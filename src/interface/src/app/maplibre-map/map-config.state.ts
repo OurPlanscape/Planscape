@@ -59,6 +59,10 @@ export class MapConfigState {
   );
   public mapInteractionMode$ = this._mapInteractionMode$.asObservable();
 
+  /* TODO: possibly move this to a dedicated funding map state service? */
+  private _selectedProjectAreas$ = new BehaviorSubject<number[]>([]);
+  public selectedProjectAreas$ = this._selectedProjectAreas$.asObservable();
+
   updateBaseMap(layer: BaseMapType) {
     this._baseMap$.next(layer);
   }
@@ -118,5 +122,24 @@ export class MapConfigState {
 
   updateDataLayersOpacity(opacity: number) {
     this._dataLayersOpacity$.next(opacity);
+  }
+
+  /* TODO: just funding map? */
+  updateSelectedProjectAreas(area_ids: number[]) {
+    this._selectedProjectAreas$.next(area_ids);
+  }
+
+  toggleProjectArea(area_id: number) {
+    // if the area_id is already selected, we remove it.
+    const currentSelection = this._selectedProjectAreas$.getValue();
+    if (currentSelection.includes(area_id)) {
+      this._selectedProjectAreas$.next(
+        currentSelection.filter((p) => p !== area_id)
+      );
+    } else {
+      // otherwise we add it
+      currentSelection.push(area_id);
+      this._selectedProjectAreas$.next(currentSelection);
+    }
   }
 }

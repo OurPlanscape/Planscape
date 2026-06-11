@@ -1,4 +1,13 @@
-app-map-nav-bar {
-  left: 510px;/* todo: fix placeholder */
-  top: 100px; /* todo: placeholder */
+
+
+:host {
+  display: flex;
+  box-sizing: border-box;
+  height: 100%;
+  flex-direction: column;
+}
+
+mgl-map {
+  width: 100%;
+  height: 100%;
 }

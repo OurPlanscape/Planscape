@@ -8,10 +8,9 @@ describe('FundingReportMapComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FundingReportMapComponent]
-    })
-    .compileComponents();
-    
+      imports: [FundingReportMapComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(FundingReportMapComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

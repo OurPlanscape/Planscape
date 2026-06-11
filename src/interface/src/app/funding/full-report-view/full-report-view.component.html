@@ -39,5 +39,16 @@
     </div>
   </div>
   <div class="data_layer_view" *ngIf="currentView === 'data_layers'"></div>
-  <app-funding-report-map></app-funding-report-map>
+  <div class="right-side">
+    <app-map-nav-bar>
+      <sg-opacity-slider
+        class="navbar-slider"
+        [minValue]="0"
+        [maxValue]="1"
+        [step]="0.01"
+        [sliderValue]="(opacity$ | async) ?? 0.5"
+        (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
+    </app-map-nav-bar>
+    <app-funding-report-map> </app-funding-report-map>
+  </div>
 </section>

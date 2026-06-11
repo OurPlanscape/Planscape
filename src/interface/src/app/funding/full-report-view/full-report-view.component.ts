@@ -12,19 +12,24 @@ import {
   ToggleButtonsConfig,
   ToggleTabsComponent,
 } from '@styleguide/toggle-tabs/toggle-tabs.component';
-import { FilterDropdownComponent } from '@styleguide';
-import { NgIf } from '@angular/common';
+import { FilterDropdownComponent, OpacitySliderComponent } from '@styleguide';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { FundingReportComponent } from '../funding-report/funding-report.component';
 import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
+import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
+import { of } from 'rxjs';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
 
 @Component({
   selector: 'app-full-report-view',
   standalone: true,
   imports: [
+    AsyncPipe,
     FilterDropdownComponent,
     FundingReportComponent,
     FundingReportMapComponent,
+    MapNavbarComponent,
     MatButtonToggleModule,
     MatIconModule,
     MatMenuModule,
@@ -32,6 +37,7 @@ import { FundingReportMapComponent } from '../funding-report-map/funding-report-
     NavBarComponent,
     MatTabsModule,
     NgIf,
+    OpacitySliderComponent,
     ToggleTabsComponent,
   ],
   templateUrl: './full-report-view.component.html',
@@ -52,7 +58,10 @@ export class FullReportViewComponent {
 
   currentView: string = 'report';
 
-  constructor(private breadcumbService: BreadcrumbService) {
+  constructor(
+    private breadcumbService: BreadcrumbService,
+    private mapConfigState: MapConfigState
+  ) {
     const newBreadCrumb: BreadCrumb = {
       label: 'Funding Opportunity Report',
       backUrl: '..',
@@ -65,4 +74,16 @@ export class FullReportViewComponent {
   handleToggleSelection(selection: string) {
     this.currentView = selection;
   }
+
+  /* map interaction -- TODO: possibly move these vars elsewhere */
+  opacity$ = of(1);
+
+  handleOpacityChange(opacity: number) {
+    console.log('opacity changed to:', opacity);
+    this.mapConfigState.setOpacity(opacity);
+  }
+
+  selectedProjectAreas$ = of([]);
+
+  selectProjectAreas(selectedAreas: number[]) {}
 }

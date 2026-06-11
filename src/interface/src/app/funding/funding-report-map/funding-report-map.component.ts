@@ -23,7 +23,8 @@ import { MapBaseLayersComponent } from '@app/maplibre-map/map-base-layers/map-ba
 import { MapDataLayerComponent } from '@app/maplibre-map/map-data-layer/map-data-layer.component';
 import { PlanState } from '@app/plan/plan.state';
 import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
-import { MapProjectAreasComponent } from '@app/maplibre-map/map-project-areas/map-project-areas.component';
+import { MapConfigService } from '@app/maplibre-map/map-config.service';
+import { MapMultiProjectAreasComponent } from '../map-multi-project-areas/map-multi-project-areas.component';
 
 @Component({
   selector: 'app-funding-report-map',
@@ -35,7 +36,7 @@ import { MapProjectAreasComponent } from '@app/maplibre-map/map-project-areas/ma
     MapBaseLayersComponent,
     MapDataLayerComponent,
     MapComponent,
-    MapProjectAreasComponent,
+    MapMultiProjectAreasComponent,
     MapZoomControlComponent,
     MapNavbarComponent,
     MatProgressSpinnerModule,
@@ -47,14 +48,30 @@ import { MapProjectAreasComponent } from '@app/maplibre-map/map-project-areas/ma
   styleUrl: './funding-report-map.component.scss',
 })
 export class FundingReportMapComponent {
+  // TODO: use separate instance of mapconfigstate?
+  constructor(
+    private mapConfigState: MapConfigState,
+    private mapConfigService: MapConfigService,
+    private authService: AuthService,
+    private planState: PlanState
+  ) {
+    this.mapConfigService.initialize();
+  }
   mapLibreMap!: MapLibreMap;
-  baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
-  showProjectAreas$ = of(true); // TODO: replace w actual state
   /**
    * Maplibre defaults
    */
   minZoom = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
+
+  /**
+   * Observable that provides the url to load the selected map base layer
+   */
+  baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
+
+  opacity$ = this.mapConfigState.opacity$;
+
+  showProjectAreas$ = of(true); // TODO: replace w actual state
   projectAreaCount$ = of(4); // TODO: replace w actual state
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {
@@ -66,17 +83,9 @@ export class FundingReportMapComponent {
   //Funding Report dependencies
   loading$ = new BehaviorSubject<boolean>(false);
 
-  // TODO: use separate instance of mapconfigstate?
-  constructor(
-    private mapConfigState: MapConfigState,
-    private authService: AuthService,
-    private planState: PlanState
-  ) {}
-
-  opacity$ = this.mapConfigState.opacity$;
-
   mapLoaded(loadedMap: MapLibreMap) {
     this.mapLibreMap = loadedMap;
+    console.log('we have a map?', this.mapLibreMap);
   }
 
   handleOpacityChange(opacity: number) {
