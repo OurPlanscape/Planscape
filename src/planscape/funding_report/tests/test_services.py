@@ -82,12 +82,15 @@ def expected_raster_aggregate(geometry: MultiPolygon) -> dict:
     )
     baseline_values = np.ma.array(baseline, mask=~valid, dtype=float)
     value_values = np.ma.array(value, mask=~valid, dtype=float)
-    delta = np.ma.divide(value_values - baseline_values, baseline_values)
-    delta = np.ma.where((baseline_values == 0) | (value_values == 0), 0, delta)
+    baseline_sum = float(baseline_values.sum())
+    value_sum = float(value_values.sum())
+    delta = (
+        (value_sum - baseline_sum) / baseline_sum * 100 if baseline_sum else 0.0
+    )
     return {
-        "baseline": float(baseline_values.sum()),
-        "value": float(value_values.sum()),
-        "delta": float(delta.sum()),
+        "baseline": baseline_sum,
+        "value": value_sum,
+        "delta": delta,
     }
 
 
@@ -333,10 +336,11 @@ class FundingReportRasterCalculationTest(TestCase):
         )
 
         self.assertNotIn("variables", results)
-        self.assertEqual(
-            results["summary"][FundingReportMetric.ABOVEGROUND_TOTAL][0],
-            {"year": 2026, "value": 25, "baseline": 12, "delta": 4},
-        )
+        summary = results["summary"][FundingReportMetric.ABOVEGROUND_TOTAL][0]
+        self.assertEqual(summary["year"], 2026)
+        self.assertEqual(summary["value"], 25)
+        self.assertEqual(summary["baseline"], 12)
+        self.assertAlmostEqual(summary["delta"], (25 - 12) / 12 * 100)
         self.assertEqual(
             results["projects"][FundingReportMetric.ABOVEGROUND_TOTAL],
             [
