@@ -1,0 +1,6 @@
+<h5>{{ heading }}</h5>
+<mat-radio-group (change)="selectedLayer.emit($event.value)">
+  <mat-radio-button *ngFor="let layer of layers" [value]="layer">
+    {{ layer.name }}
+  </mat-radio-button>
+</mat-radio-group>

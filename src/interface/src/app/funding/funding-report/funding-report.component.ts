@@ -4,10 +4,12 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   NgZone,
   OnDestroy,
   OnInit,
+  Output,
   ViewChild,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,6 +19,8 @@ import {
   BannerComponent,
   ButtonComponent,
   ChartComponent,
+  InputDirective,
+  InputFieldComponent,
   ModalComponent,
   PopoverComponent,
   SectionComponent,
@@ -31,6 +35,19 @@ import {
 } from '@app/chart-helper';
 import { FundingReportFooterComponent } from '../funding-report-footer/funding-report-footer.component';
 import { FundingReport } from '@types';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
+import {
+  FundingMapLayersComponent,
+  MapLayer,
+} from '../funding-map-layers/funding-map-layers.component';
 
 interface ChartConfig {
   data: ChartData<'bar'>;
@@ -49,6 +66,19 @@ interface ReportSection {
   label: string;
 }
 
+/** The "greater than" threshold must be above the "lesser than" one. */
+const flameLengthRangeValidator: ValidatorFn = (
+  group: AbstractControl
+): ValidationErrors | null => {
+  const greaterThan = group.get('greaterThan')?.value;
+  const lesserThan = group.get('lesserThan')?.value;
+  // Empties are handled by the per-field required validators.
+  if (greaterThan === null || lesserThan === null) {
+    return null;
+  }
+  return greaterThan > lesserThan ? null : { range: true };
+};
+
 @Component({
   selector: 'app-funding-report',
   standalone: true,
@@ -64,6 +94,10 @@ interface ReportSection {
     BannerComponent,
     ModalComponent,
     PopoverComponent,
+    FundingMapLayersComponent,
+    InputFieldComponent,
+    InputDirective,
+    ReactiveFormsModule,
   ],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',
@@ -80,12 +114,39 @@ export class FundingReportComponent
   /** Name of the section whose interactive tooltip was last opened. */
   tooltipName = '';
 
+  // TODO placeholder
+  mapLayers: MapLayer[] = [
+    { id: 1, name: 'Water Availability with No Treatment' },
+    { id: 2, name: 'Water Availability with Treatment' },
+  ];
+
+  flameLengthForm = new FormGroup(
+    {
+      greaterThan: new FormControl<number | null>(7, Validators.required),
+      lesserThan: new FormControl<number | null>(4, Validators.required),
+    },
+    { validators: flameLengthRangeValidator }
+  );
+
+  waterAvailabilityControl = new FormControl<number | null>(
+    25,
+    Validators.required
+  );
+
   private suppressUntil = 0;
   private pendingScrollFrame: number | null = null;
   @Input() showMap = true;
   @Input() showFooter = true;
   @Input() reportType: 'preview' | 'full' = 'preview';
   @Input() report!: FundingReport;
+
+  // todo datalayer probably
+  @Output() showLayer = new EventEmitter<number>();
+  @Output() updateWaterAvailability = new EventEmitter<number>();
+  @Output() updateFlameLength = new EventEmitter<{
+    greaterThan: number;
+    lesserThan: number;
+  }>();
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -204,6 +265,56 @@ export class FundingReportComponent
         options: getPercentageChartOptions(this.xAxisLabel, values[key])!,
       }))
     );
+  }
+
+  onLayerSelected(layer: MapLayer): void {
+    // TODO: drive the map / section-specific behavior off the selected layer.
+    this.showLayer.emit(layer.id);
+  }
+
+  /** Keep the flame length fields numeric, updating validity as the user types. */
+  onFlameLengthInput(event: Event, key: 'greaterThan' | 'lesserThan'): void {
+    const input = event.target as HTMLInputElement;
+    const sanitized = input.value.replace(/\D/g, '');
+    if (sanitized !== input.value) {
+      input.value = sanitized;
+    }
+    this.flameLengthForm.controls[key].setValue(
+      sanitized === '' ? null : Number(sanitized)
+    );
+  }
+
+  /** Emit the flame length thresholds (feet) once the whole form is valid. */
+  emitFlameLength(): void {
+    if (this.flameLengthForm.invalid) {
+      return;
+    }
+    const { greaterThan, lesserThan } = this.flameLengthForm.getRawValue();
+    if (greaterThan === null || lesserThan === null) {
+      return;
+    }
+    this.updateFlameLength.emit({ greaterThan, lesserThan });
+  }
+
+  /** Keep the water availability field numeric, updating validity as the user types. */
+  onWaterAvailabilityInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const sanitized = input.value.replace(/\D/g, '');
+    if (sanitized !== input.value) {
+      input.value = sanitized;
+    }
+    this.waterAvailabilityControl.setValue(
+      sanitized === '' ? null : Number(sanitized)
+    );
+  }
+
+  /** Emit the water availability increase (%) once it is a valid number. */
+  emitWaterAvailability(): void {
+    const value = this.waterAvailabilityControl.value;
+    if (value === null) {
+      return;
+    }
+    this.updateWaterAvailability.emit(value);
   }
 
   get isPreview() {
