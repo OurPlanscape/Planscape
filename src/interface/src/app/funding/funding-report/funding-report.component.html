@@ -48,6 +48,13 @@
     (tooltipClicked)="tooltipName = 'Carbon'"
     [isCollapsible]="true"
     [defaultExpanded]="true">
+    <div class="summary-card" *ngIf="!isPreview">
+      <app-funding-map-layers
+        heading="Map Layers (no treatment)"
+        [layers]="mapLayers"
+        (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
+    </div>
+
     <div>
       <h5>Unhealthy Smoke Production</h5>
       <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
@@ -85,11 +92,17 @@
   <sg-section
     id="wildfire"
     class="report-section"
-    headline="Wildfire Risk"
+    headline="Wildfire Risk Reduction"
     [isCollapsible]="true"
     [defaultExpanded]="true">
     <div>Metrics reflect outcomes within forested land only.</div>
 
+    <div class="summary-card" *ngIf="!isPreview">
+      <app-funding-map-layers
+        heading="Map Layers (no treatment)"
+        [layers]="mapLayers"
+        (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
+    </div>
     <div>
       <h5>
         Flame Length
@@ -99,7 +112,63 @@
           [contentTemplate]="tooltipContent"
           (opened)="tooltipName = 'Flame Length'"></sg-popover>
       </h5>
-      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
+      <div class="summary-card" *ngIf="!isPreview">
+        (%) Percentage of area with flame length reduced from:
+        <div class="summary-flex" [formGroup]="flameLengthForm">
+          <sg-input-field
+            label="Greater than (>)"
+            suffix="feet"
+            showSupportMessage="on-error"
+            [supportMessage]="
+              flameLengthForm.controls.greaterThan.invalid
+                ? 'Field is required'
+                : ''
+            "
+            [error]="
+              flameLengthForm.controls.greaterThan.invalid ||
+              flameLengthForm.hasError('range')
+            ">
+            <input
+              sgInput
+              type="text"
+              inputmode="numeric"
+              required
+              formControlName="greaterThan"
+              (input)="onFlameLengthInput($event, 'greaterThan')"
+              (change)="emitFlameLength()" />
+          </sg-input-field>
+          <div class="summary-to">to</div>
+
+          <sg-input-field
+            label="Lesser than (<)"
+            suffix="feet"
+            showSupportMessage="on-error"
+            [supportMessage]="
+              flameLengthForm.controls.lesserThan.invalid
+                ? 'Field is required'
+                : ''
+            "
+            [error]="
+              flameLengthForm.controls.lesserThan.invalid ||
+              flameLengthForm.hasError('range')
+            ">
+            <input
+              sgInput
+              type="text"
+              inputmode="numeric"
+              required
+              formControlName="lesserThan"
+              (input)="onFlameLengthInput($event, 'lesserThan')"
+              (change)="emitFlameLength()" />
+          </sg-input-field>
+        </div>
+        <div class="field-error" *ngIf="flameLengthForm.hasError('range')">
+          Greater than must exceed lesser than
+        </div>
+      </div>
+      <p class="chart-subtitle" *ngIf="isPreview">
+        (%) Percentage Change After Treatment
+      </p>
       <sg-chart
         *ngIf="flameLengthChart$ | async as chart"
         class="no-margin"
@@ -140,6 +209,34 @@
     (tooltipClicked)="tooltipName = 'Water'"
     [isCollapsible]="true"
     [defaultExpanded]="true">
+    <div class="summary-card" *ngIf="!isPreview">
+      <app-funding-map-layers
+        heading="Map Layers"
+        [layers]="mapLayers"
+        (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
+    </div>
+    <div class="summary-card" *ngIf="!isPreview">
+      <div class="summary-water">
+        Water availability increased by:
+        <sg-input-field
+          suffix="%"
+          [error]="waterAvailabilityControl.invalid"
+          class="water-input">
+          <input
+            sgInput
+            type="text"
+            inputmode="numeric"
+            required
+            [formControl]="waterAvailabilityControl"
+            (input)="onWaterAvailabilityInput($event)"
+            (change)="emitWaterAvailability()" />
+        </sg-input-field>
+      </div>
+
+      <div class="field-error" *ngIf="waterAvailabilityControl.invalid">
+        Field is required
+      </div>
+    </div>
     <div class="stat-cards">
       <div class="stat-card">
         <div class="stat-label">
