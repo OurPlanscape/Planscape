@@ -68,7 +68,7 @@ class Command(BaseCommand):
         for item in data:
             fields = item.get("fields")
             if not isinstance(fields, dict):
-                sanitized_data.append(item)
+                data.append(item)
                 continue
 
             # Make catalog fixtures loadable against an arbitrary local dev DB.
