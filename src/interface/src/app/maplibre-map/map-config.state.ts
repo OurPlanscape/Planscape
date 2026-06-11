@@ -129,16 +129,17 @@ export class MapConfigState {
     this._selectedProjectAreas$.next(area_ids);
   }
 
-  toggleProjectArea(area_id: number) {
+  toggleProjectArea(proj: any) {
     // if the area_id is already selected, we remove it.
+    console.log('selected:', proj.area_id);
     const currentSelection = this._selectedProjectAreas$.getValue();
-    if (currentSelection.includes(area_id)) {
+    if (currentSelection.includes(proj.area_id)) {
       this._selectedProjectAreas$.next(
-        currentSelection.filter((p) => p !== area_id)
+        currentSelection.filter((p) => p !== proj.area_id)
       );
     } else {
       // otherwise we add it
-      currentSelection.push(area_id);
+      currentSelection.push(proj.area_id);
       this._selectedProjectAreas$.next(currentSelection);
     }
   }

@@ -66,7 +66,6 @@ export class ScenarioDashboardComponent implements OnInit {
       if (!scenario.scenario_result) {
         return null;
       }
-
       return parseResultsToProjectAreas(scenario.scenario_result);
     })
   );
