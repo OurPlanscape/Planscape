@@ -37,6 +37,23 @@ FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE = OpenApiExample(
         "status": "SUCCESS",
         "treatment_datalayer": 482,
         "results": {
+            "summary": {
+                "ABOVEGROUND_TOTAL": [
+                    {"year": 2026, "value": 320.5, "baseline": 5000.0, "delta": 6.41}
+                ],
+            },
+            "projects": {
+                "ABOVEGROUND_TOTAL": [
+                    {
+                        "project_id": 14,
+                        "proj_id": None,
+                        "year": 2026,
+                        "value": 80.0,
+                        "baseline": 1000.0,
+                        "delta": 8.0,
+                    }
+                ],
+            },
             "treatment_areas": {
                 "projects": {
                     "101": {
