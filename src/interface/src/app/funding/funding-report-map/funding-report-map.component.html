@@ -30,12 +30,21 @@
     [layout]="{ visibility: 'none' }">
   </mgl-layer>
 
+ <app-map-tooltip
+    [lngLat]="hoverLngLat"
+    *ngIf="hoverLngLat">
+    Click Project Area To Select
+  </app-map-tooltip>
+
   <ng-container *ngIf="showProjectAreas$ | async">
     <app-map-multi-project-areas
       *ngIf="projectAreaCount$ | async as projectAreasCount"
       [projectAreasCount]="projectAreasCount"
       [mapLibreMap]="mapLibreMap"
-      [labelField]="'rank'">
+      [labelField]="'rank'"
+      (changeHoveredProjectAreaId)="
+      setHoveredProjectAreaId($event)
+    ">
     </app-map-multi-project-areas>
   </ng-container>
   <mgl-control position="top-right">

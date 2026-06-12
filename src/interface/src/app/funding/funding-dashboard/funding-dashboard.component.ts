@@ -24,7 +24,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FundingReportComponent } from '@app/funding/funding-report/funding-report.component';
 import { ButtonComponent, ToolInfoCardComponent } from '@styleguide';
 import { ScenarioState } from '@scenario/scenario.state';
-// import { scenarioHasCapability } from '@scenario/scenario-helper';
+import { scenarioHasCapability } from '@scenario/scenario-helper';
 import { FundingReportService } from '@services/funding-report.service';
 import { FundingReport } from '@types';
 import { POLLING_INTERVAL } from '@plan/plan-helpers';
@@ -73,7 +73,7 @@ export class FundingDashboardComponent implements OnInit {
   /** Set the moment the user clicks generate, so the view switches instantly. */
   private generationRequested$ = new BehaviorSubject<boolean>(false);
 
-  just_testing = true;
+  DEV_DEBUGGING = true;
 
   report$ = this.scenarioId$.pipe(
     switchMap((id) => this.reload$.pipe(switchMap(() => this.pollReport(id)))),
@@ -150,7 +150,9 @@ export class FundingDashboardComponent implements OnInit {
       label: 'Scenario Dashboard ',
       backUrl: '../dashboard',
     });
-    // this.redirectIfFundingReportUnavailable();
+    if (!this.DEV_DEBUGGING) {
+      this.redirectIfFundingReportUnavailable();
+    }
   }
 
   generateReport() {
@@ -181,19 +183,18 @@ export class FundingDashboardComponent implements OnInit {
     this.router.navigate(['../dashboard'], { relativeTo: this.route });
   }
 
-  // // redirect if the scenario does not have funding report capability
-  // private redirectIfFundingReportUnavailable() {
-  //   const scenarioId = Number(this.route.snapshot.paramMap.get('scenarioId'));
-  //   this.scenarioState.currentScenario$
-  //     .pipe(
-  //       filter((scenario) => scenario.id === scenarioId),
-  //       take(1),
-  //       untilDestroyed(this)
-  //     )
-  //     .subscribe((scenario) => {
-  //       if (!scenarioHasCapability(scenario, 'FUNDING_REPORT')) {
-  //         this.redirectToDashboard();
-  //       }
-  //     });
-  // }
+  private redirectIfFundingReportUnavailable() {
+    const scenarioId = Number(this.route.snapshot.paramMap.get('scenarioId'));
+    this.scenarioState.currentScenario$
+      .pipe(
+        filter((scenario) => scenario.id === scenarioId),
+        take(1),
+        untilDestroyed(this)
+      )
+      .subscribe((scenario) => {
+        if (!scenarioHasCapability(scenario, 'FUNDING_REPORT')) {
+          this.redirectToDashboard();
+        }
+      });
+  }
 }

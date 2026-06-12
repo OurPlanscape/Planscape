@@ -61,7 +61,6 @@ export class MapMultiProjectAreasComponent implements OnInit {
 
   @Output() changeHoveredProjectAreaId = new EventEmitter<number | null>();
   @Output() changeMouseLngLat = new EventEmitter<LngLat | null>();
-  @Output() selectProjectArea = new EventEmitter<string>();
 
   private get martinSource() {
     return isPlanningApproachSubUnits(this.planningApproach)
@@ -224,7 +223,7 @@ export class MapMultiProjectAreasComponent implements OnInit {
     matchExpression.push(defaultColor);
 
     return {
-      // 'fill-color': matchExpression as ExpressionSpecification,
+      // TODO: resolve to designs -- 'fill-color': matchExpression as ExpressionSpecification,
       'fill-color': defaultColor,
       'fill-opacity': this.opacity,
     };

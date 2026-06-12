@@ -78,12 +78,18 @@ export class FundingReportMapComponent {
     })
   );
 
-  //Funding Report dependencies
   loading$ = new BehaviorSubject<boolean>(false);
 
   mapLoaded(loadedMap: MapLibreMap) {
     this.mapLibreMap = loadedMap;
   }
+
+
+  setHoveredProjectAreaId(value: number | null) {
+    console.log('setting hovered area id', value);
+  }
+
+
 
   handleOpacityChange(opacity: number) {
     this.mapConfigState.setOpacity(opacity);
