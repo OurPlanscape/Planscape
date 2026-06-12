@@ -1161,7 +1161,8 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(config.get("targets").get("estimated_cost"), 12345)
 
     # Test sequential patches, ensure we retain values as expected
-    def test_patch_scenario_incremental_updates(self):
+    @mock.patch("planning.serializers.calculate_scenario_treatable_area", return_value=None)
+    def test_patch_scenario_incremental_updates(self, treatable_area_mock):
         from datasets.models import DataLayerType, GeometryType
         from datasets.tests.factories import DataLayerFactory
 
