@@ -31,6 +31,7 @@
               noSelectionsLabel="All Project Areas"
               [menuItems]="outcomeViewOptions"
               [showCountChip]="false"
+              (confirmedSelection)="changeProjectAreas($event)"
               menuLabel="Project Areas"></sg-filter-dropdown>
           </div>
         </div>
@@ -38,6 +39,7 @@
           <app-funding-report
             *ngIf="report.status === 'SUCCESS'; else loadingReport"
             [report]="report"
+            [projectAreas]="selectedProjectAreas"
             [reportType]="'full'"></app-funding-report>
         </ng-container>
         <ng-template #loadingReport>

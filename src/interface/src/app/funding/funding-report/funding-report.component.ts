@@ -7,16 +7,17 @@ import {
   EventEmitter,
   Input,
   NgZone,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import {
-  BannerComponent,
   ButtonComponent,
   ChartComponent,
   InputDirective,
@@ -27,14 +28,15 @@ import {
 } from '@styleguide';
 import { Chart, ChartData, ChartOptions } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { map, Observable, of } from 'rxjs';
 import {
   buildPercentageBarData,
   getPercentageChartOptions,
   PercentageBarColor,
 } from '@app/chart-helper';
 import { FundingReportFooterComponent } from '../funding-report-footer/funding-report-footer.component';
-import { FundingReport } from '@types';
+import { FundingReport, FundingReportMetric } from '@types';
+import { aggregateMetricSummary, hasMetricData } from './funding-report.helper';
+import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
 import {
   AbstractControl,
   FormControl,
@@ -52,13 +54,6 @@ import {
 interface ChartConfig {
   data: ChartData<'bar'>;
   options: ChartOptions<'bar'>;
-}
-
-interface ChartValues {
-  smoke: number[];
-  treeCarbon: number[];
-  flameLength: number[];
-  burnProb: number[];
 }
 
 interface ReportSection {
@@ -91,19 +86,19 @@ const flameLengthRangeValidator: ValidatorFn = (
     SectionComponent,
     ButtonComponent,
     ChartComponent,
-    BannerComponent,
     ModalComponent,
     PopoverComponent,
     FundingMapLayersComponent,
     InputFieldComponent,
     InputDirective,
     ReactiveFormsModule,
+    MessageCardComponent,
   ],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',
 })
 export class FundingReportComponent
-  implements OnInit, AfterViewInit, OnDestroy
+  implements OnInit, OnChanges, AfterViewInit, OnDestroy
 {
   @ViewChild('scrollContainer', { static: true })
   scrollContainer!: ElementRef<HTMLElement>;
@@ -139,6 +134,8 @@ export class FundingReportComponent
   @Input() showFooter = true;
   @Input() reportType: 'preview' | 'full' = 'preview';
   @Input() report!: FundingReport;
+  /** Selected project area ids; empty means show the whole-scenario summary. */
+  @Input() projectAreas: number[] = [];
 
   // todo datalayer probably
   @Output() showLayer = new EventEmitter<number>();
@@ -156,6 +153,14 @@ export class FundingReportComponent
   ngOnInit(): void {
     Chart.register(ChartDataLabels);
     this.assignSections();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Fires before ngOnInit on first render, so this also does the initial build.
+    // Redraw whenever the report or the selected project areas change.
+    if (changes['report'] || changes['projectAreas']) {
+      this.buildCharts();
+    }
   }
 
   assignSections() {
@@ -242,28 +247,65 @@ export class FundingReportComponent
   private readonly labels = [0, 5, 10, 15, 20];
   private readonly xAxisLabel = 'Years Since Treatment';
 
-  // simulating an async source — swap for a real data service later
-  readonly chartValues$: Observable<ChartValues> = of({
-    smoke: [-48, -23, -22, -18, -12],
-    treeCarbon: [-50, -45, -28, -25, -15],
-    flameLength: [71, 58, 32, 16, 14],
-    burnProb: [70, 30, 25, 20, 16],
-  });
+  /** Rebuilt in `ngOnChanges` whenever the report or selected project areas change. */
+  smokeChart!: ChartConfig;
+  treeCarbonChart!: ChartConfig;
+  flameLengthChart!: ChartConfig;
 
-  readonly smokeChart$ = this.buildChart$('smoke', 'blue');
-  readonly treeCarbonChart$ = this.buildChart$('treeCarbon', 'purple');
-  readonly flameLengthChart$ = this.buildChart$('flameLength', 'orange');
-  readonly burnProbChart$ = this.buildChart$('burnProb', 'yellow');
+  /**
+   * Whether each chart has any data for the current selection. When false the
+   * chart is hidden and the no-data message is shown instead.
+   */
+  smokeHasData = false;
+  treeCarbonHasData = false;
+  flameLengthHasData = false;
 
-  private buildChart$(
-    key: keyof ChartValues,
+  private buildCharts(): void {
+    this.smokeChart = this.buildSummaryChart('POTENTIAL_SMOKE', 'blue');
+    this.treeCarbonChart = this.buildSummaryChart(
+      'ABOVEGROUND_TOTAL',
+      'purple'
+    );
+    this.flameLengthChart = this.buildSummaryChart(
+      'TOTAL_FLAME_SEVERITY',
+      'orange'
+    );
+
+    this.smokeHasData = this.metricHasData('POTENTIAL_SMOKE');
+    this.treeCarbonHasData = this.metricHasData('ABOVEGROUND_TOTAL');
+    this.flameLengthHasData = this.metricHasData('TOTAL_FLAME_SEVERITY');
+  }
+
+  /** True when the metric has any non-null data over the current selection. */
+  private metricHasData(metric: FundingReportMetric): boolean {
+    const results = this.report?.results;
+    return !!results && hasMetricData(results, metric, this.projectAreas);
+  }
+
+  /** Build a bar chart from a report metric: one bar per year, value = % delta. */
+  private buildSummaryChart(
+    metric: FundingReportMetric,
     color: PercentageBarColor
-  ): Observable<ChartConfig> {
-    return this.chartValues$.pipe(
-      map((values) => ({
-        data: buildPercentageBarData(this.labels, values[key], color),
-        options: getPercentageChartOptions(this.xAxisLabel, values[key])!,
-      }))
+  ): ChartConfig {
+    const deltas = this.deltasForMetric(metric);
+    return {
+      data: buildPercentageBarData(this.labels, deltas, color),
+      options: getPercentageChartOptions(
+        this.xAxisLabel,
+        deltas.length ? deltas : undefined
+      )!,
+    };
+  }
+
+  /** Per-year % deltas for a metric over the currently selected project areas. */
+  private deltasForMetric(metric: FundingReportMetric): number[] {
+    const results = this.report?.results;
+    if (!results) {
+      return [];
+    }
+    // delta can be null when a metric had no valid pixels; treat it as 0.
+    return aggregateMetricSummary(results, metric, this.projectAreas).map(
+      (point) => point.delta ?? 0
     );
   }
 

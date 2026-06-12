@@ -101,7 +101,7 @@ h5 {
   }
 
   sg-input-field ::ng-deep .label {
-    color: var(--Neutral-Dark-gray, #4A4A4A);
+    color: $color-dark-gray;
     font-size: 14px;
     font-style: normal;
     font-weight: 500;
@@ -140,15 +140,6 @@ h5 {
 
 .summary-tooltip-icon {
   color: $color-standard-blue;
-}
-
-.summary-value {
-  color: $color-brand-teal;
-  font-size: 26px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 32px;
-  /* 123.077% */
 }
 
 .summary-water {
@@ -243,4 +234,17 @@ h5 {
 
 .burn-probability-banner {
   margin: 16px 0;
+}
+
+.no-data-card {
+  margin-top: 24px;
+
+  ul {
+    padding-left: 16px;
+    margin: 24px 0 0;
+  }
+
+  li {
+    color: $color-black;
+  }
 }

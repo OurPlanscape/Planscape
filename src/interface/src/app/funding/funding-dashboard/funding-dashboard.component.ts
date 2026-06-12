@@ -125,9 +125,8 @@ export class FundingDashboardComponent implements OnInit {
   }
 
   /** Whether a (successful) report actually carries results to display. */
-  // TODO: refine once the shape of `results` is known.
   private hasResults(report: FundingReport | null): boolean {
-    return true;
+    return !!report?.results;
   }
 
   readonly partners = [

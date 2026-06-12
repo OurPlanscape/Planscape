@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, HostBinding, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
@@ -11,4 +11,6 @@ import { MatIconModule } from '@angular/material/icon';
 export class MessageCardComponent {
   @Input() cardTitle: string = '';
   @Input() cardType: 'warning' | 'error' = 'warning';
+
+  @Input() @HostBinding('class.with-border') withBorders = true;
 }
