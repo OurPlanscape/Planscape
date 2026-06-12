@@ -363,12 +363,12 @@ class FundingReportRasterCalculationTest(TestCase):
         self.assertEqual(summary["value"], 15)
         self.assertEqual(summary["baseline"], 60)
         self.assertAlmostEqual(summary["delta"], 15 / 60 * 100)
-        self.assertEqual(summary["interval"], {"from": 7.0, "to": 4.0})
+        self.assertNotIn("interval", summary)
 
         for project_result in results["projects"][
             FundingReportMetric.TOTAL_FLAME_SEVERITY
         ]:
-            self.assertEqual(project_result["interval"], {"from": 7.0, "to": 4.0})
+            self.assertNotIn("interval", project_result)
 
     def test_build_results_uses_projects_and_summary(self):
         results = build_funding_report_results(
@@ -522,7 +522,7 @@ class FlameLengthReductionCalculationTest(TestCase):
         self.assertEqual(len(results["summary"]), len(FUNDING_REPORT_YEARS))
         self.assertEqual(len(results["projects"]), len(FUNDING_REPORT_YEARS))
         for entry in results["summary"]:
-            self.assertEqual(entry["interval"], {"from": 7.0, "to": 4.0})
+            self.assertNotIn("interval", entry)
         for entry in results["projects"]:
             self.assertEqual(entry["project_id"], self.project_area.pk)
-            self.assertEqual(entry["interval"], {"from": 7.0, "to": 4.0})
+            self.assertNotIn("interval", entry)

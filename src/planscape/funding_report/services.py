@@ -395,16 +395,12 @@ def build_funding_report_results(
             "baseline": result["baseline"],
             "delta": result["delta"],
         }
-        if "interval" in result:
-            project_result["interval"] = result["interval"]
         projects[metric].append(project_result)
 
         summary = summary_values.setdefault(
             (metric, year),
             {"year": year, "value": None, "baseline": None, "delta": None},
         )
-        if "interval" in result:
-            summary["interval"] = result["interval"]
         for field in ("value", "baseline"):
             if result[field] is None:
                 continue

@@ -47,10 +47,6 @@ class FundingReportFlameLengthReductionSummarySerializer(serializers.Serializer)
     value = serializers.FloatField(allow_null=True)
     baseline = serializers.FloatField(allow_null=True)
     delta = serializers.FloatField(allow_null=True)
-    interval = serializers.DictField(
-        child=serializers.FloatField(),
-        help_text="Flame length interval in feet, e.g. {'from': 7.0, 'to': 4.0}.",
-    )
 
 
 class FundingReportFlameLengthReductionProjectSerializer(serializers.Serializer):
@@ -60,10 +56,6 @@ class FundingReportFlameLengthReductionProjectSerializer(serializers.Serializer)
     value = serializers.FloatField(allow_null=True)
     baseline = serializers.FloatField(allow_null=True)
     delta = serializers.FloatField(allow_null=True)
-    interval = serializers.DictField(
-        child=serializers.FloatField(),
-        help_text="Flame length interval in feet, e.g. {'from': 7.0, 'to': 4.0}.",
-    )
 
 
 class FundingReportFlameLengthReductionResponseSerializer(serializers.Serializer):

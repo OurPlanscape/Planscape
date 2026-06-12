@@ -10,7 +10,6 @@ FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE = OpenApiExample(
                 "value": 320.5,
                 "baseline": 5000.0,
                 "delta": 6.41,
-                "interval": {"from": 7.0, "to": 4.0},
             }
         ],
         "projects": [
@@ -21,7 +20,6 @@ FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE = OpenApiExample(
                 "value": 80.0,
                 "baseline": 1000.0,
                 "delta": 8.0,
-                "interval": {"from": 7.0, "to": 4.0},
             }
         ],
     },

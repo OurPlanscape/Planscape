@@ -288,7 +288,6 @@ class FlameLengthReductionTest(APITestCase):
                     "value": 10,
                     "baseline": 100,
                     "delta": 10.0,
-                    "interval": {"from": 7.0, "to": 4.0},
                 }
             ],
             "projects": [
@@ -299,7 +298,6 @@ class FlameLengthReductionTest(APITestCase):
                     "value": 10,
                     "baseline": 100,
                     "delta": 10.0,
-                    "interval": {"from": 7.0, "to": 4.0},
                 }
             ],
         }
