@@ -1,23 +1,44 @@
 import json
 import logging
+import tempfile
 from collections import defaultdict
+from copy import deepcopy
+from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
+from uuid import uuid4
 
 import numpy as np
 import rasterio
+from datasets.models import (
+    DataLayer,
+    DataLayerHasStyle,
+    DataLayerStatus,
+    DataLayerType,
+    StorageTypeChoices,
+)
+from datasets.services import geometry_from_info, get_storage_url
 from django.conf import settings
-from datasets.models import DataLayer, DataLayerType
-from gis.core import with_vsi_prefix
+from django.contrib.auth import get_user_model
+from django.contrib.gis.db.models import Union as UnionOp
+from django.contrib.gis.geos import GEOSGeometry
+from gis.core import fetch_geometry_type, get_layer_info, with_vsi_prefix
 from gis.geometry import maybe_transform
-from planning.models import ProjectArea
+from gis.io import detect_mimetype
+from gis.rasters import to_cog_streaming
+from planning.models import ProjectArea, Scenario
 from planning.services import get_acreage
 from pyproj import Geod
+from rasterio.features import geometry_mask
 from rasterio.mask import mask
 
 from funding_report.models import (
-    FUNDING_REPORT_YEARS,
     FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
     FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
+    FUNDING_REPORT_YEARS,
+    TREATMENT_NO_TREATMENT_LABEL,
+    TREATMENT_PIXEL_VALUE_LABELS,
+    TREATMENT_ROLE,
+    TREATMENT_VARIABLE,
     FundingOpportunityReport,
     FundingReportMetric,
 )
@@ -70,6 +91,41 @@ def get_aet_delta_datalayer() -> DataLayer:
     if len(datalayers) > 1:
         raise ValueError("Multiple funding report AET delta datalayers found.")
     return datalayers[0]
+
+
+def get_treatment_datalayer() -> DataLayer | None:
+    datalayers = list(
+        DataLayer.objects.filter(
+            type=DataLayerType.RASTER,
+            metadata__contains={
+                "modules": {
+                    "funding_report": {
+                        "variable": TREATMENT_VARIABLE,
+                        "role": TREATMENT_ROLE,
+                    }
+                }
+            },
+        )[:2]
+    )
+    if not datalayers:
+        log.warning("Missing funding report treatment datalayer.")
+        return None
+    if len(datalayers) > 1:
+        log.warning("Multiple funding report treatment datalayers found.")
+        return None
+    return datalayers[0]
+
+
+def get_project_areas_union(scenario: Scenario) -> GEOSGeometry:
+    geometry = scenario.project_areas.aggregate(geometry=UnionOp("geometry"))[
+        "geometry"
+    ]
+    if geometry is None:
+        raise ValueError(
+            f"Scenario {scenario.pk} has no project areas to union for the "
+            "treatment datalayer clip."
+        )
+    return geometry
 
 
 def _get_datalayer(
@@ -375,6 +431,175 @@ def calculate_aet_improvement(
         "total_project_area_acres": total_project_area_acres,
         "improved_area_percent": improved_area_percent,
         "project_areas": project_area_results,
+    }
+
+
+def generate_treatment_clip_datalayer(report: FundingOpportunityReport) -> DataLayer:
+    from datasets.tasks import datalayer_uploaded
+
+    source = get_treatment_datalayer()
+    if source is None:
+        raise ValueError("Missing funding report treatment datalayer.")
+
+    report = FundingOpportunityReport.objects.select_related("scenario").get(
+        pk=report.pk
+    )
+    scenario = report.scenario
+    geometry = get_project_areas_union(scenario)
+
+    with rasterio.open(_datalayer_path(source)) as src:
+        raster_srid = src.crs.to_epsg() if src.crs else None
+        if raster_srid is None:
+            raise ValueError(f"Raster CRS {src.crs} does not resolve to an EPSG SRID.")
+        clip_geometry = json.loads(maybe_transform(geometry, raster_srid).geojson)
+        data, transform = mask(src, [clip_geometry], crop=True)
+
+        profile = src.profile.copy()
+        profile.update(
+            {
+                "height": data.shape[1],
+                "width": data.shape[2],
+                "transform": transform,
+            }
+        )
+
+        with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as tmp:
+            clipped_path = tmp.name
+        with rasterio.open(clipped_path, "w", **profile) as dst:
+            dst.write(data)
+
+    try:
+        organization = source.organization
+        uuid_value = str(uuid4())
+        original_name = f"funding_report_treatments_scenario_{scenario.pk}.tif"
+        storage_url = get_storage_url(
+            organization_id=organization.pk,
+            uuid=uuid_value,
+            original_name=original_name,
+            mimetype="image/tiff",
+        )
+        to_cog_streaming(input_file=clipped_path, output_file=storage_url)
+    finally:
+        Path(clipped_path).unlink(missing_ok=True)
+
+    vsi_output = with_vsi_prefix(storage_url)
+    layer_type, layer_info = get_layer_info(input_file=vsi_output)
+    mimetype = detect_mimetype(input_file=vsi_output) or "image/tiff"
+    geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
+
+    style_associations = [
+        (association.style_id, association.default)
+        for association in source.rel_styles.all()
+    ]
+
+    user_model = get_user_model()
+    created_by = user_model.objects.get(email=settings.DEFAULT_ADMIN_EMAIL)
+
+    name = f"Funding Report Treatments - Scenario {scenario.pk}"
+    DataLayer.dead_or_alive.filter(dataset=source.dataset, name=name).delete()
+
+    datalayer = DataLayer.objects.create(
+        name=name,
+        uuid=uuid_value,
+        dataset=source.dataset,
+        category=source.category,
+        organization=organization,
+        workspace=source.workspace,
+        created_by=created_by,
+        original_name=original_name,
+        url=storage_url,
+        type=layer_type,
+        storage_type=StorageTypeChoices.DATABASE,
+        geometry_type=geometry_type,
+        geometry=geometry_from_info(layer_info, datalayer_type=layer_type),
+        info=layer_info,
+        mimetype=mimetype,
+        metadata=deepcopy(source.metadata) or {},
+        map_service_type=source.map_service_type,
+        status=DataLayerStatus.PENDING,
+    )
+    DataLayerHasStyle.objects.bulk_create(
+        [
+            DataLayerHasStyle(
+                datalayer=datalayer,
+                style_id=style_id,
+                default=default,
+            )
+            for style_id, default in style_associations
+        ]
+    )
+
+    datalayer_uploaded.delay(datalayer.pk, status=DataLayerStatus.READY)
+    return datalayer
+
+
+def calculate_treatment_pixel_areas(report: FundingOpportunityReport) -> Dict[str, Any]:
+    source = get_treatment_datalayer()
+    if source is None:
+        raise ValueError("Missing funding report treatment datalayer.")
+
+    report = FundingOpportunityReport.objects.select_related("scenario").get(
+        pk=report.pk
+    )
+    project_areas = list(report.scenario.project_areas.all())
+
+    projects: Dict[int, Dict[str, float]] = {}
+    total: Dict[str, float] = defaultdict(float)
+
+    with rasterio.open(_datalayer_path(source)) as src:
+        raster_srid = src.crs.to_epsg() if src.crs else None
+        if raster_srid is None:
+            raise ValueError(f"Raster CRS {src.crs} does not resolve to an EPSG SRID.")
+
+        for project_area in project_areas:
+            geometry = json.loads(
+                maybe_transform(project_area.geometry, raster_srid).geojson
+            )
+            try:
+                data, transform = mask(src, [geometry], crop=True, filled=False)
+            except ValueError:
+                projects[project_area.pk] = {}
+                continue
+
+            pixels = data[0]
+            data_mask = np.ma.getmaskarray(pixels)
+            valid_mask = ~data_mask
+            values = np.ma.array(pixels, mask=~valid_mask).compressed()
+
+            inside_geometry = ~geometry_mask(
+                [geometry],
+                out_shape=pixels.shape,
+                transform=transform,
+                invert=False,
+            )
+
+            project_result: Dict[str, float] = {}
+            for value in np.unique(values):
+                selected_pixels = valid_mask & (pixels.filled(np.nan) == value)
+                acres = _selected_pixel_area_acres(
+                    selected_pixels=selected_pixels,
+                    src=src,
+                    transform=transform,
+                )
+                label = TREATMENT_PIXEL_VALUE_LABELS.get(int(value), str(int(value)))
+                project_result[label] = acres
+                total[label] += acres
+
+            no_treatment_pixels = inside_geometry & data_mask
+            if no_treatment_pixels.any():
+                acres = _selected_pixel_area_acres(
+                    selected_pixels=no_treatment_pixels,
+                    src=src,
+                    transform=transform,
+                )
+                project_result[TREATMENT_NO_TREATMENT_LABEL] = acres
+                total[TREATMENT_NO_TREATMENT_LABEL] += acres
+
+            projects[project_area.pk] = project_result
+
+    return {
+        "projects": projects,
+        "total": dict(total),
     }
 
 

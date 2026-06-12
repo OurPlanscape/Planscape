@@ -14,6 +14,7 @@ class FundingOpportunityReportSerializer(serializers.ModelSerializer):
             "updated_at",
             "status",
             "results",
+            "treatment_datalayer",
         ]
         read_only_fields = fields
 
