@@ -14,7 +14,13 @@ from planning.services import get_acreage
 from pyproj import Geod
 from rasterio.mask import mask
 
-from funding_report.models import FundingOpportunityReport
+from funding_report.models import (
+    FUNDING_REPORT_YEARS,
+    FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
+    FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
+    FundingOpportunityReport,
+    FundingReportMetric,
+)
 
 log = logging.getLogger(__name__)
 
@@ -194,11 +200,40 @@ def aggregate_project_area_pixels(
     }
 
 
+def aggregate_flame_length_reduction(
+    baseline_pixels: np.ma.MaskedArray,
+    value_pixels: np.ma.MaskedArray,
+    src: rasterio.DatasetReader,
+    transform,
+    project_area: ProjectArea,
+    from_ft: float,
+    to_ft: float,
+) -> Dict[str, Any]:
+    valid_mask = _valid_pixel_mask(baseline_pixels, value_pixels)
+    baseline_values = baseline_pixels.filled(np.nan)
+    value_values = value_pixels.filled(np.nan)
+    reduced_mask = valid_mask & (baseline_values > from_ft) & (value_values <= to_ft)
+
+    reduced_area_acres = _selected_pixel_area_acres(reduced_mask, src, transform)
+    project_area_acres = get_acreage(project_area.geometry)
+    percent_area_reduced = (
+        reduced_area_acres / project_area_acres * 100 if project_area_acres else 0.0
+    )
+    return {
+        "value": reduced_area_acres,
+        "baseline": project_area_acres,
+        "delta": percent_area_reduced,
+        "interval": {"from": from_ft, "to": to_ft},
+    }
+
+
 def calculate_project_area_delta(
     project_area: ProjectArea,
     metric: str,
     year: int,
     datalayer_lookup: Dict[Tuple[str, int, bool], DataLayer] | None = None,
+    from_ft: float = FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
+    to_ft: float = FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
 ) -> Dict[str, Any]:
     datalayer_lookup = datalayer_lookup or build_datalayer_lookup()
     baseline_layer = _get_datalayer(datalayer_lookup, metric, year, baseline=True)
@@ -221,19 +256,30 @@ def calculate_project_area_delta(
                     raster_srid,
                 ).geojson
             )
-            baseline_data, _baseline_transform = mask(
+            baseline_data, baseline_transform = mask(
                 baseline_src, [geometry], crop=True, filled=False
             )
             value_data, _value_transform = mask(
                 value_src, [geometry], crop=True, filled=False
             )
 
-    baseline_pixels = baseline_data[0]
-    value_pixels = value_data[0]
-    aggregates = aggregate_project_area_pixels(
-        baseline_pixels=baseline_pixels,
-        value_pixels=value_pixels,
-    )
+        baseline_pixels = baseline_data[0]
+        value_pixels = value_data[0]
+        if metric == FundingReportMetric.TOTAL_FLAME_SEVERITY:
+            aggregates = aggregate_flame_length_reduction(
+                baseline_pixels=baseline_pixels,
+                value_pixels=value_pixels,
+                src=baseline_src,
+                transform=baseline_transform,
+                project_area=project_area,
+                from_ft=from_ft,
+                to_ft=to_ft,
+            )
+        else:
+            aggregates = aggregate_project_area_pixels(
+                baseline_pixels=baseline_pixels,
+                value_pixels=value_pixels,
+            )
     return {
         "variable": metric,
         "project_id": project_area.pk,
@@ -349,23 +395,34 @@ def build_funding_report_results(
             "baseline": result["baseline"],
             "delta": result["delta"],
         }
+        if "interval" in result:
+            project_result["interval"] = result["interval"]
         projects[metric].append(project_result)
 
         summary = summary_values.setdefault(
             (metric, year),
             {"year": year, "value": None, "baseline": None, "delta": None},
         )
+        if "interval" in result:
+            summary["interval"] = result["interval"]
         for field in ("value", "baseline"):
             if result[field] is None:
                 continue
             summary[field] = (summary[field] or 0) + result[field]
 
-    for summary in summary_values.values():
+    for (metric, _year), summary in summary_values.items():
         if summary["value"] is None or summary["baseline"] is None:
             continue
-        summary["delta"] = calculate_percent_delta(
-            summary["value"], summary["baseline"]
-        )
+        if metric == FundingReportMetric.TOTAL_FLAME_SEVERITY:
+            summary["delta"] = (
+                summary["value"] / summary["baseline"] * 100
+                if summary["baseline"]
+                else 0.0
+            )
+        else:
+            summary["delta"] = calculate_percent_delta(
+                summary["value"], summary["baseline"]
+            )
 
     summary_by_metric: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for (metric, _year), summary in summary_values.items():
@@ -383,4 +440,40 @@ def build_funding_report_results(
             )
             for metric, values in projects.items()
         },
+    }
+
+
+def calculate_funding_report_flame_length_reduction(
+    report: FundingOpportunityReport,
+    from_ft: float,
+    to_ft: float,
+) -> Dict[str, Any]:
+    report = FundingOpportunityReport.objects.select_related("scenario").get(
+        pk=report.pk
+    )
+    project_areas = list(report.scenario.project_areas.all())
+    datalayer_lookup = build_datalayer_lookup()
+
+    results = [
+        calculate_project_area_delta(
+            project_area=project_area,
+            metric=FundingReportMetric.TOTAL_FLAME_SEVERITY.value,
+            year=year,
+            datalayer_lookup=datalayer_lookup,
+            from_ft=from_ft,
+            to_ft=to_ft,
+        )
+        for project_area in project_areas
+        for year in FUNDING_REPORT_YEARS
+    ]
+
+    built = build_funding_report_results(results)
+    return {
+        "interval": {"from": from_ft, "to": to_ft},
+        "summary": built["summary"].get(
+            FundingReportMetric.TOTAL_FLAME_SEVERITY.value, []
+        ),
+        "projects": built["projects"].get(
+            FundingReportMetric.TOTAL_FLAME_SEVERITY.value, []
+        ),
     }

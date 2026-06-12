@@ -20,3 +20,8 @@ class FundingOpportunityReportSerializer(serializers.ModelSerializer):
 
 class FundingReportAETImprovementRequestSerializer(serializers.Serializer):
     percentage = serializers.FloatField(min_value=0)
+
+
+class FundingReportFlameLengthReductionRequestSerializer(serializers.Serializer):
+    from_ft = serializers.FloatField(min_value=0)
+    to_ft = serializers.FloatField(min_value=0)
