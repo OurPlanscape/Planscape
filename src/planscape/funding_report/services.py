@@ -28,12 +28,14 @@ from gis.rasters import to_cog_streaming
 from planning.models import ProjectArea, Scenario
 from planning.services import get_acreage
 from pyproj import Geod
+from rasterio.features import geometry_mask
 from rasterio.mask import mask
 
 from funding_report.models import (
     FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
     FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
     FUNDING_REPORT_YEARS,
+    TREATMENT_NO_TREATMENT_LABEL,
     TREATMENT_PIXEL_VALUE_LABELS,
     TREATMENT_ROLE,
     TREATMENT_VARIABLE,
@@ -560,8 +562,16 @@ def calculate_treatment_pixel_areas(report: FundingOpportunityReport) -> Dict[st
                 continue
 
             pixels = data[0]
-            valid_mask = ~np.ma.getmaskarray(pixels)
+            data_mask = np.ma.getmaskarray(pixels)
+            valid_mask = ~data_mask
             values = np.ma.array(pixels, mask=~valid_mask).compressed()
+
+            inside_geometry = ~geometry_mask(
+                [geometry],
+                out_shape=pixels.shape,
+                transform=transform,
+                invert=False,
+            )
 
             project_result: Dict[str, float] = {}
             for value in np.unique(values):
@@ -574,6 +584,16 @@ def calculate_treatment_pixel_areas(report: FundingOpportunityReport) -> Dict[st
                 label = TREATMENT_PIXEL_VALUE_LABELS.get(int(value), str(int(value)))
                 project_result[label] = acres
                 total[label] += acres
+
+            no_treatment_pixels = inside_geometry & data_mask
+            if no_treatment_pixels.any():
+                acres = _selected_pixel_area_acres(
+                    selected_pixels=no_treatment_pixels,
+                    src=src,
+                    transform=transform,
+                )
+                project_result[TREATMENT_NO_TREATMENT_LABEL] = acres
+                total[TREATMENT_NO_TREATMENT_LABEL] += acres
 
             projects[project_area.pk] = project_result
 

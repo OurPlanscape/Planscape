@@ -59,7 +59,10 @@ from funding_report.models import (
     FundingOpportunityReport,
     FundingOpportunityReportStatus,
 )
-from funding_report.openapi_examples import FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE
+from funding_report.openapi_examples import (
+    FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE,
+    FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE,
+)
 from funding_report.serializers import (
     FundingOpportunityReportSerializer,
     FundingReportAETImprovementRequestSerializer,
@@ -416,6 +419,11 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         planning_area.save(update_fields=["updated_at"])
         return Response(response_serializer.data)
 
+    @extend_schema(
+        description="Run a Scenario's funding opportunity report.",
+        responses={202: FundingOpportunityReportSerializer},
+        examples=[FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE],
+    )
     @action(methods=["post"], detail=True, url_path="run-report")
     def run_report(self, request, pk=None):
         scenario = self.get_object()
@@ -427,6 +435,11 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         serializer = FundingOpportunityReportSerializer(instance=report)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
+    @extend_schema(
+        description="Get a Scenario's funding opportunity report.",
+        responses={200: FundingOpportunityReportSerializer},
+        examples=[FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE],
+    )
     @action(methods=["get"], detail=True, url_path="get-report")
     def get_report(self, request, pk=None):
         scenario = self.get_object()

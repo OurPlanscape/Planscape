@@ -25,3 +25,36 @@ FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE = OpenApiExample(
     },
     response_only=True,
 )
+
+FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE = OpenApiExample(
+    "Funding opportunity report",
+    value={
+        "id": 1,
+        "scenario": 14,
+        "created_by": 3,
+        "created_at": "2026-06-01T00:00:00Z",
+        "updated_at": "2026-06-01T00:05:00Z",
+        "status": "SUCCESS",
+        "treatment_datalayer": 482,
+        "results": {
+            "treatment_areas": {
+                "projects": {
+                    "101": {
+                        "Rx Burn": 12.34,
+                        "Thin and Rx Burn": 5.67,
+                        "No Treatment": 2.10,
+                    },
+                    "102": {
+                        "No Treatment": 8.45,
+                    },
+                },
+                "total": {
+                    "Rx Burn": 12.34,
+                    "Thin and Rx Burn": 5.67,
+                    "No Treatment": 10.55,
+                },
+            },
+        },
+    },
+    response_only=True,
+)

@@ -42,8 +42,14 @@ FUNDING_REPORT_DATALAYER_NAME_REGEX = re.compile(
 TREATMENT_VARIABLE = "TREATMENT"
 TREATMENT_ROLE = "treatment"
 
+# Label for pixels that are nodata in the treatments raster.
+TREATMENT_NO_TREATMENT_LABEL = "No Treatment"
+
 # Maps raster pixel values from the treatments layer to treatment-type labels.
-TREATMENT_PIXEL_VALUE_LABELS: Dict[int, str] = {}
+TREATMENT_PIXEL_VALUE_LABELS: Dict[int, str] = {
+    1: "Rx Burn",
+    2: "Thin and Rx Burn",
+}
 
 
 def get_funding_report_metadata(input_file: str) -> Dict[str, Any]:
