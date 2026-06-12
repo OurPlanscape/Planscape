@@ -59,7 +59,7 @@ export class MapConfigState {
   );
   public mapInteractionMode$ = this._mapInteractionMode$.asObservable();
 
-  /* TODO: possibly move this to a dedicated funding map state service? */
+  /* TODO: this is just for the funding map -- should we move to a different state service? */
   private _selectedProjectAreas$ = new BehaviorSubject<number[]>([]);
   public selectedProjectAreas$ = this._selectedProjectAreas$.asObservable();
 
@@ -124,22 +124,25 @@ export class MapConfigState {
     this._dataLayersOpacity$.next(opacity);
   }
 
-  /* TODO: just funding map? */
-  updateSelectedProjectAreas(area_ids: number[]) {
-    this._selectedProjectAreas$.next(area_ids);
+  /* TODO: this is just for the funding map -- should we move to a different state service? */
+  updateSelectedProjectAreas(proj_rank_ids: number[]) {
+    this._selectedProjectAreas$.next(proj_rank_ids);
   }
 
+  /* TODO: this is just for the funding map -- should we move to a different state service? */
+  /* TODO: here we are using 'rank' because its the only common key among martin data and proj data? :| 
+    */
   toggleProjectArea(proj: any) {
     // if the area_id is already selected, we remove it.
-    console.log('selected:', proj.area_id);
+    console.log('selected:', proj, proj.properties['rank']);
     const currentSelection = this._selectedProjectAreas$.getValue();
-    if (currentSelection.includes(proj.area_id)) {
+    if (currentSelection.includes(proj.properties['rank'])) {
       this._selectedProjectAreas$.next(
-        currentSelection.filter((p) => p !== proj.area_id)
+        currentSelection.filter((p) => p !== proj.properties['rank'])
       );
     } else {
       // otherwise we add it
-      currentSelection.push(proj.area_id);
+      currentSelection.push(proj.properties['rank']);
       this._selectedProjectAreas$.next(currentSelection);
     }
   }

@@ -157,7 +157,7 @@ export class MapMultiProjectAreasComponent implements OnInit {
     this.mapLibreMap.setPaintProperty(
       this.layers.projectAreasOutline.name,
       'line-width',
-      ['case', ['in', ['get', 'id'], ['literal', ids]], 6, 2]
+      ['case', ['in', ['get', 'rank'], ['literal', ids]], 6, 2]
     );
   }
 

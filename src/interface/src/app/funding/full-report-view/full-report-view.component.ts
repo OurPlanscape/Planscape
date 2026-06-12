@@ -68,17 +68,16 @@ export class FullReportViewComponent implements OnInit {
 
   currentScenario$ = this.scenarioState.currentScenario$;
 
+  // collects current scenario results, maps them to an object used by the dropdown */
   /* TODO clean this up, omve to helper? */
   resultsToSelectionMenu(
     results: ScenarioResult
   ): { id: number; name: string; shortName: string }[] {
-    console.log('what is the result?', results);
 
     return results.result.features.map((featureCollection) => {
-      console.log('wait, theres a faeture collection?', featureCollection);
       const props = featureCollection.properties;
       return {
-        id: props.proj_id,
+        id: props.treatment_rank,
         shortName: props.treatment_rank,
         name: `Project Area ${props.treatment_rank}`,
       };
@@ -86,15 +85,11 @@ export class FullReportViewComponent implements OnInit {
   }
 
   ngOnInit() {
-    //  DO IT HERE INSTEAD
     this.currentScenario$
       .pipe(untilDestroyed(this))
       .subscribe((scenario: Scenario) => {
-        console.log('is there a scenario?', scenario);
         if (scenario?.scenario_result) {
-          console.log('results?', scenario.scenario_result);
           const areas = this.resultsToSelectionMenu(scenario.scenario_result);
-          console.log('areas?', areas);
           this.outcomeViewOptions = areas;
         }
       });
