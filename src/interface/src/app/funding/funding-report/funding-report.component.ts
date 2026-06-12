@@ -28,7 +28,6 @@ import {
 } from '@styleguide';
 import { Chart, ChartData, ChartOptions } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { Observable, of } from 'rxjs';
 import {
   buildPercentageBarData,
   getPercentageChartOptions,
@@ -36,7 +35,8 @@ import {
 } from '@app/chart-helper';
 import { FundingReportFooterComponent } from '../funding-report-footer/funding-report-footer.component';
 import { FundingReport, FundingReportMetric } from '@types';
-import { aggregateMetricSummary } from './funding-report.helper';
+import { aggregateMetricSummary, hasMetricData } from './funding-report.helper';
+import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
 import {
   AbstractControl,
   FormControl,
@@ -54,10 +54,6 @@ import {
 interface ChartConfig {
   data: ChartData<'bar'>;
   options: ChartOptions<'bar'>;
-}
-
-interface ChartValues {
-  burnProb: number[];
 }
 
 interface ReportSection {
@@ -96,6 +92,7 @@ const flameLengthRangeValidator: ValidatorFn = (
     InputFieldComponent,
     InputDirective,
     ReactiveFormsModule,
+    MessageCardComponent,
   ],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',
@@ -250,23 +247,39 @@ export class FundingReportComponent
   private readonly labels = [0, 5, 10, 15, 20];
   private readonly xAxisLabel = 'Years Since Treatment';
 
-  // simulating an async source — swap for a real data service later
-  readonly chartValues$: Observable<ChartValues> = of({
-    burnProb: [70, 30, 25, 20, 16],
-  });
-
   /** Rebuilt in `ngOnChanges` whenever the report or selected project areas change. */
   smokeChart!: ChartConfig;
   treeCarbonChart!: ChartConfig;
   flameLengthChart!: ChartConfig;
 
+  /**
+   * Whether each chart has any data for the current selection. When false the
+   * chart is hidden and the no-data message is shown instead.
+   */
+  smokeHasData = false;
+  treeCarbonHasData = false;
+  flameLengthHasData = false;
+
   private buildCharts(): void {
     this.smokeChart = this.buildSummaryChart('POTENTIAL_SMOKE', 'blue');
-    this.treeCarbonChart = this.buildSummaryChart('ABOVEGROUND_TOTAL', 'purple');
+    this.treeCarbonChart = this.buildSummaryChart(
+      'ABOVEGROUND_TOTAL',
+      'purple'
+    );
     this.flameLengthChart = this.buildSummaryChart(
       'TOTAL_FLAME_SEVERITY',
       'orange'
     );
+
+    this.smokeHasData = this.metricHasData('POTENTIAL_SMOKE');
+    this.treeCarbonHasData = this.metricHasData('ABOVEGROUND_TOTAL');
+    this.flameLengthHasData = this.metricHasData('TOTAL_FLAME_SEVERITY');
+  }
+
+  /** True when the metric has any non-null data over the current selection. */
+  private metricHasData(metric: FundingReportMetric): boolean {
+    const results = this.report?.results;
+    return !!results && hasMetricData(results, metric, this.projectAreas);
   }
 
   /** Build a bar chart from a report metric: one bar per year, value = % delta. */

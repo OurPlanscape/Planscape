@@ -13,6 +13,28 @@ export function percentDelta(value: number, baseline: number): number {
 }
 
 /**
+ * Whether a metric has any usable data over the chosen project areas. The
+ * backend sends a full list of years with null values when nothing was
+ * computed; if every point is null the chart should be hidden.
+ *
+ * An empty `projectAreas` checks the whole-scenario summary; a non-empty list
+ * checks only the selected project areas.
+ */
+export function hasMetricData(
+  results: FundingReportResults,
+  metric: FundingReportMetric,
+  projectAreas: number[]
+): boolean {
+  const points =
+    projectAreas.length === 0
+      ? results.summary[metric]
+      : results.projects[metric].filter((point) =>
+          projectAreas.includes(point.project_id)
+        );
+  return points.some((point) => point.value !== null);
+}
+
+/**
  * Per-year summary for a metric over the chosen project areas, year-sorted.
  *
  * An empty `projectAreas` means "all areas" and returns the precomputed

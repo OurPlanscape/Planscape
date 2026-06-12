@@ -52,12 +52,15 @@ export class FullReportViewComponent {
 
   // TODO: convert project area list to match this format
   outcomeViewOptions = [
-    { name: 'Project Area 1', shortName: '1' },
-    { name: 'Project Area 2', shortName: '2' },
-    { name: 'Project Area 3', shortName: '3' },
+    { name: 'Project Area 1', shortName: '1', id: 27372 },
+    { name: 'Project Area 2', shortName: '2', id: 27373 },
+    { name: 'Project Area 3', shortName: '3', id: 27374 },
   ];
 
   currentView: string = 'report';
+
+  /** Project area ids selected in the dropdown; empty means all areas. */
+  selectedProjectAreas: number[] = [];
 
   /**
    * Single (non-polling) fetch of the report. This view is only reachable for a
@@ -104,4 +107,8 @@ export class FullReportViewComponent {
   /* report tabs things */
   tabIndex = 1;
   onTabIndexChange(tabSelected: number) {}
+
+  changeProjectAreas(selection: { id: number }[]) {
+    this.selectedProjectAreas = selection.map((item) => item.id);
+  }
 }

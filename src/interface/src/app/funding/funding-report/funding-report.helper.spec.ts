@@ -30,8 +30,6 @@ function makeResults(
   return {
     summary: {
       ...empty,
-      // Sentinel precomputed summary — distinct from the real aggregate so we
-      // can tell the "all areas" passthrough from a recompute.
       POTENTIAL_SMOKE: [{ year: 0, value: 999, baseline: 999, delta: 42 }],
     },
     projects: { ...empty, POTENTIAL_SMOKE: projects },

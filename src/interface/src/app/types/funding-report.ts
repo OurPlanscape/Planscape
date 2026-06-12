@@ -1,8 +1,9 @@
 export interface FundingReportDataPoint {
   year: number;
-  delta: number;
-  value: number;
-  baseline: number;
+  // The backend sends null for years/metrics with no valid data.
+  delta: number | null;
+  value: number | null;
+  baseline: number | null;
 }
 
 export interface FundingReportProjectDataPoint extends FundingReportDataPoint {

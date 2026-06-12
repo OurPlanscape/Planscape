@@ -57,35 +57,27 @@
 
     <div>
       <h5>Unhealthy Smoke Production</h5>
-      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
+      <p class="chart-subtitle" *ngIf="smokeHasData">
+        (%) Percentage Change After Treatment
+      </p>
       <sg-chart
-        *ngIf="smokeChart as chart"
+        *ngIf="smokeHasData; else noData"
         class="no-margin"
-        [data]="chart.data"
-        [options]="chart.options"
+        [data]="smokeChart.data"
+        [options]="smokeChart.options"
         type="bar"></sg-chart>
     </div>
     <div class="top-section-divider">
       <h5>Standing Aboveground Live Tree Carbon</h5>
-      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
+      <p class="chart-subtitle" *ngIf="treeCarbonHasData">
+        (%) Percentage Change After Treatment
+      </p>
       <sg-chart
-        *ngIf="treeCarbonChart as chart"
+        *ngIf="treeCarbonHasData; else noData"
         class="no-margin"
-        [data]="chart.data"
-        [options]="chart.options"
+        [data]="treeCarbonChart.data"
+        [options]="treeCarbonChart.options"
         type="bar"></sg-chart>
-    </div>
-    <div class="summary-card">
-      <div class="summary-label">
-        Potential Forecasted Mitigation Units (FMU) Produced
-        <button
-          sg-button
-          variant="icon-only"
-          icon="info"
-          [outlined]="true"
-          class="summary-tooltip-icon"></button>
-      </div>
-      <div class="summary-value">12</div>
     </div>
   </sg-section>
 
@@ -166,14 +158,14 @@
           Greater than must exceed lesser than
         </div>
       </div>
-      <p class="chart-subtitle" *ngIf="isPreview">
+      <p class="chart-subtitle" *ngIf="isPreview && flameLengthHasData">
         (%) Percentage Change After Treatment
       </p>
       <sg-chart
-        *ngIf="flameLengthChart as chart"
+        *ngIf="flameLengthHasData; else noData"
         class="no-margin"
-        [data]="chart.data"
-        [options]="chart.options"
+        [data]="flameLengthChart.data"
+        [options]="flameLengthChart.options"
         type="bar"></sg-chart>
     </div>
     <div class="top-section-divider">
@@ -281,5 +273,23 @@
     </div>
   </sg-section>
 </div>
+
+<ng-template #noData>
+  <sg-message-card
+    cardType="warning"
+    cardTitle="Data Unavailable"
+    class="no-data-card"
+    [withBorders]="false">
+    We couldn’t find data for your selected area. To proceed, please:
+    <ul>
+      <li>Select a different Outcome from the dropdown menu.</li>
+      <li>
+        Adjust your Planning or Project boundaries to a location with available
+        data and run again.
+      </li>
+    </ul>
+  </sg-message-card>
+</ng-template>
+
 <app-funding-report-footer
   [footerType]="reportType"></app-funding-report-footer>
