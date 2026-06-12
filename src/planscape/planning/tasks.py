@@ -40,7 +40,6 @@ from planning.models import (
 from planning.services import (
     build_run_configuration,
     calculate_and_update_scenario_result,
-    calculate_and_store_scenario_treatable_area,
     create_metrics_task,
     export_to_geopackage,
     get_acreage,
@@ -288,17 +287,6 @@ def async_pre_forsys_process(scenario_id: int) -> None:
     excluded_areas_ids = scenario.configuration.get("excluded_areas_ids")
     if excluded_areas_ids:
         excluded_datalayers = DataLayer.objects.filter(pk__in=excluded_areas_ids)
-
-    included_datalayers = None
-    included_areas_ids = scenario.configuration.get("included_areas_ids")
-    if included_areas_ids:
-        included_datalayers = DataLayer.objects.filter(pk__in=included_areas_ids)
-
-    calculate_and_store_scenario_treatable_area(
-        scenario=scenario, 
-        excludes=excluded_datalayers.filter(type=DataLayerType.VECTOR) if excluded_datalayers else None, 
-        includes=included_datalayers.filter(type=DataLayerType.VECTOR) if included_datalayers else None,
-    )
 
     stand_ids = get_available_stand_ids(
         scenario, scenario.get_stand_size(), excluded_datalayers

@@ -15,6 +15,7 @@ from actstream import action
 from cacheops import cached
 from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
+from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
 from datasets.dynamic_models import model_from_fiona
 from datasets.models import DataLayer, DataLayerType
@@ -700,12 +701,6 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 
     # Expensive validations below
     try:
-        calculate_and_store_scenario_treatable_area(
-        scenario=scenario, 
-            excludes=excluded_areas.filter(type=DataLayerType.VECTOR) if excluded_areas else None, 
-            includes=included_areas.filter(type=DataLayerType.VECTOR) if included_areas else None,
-        )
-        
         available_stand_ids = get_available_stand_ids(
             scenario=scenario,
             stand_size=stand_size or StandSizeChoices.LARGE,
@@ -1747,7 +1742,10 @@ def get_available_stand_ids(
     excludes: Optional[QuerySet[DataLayer]] = None,
 ) -> List[int]:
     planning_area = scenario.planning_area
-    stands = scenario.get_treatable_area_stands(stand_size=stand_size)
+    if feature_enabled("CALCULATE_INCLUSION_ZONE"):
+        stands = scenario.get_treatable_area_stands(stand_size=stand_size)
+    else:
+        stands = planning_area.get_stands(stand_size=stand_size)
 
     if (
         scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
@@ -1774,61 +1772,34 @@ def get_available_stand_ids(
     return list(stand_ids)
 
 
-def calculate_and_store_scenario_treatable_area(
+def calculate_scenario_treatable_area(
     scenario: Scenario, 
-    excludes: Optional[QuerySet[DataLayer]] = None,
     includes: Optional[QuerySet[DataLayer]] = None,
-) -> MultiPolygon:
+) -> Optional[MultiPolygon]:
     planning_area = scenario.planning_area
-    geometry = planning_area.geometry
+    pa_geometry = planning_area.geometry
 
-    if excludes:
-        excluded_merged_geometry = None
-        for excluded in excludes:
-            if excluded.type != DataLayerType.VECTOR:
-                # skip RASTER layers
-                continue
-
-            DynamicModel = model_from_fiona(excluded)
-            queryset = DynamicModel.objects.filter(geometry__bboverlaps=geometry).filter(
-                geometry__intersects=geometry
-            )
-            excluded_geometry = queryset.all().aggregate(
-                geometry=UnionOp("geometry")
-            )["geometry"]
-
-            if not excluded_merged_geometry:
-                excluded_merged_geometry = excluded_geometry
-            else:
-                excluded_merged_geometry = excluded_merged_geometry.union(excluded_geometry)
-
-        geometry = geometry.difference(excluded_merged_geometry)
-
+    included_geometry = None
     if includes:
-        included_merged_geometry = None
         for included in includes:
             if included.type != DataLayerType.VECTOR:
                 # skip RASTER layers
                 continue
 
             DynamicModel = model_from_fiona(included)
-            queryset = DynamicModel.objects.filter(geometry__bboverlaps=geometry).filter(
-                geometry__intersects=geometry
+            queryset = DynamicModel.objects.filter(geometry__bboverlaps=pa_geometry).filter(
+                geometry__intersects=pa_geometry
             )
-            included_geometry = queryset.all().aggregate(
+            layer_geometry = queryset.all().aggregate(
                 geometry=UnionOp("geometry")
             )["geometry"]
 
-            if not included_merged_geometry:
-                included_merged_geometry = included_geometry
+            if not included_geometry:
+                included_geometry = layer_geometry
             else:
-                included_merged_geometry = included_merged_geometry.union(included_geometry)
-        
-        geometry = geometry.union(included_merged_geometry)
+                included_geometry = included_geometry.union(layer_geometry)
 
-    scenario.treatable_area = geometry
-    scenario.save()
-    return geometry
+    return included_geometry
 
 
 def get_min_project_area(scenario: Scenario) -> float:
