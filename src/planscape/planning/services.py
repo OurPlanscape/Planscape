@@ -685,15 +685,27 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 
     stand_size = cfg.get("stand_size")
     excluded_areas_ids = cfg.get("excluded_areas_ids", [])
-    excluded_areas: List[DataLayer] = []
+    excluded_areas = None
     if excluded_areas_ids:
-        excluded_areas = list(DataLayer.objects.filter(pk__in=excluded_areas_ids))
+        excluded_areas = DataLayer.objects.filter(pk__in=excluded_areas_ids)
+
+    included_areas_ids = cfg.get("included_areas_ids", [])
+    included_areas = None
+    if included_areas_ids:
+        included_areas = DataLayer.objects.filter(pk__in=included_areas_ids)
+
 
     if not stand_size:
         errors.append("Configuration field `stand_size` is required.")
 
     # Expensive validations below
     try:
+        calculate_and_store_scenario_treatable_area(
+        scenario=scenario, 
+            excludes=excluded_areas.filter(type=DataLayerType.VECTOR) if excluded_areas else None, 
+            includes=included_areas.filter(type=DataLayerType.VECTOR) if included_areas else None,
+        )
+        
         available_stand_ids = get_available_stand_ids(
             scenario=scenario,
             stand_size=stand_size or StandSizeChoices.LARGE,
@@ -1732,13 +1744,10 @@ def get_available_stands(
 def get_available_stand_ids(
     scenario: Scenario,
     stand_size: str = "LARGE",
-    excludes: Optional[List[DataLayer]] = None,
+    excludes: Optional[QuerySet[DataLayer]] = None,
 ) -> List[int]:
-    if not excludes:
-        excludes = list()
-
     planning_area = scenario.planning_area
-    stands = planning_area.get_stands(stand_size=stand_size)
+    stands = scenario.get_treatable_area_stands(stand_size=stand_size)
 
     if (
         scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
@@ -1753,15 +1762,73 @@ def get_available_stand_ids(
         )
 
     excluded_ids = []
-    for exclude in excludes:
-        stands_queryset = stands.all()
-        excluded_stands = get_excluded_stands(stands_queryset, exclude)
-        excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
+    if excludes:
+        for exclude in excludes:
+            stands_queryset = stands.all()
+            excluded_stands = get_excluded_stands(stands_queryset, exclude)
+            excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
     stand_ids = stands.values_list("id", flat=True)
 
     stand_ids = set(stand_ids) - set(excluded_ids)
     return list(stand_ids)
+
+
+def calculate_and_store_scenario_treatable_area(
+    scenario: Scenario, 
+    excludes: Optional[QuerySet[DataLayer]] = None,
+    includes: Optional[QuerySet[DataLayer]] = None,
+) -> MultiPolygon:
+    planning_area = scenario.planning_area
+    geometry = planning_area.geometry
+
+    if excludes:
+        excluded_merged_geometry = None
+        for excluded in excludes:
+            if excluded.type != DataLayerType.VECTOR:
+                # skip RASTER layers
+                continue
+
+            DynamicModel = model_from_fiona(excluded)
+            queryset = DynamicModel.objects.filter(geometry__bboverlaps=geometry).filter(
+                geometry__intersects=geometry
+            )
+            excluded_geometry = queryset.all().aggregate(
+                geometry=UnionOp("geometry")
+            )["geometry"]
+
+            if not excluded_merged_geometry:
+                excluded_merged_geometry = excluded_geometry
+            else:
+                excluded_merged_geometry = excluded_merged_geometry.union(excluded_geometry)
+
+        geometry = geometry.difference(excluded_merged_geometry)
+
+    if includes:
+        included_merged_geometry = None
+        for included in includes:
+            if included.type != DataLayerType.VECTOR:
+                # skip RASTER layers
+                continue
+
+            DynamicModel = model_from_fiona(included)
+            queryset = DynamicModel.objects.filter(geometry__bboverlaps=geometry).filter(
+                geometry__intersects=geometry
+            )
+            included_geometry = queryset.all().aggregate(
+                geometry=UnionOp("geometry")
+            )["geometry"]
+
+            if not included_merged_geometry:
+                included_merged_geometry = included_geometry
+            else:
+                included_merged_geometry = included_merged_geometry.union(included_geometry)
+        
+        geometry = geometry.union(included_merged_geometry)
+
+    scenario.treatable_area = geometry
+    scenario.save()
+    return geometry
 
 
 def get_min_project_area(scenario: Scenario) -> float:
