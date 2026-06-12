@@ -163,13 +163,6 @@ export class MapMultiProjectAreasComponent implements OnInit {
 
   handleLayerClick(event: MapMouseEvent) {
     const proj = this.getProjectAreaFromFeatures(event.point);
-    console.log('here is the whole proj area:', proj);
-    const projectAreaId = proj.properties['id'];
-    console.log(
-      'here are properties we have',
-      projectAreaId,
-      this.getProjectAreaFromFeatures(event.point).properties
-    );
     this.mapConfigState.toggleProjectArea(proj);
   }
 

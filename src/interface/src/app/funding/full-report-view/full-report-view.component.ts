@@ -23,6 +23,12 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { Scenario, ScenarioResult } from '@app/types';
 
+interface FilterProjectFormat {
+  id: number;
+  name: string;
+  shortName: string;
+}
+
 @UntilDestroy()
 @Component({
   selector: 'app-full-report-view',
@@ -53,27 +59,16 @@ export class FullReportViewComponent implements OnInit {
     { name: 'Data Layers', value: 'data_layers', icon: 'layers_outline' },
   ];
 
-  // TODO: convert project area list to match this format
-  outcomeViewOptions = [
-    { id: 27014, name: 'Project Area 1', shortName: '1' },
-    { id: 27015, name: 'Project Area 2', shortName: '2' },
-    { id: 27016, name: 'Project Area 3', shortName: '3' },
-    { id: 27017, name: 'Project Area 4', shortName: '4' },
-    { id: 27018, name: 'Project Area 5', shortName: '5' },
-    { id: 27019, name: 'Project Area 6', shortName: '6' },
-  ];
+  availableProjectAreas: FilterProjectFormat[] = [];
 
   currentView: string = 'report';
   selectedProjectAreas: any[] = [];
 
   currentScenario$ = this.scenarioState.currentScenario$;
 
-  // collects current scenario results, maps them to an object used by the dropdown */
+  // collects current scenario results, maps them to an object type used by the dropdown */
   /* TODO clean this up, omve to helper? */
-  resultsToSelectionMenu(
-    results: ScenarioResult
-  ): { id: number; name: string; shortName: string }[] {
-
+  resultsToSelectionMenu(results: ScenarioResult): FilterProjectFormat[] {
     return results.result.features.map((featureCollection) => {
       const props = featureCollection.properties;
       return {
@@ -90,7 +85,7 @@ export class FullReportViewComponent implements OnInit {
       .subscribe((scenario: Scenario) => {
         if (scenario?.scenario_result) {
           const areas = this.resultsToSelectionMenu(scenario.scenario_result);
-          this.outcomeViewOptions = areas;
+          this.availableProjectAreas = areas;
         }
       });
   }
@@ -125,7 +120,7 @@ export class FullReportViewComponent implements OnInit {
     if (ids.length === 0) {
       this.selectedProjectAreas = [];
     }
-    this.selectedProjectAreas = this.outcomeViewOptions.filter((o) => {
+    this.selectedProjectAreas = this.availableProjectAreas.filter((o) => {
       return ids.includes(o.id);
     });
   }
@@ -134,7 +129,7 @@ export class FullReportViewComponent implements OnInit {
     this.currentView = selection;
   }
 
-  /* map interaction -- TODO: possibly move these vars elsewhere */
+  /* map interaction -- TODO: possibly move these elsewhere */
   opacity$ = this.mapConfigState.opacity$;
 
   handleOpacityChange(opacity: number) {

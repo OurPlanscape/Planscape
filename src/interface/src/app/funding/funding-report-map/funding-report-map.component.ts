@@ -74,7 +74,6 @@ export class FundingReportMapComponent {
   projectAreaCount$ = of(4); // TODO: replace w actual state
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {
-      console.log('we have geometry?', geometry);
       return getBoundsFromGeometry(geometry);
     })
   );
@@ -84,7 +83,6 @@ export class FundingReportMapComponent {
 
   mapLoaded(loadedMap: MapLibreMap) {
     this.mapLibreMap = loadedMap;
-    console.log('we have a map?', this.mapLibreMap);
   }
 
   handleOpacityChange(opacity: number) {

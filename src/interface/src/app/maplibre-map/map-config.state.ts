@@ -130,11 +130,11 @@ export class MapConfigState {
   }
 
   /* TODO: this is just for the funding map -- should we move to a different state service? */
-  /* TODO: here we are using 'rank' because its the only common key among martin data and proj data? :| 
-    */
+  /* TODO: here we are using 'rank' because...its the only common key among martin data and proj data? :|
+            confirm that we don't have a better option 
+  */
   toggleProjectArea(proj: any) {
-    // if the area_id is already selected, we remove it.
-    console.log('selected:', proj, proj.properties['rank']);
+    // if the id is already selected, we remove it.
     const currentSelection = this._selectedProjectAreas$.getValue();
     if (currentSelection.includes(proj.properties['rank'])) {
       this._selectedProjectAreas$.next(
