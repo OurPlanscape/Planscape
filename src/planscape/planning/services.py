@@ -690,12 +690,6 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
     if excluded_areas_ids:
         excluded_areas = DataLayer.objects.filter(pk__in=excluded_areas_ids)
 
-    included_areas_ids = cfg.get("included_areas_ids", [])
-    included_areas = None
-    if included_areas_ids:
-        included_areas = DataLayer.objects.filter(pk__in=included_areas_ids)
-
-
     if not stand_size:
         errors.append("Configuration field `stand_size` is required.")
 
