@@ -19,7 +19,9 @@ from rasterio.transform import from_origin
 from rasterio.mask import mask
 
 from funding_report.models import (
+    FUNDING_REPORT_YEARS,
     FundingOpportunityReport,
+    FundingOpportunityReportStatus,
     FundingReportMetric,
 )
 from funding_report.services import (
@@ -27,6 +29,7 @@ from funding_report.services import (
     calculate_aet_improvement,
     build_datalayer_lookup,
     build_funding_report_results,
+    calculate_funding_report_flame_length_reduction,
     calculate_pixel_deltas,
     calculate_project_area_aet_improvement,
     calculate_project_area_delta,
@@ -96,6 +99,23 @@ def expected_raster_aggregate(geometry: MultiPolygon) -> dict:
 
 def write_aet_delta_raster(raster_path: Path) -> None:
     values = np.array([[10, 15], [20, 30]], dtype=np.float32)
+    transform = from_origin(0, 20, 10, 10)
+    with rasterio.open(
+        raster_path,
+        "w",
+        driver="GTiff",
+        height=values.shape[0],
+        width=values.shape[1],
+        count=1,
+        dtype=values.dtype,
+        crs="EPSG:3857",
+        transform=transform,
+        nodata=-9999,
+    ) as dst:
+        dst.write(values, 1)
+
+
+def write_flame_length_raster(raster_path: Path, values: np.ndarray) -> None:
     transform = from_origin(0, 20, 10, 10)
     with rasterio.open(
         raster_path,
@@ -313,6 +333,43 @@ class FundingReportRasterCalculationTest(TestCase):
         self.assertAlmostEqual(result["value"], expected["value"], places=4)
         self.assertAlmostEqual(result["delta"], expected["delta"], places=4)
 
+    def test_build_results_flame_severity_summary_aggregates_value_baseline_and_percent(
+        self,
+    ):
+        results = build_funding_report_results(
+            [
+                {
+                    "variable": FundingReportMetric.TOTAL_FLAME_SEVERITY,
+                    "project_id": 1,
+                    "year": 2026,
+                    "value": 10,
+                    "baseline": 40,
+                    "delta": 25.0,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+                {
+                    "variable": FundingReportMetric.TOTAL_FLAME_SEVERITY,
+                    "project_id": 2,
+                    "year": 2026,
+                    "value": 5,
+                    "baseline": 20,
+                    "delta": 25.0,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+            ]
+        )
+
+        summary = results["summary"][FundingReportMetric.TOTAL_FLAME_SEVERITY][0]
+        self.assertEqual(summary["value"], 15)
+        self.assertEqual(summary["baseline"], 60)
+        self.assertAlmostEqual(summary["delta"], 15 / 60 * 100)
+        self.assertNotIn("interval", summary)
+
+        for project_result in results["projects"][
+            FundingReportMetric.TOTAL_FLAME_SEVERITY
+        ]:
+            self.assertNotIn("interval", project_result)
+
     def test_build_results_uses_projects_and_summary(self):
         results = build_funding_report_results(
             [
@@ -362,3 +419,110 @@ class FundingReportRasterCalculationTest(TestCase):
                 },
             ],
         )
+
+
+class FlameLengthReductionCalculationTest(TestCase):
+    def setUp(self):
+        tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp_dir.cleanup)
+        self.baseline_path = Path(tmp_dir.name) / "flame_baseline.tif"
+        self.value_path = Path(tmp_dir.name) / "flame_value.tif"
+        write_flame_length_raster(
+            self.baseline_path, np.array([[8, 8], [3, 8]], dtype=np.float32)
+        )
+        write_flame_length_raster(
+            self.value_path, np.array([[3, 5], [3, 3]], dtype=np.float32)
+        )
+
+        self.geometry = raster_bounds_geometry(self.baseline_path)
+        self.planning_area = PlanningAreaFactory.create(
+            with_stands=False,
+            geometry=self.geometry,
+        )
+        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
+        self.project_area = ProjectAreaFactory.create(
+            scenario=self.scenario,
+            geometry=self.geometry,
+        )
+
+        for year in FUNDING_REPORT_YEARS:
+            self.create_flame_datalayer(year=year, baseline=True)
+            self.create_flame_datalayer(year=year, baseline=False)
+
+        self.datalayer_lookup = build_datalayer_lookup()
+        self.pixel_area_acres = 100 / settings.CONVERSION_SQM_ACRES
+
+    def create_flame_datalayer(self, year, baseline):
+        return DataLayerFactory.create(
+            name=f"{'Baseline' if baseline else 'Legalmax'} {year} TOTAL_FLAME_SEVERITY",
+            type=DataLayerType.RASTER,
+            url=str(self.baseline_path if baseline else self.value_path),
+            metadata={
+                "modules": {
+                    "funding_report": {
+                        "year": year,
+                        "variable": FundingReportMetric.TOTAL_FLAME_SEVERITY.value,
+                        "baseline": baseline,
+                    }
+                }
+            },
+        )
+
+    def test_calculate_project_area_delta_flame_severity_uses_default_interval(self):
+        result = calculate_project_area_delta(
+            project_area=self.project_area,
+            metric=FundingReportMetric.TOTAL_FLAME_SEVERITY.value,
+            year=2026,
+            datalayer_lookup=self.datalayer_lookup,
+        )
+
+        expected_project_area_acres = get_acreage(self.project_area.geometry)
+        expected_reduced_acres = 2 * self.pixel_area_acres
+
+        self.assertEqual(result["interval"], {"from": 7.0, "to": 4.0})
+        self.assertAlmostEqual(result["value"], expected_reduced_acres, places=6)
+        self.assertAlmostEqual(
+            result["baseline"], expected_project_area_acres, places=6
+        )
+        self.assertAlmostEqual(
+            result["delta"],
+            expected_reduced_acres / expected_project_area_acres * 100,
+            places=6,
+        )
+
+    def test_calculate_project_area_delta_flame_severity_custom_interval(self):
+        result = calculate_project_area_delta(
+            project_area=self.project_area,
+            metric=FundingReportMetric.TOTAL_FLAME_SEVERITY.value,
+            year=2026,
+            datalayer_lookup=self.datalayer_lookup,
+            from_ft=2.0,
+            to_ft=3.0,
+        )
+
+        expected_reduced_acres = 3 * self.pixel_area_acres
+
+        self.assertEqual(result["interval"], {"from": 2.0, "to": 3.0})
+        self.assertAlmostEqual(result["value"], expected_reduced_acres, places=6)
+
+    def test_calculate_funding_report_flame_length_reduction_returns_summary_and_projects(
+        self,
+    ):
+        report = FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.scenario.user,
+            status=FundingOpportunityReportStatus.SUCCESS,
+        )
+
+        results = calculate_funding_report_flame_length_reduction(
+            report=report, from_ft=7.0, to_ft=4.0
+        )
+
+        self.assertEqual(results["interval"], {"from": 7.0, "to": 4.0})
+        self.assertEqual(len(results["summary"]), len(FUNDING_REPORT_YEARS))
+        self.assertEqual(len(results["projects"]), len(FUNDING_REPORT_YEARS))
+        for entry in results["summary"]:
+            self.assertNotIn("interval", entry)
+        for entry in results["projects"]:
+            self.assertEqual(entry["project_id"], self.project_area.pk)
+            self.assertNotIn("interval", entry)

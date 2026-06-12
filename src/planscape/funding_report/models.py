@@ -18,6 +18,9 @@ class FundingOpportunityReportStatus(models.TextChoices):
 
 FUNDING_REPORT_YEARS = (2026, 2031, 2036, 2041, 2046)
 
+FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT = 7.0
+FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT = 4.0
+
 
 class FundingReportMetric(models.TextChoices):
     ABOVEGROUND_TOTAL = "ABOVEGROUND_TOTAL", "Aboveground Total"

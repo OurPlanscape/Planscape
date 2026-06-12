@@ -59,11 +59,18 @@ from funding_report.models import (
     FundingOpportunityReport,
     FundingOpportunityReportStatus,
 )
+from funding_report.openapi_examples import FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE
 from funding_report.serializers import (
     FundingOpportunityReportSerializer,
     FundingReportAETImprovementRequestSerializer,
+    FundingReportAETImprovementResponseSerializer,
+    FundingReportFlameLengthReductionRequestSerializer,
+    FundingReportFlameLengthReductionResponseSerializer,
 )
-from funding_report.services import calculate_aet_improvement
+from funding_report.services import (
+    calculate_aet_improvement,
+    calculate_funding_report_flame_length_reduction,
+)
 from funding_report.tasks import run_funding_opportunity_report
 from modules.base import compute_scenario_capabilities
 from planning.services import (
@@ -427,6 +434,18 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         serializer = FundingOpportunityReportSerializer(instance=report)
         return Response(serializer.data)
 
+    @extend_schema(
+        description=(
+            "Calculate the AET (Actual Evapotranspiration) improvement for a "
+            "Scenario's funding report."
+        ),
+        request=FundingReportAETImprovementRequestSerializer,
+        responses={
+            200: FundingReportAETImprovementResponseSerializer,
+            400: BaseErrorMessageSerializer,
+            409: BaseErrorMessageSerializer,
+        },
+    )
     @action(methods=["post"], detail=True, url_path="aet-improvement")
     def aet_improvement(self, request, pk=None):
         scenario = self.get_object()
@@ -449,6 +468,49 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             results = calculate_aet_improvement(
                 report=report,
                 percentage=serializer.validated_data["percentage"],
+            )
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(results)
+
+    @extend_schema(
+        description=(
+            "Calculate the flame length reduction for a Scenario's funding "
+            "report, given a 'from' and 'to' flame length interval in feet."
+        ),
+        request=FundingReportFlameLengthReductionRequestSerializer,
+        responses={
+            200: FundingReportFlameLengthReductionResponseSerializer,
+            400: BaseErrorMessageSerializer,
+            409: BaseErrorMessageSerializer,
+        },
+        examples=[FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE],
+    )
+    @action(methods=["post"], detail=True, url_path="flame-length-reduction")
+    def flame_length_reduction(self, request, pk=None):
+        scenario = self.get_object()
+        serializer = FundingReportFlameLengthReductionRequestSerializer(
+            data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+
+        report = FundingOpportunityReport.objects.filter(scenario=scenario).first()
+        if not report or report.status != FundingOpportunityReportStatus.SUCCESS:
+            return Response(
+                {
+                    "detail": (
+                        "Flame length reduction can only be calculated after "
+                        "the funding report completes successfully."
+                    )
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        try:
+            results = calculate_funding_report_flame_length_reduction(
+                report=report,
+                from_ft=serializer.validated_data["from_ft"],
+                to_ft=serializer.validated_data["to_ft"],
             )
         except ValueError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)

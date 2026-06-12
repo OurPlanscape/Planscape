@@ -222,3 +222,111 @@ class AETImprovementTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", response.json())
+
+
+class FlameLengthReductionTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+        )
+        self.url = reverse(
+            "api:planning:scenarios-flame-length-reduction", args=[self.scenario.pk]
+        )
+
+    def test_flame_length_reduction_requires_successful_funding_report(self):
+        FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.user,
+            status=FundingOpportunityReportStatus.RUNNING,
+        )
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(
+            self.url, {"from_ft": 7, "to_ft": 4}, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+
+    def test_flame_length_reduction_requires_existing_funding_report(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(
+            self.url, {"from_ft": 7, "to_ft": 4}, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+
+    def test_flame_length_reduction_validates_required_fields(self):
+        FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.user,
+            status=FundingOpportunityReportStatus.SUCCESS,
+        )
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(self.url, {"from_ft": 7}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @mock.patch("planning.views_v2.calculate_funding_report_flame_length_reduction")
+    def test_flame_length_reduction_returns_results_after_successful_report(
+        self, calculate_mock
+    ):
+        report = FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.user,
+            status=FundingOpportunityReportStatus.SUCCESS,
+        )
+        calculate_mock.return_value = {
+            "interval": {"from": 7.0, "to": 4.0},
+            "summary": [
+                {
+                    "year": 2026,
+                    "value": 10,
+                    "baseline": 100,
+                    "delta": 10.0,
+                }
+            ],
+            "projects": [
+                {
+                    "project_id": 1,
+                    "proj_id": None,
+                    "year": 2026,
+                    "value": 10,
+                    "baseline": 100,
+                    "delta": 10.0,
+                }
+            ],
+        }
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(
+            self.url, {"from_ft": 7, "to_ft": 4}, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), calculate_mock.return_value)
+        calculate_mock.assert_called_once_with(report=report, from_ft=7.0, to_ft=4.0)
+
+    @mock.patch("planning.views_v2.calculate_funding_report_flame_length_reduction")
+    def test_flame_length_reduction_returns_400_on_value_error(self, calculate_mock):
+        FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.user,
+            status=FundingOpportunityReportStatus.SUCCESS,
+        )
+        calculate_mock.side_effect = ValueError(
+            "Missing funding report datalayer for variable="
+            "'TOTAL_FLAME_SEVERITY', year=2026."
+        )
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(
+            self.url, {"from_ft": 7, "to_ft": 4}, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("detail", response.json())
