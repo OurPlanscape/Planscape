@@ -1,7 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { environment } from '@env/environment';
-import { FundingReport } from '@types';
+import {
+  FlameLengthReductionResponse,
+  FlameLengthRequestParams,
+  FundingReport,
+} from '@types';
 import { catchError, Observable, of, throwError } from 'rxjs';
 
 @Injectable({
@@ -30,6 +34,20 @@ export class FundingReportService {
   generateReport(scenarioId: number) {
     return this.http.post<FundingReport>(
       environment.backend_endpoint + `/v2/scenarios/${scenarioId}/run-report/`,
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  getFlameLengthReduction(
+    scenarioId: number,
+    params: FlameLengthRequestParams
+  ): Observable<FlameLengthReductionResponse> {
+    return this.http.post<FlameLengthReductionResponse>(
+      environment.backend_endpoint +
+        `/v2/scenarios/${scenarioId}/flame-length-reduction/`,
+      { ...params },
       {
         withCredentials: true,
       }

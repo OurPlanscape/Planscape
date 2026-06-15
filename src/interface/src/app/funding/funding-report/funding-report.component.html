@@ -130,8 +130,7 @@
               inputmode="numeric"
               required
               formControlName="greaterThan"
-              (input)="onFlameLengthInput($event, 'greaterThan')"
-              (change)="emitFlameLength()" />
+              (input)="onFlameLengthInput($event, 'greaterThan')" />
           </sg-input-field>
           <div class="summary-to">to</div>
 
@@ -154,9 +153,17 @@
               inputmode="numeric"
               required
               formControlName="lesserThan"
-              (input)="onFlameLengthInput($event, 'lesserThan')"
-              (change)="emitFlameLength()" />
+              (input)="onFlameLengthInput($event, 'lesserThan')" />
           </sg-input-field>
+
+          <button
+            sg-button
+            type="button"
+            class="flame-length-button"
+            [disabled]="flameLengthForm.invalid"
+            (click)="emitFlameLength()">
+            Apply
+          </button>
         </div>
         <div class="field-error" *ngIf="flameLengthForm.hasError('range')">
           Greater than must exceed lesser than
@@ -165,12 +172,17 @@
       <p class="chart-subtitle" *ngIf="isPreview && flameLengthHasData">
         (%) Percentage Change After Treatment
       </p>
-      <sg-chart
-        *ngIf="flameLengthHasData; else noData"
-        class="no-margin"
-        [data]="flameLengthChart.data"
-        [options]="flameLengthChart.options"
-        type="bar"></sg-chart>
+      <div class="chart-wrapper">
+        <sg-chart
+          *ngIf="flameLengthHasData; else noData"
+          class="no-margin"
+          [data]="flameLengthChart.data"
+          [options]="flameLengthChart.options"
+          type="bar"></sg-chart>
+        <div class="chart-loader" *ngIf="updatingFlameLength">
+          <mat-spinner diameter="36"></mat-spinner>
+        </div>
+      </div>
     </div>
     <div class="top-section-divider">
       <div class="coming-soon">
