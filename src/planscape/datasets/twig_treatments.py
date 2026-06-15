@@ -17,6 +17,7 @@ from core.gcs import is_gcs_file
 from core.requests import RequestSessionWrap
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.utils import timezone
 from gis.core import fetch_geometry_type, get_layer_info
 from google.cloud import storage
@@ -492,7 +493,16 @@ def replace_twig_treatment_datalayer(
         ]
     )
 
-    datalayer_uploaded.delay(datalayer.pk, status=DataLayerStatus.READY)
+    logger.info("Importing TWIG datalayer %s synchronously", datalayer.pk)
+    datalayer_uploaded(datalayer.pk, status=DataLayerStatus.READY)
+    datalayer.refresh_from_db()
+
+    if datalayer.status != DataLayerStatus.READY:
+        raise RuntimeError(
+            f"TWIG datalayer {datalayer.pk} finished import with status {datalayer.status}, "
+            "so planning areas will not be prepared."
+        )
+
     return datalayer
 
 
@@ -542,6 +552,11 @@ def refresh_twig_treatment_layers(
                 input_file=temp_file.name,
             )
 
-        refreshed_layers[layer_name] = datalayer.url
+            refreshed_layers[layer_name] = datalayer.url
+
+    logger.info(
+        "TWIG treatment layers refreshed and imported. Preparing DONE planning areas."
+    )
+    call_command("prepare_planning_areas", "5", "--only-done")
 
     return refreshed_layers
