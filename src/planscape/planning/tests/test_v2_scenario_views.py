@@ -4,7 +4,7 @@ from unittest import mock
 
 from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.test import TestCase
 from django.urls import reverse
 from modules.base import compute_scenario_capabilities
@@ -1163,11 +1163,6 @@ class PatchScenarioConfigurationTest(APITestCase):
     # Test sequential patches, ensure we retain values as expected
     @mock.patch("planning.serializers.calculate_scenario_treatable_area", return_value=None)
     def test_patch_scenario_incremental_updates(self, treatable_area_mock):
-        from datasets.models import DataLayerType, GeometryType
-        from datasets.tests.factories import DataLayerFactory
-
-        from planning.tests.factories import TreatmentGoalFactory
-
         # create valid excluded_areas and included_areas with real PKs
         excluded_layers = DataLayerFactory.create_batch(
             3,
@@ -1322,6 +1317,38 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(config8.get("stand_size"), "SMALL")
         self.assertEqual(response8.data["treatment_goal"]["id"], new_goal.pk)
         self.assertEqual(response8.data["treatment_goal"]["name"], new_goal.name)
+
+    @mock.patch(
+        "planning.serializers.calculate_scenario_treatable_area", 
+        return_value=MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
+    )
+    def test_patch_scenario_with_includes_calculates_treatable_area(
+        self, 
+        calculate_scenario_treatable_area_mock
+    ):
+        included_layers = DataLayerFactory.create_batch(
+            2,
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        included_ids = [layer.pk for layer in included_layers]
+
+        payload = {
+            "configuration": {
+                "included_areas": included_ids,
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        config = response.data.get("configuration", {})
+        self.assertCountEqual(config.get("included_areas"), included_ids)
+        self.scenario.refresh_from_db()
+
+        self.assertIsNotNone(self.scenario.treatable_area)
+        calculate_scenario_treatable_area_mock.assert_called_once()
 
     def test_patch_scenario_configuration_unauthenticated(self):
         payload = {"max_budget": 5000}
