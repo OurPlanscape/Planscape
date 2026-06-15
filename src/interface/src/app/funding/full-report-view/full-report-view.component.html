@@ -7,7 +7,7 @@
         defaultSelection="report"
         (emitSelection)="handleToggleSelection($event)"></sg-toggle-tabs>
     </div>
-    <div class="report-view" *ngIf="currentView === 'report'">
+    <div class="report-view" #reportScroll *ngIf="currentView === 'report'">
       <div class="section-row">
         <div class="section-title">Introduction</div>
         <div class="section-text">
@@ -40,6 +40,7 @@
             *ngIf="report.status === 'SUCCESS'; else loadingReport"
             [report]="report"
             [projectAreas]="selectedProjectAreas"
+            [scrollElement]="reportScroll"
             [reportType]="'full'"></app-funding-report>
         </ng-container>
         <ng-template #loadingReport>

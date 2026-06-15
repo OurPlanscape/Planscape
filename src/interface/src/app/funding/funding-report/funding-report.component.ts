@@ -1,18 +1,13 @@
 import { CommonModule } from '@angular/common';
 import {
-  AfterViewInit,
-  ChangeDetectorRef,
   Component,
-  ElementRef,
   EventEmitter,
   Input,
-  NgZone,
   OnChanges,
   OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
-  ViewChild,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -50,6 +45,7 @@ import {
   FundingMapLayersComponent,
   MapLayer,
 } from '../funding-map-layers/funding-map-layers.component';
+import { ScrollSpyDirective } from '@app/standalone/scroll-spy-directive/scroll-spy.directive';
 
 interface ChartConfig {
   data: ChartData<'bar'>;
@@ -93,17 +89,15 @@ const flameLengthRangeValidator: ValidatorFn = (
     InputDirective,
     ReactiveFormsModule,
     MessageCardComponent,
+    ScrollSpyDirective,
   ],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',
 })
-export class FundingReportComponent
-  implements OnInit, OnChanges, AfterViewInit, OnDestroy
-{
-  @ViewChild('scrollContainer', { static: true })
-  scrollContainer!: ElementRef<HTMLElement>;
-
+export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   sections: ReportSection[] = [];
+  /** Section ids in document order, handed to the scrollspy directive. */
+  sectionIds: string[] = [];
 
   activeId = '';
   /** Name of the section whose interactive tooltip was last opened. */
@@ -128,14 +122,19 @@ export class FundingReportComponent
     Validators.required
   );
 
-  private suppressUntil = 0;
-  private pendingScrollFrame: number | null = null;
   @Input() showMap = true;
   @Input() showFooter = true;
   @Input() reportType: 'preview' | 'full' = 'preview';
   @Input() report!: FundingReport;
   /** Selected project area ids; empty means show the whole-scenario summary. */
   @Input() projectAreas: number[] = [];
+  /**
+   * The element that actually scrolls the report. When the report is embedded
+   * in a host that owns the scroll (e.g. full-report-view), the host passes its
+   * scroll container here. Defaults to the component's own `#scrollContainer`,
+   * which is the scroller in the standalone/preview layout.
+   */
+  @Input() scrollElement?: HTMLElement;
 
   // todo datalayer probably
   @Output() showLayer = new EventEmitter<number>();
@@ -144,11 +143,6 @@ export class FundingReportComponent
     greaterThan: number;
     lesserThan: number;
   }>();
-
-  constructor(
-    private cdr: ChangeDetectorRef,
-    private zone: NgZone
-  ) {}
 
   ngOnInit(): void {
     Chart.register(ChartDataLabels);
@@ -175,73 +169,12 @@ export class FundingReportComponent
         { id: 'biomass', label: 'Biomass' },
       ]
     );
+    this.sectionIds = this.sections.map((s) => s.id);
     this.activeId = this.sections[0].id;
   }
 
-  ngAfterViewInit(): void {
-    this.zone.runOutsideAngular(() => {
-      this.scrollContainer.nativeElement.addEventListener(
-        'scroll',
-        this.onScroll,
-        { passive: true }
-      );
-    });
-    this.updateActiveNav();
-  }
-
   ngOnDestroy(): void {
-    this.scrollContainer?.nativeElement.removeEventListener(
-      'scroll',
-      this.onScroll
-    );
-    if (this.pendingScrollFrame !== null)
-      cancelAnimationFrame(this.pendingScrollFrame);
     Chart.unregister(ChartDataLabels);
-  }
-
-  scrollTo(event: Event, id: string): void {
-    event.preventDefault();
-    this.activeId = id;
-    // mute scrollspy until smooth-scroll settles so it doesn't flicker
-    // through intermediate sections
-    this.suppressUntil = Date.now() + 700;
-    document
-      .getElementById(id)
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  private onScroll = (): void => {
-    if (this.pendingScrollFrame !== null) return;
-    this.pendingScrollFrame = requestAnimationFrame(() => {
-      this.pendingScrollFrame = null;
-      if (Date.now() < this.suppressUntil) return;
-      this.updateActiveNav();
-    });
-  };
-
-  private updateActiveNav(): void {
-    const containerTop =
-      this.scrollContainer.nativeElement.getBoundingClientRect().top;
-    // 80px is the height of the header approximately
-    const activeLineY = containerTop + 80;
-
-    let next = this.sections[0].id;
-    for (const s of this.sections) {
-      const el = document.getElementById(s.id);
-      if (!el) continue;
-      if (el.getBoundingClientRect().top <= activeLineY) {
-        next = s.id;
-      } else {
-        break;
-      }
-    }
-
-    if (next !== this.activeId) {
-      this.zone.run(() => {
-        this.activeId = next;
-        this.cdr.markForCheck();
-      });
-    }
   }
 
   private readonly labels = [0, 5, 10, 15, 20];

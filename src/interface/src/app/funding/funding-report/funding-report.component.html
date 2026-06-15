@@ -2,13 +2,17 @@
   mat-tab-nav-bar
   [tabPanel]="tabPanel"
   class="funding-report-tabs"
-  [ngClass]="{ fullview: !isPreview }">
+  [ngClass]="{ fullview: !isPreview }"
+  [appScrollSpy]="sectionIds"
+  [spyRoot]="scrollElement || scrollContainer"
+  (activeSection)="activeId = $event"
+  #spy="appScrollSpy">
   <a
     mat-tab-link
     *ngFor="let s of sections"
     [active]="activeId === s.id"
     [href]="'#' + s.id"
-    (click)="scrollTo($event, s.id)">
+    (click)="$event.preventDefault(); spy.scrollTo(s.id)">
     {{ s.label }}
   </a>
 </nav>
