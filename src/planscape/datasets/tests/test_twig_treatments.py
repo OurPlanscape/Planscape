@@ -229,6 +229,7 @@ class TwigTreatmentsTest(SimpleTestCase):
         organization = Mock(pk=1)
         created_by = Mock()
         created_datalayer = Mock(pk=123)
+        created_datalayer.status = "READY"
 
         get_user_model_mock.return_value.objects.get.return_value = created_by
         convert_geojson_to_zipped_shapefile_mock.return_value = (
@@ -249,8 +250,8 @@ class TwigTreatmentsTest(SimpleTestCase):
         existing_layer.deleted_at = None
 
         existing_layers = datalayer_model_mock.dead_or_alive.filter.return_value
-        existing_layers.__iter__ = Mock(return_value=iter([existing_layer]))
         existing_layers.filter.return_value.first.return_value = None
+        existing_layers.__iter__ = Mock(return_value=iter([existing_layer]))
 
         result = replace_twig_treatment_datalayer(
             dataset=dataset,
@@ -310,7 +311,8 @@ class TwigTreatmentsTest(SimpleTestCase):
         self.assertIsNone(create_kwargs["category"])
 
         datalayer_has_style_mock.objects.bulk_create.assert_called_once_with([])
-        datalayer_uploaded_mock.delay.assert_called_once_with(123, status="READY")
+        datalayer_uploaded_mock.assert_called_once_with(123, status="READY")
+        created_datalayer.refresh_from_db.assert_called_once()
         self.assertEqual(result, created_datalayer)
 
     @patch("datasets.tasks.datalayer_uploaded")
@@ -341,6 +343,7 @@ class TwigTreatmentsTest(SimpleTestCase):
         category = Mock()
         created_by = Mock()
         created_datalayer = Mock(pk=123)
+        created_datalayer.status = "READY"
 
         existing_datalayer = Mock(
             metadata={"modules": {"twig": {"enabled": True}}},
@@ -368,6 +371,7 @@ class TwigTreatmentsTest(SimpleTestCase):
 
         existing_layers = datalayer_model_mock.dead_or_alive.filter.return_value
         existing_layers.filter.return_value.first.return_value = existing_datalayer
+        existing_layers.__iter__ = Mock(return_value=iter([]))
 
         replace_twig_treatment_datalayer(
             dataset=dataset,
@@ -402,3 +406,6 @@ class TwigTreatmentsTest(SimpleTestCase):
             storage_url="gs://bucket/twig_years_since_treatment_0_5.zip",
             input_file="/tmp/twig_years_since_treatment_0_5.zip",
         )
+
+        datalayer_uploaded_mock.assert_called_once_with(123, status="READY")
+        created_datalayer.refresh_from_db.assert_called_once()
