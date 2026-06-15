@@ -4,7 +4,13 @@ import {
   parseResultsToTotals,
 } from '../plan-helpers';
 import { PROJECT_AREA_COLORS } from '@shared';
-import { CurrencyPipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
+import {
+  CurrencyPipe,
+  DecimalPipe,
+  NgFor,
+  NgIf,
+  PercentPipe,
+} from '@angular/common';
 
 export interface ProjectAreaReport {
   rank: number;
@@ -19,7 +25,7 @@ export type ProjectTotalReport = Omit<ProjectAreaReport, 'rank' | 'score'>;
 
 @Component({
   standalone: true,
-  imports: [NgFor, DecimalPipe, CurrencyPipe, NgIf],
+  imports: [NgFor, DecimalPipe, CurrencyPipe, NgIf, PercentPipe],
   selector: 'app-project-areas',
   templateUrl: './project-areas.component.html',
   styleUrls: ['./project-areas.component.scss'],
