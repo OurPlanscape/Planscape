@@ -52,7 +52,7 @@ class OptionThresholdsSerializer(serializers.Serializer):
 
 
 class ForsysOptionsSerializer(BaseModuleOptionsSerializer):
-    inclusions = serializers.ListField(child=OptionDataLayerSerializer())
+    inclusions = serializers.ListField(child=BrowseDataLayerSerializer())
     exclusions = serializers.ListField(child=BrowseDataLayerSerializer())
     thresholds = OptionThresholdsSerializer()
 
