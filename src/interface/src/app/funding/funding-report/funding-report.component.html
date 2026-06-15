@@ -35,7 +35,7 @@
   [ngClass]="{ fullview: !isPreview }">
   <section id="map" class="report-section" *ngIf="isPreview">
     <div class="map-container">
-      <app-funding-report-map></app-funding-report-map>
+      <app-funding-report-map [allowInteraction]="false"></app-funding-report-map>
     </div>
   </section>
 

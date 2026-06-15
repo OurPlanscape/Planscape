@@ -51,6 +51,7 @@ export class MapMultiProjectAreasComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
   @Input() showHoveredProjectAreas: boolean = true;
+  @Input() allowInteraction = true;
   /**
    * If provided we should fill the project areas
    */
@@ -112,7 +113,7 @@ export class MapMultiProjectAreasComponent implements OnInit {
 
   scenarioId$ = this.scenarioState.currentScenarioId$.pipe(
     filter((scenarioId) => !!scenarioId),
-    map((scenario) => scenario as number)
+    map((scenario) => scenario as number),
   );
 
   vectorLayerUrl$ = this.scenarioId$.pipe(
@@ -161,6 +162,9 @@ export class MapMultiProjectAreasComponent implements OnInit {
   }
 
   handleLayerClick(event: MapMouseEvent) {
+    if (this.allowInteraction === false) {
+      return;
+    }
     const proj = this.getProjectAreaFromFeatures(event.point);
     this.mapConfigState.toggleProjectArea(proj);
   }
@@ -173,7 +177,7 @@ export class MapMultiProjectAreasComponent implements OnInit {
   }
 
   setProjectAreaTooltip(e: MapMouseEvent) {
-    if (!this.visible) {
+    if (!this.visible || !this.allowInteraction) {
       return;
     }
     this.hoveredProjectAreaFromFeatures = this.getProjectAreaFromFeatures(
@@ -189,7 +193,7 @@ export class MapMultiProjectAreasComponent implements OnInit {
   }
 
   resetCursorAndTooltip() {
-    if (!this.visible) {
+    if (!this.visible || !this.allowInteraction) {
       return;
     }
     this.mapLibreMap.getCanvas().style.cursor = '';

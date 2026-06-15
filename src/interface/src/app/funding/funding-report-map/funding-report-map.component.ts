@@ -1,7 +1,7 @@
 import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
-import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
+import { LngLat, Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import {
   ControlComponent,
   LayerComponent,
@@ -14,7 +14,7 @@ import {
 import { AuthService } from '@app/services';
 import { FrontendConstants } from '@app/map/map.constants';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { BehaviorSubject, map, of } from 'rxjs';
+import { BehaviorSubject, map,  Subject } from 'rxjs';
 import { EventData } from '@angular/cdk/testing';
 import { MapZoomControlComponent } from '@app/maplibre-map/map-zoom-control/map-zoom-control.component';
 import { MapBaseLayersComponent } from '@app/maplibre-map/map-base-layers/map-base-layers.component';
@@ -23,6 +23,8 @@ import { PlanState } from '@app/plan/plan.state';
 import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
 import { MapMultiProjectAreasComponent } from '../map-multi-project-areas/map-multi-project-areas.component';
+import { ScenarioState } from '@app/scenario/scenario.state';
+import { MapTooltipComponent } from '@app/treatments/map-tooltip/map-tooltip.component';
 
 @Component({
   selector: 'app-funding-report-map',
@@ -35,6 +37,7 @@ import { MapMultiProjectAreasComponent } from '../map-multi-project-areas/map-mu
     MapDataLayerComponent,
     MapComponent,
     MapMultiProjectAreasComponent,
+    MapTooltipComponent,
     MapZoomControlComponent,
     MatProgressSpinnerModule,
     NgIf,
@@ -49,12 +52,13 @@ export class FundingReportMapComponent {
     private mapConfigState: MapConfigState,
     private mapConfigService: MapConfigService,
     private authService: AuthService,
-    private planState: PlanState
+    private planState: PlanState,
+    private scenarioState: ScenarioState
   ) {
     this.mapConfigService.initialize();
   }
 
-  @Input() handleInteractions = true; // TODO: actually use this
+  @Input() allowInteraction = true;
 
   mapLibreMap!: MapLibreMap;
   /**
@@ -69,13 +73,24 @@ export class FundingReportMapComponent {
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
 
   opacity$ = this.mapConfigState.opacity$;
-
-  showProjectAreas$ = of(true); // TODO: replace w actual state
-  projectAreaCount$ = of(4); // TODO: replace w actual state
+  
+  projectAreaCount$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => {
+      return scenario.scenario_result?.result?.features.length;
+    })
+  );
+  
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {
       return getBoundsFromGeometry(geometry);
     })
+  );
+
+  hoveredProjectAreaId$ = new Subject<number | null>();
+  mouseLngLat: LngLat | null = null;
+
+  planningApproach$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => scenario.planning_approach ?? 'OPTIMIZE_PROJECT_AREAS')
   );
 
   loading$ = new BehaviorSubject<boolean>(false);
@@ -83,13 +98,6 @@ export class FundingReportMapComponent {
   mapLoaded(loadedMap: MapLibreMap) {
     this.mapLibreMap = loadedMap;
   }
-
-
-  setHoveredProjectAreaId(value: number | null) {
-    console.log('setting hovered area id', value);
-  }
-
-
 
   handleOpacityChange(opacity: number) {
     this.mapConfigState.setOpacity(opacity);
@@ -100,6 +108,14 @@ export class FundingReportMapComponent {
     if (status >= 500 && status < 600) {
       // TODO: handle errors
     }
+  }
+
+  setHoveredProjectAreaId(value: number | null) {
+    this.hoveredProjectAreaId$.next(value);
+  }
+
+  setMouseLngLat(value: LngLat | null) {
+    this.mouseLngLat = value;
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>

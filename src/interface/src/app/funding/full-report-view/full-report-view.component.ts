@@ -88,6 +88,12 @@ export class FullReportViewComponent implements OnInit {
           this.availableProjectAreas = areas;
         }
       });
+      
+      this.mapConfigState.selectedProjectAreas$
+      .pipe(untilDestroyed(this))
+      .subscribe((selectedIds) => {
+        this.setSelectedProjectAreas(selectedIds);
+      });
   }
 
   constructor(
@@ -103,11 +109,7 @@ export class FullReportViewComponent implements OnInit {
     };
     this.breadcumbService.updateBreadCrumb(newBreadCrumb);
 
-    this.mapConfigState.selectedProjectAreas$
-      .pipe(untilDestroyed(this))
-      .subscribe((selectedIds) => {
-        this.setSelectedProjectAreas(selectedIds);
-      });
+    
   }
 
   handleFilterSelection(selectedAreas: any[]) {

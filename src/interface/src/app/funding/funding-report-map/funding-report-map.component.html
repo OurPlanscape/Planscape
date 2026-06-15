@@ -10,7 +10,7 @@
   (mapLoad)="mapLoaded($event)"
   (mapError)="onMapError($event)">
   <app-map-zoom-control
-    *ngIf="mapLibreMap"
+    *ngIf="mapLibreMap && allowInteraction"
     [mapLibreMap]="mapLibreMap"
     controlsPosition="bottom-right"></app-map-zoom-control>
 
@@ -30,17 +30,29 @@
     [layout]="{ visibility: 'none' }">
   </mgl-layer>
 
-  <ng-container *ngIf="showProjectAreas$ | async">
+  
     <app-map-multi-project-areas
       *ngIf="projectAreaCount$ | async as projectAreasCount"
+      [allowInteraction]="allowInteraction"
       [projectAreasCount]="projectAreasCount"
       [mapLibreMap]="mapLibreMap"
       [labelField]="'rank'"
-      (changeHoveredProjectAreaId)="
-      setHoveredProjectAreaId($event)
-    ">
+      (changeHoveredProjectAreaId)="setHoveredProjectAreaId($event)"
+      (changeMouseLngLat)="setMouseLngLat($event)"
+      [planningApproach]="
+        (planningApproach$ | async) || 'OPTIMIZE_PROJECT_AREAS'
+      ">
     </app-map-multi-project-areas>
-  </ng-container>
+
+  <app-map-tooltip
+    *ngIf="
+      allowInteraction && 
+      (hoveredProjectAreaId$ | async) && mouseLngLat
+    "
+    [lngLat]="mouseLngLat"
+    >Click project area to select</app-map-tooltip
+  >
+
   <mgl-control position="top-right">
     <!-- TODO: add the funding legend -->
   </mgl-control>
