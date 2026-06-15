@@ -128,14 +128,27 @@ export class FundingReportComponent
     Validators.required
   );
 
-  private suppressUntil = 0;
-  private pendingScrollFrame: number | null = null;
+  /** Scrollspy: notifies when sections cross the active line. No scroll listener. */
+  private observer?: IntersectionObserver;
+  /** Ids of sections currently below the active line, kept in sync by the observer. */
+  private readonly visible = new Set<string>();
+  /** Section a tab click is smooth-scrolling toward; spy holds here until it arrives. */
+  private seekId: string | null = null;
+  /** Safety release for `seekId` if the target is never reached (e.g. last section). */
+  private seekDeadline = 0;
   @Input() showMap = true;
   @Input() showFooter = true;
   @Input() reportType: 'preview' | 'full' = 'preview';
   @Input() report!: FundingReport;
   /** Selected project area ids; empty means show the whole-scenario summary. */
   @Input() projectAreas: number[] = [];
+  /**
+   * The element that actually scrolls the report. When the report is embedded
+   * in a host that owns the scroll (e.g. full-report-view), the host passes its
+   * scroll container here. Defaults to the component's own `#scrollContainer`,
+   * which is the scroller in the standalone/preview layout.
+   */
+  @Input() scrollElement?: HTMLElement;
 
   // todo datalayer probably
   @Output() showLayer = new EventEmitter<number>();
@@ -179,60 +192,64 @@ export class FundingReportComponent
   }
 
   ngAfterViewInit(): void {
+    const root = this.scrollElement ?? this.scrollContainer.nativeElement;
+    // The active line sits where a clicked section lands: scroll-margin-top below
+    // the scroll container's top. Reading it from CSS keeps spy and click in sync
+    // and absorbs each layout's sticky offset (16 preview / 184 full).
+    const first = document.getElementById(this.sections[0].id);
+    const offset = first
+      ? parseInt(getComputedStyle(first).scrollMarginTop, 10) || 0
+      : 0;
     this.zone.runOutsideAngular(() => {
-      this.scrollContainer.nativeElement.addEventListener(
-        'scroll',
-        this.onScroll,
-        { passive: true }
-      );
+      this.observer = new IntersectionObserver(this.onIntersect, {
+        root,
+        rootMargin: `-${offset}px 0px 0px 0px`,
+        threshold: 0,
+      });
+      for (const s of this.sections) {
+        const el = document.getElementById(s.id);
+        if (el) this.observer.observe(el);
+      }
     });
-    this.updateActiveNav();
   }
 
   ngOnDestroy(): void {
-    this.scrollContainer?.nativeElement.removeEventListener(
-      'scroll',
-      this.onScroll
-    );
-    if (this.pendingScrollFrame !== null)
-      cancelAnimationFrame(this.pendingScrollFrame);
+    this.observer?.disconnect();
     Chart.unregister(ChartDataLabels);
   }
 
   scrollTo(event: Event, id: string): void {
     event.preventDefault();
     this.activeId = id;
-    // mute scrollspy until smooth-scroll settles so it doesn't flicker
-    // through intermediate sections
-    this.suppressUntil = Date.now() + 700;
+    // Hold the spy on this target so it doesn't flicker through the sections the
+    // smooth scroll passes over; released when we arrive or after a safety delay.
+    this.seekId = id;
+    this.seekDeadline = Date.now() + 1500;
+    // scroll-margin-top lands the section on the same line the spy reacts to,
+    // and scrollIntoView resolves the final position regardless of how the
+    // sticky elements are currently laid out — so it works even from the top.
     document
       .getElementById(id)
       ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  private onScroll = (): void => {
-    if (this.pendingScrollFrame !== null) return;
-    this.pendingScrollFrame = requestAnimationFrame(() => {
-      this.pendingScrollFrame = null;
-      if (Date.now() < this.suppressUntil) return;
-      this.updateActiveNav();
-    });
-  };
+  /** Active section = the first one still below the active line. */
+  private onIntersect = (entries: IntersectionObserverEntry[]): void => {
+    for (const e of entries) {
+      if (e.isIntersecting) this.visible.add(e.target.id);
+      else this.visible.delete(e.target.id);
+    }
 
-  private updateActiveNav(): void {
-    const containerTop =
-      this.scrollContainer.nativeElement.getBoundingClientRect().top;
-    // 80px is the height of the header approximately
-    const activeLineY = containerTop + 80;
+    const next = this.sections.find((s) => this.visible.has(s.id))?.id;
+    if (!next) return;
 
-    let next = this.sections[0].id;
-    for (const s of this.sections) {
-      const el = document.getElementById(s.id);
-      if (!el) continue;
-      if (el.getBoundingClientRect().top <= activeLineY) {
-        next = s.id;
+    // While a tab-click scroll is in flight, hold on the target; release once we
+    // reach it (or the safety deadline elapses).
+    if (this.seekId) {
+      if (next === this.seekId || Date.now() >= this.seekDeadline) {
+        this.seekId = null;
       } else {
-        break;
+        return;
       }
     }
 
@@ -242,7 +259,7 @@ export class FundingReportComponent
         this.cdr.markForCheck();
       });
     }
-  }
+  };
 
   private readonly labels = [0, 5, 10, 15, 20];
   private readonly xAxisLabel = 'Years Since Treatment';
