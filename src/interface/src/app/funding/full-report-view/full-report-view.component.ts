@@ -22,6 +22,9 @@ import { UntilDestroy } from '@ngneat/until-destroy';
 import { ScenarioState } from '@scenario/scenario.state';
 import { FundingReportService } from '@services/funding-report.service';
 import { FundingReportComponent } from '../funding-report/funding-report.component';
+import { MapSelectorComponent } from '@app/explore/map-selector/map-selector.component';
+import { BaseLayersComponent } from '@app/base-layers/base-layers/base-layers.component';
+import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
 
 @UntilDestroy()
 @Component({
@@ -29,8 +32,11 @@ import { FundingReportComponent } from '../funding-report/funding-report.compone
   standalone: true,
   imports: [
     AsyncPipe,
+    BaseLayersComponent,
+    DataLayersComponent,
     FilterDropdownComponent,
     FundingReportComponent,
+    MapSelectorComponent,
     MatButtonToggleModule,
     MatIconModule,
     MatMenuModule,
@@ -101,14 +107,18 @@ export class FullReportViewComponent {
   }
 
   handleToggleSelection(selection: string) {
+    console.log('what', selection);
     this.currentView = selection;
   }
 
-  /* report tabs things */
-  tabIndex = 1;
-  onTabIndexChange(tabSelected: number) {}
 
   changeProjectAreas(selection: { id: number }[]) {
     this.selectedProjectAreas = selection.map((item) => item.id);
   }
+
+
+  /* data layer tabs things */
+  panelExpanded = true;
+  tabIndex = 1;
+  onTabIndexChange(tabSelected: number) {}
 }
