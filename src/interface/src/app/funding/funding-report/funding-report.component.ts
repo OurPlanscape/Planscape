@@ -1,18 +1,13 @@
 import { CommonModule } from '@angular/common';
 import {
-  AfterViewInit,
-  ChangeDetectorRef,
   Component,
-  ElementRef,
   EventEmitter,
   Input,
-  NgZone,
   OnChanges,
   OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
-  ViewChild,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -50,6 +45,7 @@ import {
   FundingMapLayersComponent,
   MapLayer,
 } from '../funding-map-layers/funding-map-layers.component';
+import { ScrollSpyDirective } from '@app/standalone/scroll-spy-directive/scroll-spy.directive';
 
 interface ChartConfig {
   data: ChartData<'bar'>;
@@ -93,17 +89,15 @@ const flameLengthRangeValidator: ValidatorFn = (
     InputDirective,
     ReactiveFormsModule,
     MessageCardComponent,
+    ScrollSpyDirective,
   ],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',
 })
-export class FundingReportComponent
-  implements OnInit, OnChanges, AfterViewInit, OnDestroy
-{
-  @ViewChild('scrollContainer', { static: true })
-  scrollContainer!: ElementRef<HTMLElement>;
-
+export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   sections: ReportSection[] = [];
+  /** Section ids in document order, handed to the scrollspy directive. */
+  sectionIds: string[] = [];
 
   activeId = '';
   /** Name of the section whose interactive tooltip was last opened. */
@@ -128,14 +122,6 @@ export class FundingReportComponent
     Validators.required
   );
 
-  /** Scrollspy: notifies when sections cross the active line. No scroll listener. */
-  private observer?: IntersectionObserver;
-  /** Ids of sections currently below the active line, kept in sync by the observer. */
-  private readonly visible = new Set<string>();
-  /** Section a tab click is smooth-scrolling toward; spy holds here until it arrives. */
-  private seekId: string | null = null;
-  /** Safety release for `seekId` if the target is never reached (e.g. last section). */
-  private seekDeadline = 0;
   @Input() showMap = true;
   @Input() showFooter = true;
   @Input() reportType: 'preview' | 'full' = 'preview';
@@ -157,11 +143,6 @@ export class FundingReportComponent
     greaterThan: number;
     lesserThan: number;
   }>();
-
-  constructor(
-    private cdr: ChangeDetectorRef,
-    private zone: NgZone
-  ) {}
 
   ngOnInit(): void {
     Chart.register(ChartDataLabels);
@@ -188,78 +169,13 @@ export class FundingReportComponent
         { id: 'biomass', label: 'Biomass' },
       ]
     );
+    this.sectionIds = this.sections.map((s) => s.id);
     this.activeId = this.sections[0].id;
   }
 
-  ngAfterViewInit(): void {
-    const root = this.scrollElement ?? this.scrollContainer.nativeElement;
-    // The active line sits where a clicked section lands: scroll-margin-top below
-    // the scroll container's top. Reading it from CSS keeps spy and click in sync
-    // and absorbs each layout's sticky offset (16 preview / 184 full).
-    const first = document.getElementById(this.sections[0].id);
-    const offset = first
-      ? parseInt(getComputedStyle(first).scrollMarginTop, 10) || 0
-      : 0;
-    this.zone.runOutsideAngular(() => {
-      this.observer = new IntersectionObserver(this.onIntersect, {
-        root,
-        rootMargin: `-${offset}px 0px 0px 0px`,
-        threshold: 0,
-      });
-      for (const s of this.sections) {
-        const el = document.getElementById(s.id);
-        if (el) this.observer.observe(el);
-      }
-    });
-  }
-
   ngOnDestroy(): void {
-    this.observer?.disconnect();
     Chart.unregister(ChartDataLabels);
   }
-
-  scrollTo(event: Event, id: string): void {
-    event.preventDefault();
-    this.activeId = id;
-    // Hold the spy on this target so it doesn't flicker through the sections the
-    // smooth scroll passes over; released when we arrive or after a safety delay.
-    this.seekId = id;
-    this.seekDeadline = Date.now() + 1500;
-    // scroll-margin-top lands the section on the same line the spy reacts to,
-    // and scrollIntoView resolves the final position regardless of how the
-    // sticky elements are currently laid out — so it works even from the top.
-    document
-      .getElementById(id)
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  /** Active section = the first one still below the active line. */
-  private onIntersect = (entries: IntersectionObserverEntry[]): void => {
-    for (const e of entries) {
-      if (e.isIntersecting) this.visible.add(e.target.id);
-      else this.visible.delete(e.target.id);
-    }
-
-    const next = this.sections.find((s) => this.visible.has(s.id))?.id;
-    if (!next) return;
-
-    // While a tab-click scroll is in flight, hold on the target; release once we
-    // reach it (or the safety deadline elapses).
-    if (this.seekId) {
-      if (next === this.seekId || Date.now() >= this.seekDeadline) {
-        this.seekId = null;
-      } else {
-        return;
-      }
-    }
-
-    if (next !== this.activeId) {
-      this.zone.run(() => {
-        this.activeId = next;
-        this.cdr.markForCheck();
-      });
-    }
-  };
 
   private readonly labels = [0, 5, 10, 15, 20];
   private readonly xAxisLabel = 'Years Since Treatment';
