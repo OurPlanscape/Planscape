@@ -110,5 +110,12 @@ export class IncludeAreasSelectorComponent
 
   override beforeStepExit(): void {
     this.clearViewedLayers(); // clears layer selection after step in completed
+    // Revert any unsaved selection so going back doesn't persist changes.
+    // On save this is a no-op since the config was already updated.
+    this.newScenarioState.scenarioConfig$
+      .pipe(take(1))
+      .subscribe((config) =>
+        this.newScenarioState.setIncludedAreas(config.included_areas ?? [])
+      );
   }
 }
