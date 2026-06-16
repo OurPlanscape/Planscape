@@ -7,6 +7,7 @@ const authFile = 'e2e/.auth/user.json';
 
 setup('login via API and save auth cookies for authenticated tests', async ({}) => {
   const api = await request.newContext({ baseURL });
+  console.log('we have a test user?', TEST_USER);
   await loginTestUser(api, TEST_USER);
   await api.storageState({ path: authFile });
   await api.dispose();

@@ -21,7 +21,7 @@ function getTestPassword(): string {
   try {
     return readFileSync(PASSWORD_FILE, 'utf-8').trim();
   } catch {
-    return generatePassword();
+    //return generatePassword();
   }
 }
 
@@ -29,7 +29,7 @@ function getTestEmail(): string {
   try {
     return readFileSync(EMAIL_FILE, 'utf-8').trim();
   } catch {
-    return generateEmail();
+    //return generateEmail();
   }
 }
 
