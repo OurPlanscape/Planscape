@@ -1,0 +1,55 @@
+<app-nav-bar></app-nav-bar>
+<section class="container">
+  <div class="full-report-sidebar">
+    <div class="section-row toggle-row">
+      <sg-toggle-tabs
+        [buttons]="tabButtons"
+        defaultSelection="report"
+        (emitSelection)="handleToggleSelection($event)"></sg-toggle-tabs>
+    </div>
+    <div class="report-view" #reportScroll *ngIf="currentView === 'report'">
+      <div class="section-row">
+        <div class="section-title">Introduction</div>
+        <div class="section-text">
+          Presented below are the results of our land management modeling, which
+          apply the maximum permissible treatments according to protected area
+          status and vegetation type. These values highlight the difference
+          between max allowable treatments and a "no-treatment" baseline.
+          <a>Learn More</a>
+        </div>
+      </div>
+      <div class="section-row outcomes-row">
+        <div class="view-outcomes-row">
+          <div class="view-outcomes-box">
+            <div>Viewing outcomes for:</div>
+            <sg-filter-dropdown
+              class="outcome-areas-dropdown"
+              [styleType]="'white'"
+              [hasSearch]="false"
+              displayField="name"
+              shortLabel="shortName"
+              noSelectionsLabel="All Project Areas"
+              [menuItems]="outcomeViewOptions"
+              [showCountChip]="false"
+              (confirmedSelection)="changeProjectAreas($event)"
+              menuLabel="Project Areas"></sg-filter-dropdown>
+          </div>
+        </div>
+        <ng-container *ngIf="report$ | async as report; else loadingReport">
+          <app-funding-report
+            *ngIf="report.status === 'SUCCESS'; else loadingReport"
+            [report]="report"
+            [projectAreas]="selectedProjectAreas"
+            [scrollElement]="reportScroll"
+            [reportType]="'full'"></app-funding-report>
+        </ng-container>
+        <ng-template #loadingReport>
+          <mat-spinner class="report-spinner" diameter="36"></mat-spinner>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+  <div class="data_layer_view" *ngIf="currentView === 'data_layers'"></div>
+  <!-- TODO: funding map -->
+  <div>PLACEHOLDER: MAP GOES HERE</div>
+</section>

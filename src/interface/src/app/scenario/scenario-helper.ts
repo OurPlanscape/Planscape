@@ -88,6 +88,12 @@ export function convertOldConfigurationToV3Payload(
   ) {
     config.excluded_areas = Array.from(formData.excluded_areas);
   }
+  if (
+    formData.included_areas !== undefined &&
+    Array.isArray(formData.included_areas)
+  ) {
+    config.included_areas = Array.from(formData.included_areas);
+  }
   // targets
   const targets: any = {};
   if (formData.estimated_cost !== undefined) {

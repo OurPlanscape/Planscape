@@ -1,0 +1,49 @@
+<sg-section
+  headline="Select Areas To Include"
+  class="include-areas"
+  [headlineHint]="selectedAreas.length + ' Selected (No Limit)'"
+  [required]="true"
+  [tooltipTemplate]="tooltipContent">
+  <div>
+    Select all the ownership types you want to include in your Potential
+    Treatable Area.
+  </div>
+  <section>
+    <form [formGroup]="form">
+      <sg-selectable-list
+        colorPath="styles[0].data.fill-color"
+        outlineColorPath="styles[0].data.fill-outline-color"
+        [items]="(includableAreas$ | async) ?? []"
+        groupBy="dataset.name"
+        (selectedItemsChanged)="handleSelectedItemsChange($event)"
+        (viewedItemsChanged)="handleViewedItemsChange($event)"
+        [selectedItems]="selectedAreas"
+        [viewedItems]="viewingAreas"
+        [loadingItems]="(loadingAreas$ | async) ?? []">
+      </sg-selectable-list>
+    </form>
+  </section>
+</sg-section>
+
+<ng-template #tooltipContent>
+  <p class="tooltip-title"><b>How do I select included areas?</b></p>
+  <p class="tooltip-paragraph">
+    Select stands to include based on ownership type. You can view ownership
+    layers here to understand coverage, but the map will not update based on
+    your selections in this step.
+  </p>
+  <p class="tooltip-paragraph">
+    Selected areas will be applied in the next step, where only included stands
+    are available.
+  </p>
+  <p class="tooltip-title">What does this step do?</p>
+  <p class="tooltip-paragraph">
+    Here you define specific areas that must be considered in the analysis —
+    based on ownership, land designation, or other attributes.
+  </p>
+  <p class="tooltip-title">How does this affect results?</p>
+  <p class="tooltip-paragraph">
+    Areas included here form the foundation of what’s considered treatable by
+    ForSys. All exclusions and further refinements are applied after this step.
+  </p>
+</ng-template>

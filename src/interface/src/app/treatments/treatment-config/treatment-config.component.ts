@@ -112,7 +112,6 @@ export class TreatmentConfigComponent {
         filter((event) => event instanceof NavigationEnd) // Only react to navigation events
       )
       .subscribe(() => {
-        this.loading = true;
         const data = getMergedRouteData(this.route.snapshot);
         this.treatmentsState
           .loadTreatmentByRouteData(data)

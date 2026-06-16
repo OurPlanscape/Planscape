@@ -11,7 +11,6 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '../new-scenario.state';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { finalize, take } from 'rxjs';
-import { FeatureService } from '@features/feature.service';
 
 const MAX_SELECTABLE_LAYERS = 10;
 
@@ -49,8 +48,7 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioDraftConfig
 
   constructor(
     private dataLayersStateService: DataLayersStateService,
-    private newScenarioState: NewScenarioState,
-    private featureService: FeatureService
+    private newScenarioState: NewScenarioState
   ) {
     super();
 
@@ -94,9 +92,7 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioDraftConfig
     this.dataLayersStateService.clearUnselectableLayers();
     this.newScenarioState.scenarioConfig$.pipe(take(1)).subscribe((config) => {
       const draft = config as Partial<ScenarioDraftConfiguration>;
-      const priorityIds = this.weightingFlagOn
-        ? (draft.priorities ?? []).map((p) => p.datalayer)
-        : draft.priority_objectives;
+      const priorityIds = (draft.priorities ?? []).map((p) => p.datalayer);
       if (priorityIds && priorityIds.length > 0) {
         this.dataLayersStateService.setUnselectableLayers(
           priorityIds,
@@ -110,9 +106,5 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioDraftConfig
   override beforeStepExit() {
     this.dataLayersStateService.resetAll();
     this.dataLayersStateService.updateSelectedLayers([]);
-  }
-
-  get weightingFlagOn() {
-    return this.featureService.isFeatureEnabled('PRIORITY_OBJECTIVE_WEIGHTING');
   }
 }

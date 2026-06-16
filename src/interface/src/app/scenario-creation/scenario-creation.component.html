@@ -8,11 +8,7 @@
     [allowNavigation]="true"
     [linear]="true"
     (selectionChange)="
-      stepsComponent &&
-        (stepsComponent.selectedIndex =
-          isCustomScenario(scenarioType) || subUnitsPrioritized
-            ? $event + 1
-            : $event)
+      stepsComponent && (stepsComponent.selectedIndex = $event + 1)
     "></sg-steps-nav>
   <section class="container">
     <sg-steps
@@ -54,6 +50,9 @@
         <sg-step>
           <app-treatment-goal-step></app-treatment-goal-step>
         </sg-step>
+        <sg-step *appFeatureFlag="'ADD_INCLUDES'">
+          <app-include-areas-selector></app-include-areas-selector>
+        </sg-step>
         <sg-step>
           <app-exclude-areas-selector></app-exclude-areas-selector>
         </sg-step>
@@ -81,6 +80,9 @@
         </sg-step>
         <sg-step>
           <app-custom-cobenefits></app-custom-cobenefits>
+        </sg-step>
+        <sg-step *appFeatureFlag="'ADD_INCLUDES'">
+          <app-include-areas-selector></app-include-areas-selector>
         </sg-step>
         <sg-step>
           <app-exclude-areas-selector></app-exclude-areas-selector>

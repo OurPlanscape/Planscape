@@ -1,9 +1,22 @@
-<sg-tile-button
-  *ngFor="let tool of scenarioDashboardTools$ | async"
-  [backgroundImage]="tool.backgroundImage"
-  [backgroundColor]="tool.backgroundColor ?? ''"
-  [title]="tool.title"
-  size="lg"
-  [disabled]="!tool.enabled"
-  (tileClick)="onToolClick(tool.id)">
-</sg-tile-button>
+@if (scenarioDashboardTools$ | async; as dashboardTools) {
+  @if (dashboardTools.length) {
+    <sg-details-card [cardTitle]="cardTitle" class="project-area-tools-card">
+      <!--Subtitle-->
+      <p class="description">
+        {{ subtitle }}
+      </p>
+      <!--Tools-->
+      <div class="tools">
+        <sg-tile-button
+          *ngFor="let tool of dashboardTools"
+          [backgroundImage]="tool.backgroundImage"
+          [backgroundColor]="tool.backgroundColor ?? ''"
+          [title]="tool.title"
+          size="lg"
+          [disabled]="!tool.enabled"
+          (tileClick)="onToolClick(tool.id)">
+        </sg-tile-button>
+      </div>
+    </sg-details-card>
+  }
+}

@@ -24,6 +24,7 @@ export interface AvailableStands {
 export interface ScenarioDraftConfiguration extends ScenarioConfigPayload {
   treatment_goal: number;
   excluded_areas: number[];
+  included_areas: number[];
   name: string;
   planning_area: number;
   priority_objectives?: number[];

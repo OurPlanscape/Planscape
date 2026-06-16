@@ -72,6 +72,8 @@ import { TreatmentGoalStepComponent } from '@scenario-creation/treatment-goal-st
 import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
 import { SubUnitsTreatmentTargetComponent } from './sub-units-treatment-target/sub-units-treatment-target.component';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { FeatureService } from '@app/features/feature.service';
+import { IncludeAreasSelectorComponent } from './include-areas-selector/include-areas-selector.component';
 
 @UntilDestroy()
 @Component({
@@ -120,6 +122,7 @@ import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
     SubUnitsTreatmentTargetComponent,
     FeaturesModule,
     NavBarComponent,
+    IncludeAreasSelectorComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
@@ -213,10 +216,21 @@ export class ScenarioCreationComponent implements OnInit {
     private mapModuleService: MapModuleService,
     private planState: PlanState,
     private dataLayersStateService: DataLayersStateService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private featureService: FeatureService
   ) {
     // Pre load goals
     this.treatmentGoals$.pipe(take(1)).subscribe();
+
+    // Remove this block once ADD_INCLUDES be released to show always 'Include Areas' step
+    if (!this.featureService.isFeatureEnabled('ADD_INCLUDES')) {
+      this.scenarioSteps = this.scenarioSteps.filter(
+        (obj) => obj.label !== 'Include Areas'
+      );
+      this.customSteps = this.customSteps.filter(
+        (obj) => obj.label !== 'Include Areas'
+      );
+    }
   }
 
   ngOnInit(): void {
@@ -264,6 +278,7 @@ export class ScenarioCreationComponent implements OnInit {
     );
     // Adding excluded areas and treatment goal
     newState['excluded_areas'] = scenario.configuration.excluded_areas || [];
+    newState['included_areas'] = scenario.configuration.included_areas || [];
     newState['treatment_goal'] = scenario.treatment_goal?.id;
     newState['type'] = scenario.type;
     newState['planning_approach'] = scenario.planning_approach;

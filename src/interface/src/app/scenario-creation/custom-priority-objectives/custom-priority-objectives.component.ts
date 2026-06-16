@@ -17,7 +17,6 @@ import { NewScenarioState } from '../new-scenario.state';
 import { BehaviorSubject, combineLatest, finalize, map, take } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FeaturesModule } from '@features/features.module';
-import { FeatureService } from '@features/feature.service';
 import {
   AppliedWeight,
   PriorityWeightingComponent,
@@ -89,8 +88,7 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
 
   constructor(
     private dataLayersStateService: DataLayersStateService,
-    private newScenarioState: NewScenarioState,
-    private featureService: FeatureService
+    private newScenarioState: NewScenarioState
   ) {
     super();
 
@@ -133,47 +131,33 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
 
   getData() {
     const datalayers = this.form.getRawValue().dataLayers ?? [];
-    if (this.weightingFlagOn) {
-      const weights = this.weights$.value;
-      return {
-        priorities: datalayers.map((dl) => ({
-          datalayer: dl.id,
-          weight: weights[dl.id] ?? 1,
-        })),
-      };
-    }
-    return { priority_objectives: datalayers.map((dl) => dl.id) };
+    const weights = this.weights$.value;
+    return {
+      priorities: datalayers.map((dl) => ({
+        datalayer: dl.id,
+        weight: weights[dl.id] ?? 1,
+      })),
+    };
   }
 
   mapConfigToUI(): void {
     this.uiLoading = true;
-    if (this.weightingFlagOn) {
-      this.newScenarioState.prioritiesDetails$
-        .pipe(
-          take(1),
-          finalize(() => (this.uiLoading = false))
-        )
-        .subscribe((entries) => {
-          const layers = entries.map((e) => e.layer);
-          const weights: Record<number, number> = {};
-          for (const e of entries) {
-            weights[e.layer.id] = e.weight;
-          }
-          this.weights$.next(weights);
-          this.form.get('dataLayers')?.setValue(layers);
-          this.dataLayersStateService.updateSelectedLayers(layers);
-        });
-      return;
-    }
-    this.newScenarioState.priorityObjectivesDetails$
+    this.newScenarioState.prioritiesDetails$
       .pipe(
         take(1),
         finalize(() => (this.uiLoading = false))
       )
-      .subscribe((layers) => {
+      .subscribe((entries) => {
+        const layers = entries.map((e) => e.layer);
+        const weights: Record<number, number> = {};
+        for (const e of entries) {
+          weights[e.layer.id] = e.weight;
+        }
+        this.weights$.next(weights);
         this.form.get('dataLayers')?.setValue(layers);
         this.dataLayersStateService.updateSelectedLayers(layers);
       });
+    return;
   }
 
   override beforeStepLoad() {
@@ -195,9 +179,5 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
     this.dataLayersStateService.resetAll();
     this.dataLayersStateService.updateSelectedLayers([]);
     this.weights$.next({});
-  }
-
-  get weightingFlagOn() {
-    return this.featureService.isFeatureEnabled('PRIORITY_OBJECTIVE_WEIGHTING');
   }
 }

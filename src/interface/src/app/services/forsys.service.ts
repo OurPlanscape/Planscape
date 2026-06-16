@@ -15,6 +15,7 @@ export class ForsysService {
   );
 
   public excludedAreas$ = this.forsysData$.pipe(map((data) => data.exclusions));
+  public includedAreas$ = this.forsysData$.pipe(map((data) => data.inclusions));
 
   constructor(private moduleService: ModuleService) {}
 

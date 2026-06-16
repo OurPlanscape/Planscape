@@ -58,7 +58,7 @@ export class FilterDropdownComponent<T> implements OnInit {
   /**
    * The label text displayed for the menu, if nothing is selected
    */
-  @Input() noSelectionsLabel?: string;
+  @Input() noSelectionsLabel?: string | null = null;
   /**
    * Items displayed in the menu, an object of any type
    */

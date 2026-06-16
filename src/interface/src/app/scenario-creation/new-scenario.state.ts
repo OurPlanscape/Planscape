@@ -30,7 +30,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ForsysService } from '@services/forsys.service';
 import { ScenarioStepConfig } from '@scenario/scenario.constants';
-import { FeatureService } from '@features/feature.service';
 
 export interface PriorityWithLayer {
   layer: DataLayer;
@@ -48,6 +47,10 @@ export class NewScenarioState {
   private _excludedAreas$ = new BehaviorSubject<number[]>([]);
   public excludedAreas$ = this._excludedAreas$.asObservable();
 
+  // user selected included areas
+  private _includedAreas$ = new BehaviorSubject<number[]>([]);
+  public includedAreas$ = this._includedAreas$.asObservable();
+
   // max slope and/or distance to roads constraints
   private _constraints$ = new BehaviorSubject<Constraint[]>([]);
   public constraints$ = this._constraints$.asObservable();
@@ -64,13 +67,7 @@ export class NewScenarioState {
   public priorityObjectivesDetails$ = this.scenarioConfig$.pipe(
     map((config) => {
       const draft = config as Partial<ScenarioDraftConfiguration>;
-      // When weighting is enabled, ids live in the new `priorities` field;
-      // otherwise read the legacy `priority_objectives` field.
-      return this.featureService.isFeatureEnabled(
-        'PRIORITY_OBJECTIVE_WEIGHTING'
-      )
-        ? (draft.priorities ?? []).map((p) => p.datalayer)
-        : draft.priority_objectives;
+      return (draft.priorities ?? []).map((p) => p.datalayer);
     }),
     map((ids) => (Array.isArray(ids) && ids.length > 0 ? ids : [])),
     distinctUntilChanged(
@@ -247,8 +244,7 @@ export class NewScenarioState {
     private router: Router,
     private snackbar: MatSnackBar,
     private forsysService: ForsysService,
-    private dataLayersService: DataLayersService,
-    private featureService: FeatureService
+    private dataLayersService: DataLayersService
   ) {
     this.forsysService.forsysData$.subscribe((forsys) => {
       this.slopeId = forsys.thresholds.slope.id;
@@ -272,10 +268,17 @@ export class NewScenarioState {
     this._excludedAreas$.next(value);
   }
 
+  setIncludedAreas(value: number[]) {
+    this._includedAreas$.next(value);
+  }
+
   setScenarioConfig(config: Partial<ScenarioDraftConfiguration>) {
     this._scenarioConfig$.next(config);
     if (config.excluded_areas) {
       this.setExcludedAreas(config.excluded_areas);
+    }
+    if (config.included_areas) {
+      this.setIncludedAreas(config.included_areas);
     }
   }
 

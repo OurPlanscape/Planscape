@@ -31,9 +31,6 @@ import { take } from 'rxjs';
 
 import * as shp from 'shpjs';
 import { MatMenuModule } from '@angular/material/menu';
-import { PopoverComponent } from '@styleguide/popover/popover.component';
-import { FeatureService } from '@app/features/feature.service';
-
 export interface DialogData {
   planning_area_name: string;
   planId: string;
@@ -60,7 +57,6 @@ export interface DialogData {
     ReactiveFormsModule,
     MatMenuModule,
     InputDirective,
-    PopoverComponent,
   ],
 })
 export class UploadProjectAreasModalComponent {
@@ -78,23 +74,13 @@ export class UploadProjectAreasModalComponent {
   readonly data = inject<DialogData>(MAT_DIALOG_DATA);
   uploadingData = false;
 
-  tooltipContent =
-    '<p>The stand sizes represent the number of acres per stand.</p><p><strong>Small</strong> stand size is 10 acres/stand. <br /><strong>Medium</strong> stand size is 100 acres/stand.<br /><strong>Large</strong> stand size is 500 acres/stand.</p>';
-
   constructor(
     private fb: FormBuilder,
-    private planService: PlanService,
-    private featureService: FeatureService
+    private planService: PlanService
   ) {
     this.uploadProjectsForm = this.fb.group({
       scenarioName: this.fb.control('', [Validators.required]),
     });
-    if (this.showStandSize()) {
-      this.uploadProjectsForm.addControl(
-        'standSize',
-        this.fb.control('MEDIUM', [Validators.required])
-      );
-    }
   }
 
   handleFileEvent(file: File | undefined): void {
@@ -166,19 +152,11 @@ export class UploadProjectAreasModalComponent {
         'scenarioName',
         this.uploadProjectsForm.get('scenarioName')?.value
       );
-      formData.append(
-        'standSize',
-        this.uploadProjectsForm.get('standSize')?.value
-      );
     } else {
       this.uploadElementStatus = 'failed';
       this.uploadFormError = 'A file was not uploaded.';
     }
     this.uploadData();
-  }
-
-  showStandSize() {
-    return this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS');
   }
 
   uploadData() {
@@ -187,7 +165,6 @@ export class UploadProjectAreasModalComponent {
       const uploadOptions: ScenarioUploadOptions = {
         shape: this.geometries,
         scenarioName: this.uploadProjectsForm.get('scenarioName')?.value,
-        standSize: this.uploadProjectsForm.get('standSize')?.value ?? null,
         planId: this.data.planId,
       };
 

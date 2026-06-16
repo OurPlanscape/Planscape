@@ -32,7 +32,6 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { ScenarioSetupModalComponent } from '@scenario/scenario-setup-modal/scenario-setup-modal.component';
 import { PlanState } from '@plan/plan.state';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { FeatureService } from '@app/features/feature.service';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -68,8 +67,7 @@ export class PlanScenariosListComponent implements OnInit {
     private dialog: MatDialog,
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
-    private planState: PlanState,
-    private featureService: FeatureService
+    private planState: PlanState
   ) {}
 
   ngOnInit(): void {
@@ -182,18 +180,19 @@ export class PlanScenariosListComponent implements OnInit {
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
-    // Update when SCENARIO_DASHBOARD be released
     if (
-      this.featureService.isFeatureEnabled('SCENARIO_DASHBOARDS') &&
+      // if the scenario has a result and that result is a finished state (failure, panic, success)...
       clickedScenario.scenario_result &&
       ['FAILURE', 'PANIC', 'SUCCESS'].includes(
         clickedScenario.scenario_result.status
       )
     ) {
+      // then we go to the dashboard
       this.router.navigate(['scenario', clickedScenario.id, 'dashboard'], {
         relativeTo: this.route,
       });
     } else {
+      // otherwise we are still working on it, so we go to the non-dashboard route
       this.router.navigate(['scenario', clickedScenario.id], {
         relativeTo: this.route,
       });

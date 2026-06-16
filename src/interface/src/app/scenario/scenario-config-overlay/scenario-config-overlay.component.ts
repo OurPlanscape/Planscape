@@ -20,7 +20,7 @@ import {
 } from '../scenario-helper';
 import { DataLayersService } from '@services';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { FeatureService } from '@features/feature.service';
+
 import { filter } from 'rxjs/operators';
 
 @UntilDestroy()
@@ -42,7 +42,6 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
   private scenarioState = inject(ScenarioState);
   private forsysService = inject(ForsysService);
   private dataLayersService = inject(DataLayersService);
-  private featureService = inject(FeatureService);
 
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
   currentScenario$ = this.scenarioState.currentScenario$;
@@ -154,8 +153,5 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
 
   ngOnDestroy() {
     this.close();
-  }
-  get weightingFlagOn() {
-    return this.featureService.isFeatureEnabled('PRIORITY_OBJECTIVE_WEIGHTING');
   }
 }

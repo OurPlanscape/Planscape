@@ -1,0 +1,24 @@
+@import 'colors';
+@import 'mixins';
+@import 'variables';
+
+::ng-deep .include-areas .mat-expansion-panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .list-header {
+    font-size: 14px;
+  }
+}
+
+.tooltip-title {
+  @include small-paragraph();
+  color: $color-black;
+  font-weight: 600;
+}
+
+.tooltip-paragraph {
+  @include small-paragraph();
+  color: $color-dark-gray;
+}
