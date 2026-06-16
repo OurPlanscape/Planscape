@@ -217,9 +217,11 @@ PRIVATE_LAYERS = (
     "planning_area_by_id",
     "project_area_aggregate",
     "project_areas_by_scenario",
+    "scenario_treatable_area",
     "stands_by_tx_plan",
     "stands_by_tx_result",
     "stands_by_planning_area",
+    "stands_by_scenario",
     "sub_units_by_scenario",
 )
 
