@@ -230,6 +230,31 @@ class FundingReportModule(BaseModule):
         scenario_geometry = runnable.planning_area.geometry
         return self.coverage.contains(scenario_geometry)
 
+    def _get_options(self, **kwargs):
+        user = kwargs.get("user")
+        layers = (
+            DataLayer.objects.all()
+            .accessible_by(user)
+            .by_meta_module(self.name)
+            .order_by("name")
+        )
+        groups: Dict[str, List[DataLayer]] = {}
+        for layer in layers:
+            group_key = (
+                (layer.metadata or {})
+                .get("modules", {})
+                .get(self.name, {})
+                .get("group")
+            )
+            if not group_key:
+                continue
+            groups.setdefault(group_key, []).append(layer)
+        return {
+            "groups": [
+                {"key": key, "layers": groups[key]} for key in sorted(groups)
+            ]
+        }
+
     def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
         return FundingReportModuleSerializer
 

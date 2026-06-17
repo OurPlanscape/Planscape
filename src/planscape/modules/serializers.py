@@ -90,8 +90,13 @@ class PrioritizeSubUnitsModuleSerializer(BaseModuleSerializer):
     options = PrioritizeSubUnitsOptionsSerializer()
 
 
-class FundingReportOptionsSerializer(BaseModuleOptionsSerializer):
-    pass
+class FundingReportGroupSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    layers = serializers.ListField(child=BrowseDataLayerSerializer())
+
+
+class FundingReportOptionsSerializer(serializers.Serializer):
+    groups = serializers.ListField(child=FundingReportGroupSerializer())
 
 
 class FundingReportModuleSerializer(BaseModuleSerializer):

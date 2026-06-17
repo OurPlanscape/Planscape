@@ -365,6 +365,73 @@ class PrioritizeSubUnitsModuleTest(TestCase):
         self.assertEqual(len(sub_units), 1)
 
 
+class FundingReportModuleTest(TestCase):
+    def test_returns_grouped_layers_sorted_by_name(self):
+        dataset = DatasetFactory.create(
+            name="funding-base",
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
+            visibility=VisibilityOptions.PUBLIC,
+            modules=["funding_report"],
+        )
+        DataLayerFactory.create(
+            dataset=dataset,
+            name="Standing Aboveground Live Tree Carbon",
+            metadata={"modules": {"funding_report": {"group": "carbon"}}},
+        )
+        DataLayerFactory.create(
+            dataset=dataset,
+            name="Smoke Production",
+            metadata={"modules": {"funding_report": {"group": "carbon"}}},
+        )
+        DataLayerFactory.create(
+            dataset=dataset,
+            name="Wildfire Hazard Potential",
+            metadata={"modules": {"funding_report": {"group": "wildfire_risk"}}},
+        )
+        # layer tagged for funding_report but without a group key is skipped
+        DataLayerFactory.create(
+            dataset=dataset,
+            name="Untagged",
+            metadata={"modules": {"funding_report": {}}},
+        )
+
+        module = get_module("funding_report")
+        configuration: Dict[str, Any] = module.get_configuration()
+
+        self.assertIn("options", configuration)
+        groups = configuration["options"]["groups"]
+
+        # groups are emitted in a deterministic (alphabetical) key order
+        self.assertEqual([g["key"] for g in groups], ["carbon", "wildfire_risk"])
+
+        carbon = next(g for g in groups if g["key"] == "carbon")
+        wildfire = next(g for g in groups if g["key"] == "wildfire_risk")
+
+        # layers within a group are sorted alphabetically by name
+        self.assertEqual(
+            [layer.name for layer in carbon["layers"]],
+            ["Smoke Production", "Standing Aboveground Live Tree Carbon"],
+        )
+        self.assertEqual(len(wildfire["layers"]), 1)
+
+    def test_excludes_layers_not_tagged_for_module(self):
+        dataset = DatasetFactory.create(
+            name="funding-base",
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
+            visibility=VisibilityOptions.PUBLIC,
+            modules=["funding_report"],
+        )
+        DataLayerFactory.create(
+            dataset=dataset,
+            name="Other Module Layer",
+            metadata={"modules": {"prioritize_sub_units": {"enabled": True}}},
+        )
+
+        module = get_module("funding_report")
+        configuration: Dict[str, Any] = module.get_configuration()
+        self.assertEqual(configuration["options"]["groups"], [])
+
+
 class ImpactsModulesTest(TestCase):
     def setUp(self):
         inside_california_goemtry = {
