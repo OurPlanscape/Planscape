@@ -17,11 +17,27 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
-import { filter, shareReplay, switchMap, take, tap } from 'rxjs';
-import { UntilDestroy } from '@ngneat/until-destroy';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  finalize,
+  map,
+  shareReplay,
+  Subject,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ScenarioState } from '@scenario/scenario.state';
 import { FundingReportService } from '@services/funding-report.service';
 import { FundingReportComponent } from '../funding-report/funding-report.component';
+import {
+  FlameLengthReductionResponse,
+  FlameLengthRequestParams,
+  FundingReport,
+} from '@types';
 
 @UntilDestroy()
 @Component({
@@ -68,7 +84,7 @@ export class FullReportViewComponent {
    * status (or a missing report). `shareReplay(1)` keeps the template binding
    * and the redirect check on one HTTP call.
    */
-  report$ = this.scenarioState.currentScenarioId$.pipe(
+  private fetchedReport$ = this.scenarioState.currentScenarioId$.pipe(
     filter((id): id is number => id !== null),
     take(1),
     switchMap((id) => this.fundingReportService.getReport(id)),
@@ -79,6 +95,20 @@ export class FullReportViewComponent {
     }),
     shareReplay(1)
   );
+
+  /** Latest flame-length recalculation, patched into the report locally. */
+  private flameLength$ =
+    new BehaviorSubject<FlameLengthReductionResponse | null>(null);
+
+  /** The fetched report with any local flame-length recalculation applied. */
+  report$ = combineLatest([this.fetchedReport$, this.flameLength$]).pipe(
+    map(([report, flameLength]) => this.withFlameLength(report, flameLength)),
+    shareReplay(1)
+  );
+
+  updatingFlameLength = false;
+  /** Apply clicks; `switchMap` cancels any in-flight request when a new one arrives. */
+  private flameLengthRequest$ = new Subject<FlameLengthRequestParams>();
 
   constructor(
     private breadcumbService: BreadcrumbService,
@@ -94,6 +124,25 @@ export class FullReportViewComponent {
       blackText: true,
     };
     this.breadcumbService.updateBreadCrumb(newBreadCrumb);
+
+    this.flameLengthRequest$
+      .pipe(
+        switchMap((params) => {
+          // Set inside switchMap so a re-apply re-arms the loader *after* the
+          // cancelled request's finalize has cleared it.
+          this.updatingFlameLength = true;
+          return this.scenarioState.currentScenarioId$.pipe(
+            filter((id): id is number => id !== null),
+            take(1),
+            switchMap((id) =>
+              this.fundingReportService.getFlameLengthReduction(id, params)
+            ),
+            finalize(() => (this.updatingFlameLength = false))
+          );
+        }),
+        untilDestroyed(this)
+      )
+      .subscribe((flameLength) => this.flameLength$.next(flameLength));
   }
 
   private redirectToFunding() {
@@ -110,5 +159,36 @@ export class FullReportViewComponent {
 
   changeProjectAreas(selection: { id: number }[]) {
     this.selectedProjectAreas = selection.map((item) => item.id);
+  }
+
+  updateFlameLength(params: FlameLengthRequestParams) {
+    this.flameLengthRequest$.next(params);
+  }
+
+  /**
+   * Replace the report's `TOTAL_FLAME_SEVERITY` (summary and per-project) with a
+   * flame-length recalculation, leaving the other metrics untouched. Returns a
+   * new report object so change detection picks it up.
+   */
+  private withFlameLength(
+    report: FundingReport | null,
+    flameLength: FlameLengthReductionResponse | null
+  ): FundingReport | null {
+    if (!report || !report.results || !flameLength) {
+      return report;
+    }
+    return {
+      ...report,
+      results: {
+        summary: {
+          ...report.results.summary,
+          TOTAL_FLAME_SEVERITY: flameLength.summary,
+        },
+        projects: {
+          ...report.results.projects,
+          TOTAL_FLAME_SEVERITY: flameLength.projects,
+        },
+      },
+    };
   }
 }

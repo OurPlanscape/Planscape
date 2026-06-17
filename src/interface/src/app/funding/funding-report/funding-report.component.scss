@@ -115,6 +115,20 @@ h5 {
   margin-top: 16px;
 }
 
+.chart-wrapper {
+  position: relative;
+}
+
+.chart-loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.6);
+  z-index: 1;
+}
+
 .summary-to {
   margin-top: 40px;
 }
@@ -283,4 +297,8 @@ h5 {
     font-weight: 600;
     line-height: 32px;
   }
+}
+
+.flame-length-button {
+  margin-top: 31px;
 }
