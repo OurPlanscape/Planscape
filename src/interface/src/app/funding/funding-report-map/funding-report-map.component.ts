@@ -51,7 +51,6 @@ import { MapTooltipComponent } from '@app/treatments/map-tooltip/map-tooltip.com
   styleUrl: './funding-report-map.component.scss',
 })
 export class FundingReportMapComponent {
-  // TODO: use separate instance of mapconfigstate?
   constructor(
     private mapConfigState: MapConfigState,
     private mapConfigService: MapConfigService,
