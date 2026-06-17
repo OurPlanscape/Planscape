@@ -55,13 +55,13 @@
     </div>
     <div class="data-layers-view" *ngIf="currentView === 'data_layers'">
       <mat-tab-group
-        class="side-tabs"
+        class="map-layers-tabs"
         [(selectedIndex)]="tabIndex"
         (selectedIndexChange)="onTabIndexChange($event)"
         mat-stretch-tabs="false"
         mat-align-tabs="start">
         <mat-tab label="Data Layers">
-          <app-data-layers class="white-background"></app-data-layers>
+          <app-data-layers class="white-background" [useClearFooter]="false"></app-data-layers>
         </mat-tab>
         <mat-tab label="Base Layers">
           <app-base-layers class="white-background"></app-base-layers>

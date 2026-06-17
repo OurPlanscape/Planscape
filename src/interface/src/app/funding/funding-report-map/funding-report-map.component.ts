@@ -32,12 +32,14 @@ import { MapTooltipComponent } from '@app/treatments/map-tooltip/map-tooltip.com
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { DataLayer } from '@app/types';
 import { MatIconModule } from '@angular/material/icon';
+import { ButtonComponent } from '@styleguide';
 
 @Component({
   selector: 'app-funding-report-map',
   standalone: true,
   imports: [
     AsyncPipe,
+    ButtonComponent,
     ControlComponent,
     LayerComponent,
     MapBaseLayersComponent,

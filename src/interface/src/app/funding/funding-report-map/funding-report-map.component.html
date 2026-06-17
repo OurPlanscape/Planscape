@@ -66,7 +66,13 @@
         (click)="goToSelectedLayer(selectedLayer)">
         {{ selectedLayer.name }}
       </a>
-      <mat-icon (click)="clearSelectedLayer()">close</mat-icon>
+      <button
+      sg-button
+      variant="icon-only"
+      aria-label="close"
+      (click)="clearSelectedLayer()">
+      <mat-icon class="close-btn">close</mat-icon>
+      </button>
     </div>
   </mgl-control>
 </mgl-map>

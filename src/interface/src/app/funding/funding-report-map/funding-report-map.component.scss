@@ -30,8 +30,11 @@ mgl-map {
 .label {
   @include xs-label();
   @include public-sans();
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   color: $color-dark-gray;
-  padding: 10px 14px;
+  padding: 0 12px;
   border-radius: 0 8px 0 0;
   background: $color-white;
   box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.15);
@@ -41,12 +44,6 @@ mgl-map {
   overflow: hidden;
   text-wrap-mode: nowrap;
   text-overflow: ellipsis;
-
-  // TODO: or grid?
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
 }
 
 .mat-icon {
