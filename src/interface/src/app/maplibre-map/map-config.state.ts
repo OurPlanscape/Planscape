@@ -59,7 +59,7 @@ export class MapConfigState {
   );
   public mapInteractionMode$ = this._mapInteractionMode$.asObservable();
 
-  /* TODO: this is just for the funding map -- should we move to a different state service? */
+  /* currently exclusive to the funding map */
   private _selectedProjectAreas$ = new BehaviorSubject<number[]>([]);
   public selectedProjectAreas$ = this._selectedProjectAreas$.asObservable();
 

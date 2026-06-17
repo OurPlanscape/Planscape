@@ -50,9 +50,6 @@ export class MapMultiProjectAreasComponent implements OnInit {
   @Input() visible = true;
   @Input() showHoveredProjectAreas: boolean = true;
   @Input() allowInteraction = true;
-  /**
-   * If provided we should fill the project areas
-   */
   @Input() projectAreasCount: number | null = null;
 
   @Input() labelField: 'name' | 'rank' | '' = 'name'; // blank string shows nothing

@@ -29,6 +29,8 @@ import { MapConfigService } from '@app/maplibre-map/map-config.service';
 import { MapMultiProjectAreasComponent } from '../map-multi-project-areas/map-multi-project-areas.component';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { MapTooltipComponent } from '@app/treatments/map-tooltip/map-tooltip.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SNACK_ERROR_CONFIG } from '@app/shared';
 
 @Component({
   selector: 'app-funding-report-map',
@@ -56,9 +58,11 @@ export class FundingReportMapComponent {
     private mapConfigService: MapConfigService,
     private authService: AuthService,
     private planState: PlanState,
-    private scenarioState: ScenarioState
+    private scenarioState: ScenarioState,
+    private matSnackBar: MatSnackBar
   ) {
     this.mapConfigService.initialize();
+    this.loading$.next(true);
   }
 
   @Input() allowInteraction = true;
@@ -70,12 +74,11 @@ export class FundingReportMapComponent {
   minZoom = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
-  /**
-   * Observable that provides the url to load the selected map base layer
-   */
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
 
   opacity$ = this.mapConfigState.opacity$;
+
+  loading$ = new BehaviorSubject<boolean>(false);
 
   projectAreaCount$ = this.scenarioState.currentScenario$.pipe(
     map((scenario) => {
@@ -96,10 +99,9 @@ export class FundingReportMapComponent {
     map((scenario) => scenario.planning_approach ?? 'OPTIMIZE_PROJECT_AREAS')
   );
 
-  loading$ = new BehaviorSubject<boolean>(false);
-
   mapLoaded(loadedMap: MapLibreMap) {
     this.mapLibreMap = loadedMap;
+    this.loading$.next(false);
   }
 
   handleOpacityChange(opacity: number) {
@@ -109,8 +111,20 @@ export class FundingReportMapComponent {
   onMapError(event: ErrorEvent & EventData) {
     const status = (event.error as any)?.status;
     if (status >= 500 && status < 600) {
-      // TODO: handle errors
+      this.showMapError();
     }
+  }
+
+  showMapError() {
+    // TODO: confirm this message
+    this.matSnackBar.open(
+      'There was a problem loading the funding report map.',
+      'Dismiss',
+      {
+        ...SNACK_ERROR_CONFIG,
+        panelClass: ['snackbar-error', 'snackbar-error-multiline'],
+      }
+    );
   }
 
   setHoveredProjectAreaId(value: number | null) {
