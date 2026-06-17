@@ -22,9 +22,7 @@
 }
 
 .full-report-sidebar {
-  width: $scenario-sidebar-width;
-  max-width: $scenario-sidebar-width;
-
+  max-width: $funding-sidebar-width;
   background-color: $color-soft-purple;
   box-shadow: 6px 0 8px 0 rgba(0, 0, 0, 0.12);
   display: flex;
@@ -100,4 +98,10 @@
 .data-layers-view {
   height: 100%;
   background-color: $color-white;
+}
+
+
+.right-side {
+  width: 100%;
+  position: relative;
 }

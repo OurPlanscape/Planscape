@@ -38,8 +38,10 @@
   #scrollContainer
   [ngClass]="{ fullview: !isPreview }">
   <section id="map" class="report-section" *ngIf="isPreview">
-    <!-- TODO: map -->
-    <div class="map-container"></div>
+    <div class="map-container">
+      <app-funding-report-map
+        [allowInteraction]="false"></app-funding-report-map>
+    </div>
   </section>
 
   <sg-section
@@ -173,15 +175,17 @@
         type="bar"></sg-chart>
     </div>
     <div class="top-section-divider">
-      <h5>
-        Burn Probability
-        <sg-popover
-          [modal]="true"
-          icon="info"
-          [contentTemplate]="tooltipContent"
-          (opened)="tooltipName = 'Burn Probability'"></sg-popover>
-      </h5>
-      <div>Coming soon ...</div>
+      <div class="coming-soon">
+        <div class="coming-soon-header">
+          <mat-icon>access_time</mat-icon>
+          <h4>Burn Probability is coming soon!</h4>
+        </div>
+        <div>
+          This section is currently under construction. Soon, you will be able
+          to explore how treatments influence wildfire burn probability over
+          time across your planning area.
+        </div>
+      </div>
     </div>
   </sg-section>
 

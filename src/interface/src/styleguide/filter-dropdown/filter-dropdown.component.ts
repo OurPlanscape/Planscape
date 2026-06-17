@@ -155,9 +155,11 @@ export class FilterDropdownComponent<T> implements OnInit {
       });
       // and then we sort, if the shortLabel is selected
       if (this.shortLabel) {
-        displayedSelections.sort();
+        // if we're using the shortLabel, we tell typescript that it's an array of strings to sort
+        (displayedSelections as string[]).sort(
+          new Intl.Collator(undefined, { numeric: true }).compare
+        );
       }
-
       return `: ${displayedSelections.join(', ')}`;
     }
     return '';

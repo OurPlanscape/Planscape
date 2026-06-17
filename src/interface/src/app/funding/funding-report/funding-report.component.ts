@@ -29,6 +29,7 @@ import {
   PercentageBarColor,
 } from '@app/chart-helper';
 import { FundingReportFooterComponent } from '../funding-report-footer/funding-report-footer.component';
+import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
 import { FundingReport, FundingReportMetric } from '@types';
 import { aggregateMetricSummary, hasMetricData } from './funding-report.helper';
 import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
@@ -76,6 +77,7 @@ const flameLengthRangeValidator: ValidatorFn = (
   imports: [
     CommonModule,
     FundingReportFooterComponent,
+    FundingReportMapComponent,
     MatButtonModule,
     MatIconModule,
     MatTabsModule,
@@ -84,6 +86,7 @@ const flameLengthRangeValidator: ValidatorFn = (
     ChartComponent,
     ModalComponent,
     PopoverComponent,
+    FundingReportMapComponent,
     FundingMapLayersComponent,
     InputFieldComponent,
     InputDirective,

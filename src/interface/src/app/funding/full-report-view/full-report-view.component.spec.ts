@@ -7,8 +7,10 @@ import { MockProvider } from 'ng-mocks';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { ScenarioState } from '@scenario/scenario.state';
+import { MOCK_SCENARIO } from '@app/services/mocks';
+import { MapConfigService } from '@app/maplibre-map/map-config.service';
 
 describe('FullReportViewComponent', () => {
   let component: FullReportViewComponent;
@@ -23,9 +25,11 @@ describe('FullReportViewComponent', () => {
         MatSnackBarModule,
       ],
       providers: [
-        MockProvider(MapConfigState),
+        MockProvider(MapConfigState, { selectedProjectAreas$: of([]) }),
+        MockProvider(MapConfigService),
         MockProvider(ScenarioState, {
           currentScenarioId$: new BehaviorSubject<number | null>(null),
+          currentScenario$: new BehaviorSubject(MOCK_SCENARIO),
         }),
         { provide: ActivatedRoute, useValue: { firstChild: {} } },
         {
