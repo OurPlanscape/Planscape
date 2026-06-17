@@ -29,6 +29,9 @@ import { MapConfigService } from '@app/maplibre-map/map-config.service';
 import { MapMultiProjectAreasComponent } from '../map-multi-project-areas/map-multi-project-areas.component';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { MapTooltipComponent } from '@app/treatments/map-tooltip/map-tooltip.component';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { DataLayer } from '@app/types';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-funding-report-map',
@@ -43,6 +46,7 @@ import { MapTooltipComponent } from '@app/treatments/map-tooltip/map-tooltip.com
     MapMultiProjectAreasComponent,
     MapTooltipComponent,
     MapZoomControlComponent,
+    MatIconModule,
     MatProgressSpinnerModule,
     NgIf,
     PlanningAreaLayerComponent,
@@ -56,7 +60,8 @@ export class FundingReportMapComponent {
     private mapConfigService: MapConfigService,
     private authService: AuthService,
     private planState: PlanState,
-    private scenarioState: ScenarioState
+    private scenarioState: ScenarioState,
+    private dataLayersStateService: DataLayersStateService
   ) {
     this.mapConfigService.initialize();
   }
@@ -82,6 +87,8 @@ export class FundingReportMapComponent {
       return scenario.scenario_result?.result?.features.length;
     })
   );
+
+  selectedLayer$ = this.dataLayersStateService.viewedDataLayer$;
 
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {
@@ -119,6 +126,14 @@ export class FundingReportMapComponent {
 
   setMouseLngLat(value: LngLat | null) {
     this.mouseLngLat = value;
+  }
+
+  goToSelectedLayer(layer: DataLayer) {
+    this.dataLayersStateService.goToSelectedLayer(layer);
+  }
+
+  clearSelectedLayer() {
+    this.dataLayersStateService.clearViewedDataLayer();
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>

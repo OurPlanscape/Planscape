@@ -52,4 +52,21 @@
   <mgl-control position="top-right">
     <!-- TODO: add the funding legend -->
   </mgl-control>
+
+  <mgl-control
+    position="bottom-left"
+    class="map-label-control custom-bottom-left-control">
+    <div
+      class="selected-layer-control label"
+      *ngIf="selectedLayer$ | async as selectedLayer">
+      <a
+        sg-button
+        variant="link"
+        class="label-button"
+        (click)="goToSelectedLayer(selectedLayer)">
+        {{ selectedLayer.name }}
+      </a>
+      <mat-icon (click)="clearSelectedLayer()">close</mat-icon>
+    </div>
+  </mgl-control>
 </mgl-map>

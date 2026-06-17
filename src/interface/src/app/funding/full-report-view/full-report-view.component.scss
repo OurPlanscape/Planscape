@@ -96,8 +96,9 @@
 
 
 .data-layers-view {
-  height: 100%;
   background-color: $color-white;
+  width: $funding-sidebar-width;
+  overflow: auto;
 }
 
 
