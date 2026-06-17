@@ -140,7 +140,6 @@ export class MapMultiProjectAreasComponent implements OnInit {
         this.updateMapSelectionThickness(selectedIds);
       });
 
-    // TODO: refactor this somewhere else
     this.scenarioState.currentScenario$
       .pipe(untilDestroyed(this))
       .subscribe((scenario) => {
