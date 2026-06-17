@@ -1,4 +1,4 @@
-import { NgIf } from '@angular/common';
+import { NgClass, NgIf } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -8,7 +8,7 @@ import { ButtonComponent } from '@styleguide';
 @Component({
   selector: 'app-funding-report-footer',
   standalone: true,
-  imports: [ButtonComponent, MatIconModule, MatMenuModule, NgIf],
+  imports: [ButtonComponent, MatIconModule, MatMenuModule, NgIf, NgClass],
   templateUrl: './funding-report-footer.component.html',
   styleUrl: './funding-report-footer.component.scss',
 })
@@ -34,5 +34,9 @@ export class FundingReportFooterComponent {
 
   openFullView() {
     this.router.navigate(['report'], { relativeTo: this.route });
+  }
+
+  get isFullView() {
+    return this.footerType === 'full';
   }
 }
