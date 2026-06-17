@@ -39,8 +39,8 @@ test('user can create a Custom Scenario', {tag: ['@smoke'] }, async ({ page }) =
   .getByText('upload Upload', { exact: true })
   .click({ timeout: 60000 });
 
-  await page.getByRole('textbox', { name: 'Scenario name' }).click();
-  await page.getByRole('textbox', { name: 'Scenario name' }).fill(newScenarioName);
+  await page.getByRole('textbox', { name: 'Name' }).click();
+  await page.getByRole('textbox', { name: 'Name' }).fill(newScenarioName);
   await page.getByRole('button', { name: 'more options' }).click();
   await page.locator('sg-file-upload input[type="file"]').setInputFiles(SCENARIO_SHAPEFILE);
   await page.getByRole('button', { name: 'Create' }).click();
