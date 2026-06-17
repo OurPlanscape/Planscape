@@ -1736,7 +1736,7 @@ def get_available_stand_ids(
     excludes: Optional[QuerySet[DataLayer]] = None,
 ) -> List[int]:
     planning_area = scenario.planning_area
-    if feature_enabled("CALCULATE_INCLUSION_ZONE"):
+    if feature_enabled("ADD_INCLUDES"):
         stands = scenario.get_treatable_area_stands(stand_size=stand_size)
     else:
         stands = planning_area.get_stands(stand_size=stand_size)
