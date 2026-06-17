@@ -124,25 +124,26 @@ export class MapConfigState {
     this._dataLayersOpacity$.next(opacity);
   }
 
-  /* TODO: this is just for the funding map -- should we move to a different state service? */
-  updateSelectedProjectAreas(proj_rank_ids: number[]) {
-    this._selectedProjectAreas$.next(proj_rank_ids);
+  /**  note that 'ids' here is either based on:
+  /*  the project_id for USER origin or the rank for SYSTEM origin
+  */
+  updateSelectedProjectAreas(ids: number[]) {
+    this._selectedProjectAreas$.next(ids);
   }
 
-  /* TODO: this is just for the funding map -- should we move to a different state service? */
-  /* TODO: here we are using 'rank' because...its the only common key among martin data and proj data? :|
-            confirm that we don't have a better option 
+  /**  note that 'id' here is either based on:
+  /*  the project_id for USER origin or the rank for SYSTEM origin
   */
-  toggleProjectArea(proj: any) {
+  toggleSelectedProjectArea(id: any) {
     // if the id is already selected, we remove it.
     const currentSelection = this._selectedProjectAreas$.getValue();
-    if (currentSelection.includes(proj.properties['rank'])) {
+    if (currentSelection.includes(id)) {
       this._selectedProjectAreas$.next(
-        currentSelection.filter((p) => p !== proj.properties['rank'])
+        currentSelection.filter((p) => p !== id)
       );
     } else {
       // otherwise we add it
-      currentSelection.push(proj.properties['rank']);
+      currentSelection.push(id);
       this._selectedProjectAreas$.next(currentSelection);
     }
   }

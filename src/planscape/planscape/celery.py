@@ -47,6 +47,18 @@ def get_forisk_mills_schedule() -> dict[str, dict]:
     }
 
 
+def get_twig_treatments_schedule() -> dict[str, dict]:
+    if not settings.TWIG_TREATMENTS_CRON:
+        return {}
+
+    return {
+        "refresh-twig-treatment-layers": {
+            "task": "datasets.tasks.refresh_twig_treatment_layers_task",
+            "schedule": crontab.from_string(settings.TWIG_TREATMENTS_CRON),
+        }
+    }
+
+
 beat_schedule = {
     "trigger-scenario-post-processing": {
         "task": "planning.tasks.trigger_scenario_post_processing",
@@ -71,5 +83,6 @@ if settings.WEEKLY_NEW_USERS_REPORT_ENABLED:
 beat_schedule.update(get_catalog_backup_schedule())
 beat_schedule.update(get_catalog_restore_schedule())
 beat_schedule.update(get_forisk_mills_schedule())
+beat_schedule.update(get_twig_treatments_schedule())
 
 app.conf.beat_schedule = beat_schedule

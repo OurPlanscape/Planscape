@@ -1,0 +1,18 @@
+@import 'colors';
+
+h5 {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 15px;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+  color: $color-black;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+mat-radio-button {
+  display: block;
+  margin-left: -8px;
+}

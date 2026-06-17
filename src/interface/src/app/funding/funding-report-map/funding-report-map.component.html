@@ -30,25 +30,21 @@
     [layout]="{ visibility: 'none' }">
   </mgl-layer>
 
-  
-    <app-map-multi-project-areas
-      *ngIf="projectAreaCount$ | async as projectAreasCount"
-      [allowInteraction]="allowInteraction"
-      [projectAreasCount]="projectAreasCount"
-      [mapLibreMap]="mapLibreMap"
-      [labelField]="'rank'"
-      (changeHoveredProjectAreaId)="setHoveredProjectAreaId($event)"
-      (changeMouseLngLat)="setMouseLngLat($event)"
-      [planningApproach]="
-        (planningApproach$ | async) || 'OPTIMIZE_PROJECT_AREAS'
-      ">
-    </app-map-multi-project-areas>
+  <app-map-multi-project-areas
+    *ngIf="projectAreaCount$ | async as projectAreasCount"
+    [allowInteraction]="allowInteraction"
+    [projectAreasCount]="projectAreasCount"
+    [mapLibreMap]="mapLibreMap"
+    [labelField]="'rank'"
+    (changeHoveredProjectAreaId)="setHoveredProjectAreaId($event)"
+    (changeMouseLngLat)="setMouseLngLat($event)"
+    [planningApproach]="
+      (planningApproach$ | async) || 'OPTIMIZE_PROJECT_AREAS'
+    ">
+  </app-map-multi-project-areas>
 
   <app-map-tooltip
-    *ngIf="
-      allowInteraction && 
-      (hoveredProjectAreaId$ | async) && mouseLngLat
-    "
+    *ngIf="allowInteraction && (hoveredProjectAreaId$ | async) && mouseLngLat"
     [lngLat]="mouseLngLat"
     >Click project area to select</app-map-tooltip
   >

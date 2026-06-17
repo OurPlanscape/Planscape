@@ -28,7 +28,15 @@ describe('FundingReportService', () => {
   });
 
   it('getReport returns the report on success', () => {
-    const report: FundingReport = { status: 'SUCCESS' };
+    const report: FundingReport = {
+      status: 'SUCCESS',
+      created_at: '2026-01-01T00:00:00Z',
+      created_by: 1,
+      updated_at: '2026-01-01T00:00:00Z',
+      id: 1,
+      scenario: 123,
+      results: null,
+    };
     let result: FundingReport | null | undefined;
     service.getReport(123).subscribe((r) => (result = r));
 

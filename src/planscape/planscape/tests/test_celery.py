@@ -4,6 +4,7 @@ from planscape.celery import (
     get_catalog_backup_schedule,
     get_catalog_restore_schedule,
     get_forisk_mills_schedule,
+    get_twig_treatments_schedule,
 )
 
 
@@ -45,4 +46,25 @@ class TestCatalogBeatSchedule(SimpleTestCase):
         self.assertEqual(
             schedule["refresh-forisk-mill-layers"]["schedule"]._orig_minute,
             "30",
+        )
+
+    @override_settings(TWIG_TREATMENTS_CRON="30 5 1 * *")
+    def test_twig_treatments_schedule_uses_cron_env_var(self):
+        schedule = get_twig_treatments_schedule()
+
+        self.assertEqual(
+            schedule["refresh-twig-treatment-layers"]["task"],
+            "datasets.tasks.refresh_twig_treatment_layers_task",
+        )
+        self.assertEqual(
+            schedule["refresh-twig-treatment-layers"]["schedule"]._orig_minute,
+            "30",
+        )
+        self.assertEqual(
+            schedule["refresh-twig-treatment-layers"]["schedule"]._orig_hour,
+            "5",
+        )
+        self.assertEqual(
+            schedule["refresh-twig-treatment-layers"]["schedule"]._orig_day_of_month,
+            "1",
         )

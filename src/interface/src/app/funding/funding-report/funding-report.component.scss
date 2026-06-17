@@ -60,7 +60,7 @@
   padding: 16px;
   display: flex;
   flex: 0 0 auto;
-  justify-content: end;
+  justify-content: flex-end;
   gap: 8px;
 }
 
@@ -89,7 +89,41 @@ h5 {
   border: 1px solid $color-fields-gray;
   border-radius: 4px;
   padding: 16px;
+  color: $color-dark-gray;
+
+  h5 {
+    margin: 0 0 8px;
+  }
+
+  mat-radio-button {
+    display: block;
+    margin-left: -8px;
+  }
+
+  sg-input-field ::ng-deep .label {
+    color: $color-dark-gray;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 22px;
+  }
 }
+
+.summary-flex {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.summary-to {
+  margin-top: 40px;
+}
+
+.field-error {
+  color: $color-error;
+  margin-top: 4px;
+}
+
 
 .summary-label {
   color: $color-md-gray;
@@ -108,13 +142,14 @@ h5 {
   color: $color-standard-blue;
 }
 
-.summary-value {
-  color: $color-brand-teal;
-  font-size: 26px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: 32px;
-  /* 123.077% */
+.summary-water {
+  display: flex;
+  align-items: center;
+  gap: 12px
+}
+
+.water-input {
+  width: 80px;
 }
 
 .stat-cards {
@@ -199,4 +234,17 @@ h5 {
 
 .burn-probability-banner {
   margin: 16px 0;
+}
+
+.no-data-card {
+  margin-top: 24px;
+
+  ul {
+    padding-left: 16px;
+    margin: 24px 0 0;
+  }
+
+  li {
+    color: $color-black;
+  }
 }

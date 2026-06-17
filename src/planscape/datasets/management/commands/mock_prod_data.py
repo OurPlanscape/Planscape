@@ -41,7 +41,7 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--backup-url",
-            default="gs://planscape-backups/20260416_203907_catalog_backup.json",
+            default="gs://planscape-restore/latest_production_backup.json",
             help=(
                 "Authenticated GCS URL for the catalog backup fixture. "
                 "Only gs:// URLs are supported."

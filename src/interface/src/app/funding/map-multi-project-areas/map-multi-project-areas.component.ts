@@ -3,7 +3,6 @@ import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-// import type { ExpressionSpecification } from 'maplibre-gl';
 import {
   LayerSpecification,
   LngLat,
@@ -17,7 +16,6 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { MARTIN_SOURCES } from '@treatments/map.sources';
 import { BASE_COLORS, LABEL_PAINT } from '@treatments/map.styles';
 import { filter, map, Subject } from 'rxjs';
-import { getColorForProjectPosition } from '@plan/plan-helpers';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ScenarioState } from '@scenario/scenario.state';
 import { isPlanningApproachSubUnits } from '@scenario/scenario-helper';
@@ -72,6 +70,7 @@ export class MapMultiProjectAreasComponent implements OnInit {
   hoveredProjectAreaId$ = new Subject<number | null>();
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
   opacity: number = 0.5;
+  scenarioOrigin: 'USER' | 'SYSTEM' | null = null;
 
   selectedProjectAreas$ = this.mapConfigState.selectedProjectAreas$;
 
@@ -113,7 +112,7 @@ export class MapMultiProjectAreasComponent implements OnInit {
 
   scenarioId$ = this.scenarioState.currentScenarioId$.pipe(
     filter((scenarioId) => !!scenarioId),
-    map((scenario) => scenario as number),
+    map((scenario) => scenario as number)
   );
 
   vectorLayerUrl$ = this.scenarioId$.pipe(
@@ -128,9 +127,6 @@ export class MapMultiProjectAreasComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    if (this.projectAreasCount) {
-      this.paint = this.getFillColors();
-    }
     this.mapConfigState.opacity$
       .pipe(untilDestroyed(this))
       .subscribe((opacity) => {
@@ -143,6 +139,15 @@ export class MapMultiProjectAreasComponent implements OnInit {
       .subscribe((selectedIds) => {
         this.updateMapSelectionThickness(selectedIds);
       });
+
+    // TODO: refactor this somewhere else
+    this.scenarioState.currentScenario$
+      .pipe(untilDestroyed(this))
+      .subscribe((scenario) => {
+        if (scenario.origin) {
+          this.scenarioOrigin = scenario.origin;
+        }
+      });
   }
 
   private updateMapSelectionThickness(selectedIds: number[] | null) {
@@ -153,12 +158,19 @@ export class MapMultiProjectAreasComponent implements OnInit {
       return;
 
     const ids = selectedIds || [];
-
-    this.mapLibreMap.setPaintProperty(
-      this.layers.projectAreasOutline.name,
-      'line-width',
-      ['case', ['in', ['get', 'rank'], ['literal', ids]], 6, 2]
-    );
+    if (this.scenarioOrigin === 'USER') {
+      this.mapLibreMap.setPaintProperty(
+        this.layers.projectAreasOutline.name,
+        'line-width',
+        ['case', ['in', ['get', 'id'], ['literal', ids]], 6, 2]
+      );
+    } else {
+      this.mapLibreMap.setPaintProperty(
+        this.layers.projectAreasOutline.name,
+        'line-width',
+        ['case', ['in', ['get', 'rank'], ['literal', ids]], 6, 2]
+      );
+    }
   }
 
   handleLayerClick(event: MapMouseEvent) {
@@ -166,7 +178,11 @@ export class MapMultiProjectAreasComponent implements OnInit {
       return;
     }
     const proj = this.getProjectAreaFromFeatures(event.point);
-    this.mapConfigState.toggleProjectArea(proj);
+    let project_identifier = proj.properties['rank'];
+    if (this.scenarioOrigin === 'USER') {
+      project_identifier = proj.properties['id'];
+    }
+    this.mapConfigState.toggleSelectedProjectArea(project_identifier);
   }
 
   setCursor() {
@@ -210,26 +226,5 @@ export class MapMultiProjectAreasComponent implements OnInit {
     });
 
     return features[0];
-  }
-
-  getFillColors(): LayerSpecification['paint'] {
-    const defaultColor = 'transparent';
-    const matchExpression: (number | string | string[])[] = [
-      'match',
-      ['get', 'rank'],
-    ];
-    // If there is no project area count we should not fill
-    if (this.projectAreasCount) {
-      for (let i = 1; i <= this.projectAreasCount; i++) {
-        matchExpression.push(i, getColorForProjectPosition(i));
-      }
-    }
-    matchExpression.push(defaultColor);
-
-    return {
-      // TODO: resolve to designs -- 'fill-color': matchExpression as ExpressionSpecification,
-      'fill-color': defaultColor,
-      'fill-opacity': this.opacity,
-    };
   }
 }

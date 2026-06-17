@@ -2,13 +2,17 @@
   mat-tab-nav-bar
   [tabPanel]="tabPanel"
   class="funding-report-tabs"
-  [ngClass]="{ fullview: !isPreview }">
+  [ngClass]="{ fullview: !isPreview }"
+  [appScrollSpy]="sectionIds"
+  [spyRoot]="scrollElement || scrollContainer"
+  (activeSection)="activeId = $event"
+  #spy="appScrollSpy">
   <a
     mat-tab-link
     *ngFor="let s of sections"
     [active]="activeId === s.id"
     [href]="'#' + s.id"
-    (click)="scrollTo($event, s.id)">
+    (click)="$event.preventDefault(); spy.scrollTo(s.id)">
     {{ s.label }}
   </a>
 </nav>
@@ -35,7 +39,8 @@
   [ngClass]="{ fullview: !isPreview }">
   <section id="map" class="report-section" *ngIf="isPreview">
     <div class="map-container">
-      <app-funding-report-map [allowInteraction]="false"></app-funding-report-map>
+      <app-funding-report-map
+        [allowInteraction]="false"></app-funding-report-map>
     </div>
   </section>
 
@@ -49,48 +54,53 @@
     (tooltipClicked)="tooltipName = 'Carbon'"
     [isCollapsible]="true"
     [defaultExpanded]="true">
+    <div class="summary-card" *ngIf="!isPreview">
+      <app-funding-map-layers
+        heading="Map Layers (no treatment)"
+        [layers]="mapLayers"
+        (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
+    </div>
+
     <div>
       <h5>Unhealthy Smoke Production</h5>
-      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
+      <p class="chart-subtitle" *ngIf="smokeHasData">
+        (%) Percentage Change After Treatment
+      </p>
       <sg-chart
-        *ngIf="smokeChart$ | async as chart"
+        *ngIf="smokeHasData; else noData"
         class="no-margin"
-        [data]="chart.data"
-        [options]="chart.options"
+        [data]="smokeChart.data"
+        [options]="smokeChart.options"
         type="bar"></sg-chart>
     </div>
     <div class="top-section-divider">
       <h5>Standing Aboveground Live Tree Carbon</h5>
-      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
+      <p class="chart-subtitle" *ngIf="treeCarbonHasData">
+        (%) Percentage Change After Treatment
+      </p>
       <sg-chart
-        *ngIf="treeCarbonChart$ | async as chart"
+        *ngIf="treeCarbonHasData; else noData"
         class="no-margin"
-        [data]="chart.data"
-        [options]="chart.options"
+        [data]="treeCarbonChart.data"
+        [options]="treeCarbonChart.options"
         type="bar"></sg-chart>
-    </div>
-    <div class="summary-card">
-      <div class="summary-label">
-        Potential Forecasted Mitigation Units (FMU) Produced
-        <button
-          sg-button
-          variant="icon-only"
-          icon="info"
-          [outlined]="true"
-          class="summary-tooltip-icon"></button>
-      </div>
-      <div class="summary-value">12</div>
     </div>
   </sg-section>
 
   <sg-section
     id="wildfire"
     class="report-section"
-    headline="Wildfire Risk"
+    headline="Wildfire Risk Reduction"
     [isCollapsible]="true"
     [defaultExpanded]="true">
     <div>Metrics reflect outcomes within forested land only.</div>
 
+    <div class="summary-card" *ngIf="!isPreview">
+      <app-funding-map-layers
+        heading="Map Layers (no treatment)"
+        [layers]="mapLayers"
+        (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
+    </div>
     <div>
       <h5>
         Flame Length
@@ -100,12 +110,68 @@
           [contentTemplate]="tooltipContent"
           (opened)="tooltipName = 'Flame Length'"></sg-popover>
       </h5>
-      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
+      <div class="summary-card" *ngIf="!isPreview">
+        (%) Percentage of area with flame length reduced from:
+        <div class="summary-flex" [formGroup]="flameLengthForm">
+          <sg-input-field
+            label="Greater than (>)"
+            suffix="feet"
+            showSupportMessage="on-error"
+            [supportMessage]="
+              flameLengthForm.controls.greaterThan.invalid
+                ? 'Field is required'
+                : ''
+            "
+            [error]="
+              flameLengthForm.controls.greaterThan.invalid ||
+              flameLengthForm.hasError('range')
+            ">
+            <input
+              sgInput
+              type="text"
+              inputmode="numeric"
+              required
+              formControlName="greaterThan"
+              (input)="onFlameLengthInput($event, 'greaterThan')"
+              (change)="emitFlameLength()" />
+          </sg-input-field>
+          <div class="summary-to">to</div>
+
+          <sg-input-field
+            label="Lesser than (<)"
+            suffix="feet"
+            showSupportMessage="on-error"
+            [supportMessage]="
+              flameLengthForm.controls.lesserThan.invalid
+                ? 'Field is required'
+                : ''
+            "
+            [error]="
+              flameLengthForm.controls.lesserThan.invalid ||
+              flameLengthForm.hasError('range')
+            ">
+            <input
+              sgInput
+              type="text"
+              inputmode="numeric"
+              required
+              formControlName="lesserThan"
+              (input)="onFlameLengthInput($event, 'lesserThan')"
+              (change)="emitFlameLength()" />
+          </sg-input-field>
+        </div>
+        <div class="field-error" *ngIf="flameLengthForm.hasError('range')">
+          Greater than must exceed lesser than
+        </div>
+      </div>
+      <p class="chart-subtitle" *ngIf="isPreview && flameLengthHasData">
+        (%) Percentage Change After Treatment
+      </p>
       <sg-chart
-        *ngIf="flameLengthChart$ | async as chart"
+        *ngIf="flameLengthHasData; else noData"
         class="no-margin"
-        [data]="chart.data"
-        [options]="chart.options"
+        [data]="flameLengthChart.data"
+        [options]="flameLengthChart.options"
         type="bar"></sg-chart>
     </div>
     <div class="top-section-divider">
@@ -117,18 +183,7 @@
           [contentTemplate]="tooltipContent"
           (opened)="tooltipName = 'Burn Probability'"></sg-popover>
       </h5>
-      <sg-banner class="burn-probability-banner" customIcon="priority_high"
-        >Please note that burn probability data is calculated for the entire
-        planning boundary, encompassing both treated and untreated areas. Unlike
-        other sections of this report, these results are not filtered by your
-        project area selection.
-      </sg-banner>
-      <p class="chart-subtitle">(%) Percentage Change After Treatment</p>
-      <sg-chart
-        *ngIf="burnProbChart$ | async as chart"
-        [data]="chart.data"
-        [options]="chart.options"
-        type="bar"></sg-chart>
+      <div>Coming soon ...</div>
     </div>
   </sg-section>
 
@@ -141,6 +196,34 @@
     (tooltipClicked)="tooltipName = 'Water'"
     [isCollapsible]="true"
     [defaultExpanded]="true">
+    <div class="summary-card" *ngIf="!isPreview">
+      <app-funding-map-layers
+        heading="Map Layers"
+        [layers]="mapLayers"
+        (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
+    </div>
+    <div class="summary-card" *ngIf="!isPreview">
+      <div class="summary-water">
+        Water availability increased by:
+        <sg-input-field
+          suffix="%"
+          [error]="waterAvailabilityControl.invalid"
+          class="water-input">
+          <input
+            sgInput
+            type="text"
+            inputmode="numeric"
+            required
+            [formControl]="waterAvailabilityControl"
+            (input)="onWaterAvailabilityInput($event)"
+            (change)="emitWaterAvailability()" />
+        </sg-input-field>
+      </div>
+
+      <div class="field-error" *ngIf="waterAvailabilityControl.invalid">
+        Field is required
+      </div>
+    </div>
     <div class="stat-cards">
       <div class="stat-card">
         <div class="stat-label">
@@ -196,5 +279,23 @@
     </div>
   </sg-section>
 </div>
+
+<ng-template #noData>
+  <sg-message-card
+    cardType="warning"
+    cardTitle="Data Unavailable"
+    class="no-data-card"
+    [withBorders]="false">
+    We couldn’t find data for your selected area. To proceed, please:
+    <ul>
+      <li>Select a different Outcome from the dropdown menu.</li>
+      <li>
+        Adjust your Planning or Project boundaries to a location with available
+        data and run again.
+      </li>
+    </ul>
+  </sg-message-card>
+</ng-template>
+
 <app-funding-report-footer
   [footerType]="reportType"></app-funding-report-footer>

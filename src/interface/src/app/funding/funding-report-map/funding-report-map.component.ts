@@ -1,7 +1,11 @@
 import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
-import { LngLat, Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
+import {
+  LngLat,
+  Map as MapLibreMap,
+  RequestTransformFunction,
+} from 'maplibre-gl';
 import {
   ControlComponent,
   LayerComponent,
@@ -14,7 +18,7 @@ import {
 import { AuthService } from '@app/services';
 import { FrontendConstants } from '@app/map/map.constants';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { BehaviorSubject, map,  Subject } from 'rxjs';
+import { BehaviorSubject, map, Subject } from 'rxjs';
 import { EventData } from '@angular/cdk/testing';
 import { MapZoomControlComponent } from '@app/maplibre-map/map-zoom-control/map-zoom-control.component';
 import { MapBaseLayersComponent } from '@app/maplibre-map/map-base-layers/map-base-layers.component';
@@ -73,13 +77,13 @@ export class FundingReportMapComponent {
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
 
   opacity$ = this.mapConfigState.opacity$;
-  
+
   projectAreaCount$ = this.scenarioState.currentScenario$.pipe(
     map((scenario) => {
       return scenario.scenario_result?.result?.features.length;
     })
   );
-  
+
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {
       return getBoundsFromGeometry(geometry);

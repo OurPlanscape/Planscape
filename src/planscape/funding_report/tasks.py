@@ -1,22 +1,30 @@
 import logging
+from datetime import timedelta
 
-from celery import chain, chord
-from datasets.models import DataLayer
-from django.conf import settings
+from celery import chord
 from django.db import transaction
-from funding_report.models import FundingOpportunityReport, FundingOpportunityReportStatus
+from django.utils import timezone
+from datasets.models import DataLayer
+from funding_report.models import (
+    FUNDING_REPORT_YEARS,
+    FundingOpportunityReport,
+    FundingOpportunityReportStatus,
+    FundingReportMetric,
+)
 from funding_report.services import (
-    calculate_funding_opportunity_report,
-    get_funding_report_calculation_datalayers,
+    build_datalayer_lookup,
+    build_funding_report_results,
+    calculate_project_area_delta,
+    calculate_treatment_pixel_areas,
+    generate_treatment_clip_datalayer,
+    get_treatment_datalayer,
 )
+from planning.models import ProjectArea
 from planscape.celery import app
-from stands.models import Stand
-from stands.services import (
-    calculate_stand_zonal_stats_api,
-    get_missing_stand_ids_for_datalayer_from_stand_list,
-)
 
 log = logging.getLogger(__name__)
+
+STALE_RUNNING_TIMEOUT = timedelta(minutes=30)
 
 
 @app.task()
@@ -30,53 +38,159 @@ def async_set_status(
 
 
 @app.task()
-def async_ensure_funding_report_metrics(
-    funding_opportunity_report_id: int,
-    datalayer_id: int,
-) -> None:
+def async_calculate_funding_report_delta(
+    project_area_id: int,
+    baseline_layer_id: int,
+    value_layer_id: int,
+    year: int,
+    metric: str,
+) -> dict | None:
     try:
-        report = FundingOpportunityReport.objects.get(pk=funding_opportunity_report_id)
-        datalayer = DataLayer.objects.get(pk=datalayer_id)
-        stand_size = report.scenario.get_stand_size()
-        stand_ids = list(
-            report.scenario.get_project_areas_stands(stand_size=stand_size).values_list(
-                "id", flat=True
-            )
-        )
-        missing_stand_ids = list(
-            get_missing_stand_ids_for_datalayer_from_stand_list(
-                stand_ids=stand_ids,
-                datalayer=datalayer,
-            )
-        )
-        batch_size = settings.STAND_METRICS_PAGE_SIZE
-        for i in range(0, len(missing_stand_ids), batch_size):
-            batch_stand_ids = missing_stand_ids[i : i + batch_size]
-            calculate_stand_zonal_stats_api(
-                stands=Stand.objects.filter(id__in=batch_stand_ids),
-                datalayer=datalayer,
-            )
-    except FundingOpportunityReport.DoesNotExist:
+        project_area = ProjectArea.objects.get(pk=project_area_id)
+    except ProjectArea.DoesNotExist:
         log.warning(
-            "FundingOpportunityReport with pk %s does not exist. Cannot ensure metrics.",
-            funding_opportunity_report_id,
+            "ProjectArea with pk %s does not exist. Cannot calculate funding report delta.",
+            project_area_id,
         )
-        return
+        return None
+
+    datalayer_lookup = {
+        (metric, year, True): DataLayer.objects.get(pk=baseline_layer_id),
+        (metric, year, False): DataLayer.objects.get(pk=value_layer_id),
+    }
+    try:
+        return calculate_project_area_delta(
+            project_area=project_area,
+            metric=metric,
+            year=year,
+            datalayer_lookup=datalayer_lookup,
+        )
+    except Exception as exc:
+        log.exception(
+            "Failed to calculate funding report delta for project area %s, "
+            "metric %s, year %s.",
+            project_area_id,
+            metric,
+            year,
+        )
+        return {
+            "error": str(exc),
+            "project_id": project_area_id,
+            "proj_id": (project_area.data or {}).get("proj_id"),
+            "variable": metric,
+            "year": year,
+        }
 
 
 @app.task()
-def async_calculate_funding_opportunity_report(
+def async_generate_treatment_datalayer(
     funding_opportunity_report_id: int,
-) -> None:
-    try:
-        report = FundingOpportunityReport.objects.get(pk=funding_opportunity_report_id)
-        calculate_funding_opportunity_report(report)
-    except FundingOpportunityReport.DoesNotExist:
+) -> dict | None:
+    if get_treatment_datalayer() is None:
         log.warning(
-            "FundingOpportunityReport with pk %s does not exist. Cannot calculate report.",
+            "No funding report treatment datalayer configured. Skipping "
+            "treatment datalayer generation for report %s.",
             funding_opportunity_report_id,
         )
-        return
+        return None
+
+    try:
+        report = FundingOpportunityReport.objects.get(
+            pk=funding_opportunity_report_id
+        )
+        datalayer = generate_treatment_clip_datalayer(report=report)
+        return {"kind": "treatment_datalayer", "datalayer_id": datalayer.pk}
+    except Exception as exc:
+        log.exception(
+            "Failed to generate treatment datalayer for funding report %s.",
+            funding_opportunity_report_id,
+        )
+        return {"kind": "treatment_datalayer", "error": str(exc)}
+
+
+@app.task()
+def async_calculate_treatment_areas(
+    funding_opportunity_report_id: int,
+) -> dict | None:
+    if get_treatment_datalayer() is None:
+        log.warning(
+            "No funding report treatment datalayer configured. Skipping "
+            "treatment pixel area calculation for report %s.",
+            funding_opportunity_report_id,
+        )
+        return None
+
+    try:
+        report = FundingOpportunityReport.objects.get(
+            pk=funding_opportunity_report_id
+        )
+        result = calculate_treatment_pixel_areas(report=report)
+        return {"kind": "treatment_areas", **result}
+    except Exception as exc:
+        log.exception(
+            "Failed to calculate treatment pixel areas for funding report %s.",
+            funding_opportunity_report_id,
+        )
+        return {"kind": "treatment_areas", "error": str(exc)}
+
+
+@app.task()
+def async_finalize_funding_report_results(
+    project_results: list[dict | None],
+    funding_opportunity_report_id: int,
+) -> None:
+    successes = []
+    errors = []
+    treatment_errors = []
+    treatment_datalayer_id = None
+    treatment_areas = None
+
+    for result in project_results:
+        if result is None:
+            continue
+        kind = result.get("kind")
+        if kind == "treatment_datalayer":
+            if "error" in result:
+                treatment_errors.append(result)
+            else:
+                treatment_datalayer_id = result["datalayer_id"]
+            continue
+        if kind == "treatment_areas":
+            if "error" in result:
+                treatment_errors.append(result)
+            else:
+                treatment_areas = {
+                    "projects": result["projects"],
+                    "total": result["total"],
+                }
+            continue
+        if "error" in result:
+            errors.append(result)
+        else:
+            successes.append(result)
+
+    results = build_funding_report_results(successes)
+    if treatment_areas is not None:
+        results["treatment_areas"] = treatment_areas
+    if treatment_errors:
+        results["treatment_errors"] = treatment_errors
+    if errors:
+        results["errors"] = errors
+
+    update_fields: dict = {
+        "results": results,
+        "status": (
+            FundingOpportunityReportStatus.FAILED
+            if errors
+            else FundingOpportunityReportStatus.SUCCESS
+        ),
+    }
+    if treatment_datalayer_id is not None:
+        update_fields["treatment_datalayer_id"] = treatment_datalayer_id
+
+    FundingOpportunityReport.objects.filter(pk=funding_opportunity_report_id).update(
+        **update_fields
+    )
 
 
 @app.task()
@@ -92,33 +206,61 @@ def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
                 funding_opportunity_report_id,
             )
             return
-        if report.status == FundingOpportunityReportStatus.RUNNING:
+        if (
+            report.status == FundingOpportunityReportStatus.RUNNING
+            and timezone.now() - report.updated_at < STALE_RUNNING_TIMEOUT
+        ):
             log.warning(
                 "FundingOpportunityReport with pk %s is already running, skipping duplicate dispatch.",
                 funding_opportunity_report_id,
             )
             return
-        FundingOpportunityReport.objects.filter(pk=funding_opportunity_report_id).update(
-            status=FundingOpportunityReportStatus.RUNNING
-        )
+        report.status = FundingOpportunityReportStatus.RUNNING
+        report.save(update_fields=["status", "updated_at"])
+        project_area_ids = list(report.scenario.project_areas.values_list("id", flat=True))
 
     try:
-        datalayers = get_funding_report_calculation_datalayers()
-        tasks = [
-            async_ensure_funding_report_metrics.si(
+        if not project_area_ids:
+            async_finalize_funding_report_results(
+                project_results=[],
                 funding_opportunity_report_id=funding_opportunity_report_id,
-                datalayer_id=datalayer.pk,
             )
-            for datalayer in datalayers
-        ]
-        callback = chain(
-            async_calculate_funding_opportunity_report.si(
-                funding_opportunity_report_id=funding_opportunity_report_id
-            ),
-            async_set_status.si(
+            return
+
+        datalayer_lookup = build_datalayer_lookup()
+        tasks = []
+        for metric in FundingReportMetric:
+            for year in FUNDING_REPORT_YEARS:
+                try:
+                    baseline_layer = datalayer_lookup[(metric.value, year, True)]
+                    value_layer = datalayer_lookup[(metric.value, year, False)]
+                except KeyError:
+                    raise ValueError(
+                        "Missing funding report datalayer for variable="
+                        f"{metric.value!r}, year={year}."
+                    )
+                tasks.extend(
+                    async_calculate_funding_report_delta.si(
+                        project_area_id=project_area_id,
+                        baseline_layer_id=baseline_layer.pk,
+                        value_layer_id=value_layer.pk,
+                        year=year,
+                        metric=metric.value,
+                    )
+                    for project_area_id in project_area_ids
+                )
+        tasks.append(
+            async_generate_treatment_datalayer.si(
                 funding_opportunity_report_id=funding_opportunity_report_id,
-                status=FundingOpportunityReportStatus.SUCCESS,
-            ),
+            )
+        )
+        tasks.append(
+            async_calculate_treatment_areas.si(
+                funding_opportunity_report_id=funding_opportunity_report_id,
+            )
+        )
+        callback = async_finalize_funding_report_results.s(
+            funding_opportunity_report_id=funding_opportunity_report_id,
         ).on_error(
             async_set_status.si(
                 funding_opportunity_report_id=funding_opportunity_report_id,

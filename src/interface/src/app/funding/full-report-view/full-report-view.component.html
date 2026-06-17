@@ -1,5 +1,7 @@
 <app-nav-bar></app-nav-bar>
-<section class="container">
+<section
+  class="container"
+  *ngIf="selectedProjectAreas$ | async as selectedProjectAreas">
   <div class="full-report-sidebar">
     <div class="section-row toggle-row">
       <sg-toggle-tabs
@@ -7,7 +9,7 @@
         defaultSelection="report"
         (emitSelection)="handleToggleSelection($event)"></sg-toggle-tabs>
     </div>
-    <div class="report-view" *ngIf="currentView === 'report'">
+    <div class="report-view" #reportScroll *ngIf="currentView === 'report'">
       <div class="section-row">
         <div class="section-title">Introduction</div>
         <div class="section-text">
@@ -31,13 +33,24 @@
               displayField="name"
               shortLabel="shortName"
               noSelectionsLabel="All Project Areas"
-              [selectedItems]="selectedProjectAreas"
-              [menuItems]="availableProjectAreas"
+              [selectedItems]="(filteredProjectAreas$ | async) ?? []"
+              [menuItems]="(availableProjectAreas$ | async) ?? []"
               [showCountChip]="false"
-              menuLabel="Project Areas"></sg-filter-dropdown>
+              menuLabel="Project Areas">
+            </sg-filter-dropdown>
           </div>
         </div>
-        <app-funding-report [reportType]="'full'"></app-funding-report>
+        <ng-container *ngIf="report$ | async as report; else loadingReport">
+          <app-funding-report
+            *ngIf="report.status === 'SUCCESS'; else loadingReport"
+            [report]="report"
+            [projectAreas]="selectedProjectAreas"
+            [scrollElement]="reportScroll"
+            [reportType]="'full'"></app-funding-report>
+        </ng-container>
+        <ng-template #loadingReport>
+          <mat-spinner class="report-spinner" diameter="36"></mat-spinner>
+        </ng-template>
       </div>
     </div>
   </div>

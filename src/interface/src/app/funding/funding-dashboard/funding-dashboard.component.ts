@@ -73,8 +73,6 @@ export class FundingDashboardComponent implements OnInit {
   /** Set the moment the user clicks generate, so the view switches instantly. */
   private generationRequested$ = new BehaviorSubject<boolean>(false);
 
-  DEV_DEBUGGING = true;
-
   report$ = this.scenarioId$.pipe(
     switchMap((id) => this.reload$.pipe(switchMap(() => this.pollReport(id)))),
     untilDestroyed(this),
@@ -127,9 +125,8 @@ export class FundingDashboardComponent implements OnInit {
   }
 
   /** Whether a (successful) report actually carries results to display. */
-  // TODO: refine once the shape of `results` is known.
   private hasResults(report: FundingReport | null): boolean {
-    return true;
+    return !!report?.results;
   }
 
   readonly partners = [
@@ -150,9 +147,7 @@ export class FundingDashboardComponent implements OnInit {
       label: 'Scenario Dashboard ',
       backUrl: '../dashboard',
     });
-    if (!this.DEV_DEBUGGING) {
-      this.redirectIfFundingReportUnavailable();
-    }
+    this.redirectIfFundingReportUnavailable();
   }
 
   generateReport() {
@@ -183,6 +178,7 @@ export class FundingDashboardComponent implements OnInit {
     this.router.navigate(['../dashboard'], { relativeTo: this.route });
   }
 
+  // redirect if the scenario does not have funding report capability
   private redirectIfFundingReportUnavailable() {
     const scenarioId = Number(this.route.snapshot.paramMap.get('scenarioId'));
     this.scenarioState.currentScenario$

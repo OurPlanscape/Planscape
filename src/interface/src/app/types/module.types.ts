@@ -1,5 +1,4 @@
 import { BaseDataSet, BaseLayer } from './data-sets';
-import { IdNamePair } from './general';
 
 export interface ApiModule<T> {
   name: string;
@@ -7,7 +6,7 @@ export interface ApiModule<T> {
 }
 
 export interface ForsysData {
-  inclusions: IdNamePair[];
+  inclusions: BaseLayer[];
   exclusions: BaseLayer[];
   thresholds: {
     slope: { id: number };

@@ -173,3 +173,36 @@ def validate_datastore_table(datastore_table_name: str, datalayer: DataLayer):
             actual_count,
             expected_count,
         )
+
+
+@app.task()
+def refresh_twig_treatment_layers_task() -> None:
+    from django.conf import settings
+
+    from datasets.twig_treatments import refresh_twig_treatment_layers
+
+    if not settings.TWIG_TREATMENTS_API_URL:
+        logger.warning("TWIG_TREATMENTS_API_URL is not configured; skipping refresh.")
+        return
+
+    try:
+        output_files = refresh_twig_treatment_layers(
+            organization_id=settings.TWIG_TREATMENTS_PLANSCAPE_ORG_ID,
+            dataset_name=settings.TWIG_TREATMENTS_DATASET_NAME,
+            api_url=settings.TWIG_TREATMENTS_API_URL,
+            timeout=settings.TWIG_TREATMENTS_TIMEOUT,
+            page_size=settings.TWIG_TREATMENTS_PAGE_SIZE,
+            status_filter=settings.TWIG_TREATMENTS_STATUS_FILTER,
+        )
+        refreshed_layers = ", ".join(output_files.keys())
+        logger.info("Refreshed TWIG treatment layers: %s", refreshed_layers)
+        post_to_mattermost(
+            f"planscape-{settings.ENV} :white_check_mark: "
+            f"TWIG treatment layers refreshed successfully: {refreshed_layers}"
+        )
+    except Exception as exc:
+        logger.exception("TWIG treatment layer refresh failed.")
+        post_to_mattermost(
+            f"planscape-{settings.ENV} :x: TWIG treatment layer refresh failed: {exc}"
+        )
+        raise

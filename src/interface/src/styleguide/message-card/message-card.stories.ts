@@ -53,3 +53,11 @@ export const RichContent: Story = {
 </sg-message-card>`,
   }),
 };
+
+export const NoBorders: Story = {
+  args: {
+    cardTitle: 'Something went wrong',
+    cardType: 'error',
+    withBorders: false,
+  },
+};

@@ -83,6 +83,7 @@ export interface ScenarioConfig {
   max_slope?: number;
   min_distance_from_road?: number;
   excluded_areas?: number[];
+  included_areas?: number[];
   stand_size?: 'SMALL' | 'MEDIUM' | 'LARGE';
   scenario_priorities?: string[];
   question_id?: number;
@@ -108,6 +109,7 @@ export interface ScenarioResult {
 export interface ScenarioConfigPayload {
   estimated_cost: number;
   excluded_areas: number[];
+  included_areas: number[];
   max_area: number;
   max_slope: number | null;
   min_distance_from_road: number | null;
@@ -119,8 +121,8 @@ export interface ScenarioConfigPayload {
 // Backend V3 config shape stored on Scenario.configuration for V3 scenarios.
 export interface ScenarioV3Config {
   excluded_areas: number[];
+  included_areas: number[];
   stand_size: STAND_SIZE;
-  includes: number[];
   priority_objectives?: number[]; // TODO: ensure this matches up with backend field
   priorities?: ScenarioPriority[];
   cobenefits?: number[]; // TODO: ensure this matches up with backend field
