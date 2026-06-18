@@ -16,7 +16,7 @@
 
   @include on-small() {
     overflow: initial;
-    flex-direction: column-reverse;
+    flex-direction: column; /* TODO: confirm w Design if map should be shown, and if so, at top or bottom */
     height: initial;
   }
 }
@@ -29,6 +29,20 @@
   flex-direction: column;
 
   @include on-small() {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+.right-side {
+  width: 100%;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  position: relative;
+  /* TODO: confirm w Design if map should be at top or bottom */
+    @include on-small() {
+    height: 600px; 
     width: 100%;
   }
 }
@@ -99,8 +113,3 @@
   height: 100%;
 }
 
-
-.right-side {
-  width: 100%;
-  position: relative;
-}
