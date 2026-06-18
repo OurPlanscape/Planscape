@@ -11,6 +11,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { ScenarioState } from '@scenario/scenario.state';
 import { MOCK_SCENARIO } from '@app/services/mocks';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 
 describe('FullReportViewComponent', () => {
   let component: FullReportViewComponent;
@@ -25,6 +26,10 @@ describe('FullReportViewComponent', () => {
         MatSnackBarModule,
       ],
       providers: [
+        MockProvider(DataLayersStateService, {
+          dataTree$: of(null),
+          paths$: of([]),
+        }),
         MockProvider(MapConfigState, { selectedProjectAreas$: of([]) }),
         MockProvider(MapConfigService),
         MockProvider(ScenarioState, {

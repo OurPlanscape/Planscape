@@ -108,9 +108,14 @@
   position: relative;
 }
 
-.map-layers-tabs::ng-deep
-  .mat-mdc-tab-header
-  .mat-mdc-tab-label-container
-  .mat-mdc-tab {
+.map-layers-tabs::ng-deep .mat-mdc-tab-header .mat-mdc-tab-label-container .mat-mdc-tab {
   flex-grow: 1;
+}
+
+.map-layers-tabs::ng-deep .mat-mdc-tab-header {
+  position: sticky;
+  text-align: 0;
+  top: 0;
+  z-index: 100;
+  background-color: white;
 }
