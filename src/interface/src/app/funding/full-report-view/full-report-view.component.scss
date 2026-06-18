@@ -16,7 +16,7 @@
 
   @include on-small() {
     overflow: initial;
-    flex-direction: column; /* TODO: confirm w Design if map should be shown, and if so, at top or bottom */
+    flex-direction: column-reverse;
     height: initial;
   }
 }
@@ -40,8 +40,8 @@
   height: 100%;
   flex-direction: column;
   position: relative;
-  /* TODO: confirm w Design if map should be at top or bottom */
-    @include on-small() {
+
+  @include on-small() {
     height: 600px; 
     width: 100%;
   }
