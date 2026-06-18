@@ -46,7 +46,11 @@
             [report]="report"
             [projectAreas]="selectedProjectAreas"
             [scrollElement]="reportScroll"
-            [reportType]="'full'"></app-funding-report>
+            [reportType]="'full'"
+            [updatingFlameLength]="updatingFlameLength"
+            (updateFlameLength)="
+              updateFlameLength($event)
+            "></app-funding-report>
         </ng-container>
         <ng-template #loadingReport>
           <mat-spinner class="report-spinner" diameter="36"></mat-spinner>

@@ -33,3 +33,24 @@ export interface FundingReport {
   scenario: number;
   results: FundingReportResults | null;
 }
+
+export interface FlameLengthRequestParams {
+  from_ft: number;
+  to_ft: number;
+}
+
+/** A per-project flame length data point; carries the 1-based project index too. */
+export interface FlameLengthReductionProjectDataPoint
+  extends FundingReportProjectDataPoint {
+  proj_id: number;
+}
+
+/**
+ * Response of the flame-length-reduction endpoint: recomputed
+ * `TOTAL_FLAME_SEVERITY` for the whole scenario and per project area.
+ */
+export interface FlameLengthReductionResponse {
+  interval: { from: number; to: number };
+  summary: FundingReportDataPoint[];
+  projects: FlameLengthReductionProjectDataPoint[];
+}
