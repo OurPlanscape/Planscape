@@ -1380,6 +1380,47 @@ def export_scenario_sub_units_outputs_to_geopackage(
         )
         raise e
 
+def export_treatable_area_to_geopackage(
+    scenario: Scenario, geopackage_path: Path
+) -> None:
+    geometry = scenario.treatable_area
+    if not geometry:
+        logger.warning("Scenario has no treatable area (Legacy). Skipping.")
+        return
+    
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+    schema = {
+        "geometry": "MultiPolygon",
+        "properties": [("id", "int"), ("name", "str:128")],
+    }
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+            with fiona.open(
+                geopackage_path,
+                "w",
+                layer="planning_area",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                geometry_json = json.loads(
+                    geometry.transform(settings.CRS_GEOPACKAGE_EXPORT, clone=True).json
+                )
+                feature = {
+                    "geometry": to_multi(geometry_json),
+                    "properties": {
+                        "id": scenario.pk,
+                        "name": scenario.name,
+                    },
+                }
+                out.write(feature)
+    except Exception as e:
+        logger.exception(
+            "Error exporting Scenario's Treatable Area %s to geopackage: %s", scenario.pk, e
+        )
+        raise e
+
 
 def export_planning_area_to_geopackage(
     planning_area: PlanningArea, geopackage_path: Path
@@ -1446,6 +1487,8 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
         scenario.save(update_fields=["geopackage_status", "updated_at"])
 
         export_planning_area_to_geopackage(scenario.planning_area, temp_file)
+        if feature_enabled("ADD_INCLUDES"):
+            export_treatable_area_to_geopackage(scenario, temp_file)
         stand_inputs = export_scenario_inputs_to_geopackage(scenario, temp_file)
 
         if scenario.result_status == ScenarioResultStatus.SUCCESS:
