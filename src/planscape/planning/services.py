@@ -1830,6 +1830,7 @@ def calculate_scenario_treatable_area(
             layer_geometry = queryset.all().aggregate(
                 geometry=UnionOp("geometry")
             )["geometry"]
+            layer_geometry = layer_geometry.intersection(pa_geometry)
 
             if not included_geometry:
                 included_geometry = layer_geometry
