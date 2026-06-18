@@ -1398,7 +1398,7 @@ def export_treatable_area_to_geopackage(
             with fiona.open(
                 geopackage_path,
                 "w",
-                layer="planning_area",
+                layer="treatable_area",
                 crs=crs,
                 driver="GPKG",
                 schema=schema,
