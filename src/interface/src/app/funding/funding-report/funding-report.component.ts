@@ -35,6 +35,7 @@ import {
   FlameLengthRequestParams,
   FundingReport,
   FundingReportMetric,
+  FundingReportWater,
   ORIGIN_TYPE,
 } from '@types';
 import { aggregateMetricSummary, hasMetricData } from './funding-report.helper';
@@ -315,5 +316,10 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
 
   get isPreview() {
     return this.reportType === 'preview';
+  }
+
+  /** Water snapshot for the template, if the report carries one. */
+  get water(): FundingReportWater | undefined {
+    return this.report?.results?.water;
   }
 }

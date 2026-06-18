@@ -243,14 +243,16 @@
         <div class="stat-label">
           Percent of Area with Significant Increase in Water Availability
         </div>
-        <div class="stat-value">18<span class="stat-unit">%</span></div>
+        <div class="stat-value">
+          {{ water?.percent_of_area | number }}<span class="stat-unit">%</span>
+        </div>
       </div>
       <div class="stat-card">
         <div class="stat-label">
           Area with Significant Increase in Water Availability
         </div>
         <div class="stat-value">
-          118,400<span class="stat-unit">acres</span>
+          {{ water?.acres | number }}<span class="stat-unit">acres</span>
         </div>
       </div>
     </div>

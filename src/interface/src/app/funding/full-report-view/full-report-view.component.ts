@@ -25,6 +25,7 @@ import {
   FlameLengthReductionResponse,
   FlameLengthRequestParams,
   FundingReport,
+  FundingReportWater,
 } from '@types';
 import {
   BehaviorSubject,
@@ -39,9 +40,10 @@ import {
   take,
   tap,
 } from 'rxjs';
-import { FundingMapConfigState } from '../funding-map-config-state';
+
 import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
 import { FundingReportComponent } from '../funding-report/funding-report.component';
+import { FundingMapConfigState } from '../funding-map-config-state';
 
 interface FilterProjectFormat {
   id: number;
@@ -130,15 +132,26 @@ export class FullReportViewComponent implements OnInit {
   private flameLength$ =
     new BehaviorSubject<FlameLengthReductionResponse | null>(null);
 
-  /** The fetched report with any local flame-length recalculation applied. */
-  report$ = combineLatest([this.fetchedReport$, this.flameLength$]).pipe(
-    map(([report, flameLength]) => this.withFlameLength(report, flameLength)),
+  /** Latest water-availability recalculation, patched into the report locally. */
+  private water$ = new BehaviorSubject<FundingReportWater | null>(null);
+
+  /** The fetched report with any local flame-length / water recalculation applied. */
+  report$ = combineLatest([
+    this.fetchedReport$,
+    this.flameLength$,
+    this.water$,
+  ]).pipe(
+    map(([report, flameLength, water]) =>
+      this.withWater(this.withFlameLength(report, flameLength), water)
+    ),
     shareReplay(1)
   );
 
   updatingFlameLength = false;
   /** Apply clicks; `switchMap` cancels any in-flight request when a new one arrives. */
   private flameLengthRequest$ = new Subject<FlameLengthRequestParams>();
+  /** Water % entered; `switchMap` cancels any in-flight request when a new one arrives. */
+  private waterRequest$ = new Subject<number>();
 
   tabIndex = 0;
 
@@ -194,6 +207,24 @@ export class FullReportViewComponent implements OnInit {
         untilDestroyed(this)
       )
       .subscribe((flameLength) => this.flameLength$.next(flameLength));
+
+    this.waterRequest$
+      .pipe(
+        switchMap((increasePercent) =>
+          this.scenarioState.currentScenarioId$.pipe(
+            filter((id): id is number => id !== null),
+            take(1),
+            switchMap((id) =>
+              this.fundingReportService.getWaterAvailability(
+                id,
+                increasePercent
+              )
+            )
+          )
+        ),
+        untilDestroyed(this)
+      )
+      .subscribe((water) => this.water$.next(water));
   }
 
   resultsToSelectionMenu(
@@ -218,6 +249,10 @@ export class FullReportViewComponent implements OnInit {
     this.flameLengthRequest$.next(params);
   }
 
+  updateWaterAvailability(increasePercent: number) {
+    this.waterRequest$.next(increasePercent);
+  }
+
   /**
    * Replace the report's `TOTAL_FLAME_SEVERITY` (summary and per-project) with a
    * flame-length recalculation, leaving the other metrics untouched. Returns a
@@ -233,6 +268,7 @@ export class FullReportViewComponent implements OnInit {
     return {
       ...report,
       results: {
+        ...report.results,
         summary: {
           ...report.results.summary,
           TOTAL_FLAME_SEVERITY: flameLength.summary,
@@ -241,6 +277,27 @@ export class FullReportViewComponent implements OnInit {
           ...report.results.projects,
           TOTAL_FLAME_SEVERITY: flameLength.projects,
         },
+      },
+    };
+  }
+
+  /**
+   * Replace the report's `water` snapshot with a recalculation, leaving the
+   * other metrics untouched. Returns a new report object so change detection
+   * picks it up.
+   */
+  private withWater(
+    report: FundingReport | null,
+    water: FundingReportWater | null
+  ): FundingReport | null {
+    if (!report || !report.results || !water) {
+      return report;
+    }
+    return {
+      ...report,
+      results: {
+        ...report.results,
+        water,
       },
     };
   }
