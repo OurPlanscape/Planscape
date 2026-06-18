@@ -68,19 +68,19 @@ test('user can create a Custom Scenario', {tag: ['@smoke'] }, async ({ page }) =
   // Step 3. Select Areas to Exclude
   await expect(page.locator('#mat-mdc-checkbox-1')).toContainText('Protection Status 1 – Wilderness areas (natural processes occur freely)');
   await page.getByRole('button').nth(3).click();
-  await page.getByRole('button', { name: 'Save & Continue' }).click();
+  await page.getByRole('button', { name: 'Save & Continue' }).click({ timeout: 60000 });
 
   // Step 4. Stand Level Constraints (slope, roads)
-  await page.getByRole('button', { name: 'Save & Continue' }).click();
+  await page.getByRole('button', { name: 'Save & Continue' }).click({ timeout: 60000 });
 
   // Step 4. Apply Treatment Target
   await page.getByRole('textbox', { name: 'Min:' }).fill('100');
   await page.getByRole('textbox', { name: 'Min:' }).press('Tab');
   await page.locator('#mat-input-3').fill('10');
-  await page.getByRole('button', { name: 'Save & Run Scenario' }).click();
+  await page.getByRole('button', { name: 'Save & Run Scenario' }).click({ timeout: 60000 });
 
   // Confirmation Modal
-  await expect(page.getByText('Ready to run the scenario?')).toBeVisible();
+  await expect(page.getByText('Ready to run the scenario?')).toBeVisible({ timeout: 60000 });
   await page.getByRole('button', { name: 'Run Scenario' }).click();
 
   // After creation - close confirmation

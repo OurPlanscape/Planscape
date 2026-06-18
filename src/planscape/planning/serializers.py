@@ -31,6 +31,7 @@ from planning.models import (
     UserPrefs,
 )
 from planning.services import (
+    calculate_scenario_treatable_area,
     get_acreage,
     get_min_project_area,
     planning_area_covers,
@@ -1106,11 +1107,25 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
             cfg.update(incoming)
             instance.configuration = cfg
 
+            included_areas_ids = incoming.get("included_areas_ids")
+            if included_areas_ids:
+                included_areas = DataLayer.objects.filter(pk__in=included_areas_ids)
+                treatable_area = calculate_scenario_treatable_area(
+                    scenario=instance,
+                    includes=included_areas
+                )
+                instance.treatable_area = treatable_area
+
         if "planning_approach" in validated_data:
             instance.planning_approach = validated_data["planning_approach"]
 
         instance.save(
-            update_fields=["treatment_goal", "configuration", "planning_approach"]
+            update_fields=[
+                "treatment_goal", 
+                "configuration", 
+                "planning_approach",
+                "treatable_area",
+            ]
         )
         instance.refresh_from_db()
         serializer = ScenarioV3Serializer(instance)

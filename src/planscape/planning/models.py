@@ -590,6 +590,13 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         if not project_areas_geometry:
             return Stand.objects.none()
         return Stand.objects.within_polygon(project_areas_geometry, size)
+    
+    def get_treatable_area_stands(self, stand_size=None) -> QuerySet[Stand]:
+        if not self.treatable_area:
+            return Stand.objects.none()
+
+        size = stand_size or self.get_stand_size()
+        return Stand.objects.within_polygon(self.treatable_area, size)
 
     def get_geopackage_url(self) -> Optional[str]:
         if not self.geopackage_url:

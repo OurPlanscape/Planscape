@@ -287,6 +287,7 @@ def async_pre_forsys_process(scenario_id: int) -> None:
     excluded_areas_ids = scenario.configuration.get("excluded_areas_ids")
     if excluded_areas_ids:
         excluded_datalayers = DataLayer.objects.filter(pk__in=excluded_areas_ids)
+
     stand_ids = get_available_stand_ids(
         scenario, scenario.get_stand_size(), excluded_datalayers
     )
@@ -295,7 +296,7 @@ def async_pre_forsys_process(scenario_id: int) -> None:
     variables = run_config["variables"]
 
     forsys_input = {
-        "stand_ids": stand_ids,
+        "stand_ids": list(stand_ids),
         "datalayers": run_config["datalayers"],
         "variables": variables,
     }

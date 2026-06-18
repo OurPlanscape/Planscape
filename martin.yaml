@@ -66,6 +66,16 @@ postgres:
       maxzoom: 20
       bounds: [-180.0, -90.0, 180.0, 90.0]
       id_column: id
+    # Layer with Scenario's Treatable Area geometry.
+    # parameters:
+    # - id: int
+    scenario_treatable_area:
+      schema: public
+      function: martin_scenario_treatable_area
+      minzoom: 0
+      maxzoom: 20
+      bounds: [-180.0, -90.0, 180.0, 90.0]
+      id_column: id
     # Returns vector tiles of stands filtered by planning_area_id.
     # parameters:
     # - planning_area_id: int
@@ -73,6 +83,17 @@ postgres:
     stands_by_planning_area:
       schema: public
       function: martin_stands_by_planning_area
+      minzoom: 0
+      maxzoom: 20
+      bounds: [-180.0, -90.0, 180.0, 90.0]
+      id_column: id
+    # Returns vector tiles of stands filtered by scenario_id and stand_size
+    # parameters:
+    # - scenario_id: int
+    # - stand_size: string
+    stands_by_scenario:
+      schema: public
+      function: martin_stands_by_scenario
       minzoom: 0
       maxzoom: 20
       bounds: [-180.0, -90.0, 180.0, 90.0]
