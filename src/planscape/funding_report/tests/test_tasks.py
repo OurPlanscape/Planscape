@@ -215,7 +215,7 @@ class FundingOpportunityReportTaskTest(TestCase):
         tasks = chord_mock.call_args.args[0]
         self.assertEqual(
             len(tasks),
-            1 * len(FundingReportMetric) * len(FUNDING_REPORT_YEARS) + 2,
+            1 * len(FundingReportMetric) * len(FUNDING_REPORT_YEARS) + 3,
         )
 
     @mock.patch("funding_report.tasks.chord")
