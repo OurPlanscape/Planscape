@@ -1,0 +1,68 @@
+<mgl-map
+  *ngIf="bounds$ | async as bounds"
+  [style]="(baseLayerUrl$ | async) || ''"
+  [transformRequest]="transformRequest"
+  [maxZoom]="maxZoom"
+  [minZoom]="minZoom"
+  [dragRotate]="false"
+  [fitBoundsOptions]="{ padding: { top: 70, bottom: 40, left: 20, right: 20 } }"
+  [fitBounds]="bounds"
+  (mapLoad)="mapLoaded($event)"
+  (mapError)="onMapError($event)"
+  [scrollZoom]="allowInteraction"
+  [doubleClickZoom]="allowInteraction"
+  [touchZoomRotate]="allowInteraction">
+  <app-map-zoom-control
+    *ngIf="mapLibreMap && allowInteraction"
+    [mapLibreMap]="mapLibreMap"
+    controlsPosition="bottom-right"></app-map-zoom-control>
+
+  <!-- This *ngIf="true" is a hack to fix the issue where the planning area was displayed on top of the project areas when moving back and forward. -->
+  <app-planning-area-layer *ngIf="true"></app-planning-area-layer>
+  <app-map-data-layer
+    *ngIf="mapLibreMap"
+    [mapLibreMap]="mapLibreMap"></app-map-data-layer>
+
+  <app-map-base-layers
+    *ngIf="mapLibreMap"
+    [mapLibreMap]="mapLibreMap"></app-map-base-layers>
+
+  <mgl-layer
+    type="background"
+    id="bottom-layer"
+    [layout]="{ visibility: 'none' }">
+  </mgl-layer>
+
+  <app-map-multi-project-areas
+    *ngIf="projectAreaCount$ | async as projectAreasCount"
+    [allowInteraction]="allowInteraction"
+    [projectAreasCount]="projectAreasCount"
+    [mapLibreMap]="mapLibreMap"
+    [labelField]="'rank'"
+    [scenarioOrigin]="(scenarioOrigin$ | async) ?? null"
+    (changeHoveredProjectAreaId)="setHoveredProjectAreaId($event)"
+    (changeMouseLngLat)="setMouseLngLat($event)"
+    [planningApproach]="
+      (planningApproach$ | async) || 'OPTIMIZE_PROJECT_AREAS'
+    ">
+  </app-map-multi-project-areas>
+
+  <app-map-tooltip
+    *ngIf="allowInteraction && (hoveredProjectAreaId$ | async) && mouseLngLat"
+    [lngLat]="mouseLngLat"
+    >Click project area to select</app-map-tooltip
+  >
+
+  <mgl-control position="top-right">
+    <!-- TODO: add the funding legend -->
+  </mgl-control>
+</mgl-map>
+
+<div
+  class="loader"
+  [class.visible]="loading$ | async"
+  [attr.aria-hidden]="
+    (loading$ | async) === false || (loading$ | async) === null
+  ">
+  <mat-spinner diameter="32"></mat-spinner>
+</div>

@@ -1,14 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { FullReportViewComponent } from './full-report-view.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { MockProvider } from 'ng-mocks';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { ScenarioState } from '@scenario/scenario.state';
+import { MOCK_SCENARIO } from '@app/services/mocks';
+import { MapConfigService } from '@app/maplibre-map/map-config.service';
+import { FundingMapConfigState } from '../funding-map-config-state';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
 
 describe('FullReportViewComponent', () => {
   let component: FullReportViewComponent;
@@ -23,9 +25,12 @@ describe('FullReportViewComponent', () => {
         MatSnackBarModule,
       ],
       providers: [
+        MockProvider(FundingMapConfigState, { selectedProjectAreas$: of([]) }),
         MockProvider(MapConfigState),
+        MockProvider(MapConfigService),
         MockProvider(ScenarioState, {
           currentScenarioId$: new BehaviorSubject<number | null>(null),
+          currentScenario$: new BehaviorSubject(MOCK_SCENARIO),
         }),
         { provide: ActivatedRoute, useValue: { firstChild: {} } },
         {

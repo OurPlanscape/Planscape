@@ -1,33 +1,29 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { FundingReportComponent } from './funding-report.component';
-import { ActivatedRoute } from '@angular/router';
+import { FundingReportMapComponent } from './funding-report-map.component';
 import { MockProvider } from 'ng-mocks';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { FundingMapConfigState } from '../funding-map-config-state';
 
-describe('FundingReportComponent', () => {
-  let component: FundingReportComponent;
-  let fixture: ComponentFixture<FundingReportComponent>;
+describe('FundingReportMapComponent', () => {
+  let component: FundingReportMapComponent;
+  let fixture: ComponentFixture<FundingReportMapComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        FundingReportComponent,
+        FundingReportMapComponent,
         HttpClientTestingModule,
         MatSnackBarModule,
-        NoopAnimationsModule,
       ],
       providers: [
-        { provide: ActivatedRoute, useValue: { snapshot: {} } },
         MockProvider(FundingMapConfigState),
         MockProvider(MapConfigService),
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(FundingReportComponent);
+    fixture = TestBed.createComponent(FundingReportMapComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

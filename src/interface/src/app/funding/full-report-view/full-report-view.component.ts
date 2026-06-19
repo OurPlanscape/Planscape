@@ -1,23 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
-import {
-  BreadCrumb,
-  BreadcrumbService,
-} from '@app/services/breadcrumb.service';
+import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatSelectModule } from '@angular/material/select';
 import {
   ToggleButtonsConfig,
   ToggleTabsComponent,
 } from '@styleguide/toggle-tabs/toggle-tabs.component';
-import { FilterDropdownComponent } from '@styleguide';
+import { FilterDropdownComponent, OpacitySliderComponent } from '@styleguide';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  Observable,
   BehaviorSubject,
   combineLatest,
   filter,
@@ -29,6 +27,9 @@ import {
   take,
   tap,
 } from 'rxjs';
+import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
+import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
+import { ScenarioResult } from '@app/types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ScenarioState } from '@scenario/scenario.state';
 import { FundingReportService } from '@services/funding-report.service';
@@ -38,6 +39,13 @@ import {
   FlameLengthRequestParams,
   FundingReport,
 } from '@types';
+import { FundingMapConfigState } from '../funding-map-config-state';
+
+interface FilterProjectFormat {
+  id: number;
+  name: string;
+  shortName: string;
+}
 
 @UntilDestroy()
 @Component({
@@ -45,38 +53,54 @@ import {
   standalone: true,
   imports: [
     AsyncPipe,
-    FilterDropdownComponent,
-    FundingReportComponent,
+    NgIf,
     MatButtonToggleModule,
     MatIconModule,
     MatMenuModule,
     MatProgressSpinnerModule,
     MatSelectModule,
-    NavBarComponent,
     MatTabsModule,
-    NgIf,
+    FilterDropdownComponent,
+    FundingReportComponent,
+    FundingReportMapComponent,
+    MapNavbarComponent,
+    NavBarComponent,
+    OpacitySliderComponent,
     ToggleTabsComponent,
   ],
+  providers: [FundingMapConfigState],
   templateUrl: './full-report-view.component.html',
   styleUrl: './full-report-view.component.scss',
 })
-export class FullReportViewComponent {
+export class FullReportViewComponent implements OnInit {
   tabButtons: ToggleButtonsConfig[] = [
     { name: 'Report', value: 'report', icon: 'analytics_outline' },
     { name: 'Data Layers', value: 'data_layers', icon: 'layers_outline' },
   ];
-
-  // TODO: convert project area list to match this format
-  outcomeViewOptions = [
-    { name: 'Project Area 1', shortName: '1', id: 27372 },
-    { name: 'Project Area 2', shortName: '2', id: 27373 },
-    { name: 'Project Area 3', shortName: '3', id: 27374 },
-  ];
-
   currentView: string = 'report';
 
-  /** Project area ids selected in the dropdown; empty means all areas. */
-  selectedProjectAreas: number[] = [];
+  currentScenario$ = this.scenarioState.currentScenario$;
+  selectedProjectAreas$ = this.fundingMapConfigState.selectedProjectAreas$;
+  opacity$ = this.fundingMapConfigState.opacity$;
+  availableProjectAreas$: Observable<FilterProjectFormat[]> =
+    this.currentScenario$.pipe(
+      map((scenario) => {
+        if (!scenario?.origin || !scenario?.scenario_result) return [];
+        return this.resultsToSelectionMenu(
+          scenario.origin,
+          scenario.scenario_result
+        );
+      }),
+      shareReplay(1)
+    );
+
+  readonly filteredProjectAreas$: Observable<FilterProjectFormat[]> =
+    combineLatest(this.availableProjectAreas$, this.selectedProjectAreas$).pipe(
+      map(([available, selectedIds]) => {
+        if (!selectedIds?.length) return [];
+        return available.filter((area) => selectedIds.includes(area.id));
+      })
+    );
 
   /**
    * Single (non-polling) fetch of the report. This view is only reachable for a
@@ -111,19 +135,38 @@ export class FullReportViewComponent {
   private flameLengthRequest$ = new Subject<FlameLengthRequestParams>();
 
   constructor(
-    private breadcumbService: BreadcrumbService,
+    private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
     private fundingReportService: FundingReportService,
+    private fundingMapConfigState: FundingMapConfigState,
     private router: Router,
     private route: ActivatedRoute
-  ) {
-    const newBreadCrumb: BreadCrumb = {
+  ) {}
+
+  ngOnInit(): void {
+    this.initializeBreadcrumb();
+  }
+
+  handleFilterSelection(selectedAreas: FilterProjectFormat[]): void {
+    const ids = selectedAreas.map((a) => a.id);
+    this.fundingMapConfigState.updateSelectedProjectAreas(ids);
+  }
+
+  handleToggleSelection(selection: string): void {
+    this.currentView = selection;
+  }
+
+  handleOpacityChange(opacity: number): void {
+    this.fundingMapConfigState.setOpacity(opacity);
+  }
+
+  initializeBreadcrumb(): void {
+    this.breadcrumbService.updateBreadCrumb({
       label: 'Funding Opportunity Report',
       backUrl: '..',
       icon: 'close',
       blackText: true,
-    };
-    this.breadcumbService.updateBreadCrumb(newBreadCrumb);
+    });
 
     this.flameLengthRequest$
       .pipe(
@@ -145,20 +188,22 @@ export class FullReportViewComponent {
       .subscribe((flameLength) => this.flameLength$.next(flameLength));
   }
 
-  private redirectToFunding() {
+  resultsToSelectionMenu(
+    origin: string,
+    results: ScenarioResult
+  ): FilterProjectFormat[] {
+    return results.result.features.map((featureCollection) => {
+      const props = featureCollection.properties;
+      return {
+        id: origin === 'USER' ? props.project_id : props.treatment_rank,
+        shortName: props.treatment_rank,
+        name: `Project Area ${props.treatment_rank}`,
+      };
+    });
+  }
+
+  redirectToFunding() {
     this.router.navigate(['..'], { relativeTo: this.route });
-  }
-
-  handleToggleSelection(selection: string) {
-    this.currentView = selection;
-  }
-
-  /* report tabs things */
-  tabIndex = 1;
-  onTabIndexChange(tabSelected: number) {}
-
-  changeProjectAreas(selection: { id: number }[]) {
-    this.selectedProjectAreas = selection.map((item) => item.id);
   }
 
   updateFlameLength(params: FlameLengthRequestParams) {
