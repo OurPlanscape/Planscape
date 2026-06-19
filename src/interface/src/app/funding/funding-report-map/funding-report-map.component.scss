@@ -34,17 +34,20 @@ mgl-map {
   flex-direction: row;
   align-items: center;
   color: $color-dark-gray;
-  padding: 0 12px;
+  padding: 0 4px 0 12px;
   border-radius: 0 8px 0 0;
   background: $color-white;
   box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.15);
 
-  // Text ellipsis if there is no space
-  line-height: inherit;
-  overflow: hidden;
-  text-wrap-mode: nowrap;
-  text-overflow: ellipsis;
+  .label-button {
+    line-height: inherit;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+  }
 }
+
 
 .mat-icon {
   color: $color-standard-blue;

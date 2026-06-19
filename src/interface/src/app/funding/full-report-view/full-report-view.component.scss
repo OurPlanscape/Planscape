@@ -114,6 +114,10 @@
   width: $funding-sidebar-width;
   overflow: auto;
   flex: 1;
+  
+    @include on-small() {
+    width: 100%;
+  }
 }
 
 .map-layers-tabs::ng-deep .mat-mdc-tab-header .mat-mdc-tab-label-container .mat-mdc-tab {
