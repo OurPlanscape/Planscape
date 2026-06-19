@@ -15,6 +15,7 @@
         outlineColorPath="styles[0].data.fill-outline-color"
         [items]="(includableAreas$ | async) ?? []"
         groupBy="dataset.name"
+        [selectAllEnabled]="true"
         (selectedItemsChanged)="handleSelectedItemsChange($event)"
         (viewedItemsChanged)="handleViewedItemsChange($event)"
         [selectedItems]="selectedAreas"

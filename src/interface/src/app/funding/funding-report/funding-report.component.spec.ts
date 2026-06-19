@@ -1,15 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-
 import { FundingReportComponent } from './funding-report.component';
 import { ActivatedRoute } from '@angular/router';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { MockProvider } from 'ng-mocks';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { of } from 'rxjs';
+import { FundingMapConfigState } from '../funding-map-config-state';
 
 describe('FundingReportComponent', () => {
   let component: FundingReportComponent;
@@ -29,7 +28,7 @@ describe('FundingReportComponent', () => {
           dataTree$: of(null),
           paths$: of([]),
         }),
-        MockProvider(MapConfigState),
+        MockProvider(FundingMapConfigState),
         MockProvider(MapConfigService),
       ],
     }).compileComponents();

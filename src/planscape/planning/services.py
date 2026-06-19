@@ -15,6 +15,7 @@ from actstream import action
 from cacheops import cached
 from celery import chord, group
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
+from core.flags import feature_enabled
 from core.gcs import upload_file_via_cli
 from datasets.dynamic_models import model_from_fiona
 from datasets.models import DataLayer, DataLayerType
@@ -685,9 +686,9 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 
     stand_size = cfg.get("stand_size")
     excluded_areas_ids = cfg.get("excluded_areas_ids", [])
-    excluded_areas: List[DataLayer] = []
+    excluded_areas = None
     if excluded_areas_ids:
-        excluded_areas = list(DataLayer.objects.filter(pk__in=excluded_areas_ids))
+        excluded_areas = DataLayer.objects.filter(pk__in=excluded_areas_ids)
 
     if not stand_size:
         errors.append("Configuration field `stand_size` is required.")
@@ -1379,6 +1380,47 @@ def export_scenario_sub_units_outputs_to_geopackage(
         )
         raise e
 
+def export_treatable_area_to_geopackage(
+    scenario: Scenario, geopackage_path: Path
+) -> None:
+    geometry = scenario.treatable_area
+    if not geometry:
+        logger.warning("Scenario has no treatable area (Legacy). Skipping.")
+        return
+    
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+    schema = {
+        "geometry": "MultiPolygon",
+        "properties": [("id", "int"), ("name", "str:128")],
+    }
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+            with fiona.open(
+                geopackage_path,
+                "w",
+                layer="treatable_area",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                geometry_json = json.loads(
+                    geometry.transform(settings.CRS_GEOPACKAGE_EXPORT, clone=True).json
+                )
+                feature = {
+                    "geometry": to_multi(geometry_json),
+                    "properties": {
+                        "id": scenario.pk,
+                        "name": scenario.name,
+                    },
+                }
+                out.write(feature)
+    except Exception as e:
+        logger.exception(
+            "Error exporting Scenario's Treatable Area %s to geopackage: %s", scenario.pk, e
+        )
+        raise e
+
 
 def export_planning_area_to_geopackage(
     planning_area: PlanningArea, geopackage_path: Path
@@ -1445,6 +1487,8 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
         scenario.save(update_fields=["geopackage_status", "updated_at"])
 
         export_planning_area_to_geopackage(scenario.planning_area, temp_file)
+        if feature_enabled("ADD_INCLUDES"):
+            export_treatable_area_to_geopackage(scenario, temp_file)
         stand_inputs = export_scenario_inputs_to_geopackage(scenario, temp_file)
 
         if scenario.result_status == ScenarioResultStatus.SUCCESS:
@@ -1732,13 +1776,13 @@ def get_available_stands(
 def get_available_stand_ids(
     scenario: Scenario,
     stand_size: str = "LARGE",
-    excludes: Optional[List[DataLayer]] = None,
+    excludes: Optional[QuerySet[DataLayer]] = None,
 ) -> List[int]:
-    if not excludes:
-        excludes = list()
-
     planning_area = scenario.planning_area
-    stands = planning_area.get_stands(stand_size=stand_size)
+    if feature_enabled("ADD_INCLUDES"):
+        stands = scenario.get_treatable_area_stands(stand_size=stand_size)
+    else:
+        stands = planning_area.get_stands(stand_size=stand_size)
 
     if (
         scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
@@ -1753,15 +1797,49 @@ def get_available_stand_ids(
         )
 
     excluded_ids = []
-    for exclude in excludes:
-        stands_queryset = stands.all()
-        excluded_stands = get_excluded_stands(stands_queryset, exclude)
-        excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
+    if excludes:
+        for exclude in excludes:
+            stands_queryset = stands.all()
+            excluded_stands = get_excluded_stands(stands_queryset, exclude)
+            excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
     stand_ids = stands.values_list("id", flat=True)
 
     stand_ids = set(stand_ids) - set(excluded_ids)
     return list(stand_ids)
+
+
+def calculate_scenario_treatable_area(
+    scenario: Scenario, 
+    includes: Optional[QuerySet[DataLayer]] = None,
+) -> Optional[MultiPolygon]:
+    planning_area = scenario.planning_area
+    pa_geometry = planning_area.geometry
+
+    included_geometry = None
+    if includes:
+        for included in includes:
+            if included.type != DataLayerType.VECTOR:
+                # skip RASTER layers
+                continue
+
+            DynamicModel = model_from_fiona(included)
+            queryset = DynamicModel.objects.filter(geometry__bboverlaps=pa_geometry).filter(
+                geometry__intersects=pa_geometry
+            )
+            layer_geometry = queryset.all().aggregate(
+                geometry=UnionOp("geometry")
+            )["geometry"]
+            if not layer_geometry:
+                continue
+            layer_geometry = layer_geometry.intersection(pa_geometry)
+
+            if not included_geometry:
+                included_geometry = layer_geometry
+            else:
+                included_geometry = included_geometry.union(layer_geometry)
+
+    return included_geometry
 
 
 def get_min_project_area(scenario: Scenario) -> float:

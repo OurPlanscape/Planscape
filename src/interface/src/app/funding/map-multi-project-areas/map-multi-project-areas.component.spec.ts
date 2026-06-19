@@ -2,10 +2,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MapMultiProjectAreasComponent } from './map-multi-project-areas.component';
 import { MockProvider } from 'ng-mocks';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of } from 'rxjs';
+import { FundingMapConfigState } from '../funding-map-config-state';
 
 describe('MapMultiProjectAreasComponent', () => {
   let component: MapMultiProjectAreasComponent;
@@ -15,7 +15,7 @@ describe('MapMultiProjectAreasComponent', () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, MapMultiProjectAreasComponent],
       providers: [
-        MockProvider(MapConfigState, {
+        MockProvider(FundingMapConfigState, {
           opacity$: of(0.5),
           selectedProjectAreas$: of([]),
         }),

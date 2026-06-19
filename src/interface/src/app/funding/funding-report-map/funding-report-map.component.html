@@ -8,7 +8,10 @@
   [fitBoundsOptions]="{ padding: { top: 70, bottom: 40, left: 20, right: 20 } }"
   [fitBounds]="bounds"
   (mapLoad)="mapLoaded($event)"
-  (mapError)="onMapError($event)">
+  (mapError)="onMapError($event)"
+  [scrollZoom]="allowInteraction"
+  [doubleClickZoom]="allowInteraction"
+  [touchZoomRotate]="allowInteraction">
   <app-map-zoom-control
     *ngIf="mapLibreMap && allowInteraction"
     [mapLibreMap]="mapLibreMap"
@@ -36,6 +39,7 @@
     [projectAreasCount]="projectAreasCount"
     [mapLibreMap]="mapLibreMap"
     [labelField]="'rank'"
+    [scenarioOrigin]="(scenarioOrigin$ | async) ?? null"
     (changeHoveredProjectAreaId)="setHoveredProjectAreaId($event)"
     (changeMouseLngLat)="setMouseLngLat($event)"
     [planningApproach]="
@@ -76,3 +80,13 @@
     </div>
   </mgl-control>
 </mgl-map>
+</mgl-map>
+
+<div
+  class="loader"
+  [class.visible]="loading$ | async"
+  [attr.aria-hidden]="
+    (loading$ | async) === false || (loading$ | async) === null
+  ">
+  <mat-spinner diameter="32"></mat-spinner>
+</div>

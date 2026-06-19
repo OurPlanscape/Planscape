@@ -1,6 +1,5 @@
 import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import {
   LngLat,
   Map as MapLibreMap,
@@ -33,6 +32,9 @@ import { DataLayersStateService } from '@app/data-layers/data-layers.state.servi
 import { DataLayer } from '@app/types';
 import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '@styleguide';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SNACK_ERROR_CONFIG } from '@app/shared';
+import { FundingMapConfigState } from '../funding-map-config-state';
 
 @Component({
   selector: 'app-funding-report-map',
@@ -58,14 +60,16 @@ import { ButtonComponent } from '@styleguide';
 })
 export class FundingReportMapComponent {
   constructor(
-    private mapConfigState: MapConfigState,
+    private fundingMapConfigState: FundingMapConfigState,
     private mapConfigService: MapConfigService,
+    private dataLayersStateService: DataLayersStateService,
     private authService: AuthService,
     private planState: PlanState,
     private scenarioState: ScenarioState,
-    private dataLayersStateService: DataLayersStateService
+    private matSnackBar: MatSnackBar
   ) {
     this.mapConfigService.initialize();
+    this.loading$.next(true);
   }
 
   @Input() allowInteraction = true;
@@ -77,12 +81,11 @@ export class FundingReportMapComponent {
   minZoom = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
-  /**
-   * Observable that provides the url to load the selected map base layer
-   */
-  baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
+  baseLayerUrl$ = this.fundingMapConfigState.baseMapUrl$;
 
-  opacity$ = this.mapConfigState.opacity$;
+  opacity$ = this.fundingMapConfigState.opacity$;
+
+  loading$ = new BehaviorSubject<boolean>(false);
 
   projectAreaCount$ = this.scenarioState.currentScenario$.pipe(
     map((scenario) => {
@@ -90,7 +93,13 @@ export class FundingReportMapComponent {
     })
   );
 
-  selectedLayer$ = this.dataLayersStateService.viewedDataLayer$;
+  scenarioOrigin$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => scenario.origin)
+  );
+
+  planningApproach$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => scenario.planning_approach ?? 'OPTIMIZE_PROJECT_AREAS')
+  );
 
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {
@@ -101,25 +110,32 @@ export class FundingReportMapComponent {
   hoveredProjectAreaId$ = new Subject<number | null>();
   mouseLngLat: LngLat | null = null;
 
-  planningApproach$ = this.scenarioState.currentScenario$.pipe(
-    map((scenario) => scenario.planning_approach ?? 'OPTIMIZE_PROJECT_AREAS')
-  );
-
-  loading$ = new BehaviorSubject<boolean>(false);
-
   mapLoaded(loadedMap: MapLibreMap) {
     this.mapLibreMap = loadedMap;
+    this.loading$.next(false);
   }
 
   handleOpacityChange(opacity: number) {
-    this.mapConfigState.setOpacity(opacity);
+    this.fundingMapConfigState.setOpacity(opacity);
   }
 
   onMapError(event: ErrorEvent & EventData) {
     const status = (event.error as any)?.status;
     if (status >= 500 && status < 600) {
-      // TODO: handle errors
+      this.showMapError();
     }
+  }
+
+  showMapError() {
+    // TODO: confirm this message
+    this.matSnackBar.open(
+      'There was a problem loading the funding report map.',
+      'Dismiss',
+      {
+        ...SNACK_ERROR_CONFIG,
+        panelClass: ['snackbar-error', 'snackbar-error-multiline'],
+      }
+    );
   }
 
   setHoveredProjectAreaId(value: number | null) {

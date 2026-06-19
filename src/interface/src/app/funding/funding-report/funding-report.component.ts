@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import {
   ButtonComponent,
@@ -30,7 +31,11 @@ import {
 } from '@app/chart-helper';
 import { FundingReportFooterComponent } from '../funding-report-footer/funding-report-footer.component';
 import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
-import { FundingReport, FundingReportMetric } from '@types';
+import {
+  FlameLengthRequestParams,
+  FundingReport,
+  FundingReportMetric,
+} from '@types';
 import { aggregateMetricSummary, hasMetricData } from './funding-report.helper';
 import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
 import {
@@ -80,9 +85,9 @@ const flameLengthRangeValidator: ValidatorFn = (
     FundingReportMapComponent,
     MatButtonModule,
     MatIconModule,
+    MatProgressSpinnerModule,
     MatTabsModule,
     SectionComponent,
-    ButtonComponent,
     ChartComponent,
     ModalComponent,
     PopoverComponent,
@@ -93,6 +98,7 @@ const flameLengthRangeValidator: ValidatorFn = (
     ReactiveFormsModule,
     MessageCardComponent,
     ScrollSpyDirective,
+    ButtonComponent,
   ],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',
@@ -138,14 +144,13 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
    * which is the scroller in the standalone/preview layout.
    */
   @Input() scrollElement?: HTMLElement;
+  /** While true, a loader covers the flame length chart (recalc in flight). */
+  @Input() updatingFlameLength = false;
 
   // todo datalayer probably
   @Output() showLayer = new EventEmitter<number>();
   @Output() updateWaterAvailability = new EventEmitter<number>();
-  @Output() updateFlameLength = new EventEmitter<{
-    greaterThan: number;
-    lesserThan: number;
-  }>();
+  @Output() updateFlameLength = new EventEmitter<FlameLengthRequestParams>();
 
   ngOnInit(): void {
     Chart.register(ChartDataLabels);
@@ -271,7 +276,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     if (greaterThan === null || lesserThan === null) {
       return;
     }
-    this.updateFlameLength.emit({ greaterThan, lesserThan });
+    this.updateFlameLength.emit({ from_ft: greaterThan, to_ft: lesserThan });
   }
 
   /** Keep the water availability field numeric, updating validity as the user types. */

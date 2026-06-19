@@ -271,6 +271,21 @@ class FlameLengthReductionTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_flame_length_reduction_rejects_from_less_than_or_equal_to_to(self):
+        FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.user,
+            status=FundingOpportunityReportStatus.SUCCESS,
+        )
+        self.client.force_authenticate(self.user)
+
+        for from_ft, to_ft in [(4, 7), (4, 4)]:
+            with self.subTest(from_ft=from_ft, to_ft=to_ft):
+                response = self.client.post(
+                    self.url, {"from_ft": from_ft, "to_ft": to_ft}, format="json"
+                )
+                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     @mock.patch("planning.views_v2.calculate_funding_report_flame_length_reduction")
     def test_flame_length_reduction_returns_results_after_successful_report(
         self, calculate_mock

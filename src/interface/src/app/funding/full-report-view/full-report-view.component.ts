@@ -1,39 +1,48 @@
+import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
-import { BreadcrumbService } from '@app/services/breadcrumb.service';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTabsModule } from '@angular/material/tabs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { BaseLayersComponent } from '@app/base-layers/base-layers/base-layers.component';
+import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
+import { MapSelectorComponent } from '@app/explore/map-selector/map-selector.component';
+import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
+import { ScenarioState } from '@app/scenario/scenario.state';
+import { BreadcrumbService } from '@app/services/breadcrumb.service';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { ScenarioResult } from '@app/types';
+import { untilDestroyed } from '@ngneat/until-destroy';
+import { FundingReportService } from '@services/funding-report.service';
+import { FilterDropdownComponent, OpacitySliderComponent } from '@styleguide';
 import {
   ToggleButtonsConfig,
   ToggleTabsComponent,
 } from '@styleguide/toggle-tabs/toggle-tabs.component';
-import { FilterDropdownComponent, OpacitySliderComponent } from '@styleguide';
-import { AsyncPipe, NgIf } from '@angular/common';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ActivatedRoute, Router } from '@angular/router';
 import {
+  FlameLengthReductionResponse,
+  FlameLengthRequestParams,
+  FundingReport,
+} from '@types';
+import {
+  BehaviorSubject,
   combineLatest,
   filter,
+  finalize,
   map,
   Observable,
   shareReplay,
+  Subject,
   switchMap,
   take,
-  tap,
+  tap
 } from 'rxjs';
-import { FundingReportService } from '@services/funding-report.service';
-import { FundingReportComponent } from '../funding-report/funding-report.component';
-import { MapSelectorComponent } from '@app/explore/map-selector/map-selector.component';
-import { BaseLayersComponent } from '@app/base-layers/base-layers/base-layers.component';
-import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
+import { FundingMapConfigState } from '../funding-map-config-state';
 import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
-import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
-import { ScenarioState } from '@app/scenario/scenario.state';
-import { ScenarioResult } from '@app/types';
+import { FundingReportComponent } from '../funding-report/funding-report.component';
 
 interface FilterProjectFormat {
   id: number;
@@ -66,6 +75,7 @@ interface FilterProjectFormat {
     OpacitySliderComponent,
     ToggleTabsComponent,
   ],
+  providers: [FundingMapConfigState],
   templateUrl: './full-report-view.component.html',
   styleUrl: './full-report-view.component.scss',
 })
@@ -77,8 +87,8 @@ export class FullReportViewComponent implements OnInit {
   currentView: string = 'report';
 
   currentScenario$ = this.scenarioState.currentScenario$;
-  selectedProjectAreas$ = this.mapConfigState.selectedProjectAreas$;
-  opacity$ = this.mapConfigState.opacity$;
+  selectedProjectAreas$ = this.fundingMapConfigState.selectedProjectAreas$;
+  opacity$ = this.fundingMapConfigState.opacity$;
   availableProjectAreas$: Observable<FilterProjectFormat[]> =
     this.currentScenario$.pipe(
       map((scenario) => {
@@ -105,7 +115,7 @@ export class FullReportViewComponent implements OnInit {
    * status (or a missing report). `shareReplay(1)` keeps the template binding
    * and the redirect check on one HTTP call.
    */
-  report$ = this.scenarioState.currentScenarioId$.pipe(
+  private fetchedReport$ = this.scenarioState.currentScenarioId$.pipe(
     filter((id): id is number => id !== null),
     take(1),
     switchMap((id) => this.fundingReportService.getReport(id)),
@@ -117,11 +127,25 @@ export class FullReportViewComponent implements OnInit {
     shareReplay(1)
   );
 
+  /** Latest flame-length recalculation, patched into the report locally. */
+  private flameLength$ =
+    new BehaviorSubject<FlameLengthReductionResponse | null>(null);
+
+  /** The fetched report with any local flame-length recalculation applied. */
+  report$ = combineLatest([this.fetchedReport$, this.flameLength$]).pipe(
+    map(([report, flameLength]) => this.withFlameLength(report, flameLength)),
+    shareReplay(1)
+  );
+
+  updatingFlameLength = false;
+  /** Apply clicks; `switchMap` cancels any in-flight request when a new one arrives. */
+  private flameLengthRequest$ = new Subject<FlameLengthRequestParams>();
+
   constructor(
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
     private fundingReportService: FundingReportService,
-    private mapConfigState: MapConfigState,
+    private fundingMapConfigState: FundingMapConfigState,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -132,7 +156,7 @@ export class FullReportViewComponent implements OnInit {
 
   handleFilterSelection(selectedAreas: FilterProjectFormat[]): void {
     const ids = selectedAreas.map((a) => a.id);
-    this.mapConfigState.updateSelectedProjectAreas(ids);
+    this.fundingMapConfigState.updateSelectedProjectAreas(ids);
   }
 
   handleToggleSelection(selection: string): void {
@@ -140,7 +164,7 @@ export class FullReportViewComponent implements OnInit {
   }
 
   handleOpacityChange(opacity: number): void {
-    this.mapConfigState.setOpacity(opacity);
+    this.fundingMapConfigState.setOpacity(opacity);
   }
 
   initializeBreadcrumb(): void {
@@ -150,6 +174,25 @@ export class FullReportViewComponent implements OnInit {
       icon: 'close',
       blackText: true,
     });
+
+    this.flameLengthRequest$
+      .pipe(
+        switchMap((params) => {
+          // Set inside switchMap so a re-apply re-arms the loader *after* the
+          // cancelled request's finalize has cleared it.
+          this.updatingFlameLength = true;
+          return this.scenarioState.currentScenarioId$.pipe(
+            filter((id): id is number => id !== null),
+            take(1),
+            switchMap((id) =>
+              this.fundingReportService.getFlameLengthReduction(id, params)
+            ),
+            finalize(() => (this.updatingFlameLength = false))
+          );
+        }),
+        untilDestroyed(this)
+      )
+      .subscribe((flameLength) => this.flameLength$.next(flameLength));
   }
 
   resultsToSelectionMenu(
@@ -170,8 +213,34 @@ export class FullReportViewComponent implements OnInit {
     this.router.navigate(['..'], { relativeTo: this.route });
   }
 
-  /* data layer tabs things */
-  panelExpanded = true;
-  tabIndex = 1;
-  onTabIndexChange(tabSelected: number) {}
+  updateFlameLength(params: FlameLengthRequestParams) {
+    this.flameLengthRequest$.next(params);
+  }
+
+  /**
+   * Replace the report's `TOTAL_FLAME_SEVERITY` (summary and per-project) with a
+   * flame-length recalculation, leaving the other metrics untouched. Returns a
+   * new report object so change detection picks it up.
+   */
+  private withFlameLength(
+    report: FundingReport | null,
+    flameLength: FlameLengthReductionResponse | null
+  ): FundingReport | null {
+    if (!report || !report.results || !flameLength) {
+      return report;
+    }
+    return {
+      ...report,
+      results: {
+        summary: {
+          ...report.results.summary,
+          TOTAL_FLAME_SEVERITY: flameLength.summary,
+        },
+        projects: {
+          ...report.results.projects,
+          TOTAL_FLAME_SEVERITY: flameLength.projects,
+        },
+      },
+    };
+  }
 }
