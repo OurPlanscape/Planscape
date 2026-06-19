@@ -268,7 +268,7 @@ def aggregate_flame_length_reduction(
     valid_mask = _valid_pixel_mask(baseline_pixels, value_pixels)
     baseline_values = baseline_pixels.filled(np.nan)
     value_values = value_pixels.filled(np.nan)
-    reduced_mask = valid_mask & (baseline_values > from_ft) & (value_values <= to_ft)
+    reduced_mask = valid_mask & (baseline_values >= from_ft) & (value_values <= to_ft)
 
     reduced_area_acres = _selected_pixel_area_acres(reduced_mask, src, transform)
     project_area_acres = get_acreage(project_area.geometry)

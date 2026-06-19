@@ -505,6 +505,25 @@ class FlameLengthReductionCalculationTest(TestCase):
         self.assertEqual(result["interval"], {"from": 2.0, "to": 3.0})
         self.assertAlmostEqual(result["value"], expected_reduced_acres, places=6)
 
+    def test_calculate_project_area_delta_flame_severity_includes_at_threshold_pixels(
+        self,
+    ):
+        # Baseline raster has values [[8, 8], [3, 8]]. With from_ft=8 the comparison
+        # must be >= (not >) so that pixels exactly at the threshold are included.
+        result = calculate_project_area_delta(
+            project_area=self.project_area,
+            metric=FundingReportMetric.TOTAL_FLAME_SEVERITY.value,
+            year=2026,
+            datalayer_lookup=self.datalayer_lookup,
+            from_ft=8.0,
+            to_ft=4.0,
+        )
+
+        # Pixels (0,0) and (1,1) have baseline==8 >= 8 and value<=4 → selected.
+        expected_reduced_acres = 2 * self.pixel_area_acres
+        self.assertEqual(result["interval"], {"from": 8.0, "to": 4.0})
+        self.assertAlmostEqual(result["value"], expected_reduced_acres, places=6)
+
     def test_calculate_funding_report_flame_length_reduction_returns_summary_and_projects(
         self,
     ):
