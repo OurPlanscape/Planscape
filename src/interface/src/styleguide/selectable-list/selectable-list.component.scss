@@ -10,7 +10,6 @@ $material-checkbox-padding: 8px;
   position: relative;
   display: block;
 
-
   .view-checkbox {
     padding-left: 0;
     flex: 1;
@@ -28,7 +27,6 @@ $material-checkbox-padding: 8px;
     .mat-mdc-progress-spinner {
       margin-top: 10px;
     }
-
   }
 }
 
@@ -42,7 +40,6 @@ $material-checkbox-padding: 8px;
 .spinner-container {
   width: 20px;
 }
-
 
 .group-header {
   @include top-level-label();
@@ -99,7 +96,6 @@ $material-checkbox-padding: 8px;
   }
 }
 
-
 .select-title,
 .select {
   width: 50px;
@@ -145,4 +141,8 @@ $material-checkbox-padding: 8px;
   &.selected {
     visibility: visible;
   }
+}
+
+.ml-auto {
+  margin-left: auto;
 }

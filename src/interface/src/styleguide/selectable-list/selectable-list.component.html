@@ -1,6 +1,14 @@
 <div class="list-header items-container" [class.grouped-header]="groupBy">
   <div class="select-title">Select</div>
   <div>View Layer</div>
+  <button
+    sg-button
+    *ngIf="selectAllEnabled"
+    (click)="handleSelectAll()"
+    class="ml-auto"
+    [icon]="areAllSelected ? 'remove' : 'add'">
+    {{ areAllSelected ? 'Unselect All' : 'Select All' }}
+  </button>
 </div>
 
 <div *ngFor="let group of groupedData | keyvalue" class="group-wrapper">

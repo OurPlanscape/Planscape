@@ -27,6 +27,14 @@ class FundingReportFlameLengthReductionRequestSerializer(serializers.Serializer)
     from_ft = serializers.FloatField(min_value=0)
     to_ft = serializers.FloatField(min_value=0)
 
+    def validate(self, attrs):
+        if attrs.get("from_ft") is not None and attrs.get("to_ft") is not None:
+            if attrs["from_ft"] <= attrs["to_ft"]:
+                raise serializers.ValidationError(
+                    "from_ft must be greater than to_ft (e.g. from_ft=7, to_ft=4)."
+                )
+        return attrs
+
 
 class FundingReportAETImprovementProjectAreaSerializer(serializers.Serializer):
     project_id = serializers.IntegerField()

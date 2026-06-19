@@ -112,6 +112,8 @@ export class SelectableListComponent<T extends Item> implements OnChanges {
   @Input() colorPath?: string;
   @Input() outlineColorPath?: string;
 
+  @Input() selectAllEnabled: boolean = false;
+
   /** Emits when an item is selected */
   @Output() selectedItemsChanged = new EventEmitter<T[]>();
 
@@ -198,5 +200,16 @@ export class SelectableListComponent<T extends Item> implements OnChanges {
       out.push(m[1] !== undefined ? Number(m[1]) : m[0]);
     }
     return out;
+  }
+
+  handleSelectAll() {
+    this.selectedItems = this.areAllSelected ? [] : this.items;
+    this.selectedItemsChanged.emit(this.selectedItems);
+  }
+
+  get areAllSelected(): boolean {
+    const selectedIds = new Set(this.selectedItems.map((i) => i.id));
+
+    return this.items.every((i) => selectedIds.has(i.id));
   }
 }
