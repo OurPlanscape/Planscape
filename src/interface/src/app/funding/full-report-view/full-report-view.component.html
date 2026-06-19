@@ -1,7 +1,5 @@
 <app-nav-bar></app-nav-bar>
-<section
-  class="container"
-  *ngIf="selectedProjectAreas$ | async as selectedProjectAreas">
+<section class="container">
   <div class="full-report-sidebar">
     <div class="section-row toggle-row">
       <sg-toggle-tabs
@@ -26,7 +24,7 @@
             <div>Viewing outcomes for:</div>
             <sg-filter-dropdown
               class="outcome-areas-dropdown"
-              [size]="'large'"
+              size="large"
               (confirmedSelection)="handleFilterSelection($event)"
               [styleType]="'white'"
               [hasSearch]="false"
@@ -44,9 +42,9 @@
           <app-funding-report
             *ngIf="report.status === 'SUCCESS'; else loadingReport"
             [report]="report"
-            [projectAreas]="selectedProjectAreas"
+            [projectAreas]="(selectedProjectAreas$ | async) ?? []"
             [scrollElement]="reportScroll"
-            [reportType]="'full'"
+            reportType="full"
             [updatingFlameLength]="updatingFlameLength"
             (updateFlameLength)="
               updateFlameLength($event)

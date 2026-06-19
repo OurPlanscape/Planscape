@@ -20,8 +20,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ScenarioState } from '@scenario/scenario.state';
 import { isPlanningApproachSubUnits } from '@scenario/scenario-helper';
 import { PLANNING_APPROACH } from '@types';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { AccountRoutingModule } from '@app/account/account-routing.module';
+import { FundingMapConfigState } from '../funding-map-config-state';
 
 type MapLayerData = {
   readonly name: string;
@@ -47,8 +47,6 @@ type MapLayerData = {
 })
 export class MapMultiProjectAreasComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
-  @Input() visible = true;
-  @Input() showHoveredProjectAreas: boolean = true;
   @Input() allowInteraction = true;
   @Input() projectAreasCount: number | null = null;
 
@@ -68,8 +66,9 @@ export class MapMultiProjectAreasComponent implements OnInit {
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
   opacity: number = 0.5;
   scenarioOrigin: 'USER' | 'SYSTEM' | null = null;
+  hoverColor = '#FFCD664D';
 
-  selectedProjectAreas$ = this.mapConfigState.selectedProjectAreas$;
+  selectedProjectAreas$ = this.fundingMapConfigState.selectedProjectAreas$;
 
   paint: LayerSpecification['paint'] = {
     'fill-color': 'transparent',
@@ -119,12 +118,12 @@ export class MapMultiProjectAreasComponent implements OnInit {
   );
 
   constructor(
-    private mapConfigState: MapConfigState,
+    private fundingMapConfigState: FundingMapConfigState,
     private scenarioState: ScenarioState
   ) {}
 
   ngOnInit(): void {
-    this.mapConfigState.opacity$
+    this.fundingMapConfigState.opacity$
       .pipe(untilDestroyed(this))
       .subscribe((opacity) => {
         this.opacity = opacity;
@@ -154,19 +153,15 @@ export class MapMultiProjectAreasComponent implements OnInit {
       return;
 
     const ids = selectedIds || [];
+    let projectKey = 'rank';
     if (this.scenarioOrigin === 'USER') {
-      this.mapLibreMap.setPaintProperty(
-        this.layers.projectAreasOutline.name,
-        'line-width',
-        ['case', ['in', ['get', 'id'], ['literal', ids]], 6, 2]
-      );
-    } else {
-      this.mapLibreMap.setPaintProperty(
-        this.layers.projectAreasOutline.name,
-        'line-width',
-        ['case', ['in', ['get', 'rank'], ['literal', ids]], 6, 2]
-      );
+      projectKey = 'id';
     }
+    this.mapLibreMap.setPaintProperty(
+      this.layers.projectAreasOutline.name,
+      'line-width',
+      ['case', ['in', ['get', projectKey], ['literal', ids]], 6, 2]
+    );
   }
 
   handleLayerClick(event: MapMouseEvent) {
@@ -178,18 +173,15 @@ export class MapMultiProjectAreasComponent implements OnInit {
     if (this.scenarioOrigin === 'USER') {
       project_identifier = proj.properties['id'];
     }
-    this.mapConfigState.toggleSelectedProjectArea(project_identifier);
+    this.fundingMapConfigState.toggleSelectedProjectArea(project_identifier);
   }
 
   setCursor() {
-    if (!this.visible) {
-      return;
-    }
     this.mapLibreMap.getCanvas().style.cursor = 'pointer';
   }
 
   setProjectAreaTooltip(e: MapMouseEvent) {
-    if (!this.visible || !this.allowInteraction) {
+    if (!this.allowInteraction) {
       return;
     }
     this.hoveredProjectAreaFromFeatures = this.getProjectAreaFromFeatures(
@@ -205,7 +197,7 @@ export class MapMultiProjectAreasComponent implements OnInit {
   }
 
   resetCursorAndTooltip() {
-    if (!this.visible || !this.allowInteraction) {
+    if (!this.allowInteraction) {
       return;
     }
     this.mapLibreMap.getCanvas().style.cursor = '';

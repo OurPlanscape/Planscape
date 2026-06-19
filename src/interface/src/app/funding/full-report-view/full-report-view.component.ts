@@ -29,7 +29,6 @@ import {
 } from 'rxjs';
 import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
 import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { ScenarioResult } from '@app/types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ScenarioState } from '@scenario/scenario.state';
@@ -40,6 +39,7 @@ import {
   FlameLengthRequestParams,
   FundingReport,
 } from '@types';
+import { FundingMapConfigState } from '../funding-map-config-state';
 
 interface FilterProjectFormat {
   id: number;
@@ -68,6 +68,7 @@ interface FilterProjectFormat {
     OpacitySliderComponent,
     ToggleTabsComponent,
   ],
+  providers: [FundingMapConfigState],
   templateUrl: './full-report-view.component.html',
   styleUrl: './full-report-view.component.scss',
 })
@@ -79,8 +80,8 @@ export class FullReportViewComponent implements OnInit {
   currentView: string = 'report';
 
   currentScenario$ = this.scenarioState.currentScenario$;
-  selectedProjectAreas$ = this.mapConfigState.selectedProjectAreas$;
-  opacity$ = this.mapConfigState.opacity$;
+  selectedProjectAreas$ = this.fundingMapConfigState.selectedProjectAreas$;
+  opacity$ = this.fundingMapConfigState.opacity$;
   availableProjectAreas$: Observable<FilterProjectFormat[]> =
     this.currentScenario$.pipe(
       map((scenario) => {
@@ -137,7 +138,7 @@ export class FullReportViewComponent implements OnInit {
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
     private fundingReportService: FundingReportService,
-    private mapConfigState: MapConfigState,
+    private fundingMapConfigState: FundingMapConfigState,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -148,7 +149,7 @@ export class FullReportViewComponent implements OnInit {
 
   handleFilterSelection(selectedAreas: FilterProjectFormat[]): void {
     const ids = selectedAreas.map((a) => a.id);
-    this.mapConfigState.updateSelectedProjectAreas(ids);
+    this.fundingMapConfigState.updateSelectedProjectAreas(ids);
   }
 
   handleToggleSelection(selection: string): void {
@@ -156,7 +157,7 @@ export class FullReportViewComponent implements OnInit {
   }
 
   handleOpacityChange(opacity: number): void {
-    this.mapConfigState.setOpacity(opacity);
+    this.fundingMapConfigState.setOpacity(opacity);
   }
 
   initializeBreadcrumb(): void {
@@ -204,10 +205,6 @@ export class FullReportViewComponent implements OnInit {
   redirectToFunding() {
     this.router.navigate(['..'], { relativeTo: this.route });
   }
-
-  /* report tabs things */
-  tabIndex = 1;
-  onTabIndexChange(tabSelected: number) {}
 
   updateFlameLength(params: FlameLengthRequestParams) {
     this.flameLengthRequest$.next(params);

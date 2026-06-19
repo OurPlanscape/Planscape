@@ -1,6 +1,5 @@
 import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import {
   LngLat,
   Map as MapLibreMap,
@@ -31,6 +30,7 @@ import { ScenarioState } from '@app/scenario/scenario.state';
 import { MapTooltipComponent } from '@app/treatments/map-tooltip/map-tooltip.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@app/shared';
+import { FundingMapConfigState } from '../funding-map-config-state';
 
 @Component({
   selector: 'app-funding-report-map',
@@ -49,12 +49,13 @@ import { SNACK_ERROR_CONFIG } from '@app/shared';
     NgIf,
     PlanningAreaLayerComponent,
   ],
+  // providers:[FundingMapConfigState],
   templateUrl: './funding-report-map.component.html',
   styleUrl: './funding-report-map.component.scss',
 })
 export class FundingReportMapComponent {
   constructor(
-    private mapConfigState: MapConfigState,
+    private fundingMapConfigState: FundingMapConfigState,
     private mapConfigService: MapConfigService,
     private authService: AuthService,
     private planState: PlanState,
@@ -74,9 +75,9 @@ export class FundingReportMapComponent {
   minZoom = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
-  baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
+  baseLayerUrl$ = this.fundingMapConfigState.baseMapUrl$;
 
-  opacity$ = this.mapConfigState.opacity$;
+  opacity$ = this.fundingMapConfigState.opacity$;
 
   loading$ = new BehaviorSubject<boolean>(false);
 
@@ -105,7 +106,7 @@ export class FundingReportMapComponent {
   }
 
   handleOpacityChange(opacity: number) {
-    this.mapConfigState.setOpacity(opacity);
+    this.fundingMapConfigState.setOpacity(opacity);
   }
 
   onMapError(event: ErrorEvent & EventData) {
