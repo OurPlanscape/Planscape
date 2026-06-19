@@ -457,10 +457,14 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @action(methods=["post"], detail=True, url_path="run-report")
     def run_report(self, request, pk=None):
         scenario = self.get_object()
-        report, _ = FundingOpportunityReport.objects.get_or_create(
+        report, created = FundingOpportunityReport.objects.get_or_create(
             scenario=scenario,
             defaults={"created_by": request.user},
         )
+
+        if not created and report.created_by_id != request.user.pk:
+            report.created_by = request.user
+            report.save(update_fields=["created_by", "updated_at"])
 
         FundingOpportunityReportRun.objects.create(
             report=report,
