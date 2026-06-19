@@ -1,6 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { BaseLayer, ScenarioDraftConfiguration } from '@app/types';
 import { SectionComponent, StepDirective } from '@styleguide';
@@ -39,7 +44,12 @@ export class IncludeAreasSelectorComponent
     super();
   }
 
-  form = new FormGroup({});
+  form = new FormGroup({
+    includedAreas: new FormControl<number[]>([], {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(1)],
+    }),
+  });
   includableAreas$ = this.forsysService.includedAreas$.pipe(
     map((areas) => areas.sort((a, b) => a.name.localeCompare(b.name)))
   );
@@ -69,13 +79,22 @@ export class IncludeAreasSelectorComponent
       )
       .subscribe((selectedAreas: BaseLayer[]) => {
         this.selectedAreas = selectedAreas;
+
+        this.form.controls.includedAreas.setValue(
+          this.getSelectedIncludedAreaIds()
+        );
       });
   }
 
   handleSelectedItemsChange(selectedItems: BaseLayer[]) {
     this.selectedAreas = [...selectedItems];
-    // TODO: Update this for setIncludedAreas before releasing ADD_INCLUDES
-    this.newScenarioState.setIncludedAreas(this.getSelectedIncluedAreaIds());
+
+    const includedAreaIds = this.getSelectedIncludedAreaIds();
+
+    this.form.controls.includedAreas.setValue(includedAreaIds);
+    this.form.controls.includedAreas.markAsTouched();
+
+    this.newScenarioState.setIncludedAreas(includedAreaIds);
   }
 
   getSelectedIncluedAreaIds(): number[] {
@@ -106,6 +125,10 @@ export class IncludeAreasSelectorComponent
         );
         this.baseLayersStateService.setBaseLayers([...persistent, ...next]);
       });
+  }
+
+  getSelectedIncludedAreaIds(): number[] {
+    return this.selectedAreas.map((s) => s.id);
   }
 
   override beforeStepExit(): void {

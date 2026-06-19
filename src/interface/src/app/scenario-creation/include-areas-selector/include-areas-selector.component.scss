@@ -22,3 +22,12 @@
   @include small-paragraph();
   color: $color-dark-gray;
 }
+
+.error-message {
+  @include small-input-label();
+  color: $color-error;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 32px;
+}
