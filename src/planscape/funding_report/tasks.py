@@ -12,6 +12,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from planning.models import ProjectArea
 from planscape.celery import app
+from utils.frontend import get_frontend_url
 
 from funding_report.models import (
     AET_IMPROVEMENT_DEFAULT_PERCENTAGE,
@@ -216,6 +217,84 @@ def async_calculate_aet_improvement(
         return {"kind": "aet_improvement", "error": str(exc)}
 
 
+@app.task(
+    bind=True,
+    autoretry_for=(smtplib.SMTPException, OSError),
+    retry_backoff=True,
+    retry_jitter=True,
+    retry_kwargs={"max_retries": 3},
+)
+def async_send_email_funding_report_finished(
+    self,
+    funding_opportunity_report_id: int,
+) -> None:
+    try:
+        report = FundingOpportunityReport.objects.select_related(
+            "created_by",
+            "scenario",
+            "scenario__planning_area",
+        ).get(pk=funding_opportunity_report_id)
+
+        user = report.created_by
+        email = (user.email or "").strip() if user else ""
+        if not email:
+            log.info(
+                "FundingOpportunityReport %s completed but has no recipient email; skipping.",
+                funding_opportunity_report_id,
+            )
+            return
+
+        funding_report_link = get_frontend_url(
+            f"plan/{report.scenario.planning_area_id}/scenario/{report.scenario_id}"
+        )
+
+        context = {
+            "user_full_name": user.get_full_name(),
+            "funding_report_link": funding_report_link,
+        }
+
+        subject = "Planscape Funding Opportunity Report is Ready"
+        txt = render_to_string(
+            "email/funding_report/funding_report_completed.txt",
+            context,
+        )
+        html = render_to_string(
+            "email/funding_report/funding_report_completed.html",
+            context,
+        )
+
+        send_mail(
+            subject=subject,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            message=txt,
+            html_message=html,
+        )
+
+        log.info(
+            "Email sent informing user that FundingOpportunityReport %s is finished.",
+            report.pk,
+        )
+
+    except FundingOpportunityReport.DoesNotExist:
+        log.warning(
+            "FundingOpportunityReport with pk %s does not exist. Cannot send email.",
+            funding_opportunity_report_id,
+        )
+    except (smtplib.SMTPException, OSError):
+        if self.request.retries >= self.max_retries:
+            log.exception("Failed to send funding report email.")
+        else:
+            log.warning("Failed to send funding report email. Retrying.")
+        raise
+    except Exception:
+        log.exception(
+            "Unexpected error while sending funding report finished email.",
+            extra={"funding_opportunity_report_id": funding_opportunity_report_id},
+        )
+        raise
+
+
 @app.task()
 def async_calculate_biomass_volumes(
     funding_opportunity_report_id: int,
@@ -309,13 +388,15 @@ def async_finalize_funding_report_results(
     if errors:
         results["errors"] = errors
 
+    final_status = (
+        FundingOpportunityReportStatus.FAILED
+        if errors
+        else FundingOpportunityReportStatus.SUCCESS
+    )
+
     update_fields: dict = {
         "results": results,
-        "status": (
-            FundingOpportunityReportStatus.FAILED
-            if errors
-            else FundingOpportunityReportStatus.SUCCESS
-        ),
+        "status": final_status,
     }
     if treatment_datalayer_id is not None:
         update_fields["treatment_datalayer_id"] = treatment_datalayer_id
@@ -324,8 +405,9 @@ def async_finalize_funding_report_results(
         **update_fields
     )
 
-    if update_fields["status"] == FundingOpportunityReportStatus.SUCCESS:
+    if final_status == FundingOpportunityReportStatus.SUCCESS:
         async_generate_funding_report_geopackage.delay(funding_opportunity_report_id)
+        async_send_email_funding_report_finished.delay(funding_opportunity_report_id)
 
 
 @app.task()
