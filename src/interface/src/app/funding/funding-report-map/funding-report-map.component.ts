@@ -107,6 +107,8 @@ export class FundingReportMapComponent {
     })
   );
 
+  selectedLayer$ = this.dataLayersStateService.viewedDataLayer$;
+
   hoveredProjectAreaId$ = new Subject<number | null>();
   mouseLngLat: LngLat | null = null;
 

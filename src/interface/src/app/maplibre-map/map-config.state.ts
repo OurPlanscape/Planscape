@@ -59,10 +59,6 @@ export class MapConfigState {
   );
   public mapInteractionMode$ = this._mapInteractionMode$.asObservable();
 
-  /* TODO: this is just for the funding map -- should we move to a different state service? */
-  private _selectedProjectAreas$ = new BehaviorSubject<number[]>([]);
-  public selectedProjectAreas$ = this._selectedProjectAreas$.asObservable();
-
   updateBaseMap(layer: BaseMapType) {
     this._baseMap$.next(layer);
   }
@@ -122,29 +118,5 @@ export class MapConfigState {
 
   updateDataLayersOpacity(opacity: number) {
     this._dataLayersOpacity$.next(opacity);
-  }
-
-  /**  note that 'ids' here is either based on:
-  /*  the project_id for USER origin or the rank for SYSTEM origin
-  */
-  updateSelectedProjectAreas(ids: number[]) {
-    this._selectedProjectAreas$.next(ids);
-  }
-
-  /**  note that 'id' here is either based on:
-  /*  the project_id for USER origin or the rank for SYSTEM origin
-  */
-  toggleSelectedProjectArea(id: any) {
-    // if the id is already selected, we remove it.
-    const currentSelection = this._selectedProjectAreas$.getValue();
-    if (currentSelection.includes(id)) {
-      this._selectedProjectAreas$.next(
-        currentSelection.filter((p) => p !== id)
-      );
-    } else {
-      // otherwise we add it
-      currentSelection.push(id);
-      this._selectedProjectAreas$.next(currentSelection);
-    }
   }
 }

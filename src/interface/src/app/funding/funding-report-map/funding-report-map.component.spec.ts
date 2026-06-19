@@ -21,11 +21,12 @@ describe('FundingReportMapComponent', () => {
         HttpClientTestingModule,
         MatSnackBarModule,
       ],
-      providers: [MockProvider(DataLayersStateService, {
-        dataTree$: of(null),
-        paths$: of([]),
-      })
-      , MockProvider(MapConfigState),
+      providers: [
+        MockProvider(DataLayersStateService, {
+          dataTree$: of(null),
+          paths$: of([]),
+        }),
+        MockProvider(MapConfigState),
         MockProvider(FundingMapConfigState),
         MockProvider(MapConfigService),
       ],

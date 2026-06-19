@@ -15,7 +15,7 @@ import { ScenarioState } from '@app/scenario/scenario.state';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { ScenarioResult } from '@app/types';
-import { untilDestroyed } from '@ngneat/until-destroy';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FundingReportService } from '@services/funding-report.service';
 import { FilterDropdownComponent, OpacitySliderComponent } from '@styleguide';
 import {
@@ -38,7 +38,7 @@ import {
   Subject,
   switchMap,
   take,
-  tap
+  tap,
 } from 'rxjs';
 import { FundingMapConfigState } from '../funding-map-config-state';
 import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
@@ -50,6 +50,7 @@ interface FilterProjectFormat {
   shortName: string;
 }
 
+@UntilDestroy()
 @Component({
   selector: 'app-full-report-view',
   standalone: true,
@@ -140,6 +141,8 @@ export class FullReportViewComponent implements OnInit {
   updatingFlameLength = false;
   /** Apply clicks; `switchMap` cancels any in-flight request when a new one arrives. */
   private flameLengthRequest$ = new Subject<FlameLengthRequestParams>();
+
+  tabIndex = 0;
 
   constructor(
     private breadcrumbService: BreadcrumbService,
