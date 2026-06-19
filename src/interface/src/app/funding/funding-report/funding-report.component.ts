@@ -34,8 +34,8 @@ import { FundingReportMapComponent } from '../funding-report-map/funding-report-
 import {
   FlameLengthRequestParams,
   FundingReport,
+  FundingReportAETSummary,
   FundingReportMetric,
-  FundingReportWater,
   ORIGIN_TYPE,
 } from '@types';
 import { aggregateMetricSummary, hasMetricData } from './funding-report.helper';
@@ -54,6 +54,11 @@ import {
   MapLayer,
 } from '../funding-map-layers/funding-map-layers.component';
 import { ScrollSpyDirective } from '@app/standalone/scroll-spy-directive/scroll-spy.directive';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { debounceTime, distinctUntilChanged, filter } from 'rxjs';
+
+/** Pause after the last keystroke before recalculating water availability. */
+const WATER_DEBOUNCE_MS = 300;
 
 interface ChartConfig {
   data: ChartData<'bar'>;
@@ -78,6 +83,7 @@ const flameLengthRangeValidator: ValidatorFn = (
   return greaterThan > lesserThan ? null : { range: true };
 };
 
+@UntilDestroy()
 @Component({
   selector: 'app-funding-report',
   standalone: true,
@@ -154,6 +160,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   @Input() scrollElement?: HTMLElement;
   /** While true, a loader covers the flame length chart (recalc in flight). */
   @Input() updatingFlameLength = false;
+  /** While true, a loader covers the water stat cards (recalc in flight). */
+  @Input() updatingWaterAvailability = false;
 
   // todo datalayer probably
   @Output() showLayer = new EventEmitter<number>();
@@ -163,6 +171,16 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit(): void {
     Chart.register(ChartDataLabels);
     this.assignSections();
+
+    // Recalculate water availability as the user types, after a short pause.
+    this.waterAvailabilityControl.valueChanges
+      .pipe(
+        debounceTime(WATER_DEBOUNCE_MS),
+        distinctUntilChanged(),
+        filter((value): value is number => value !== null),
+        untilDestroyed(this)
+      )
+      .subscribe((value) => this.updateWaterAvailability.emit(value));
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -305,21 +323,12 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     );
   }
 
-  /** Emit the water availability increase (%) once it is a valid number. */
-  emitWaterAvailability(): void {
-    const value = this.waterAvailabilityControl.value;
-    if (value === null) {
-      return;
-    }
-    this.updateWaterAvailability.emit(value);
-  }
-
   get isPreview() {
     return this.reportType === 'preview';
   }
 
-  /** Water snapshot for the template, if the report carries one. */
-  get water(): FundingReportWater | undefined {
-    return this.report?.results?.water;
+  /** Water (AET) summary for the template, if the report carries one. */
+  get water(): FundingReportAETSummary | undefined {
+    return this.report?.results?.summary?.AET;
   }
 }

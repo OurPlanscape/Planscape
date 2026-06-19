@@ -25,7 +25,7 @@ import {
   FlameLengthReductionResponse,
   FlameLengthRequestParams,
   FundingReport,
-  FundingReportWater,
+  FundingReportAETImprovement,
 } from '@types';
 import {
   BehaviorSubject,
@@ -133,7 +133,9 @@ export class FullReportViewComponent implements OnInit {
     new BehaviorSubject<FlameLengthReductionResponse | null>(null);
 
   /** Latest water-availability recalculation, patched into the report locally. */
-  private water$ = new BehaviorSubject<FundingReportWater | null>(null);
+  private water$ = new BehaviorSubject<FundingReportAETImprovement | null>(
+    null
+  );
 
   /** The fetched report with any local flame-length / water recalculation applied. */
   report$ = combineLatest([
@@ -148,6 +150,7 @@ export class FullReportViewComponent implements OnInit {
   );
 
   updatingFlameLength = false;
+  updatingWaterAvailability = false;
   /** Apply clicks; `switchMap` cancels any in-flight request when a new one arrives. */
   private flameLengthRequest$ = new Subject<FlameLengthRequestParams>();
   /** Water % entered; `switchMap` cancels any in-flight request when a new one arrives. */
@@ -210,8 +213,11 @@ export class FullReportViewComponent implements OnInit {
 
     this.waterRequest$
       .pipe(
-        switchMap((increasePercent) =>
-          this.scenarioState.currentScenarioId$.pipe(
+        switchMap((increasePercent) => {
+          // Set inside switchMap so a re-request re-arms the loader *after* the
+          // cancelled request's finalize has cleared it.
+          this.updatingWaterAvailability = true;
+          return this.scenarioState.currentScenarioId$.pipe(
             filter((id): id is number => id !== null),
             take(1),
             switchMap((id) =>
@@ -219,9 +225,10 @@ export class FullReportViewComponent implements OnInit {
                 id,
                 increasePercent
               )
-            )
-          )
-        ),
+            ),
+            finalize(() => (this.updatingWaterAvailability = false))
+          );
+        }),
         untilDestroyed(this)
       )
       .subscribe((water) => this.water$.next(water));
@@ -282,22 +289,32 @@ export class FullReportViewComponent implements OnInit {
   }
 
   /**
-   * Replace the report's `water` snapshot with a recalculation, leaving the
-   * other metrics untouched. Returns a new report object so change detection
-   * picks it up.
+   * Replace the report's `AET` water metric (summary and per-project) with a
+   * recalculation, leaving the other metrics untouched. The endpoint returns the
+   * summary fields and the per-project breakdown together; we split them back
+   * into `summary.AET` / `projects.AET` the way the report stores them. Returns a
+   * new report object so change detection picks it up.
    */
   private withWater(
     report: FundingReport | null,
-    water: FundingReportWater | null
+    water: FundingReportAETImprovement | null
   ): FundingReport | null {
     if (!report || !report.results || !water) {
       return report;
     }
+    const { project_areas, ...summary } = water;
     return {
       ...report,
       results: {
         ...report.results,
-        water,
+        summary: {
+          ...report.results.summary,
+          AET: summary,
+        },
+        projects: {
+          ...report.results.projects,
+          AET: project_areas,
+        },
       },
     };
   }

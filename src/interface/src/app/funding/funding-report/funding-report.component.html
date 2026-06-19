@@ -229,8 +229,7 @@
             inputmode="numeric"
             required
             [formControl]="waterAvailabilityControl"
-            (input)="onWaterAvailabilityInput($event)"
-            (change)="emitWaterAvailability()" />
+            (input)="onWaterAvailabilityInput($event)" />
         </sg-input-field>
       </div>
 
@@ -238,22 +237,25 @@
         Field is required
       </div>
     </div>
-    <div class="stat-cards">
-      <div class="stat-card">
-        <div class="stat-label">
-          Percent of Area with Significant Increase in Water Availability
+    <div class="stat-cards-wrapper">
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="stat-value">
+            {{ water?.improved_area_percent | number: '1.0-0'
+            }}<span class="stat-unit">%</span>
+          </div>
+          <div class="stat-label">of Planning Area</div>
         </div>
-        <div class="stat-value">
-          {{ water?.percent_of_area | number }}<span class="stat-unit">%</span>
+        <div class="stat-card">
+          <div class="stat-value">
+            {{ water?.improved_acres | number: '1.0-0'
+            }}<span class="stat-unit">acres</span>
+          </div>
+          <div class="stat-label">of Total Planning Area</div>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">
-          Area with Significant Increase in Water Availability
-        </div>
-        <div class="stat-value">
-          {{ water?.acres | number }}<span class="stat-unit">acres</span>
-        </div>
+      <div class="chart-loader" *ngIf="updatingWaterAvailability">
+        <mat-spinner diameter="36"></mat-spinner>
       </div>
     </div>
   </sg-section>

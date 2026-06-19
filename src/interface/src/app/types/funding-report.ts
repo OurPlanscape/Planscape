@@ -18,29 +18,55 @@ export type FundingReportMetric =
   | 'ABOVEGROUND_TOTAL'
   | 'TOTAL_FLAME_SEVERITY';
 
+/** Per-project-area AET (water availability) improvement breakdown. */
+export interface FundingReportAETImprovementProjectArea {
+  project_id: number;
+  improved_acres: number;
+  total_acres: number;
+  improved_area_percent: number;
+}
+
 /**
- * Water availability metric. Unlike the time-series metrics above, this is a
- * single snapshot rather than a per-year `FundingReportDataPoint[]`: the share
- * of the planning area and the absolute acreage that saw a significant increase
- * in water availability after treatment.
- *
- * TODO: the backend does not compute this yet — values are mocked on the FE.
+ * AET (water availability) summary block. Lives under `results.summary.AET` in
+ * the report, and is also the whole-scenario portion of the `aet-improvement`
+ * endpoint response.
  */
-export interface FundingReportWater {
-  /** Percent of the planning area with a significant increase (0-100). */
-  percent_of_area: number | null;
-  /** Acres of the planning area with a significant increase. */
-  acres: number | null;
+export interface FundingReportAETSummary {
+  /** The target percentage increase the calculation was run for. */
+  percentage: number;
+  /** Acres with a significant increase in water availability. */
+  improved_acres: number;
+  total_project_area_acres: number;
+  /** Percent of the project area with a significant increase (0-100). */
+  improved_area_percent: number;
+}
+
+/**
+ * Full response of the `aet-improvement` endpoint: the summary block plus the
+ * per-project-area breakdown for a target percentage increase.
+ */
+export interface FundingReportAETImprovement extends FundingReportAETSummary {
+  project_areas: FundingReportAETImprovementProjectArea[];
+}
+
+/** Request body for the `aet-improvement` endpoint. */
+export interface FundingReportAETImprovementRequest {
+  percentage: number;
 }
 
 /** Report results, keyed by metric (e.g. POTENTIAL_SMOKE, ABOVEGROUND_TOTAL). */
 export interface FundingReportResults {
-  /** Whole-scenario totals per metric. */
-  summary: Record<FundingReportMetric, FundingReportDataPoint[]>;
+  /**
+   * Whole-scenario totals per metric. The time-series metrics are arrays; the
+   * water metric (`AET`) is a single summary object instead.
+   */
+  summary: Record<FundingReportMetric, FundingReportDataPoint[]> & {
+    AET?: FundingReportAETSummary;
+  };
   /** Same metrics, broken down per project area. */
-  projects: Record<FundingReportMetric, FundingReportProjectDataPoint[]>;
-  /** Single-snapshot water metric. Optional: backend does not send it yet. */
-  water?: FundingReportWater;
+  projects: Record<FundingReportMetric, FundingReportProjectDataPoint[]> & {
+    AET?: FundingReportAETImprovementProjectArea[];
+  };
 }
 
 // TODO full interface

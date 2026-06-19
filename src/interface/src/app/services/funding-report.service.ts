@@ -5,19 +5,9 @@ import {
   FlameLengthReductionResponse,
   FlameLengthRequestParams,
   FundingReport,
-  FundingReportWater,
+  FundingReportAETImprovement,
 } from '@types';
-import { catchError, map, Observable, of, throwError } from 'rxjs';
-
-/**
- * Placeholder water metric. The backend does not compute this yet, so we patch
- * it into the report locally (in `getReport`) and serve recalculations from
- * `getWaterAvailability`. TODO: remove once the backend returns `results.water`.
- */
-const MOCK_WATER: FundingReportWater = {
-  percent_of_area: 18,
-  acres: 118400,
-};
+import { catchError, Observable, of, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -35,15 +25,6 @@ export class FundingReportService {
         }
       )
       .pipe(
-        // TODO: drop once the backend includes `water` in the report results.
-        map((report) =>
-          report?.results
-            ? {
-                ...report,
-                results: { ...report.results, water: MOCK_WATER },
-              }
-            : report
-        ),
         // The backend returns 404 when no report exists yet.
         catchError((error: HttpErrorResponse) =>
           error.status === 404 ? of(null) : throwError(() => error)
@@ -75,15 +56,21 @@ export class FundingReportService {
   }
 
   /**
-   * Recalculate the water availability metric for a target percentage increase.
-   * Mirrors `getFlameLengthReduction`, but returns only the water portion so the
-   * caller can patch it into the report. TODO: the backend has no endpoint yet,
-   * so this serves the mocked value.
+   * Recalculate the water availability (AET improvement) metric for a target
+   * percentage increase. Mirrors `getFlameLengthReduction`: returns only the
+   * water portion so the caller can patch it into the report.
    */
   getWaterAvailability(
     scenarioId: number,
-    increasePercent: number
-  ): Observable<FundingReportWater> {
-    return of(MOCK_WATER);
+    percentage: number
+  ): Observable<FundingReportAETImprovement> {
+    return this.http.post<FundingReportAETImprovement>(
+      environment.backend_endpoint +
+        `/v2/scenarios/${scenarioId}/aet-improvement/`,
+      { percentage },
+      {
+        withCredentials: true,
+      }
+    );
   }
 }
