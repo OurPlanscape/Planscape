@@ -41,6 +41,12 @@ FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE = OpenApiExample(
                 "ABOVEGROUND_TOTAL": [
                     {"year": 2026, "value": 320.5, "baseline": 5000.0, "delta": 6.41}
                 ],
+                "AET": {
+                    "percentage": 25.0,
+                    "improved_acres": 1234.5,
+                    "total_project_area_acres": 5000.0,
+                    "improved_area_percent": 24.69,
+                },
             },
             "projects": {
                 "ABOVEGROUND_TOTAL": [
@@ -51,6 +57,14 @@ FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE = OpenApiExample(
                         "value": 80.0,
                         "baseline": 1000.0,
                         "delta": 8.0,
+                    }
+                ],
+                "AET": [
+                    {
+                        "project_id": 14,
+                        "improved_acres": 1234.5,
+                        "total_acres": 5000.0,
+                        "improved_area_percent": 24.69,
                     }
                 ],
             },

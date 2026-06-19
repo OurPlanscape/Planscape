@@ -6,6 +6,7 @@ from django.db import transaction
 from django.utils import timezone
 from datasets.models import DataLayer
 from funding_report.models import (
+    AET_IMPROVEMENT_DEFAULT_PERCENTAGE,
     FUNDING_REPORT_YEARS,
     FundingOpportunityReport,
     FundingOpportunityReportStatus,
@@ -14,6 +15,7 @@ from funding_report.models import (
 from funding_report.services import (
     build_datalayer_lookup,
     build_funding_report_results,
+    calculate_aet_improvement,
     calculate_project_area_delta,
     calculate_treatment_pixel_areas,
     generate_treatment_clip_datalayer,
@@ -135,6 +137,23 @@ def async_calculate_treatment_areas(
 
 
 @app.task()
+def async_calculate_aet_improvement(
+    funding_opportunity_report_id: int,
+    percentage: float = AET_IMPROVEMENT_DEFAULT_PERCENTAGE,
+) -> dict | None:
+    try:
+        report = FundingOpportunityReport.objects.get(pk=funding_opportunity_report_id)
+        result = calculate_aet_improvement(report=report, percentage=percentage)
+        return {"kind": "aet_improvement", **result}
+    except Exception as exc:
+        log.exception(
+            "Failed to calculate AET improvement for funding report %s.",
+            funding_opportunity_report_id,
+        )
+        return {"kind": "aet_improvement", "error": str(exc)}
+
+
+@app.task()
 def async_finalize_funding_report_results(
     project_results: list[dict | None],
     funding_opportunity_report_id: int,
@@ -144,6 +163,7 @@ def async_finalize_funding_report_results(
     treatment_errors = []
     treatment_datalayer_id = None
     treatment_areas = None
+    aet_improvement = None
 
     for result in project_results:
         if result is None:
@@ -164,12 +184,26 @@ def async_finalize_funding_report_results(
                     "total": result["total"],
                 }
             continue
+        if kind == "aet_improvement":
+            if "error" in result:
+                treatment_errors.append(result)
+            else:
+                aet_improvement = result
+            continue
         if "error" in result:
             errors.append(result)
         else:
             successes.append(result)
 
     results = build_funding_report_results(successes)
+    if aet_improvement is not None:
+        results["summary"]["AET"] = {
+            "percentage": aet_improvement["percentage"],
+            "improved_acres": aet_improvement["improved_acres"],
+            "total_project_area_acres": aet_improvement["total_project_area_acres"],
+            "improved_area_percent": aet_improvement["improved_area_percent"],
+        }
+        results["projects"]["AET"] = aet_improvement["project_areas"]
     if treatment_areas is not None:
         results["treatment_areas"] = treatment_areas
     if treatment_errors:
@@ -256,6 +290,11 @@ def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
         )
         tasks.append(
             async_calculate_treatment_areas.si(
+                funding_opportunity_report_id=funding_opportunity_report_id,
+            )
+        )
+        tasks.append(
+            async_calculate_aet_improvement.si(
                 funding_opportunity_report_id=funding_opportunity_report_id,
             )
         )
