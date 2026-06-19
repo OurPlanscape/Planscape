@@ -1,10 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FundingReportMapComponent } from './funding-report-map.component';
-import { MockProvider } from 'ng-mocks';
-import { MapConfigService } from '@app/maplibre-map/map-config.service';
+
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { MapConfigService } from '@app/maplibre-map/map-config.service';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { MockProvider } from 'ng-mocks';
+import { of } from 'rxjs';
 import { FundingMapConfigState } from '../funding-map-config-state';
+import { FundingReportMapComponent } from './funding-report-map.component';
 
 describe('FundingReportMapComponent', () => {
   let component: FundingReportMapComponent;
@@ -18,6 +22,11 @@ describe('FundingReportMapComponent', () => {
         MatSnackBarModule,
       ],
       providers: [
+        MockProvider(DataLayersStateService, {
+          dataTree$: of(null),
+          paths$: of([]),
+        }),
+        MockProvider(MapConfigState),
         MockProvider(FundingMapConfigState),
         MockProvider(MapConfigService),
       ],

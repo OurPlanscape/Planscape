@@ -55,8 +55,21 @@
         </ng-template>
       </div>
     </div>
+    <div class="data-layers-view" *ngIf="currentView === 'data_layers'">
+      <mat-tab-group
+        class="map-layers-tabs"
+        [(selectedIndex)]="tabIndex"
+        mat-stretch-tabs="false"
+        mat-align-tabs="start">
+        <mat-tab label="Data Layers">
+          <app-data-layers [useClearFooter]="false"></app-data-layers>
+        </mat-tab>
+        <mat-tab label="Base Layers">
+          <app-base-layers></app-base-layers>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
   </div>
-  <div class="data_layer_view" *ngIf="currentView === 'data_layers'"></div>
   <div class="right-side">
     <app-map-nav-bar>
       <sg-opacity-slider

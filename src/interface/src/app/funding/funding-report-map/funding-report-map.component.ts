@@ -28,6 +28,10 @@ import { MapConfigService } from '@app/maplibre-map/map-config.service';
 import { MapMultiProjectAreasComponent } from '../map-multi-project-areas/map-multi-project-areas.component';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { MapTooltipComponent } from '@app/treatments/map-tooltip/map-tooltip.component';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { DataLayer } from '@app/types';
+import { MatIconModule } from '@angular/material/icon';
+import { ButtonComponent } from '@styleguide';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@app/shared';
 import { FundingMapConfigState } from '../funding-map-config-state';
@@ -37,6 +41,7 @@ import { FundingMapConfigState } from '../funding-map-config-state';
   standalone: true,
   imports: [
     AsyncPipe,
+    ButtonComponent,
     ControlComponent,
     LayerComponent,
     MapBaseLayersComponent,
@@ -45,11 +50,11 @@ import { FundingMapConfigState } from '../funding-map-config-state';
     MapMultiProjectAreasComponent,
     MapTooltipComponent,
     MapZoomControlComponent,
+    MatIconModule,
     MatProgressSpinnerModule,
     NgIf,
     PlanningAreaLayerComponent,
   ],
-  // providers:[FundingMapConfigState],
   templateUrl: './funding-report-map.component.html',
   styleUrl: './funding-report-map.component.scss',
 })
@@ -57,6 +62,7 @@ export class FundingReportMapComponent {
   constructor(
     private fundingMapConfigState: FundingMapConfigState,
     private mapConfigService: MapConfigService,
+    private dataLayersStateService: DataLayersStateService,
     private authService: AuthService,
     private planState: PlanState,
     private scenarioState: ScenarioState,
@@ -101,6 +107,8 @@ export class FundingReportMapComponent {
     })
   );
 
+  selectedLayer$ = this.dataLayersStateService.viewedDataLayer$;
+
   hoveredProjectAreaId$ = new Subject<number | null>();
   mouseLngLat: LngLat | null = null;
 
@@ -138,6 +146,14 @@ export class FundingReportMapComponent {
 
   setMouseLngLat(value: LngLat | null) {
     this.mouseLngLat = value;
+  }
+
+  goToSelectedLayer(layer: DataLayer) {
+    this.dataLayersStateService.goToSelectedLayer(layer);
+  }
+
+  clearSelectedLayer() {
+    this.dataLayersStateService.clearViewedDataLayer();
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>

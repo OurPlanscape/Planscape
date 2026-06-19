@@ -110,6 +110,24 @@
 
 
 .data-layers-view {
-  height: 100%;
+  background-color: $color-white;
+  width: $funding-sidebar-width;
+  overflow: auto;
+  flex: 1;
+  
+    @include on-small() {
+    width: 100%;
+  }
 }
 
+.map-layers-tabs::ng-deep .mat-mdc-tab-header .mat-mdc-tab-label-container .mat-mdc-tab {
+  flex-grow: 1;
+}
+
+.map-layers-tabs::ng-deep .mat-mdc-tab-header {
+  position: sticky;
+  text-align: 0;
+  top: 0;
+  z-index: 100;
+  background-color: white;
+}

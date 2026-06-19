@@ -9,6 +9,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { ScenarioState } from '@scenario/scenario.state';
 import { MOCK_SCENARIO } from '@app/services/mocks';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { FundingMapConfigState } from '../funding-map-config-state';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 
@@ -25,6 +26,10 @@ describe('FullReportViewComponent', () => {
         MatSnackBarModule,
       ],
       providers: [
+        MockProvider(DataLayersStateService, {
+          dataTree$: of(null),
+          paths$: of([]),
+        }),
         MockProvider(FundingMapConfigState, { selectedProjectAreas$: of([]) }),
         MockProvider(MapConfigState),
         MockProvider(MapConfigService),

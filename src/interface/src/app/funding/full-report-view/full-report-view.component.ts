@@ -1,45 +1,48 @@
+import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
-import { BreadcrumbService } from '@app/services/breadcrumb.service';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTabsModule } from '@angular/material/tabs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { BaseLayersComponent } from '@app/base-layers/base-layers/base-layers.component';
+import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
+import { MapSelectorComponent } from '@app/explore/map-selector/map-selector.component';
+import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
+import { ScenarioState } from '@app/scenario/scenario.state';
+import { BreadcrumbService } from '@app/services/breadcrumb.service';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { ScenarioResult } from '@app/types';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { FundingReportService } from '@services/funding-report.service';
+import { FilterDropdownComponent, OpacitySliderComponent } from '@styleguide';
 import {
   ToggleButtonsConfig,
   ToggleTabsComponent,
 } from '@styleguide/toggle-tabs/toggle-tabs.component';
-import { FilterDropdownComponent, OpacitySliderComponent } from '@styleguide';
-import { AsyncPipe, NgIf } from '@angular/common';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ActivatedRoute, Router } from '@angular/router';
 import {
-  Observable,
+  FlameLengthReductionResponse,
+  FlameLengthRequestParams,
+  FundingReport,
+} from '@types';
+import {
   BehaviorSubject,
   combineLatest,
   filter,
   finalize,
   map,
+  Observable,
   shareReplay,
   Subject,
   switchMap,
   take,
   tap,
 } from 'rxjs';
-import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
-import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
-import { ScenarioResult } from '@app/types';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { ScenarioState } from '@scenario/scenario.state';
-import { FundingReportService } from '@services/funding-report.service';
-import { FundingReportComponent } from '../funding-report/funding-report.component';
-import {
-  FlameLengthReductionResponse,
-  FlameLengthRequestParams,
-  FundingReport,
-} from '@types';
 import { FundingMapConfigState } from '../funding-map-config-state';
+import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
+import { FundingReportComponent } from '../funding-report/funding-report.component';
 
 interface FilterProjectFormat {
   id: number;
@@ -53,6 +56,11 @@ interface FilterProjectFormat {
   standalone: true,
   imports: [
     AsyncPipe,
+    BaseLayersComponent,
+    DataLayersComponent,
+    FilterDropdownComponent,
+    FundingReportComponent,
+    MapSelectorComponent,
     NgIf,
     MatButtonToggleModule,
     MatIconModule,
@@ -133,6 +141,8 @@ export class FullReportViewComponent implements OnInit {
   updatingFlameLength = false;
   /** Apply clicks; `switchMap` cancels any in-flight request when a new one arrives. */
   private flameLengthRequest$ = new Subject<FlameLengthRequestParams>();
+
+  tabIndex = 0;
 
   constructor(
     private breadcrumbService: BreadcrumbService,
