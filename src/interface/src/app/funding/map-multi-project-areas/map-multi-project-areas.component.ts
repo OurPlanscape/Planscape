@@ -52,6 +52,7 @@ export class MapMultiProjectAreasComponent implements OnInit {
 
   @Input() labelField: 'name' | 'rank' | '' = 'name'; // blank string shows nothing
   @Input() planningApproach: PLANNING_APPROACH = 'OPTIMIZE_PROJECT_AREAS';
+  @Input() scenarioOrigin: 'USER' | 'SYSTEM' | null = null;
 
   @Output() changeHoveredProjectAreaId = new EventEmitter<number | null>();
   @Output() changeMouseLngLat = new EventEmitter<LngLat | null>();
@@ -64,9 +65,9 @@ export class MapMultiProjectAreasComponent implements OnInit {
 
   hoveredProjectAreaId$ = new Subject<number | null>();
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
-  opacity: number = 0.5;
-  scenarioOrigin: 'USER' | 'SYSTEM' | null = null;
   hoverColor = '#FFCD664D';
+
+  opacity: number = 0.5;
 
   selectedProjectAreas$ = this.fundingMapConfigState.selectedProjectAreas$;
 
@@ -134,14 +135,6 @@ export class MapMultiProjectAreasComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe((selectedIds) => {
         this.updateMapSelectionThickness(selectedIds);
-      });
-
-    this.scenarioState.currentScenario$
-      .pipe(untilDestroyed(this))
-      .subscribe((scenario) => {
-        if (scenario.origin) {
-          this.scenarioOrigin = scenario.origin;
-        }
       });
   }
 

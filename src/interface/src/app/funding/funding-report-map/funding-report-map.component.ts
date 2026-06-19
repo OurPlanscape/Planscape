@@ -87,6 +87,14 @@ export class FundingReportMapComponent {
     })
   );
 
+  scenarioOrigin$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => scenario.origin)
+  );
+
+  planningApproach$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => scenario.planning_approach ?? 'OPTIMIZE_PROJECT_AREAS')
+  );
+
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {
       return getBoundsFromGeometry(geometry);
@@ -95,10 +103,6 @@ export class FundingReportMapComponent {
 
   hoveredProjectAreaId$ = new Subject<number | null>();
   mouseLngLat: LngLat | null = null;
-
-  planningApproach$ = this.scenarioState.currentScenario$.pipe(
-    map((scenario) => scenario.planning_approach ?? 'OPTIMIZE_PROJECT_AREAS')
-  );
 
   mapLoaded(loadedMap: MapLibreMap) {
     this.mapLibreMap = loadedMap;
