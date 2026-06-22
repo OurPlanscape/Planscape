@@ -11,7 +11,6 @@ from rest_framework.mixins import (
     RetrieveModelMixin,
     UpdateModelMixin,
 )
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -47,7 +46,6 @@ class AdminWorkspaceViewSet(
         "update": UpdateWorkspaceSerializer,
         "partial_update": UpdateWorkspaceSerializer,
     }
-    pagination_class = LimitOffsetPagination
     filter_backends = [DjangoFilterBackend]
     filterset_class = WorkspaceFilterSet
 

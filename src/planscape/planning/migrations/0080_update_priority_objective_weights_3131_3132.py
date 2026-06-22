@@ -1,4 +1,8 @@
+import logging
+
 from django.db import migrations
+
+logger = logging.getLogger(__name__)
 
 
 def get_layer(DataLayer, layer_name: str):
@@ -89,13 +93,15 @@ def update_priority_objective_weights(apps, schema_editor):
     for goal in goals:
         tg = get_treatment_goal(TreatmentGoal, goal["name"])
         if not tg:
-            print(f"[weights migration] Missing TreatmentGoal: {goal['name']}")
+            logger.warning(f"[weights migration] Missing TreatmentGoal: {goal['name']}")
             continue
 
         for spec in goal["priority_layers"]:
             datalayer = get_layer(DataLayer, spec["layer"])
             if not datalayer:
-                print(f"[weights migration] Missing DataLayer: {spec['layer']}")
+                logger.warning(
+                    f"[weights migration] Missing DataLayer: {spec['layer']}"
+                )
                 continue
 
             upsert_usage(

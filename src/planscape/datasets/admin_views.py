@@ -9,7 +9,6 @@ from rest_framework.mixins import (
     RetrieveModelMixin,
     UpdateModelMixin,
 )
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -60,7 +59,6 @@ class AdminDatasetViewSet(
         "update": UpdateDatasetSerializer,
         "partial_update": UpdateDatasetSerializer,
     }
-    pagination_class = LimitOffsetPagination
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -90,7 +88,6 @@ class AdminDataLayerViewSet(
         "create": CreateDataLayerSerializer,
         "retrieve": DataLayerSerializer,
     }
-    pagination_class = LimitOffsetPagination
     filterset_class = DataLayerFilterSet
 
     def create(self, request, *args, **kwargs):
@@ -170,7 +167,6 @@ class AdminStyleViewSet(
         "create": CreateStyleSerializer,
         "retrieve": StyleSerializer,
     }
-    pagination_class = LimitOffsetPagination
     filterset_class = StyleFilterSet
 
     def create(self, request, *args, **kwargs):

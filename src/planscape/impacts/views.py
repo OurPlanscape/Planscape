@@ -45,7 +45,6 @@ from impacts.services import (
 from impacts.tasks import async_calculate_persist_impacts_treatment_plan
 from rest_framework import mixins, response, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
 from planscape.serializers import BaseErrorMessageSerializer
@@ -95,6 +94,7 @@ class TreatmentPlanViewSet(
     queryset = TreatmentPlan.objects.none()
     filterset_class = TreatmentPlanFilterSet
     permission_classes = [TreatmentPlanViewPermission]
+    pagination_class = None
     serializer_class = TreatmentPlanSerializer
     serializer_classes = {
         "list": TreatmentPlanListSerializer,
@@ -360,7 +360,6 @@ class TreatmentPrescriptionViewSet(
     permission_classes = [
         TreatmentPrescriptionViewPermission,
     ]
-    pagination_class = LimitOffsetPagination
     serializer_class = TreatmentPrescriptionSerializer
     serializer_classes = {
         "list": TreatmentPrescriptionListSerializer,
@@ -433,6 +432,7 @@ class TreatmentPlanNoteViewSet(viewsets.ModelViewSet):
     queryset = TreatmentPlanNote.objects.all()
     serializer_class = TreatmentPlanNoteSerializer
     permission_classes = [TreatmentPlanNoteViewPermission]
+    pagination_class = None
     serializer_classes = {
         "list": TreatmentPlanNoteListSerializer,
         "create": TreatmentPlanNoteCreateSerializer,

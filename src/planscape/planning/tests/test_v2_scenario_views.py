@@ -32,6 +32,8 @@ from planning.tests.factories import (
 
 
 class CreateScenarioTest(APITransactionTestCase):
+    serialized_rollback = True
+
     def setUp(self):
         self.user = UserFactory()
         self.planning_area = PlanningAreaFactory(user=self.user)

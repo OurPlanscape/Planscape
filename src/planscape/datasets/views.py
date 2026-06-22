@@ -10,7 +10,6 @@ from planscape.openpanel import track_openpanel
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -32,7 +31,6 @@ from datasets.services import browse, find_anything
 class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     queryset = Dataset.objects.none()
     permission_classes = [IsAuthenticatedOrReadOnly]
-    pagination_class = LimitOffsetPagination
     serializer_class = DatasetSerializer
     serializer_classes = {
         "list": DatasetSerializer,
@@ -98,7 +96,6 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
 class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     queryset = DataLayer.objects.none()
     permission_classes = [IsAuthenticatedOrReadOnly]
-    pagination_class = LimitOffsetPagination
     serializer_class = DataLayerSerializer
     serializer_classes = {
         "list": DataLayerSerializer,

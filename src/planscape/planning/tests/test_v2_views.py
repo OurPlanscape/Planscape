@@ -136,6 +136,8 @@ class CreatorsTest(APITestCase):
 
 
 class GetPlanningAreaTest(APITransactionTestCase):
+    serialized_rollback = True
+
     def setUp(self):
         self.user = UserFactory.create(username="testuser")
 
