@@ -8,6 +8,7 @@ import { STAND_OPTIONS } from '@plan/plan-helpers';
 import { catchError, combineLatest, map } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
+import { FeaturesModule } from '@app/features/features.module';
 
 @UntilDestroy()
 @Component({
@@ -19,6 +20,7 @@ import { ForsysService } from '@services/forsys.service';
     MatIconModule,
     ButtonComponent,
     DecimalPipe,
+    FeaturesModule,
   ],
   templateUrl: './legacy-scenario-config-overlay.component.html',
   styleUrl: './legacy-scenario-config-overlay.component.scss',
@@ -30,8 +32,26 @@ export class LegacyScenarioConfigOverlayComponent implements OnDestroy {
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
   currentScenario$ = this.scenarioState.currentScenario$;
   excludedAreas$ = this.forsysService.excludedAreas$;
+  includedAreas$ = this.forsysService.includedAreas$;
 
   readonly standSizeOptions = STAND_OPTIONS;
+
+  selectedIncludedAreas$ = combineLatest([
+    this.currentScenario$,
+    this.includedAreas$,
+  ]).pipe(
+    untilDestroyed(this),
+    map(([scenario, includedAreas]) => {
+      const ids = scenario.configuration?.included_areas ?? [];
+      const labels = ids
+        .map((id) => includedAreas.find((a) => a.id === id)?.name)
+        .filter((v): v is string => !!v);
+      return labels.length ? labels.join(', ') : '--';
+    }),
+    catchError(() => {
+      return '--';
+    })
+  );
 
   selectedExcludedAreas$ = combineLatest([
     this.currentScenario$,

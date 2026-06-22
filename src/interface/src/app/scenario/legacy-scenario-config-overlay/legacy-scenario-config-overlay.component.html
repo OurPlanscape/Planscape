@@ -18,7 +18,12 @@
       <dd>
         {{ scenarioGoal$ | async }}
       </dd>
-
+      <ng-container *appFeatureFlag="'ADD_INCLUDES'">
+        <dt>Included Areas:</dt>
+        <dd>
+          {{ selectedIncludedAreas$ | async }}
+        </dd>
+      </ng-container>
       <dt>Excluded Areas:</dt>
       <dd>
         {{ selectedExcludedAreas$ | async }}
