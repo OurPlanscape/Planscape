@@ -18,18 +18,13 @@ export type FundingReportMetric =
   | 'ABOVEGROUND_TOTAL'
   | 'TOTAL_FLAME_SEVERITY';
 
-/** Per-project-area AET (water availability) improvement breakdown. */
-export interface FundingReportAETImprovementProjectArea {
-  project_id: number;
-  improved_acres: number;
-  total_acres: number;
-  improved_area_percent: number;
-}
-
 /**
  * AET (water availability) summary block. Lives under `results.summary.AET` in
- * the report, and is also the whole-scenario portion of the `aet-improvement`
- * endpoint response.
+ * the report, and is also the response of the `aet-improvement` endpoint.
+ *
+ * Note: the backend also returns a per-project-area AET breakdown
+ * (`project_areas`), but the report only ever displays this whole-scenario
+ * summary, so the FE deliberately ignores it (it isn't typed or read anywhere).
  */
 export interface FundingReportAETSummary {
   /** The target percentage increase the calculation was run for. */
@@ -39,14 +34,6 @@ export interface FundingReportAETSummary {
   total_project_area_acres: number;
   /** Percent of the project area with a significant increase (0-100). */
   improved_area_percent: number;
-}
-
-/**
- * Full response of the `aet-improvement` endpoint: the summary block plus the
- * per-project-area breakdown for a target percentage increase.
- */
-export interface FundingReportAETImprovement extends FundingReportAETSummary {
-  project_areas: FundingReportAETImprovementProjectArea[];
 }
 
 /** Request body for the `aet-improvement` endpoint. */
@@ -63,10 +50,15 @@ export interface FundingReportResults {
   summary: Record<FundingReportMetric, FundingReportDataPoint[]> & {
     AET?: FundingReportAETSummary;
   };
-  /** Same metrics, broken down per project area. */
-  projects: Record<FundingReportMetric, FundingReportProjectDataPoint[]> & {
-    AET?: FundingReportAETImprovementProjectArea[];
-  };
+  /**
+   * Same metrics, broken down per project area.
+   *
+   * AET is intentionally omitted here: the water section always shows the
+   * whole-scenario `summary.AET` and is never broken down by project area, so
+   * the FE doesn't model or read the per-project AET the backend sends.
+   */
+  // AET?: FundingReportAETImprovementProjectArea[];
+  projects: Record<FundingReportMetric, FundingReportProjectDataPoint[]>;
 }
 
 // TODO full interface

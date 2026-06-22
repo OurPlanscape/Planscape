@@ -25,7 +25,7 @@ import {
   FlameLengthReductionResponse,
   FlameLengthRequestParams,
   FundingReport,
-  FundingReportAETImprovement,
+  FundingReportAETSummary,
 } from '@types';
 import {
   BehaviorSubject,
@@ -133,9 +133,7 @@ export class FullReportViewComponent implements OnInit {
     new BehaviorSubject<FlameLengthReductionResponse | null>(null);
 
   /** Latest water-availability recalculation, patched into the report locally. */
-  private water$ = new BehaviorSubject<FundingReportAETImprovement | null>(
-    null
-  );
+  private water$ = new BehaviorSubject<FundingReportAETSummary | null>(null);
 
   /** The fetched report with any local flame-length / water recalculation applied. */
   report$ = combineLatest([
@@ -289,31 +287,29 @@ export class FullReportViewComponent implements OnInit {
   }
 
   /**
-   * Replace the report's `AET` water metric (summary and per-project) with a
-   * recalculation, leaving the other metrics untouched. The endpoint returns the
-   * summary fields and the per-project breakdown together; we split them back
-   * into `summary.AET` / `projects.AET` the way the report stores them. Returns a
-   * new report object so change detection picks it up.
+   * Replace the report's `AET` water summary with a recalculation, leaving the
+   * other metrics untouched. Returns a new report object so change detection
+   * picks it up.
+   *
+   * Only `summary.AET` is patched: the report always displays the whole-scenario
+   * water summary (see the funding-report component's `water` getter) and never
+   * breaks AET down by project area, so the per-project AET the endpoint also
+   * returns is ignored.
    */
   private withWater(
     report: FundingReport | null,
-    water: FundingReportAETImprovement | null
+    water: FundingReportAETSummary | null
   ): FundingReport | null {
     if (!report || !report.results || !water) {
       return report;
     }
-    const { project_areas, ...summary } = water;
     return {
       ...report,
       results: {
         ...report.results,
         summary: {
           ...report.results.summary,
-          AET: summary,
-        },
-        projects: {
-          ...report.results.projects,
-          AET: project_areas,
+          AET: water,
         },
       },
     };

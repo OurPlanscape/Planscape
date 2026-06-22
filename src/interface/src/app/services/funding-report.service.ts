@@ -5,7 +5,7 @@ import {
   FlameLengthReductionResponse,
   FlameLengthRequestParams,
   FundingReport,
-  FundingReportAETImprovement,
+  FundingReportAETSummary,
 } from '@types';
 import { catchError, Observable, of, throwError } from 'rxjs';
 
@@ -63,8 +63,8 @@ export class FundingReportService {
   getWaterAvailability(
     scenarioId: number,
     percentage: number
-  ): Observable<FundingReportAETImprovement> {
-    return this.http.post<FundingReportAETImprovement>(
+  ): Observable<FundingReportAETSummary> {
+    return this.http.post<FundingReportAETSummary>(
       environment.backend_endpoint +
         `/v2/scenarios/${scenarioId}/aet-improvement/`,
       { percentage },

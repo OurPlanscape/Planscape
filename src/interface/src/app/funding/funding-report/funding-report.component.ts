@@ -327,7 +327,15 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     return this.reportType === 'preview';
   }
 
-  /** Water (AET) summary for the template, if the report carries one. */
+  /**
+   * Water (AET) figures for the template, if the report carries them.
+   *
+   * Unlike the time-series metrics (smoke, carbon, flame length), AET is always
+   * shown as the whole-scenario summary and is NOT broken down by the selected
+   * `projectAreas`. The backend also returns a per-project AET breakdown, but
+   * the FE deliberately doesn't model or read it, so the water section stays the
+   * same whatever the project-area filter is set to.
+   */
   get water(): FundingReportAETSummary | undefined {
     return this.report?.results?.summary?.AET;
   }
