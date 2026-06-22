@@ -311,10 +311,10 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     this.updateFlameLength.emit({ from_ft: greaterThan, to_ft: lesserThan });
   }
 
-  /** Keep the water availability field numeric, updating validity as the user types. */
+  /** Keep the water availability field numeric (max 3 digits), updating validity as the user types. */
   onWaterAvailabilityInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const sanitized = input.value.replace(/\D/g, '');
+    const sanitized = input.value.replace(/\D/g, '').slice(0, 3);
     if (sanitized !== input.value) {
       input.value = sanitized;
     }
