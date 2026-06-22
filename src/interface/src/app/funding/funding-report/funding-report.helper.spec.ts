@@ -59,27 +59,32 @@ describe('funding-report helper', () => {
 
     it('returns the whole-scenario summary when no areas are selected', () => {
       // passthrough — same reference, not a recompute
-      expect(aggregateMetricSummary(results, METRIC, [])).toBe(
+      expect(aggregateMetricSummary(results, METRIC, [], 'USER')).toBe(
         results.summary[METRIC]
       );
     });
 
     it('aggregates a single selected project, year-sorted', () => {
-      expect(aggregateMetricSummary(results, METRIC, [1])).toEqual([
+      expect(aggregateMetricSummary(results, METRIC, [1], 'USER')).toEqual([
         { year: 0, value: 120, baseline: 100, delta: 20 },
         { year: 5, value: 90, baseline: 100, delta: -10 },
       ]);
     });
 
     it('sums value and baseline across selected projects, recomputing delta', () => {
-      expect(aggregateMetricSummary(results, METRIC, [1, 2])).toEqual([
+      expect(aggregateMetricSummary(results, METRIC, [1, 2], 'USER')).toEqual([
         { year: 0, value: 200, baseline: 200, delta: 0 },
         { year: 5, value: 240, baseline: 200, delta: 20 },
       ]);
     });
 
     it('excludes projects that are not selected', () => {
-      const onlyProjectTwo = aggregateMetricSummary(results, METRIC, [2]);
+      const onlyProjectTwo = aggregateMetricSummary(
+        results,
+        METRIC,
+        [2],
+        'USER'
+      );
       expect(onlyProjectTwo).toEqual([
         { year: 0, value: 80, baseline: 100, delta: -20 },
         { year: 5, value: 150, baseline: 100, delta: 50 },
@@ -87,14 +92,44 @@ describe('funding-report helper', () => {
     });
 
     it('returns an empty list when no selected ids match the report', () => {
-      expect(aggregateMetricSummary(results, METRIC, [99])).toEqual([]);
+      expect(aggregateMetricSummary(results, METRIC, [99], 'USER')).toEqual([]);
     });
 
     it('yields a 0 delta when the aggregated baseline is 0', () => {
       const zeroBaseline = makeResults([project(1, 0, 50, 0)]);
-      expect(aggregateMetricSummary(zeroBaseline, METRIC, [1])).toEqual([
-        { year: 0, value: 50, baseline: 0, delta: 0 },
+      expect(aggregateMetricSummary(zeroBaseline, METRIC, [1], 'USER')).toEqual(
+        [{ year: 0, value: 50, baseline: 0, delta: 0 }]
+      );
+    });
+
+    it('matches SYSTEM-origin selections against proj_id, not project_id', () => {
+      // project_id and proj_id diverge: selecting by proj_id picks a different
+      // point than the same id would under USER origin.
+      const systemResults = makeResults([
+        {
+          project_id: 10,
+          proj_id: 1,
+          year: 0,
+          value: 120,
+          baseline: 100,
+          delta: 20,
+        },
+        {
+          project_id: 20,
+          proj_id: 2,
+          year: 0,
+          value: 80,
+          baseline: 100,
+          delta: -20,
+        },
       ]);
+      expect(
+        aggregateMetricSummary(systemResults, METRIC, [1], 'SYSTEM')
+      ).toEqual([{ year: 0, value: 120, baseline: 100, delta: 20 }]);
+      // The same id under USER origin matches nothing (no project_id === 1).
+      expect(
+        aggregateMetricSummary(systemResults, METRIC, [1], 'USER')
+      ).toEqual([]);
     });
   });
 });
