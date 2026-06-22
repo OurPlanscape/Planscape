@@ -362,11 +362,11 @@ class ClimateForesightPillarViewSetTest(APITestCase):
         response = self.client.get(self.base_url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.json()
+        results = response.json()["results"]
 
-        self.assertGreaterEqual(len(data), 10)
+        self.assertGreaterEqual(len(results), 10)
 
-        pillar_names = [p["name"] for p in data]
+        pillar_names = [p["name"] for p in results]
 
         self.assertIn("Air Quality", pillar_names)
         self.assertIn("Fire Dynamics", pillar_names)
@@ -382,17 +382,17 @@ class ClimateForesightPillarViewSetTest(APITestCase):
         response = self.client.get(self.base_url, {"run": self.user_run1.id})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.json()
+        results = response.json()["results"]
 
-        self.assertGreaterEqual(len(data), 12)
+        self.assertGreaterEqual(len(results), 12)
 
-        pillar_names = [p["name"] for p in data]
+        pillar_names = [p["name"] for p in results]
         self.assertIn("Custom Pillar 1", pillar_names)
         self.assertIn("Custom Pillar 2", pillar_names)
         self.assertIn("Air Quality", pillar_names)
         self.assertIn("Fire Dynamics", pillar_names)
 
-        custom_pillars = [p for p in data if p["is_custom"]]
+        custom_pillars = [p for p in results if p["is_custom"]]
         custom_pillar_names = [p["name"] for p in custom_pillars]
         self.assertIn("Custom Pillar 1", custom_pillar_names)
         self.assertIn("Custom Pillar 2", custom_pillar_names)
