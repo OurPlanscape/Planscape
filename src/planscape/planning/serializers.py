@@ -738,6 +738,25 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
 
     def validate_sub_units_layer(self, sub_units_layer):
         return sub_units_layer.pk
+    
+    def validate_included_areas(self, included_areas):
+        if included_areas is None:
+            return None
+        
+        if len(included_areas) == 0:
+            raise serializers.ValidationError("Cannot set an empty list of included_areas.")
+        
+        scenario = self.parent.instance
+        treatable_area = calculate_scenario_treatable_area(
+            scenario=scenario,
+            includes=included_areas
+        )
+
+        if not treatable_area or treatable_area.area == 0:
+            raise serializers.ValidationError("Selected included_areas does not generates any valid geometry.")
+        
+        return included_areas
+
 
     def update(self, instance, validated_data):
         instance.configuration = {
