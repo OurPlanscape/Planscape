@@ -32,12 +32,18 @@ from rasterio.features import geometry_mask
 from rasterio.mask import mask
 
 from funding_report.models import (
+    BIOMASS_VARIABLE,
     FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
     FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
     FUNDING_REPORT_YEARS,
+    MERCHANTABLE_CF_TO_BF_FACTOR,
     TREATMENT_NO_TREATMENT_LABEL,
     TREATMENT_PIXEL_VALUE_LABELS,
     TREATMENT_ROLE,
+    WOOD_TYPE_HARDWOOD,
+    WOOD_TYPE_MIXED,
+    WOOD_TYPE_SOFTWOOD,
+    BiomassRole,
     TREATMENT_VARIABLE,
     FundingOpportunityReport,
     FundingReportMetric,
@@ -697,4 +703,145 @@ def calculate_funding_report_flame_length_reduction(
         "projects": built["projects"].get(
             FundingReportMetric.TOTAL_FLAME_SEVERITY.value, []
         ),
+    }
+
+
+_BIOMASS_WOOD_TYPES: Dict[int, str] = {
+    WOOD_TYPE_SOFTWOOD: "softwood",
+    WOOD_TYPE_HARDWOOD: "hardwood",
+    WOOD_TYPE_MIXED: "mixed",
+}
+
+
+def get_biomass_datalayer(role: str) -> DataLayer:
+    datalayers = list(
+        DataLayer.objects.filter(
+            type=DataLayerType.RASTER,
+            metadata__contains={
+                "modules": {
+                    "funding_report": {
+                        "variable": BIOMASS_VARIABLE,
+                        "role": role,
+                    }
+                }
+            },
+        )[:2]
+    )
+    if not datalayers:
+        raise ValueError(
+            f"Missing funding report biomass datalayer with role={role!r}."
+        )
+    if len(datalayers) > 1:
+        raise ValueError(
+            f"Multiple funding report biomass datalayers found with role={role!r}."
+        )
+    return datalayers[0]
+
+
+def _extract_raw_biomass_volumes(
+    geometry: Dict[str, Any],
+    merch_src: rasterio.DatasetReader,
+    total_src: rasterio.DatasetReader,
+    wood_type_src: rasterio.DatasetReader,
+) -> Dict[str, float]:
+    """
+    Sums raster pixel values per wood type for one project area geometry.
+    Keys: merch_{softwood,hardwood,mixed}_cuft_ac and nm_{softwood,hardwood,mixed}_cuft_ac.
+
+    Raster pixels are already in output units (cuft/ac), so values are summed
+    directly with no area conversion.
+    """
+    empty: Dict[str, float] = {}
+    for name in _BIOMASS_WOOD_TYPES.values():
+        empty[f"merch_{name}_cuft_ac"] = 0.0
+        empty[f"nm_{name}_cuft_ac"] = 0.0
+
+    try:
+        merch_data, _ = mask(merch_src, [geometry], crop=True, filled=False)
+        total_data, _ = mask(total_src, [geometry], crop=True, filled=False)
+        wt_data, _ = mask(wood_type_src, [geometry], crop=True, filled=False)
+    except ValueError:
+        return empty
+
+    merch_arr = np.ma.array(merch_data[0], dtype=float)
+    total_arr = np.ma.array(total_data[0], dtype=float)
+    non_merch_arr = total_arr - merch_arr
+    wt_arr = np.ma.array(wt_data[0])
+
+    wt_nodata = np.ma.getmaskarray(wt_arr)
+    wt_raw = wt_arr.filled(0)
+    merch_ok = ~np.ma.getmaskarray(merch_arr) & np.isfinite(merch_arr.filled(np.nan))
+    nm_ok = ~np.ma.getmaskarray(non_merch_arr) & np.isfinite(
+        non_merch_arr.filled(np.nan)
+    )
+    merch_vals = merch_arr.filled(0.0)
+    nm_vals = non_merch_arr.filled(0.0)
+
+    result: Dict[str, float] = {}
+    for wt_value, wt_name in _BIOMASS_WOOD_TYPES.items():
+        wt_match = ~wt_nodata & (wt_raw == wt_value)
+        result[f"merch_{wt_name}_cuft_ac"] = float(merch_vals[wt_match & merch_ok].sum())
+        result[f"nm_{wt_name}_cuft_ac"] = float(nm_vals[wt_match & nm_ok].sum())
+
+    return result
+
+
+def _biomass_volumes_to_output(raw: Dict[str, float]) -> Dict[str, float]:
+    result: Dict[str, float] = {}
+    for wt_name in _BIOMASS_WOOD_TYPES.values():
+        merch_cuft_ac = raw.get(f"merch_{wt_name}_cuft_ac", 0.0)
+        nm_cuft_ac = raw.get(f"nm_{wt_name}_cuft_ac", 0.0)
+        result[f"merchantable_{wt_name}_bf_ac"] = merch_cuft_ac * MERCHANTABLE_CF_TO_BF_FACTOR
+        result[f"non_merchantable_{wt_name}_cuft_ac"] = nm_cuft_ac
+    return result
+
+
+def calculate_biomass_volumes(report: FundingOpportunityReport) -> Dict[str, Any]:
+    report = FundingOpportunityReport.objects.select_related("scenario").get(
+        pk=report.pk
+    )
+    project_areas = list(report.scenario.project_areas.all())
+
+    merch_layer = get_biomass_datalayer(BiomassRole.MERCHANTABLE)
+    total_layer = get_biomass_datalayer(BiomassRole.TOTAL)
+    wt_layer = get_biomass_datalayer(BiomassRole.WOOD_TYPE)
+
+    with (
+        rasterio.open(_datalayer_path(merch_layer)) as merch_src,
+        rasterio.open(_datalayer_path(total_layer)) as total_src,
+        rasterio.open(_datalayer_path(wt_layer)) as wt_src,
+    ):
+        raster_srid = merch_src.crs.to_epsg() if merch_src.crs else None
+        if raster_srid is None:
+            raise ValueError(
+                f"Biomass raster CRS {merch_src.crs} does not resolve to an EPSG SRID."
+            )
+
+        accumulated: Dict[str, float] = {
+            f"merch_{wt_name}_cuft_ac": 0.0 for wt_name in _BIOMASS_WOOD_TYPES.values()
+        } | {
+            f"nm_{wt_name}_cuft_ac": 0.0 for wt_name in _BIOMASS_WOOD_TYPES.values()
+        }
+
+        project_area_results = []
+        for project_area in project_areas:
+            geometry = json.loads(
+                maybe_transform(project_area.geometry, raster_srid).geojson
+            )
+            raw = _extract_raw_biomass_volumes(geometry, merch_src, total_src, wt_src)
+
+            project_area_results.append(
+                {
+                    "project_id": project_area.pk,
+                    "proj_id": (project_area.data or {}).get("proj_id"),
+                    **_biomass_volumes_to_output(raw),
+                }
+            )
+
+            for key in accumulated:
+                accumulated[key] += raw.get(key, 0.0)
+
+    return {
+        "summary": _biomass_volumes_to_output(accumulated),
+        "project_areas": project_area_results,
     }
