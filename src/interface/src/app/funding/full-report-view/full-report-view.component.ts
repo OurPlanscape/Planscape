@@ -142,7 +142,7 @@ export class FullReportViewComponent implements OnInit {
     this.water$,
   ]).pipe(
     map(([report, flameLength, water]) =>
-      this.withWater(this.withFlameLength(report, flameLength), water)
+      this.applyRecalculations(report, flameLength, water)
     ),
     shareReplay(1)
   );
@@ -259,59 +259,39 @@ export class FullReportViewComponent implements OnInit {
   }
 
   /**
-   * Replace the report's `TOTAL_FLAME_SEVERITY` (summary and per-project) with a
-   * flame-length recalculation, leaving the other metrics untouched. Returns a
-   * new report object so change detection picks it up.
-   */
-  private withFlameLength(
-    report: FundingReport | null,
-    flameLength: FlameLengthReductionResponse | null
-  ): FundingReport | null {
-    if (!report || !report.results || !flameLength) {
-      return report;
-    }
-    return {
-      ...report,
-      results: {
-        ...report.results,
-        summary: {
-          ...report.results.summary,
-          TOTAL_FLAME_SEVERITY: flameLength.summary,
-        },
-        projects: {
-          ...report.results.projects,
-          TOTAL_FLAME_SEVERITY: flameLength.projects,
-        },
-      },
-    };
-  }
-
-  /**
-   * Replace the report's `AET` water summary with a recalculation, leaving the
-   * other metrics untouched. Returns a new report object so change detection
-   * picks it up.
+   * Apply the locally-triggered recalculations on top of the fetched report,
+   * leaving any metric without a recalculation untouched. Returns a new report
+   * object so change detection picks it up.
    *
-   * Only `summary.AET` is patched: the report always displays the whole-scenario
-   * water summary (see the funding-report component's `water` getter) and never
-   * breaks AET down by project area, so the per-project AET the endpoint also
-   * returns is ignored.
+   * - Flame length patches `TOTAL_FLAME_SEVERITY` for both the summary and the
+   *   per-project breakdown.
+   * - Water patches only `summary.AET`: the report always displays the
+   *   whole-scenario water summary (see the funding-report component's `water`
+   *   getter) and never breaks AET down by project area, so the per-project AET
+   *   the endpoint also returns is ignored.
    */
-  private withWater(
+  private applyRecalculations(
     report: FundingReport | null,
+    flameLength: FlameLengthReductionResponse | null,
     water: FundingReportAETSummary | null
   ): FundingReport | null {
-    if (!report || !report.results || !water) {
+    if (!report?.results) {
       return report;
     }
-    return {
-      ...report,
-      results: {
-        ...report.results,
-        summary: {
-          ...report.results.summary,
-          AET: water,
-        },
-      },
-    };
+    const results = { ...report.results };
+    if (flameLength) {
+      results.summary = {
+        ...results.summary,
+        TOTAL_FLAME_SEVERITY: flameLength.summary,
+      };
+      results.projects = {
+        ...results.projects,
+        TOTAL_FLAME_SEVERITY: flameLength.projects,
+      };
+    }
+    if (water) {
+      results.summary = { ...results.summary, AET: water };
+    }
+    return { ...report, results };
   }
 }
