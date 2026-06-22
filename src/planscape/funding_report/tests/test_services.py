@@ -579,7 +579,7 @@ def write_biomass_rasters(tmp_dir: str):
         dst.write(np.array([[100, 200], [300, 400]], dtype=np.float32), 1)
     with rasterio.open(total_path, "w", dtype=np.float32, **profile) as dst:
         dst.write(np.array([[150, 280], [380, 500]], dtype=np.float32), 1)
-    with rasterio.open(wt_path, "w", dtype=np.uint8, nodata=0, **{**profile, "nodata": 0}) as dst:
+    with rasterio.open(wt_path, "w", dtype=np.uint8, **{**profile, "nodata": 0}) as dst:
         dst.write(np.array([[1, 2], [3, 1]], dtype=np.uint8), 1)
 
     return merch_path, total_path, wt_path
