@@ -997,7 +997,10 @@ class TestRemoveExcludes(TestCase):
         pa_geom = MultiPolygon([GEOSGeometry(json.dumps(json_geom))])
         self.planning_area = PlanningAreaFactory.create(geometry=pa_geom)
         self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatable_area=self.planning_area.geometry
+        )
         self.metrics = calculate_stand_vector_stats_with_stand_list(
             stand_ids=[stand.id for stand in self.stands],
             datalayer=self.datalayer,
@@ -1061,6 +1064,13 @@ class TestRemoveExcludes(TestCase):
         self.assertEqual(6, len(excluded_stands))
 
     def test_get_available_stands_ids(self):
+        stand_ids = get_available_stand_ids(self.scenario, StandSizeChoices.LARGE)
+        stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
+        self.assertEquals(17, len(stands))
+        self.assertEquals(len(stand_ids), len(stands))
+
+    @override_settings(FEATURE_FLAGS="ADD_INCLUDES")
+    def test_get_available_stands_ids_add_includes(self):
         stand_ids = get_available_stand_ids(self.scenario, StandSizeChoices.LARGE)
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.assertEquals(17, len(stands))
