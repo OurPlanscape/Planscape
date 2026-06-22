@@ -9,7 +9,6 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BaseLayersComponent } from '@app/base-layers/base-layers/base-layers.component';
 import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
-import { MapSelectorComponent } from '@app/explore/map-selector/map-selector.component';
 import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
@@ -60,7 +59,6 @@ interface FilterProjectFormat {
     DataLayersComponent,
     FilterDropdownComponent,
     FundingReportComponent,
-    MapSelectorComponent,
     NgIf,
     MatButtonToggleModule,
     MatIconModule,

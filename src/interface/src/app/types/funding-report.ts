@@ -8,6 +8,9 @@ export interface FundingReportDataPoint {
 
 export interface FundingReportProjectDataPoint extends FundingReportDataPoint {
   project_id: number;
+  // Present for SYSTEM-origin scenarios, where selection is keyed by the
+  // 1-based project index (treatment rank) rather than the project area id.
+  proj_id?: number;
 }
 
 export type FundingReportMetric =

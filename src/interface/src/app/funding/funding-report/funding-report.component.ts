@@ -35,6 +35,7 @@ import {
   FlameLengthRequestParams,
   FundingReport,
   FundingReportMetric,
+  ORIGIN_TYPE,
 } from '@types';
 import { aggregateMetricSummary, hasMetricData } from './funding-report.helper';
 import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
@@ -138,6 +139,12 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   /** Selected project area ids; empty means show the whole-scenario summary. */
   @Input() projectAreas: number[] = [];
   /**
+   * Scenario origin. Decides which per-project field the selected
+   * `projectAreas` ids are matched against: `project_id` for USER scenarios,
+   * `proj_id` (treatment rank) for SYSTEM ones.
+   */
+  @Input() origin: ORIGIN_TYPE = 'USER';
+  /**
    * The element that actually scrolls the report. When the report is embedded
    * in a host that owns the scroll (e.g. full-report-view), the host passes its
    * scroll container here. Defaults to the component's own `#scrollContainer`,
@@ -220,7 +227,10 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   /** True when the metric has any non-null data over the current selection. */
   private metricHasData(metric: FundingReportMetric): boolean {
     const results = this.report?.results;
-    return !!results && hasMetricData(results, metric, this.projectAreas);
+    return (
+      !!results &&
+      hasMetricData(results, metric, this.projectAreas, this.origin)
+    );
   }
 
   /** Build a bar chart from a report metric: one bar per year, value = % delta. */
@@ -245,9 +255,12 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
       return [];
     }
     // delta can be null when a metric had no valid pixels; treat it as 0.
-    return aggregateMetricSummary(results, metric, this.projectAreas).map(
-      (point) => point.delta ?? 0
-    );
+    return aggregateMetricSummary(
+      results,
+      metric,
+      this.projectAreas,
+      this.origin
+    ).map((point) => point.delta ?? 0);
   }
 
   onLayerSelected(layer: MapLayer): void {
