@@ -1695,7 +1695,12 @@ def get_available_stands(
         constraints = list()
     planning_area = scenario.planning_area
     area_transform = Area(Transform("geometry", settings.AREA_SRID))
-    stands = planning_area.get_stands(stand_size).annotate(area=area_transform)
+    if feature_enabled("ADD_INCLUDES"):
+        stands = scenario.get_treatable_area_stands(stand_size=stand_size)
+    else:
+        stands = planning_area.get_stands(stand_size)
+    
+    stands = stands.annotate(area=area_transform)
     total_area = stands.all().aggregate(total_area_m2=Sum("area"))["total_area_m2"]
 
     excluded_ids = []
