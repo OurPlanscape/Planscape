@@ -52,6 +52,7 @@ import {
   MapLayer,
 } from '../funding-map-layers/funding-map-layers.component';
 import { ScrollSpyDirective } from '@app/standalone/scroll-spy-directive/scroll-spy.directive';
+import { FundingMapConfigState } from '../funding-map-config-state';
 
 interface ChartConfig {
   data: ChartData<'bar'>;
@@ -100,6 +101,7 @@ const flameLengthRangeValidator: ValidatorFn = (
     ScrollSpyDirective,
     ButtonComponent,
   ],
+  providers: [FundingMapConfigState],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',
 })
