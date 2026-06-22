@@ -166,9 +166,13 @@ h5 {
   width: 80px;
 }
 
+.stat-cards-wrapper {
+  position: relative;
+}
+
 .stat-cards {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 16px;
 }
 
@@ -176,12 +180,13 @@ h5 {
   border: 1px solid #e1e1e1;
   border-radius: 4px;
   padding: 16px;
+  flex: 1
 }
 
 .stat-label {
   color: $color-md-gray;
   font-size: 14px;
-  margin-bottom: 8px;
+  margin-top: 8px;
 }
 
 .stat-value {

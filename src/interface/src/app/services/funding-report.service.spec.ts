@@ -5,7 +5,7 @@ import {
 } from '@angular/common/http/testing';
 
 import { FundingReportService } from './funding-report.service';
-import { FundingReport } from '@types';
+import { FundingReport, FundingReportAETSummary } from '@types';
 
 describe('FundingReportService', () => {
   let service: FundingReportService;
@@ -69,5 +69,26 @@ describe('FundingReportService', () => {
       .flush(null, { status: 500, statusText: 'Server Error' });
 
     expect(errored).toBeTrue();
+  });
+
+  it('getWaterAvailability POSTs the target percentage and returns the AET summary', () => {
+    const summary: FundingReportAETSummary = {
+      percentage: 25,
+      improved_acres: 50,
+      total_project_area_acres: 100,
+      improved_area_percent: 50,
+    };
+    let result: FundingReportAETSummary | undefined;
+    service.getWaterAvailability(123, 25).subscribe((r) => (result = r));
+
+    const req = httpMock.expectOne((r) =>
+      r.url.endsWith('v2/scenarios/123/aet-improvement/')
+    );
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ percentage: 25 });
+    expect(req.request.withCredentials).toBeTrue();
+    req.flush(summary);
+
+    expect(result).toEqual(summary);
   });
 });

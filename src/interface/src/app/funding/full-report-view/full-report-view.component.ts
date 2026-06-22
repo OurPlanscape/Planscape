@@ -25,6 +25,7 @@ import {
   FlameLengthReductionResponse,
   FlameLengthRequestParams,
   FundingReport,
+  FundingReportAETSummary,
 } from '@types';
 import {
   BehaviorSubject,
@@ -39,9 +40,10 @@ import {
   take,
   tap,
 } from 'rxjs';
-import { FundingMapConfigState } from '../funding-map-config-state';
+
 import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
 import { FundingReportComponent } from '../funding-report/funding-report.component';
+import { FundingMapConfigState } from '../funding-map-config-state';
 
 interface FilterProjectFormat {
   id: number;
@@ -130,15 +132,27 @@ export class FullReportViewComponent implements OnInit {
   private flameLength$ =
     new BehaviorSubject<FlameLengthReductionResponse | null>(null);
 
-  /** The fetched report with any local flame-length recalculation applied. */
-  report$ = combineLatest([this.fetchedReport$, this.flameLength$]).pipe(
-    map(([report, flameLength]) => this.withFlameLength(report, flameLength)),
+  /** Latest water-availability recalculation, patched into the report locally. */
+  private water$ = new BehaviorSubject<FundingReportAETSummary | null>(null);
+
+  /** The fetched report with any local flame-length / water recalculation applied. */
+  report$ = combineLatest([
+    this.fetchedReport$,
+    this.flameLength$,
+    this.water$,
+  ]).pipe(
+    map(([report, flameLength, water]) =>
+      this.applyRecalculations(report, flameLength, water)
+    ),
     shareReplay(1)
   );
 
   updatingFlameLength = false;
+  updatingWaterAvailability = false;
   /** Apply clicks; `switchMap` cancels any in-flight request when a new one arrives. */
   private flameLengthRequest$ = new Subject<FlameLengthRequestParams>();
+  /** Water % entered; `switchMap` cancels any in-flight request when a new one arrives. */
+  private waterRequest$ = new Subject<number>();
 
   tabIndex = 0;
 
@@ -194,6 +208,28 @@ export class FullReportViewComponent implements OnInit {
         untilDestroyed(this)
       )
       .subscribe((flameLength) => this.flameLength$.next(flameLength));
+
+    this.waterRequest$
+      .pipe(
+        switchMap((increasePercent) => {
+          // Set inside switchMap so a re-request re-arms the loader *after* the
+          // cancelled request's finalize has cleared it.
+          this.updatingWaterAvailability = true;
+          return this.scenarioState.currentScenarioId$.pipe(
+            filter((id): id is number => id !== null),
+            take(1),
+            switchMap((id) =>
+              this.fundingReportService.getWaterAvailability(
+                id,
+                increasePercent
+              )
+            ),
+            finalize(() => (this.updatingWaterAvailability = false))
+          );
+        }),
+        untilDestroyed(this)
+      )
+      .subscribe((water) => this.water$.next(water));
   }
 
   resultsToSelectionMenu(
@@ -218,30 +254,44 @@ export class FullReportViewComponent implements OnInit {
     this.flameLengthRequest$.next(params);
   }
 
+  updateWaterAvailability(increasePercent: number) {
+    this.waterRequest$.next(increasePercent);
+  }
+
   /**
-   * Replace the report's `TOTAL_FLAME_SEVERITY` (summary and per-project) with a
-   * flame-length recalculation, leaving the other metrics untouched. Returns a
-   * new report object so change detection picks it up.
+   * Apply the locally-triggered recalculations on top of the fetched report,
+   * leaving any metric without a recalculation untouched. Returns a new report
+   * object so change detection picks it up.
+   *
+   * - Flame length patches `TOTAL_FLAME_SEVERITY` for both the summary and the
+   *   per-project breakdown.
+   * - Water patches only `summary.AET`: the report always displays the
+   *   whole-scenario water summary (see the funding-report component's `water`
+   *   getter) and never breaks AET down by project area, so the per-project AET
+   *   the endpoint also returns is ignored.
    */
-  private withFlameLength(
+  private applyRecalculations(
     report: FundingReport | null,
-    flameLength: FlameLengthReductionResponse | null
+    flameLength: FlameLengthReductionResponse | null,
+    water: FundingReportAETSummary | null
   ): FundingReport | null {
-    if (!report || !report.results || !flameLength) {
+    if (!report?.results) {
       return report;
     }
-    return {
-      ...report,
-      results: {
-        summary: {
-          ...report.results.summary,
-          TOTAL_FLAME_SEVERITY: flameLength.summary,
-        },
-        projects: {
-          ...report.results.projects,
-          TOTAL_FLAME_SEVERITY: flameLength.projects,
-        },
-      },
-    };
+    const results = { ...report.results };
+    if (flameLength) {
+      results.summary = {
+        ...results.summary,
+        TOTAL_FLAME_SEVERITY: flameLength.summary,
+      };
+      results.projects = {
+        ...results.projects,
+        TOTAL_FLAME_SEVERITY: flameLength.projects,
+      };
+    }
+    if (water) {
+      results.summary = { ...results.summary, AET: water };
+    }
+    return { ...report, results };
   }
 }

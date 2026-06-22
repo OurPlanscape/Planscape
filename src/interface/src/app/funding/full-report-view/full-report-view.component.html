@@ -47,8 +47,10 @@
             [scrollElement]="reportScroll"
             reportType="full"
             [updatingFlameLength]="updatingFlameLength"
-            (updateFlameLength)="
-              updateFlameLength($event)
+            [updatingWaterAvailability]="updatingWaterAvailability"
+            (updateFlameLength)="updateFlameLength($event)"
+            (updateWaterAvailability)="
+              updateWaterAvailability($event)
             "></app-funding-report>
         </ng-container>
         <ng-template #loadingReport>
