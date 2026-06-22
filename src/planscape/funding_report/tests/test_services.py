@@ -675,10 +675,10 @@ class BiomassVolumesCalculationTest(TestCase):
     def test_calculate_biomass_volumes_nonoverlapping_project_area_returns_zeros(self):
         self._create_all_biomass_datalayers()
         far_away = MultiPolygon(
-            Polygon(((1e7, 1e7), (1e7, 1e7 + 10), (1e7 + 10, 1e7 + 10), (1e7 + 10, 1e7), (1e7, 1e7)), srid=3857),
+            Polygon(((10, 10), (10, 11), (11, 11), (11, 10), (10, 10)), srid=4269),
             srid=4269,
         )
-        self.project_area.geometry = far_away.transform(4269, clone=True)
+        self.project_area.geometry = far_away
         self.project_area.save(update_fields=["geometry"])
 
         results = calculate_biomass_volumes(self.report)
