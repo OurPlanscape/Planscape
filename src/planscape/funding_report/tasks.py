@@ -187,37 +187,20 @@ def async_finalize_funding_report_results(
         if result is None:
             continue
         kind = result.get("kind")
-        if kind == "treatment_datalayer":
-            if "error" in result:
-                treatment_errors.append(result)
-            else:
-                treatment_datalayer_id = result["datalayer_id"]
-            continue
-        if kind == "treatment_areas":
-            if "error" in result:
-                treatment_errors.append(result)
-            else:
-                treatment_areas = {
-                    "projects": result["projects"],
-                    "total": result["total"],
-                }
-            continue
-        if kind == "aet_improvement":
-            if "error" in result:
-                treatment_errors.append(result)
-            else:
-                aet_improvement = result
-            continue
-        if kind == "biomass_volumes":
-            if "error" in result:
-                treatment_errors.append(result)
-            else:
-                biomass_volumes = result
-            continue
         if "error" in result:
-            errors.append(result)
-        else:
-            successes.append(result)
+            (treatment_errors if kind else errors).append(result)
+            continue
+        match kind:
+            case "treatment_datalayer":
+                treatment_datalayer_id = result["datalayer_id"]
+            case "treatment_areas":
+                treatment_areas = {"projects": result["projects"], "total": result["total"]}
+            case "aet_improvement":
+                aet_improvement = result
+            case "biomass_volumes":
+                biomass_volumes = result
+            case _:
+                successes.append(result)
 
     results = build_funding_report_results(successes)
     if aet_improvement is not None:
