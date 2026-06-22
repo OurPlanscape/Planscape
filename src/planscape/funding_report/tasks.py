@@ -16,6 +16,7 @@ from funding_report.services import (
     build_datalayer_lookup,
     build_funding_report_results,
     calculate_aet_improvement,
+    calculate_biomass_volumes,
     calculate_project_area_delta,
     calculate_treatment_pixel_areas,
     generate_treatment_clip_datalayer,
@@ -154,6 +155,22 @@ def async_calculate_aet_improvement(
 
 
 @app.task()
+def async_calculate_biomass_volumes(
+    funding_opportunity_report_id: int,
+) -> dict | None:
+    try:
+        report = FundingOpportunityReport.objects.get(pk=funding_opportunity_report_id)
+        result = calculate_biomass_volumes(report=report)
+        return {"kind": "biomass_volumes", **result}
+    except Exception as exc:
+        log.exception(
+            "Failed to calculate biomass volumes for funding report %s.",
+            funding_opportunity_report_id,
+        )
+        return {"kind": "biomass_volumes", "error": str(exc)}
+
+
+@app.task()
 def async_finalize_funding_report_results(
     project_results: list[dict | None],
     funding_opportunity_report_id: int,
@@ -164,36 +181,26 @@ def async_finalize_funding_report_results(
     treatment_datalayer_id = None
     treatment_areas = None
     aet_improvement = None
+    biomass_volumes = None
 
     for result in project_results:
         if result is None:
             continue
         kind = result.get("kind")
-        if kind == "treatment_datalayer":
-            if "error" in result:
-                treatment_errors.append(result)
-            else:
-                treatment_datalayer_id = result["datalayer_id"]
-            continue
-        if kind == "treatment_areas":
-            if "error" in result:
-                treatment_errors.append(result)
-            else:
-                treatment_areas = {
-                    "projects": result["projects"],
-                    "total": result["total"],
-                }
-            continue
-        if kind == "aet_improvement":
-            if "error" in result:
-                treatment_errors.append(result)
-            else:
-                aet_improvement = result
-            continue
         if "error" in result:
-            errors.append(result)
-        else:
-            successes.append(result)
+            (treatment_errors if kind else errors).append(result)
+            continue
+        match kind:
+            case "treatment_datalayer":
+                treatment_datalayer_id = result["datalayer_id"]
+            case "treatment_areas":
+                treatment_areas = {"projects": result["projects"], "total": result["total"]}
+            case "aet_improvement":
+                aet_improvement = result
+            case "biomass_volumes":
+                biomass_volumes = result
+            case _:
+                successes.append(result)
 
     results = build_funding_report_results(successes)
     if aet_improvement is not None:
@@ -204,6 +211,9 @@ def async_finalize_funding_report_results(
             "improved_area_percent": aet_improvement["improved_area_percent"],
         }
         results["projects"]["AET"] = aet_improvement["project_areas"]
+    if biomass_volumes is not None:
+        results["summary"]["BIOMASS_VOLUMES"] = biomass_volumes["summary"]
+        results["projects"]["BIOMASS_VOLUMES"] = biomass_volumes["project_areas"]
     if treatment_areas is not None:
         results["treatment_areas"] = treatment_areas
     if treatment_errors:
@@ -295,6 +305,11 @@ def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
         )
         tasks.append(
             async_calculate_aet_improvement.si(
+                funding_opportunity_report_id=funding_opportunity_report_id,
+            )
+        )
+        tasks.append(
+            async_calculate_biomass_volumes.si(
                 funding_opportunity_report_id=funding_opportunity_report_id,
             )
         )

@@ -43,6 +43,22 @@ FUNDING_REPORT_DATALAYER_NAME_REGEX = re.compile(
 TREATMENT_VARIABLE = "TREATMENT"
 TREATMENT_ROLE = "treatment"
 
+BIOMASS_VARIABLE = "BIOMASS"
+
+WOOD_TYPE_SOFTWOOD = 1
+WOOD_TYPE_HARDWOOD = 2
+WOOD_TYPE_MIXED = 3
+
+# Conversion factor from cubic feet to board feet (Scribner scale).
+# Confirm with data team before changing.
+MERCHANTABLE_CF_TO_BF_FACTOR = 5.5
+
+
+class BiomassRole(models.TextChoices):
+    MERCHANTABLE = "merchantable", "Merchantable"
+    TOTAL = "total", "Total"
+    WOOD_TYPE = "wood_type", "Wood Type"
+
 # Label for pixels that are nodata in the treatments raster.
 TREATMENT_NO_TREATMENT_LABEL = "No Treatment"
 
