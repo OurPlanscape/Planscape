@@ -658,19 +658,20 @@ class BiomassVolumesCalculationTest(TestCase):
 
         results = calculate_biomass_volumes(self.report)
 
-        area_ac = get_acreage(self.project_area.geometry)
+        # Pixel values are already in output units (cuft/ac). Values are summed
+        # directly per wood type, then merchantable is converted cuft/ac → bf/ac.
+        #
+        # Softwood pixels: (0,0) merch=100, nm=50; (1,1) merch=400, nm=100
+        # Hardwood pixels: (0,1) merch=200, nm=80
+        # Mixed pixels:    (1,0) merch=300, nm=80
         cf_to_bf = MERCHANTABLE_CF_TO_BF_FACTOR
-
-        # Softwood pixels: (0,0) merch=100 nm=50; (1,1) merch=400 nm=100
-        # Hardwood pixels: (0,1) merch=200 nm=80
-        # Mixed pixels: (1,0) merch=300 nm=80
         summary = results["summary"]
-        self.assertAlmostEqual(summary["merchantable_softwood_bf_ac"], 500 / area_ac * cf_to_bf, places=4)
-        self.assertAlmostEqual(summary["merchantable_hardwood_bf_ac"], 200 / area_ac * cf_to_bf, places=4)
-        self.assertAlmostEqual(summary["merchantable_mixed_bf_ac"], 300 / area_ac * cf_to_bf, places=4)
-        self.assertAlmostEqual(summary["non_merchantable_softwood_cuft_ac"], 150 / area_ac, places=4)
-        self.assertAlmostEqual(summary["non_merchantable_hardwood_cuft_ac"], 80 / area_ac, places=4)
-        self.assertAlmostEqual(summary["non_merchantable_mixed_cuft_ac"], 80 / area_ac, places=4)
+        self.assertAlmostEqual(summary["merchantable_softwood_bf_ac"], (100 + 400) * cf_to_bf, places=4)
+        self.assertAlmostEqual(summary["merchantable_hardwood_bf_ac"], 200 * cf_to_bf, places=4)
+        self.assertAlmostEqual(summary["merchantable_mixed_bf_ac"], 300 * cf_to_bf, places=4)
+        self.assertAlmostEqual(summary["non_merchantable_softwood_cuft_ac"], 50 + 100, places=4)
+        self.assertAlmostEqual(summary["non_merchantable_hardwood_cuft_ac"], 80, places=4)
+        self.assertAlmostEqual(summary["non_merchantable_mixed_cuft_ac"], 80, places=4)
 
     def test_calculate_biomass_volumes_nonoverlapping_project_area_returns_zeros(self):
         self._create_all_biomass_datalayers()

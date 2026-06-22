@@ -745,13 +745,16 @@ def _extract_raw_biomass_volumes(
     wood_type_src: rasterio.DatasetReader,
 ) -> Dict[str, float]:
     """
-    Returns raw cubic-feet totals per wood type for one project area geometry.
-    Keys: merch_{softwood,hardwood,mixed}_cuft and nm_{softwood,hardwood,mixed}_cuft.
+    Sums raster pixel values per wood type for one project area geometry.
+    Keys: merch_{softwood,hardwood,mixed}_cuft_ac and nm_{softwood,hardwood,mixed}_cuft_ac.
+
+    Raster pixels are already in output units (cuft/ac), so values are summed
+    directly with no area conversion.
     """
     empty: Dict[str, float] = {}
     for name in _BIOMASS_WOOD_TYPES.values():
-        empty[f"merch_{name}_cuft"] = 0.0
-        empty[f"nm_{name}_cuft"] = 0.0
+        empty[f"merch_{name}_cuft_ac"] = 0.0
+        empty[f"nm_{name}_cuft_ac"] = 0.0
 
     try:
         merch_data, _ = mask(merch_src, [geometry], crop=True, filled=False)
@@ -777,27 +780,19 @@ def _extract_raw_biomass_volumes(
     result: Dict[str, float] = {}
     for wt_value, wt_name in _BIOMASS_WOOD_TYPES.items():
         wt_match = ~wt_nodata & (wt_raw == wt_value)
-        result[f"merch_{wt_name}_cuft"] = float(merch_vals[wt_match & merch_ok].sum())
-        result[f"nm_{wt_name}_cuft"] = float(nm_vals[wt_match & nm_ok].sum())
+        result[f"merch_{wt_name}_cuft_ac"] = float(merch_vals[wt_match & merch_ok].sum())
+        result[f"nm_{wt_name}_cuft_ac"] = float(nm_vals[wt_match & nm_ok].sum())
 
     return result
 
 
-def _biomass_volumes_per_acre(
-    raw_cuft: Dict[str, float], total_acres: float
-) -> Dict[str, float]:
+def _biomass_volumes_to_output(raw: Dict[str, float]) -> Dict[str, float]:
     result: Dict[str, float] = {}
     for wt_name in _BIOMASS_WOOD_TYPES.values():
-        merch_cuft = raw_cuft.get(f"merch_{wt_name}_cuft", 0.0)
-        nm_cuft = raw_cuft.get(f"nm_{wt_name}_cuft", 0.0)
-        result[f"merchantable_{wt_name}_bf_ac"] = (
-            merch_cuft / total_acres * MERCHANTABLE_CF_TO_BF_FACTOR
-            if total_acres
-            else 0.0
-        )
-        result[f"non_merchantable_{wt_name}_cuft_ac"] = (
-            nm_cuft / total_acres if total_acres else 0.0
-        )
+        merch_cuft_ac = raw.get(f"merch_{wt_name}_cuft_ac", 0.0)
+        nm_cuft_ac = raw.get(f"nm_{wt_name}_cuft_ac", 0.0)
+        result[f"merchantable_{wt_name}_bf_ac"] = merch_cuft_ac * MERCHANTABLE_CF_TO_BF_FACTOR
+        result[f"non_merchantable_{wt_name}_cuft_ac"] = nm_cuft_ac
     return result
 
 
@@ -822,15 +817,14 @@ def calculate_biomass_volumes(report: FundingOpportunityReport) -> Dict[str, Any
                 f"Biomass raster CRS {merch_src.crs} does not resolve to an EPSG SRID."
             )
 
-        accumulated: Dict[str, float] = {}
-        for wt_name in _BIOMASS_WOOD_TYPES.values():
-            accumulated[f"merch_{wt_name}_cuft"] = 0.0
-            accumulated[f"nm_{wt_name}_cuft"] = 0.0
-        total_acres = 0.0
+        accumulated: Dict[str, float] = {
+            f"merch_{wt_name}_cuft_ac": 0.0 for wt_name in _BIOMASS_WOOD_TYPES.values()
+        } | {
+            f"nm_{wt_name}_cuft_ac": 0.0 for wt_name in _BIOMASS_WOOD_TYPES.values()
+        }
 
         project_area_results = []
         for project_area in project_areas:
-            area_ac = get_acreage(project_area.geometry)
             geometry = json.loads(
                 maybe_transform(project_area.geometry, raster_srid).geojson
             )
@@ -840,15 +834,14 @@ def calculate_biomass_volumes(report: FundingOpportunityReport) -> Dict[str, Any
                 {
                     "project_id": project_area.pk,
                     "proj_id": (project_area.data or {}).get("proj_id"),
-                    **_biomass_volumes_per_acre(raw, area_ac),
+                    **_biomass_volumes_to_output(raw),
                 }
             )
 
             for key in accumulated:
                 accumulated[key] += raw.get(key, 0.0)
-            total_acres += area_ac
 
     return {
-        "summary": _biomass_volumes_per_acre(accumulated, total_acres),
+        "summary": _biomass_volumes_to_output(accumulated),
         "project_areas": project_area_results,
     }
