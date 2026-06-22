@@ -81,6 +81,11 @@
   </mgl-control>
 </mgl-map>
 
-<div *ngIf="loading$ | async" class="loader">
+<div
+  class="loader"
+  [class.visible]="loading$ | async"
+  [attr.aria-hidden]="
+    (loading$ | async) === false || (loading$ | async) === null
+  ">
   <mat-spinner diameter="32"></mat-spinner>
 </div>
