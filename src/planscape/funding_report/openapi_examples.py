@@ -47,6 +47,14 @@ FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE = OpenApiExample(
                     "total_project_area_acres": 5000.0,
                     "improved_area_percent": 24.69,
                 },
+                "BIOMASS_VOLUMES": {
+                    "merchantable_softwood_bf_ac": 1820.5,
+                    "merchantable_hardwood_bf_ac": 430.2,
+                    "merchantable_mixed_bf_ac": 95.1,
+                    "non_merchantable_softwood_cuft_ac": 12.4,
+                    "non_merchantable_hardwood_cuft_ac": 3.1,
+                    "non_merchantable_mixed_cuft_ac": 0.9,
+                },
             },
             "projects": {
                 "ABOVEGROUND_TOTAL": [
@@ -65,6 +73,18 @@ FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE = OpenApiExample(
                         "improved_acres": 1234.5,
                         "total_acres": 5000.0,
                         "improved_area_percent": 24.69,
+                    }
+                ],
+                "BIOMASS_VOLUMES": [
+                    {
+                        "project_id": 14,
+                        "proj_id": None,
+                        "merchantable_softwood_bf_ac": 1820.5,
+                        "merchantable_hardwood_bf_ac": 430.2,
+                        "merchantable_mixed_bf_ac": 95.1,
+                        "non_merchantable_softwood_cuft_ac": 12.4,
+                        "non_merchantable_hardwood_cuft_ac": 3.1,
+                        "non_merchantable_mixed_cuft_ac": 0.9,
                     }
                 ],
             },

@@ -1161,7 +1161,10 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(config.get("targets").get("estimated_cost"), 12345)
 
     # Test sequential patches, ensure we retain values as expected
-    @mock.patch("planning.serializers.calculate_scenario_treatable_area", return_value=None)
+    @mock.patch(
+        "planning.serializers.calculate_scenario_treatable_area", 
+        return_value=MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
+    )
     def test_patch_scenario_incremental_updates(self, treatable_area_mock):
         # create valid excluded_areas and included_areas with real PKs
         excluded_layers = DataLayerFactory.create_batch(
@@ -1348,7 +1351,94 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.scenario.refresh_from_db()
 
         self.assertIsNotNone(self.scenario.treatable_area)
-        calculate_scenario_treatable_area_mock.assert_called_once()
+        calculate_scenario_treatable_area_mock.assert_called()
+
+    @mock.patch(
+        "planning.serializers.calculate_scenario_treatable_area", 
+        return_value=MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
+    )
+    def test_patch_scenario_with_includes_invalid_datalayer_ids(
+        self, 
+        calculate_scenario_treatable_area_mock
+    ):
+        included_layers = DataLayerFactory.create_batch(
+            2,
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        included_ids = [layer.pk + 100 for layer in included_layers]
+
+        payload = {
+            "configuration": {
+                "included_areas": included_ids,
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.scenario.refresh_from_db()
+        self.assertIsNone(self.scenario.treatable_area)
+        self.assertEqual(calculate_scenario_treatable_area_mock.call_count, 0)
+
+    @mock.patch(
+        "planning.serializers.calculate_scenario_treatable_area", 
+        return_value=MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
+    )
+    def test_patch_scenario_with_includes_empty_list(
+        self, calculate_scenario_treatable_area_mock
+    ):
+
+        payload = {
+            "configuration": {
+                "included_areas": [],
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.assertIn(
+            b'{"configuration":{"included_areas":["Cannot set an empty list of included_areas."]}}',
+            response.content,
+        )
+
+        self.scenario.refresh_from_db()
+        self.assertIsNone(self.scenario.treatable_area)
+        self.assertEqual(calculate_scenario_treatable_area_mock.call_count, 0)
+
+    @mock.patch(
+        "planning.serializers.calculate_scenario_treatable_area", 
+        return_value=None
+    )
+    def test_patch_scenario_with_includes_no_area(self, calculate_scenario_treatable_area_mock):
+        included_layers = DataLayerFactory.create_batch(
+            2,
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        included_ids = [layer.pk for layer in included_layers]
+
+        payload = {
+            "configuration": {
+                "included_areas": included_ids,
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.assertIn(
+            b'{"configuration":{"included_areas":["Selected included_areas does not generates any valid geometry."]}}',
+            response.content,
+        )
+
+        self.scenario.refresh_from_db()
+        self.assertIsNone(self.scenario.treatable_area)
+        calculate_scenario_treatable_area_mock.assert_called()
 
     def test_patch_scenario_configuration_unauthenticated(self):
         payload = {"max_budget": 5000}

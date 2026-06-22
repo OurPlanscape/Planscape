@@ -47,7 +47,7 @@ from stands.models import Stand, StandMetric, StandSizeChoices, area_from_size
 from stands.services import get_datalayer_metric, get_stand_grid_key_search_precision
 from utils.geometry import to_multi
 
-from planning.geometry import coerce_geojson, coerce_geometry
+from planning.geometry import coerce_geojson, coerce_geometry, to_multipolygon
 from planning.models import (
     GeoPackageStatus,
     PlanningArea,
@@ -1838,8 +1838,8 @@ def calculate_scenario_treatable_area(
                 included_geometry = layer_geometry
             else:
                 included_geometry = included_geometry.union(layer_geometry)
-
-    return included_geometry
+    
+    return to_multipolygon(included_geometry) if included_geometry else None
 
 
 def get_min_project_area(scenario: Scenario) -> float:

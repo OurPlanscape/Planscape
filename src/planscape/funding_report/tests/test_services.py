@@ -20,6 +20,8 @@ from rasterio.mask import mask
 
 from funding_report.models import (
     FUNDING_REPORT_YEARS,
+    MERCHANTABLE_CF_TO_BF_FACTOR,
+    BiomassRole,
     FundingOpportunityReport,
     FundingOpportunityReportStatus,
     FundingReportMetric,
@@ -29,11 +31,13 @@ from funding_report.services import (
     calculate_aet_improvement,
     build_datalayer_lookup,
     build_funding_report_results,
+    calculate_biomass_volumes,
     calculate_funding_report_flame_length_reduction,
     calculate_pixel_deltas,
     calculate_project_area_aet_improvement,
     calculate_project_area_delta,
     get_aet_delta_datalayer,
+    get_biomass_datalayer,
 )
 
 
@@ -545,3 +549,141 @@ class FlameLengthReductionCalculationTest(TestCase):
         for entry in results["projects"]:
             self.assertEqual(entry["project_id"], self.project_area.pk)
             self.assertNotIn("interval", entry)
+
+
+def write_biomass_rasters(tmp_dir: str):
+    """
+    Write three aligned 2x2 rasters (10 m pixels, EPSG:3857) for biomass tests.
+
+    Layout (row, col):
+      (0,0) softwood  merch=100  total=150  → nm=50
+      (0,1) hardwood  merch=200  total=280  → nm=80
+      (1,0) mixed     merch=300  total=380  → nm=80
+      (1,1) softwood  merch=400  total=500  → nm=100
+    """
+    transform = from_origin(0, 20, 10, 10)
+    profile = dict(
+        driver="GTiff",
+        height=2,
+        width=2,
+        count=1,
+        crs="EPSG:3857",
+        transform=transform,
+        nodata=-9999,
+    )
+    merch_path = Path(tmp_dir) / "merchantable_biomass.tif"
+    total_path = Path(tmp_dir) / "total_biomass.tif"
+    wt_path = Path(tmp_dir) / "wood_type.tif"
+
+    with rasterio.open(merch_path, "w", dtype=np.float32, **profile) as dst:
+        dst.write(np.array([[100, 200], [300, 400]], dtype=np.float32), 1)
+    with rasterio.open(total_path, "w", dtype=np.float32, **profile) as dst:
+        dst.write(np.array([[150, 280], [380, 500]], dtype=np.float32), 1)
+    with rasterio.open(wt_path, "w", dtype=np.uint8, **{**profile, "nodata": 0}) as dst:
+        dst.write(np.array([[1, 2], [3, 1]], dtype=np.uint8), 1)
+
+    return merch_path, total_path, wt_path
+
+
+class BiomassVolumesCalculationTest(TestCase):
+    def setUp(self):
+        tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp_dir.cleanup)
+        self.merch_path, self.total_path, self.wt_path = write_biomass_rasters(
+            tmp_dir.name
+        )
+
+        self.geometry = raster_bounds_geometry(self.merch_path)
+        planning_area = PlanningAreaFactory.create(
+            with_stands=False, geometry=self.geometry
+        )
+        self.scenario = ScenarioFactory.create(planning_area=planning_area)
+        self.project_area = ProjectAreaFactory.create(
+            scenario=self.scenario, geometry=self.geometry
+        )
+        self.report = FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.scenario.user,
+        )
+        self.pixel_area_sq_m = 100.0  # 10 m × 10 m
+
+    def _create_biomass_datalayer(self, role: str, path: Path):
+        return DataLayerFactory.create(
+            name=f"Biomass {role}",
+            type=DataLayerType.RASTER,
+            url=str(path),
+            metadata={"modules": {"funding_report": {"variable": "BIOMASS", "role": role}}},
+        )
+
+    def _create_all_biomass_datalayers(self):
+        self._create_biomass_datalayer(BiomassRole.MERCHANTABLE, self.merch_path)
+        self._create_biomass_datalayer(BiomassRole.TOTAL, self.total_path)
+        self._create_biomass_datalayer(BiomassRole.WOOD_TYPE, self.wt_path)
+
+    def test_get_biomass_datalayer_returns_correct_layer(self):
+        layer = self._create_biomass_datalayer(BiomassRole.MERCHANTABLE, self.merch_path)
+
+        self.assertEqual(get_biomass_datalayer(BiomassRole.MERCHANTABLE), layer)
+
+    def test_get_biomass_datalayer_raises_when_missing(self):
+        with self.assertRaises(ValueError):
+            get_biomass_datalayer(BiomassRole.MERCHANTABLE)
+
+    def test_calculate_biomass_volumes_returns_six_values_per_project_and_summary(self):
+        self._create_all_biomass_datalayers()
+
+        results = calculate_biomass_volumes(self.report)
+
+        self.assertIn("summary", results)
+        self.assertIn("project_areas", results)
+
+        summary = results["summary"]
+        expected_keys = {
+            "merchantable_softwood_bf_ac",
+            "merchantable_hardwood_bf_ac",
+            "merchantable_mixed_bf_ac",
+            "non_merchantable_softwood_cuft_ac",
+            "non_merchantable_hardwood_cuft_ac",
+            "non_merchantable_mixed_cuft_ac",
+        }
+        self.assertEqual(set(summary.keys()), expected_keys)
+
+        self.assertEqual(len(results["project_areas"]), 1)
+        project_result = results["project_areas"][0]
+        self.assertEqual(project_result["project_id"], self.project_area.pk)
+        self.assertEqual(set(project_result.keys()), expected_keys | {"project_id", "proj_id"})
+
+    def test_calculate_biomass_volumes_correct_values(self):
+        self._create_all_biomass_datalayers()
+
+        results = calculate_biomass_volumes(self.report)
+
+        # Pixel values are already in output units (cuft/ac). Values are summed
+        # directly per wood type, then merchantable is converted cuft/ac → bf/ac.
+        #
+        # Softwood pixels: (0,0) merch=100, nm=50; (1,1) merch=400, nm=100
+        # Hardwood pixels: (0,1) merch=200, nm=80
+        # Mixed pixels:    (1,0) merch=300, nm=80
+        cf_to_bf = MERCHANTABLE_CF_TO_BF_FACTOR
+        summary = results["summary"]
+        self.assertAlmostEqual(summary["merchantable_softwood_bf_ac"], (100 + 400) * cf_to_bf, places=4)
+        self.assertAlmostEqual(summary["merchantable_hardwood_bf_ac"], 200 * cf_to_bf, places=4)
+        self.assertAlmostEqual(summary["merchantable_mixed_bf_ac"], 300 * cf_to_bf, places=4)
+        self.assertAlmostEqual(summary["non_merchantable_softwood_cuft_ac"], 50 + 100, places=4)
+        self.assertAlmostEqual(summary["non_merchantable_hardwood_cuft_ac"], 80, places=4)
+        self.assertAlmostEqual(summary["non_merchantable_mixed_cuft_ac"], 80, places=4)
+
+    def test_calculate_biomass_volumes_nonoverlapping_project_area_returns_zeros(self):
+        self._create_all_biomass_datalayers()
+        far_away = MultiPolygon(
+            Polygon(((10, 10), (10, 11), (11, 11), (11, 10), (10, 10)), srid=4269),
+            srid=4269,
+        )
+        self.project_area.geometry = far_away
+        self.project_area.save(update_fields=["geometry"])
+
+        results = calculate_biomass_volumes(self.report)
+
+        summary = results["summary"]
+        for key in summary:
+            self.assertEqual(summary[key], 0.0, msg=f"{key} should be 0 for non-overlapping area")
