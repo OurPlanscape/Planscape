@@ -55,13 +55,17 @@ mgl-map {
 }
 
 .loader {
-
-  width: 100%;
+  position: absolute;
   height: 100%;
-  flex-shrink: 0;
+  width: 100%;
   background-color: rgba($color-black, 0.4);
-
-  display: none;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 400ms cubic-bezier(0.25, 0.8, 0.25, 1);
+  pointer-events: none;
 
   mat-spinner {
     --mdc-circular-progress-active-indicator-color: white;
@@ -69,7 +73,6 @@ mgl-map {
 }
 
 .loader.visible {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  opacity: 1;
+  pointer-events: auto;
 }
