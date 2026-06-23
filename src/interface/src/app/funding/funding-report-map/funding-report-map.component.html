@@ -53,7 +53,7 @@
     >Click project area to select</app-map-tooltip
   >
 
-  <mgl-control position="top-right">
+  <mgl-control position="top-right" *ngIf="allowInteraction">
     <app-funding-acreage-legend></app-funding-acreage-legend>
   </mgl-control>
 

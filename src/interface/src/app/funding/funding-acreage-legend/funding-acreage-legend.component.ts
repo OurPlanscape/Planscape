@@ -1,12 +1,21 @@
-import { NgFor, NgIf } from '@angular/common';
+import { DecimalPipe, NgFor, NgIf, NgStyle } from '@angular/common';
 import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { ButtonComponent } from '@styleguide';
 
 @Component({
   selector: 'app-funding-acreage-legend',
   standalone: true,
-  imports: [ButtonComponent, MatIconModule, NgFor, NgIf],
+  imports: [
+    ButtonComponent,
+    DecimalPipe,
+    MatIconModule,
+    MatMenuModule,
+    NgFor,
+    NgIf,
+    NgStyle,
+  ],
   templateUrl: './funding-acreage-legend.component.html',
   styleUrl: './funding-acreage-legend.component.scss',
 })

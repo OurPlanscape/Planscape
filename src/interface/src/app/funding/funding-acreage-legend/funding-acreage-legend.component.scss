@@ -14,11 +14,11 @@
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(2px);
   display: flex;
-  padding: 16px;
+  padding: 0 16px 16px 16px;
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
-  width: 238px;
+  width: 180px;
   height: auto;
   max-height: calc(100% - $map-nav-bar-height);
   text-overflow: ellipsis;
@@ -37,10 +37,12 @@
 //   }
 }
 
-.title-line {
+.title-line, .treatment-title-line {
   display: flex;
   flex-direction: row;
   align-items: center;
+  width: 100%;
+  padding: 10px 0;
 }
 
 .title {
@@ -57,7 +59,7 @@
   min-height: 24px;
 }
 
-.close-button {
+.close-button, .info-icon {
     color: $color-white;
 }
 
@@ -78,6 +80,7 @@
   gap: 8px;
   width: 100%;
     color: $color-white;
+    padding: 0 20px;
 
 }
 
@@ -98,18 +101,37 @@
   white-space: nowrap;
 }
 
-.entries-legend {
-  display: flex;
+
+.static-lines, .dynamic-acres-row {
+   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   overflow: hidden;
   height: 100%;
   width: 100%;
 }
 
-.entries-legend:hover {
-  overflow-y: auto;
+.static-section, .dynamic-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
 }
+
+// .entries-legend {
+//   display: flex;
+//   flex-direction: column;
+//   gap: 8px;
+//   overflow: hidden;
+//   height: 100%;
+//   width: 100%;
+// }
+
+// .entries-legend:hover {
+//   overflow-y: auto;
+// }
 
 .swatch-gradient {
   width: 14px;
