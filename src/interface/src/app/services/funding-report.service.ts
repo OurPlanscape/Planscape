@@ -5,6 +5,7 @@ import {
   FlameLengthReductionResponse,
   FlameLengthRequestParams,
   FundingReport,
+  FundingReportAETSummary,
 } from '@types';
 import { catchError, Observable, of, throwError } from 'rxjs';
 
@@ -48,6 +49,25 @@ export class FundingReportService {
       environment.backend_endpoint +
         `/v2/scenarios/${scenarioId}/flame-length-reduction/`,
       { ...params },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /**
+   * Recalculate the water availability (AET improvement) metric for a target
+   * percentage increase. Mirrors `getFlameLengthReduction`: returns only the
+   * water portion so the caller can patch it into the report.
+   */
+  getWaterAvailability(
+    scenarioId: number,
+    percentage: number
+  ): Observable<FundingReportAETSummary> {
+    return this.http.post<FundingReportAETSummary>(
+      environment.backend_endpoint +
+        `/v2/scenarios/${scenarioId}/aet-improvement/`,
+      { percentage },
       {
         withCredentials: true,
       }

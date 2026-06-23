@@ -5,7 +5,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ButtonComponent } from '@styleguide';
 import { STAND_OPTIONS } from '@plan/plan-helpers';
-import { catchError, combineLatest, map, shareReplay, switchMap } from 'rxjs';
+import {
+  catchError,
+  combineLatest,
+  map,
+  of,
+  shareReplay,
+  switchMap,
+} from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
 import {
@@ -21,7 +28,8 @@ import {
 import { DataLayersService } from '@services';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-import { filter } from 'rxjs/operators';
+import { filter, startWith } from 'rxjs/operators';
+import { FeaturesModule } from '@app/features/features.module';
 
 @UntilDestroy()
 @Component({
@@ -34,6 +42,7 @@ import { filter } from 'rxjs/operators';
     ButtonComponent,
     DecimalPipe,
     MatProgressSpinnerModule,
+    FeaturesModule,
   ],
   templateUrl: './scenario-config-overlay.component.html',
   styleUrl: './scenario-config-overlay.component.scss',
@@ -46,6 +55,7 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
   currentScenario$ = this.scenarioState.currentScenario$;
   excludedAreas$ = this.forsysService.excludedAreas$;
+  includedAreas$ = this.forsysService.includedAreas$;
 
   configuration: ScenarioV3Config | null = null;
   slopeId: number | null = null;
@@ -72,6 +82,25 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
       (s) =>
         s.planning_approach && isPlanningApproachSubUnits(s.planning_approach)
     )
+  );
+
+  selectedIncludedAreas$ = combineLatest([
+    this.currentScenario$,
+    this.includedAreas$,
+  ]).pipe(
+    untilDestroyed(this),
+    map(([scenario, includedAreas]) => {
+      const config = scenario.configuration as ScenarioV3Config;
+      const ids = config.included_areas ?? [];
+
+      const labels = ids
+        .map((id) => includedAreas.find((a) => a.id === id)?.name)
+        .filter((v): v is string => !!v);
+
+      return labels.length ? labels.join(', ') : '--';
+    }),
+    startWith(null),
+    catchError(() => of('--'))
   );
 
   selectedExcludedAreas$ = combineLatest([

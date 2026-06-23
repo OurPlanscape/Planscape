@@ -1,8 +1,22 @@
 import {
+  FundingReportBiomassVolumes,
   FundingReportDataPoint,
   FundingReportMetric,
+  FundingReportProjectDataPoint,
   FundingReportResults,
+  ORIGIN_TYPE,
 } from '@types';
+
+/**
+ * The per-project field that selection ids are matched against. USER scenarios
+ * select by project area id (`project_id`); SYSTEM scenarios select by the
+ * 1-based project index / treatment rank (`proj_id`).
+ */
+function projectIdKey(
+  origin: ORIGIN_TYPE
+): keyof Pick<FundingReportProjectDataPoint, 'project_id' | 'proj_id'> {
+  return origin === 'SYSTEM' ? 'proj_id' : 'project_id';
+}
 
 /**
  * Percentage change after treatment for a year, mirroring the backend's
@@ -18,18 +32,21 @@ export function percentDelta(value: number, baseline: number): number {
  * computed; if every point is null the chart should be hidden.
  *
  * An empty `projectAreas` checks the whole-scenario summary; a non-empty list
- * checks only the selected project areas.
+ * checks only the selected project areas. `origin` decides which per-project
+ * field the selection ids are matched against.
  */
 export function hasMetricData(
   results: FundingReportResults,
   metric: FundingReportMetric,
-  projectAreas: number[]
+  projectAreas: number[],
+  origin: ORIGIN_TYPE
 ): boolean {
+  const idKey = projectIdKey(origin);
   const points =
     projectAreas.length === 0
       ? results.summary[metric]
       : results.projects[metric].filter((point) =>
-          projectAreas.includes(point.project_id)
+          projectAreas.includes(point[idKey] as number)
         );
   return points.some((point) => point.value !== null);
 }
@@ -40,20 +57,23 @@ export function hasMetricData(
  * An empty `projectAreas` means "all areas" and returns the precomputed
  * whole-scenario summary as-is. A non-empty list aggregates only those projects
  * the same way the backend builds the summary: sum value & baseline per year,
- * then recompute the percentage delta.
+ * then recompute the percentage delta. `origin` decides which per-project field
+ * the selection ids are matched against.
  */
 export function aggregateMetricSummary(
   results: FundingReportResults,
   metric: FundingReportMetric,
-  projectAreas: number[]
+  projectAreas: number[],
+  origin: ORIGIN_TYPE
 ): FundingReportDataPoint[] {
   if (projectAreas.length === 0) {
     return results.summary[metric];
   }
+  const idKey = projectIdKey(origin);
   const selected = new Set(projectAreas);
   const byYear = new Map<number, { value: number; baseline: number }>();
   for (const point of results.projects[metric]) {
-    if (!selected.has(point.project_id)) {
+    if (!selected.has(point[idKey] as number)) {
       continue;
     }
     const agg = byYear.get(point.year) ?? { value: 0, baseline: 0 };
@@ -69,4 +89,48 @@ export function aggregateMetricSummary(
       baseline,
       delta: percentDelta(value, baseline),
     }));
+}
+
+/**
+ * Estimated biomass volumes for the chosen project areas.
+ *
+ * An empty `projectAreas` means "all areas" and returns the precomputed
+ * whole-scenario summary as-is. A non-empty list sums each volume field over
+ * the selected project areas, mirroring the backend, which accumulates raw
+ * per-area values before the (linear) unit conversion — so summing the
+ * already-converted per-area outputs yields the same totals.
+ *
+ * Returns `undefined` when no biomass data is available for the selection.
+ * `origin` decides which per-project field the selection ids are matched against.
+ */
+export function aggregateBiomassVolumes(
+  results: FundingReportResults,
+  projectAreas: number[],
+  origin: ORIGIN_TYPE
+): FundingReportBiomassVolumes | undefined {
+  if (projectAreas.length === 0) {
+    return results.summary.BIOMASS_VOLUMES;
+  }
+  const projects = results.projects.BIOMASS_VOLUMES;
+  if (!projects) {
+    return undefined;
+  }
+  const idKey = projectIdKey(origin);
+  const selected = new Set(projectAreas);
+  const matches = projects.filter((project) =>
+    selected.has(project[idKey] as number)
+  );
+  if (matches.length === 0) {
+    return undefined;
+  }
+  const sum = (key: keyof FundingReportBiomassVolumes) =>
+    matches.reduce((total, project) => total + (project[key] ?? 0), 0);
+  return {
+    merchantable_softwood_bf_ac: sum('merchantable_softwood_bf_ac'),
+    merchantable_hardwood_bf_ac: sum('merchantable_hardwood_bf_ac'),
+    merchantable_mixed_bf_ac: sum('merchantable_mixed_bf_ac'),
+    non_merchantable_softwood_cuft_ac: sum('non_merchantable_softwood_cuft_ac'),
+    non_merchantable_hardwood_cuft_ac: sum('non_merchantable_hardwood_cuft_ac'),
+    non_merchantable_mixed_cuft_ac: sum('non_merchantable_mixed_cuft_ac'),
+  };
 }

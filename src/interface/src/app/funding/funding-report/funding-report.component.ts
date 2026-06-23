@@ -34,9 +34,16 @@ import { FundingReportMapComponent } from '../funding-report-map/funding-report-
 import {
   FlameLengthRequestParams,
   FundingReport,
+  FundingReportAETSummary,
+  FundingReportBiomassVolumes,
   FundingReportMetric,
+  ORIGIN_TYPE,
 } from '@types';
-import { aggregateMetricSummary, hasMetricData } from './funding-report.helper';
+import {
+  aggregateBiomassVolumes,
+  aggregateMetricSummary,
+  hasMetricData,
+} from './funding-report.helper';
 import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
 import {
   AbstractControl,
@@ -53,6 +60,11 @@ import {
 } from '../funding-map-layers/funding-map-layers.component';
 import { ScrollSpyDirective } from '@app/standalone/scroll-spy-directive/scroll-spy.directive';
 import { FundingMapConfigState } from '../funding-map-config-state';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { debounceTime, distinctUntilChanged, filter } from 'rxjs';
+
+/** Pause after the last keystroke before recalculating water availability. */
+const WATER_DEBOUNCE_MS = 300;
 
 interface ChartConfig {
   data: ChartData<'bar'>;
@@ -77,6 +89,7 @@ const flameLengthRangeValidator: ValidatorFn = (
   return greaterThan > lesserThan ? null : { range: true };
 };
 
+@UntilDestroy()
 @Component({
   selector: 'app-funding-report',
   standalone: true,
@@ -140,6 +153,12 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   /** Selected project area ids; empty means show the whole-scenario summary. */
   @Input() projectAreas: number[] = [];
   /**
+   * Scenario origin. Decides which per-project field the selected
+   * `projectAreas` ids are matched against: `project_id` for USER scenarios,
+   * `proj_id` (treatment rank) for SYSTEM ones.
+   */
+  @Input() origin: ORIGIN_TYPE = 'USER';
+  /**
    * The element that actually scrolls the report. When the report is embedded
    * in a host that owns the scroll (e.g. full-report-view), the host passes its
    * scroll container here. Defaults to the component's own `#scrollContainer`,
@@ -148,6 +167,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   @Input() scrollElement?: HTMLElement;
   /** While true, a loader covers the flame length chart (recalc in flight). */
   @Input() updatingFlameLength = false;
+  /** While true, a loader covers the water stat cards (recalc in flight). */
+  @Input() updatingWaterAvailability = false;
 
   // todo datalayer probably
   @Output() showLayer = new EventEmitter<number>();
@@ -157,6 +178,16 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit(): void {
     Chart.register(ChartDataLabels);
     this.assignSections();
+
+    // Recalculate water availability as the user types, after a short pause.
+    this.waterAvailabilityControl.valueChanges
+      .pipe(
+        debounceTime(WATER_DEBOUNCE_MS),
+        distinctUntilChanged(),
+        filter((value): value is number => value !== null),
+        untilDestroyed(this)
+      )
+      .subscribe((value) => this.updateWaterAvailability.emit(value));
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -203,6 +234,12 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   treeCarbonHasData = false;
   flameLengthHasData = false;
 
+  /**
+   * Estimated biomass volumes for the current selection, or undefined when the
+   * report carries no biomass data. Rebuilt alongside the charts.
+   */
+  biomass?: FundingReportBiomassVolumes;
+
   private buildCharts(): void {
     this.smokeChart = this.buildSummaryChart('POTENTIAL_SMOKE', 'blue');
     this.treeCarbonChart = this.buildSummaryChart(
@@ -217,12 +254,20 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     this.smokeHasData = this.metricHasData('POTENTIAL_SMOKE');
     this.treeCarbonHasData = this.metricHasData('ABOVEGROUND_TOTAL');
     this.flameLengthHasData = this.metricHasData('TOTAL_FLAME_SEVERITY');
+
+    const results = this.report?.results;
+    this.biomass = results
+      ? aggregateBiomassVolumes(results, this.projectAreas, this.origin)
+      : undefined;
   }
 
   /** True when the metric has any non-null data over the current selection. */
   private metricHasData(metric: FundingReportMetric): boolean {
     const results = this.report?.results;
-    return !!results && hasMetricData(results, metric, this.projectAreas);
+    return (
+      !!results &&
+      hasMetricData(results, metric, this.projectAreas, this.origin)
+    );
   }
 
   /** Build a bar chart from a report metric: one bar per year, value = % delta. */
@@ -247,9 +292,12 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
       return [];
     }
     // delta can be null when a metric had no valid pixels; treat it as 0.
-    return aggregateMetricSummary(results, metric, this.projectAreas).map(
-      (point) => point.delta ?? 0
-    );
+    return aggregateMetricSummary(
+      results,
+      metric,
+      this.projectAreas,
+      this.origin
+    ).map((point) => point.delta ?? 0);
   }
 
   onLayerSelected(layer: MapLayer): void {
@@ -281,10 +329,10 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     this.updateFlameLength.emit({ from_ft: greaterThan, to_ft: lesserThan });
   }
 
-  /** Keep the water availability field numeric, updating validity as the user types. */
+  /** Keep the water availability field numeric (max 3 digits), updating validity as the user types. */
   onWaterAvailabilityInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const sanitized = input.value.replace(/\D/g, '');
+    const sanitized = input.value.replace(/\D/g, '').slice(0, 3);
     if (sanitized !== input.value) {
       input.value = sanitized;
     }
@@ -293,16 +341,20 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     );
   }
 
-  /** Emit the water availability increase (%) once it is a valid number. */
-  emitWaterAvailability(): void {
-    const value = this.waterAvailabilityControl.value;
-    if (value === null) {
-      return;
-    }
-    this.updateWaterAvailability.emit(value);
-  }
-
   get isPreview() {
     return this.reportType === 'preview';
+  }
+
+  /**
+   * Water (AET) figures for the template, if the report carries them.
+   *
+   * Unlike the time-series metrics (smoke, carbon, flame length), AET is always
+   * shown as the whole-scenario summary and is NOT broken down by the selected
+   * `projectAreas`. The backend also returns a per-project AET breakdown, but
+   * the FE deliberately doesn't model or read it, so the water section stays the
+   * same whatever the project-area filter is set to.
+   */
+  get water(): FundingReportAETSummary | undefined {
+    return this.report?.results?.summary?.AET;
   }
 }

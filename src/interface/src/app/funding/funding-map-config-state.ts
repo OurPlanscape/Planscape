@@ -18,16 +18,17 @@ export class FundingMapConfigState extends MapConfigState {
   /*  the project_id for USER origin or the rank for SYSTEM origin
   */
   toggleSelectedProjectArea(id: any) {
-    // if the id is already selected, we remove it.
     const currentSelection = this._selectedProjectAreas$.getValue();
+    // if the id is already selected, we remove it.
+
     if (currentSelection.includes(id)) {
       this._selectedProjectAreas$.next(
         currentSelection.filter((p) => p !== id)
       );
     } else {
       // otherwise we add it
-      currentSelection.push(id);
-      this._selectedProjectAreas$.next(currentSelection);
+
+      this._selectedProjectAreas$.next([...currentSelection, id]);
     }
   }
 }
