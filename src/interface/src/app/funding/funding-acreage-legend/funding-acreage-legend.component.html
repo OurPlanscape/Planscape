@@ -1,5 +1,5 @@
 <div class="treatment-acres-legend">
-  <div class="title-line">
+  <div class="title-header">
     <div class="title">Legend</div>
     <button
       sg-button
@@ -9,56 +9,62 @@
       <mat-icon>close</mat-icon>
     </button>
   </div>
-  <div class="static-section">
-    <div class="static-row">
-      <div class="legend-line">
-        <div
-          class="swatch-box"
-          [ngStyle]="{ 'background-color': '#064BBA' }"></div>
-        <div class="swatch-label">Total Planning Area Acres</div>
+  <div class="acres-section">
+    <div class="static-section">
+      <div class="static-row">
+        <div class="legend-line">
+          <div
+            class="swatch-box"
+            [ngStyle]="{ 'background-color': '#064BBA' }"></div>
+          <div class="swatch-label">Total Planning Area Acres</div>
+        </div>
+        <div class="acres-line">
+          <div class="acres-detail">
+            {{ totalAcres | number: '1.0-0' }} acres
+          </div>
+        </div>
       </div>
-      <div class="acres-line">
-        <div class="acres-detail">{{ totalAcres | number: '1.0-0' }} acres</div>
-      </div>
-    </div>
-    <div class="static-row">
-      <div class="legend-line">
-        <div
-          class="swatch-box"
-          [ngStyle]="{ 'background-color': '#344F42' }"></div>
-        <div class="swatch-label">Selected Project Area Acres:</div>
-      </div>
-      <div class="acres-line">
-        <div class="acres-detail">
-          {{ selectedAcres | number: '1.0-0' }} acres
+      <div class="static-row">
+        <div class="legend-line">
+          <div
+            class="swatch-box"
+            [ngStyle]="{ 'background-color': '#344F42' }"></div>
+          <div class="swatch-label">Selected Project Area Acres:</div>
+        </div>
+        <div class="acres-line">
+          <div class="acres-detail">
+            {{ selectedAcres | number: '1.0-0' }} acres
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="treatment-title-line">
-    <div class="title">Treatment Type</div>
-    <button
-      sg-button
-      variant="icon-only"
-      icon="info"
-      class="info-icon"
-      [outlined]="true"
-      [matMenuTriggerFor]="popoverMenu"></button>
-    <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
-      TODO tooltip
-    </mat-menu>
-  </div>
-  <div class="dynamic-section">
-    <div class="dynamic-acres-row" *ngFor="let acreageDetail of acreageDetails">
-      <div class="legend-line">
-        <div
-          class="swatch-box"
-          [ngStyle]="{ 'background-color': acreageDetail.color }"></div>
-        <div class="swatch-label">{{ acreageDetail.name }}</div>
-      </div>
-      <div class="acres-line">
-        <div class="acres-detail">
-          {{ acreageDetail.acres | number: '1.0-0' }} acres
+    <div class="treatment-title-line">
+      <div class="title">Treatment Type</div>
+      <button
+        sg-button
+        variant="icon-only"
+        icon="info"
+        class="info-icon"
+        [outlined]="true"
+        [matMenuTriggerFor]="popoverMenu"></button>
+      <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
+        TODO tooltip
+      </mat-menu>
+    </div>
+    <div class="dynamic-section">
+      <div
+        class="dynamic-acres-row"
+        *ngFor="let acreageDetail of acreageDetails">
+        <div class="legend-line">
+          <div
+            class="swatch-box"
+            [ngStyle]="{ 'background-color': acreageDetail.color }"></div>
+          <div class="swatch-label">{{ acreageDetail.name }}</div>
+        </div>
+        <div class="acres-line">
+          <div class="acres-detail">
+            {{ acreageDetail.acres | number: '1.0-0' }} acres
+          </div>
         </div>
       </div>
     </div>

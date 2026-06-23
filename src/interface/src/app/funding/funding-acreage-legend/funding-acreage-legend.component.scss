@@ -14,11 +14,9 @@
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(2px);
   display: flex;
-  padding: 0 16px 16px 16px;
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
-  width: 180px;
   height: auto;
   max-height: calc(100% - $map-nav-bar-height);
   text-overflow: ellipsis;
@@ -28,22 +26,46 @@
     height 0.8s ease;
   white-space: nowrap;
 
-//   &:hover {
-//     width: 100%;
-//     text-overflow: ellipsis;
-//     height: auto;
-//     max-width: auto;
-//     opacity: 1;
-//   }
+  padding: 0;
+  width: 280px;
+  position: relative;
+
 }
 
-.title-line, .treatment-title-line {
+.title-header {
   display: flex;
   flex-direction: row;
   align-items: center;
   width: 100%;
-  padding: 10px 0;
+  box-sizing: border-box;
+  padding: 10px 16px;
+  flex: 1;
+  justify-content: space-between;
+  border-bottom: 1px #ffffff19 solid;
 }
+
+.treatment-title-line {
+ display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  flex: 1;
+  justify-content: space-between;
+  border-top: 1px #ffffff19 solid;
+  padding: 12px 0;
+}
+
+.acres-section {
+
+  padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 
 .title {
   @include standard-label();
@@ -54,13 +76,13 @@
   text-overflow: ellipsis;
   overflow-x: hidden;
   white-space: nowrap;
-  width: 100%;
   text-transform: capitalize;
   min-height: 24px;
 }
 
-.close-button, .info-icon {
-    color: $color-white;
+.close-button,
+.info-icon {
+  color: $color-white;
 }
 
 
@@ -69,7 +91,7 @@
   align-items: flex-start;
   gap: 8px;
   width: 100%;
-    color: $color-white;
+  color: $color-white;
 
 }
 
@@ -79,8 +101,8 @@
   align-items: flex-start;
   gap: 8px;
   width: 100%;
-    color: $color-white;
-    padding: 0 20px;
+  color: $color-white;
+  padding: 0 20px;
 
 }
 
@@ -102,8 +124,9 @@
 }
 
 
-.static-lines, .dynamic-acres-row {
-   display: flex;
+.static-lines,
+.dynamic-acres-row {
+  display: flex;
   flex-direction: column;
   gap: 6px;
   overflow: hidden;
@@ -111,7 +134,8 @@
   width: 100%;
 }
 
-.static-section, .dynamic-section {
+.static-section,
+.dynamic-section {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -119,19 +143,6 @@
   height: 100%;
   width: 100%;
 }
-
-// .entries-legend {
-//   display: flex;
-//   flex-direction: column;
-//   gap: 8px;
-//   overflow: hidden;
-//   height: 100%;
-//   width: 100%;
-// }
-
-// .entries-legend:hover {
-//   overflow-y: auto;
-// }
 
 .swatch-gradient {
   width: 14px;

@@ -8,10 +8,9 @@ describe('FundingAcreageLegendComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FundingAcreageLegendComponent]
-    })
-    .compileComponents();
-    
+      imports: [FundingAcreageLegendComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(FundingAcreageLegendComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
