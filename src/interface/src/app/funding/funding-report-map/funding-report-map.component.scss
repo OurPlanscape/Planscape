@@ -47,6 +47,7 @@ mgl-map {
   }
 }
 
+
 .mat-icon {
   color: $color-standard-blue;
   height: 20px;
@@ -74,5 +75,5 @@ mgl-map {
 
 .loader.visible {
   opacity: 1;
-  pointer-events: auto;
+  transition: opacity 400ms cubic-bezier(0.25, 0.8, 0.25, 1);
 }
