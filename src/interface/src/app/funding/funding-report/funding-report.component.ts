@@ -59,6 +59,7 @@ import {
   MapLayer,
 } from '../funding-map-layers/funding-map-layers.component';
 import { ScrollSpyDirective } from '@app/standalone/scroll-spy-directive/scroll-spy.directive';
+import { FundingMapConfigState } from '../funding-map-config-state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs';
 
@@ -113,6 +114,7 @@ const flameLengthRangeValidator: ValidatorFn = (
     ScrollSpyDirective,
     ButtonComponent,
   ],
+  providers: [FundingMapConfigState],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',
 })
