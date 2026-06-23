@@ -9,7 +9,7 @@ from drf_spectacular.utils import extend_schema
 from planscape.openpanel import track_openpanel
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -95,7 +95,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         return list(datalayers.all())
 
 
-class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
+class DataLayerViewSet(RetrieveModelMixin, ListModelMixin, MultiSerializerMixin, GenericViewSet):
     queryset = DataLayer.objects.none()
     permission_classes = [IsAuthenticatedOrReadOnly]
     pagination_class = LimitOffsetPagination

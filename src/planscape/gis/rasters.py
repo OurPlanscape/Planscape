@@ -204,14 +204,8 @@ def to_cog_streaming(
 
     config = get_gdal_env()
 
-    # Convert S3 URLs to VSI prefixes for proper MinIO/S3 endpoint handling (e.g. /vsis3/ prefix)
-    output_path = output_file
-    if is_s3_file(output_file):
-        output_path = with_vsi_prefix(output_file)
-
-    input_path = input_file
-    if is_s3_file(input_file):
-        input_path = with_vsi_prefix(input_file)
+    output_path = with_vsi_prefix(output_file)
+    input_path = with_vsi_prefix(input_file)
 
     cog_translate(
         input_path,
