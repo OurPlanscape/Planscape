@@ -157,14 +157,12 @@ def async_calculate_aet_improvement(
 
 
 @app.task(
-    bind=True,
     autoretry_for=(smtplib.SMTPException, OSError),
     retry_backoff=True,
     retry_jitter=True,
     retry_kwargs={"max_retries": 3},
 )
 def async_send_email_funding_report_finished(
-    self,
     funding_opportunity_report_id: int,
 ) -> None:
     try:
@@ -173,65 +171,53 @@ def async_send_email_funding_report_finished(
             "scenario",
             "scenario__planning_area",
         ).get(pk=funding_opportunity_report_id)
-
-        user = report.created_by
-        email = (user.email or "").strip() if user else ""
-        if not email:
-            log.info(
-                "FundingOpportunityReport %s completed but has no recipient email; skipping.",
-                funding_opportunity_report_id,
-            )
-            return
-
-        funding_report_link = get_frontend_url(
-            f"plan/{report.scenario.planning_area_id}/scenario/{report.scenario_id}"
-        )
-
-        context = {
-            "user_full_name": user.get_full_name(),
-            "funding_report_link": funding_report_link,
-        }
-
-        subject = "Planscape Funding Opportunity Report is Ready"
-        txt = render_to_string(
-            "email/funding_report/funding_report_completed.txt",
-            context,
-        )
-        html = render_to_string(
-            "email/funding_report/funding_report_completed.html",
-            context,
-        )
-
-        send_mail(
-            subject=subject,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            message=txt,
-            html_message=html,
-        )
-
-        log.info(
-            "Email sent informing user that FundingOpportunityReport %s is finished.",
-            report.pk,
-        )
-
     except FundingOpportunityReport.DoesNotExist:
         log.warning(
             "FundingOpportunityReport with pk %s does not exist. Cannot send email.",
             funding_opportunity_report_id,
         )
-    except (smtplib.SMTPException, OSError):
-        if self.request.retries >= self.max_retries:
-            log.exception("Failed to send funding report email.")
-        else:
-            log.warning("Failed to send funding report email. Retrying.")
-        raise
-    except Exception:
-        log.exception(
-            "Unexpected error while sending funding report finished email.",
-            extra={"funding_opportunity_report_id": funding_opportunity_report_id},
+        return
+
+    user = report.created_by
+    if not user:
+        log.info(
+            "FundingOpportunityReport %s completed but has no created_by user; skipping email.",
+            funding_opportunity_report_id,
         )
-        raise
+        return
+
+    funding_report_link = get_frontend_url(
+        f"plan/{report.scenario.planning_area_id}/scenario/{report.scenario_id}"
+    )
+
+    context = {
+        "user_full_name": user.get_full_name(),
+        "scenario_name": report.scenario.name,
+        "funding_report_link": funding_report_link,
+    }
+
+    subject = "Planscape Funding Opportunity Report is Ready"
+    txt = render_to_string(
+        "email/funding_report/funding_report_completed.txt",
+        context,
+    )
+    html = render_to_string(
+        "email/funding_report/funding_report_completed.html",
+        context,
+    )
+
+    send_mail(
+        subject=subject,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        message=txt,
+        html_message=html,
+    )
+
+    log.info(
+        "Email sent informing user that FundingOpportunityReport %s is finished.",
+        report.pk,
+    )
 
 
 @app.task()
