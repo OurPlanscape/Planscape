@@ -1,14 +1,29 @@
-import { NgIf } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
 import { Component } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
+import { ButtonComponent } from '@styleguide';
 
 @Component({
   selector: 'app-funding-acreage-legend',
   standalone: true,
-  imports: [NgIf],
+  imports: [ButtonComponent, MatIconModule, NgFor, NgIf],
   templateUrl: './funding-acreage-legend.component.html',
   styleUrl: './funding-acreage-legend.component.scss',
 })
-export class FundingAcreageLegendComponent {}
+export class FundingAcreageLegendComponent {
+  //TODO: replace with non-mocked data
+  acreageDetails = [
+    { name: 'No Treatment', color: '#fff', acres: 342590 },
+    { name: 'Burn Only', color: '#FB6F92', acres: 342590 },
+    { name: 'Thinning Only', color: '#90BE6D', acres: 342590 },
+    { name: 'Thin and RX Burn', color: '#2A9D8F', acres: 342590 },
+  ];
+
+  totalAcres = 756000;
+  selectedAcres = 342590;
+
+  close() {}
+}
 
 /*
   example result:
