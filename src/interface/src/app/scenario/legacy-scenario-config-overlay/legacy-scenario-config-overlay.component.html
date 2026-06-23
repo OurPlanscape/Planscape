@@ -21,7 +21,17 @@
       <ng-container *appFeatureFlag="'ADD_INCLUDES'">
         <dt>Included Areas:</dt>
         <dd>
-          {{ selectedIncludedAreas$ | async }}
+          <ng-container
+            *ngIf="
+              selectedIncludedAreas$ | async as selectedIncludedAreas;
+              else loading
+            ">
+            {{ selectedIncludedAreas }}
+          </ng-container>
+
+          <ng-template #loading>
+            <mat-spinner diameter="20"></mat-spinner>
+          </ng-template>
         </dd>
       </ng-container>
       <dt>Excluded Areas:</dt>
