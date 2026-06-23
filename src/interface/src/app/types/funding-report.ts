@@ -41,6 +41,32 @@ export interface FundingReportAETImprovementRequest {
   percentage: number;
 }
 
+/**
+ * Estimated available biomass with no treatment, by wood type. Lives under
+ * `results.summary.BIOMASS_VOLUMES` (whole scenario) and, per project area,
+ * under `results.projects.BIOMASS_VOLUMES`.
+ *
+ * Merchantable volumes are board-feet per acre (bf/ac); non-merchantable
+ * volumes are cubic-feet per acre (ft³/ac).
+ */
+export interface FundingReportBiomassVolumes {
+  merchantable_softwood_bf_ac: number;
+  merchantable_hardwood_bf_ac: number;
+  merchantable_mixed_bf_ac: number;
+  non_merchantable_softwood_cuft_ac: number;
+  non_merchantable_hardwood_cuft_ac: number;
+  non_merchantable_mixed_cuft_ac: number;
+}
+
+/** Per-project-area biomass volumes; carries the selection key(s). */
+export interface FundingReportBiomassVolumesProject
+  extends FundingReportBiomassVolumes {
+  project_id: number;
+  // Present for SYSTEM-origin scenarios, where selection is keyed by the
+  // 1-based project index (treatment rank) rather than the project area id.
+  proj_id?: number | null;
+}
+
 /** Report results, keyed by metric (e.g. POTENTIAL_SMOKE, ABOVEGROUND_TOTAL). */
 export interface FundingReportResults {
   /**
@@ -49,6 +75,7 @@ export interface FundingReportResults {
    */
   summary: Record<FundingReportMetric, FundingReportDataPoint[]> & {
     AET?: FundingReportAETSummary;
+    BIOMASS_VOLUMES?: FundingReportBiomassVolumes;
   };
   /**
    * Same metrics, broken down per project area.
@@ -58,7 +85,9 @@ export interface FundingReportResults {
    * the FE doesn't model or read the per-project AET the backend sends.
    */
   // AET?: FundingReportAETImprovementProjectArea[];
-  projects: Record<FundingReportMetric, FundingReportProjectDataPoint[]>;
+  projects: Record<FundingReportMetric, FundingReportProjectDataPoint[]> & {
+    BIOMASS_VOLUMES?: FundingReportBiomassVolumesProject[];
+  };
 }
 
 // TODO full interface

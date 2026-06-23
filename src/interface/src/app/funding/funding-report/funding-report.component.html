@@ -270,7 +270,7 @@
     (tooltipClicked)="tooltipName = 'Biomass'"
     [isCollapsible]="true"
     [defaultExpanded]="true">
-    <div>
+    <div *ngIf="biomass; else noData">
       <p class="biomass-intro">
         The table shows estimated available biomass with no treatment.
       </p>
@@ -280,18 +280,27 @@
             <th>Tree Class</th>
             <th>Hardwood</th>
             <th>Softwood</th>
+            <th>Mixed</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <th scope="row">Merchantable Volume (bf/ac)</th>
-            <td>145</td>
-            <td>110</td>
+            <td>{{ biomass.merchantable_hardwood_bf_ac | number: '1.0-1' }}</td>
+            <td>{{ biomass.merchantable_softwood_bf_ac | number: '1.0-1' }}</td>
+            <td>{{ biomass.merchantable_mixed_bf_ac | number: '1.0-1' }}</td>
           </tr>
           <tr>
             <th scope="row">Non-Merchantable Volume (ft³/ac)</th>
-            <td>74</td>
-            <td>72</td>
+            <td>
+              {{ biomass.non_merchantable_hardwood_cuft_ac | number: '1.0-1' }}
+            </td>
+            <td>
+              {{ biomass.non_merchantable_softwood_cuft_ac | number: '1.0-1' }}
+            </td>
+            <td>
+              {{ biomass.non_merchantable_mixed_cuft_ac | number: '1.0-1' }}
+            </td>
           </tr>
         </tbody>
       </table>
