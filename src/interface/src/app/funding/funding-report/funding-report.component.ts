@@ -35,10 +35,15 @@ import {
   FlameLengthRequestParams,
   FundingReport,
   FundingReportAETSummary,
+  FundingReportBiomassVolumes,
   FundingReportMetric,
   ORIGIN_TYPE,
 } from '@types';
-import { aggregateMetricSummary, hasMetricData } from './funding-report.helper';
+import {
+  aggregateBiomassVolumes,
+  aggregateMetricSummary,
+  hasMetricData,
+} from './funding-report.helper';
 import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
 import {
   AbstractControl,
@@ -227,6 +232,12 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   treeCarbonHasData = false;
   flameLengthHasData = false;
 
+  /**
+   * Estimated biomass volumes for the current selection, or undefined when the
+   * report carries no biomass data. Rebuilt alongside the charts.
+   */
+  biomass?: FundingReportBiomassVolumes;
+
   private buildCharts(): void {
     this.smokeChart = this.buildSummaryChart('POTENTIAL_SMOKE', 'blue');
     this.treeCarbonChart = this.buildSummaryChart(
@@ -241,6 +252,11 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     this.smokeHasData = this.metricHasData('POTENTIAL_SMOKE');
     this.treeCarbonHasData = this.metricHasData('ABOVEGROUND_TOTAL');
     this.flameLengthHasData = this.metricHasData('TOTAL_FLAME_SEVERITY');
+
+    const results = this.report?.results;
+    this.biomass = results
+      ? aggregateBiomassVolumes(results, this.projectAreas, this.origin)
+      : undefined;
   }
 
   /** True when the metric has any non-null data over the current selection. */

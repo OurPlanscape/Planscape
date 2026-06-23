@@ -1,4 +1,5 @@
 import {
+  FundingReportBiomassVolumes,
   FundingReportDataPoint,
   FundingReportMetric,
   FundingReportProjectDataPoint,
@@ -88,4 +89,48 @@ export function aggregateMetricSummary(
       baseline,
       delta: percentDelta(value, baseline),
     }));
+}
+
+/**
+ * Estimated biomass volumes for the chosen project areas.
+ *
+ * An empty `projectAreas` means "all areas" and returns the precomputed
+ * whole-scenario summary as-is. A non-empty list sums each volume field over
+ * the selected project areas, mirroring the backend, which accumulates raw
+ * per-area values before the (linear) unit conversion — so summing the
+ * already-converted per-area outputs yields the same totals.
+ *
+ * Returns `undefined` when no biomass data is available for the selection.
+ * `origin` decides which per-project field the selection ids are matched against.
+ */
+export function aggregateBiomassVolumes(
+  results: FundingReportResults,
+  projectAreas: number[],
+  origin: ORIGIN_TYPE
+): FundingReportBiomassVolumes | undefined {
+  if (projectAreas.length === 0) {
+    return results.summary.BIOMASS_VOLUMES;
+  }
+  const projects = results.projects.BIOMASS_VOLUMES;
+  if (!projects) {
+    return undefined;
+  }
+  const idKey = projectIdKey(origin);
+  const selected = new Set(projectAreas);
+  const matches = projects.filter((project) =>
+    selected.has(project[idKey] as number)
+  );
+  if (matches.length === 0) {
+    return undefined;
+  }
+  const sum = (key: keyof FundingReportBiomassVolumes) =>
+    matches.reduce((total, project) => total + (project[key] ?? 0), 0);
+  return {
+    merchantable_softwood_bf_ac: sum('merchantable_softwood_bf_ac'),
+    merchantable_hardwood_bf_ac: sum('merchantable_hardwood_bf_ac'),
+    merchantable_mixed_bf_ac: sum('merchantable_mixed_bf_ac'),
+    non_merchantable_softwood_cuft_ac: sum('non_merchantable_softwood_cuft_ac'),
+    non_merchantable_hardwood_cuft_ac: sum('non_merchantable_hardwood_cuft_ac'),
+    non_merchantable_mixed_cuft_ac: sum('non_merchantable_mixed_cuft_ac'),
+  };
 }
