@@ -35,6 +35,7 @@ import { ButtonComponent } from '@styleguide';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@app/shared';
 import { FundingMapConfigState } from '../funding-map-config-state';
+import { FundingAcreageLegendComponent } from '../funding-acreage-legend/funding-acreage-legend.component';
 
 @Component({
   selector: 'app-funding-report-map',
@@ -43,6 +44,7 @@ import { FundingMapConfigState } from '../funding-map-config-state';
     AsyncPipe,
     ButtonComponent,
     ControlComponent,
+    FundingAcreageLegendComponent,
     LayerComponent,
     MapBaseLayersComponent,
     MapDataLayerComponent,
