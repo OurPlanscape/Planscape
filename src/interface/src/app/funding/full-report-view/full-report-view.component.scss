@@ -112,11 +112,28 @@
 .data-layers-view {
   background-color: $color-white;
   width: $funding-sidebar-width;
-  overflow: auto;
+  // Don't scroll here — let the tab content's own scroll container handle it.
+  overflow: hidden;
   flex: 1;
-  
-    @include on-small() {
+  min-height: 0;
+
+  @include on-small() {
     width: 100%;
+  }
+}
+
+// Make the tab group fill the sidebar height so the tab content (and its
+// own internal scroll container) is properly constrained. Otherwise the
+// tab body wrapper grows to fit its content and the inner scrollbar gutter
+// is painted with nothing to scroll, adding phantom spacing.
+.map-layers-tabs {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  ::ng-deep .mat-mdc-tab-body-wrapper {
+    flex: 1;
+    min-height: 0;
   }
 }
 
