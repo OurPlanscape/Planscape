@@ -19,9 +19,10 @@
 
   <!-- This *ngIf="true" is a hack to fix the issue where the planning area was displayed on top of the project areas when moving back and forward. -->
   <app-planning-area-layer *ngIf="true"></app-planning-area-layer>
-  <app-map-data-layer
-    *ngIf="mapLibreMap"
-    [mapLibreMap]="mapLibreMap"></app-map-data-layer>
+  <app-funding-data-layer
+    *ngIf="mapLibreMap && (fundingDataLayer$ | async) as fundingDataLayer"
+    [mapLibreMap]="mapLibreMap"
+    [dataLayer]="fundingDataLayer"></app-funding-data-layer>
 
   <app-map-base-layers
     *ngIf="mapLibreMap"

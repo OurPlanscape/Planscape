@@ -14,14 +14,14 @@ import {
   addRequestHeaders,
   getBoundsFromGeometry,
 } from '@app/maplibre-map/maplibre.helper';
-import { AuthService } from '@app/services';
+import { AuthService, DataLayersService } from '@app/services';
 import { FrontendConstants } from '@app/map/map.constants';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BehaviorSubject, map, Subject } from 'rxjs';
 import { EventData } from '@angular/cdk/testing';
 import { MapZoomControlComponent } from '@app/maplibre-map/map-zoom-control/map-zoom-control.component';
 import { MapBaseLayersComponent } from '@app/maplibre-map/map-base-layers/map-base-layers.component';
-import { MapDataLayerComponent } from '@app/maplibre-map/map-data-layer/map-data-layer.component';
+import { FundingDataLayerComponent } from '../funding-data-layer/funding-data-layer.component';
 import { PlanState } from '@app/plan/plan.state';
 import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
@@ -43,9 +43,9 @@ import { FundingMapConfigState } from '../funding-map-config-state';
     AsyncPipe,
     ButtonComponent,
     ControlComponent,
+    FundingDataLayerComponent,
     LayerComponent,
     MapBaseLayersComponent,
-    MapDataLayerComponent,
     MapComponent,
     MapMultiProjectAreasComponent,
     MapTooltipComponent,
@@ -63,6 +63,7 @@ export class FundingReportMapComponent {
     private fundingMapConfigState: FundingMapConfigState,
     private mapConfigService: MapConfigService,
     private dataLayersStateService: DataLayersStateService,
+    private dataLayersService: DataLayersService,
     private authService: AuthService,
     private planState: PlanState,
     private scenarioState: ScenarioState,
@@ -111,6 +112,8 @@ export class FundingReportMapComponent {
 
   hoveredProjectAreaId$ = new Subject<number | null>();
   mouseLngLat: LngLat | null = null;
+
+  fundingDataLayer$ = this.dataLayersService.getDataLayerById(1531);
 
   mapLoaded(loadedMap: MapLibreMap) {
     this.mapLibreMap = loadedMap;
