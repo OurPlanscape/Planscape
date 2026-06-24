@@ -129,8 +129,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
 
   // TODO placeholder
   mapLayers: MapLayer[] = [
-    { id: 1, name: 'Water Availability with No Treatment' },
-    { id: 2, name: 'Water Availability with Treatment' },
+    { id: 1, name: 'Placeholder' },
+    { id: 2, name: 'Placeholder' },
   ];
 
   flameLengthForm = new FormGroup(
