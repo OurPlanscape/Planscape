@@ -3,12 +3,33 @@ import logging
 from core.serializers import MultiSerializerMixin
 from datasets.models import DataLayer
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.db.models.expressions import RawSQL
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from funding_report.models import (
+    FundingOpportunityReport,
+    FundingOpportunityReportStatus,
+)
+from funding_report.openapi_examples import (
+    FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE,
+    FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE,
+)
+from funding_report.serializers import (
+    FundingOpportunityReportSerializer,
+    FundingReportAETImprovementRequestSerializer,
+    FundingReportAETImprovementResponseSerializer,
+    FundingReportFlameLengthReductionRequestSerializer,
+    FundingReportFlameLengthReductionResponseSerializer,
+)
+from funding_report.services import (
+    calculate_aet_improvement,
+    calculate_funding_report_flame_length_reduction,
+)
+from funding_report.tasks import run_funding_opportunity_report
+from modules.base import compute_scenario_capabilities
 from planscape.serializers import BaseErrorMessageSerializer
 from rest_framework import mixins, pagination, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -55,27 +76,6 @@ from planning.serializers import (
     UpsertConfigurationV2Serializer,
     UpsertScenarioV3Serializer,
 )
-from funding_report.models import (
-    FundingOpportunityReport,
-    FundingOpportunityReportStatus,
-)
-from funding_report.openapi_examples import (
-    FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE,
-    FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE,
-)
-from funding_report.serializers import (
-    FundingOpportunityReportSerializer,
-    FundingReportAETImprovementRequestSerializer,
-    FundingReportAETImprovementResponseSerializer,
-    FundingReportFlameLengthReductionRequestSerializer,
-    FundingReportFlameLengthReductionResponseSerializer,
-)
-from funding_report.services import (
-    calculate_aet_improvement,
-    calculate_funding_report_flame_length_reduction,
-)
-from funding_report.tasks import run_funding_opportunity_report
-from modules.base import compute_scenario_capabilities
 from planning.services import (
     create_config,
     create_planning_area,
@@ -427,10 +427,15 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @action(methods=["post"], detail=True, url_path="run-report")
     def run_report(self, request, pk=None):
         scenario = self.get_object()
-        report, _ = FundingOpportunityReport.objects.get_or_create(
+        report, created = FundingOpportunityReport.objects.get_or_create(
             scenario=scenario,
             defaults={"created_by": request.user},
         )
+
+        if not created and report.created_by_id != request.user.pk:
+            report.created_by = request.user
+            report.save(update_fields=["created_by", "updated_at"])
+
         run_funding_opportunity_report.delay(report.pk)
         serializer = FundingOpportunityReportSerializer(instance=report)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)

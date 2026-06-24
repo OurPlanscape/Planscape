@@ -3,6 +3,7 @@ from unittest import mock
 
 from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
+from django.conf import settings
 from django.test import TestCase
 from django.utils import timezone
 from planning.tests.factories import (
@@ -22,6 +23,7 @@ from funding_report.tasks import (
     STALE_RUNNING_TIMEOUT,
     async_calculate_funding_report_delta,
     async_finalize_funding_report_results,
+    async_send_email_funding_report_finished,
     run_funding_opportunity_report,
 )
 
@@ -93,7 +95,11 @@ class FundingOpportunityReportTaskTest(TestCase):
             metric=FundingReportMetric.ABOVEGROUND_TOTAL.value,
             year=2026,
             datalayer_lookup={
-                (FundingReportMetric.ABOVEGROUND_TOTAL.value, 2026, True): baseline_layer,
+                (
+                    FundingReportMetric.ABOVEGROUND_TOTAL.value,
+                    2026,
+                    True,
+                ): baseline_layer,
                 (FundingReportMetric.ABOVEGROUND_TOTAL.value, 2026, False): value_layer,
             },
         )
@@ -127,7 +133,8 @@ class FundingOpportunityReportTaskTest(TestCase):
             },
         )
 
-    def test_finalize_task_saves_results_and_success_status(self):
+    @mock.patch("funding_report.tasks.async_send_email_funding_report_finished.delay")
+    def test_finalize_task_saves_results_and_success_status(self, email_task_mock):
         async_finalize_funding_report_results(
             project_results=[
                 {
@@ -144,6 +151,7 @@ class FundingOpportunityReportTaskTest(TestCase):
 
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.SUCCESS)
+        email_task_mock.assert_called_once_with(self.report.pk)
         self.assertEqual(
             self.report.results,
             {
@@ -167,7 +175,8 @@ class FundingOpportunityReportTaskTest(TestCase):
             },
         )
 
-    def test_finalize_task_sets_failed_status_with_errors(self):
+    @mock.patch("funding_report.tasks.async_send_email_funding_report_finished.delay")
+    def test_finalize_task_sets_failed_status_with_errors(self, email_task_mock):
         async_finalize_funding_report_results(
             project_results=[
                 {
@@ -191,6 +200,7 @@ class FundingOpportunityReportTaskTest(TestCase):
 
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.FAILED)
+        email_task_mock.assert_not_called()
         self.assertEqual(
             self.report.results["errors"],
             [
@@ -261,3 +271,22 @@ class FundingOpportunityReportTaskTest(TestCase):
         chord_mock.assert_called_once()
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.RUNNING)
+
+    @mock.patch("funding_report.tasks.send_mail")
+    def test_send_email_funding_report_finished_sends_to_report_creator(
+        self, send_mail_mock
+    ):
+        self.user.email = "planner@example.com"
+        self.user.first_name = "Test"
+        self.user.last_name = "Planner"
+        self.user.save(update_fields=["email", "first_name", "last_name"])
+
+        async_send_email_funding_report_finished(self.report.pk)
+
+        send_mail_mock.assert_called_once()
+        kwargs = send_mail_mock.call_args.kwargs
+        self.assertEqual(kwargs["recipient_list"], ["planner@example.com"])
+        self.assertEqual(kwargs["from_email"], settings.DEFAULT_FROM_EMAIL)
+        self.assertIn("Funding Opportunity Report", kwargs["subject"])
+        self.assertIn("message", kwargs)
+        self.assertIn("html_message", kwargs)

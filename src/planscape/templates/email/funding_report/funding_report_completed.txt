@@ -1,0 +1,8 @@
+Dear {{ user_full_name }},
+
+Your Planscape Funding Opportunity Report is ready. Click here to review: {{ funding_report_link }}
+
+If you have questions or need support, please refer to the Knowledge Base: https://www.planscape.org/documentation/user-guide/
+
+Thank you,
+Team Planscape

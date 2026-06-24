@@ -1,10 +1,18 @@
 import logging
+import smtplib
 from datetime import timedelta
 
 from celery import chord
-from django.db import transaction
-from django.utils import timezone
 from datasets.models import DataLayer
+from django.conf import settings
+from django.core.mail import send_mail
+from django.db import transaction
+from django.template.loader import render_to_string
+from django.utils import timezone
+from planning.models import ProjectArea
+from planscape.celery import app
+from utils.frontend import get_frontend_url
+
 from funding_report.models import (
     AET_IMPROVEMENT_DEFAULT_PERCENTAGE,
     FUNDING_REPORT_YEARS,
@@ -22,8 +30,6 @@ from funding_report.services import (
     generate_treatment_clip_datalayer,
     get_treatment_datalayer,
 )
-from planning.models import ProjectArea
-from planscape.celery import app
 
 log = logging.getLogger(__name__)
 
@@ -98,9 +104,7 @@ def async_generate_treatment_datalayer(
         return None
 
     try:
-        report = FundingOpportunityReport.objects.get(
-            pk=funding_opportunity_report_id
-        )
+        report = FundingOpportunityReport.objects.get(pk=funding_opportunity_report_id)
         datalayer = generate_treatment_clip_datalayer(report=report)
         return {"kind": "treatment_datalayer", "datalayer_id": datalayer.pk}
     except Exception as exc:
@@ -124,9 +128,7 @@ def async_calculate_treatment_areas(
         return None
 
     try:
-        report = FundingOpportunityReport.objects.get(
-            pk=funding_opportunity_report_id
-        )
+        report = FundingOpportunityReport.objects.get(pk=funding_opportunity_report_id)
         result = calculate_treatment_pixel_areas(report=report)
         return {"kind": "treatment_areas", **result}
     except Exception as exc:
@@ -152,6 +154,70 @@ def async_calculate_aet_improvement(
             funding_opportunity_report_id,
         )
         return {"kind": "aet_improvement", "error": str(exc)}
+
+
+@app.task(
+    autoretry_for=(smtplib.SMTPException, OSError),
+    retry_backoff=True,
+    retry_jitter=True,
+    retry_kwargs={"max_retries": 3},
+)
+def async_send_email_funding_report_finished(
+    funding_opportunity_report_id: int,
+) -> None:
+    try:
+        report = FundingOpportunityReport.objects.select_related(
+            "created_by",
+            "scenario",
+            "scenario__planning_area",
+        ).get(pk=funding_opportunity_report_id)
+    except FundingOpportunityReport.DoesNotExist:
+        log.warning(
+            "FundingOpportunityReport with pk %s does not exist. Cannot send email.",
+            funding_opportunity_report_id,
+        )
+        return
+
+    user = report.created_by
+    if not user:
+        log.info(
+            "FundingOpportunityReport %s completed but has no created_by user; skipping email.",
+            funding_opportunity_report_id,
+        )
+        return
+
+    funding_report_link = get_frontend_url(
+        f"plan/{report.scenario.planning_area_id}/scenario/{report.scenario_id}"
+    )
+
+    context = {
+        "user_full_name": user.get_full_name(),
+        "scenario_name": report.scenario.name,
+        "funding_report_link": funding_report_link,
+    }
+
+    subject = "Planscape Funding Opportunity Report is Ready"
+    txt = render_to_string(
+        "email/funding_report/funding_report_completed.txt",
+        context,
+    )
+    html = render_to_string(
+        "email/funding_report/funding_report_completed.html",
+        context,
+    )
+
+    send_mail(
+        subject=subject,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        message=txt,
+        html_message=html,
+    )
+
+    log.info(
+        "Email sent informing user that FundingOpportunityReport %s is finished.",
+        report.pk,
+    )
 
 
 @app.task()
@@ -221,13 +287,15 @@ def async_finalize_funding_report_results(
     if errors:
         results["errors"] = errors
 
+    final_status = (
+        FundingOpportunityReportStatus.FAILED
+        if errors
+        else FundingOpportunityReportStatus.SUCCESS
+    )
+
     update_fields: dict = {
         "results": results,
-        "status": (
-            FundingOpportunityReportStatus.FAILED
-            if errors
-            else FundingOpportunityReportStatus.SUCCESS
-        ),
+        "status": final_status,
     }
     if treatment_datalayer_id is not None:
         update_fields["treatment_datalayer_id"] = treatment_datalayer_id
@@ -235,6 +303,9 @@ def async_finalize_funding_report_results(
     FundingOpportunityReport.objects.filter(pk=funding_opportunity_report_id).update(
         **update_fields
     )
+
+    if final_status == FundingOpportunityReportStatus.SUCCESS:
+        async_send_email_funding_report_finished.delay(funding_opportunity_report_id)
 
 
 @app.task()
@@ -261,7 +332,9 @@ def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
             return
         report.status = FundingOpportunityReportStatus.RUNNING
         report.save(update_fields=["status", "updated_at"])
-        project_area_ids = list(report.scenario.project_areas.values_list("id", flat=True))
+        project_area_ids = list(
+            report.scenario.project_areas.values_list("id", flat=True)
+        )
 
     try:
         if not project_area_ids:
