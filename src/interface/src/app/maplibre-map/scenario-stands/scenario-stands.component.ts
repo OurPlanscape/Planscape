@@ -47,16 +47,21 @@ export class ScenarioStandsComponent
   readonly excludedKey = 'excluded';
   readonly constrainedKey = 'constrained';
   readonly planId = this.route.snapshot.data['planId'];
+  readonly scenarioId = this.route.snapshot.data['scenarioId'];
 
   private standsLoaded = false;
 
   tilesUrl$ = this.newScenarioState.scenarioConfig$.pipe(
     filter((config) => !!config.stand_size),
-    map(
-      (config) =>
+    map((config) => {
+      const includes = config.included_areas?.join(',');
+      return (
         MARTIN_SOURCES.scenarioStands.tilesUrl +
-        `?planning_area_id=${this.planId}&stand_size=${config.stand_size}`
-    ),
+        `?scenario_id=${this.scenarioId}&stand_size=${config.stand_size}${
+          includes ? `&includes=${includes}` : ''
+        }`
+      );
+    }),
     distinctUntilChanged(),
     // when the stand size changes, set as loading
     tap(() => {
