@@ -18,7 +18,7 @@
             [ngStyle]="{ 'background-color': '#064BBA' }"></div>
           <div class="swatch-label">Total Planning Area Acres</div>
         </div>
-        <div class="acres-line">{{ totalAcres | number: '1.0-0' }} acres</div>
+        <div class="acres-line">{{ legendData.totalAcres | number: '1.0-0' }} acres</div>
       </div>
       <div class="static-row">
         <div class="legend-line">
@@ -28,7 +28,7 @@
           <div class="swatch-label">Selected Project Area Acres</div>
         </div>
         <div class="acres-line">
-          {{ selectedAcres | number: '1.0-0' }} acres
+          {{ legendData.selectedAcres | number: '1.0-0' }} acres
         </div>
       </div>
     </div>
