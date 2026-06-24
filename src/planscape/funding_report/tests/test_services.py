@@ -20,7 +20,6 @@ from rasterio.mask import mask
 
 from funding_report.models import (
     FUNDING_REPORT_YEARS,
-    MERCHANTABLE_CF_TO_BF_FACTOR,
     BiomassRole,
     FundingOpportunityReport,
     FundingOpportunityReportStatus,
@@ -556,10 +555,10 @@ def write_biomass_rasters(tmp_dir: str):
     Write three aligned 2x2 rasters (10 m pixels, EPSG:3857) for biomass tests.
 
     Layout (row, col):
-      (0,0) softwood  merch=100  total=150  → nm=50
-      (0,1) hardwood  merch=200  total=280  → nm=80
-      (1,0) mixed     merch=300  total=380  → nm=80
-      (1,1) softwood  merch=400  total=500  → nm=100
+      (0,0) softwood  merch=100 bf/ac  non_merch=50 cuft/ac
+      (0,1) hardwood  merch=200 bf/ac  non_merch=80 cuft/ac
+      (1,0) mixed     merch=300 bf/ac  non_merch=80 cuft/ac
+      (1,1) softwood  merch=400 bf/ac  non_merch=100 cuft/ac
     """
     transform = from_origin(0, 20, 10, 10)
     profile = dict(
@@ -571,25 +570,25 @@ def write_biomass_rasters(tmp_dir: str):
         transform=transform,
         nodata=-9999,
     )
-    merch_path = Path(tmp_dir) / "merchantable_biomass.tif"
-    total_path = Path(tmp_dir) / "total_biomass.tif"
-    wt_path = Path(tmp_dir) / "wood_type.tif"
+    merch_path = Path(tmp_dir) / "merch-2026.tif"
+    non_merch_path = Path(tmp_dir) / "non-merch-2026.tif"
+    wt_path = Path(tmp_dir) / "softwood_hardwood_mixed.tif"
 
     with rasterio.open(merch_path, "w", dtype=np.float32, **profile) as dst:
         dst.write(np.array([[100, 200], [300, 400]], dtype=np.float32), 1)
-    with rasterio.open(total_path, "w", dtype=np.float32, **profile) as dst:
-        dst.write(np.array([[150, 280], [380, 500]], dtype=np.float32), 1)
+    with rasterio.open(non_merch_path, "w", dtype=np.float32, **profile) as dst:
+        dst.write(np.array([[50, 80], [80, 100]], dtype=np.float32), 1)
     with rasterio.open(wt_path, "w", dtype=np.uint8, **{**profile, "nodata": 0}) as dst:
         dst.write(np.array([[1, 2], [3, 1]], dtype=np.uint8), 1)
 
-    return merch_path, total_path, wt_path
+    return merch_path, non_merch_path, wt_path
 
 
 class BiomassVolumesCalculationTest(TestCase):
     def setUp(self):
         tmp_dir = tempfile.TemporaryDirectory()
         self.addCleanup(tmp_dir.cleanup)
-        self.merch_path, self.total_path, self.wt_path = write_biomass_rasters(
+        self.merch_path, self.non_merch_path, self.wt_path = write_biomass_rasters(
             tmp_dir.name
         )
 
@@ -617,7 +616,7 @@ class BiomassVolumesCalculationTest(TestCase):
 
     def _create_all_biomass_datalayers(self):
         self._create_biomass_datalayer(BiomassRole.MERCHANTABLE, self.merch_path)
-        self._create_biomass_datalayer(BiomassRole.TOTAL, self.total_path)
+        self._create_biomass_datalayer(BiomassRole.NON_MERCHANTABLE, self.non_merch_path)
         self._create_biomass_datalayer(BiomassRole.WOOD_TYPE, self.wt_path)
 
     def test_get_biomass_datalayer_returns_correct_layer(self):
@@ -658,17 +657,17 @@ class BiomassVolumesCalculationTest(TestCase):
 
         results = calculate_biomass_volumes(self.report)
 
-        # Pixel values are already in output units (cuft/ac). Values are summed
-        # directly per wood type, then merchantable is converted cuft/ac → bf/ac.
+        # Pixel values are already in output units (merch bf/ac, non-merch
+        # cuft/ac), so values are summed directly per wood type with no
+        # unit conversion.
         #
         # Softwood pixels: (0,0) merch=100, nm=50; (1,1) merch=400, nm=100
         # Hardwood pixels: (0,1) merch=200, nm=80
         # Mixed pixels:    (1,0) merch=300, nm=80
-        cf_to_bf = MERCHANTABLE_CF_TO_BF_FACTOR
         summary = results["summary"]
-        self.assertAlmostEqual(summary["merchantable_softwood_bf_ac"], (100 + 400) * cf_to_bf, places=4)
-        self.assertAlmostEqual(summary["merchantable_hardwood_bf_ac"], 200 * cf_to_bf, places=4)
-        self.assertAlmostEqual(summary["merchantable_mixed_bf_ac"], 300 * cf_to_bf, places=4)
+        self.assertAlmostEqual(summary["merchantable_softwood_bf_ac"], 100 + 400, places=4)
+        self.assertAlmostEqual(summary["merchantable_hardwood_bf_ac"], 200, places=4)
+        self.assertAlmostEqual(summary["merchantable_mixed_bf_ac"], 300, places=4)
         self.assertAlmostEqual(summary["non_merchantable_softwood_cuft_ac"], 50 + 100, places=4)
         self.assertAlmostEqual(summary["non_merchantable_hardwood_cuft_ac"], 80, places=4)
         self.assertAlmostEqual(summary["non_merchantable_mixed_cuft_ac"], 80, places=4)
