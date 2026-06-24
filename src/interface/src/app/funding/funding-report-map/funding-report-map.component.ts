@@ -35,7 +35,7 @@ import { ButtonComponent } from '@styleguide';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@app/shared';
 import { FundingMapConfigState } from '../funding-map-config-state';
-import { FundingAcreageLegendComponent } from '../funding-acreage-legend/funding-acreage-legend.component';
+import { FundingAcreageLegendComponent, FundingLegendData } from '../funding-acreage-legend/funding-acreage-legend.component';
 import { MapActionButtonComponent } from '@app/treatments/map-action-button/map-action-button.component';
 
 @Component({
@@ -77,6 +77,9 @@ export class FundingReportMapComponent {
   }
 
   @Input() allowInteraction = true;
+  /// TODO: maybe dont pass this through
+  // TODO: declare a type when we know it
+  @Input() legendData: FundingLegendData | null = null;
 
   mapLibreMap!: MapLibreMap;
   /**

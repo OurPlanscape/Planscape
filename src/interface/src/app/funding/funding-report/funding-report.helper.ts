@@ -7,6 +7,7 @@ import {
   ORIGIN_TYPE,
   Scenario,
 } from '@types';
+import { FundingLegendData } from '../funding-acreage-legend/funding-acreage-legend.component';
 
 /**
  * The per-project field that selection ids are matched against. USER scenarios
@@ -140,10 +141,10 @@ export function generateLegendFromReport(
   results: FundingReportResults | null,
   selectedAreas: number[],
   scenario: Scenario
-): any {
-  const legendData = { totalAcres: 0, selectedAcres: 0 };
+): FundingLegendData {
+  const legendData : FundingLegendData = { totalAcres: 0, selectedAcres: 0 };
   if (!results || !scenario.origin) {
-    return {};
+    return {totalAcres: 0, selectedAcres: 0};
   }
   const txAreas = results?.treatment_areas;
   const idKey = projectIdKey(scenario.origin);

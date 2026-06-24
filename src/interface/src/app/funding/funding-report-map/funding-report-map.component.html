@@ -61,7 +61,8 @@
       icon="legend-toggle">
     </app-action-button>
     <app-funding-acreage-legend
-      *ngIf="showFundingLegend$ | async"></app-funding-acreage-legend>
+      *ngIf="(showFundingLegend$ | async) && legendData"
+      [legendData]="legendData"></app-funding-acreage-legend>
   </mgl-control>
 
   <mgl-control
