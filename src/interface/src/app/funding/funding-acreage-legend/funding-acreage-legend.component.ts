@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { ButtonComponent } from '@styleguide';
+import { FundingMapConfigState } from '../funding-map-config-state';
 
 @Component({
   selector: 'app-funding-acreage-legend',
@@ -20,10 +21,11 @@ import { ButtonComponent } from '@styleguide';
   styleUrl: './funding-acreage-legend.component.scss',
 })
 export class FundingAcreageLegendComponent {
+  constructor(private fundingMapConfig: FundingMapConfigState) {}
   //TODO: replace with non-mocked data
   acreageDetails = [
     { name: 'No Treatment', color: '#fff', acres: 342590 },
-    { name: 'Burn Only', color: '#FB6F92', acres: 342590 },
+    { name: 'RX Burn Only', color: '#FB6F92', acres: 342590 },
     { name: 'Thinning Only', color: '#90BE6D', acres: 342590 },
     { name: 'Thin and RX Burn', color: '#2A9D8F', acres: 342590 },
   ];
@@ -31,13 +33,8 @@ export class FundingAcreageLegendComponent {
   totalAcres = 756000;
   selectedAcres = 342590;
 
-  showLegend = true;
-
-  open() {
-    this.showLegend = true;
-  }
   close() {
-    this.showLegend = false;
+    this.fundingMapConfig.setFundingLegendVisible(false);
   }
 }
 

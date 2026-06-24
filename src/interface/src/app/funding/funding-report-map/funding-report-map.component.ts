@@ -36,6 +36,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@app/shared';
 import { FundingMapConfigState } from '../funding-map-config-state';
 import { FundingAcreageLegendComponent } from '../funding-acreage-legend/funding-acreage-legend.component';
+import { MapActionButtonComponent } from '@app/treatments/map-action-button/map-action-button.component';
 
 @Component({
   selector: 'app-funding-report-map',
@@ -46,6 +47,7 @@ import { FundingAcreageLegendComponent } from '../funding-acreage-legend/funding
     ControlComponent,
     FundingAcreageLegendComponent,
     LayerComponent,
+    MapActionButtonComponent,
     MapBaseLayersComponent,
     MapDataLayerComponent,
     MapComponent,
@@ -84,6 +86,7 @@ export class FundingReportMapComponent {
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
   baseLayerUrl$ = this.fundingMapConfigState.baseMapUrl$;
+  showFundingLegend$ = this.fundingMapConfigState.showFundingLegend$;
 
   opacity$ = this.fundingMapConfigState.opacity$;
 
@@ -140,6 +143,10 @@ export class FundingReportMapComponent {
         panelClass: ['snackbar-error', 'snackbar-error-multiline'],
       }
     );
+  }
+
+  openFundingLegend() {
+    this.fundingMapConfigState.setFundingLegendVisible(true);
   }
 
   setHoveredProjectAreaId(value: number | null) {

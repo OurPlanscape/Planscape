@@ -5,6 +5,8 @@
 :host {
   box-sizing: border-box;
   pointer-events: all;
+    /* specifying font family here, since the control defaults to helvetica */
+  font-family: 'Public Sans';
 }
 
 .treatment-acres-legend {
@@ -27,7 +29,7 @@
   white-space: nowrap;
 
   padding: 0;
-  width: 280px;
+  width: 240px;
   position: relative;
 
 }
@@ -38,7 +40,7 @@
   align-items: center;
   width: 100%;
   box-sizing: border-box;
-  padding: 10px 16px;
+  padding: 4px 16px;
   flex: 1;
   justify-content: space-between;
   border-bottom: 1px #ffffff19 solid;
@@ -69,8 +71,6 @@
 
 .title {
   @include standard-label();
-  /* specifying font family here, since the control defaults to helvetica */
-  font-family: 'Public Sans';
   font-size: 14px;
   font-weight: 600;
   color: $color-white;
@@ -78,7 +78,6 @@
   overflow-x: hidden;
   white-space: nowrap;
   text-transform: capitalize;
-  min-height: 24px;
 }
 
 .close-button,
@@ -98,7 +97,7 @@
 
 
 .acres-line {
-  @include standard-label();
+  @include small-input-label();
   display: flex;
   align-items: flex-start;
   gap: 8px;
@@ -112,6 +111,7 @@
   height: 14px;
   width: 14px;
   flex-shrink: 0;
+  border-radius: 4px;
 }
 
 .swatch-label,

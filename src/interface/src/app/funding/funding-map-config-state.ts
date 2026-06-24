@@ -7,6 +7,13 @@ export class FundingMapConfigState extends MapConfigState {
   private _selectedProjectAreas$ = new BehaviorSubject<number[]>([]);
   public selectedProjectAreas$ = this._selectedProjectAreas$.asObservable();
 
+  private _showFundingLegend$ = new BehaviorSubject(false);
+  public showFundingLegend$ = this._showFundingLegend$.asObservable();
+
+  setFundingLegendVisible(value: boolean) {
+    this._showFundingLegend$.next(value);
+  }
+
   /**  note that 'ids' here is either based on:
   /*  the project_id for USER origin or the rank for SYSTEM origin
   */

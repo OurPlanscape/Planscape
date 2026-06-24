@@ -18,11 +18,7 @@
             [ngStyle]="{ 'background-color': '#064BBA' }"></div>
           <div class="swatch-label">Total Planning Area Acres</div>
         </div>
-        <div class="acres-line">
-          <div class="acres-detail">
-            {{ totalAcres | number: '1.0-0' }} acres
-          </div>
-        </div>
+        <div class="acres-line">{{ totalAcres | number: '1.0-0' }} acres</div>
       </div>
       <div class="static-row">
         <div class="legend-line">
@@ -32,9 +28,7 @@
           <div class="swatch-label">Selected Project Area Acres</div>
         </div>
         <div class="acres-line">
-          <div class="acres-detail">
-            {{ selectedAcres | number: '1.0-0' }} acres
-          </div>
+          {{ selectedAcres | number: '1.0-0' }} acres
         </div>
       </div>
     </div>
@@ -62,9 +56,7 @@
           <div class="swatch-label">{{ acreageDetail.name }}</div>
         </div>
         <div class="acres-line">
-          <div class="acres-detail">
-            {{ acreageDetail.acres | number: '1.0-0' }} acres
-          </div>
+          {{ acreageDetail.acres | number: '1.0-0' }} acres
         </div>
       </div>
     </div>
