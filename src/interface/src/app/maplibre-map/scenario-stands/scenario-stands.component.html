@@ -1,14 +1,12 @@
 <ng-container *ngIf="tilesUrl$ | async as tilesUrl">
-  <mgl-vector-source
-    [id]="sourceName"
-    [tiles]="[tilesUrl]"
-    promoteId="id"></mgl-vector-source>
+  <mgl-vector-source [id]="sourceName" [tiles]="[tilesUrl]" promoteId="id">
+  </mgl-vector-source>
 
   <mgl-layer
     id="scenario-stands-fill"
     type="fill"
     [source]="sourceName"
-    [sourceLayer]="sourceName"
+    [sourceLayer]="sourceLayerName"
     [filter]="(filteredStands$ | async) || undefined"
     [paint]="standPaint$ | async">
   </mgl-layer>

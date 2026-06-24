@@ -10,6 +10,7 @@ export interface ScenarioStepConfig {
   refreshAvailableStands: boolean; // if the step needs to refresh available stands
   hasMap: boolean; // if the step shows the map
   showSubUnitToggle?: boolean; // defaults to true; set false to hide the sub unit toggle
+  scenarioTilesUrl?: boolean; // defaults to false; if its true we should use stands_by_scenario martin url
 }
 
 export const SUB_UNITS_STEP: ScenarioStepConfig = {
@@ -41,6 +42,7 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: false,
     refreshAvailableStands: false,
     hasMap: false,
+    scenarioTilesUrl: false,
   },
   {
     label: 'Include Areas',
@@ -49,6 +51,7 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeConstraints: false,
     includeExcludedAreas: false,
     refreshAvailableStands: true,
+    scenarioTilesUrl: false,
     hasMap: true,
   },
   {
@@ -59,6 +62,7 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: true,
     hasMap: true,
+    scenarioTilesUrl: true,
   },
   {
     label: 'Stand-level Constraints',
@@ -69,6 +73,7 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: true,
     hasMap: true,
+    scenarioTilesUrl: true,
   },
   {
     label: 'Treatment Target',
@@ -79,6 +84,7 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: false,
     hasMap: true,
+    scenarioTilesUrl: true,
   },
   {
     label: 'Generate Output',
@@ -87,6 +93,7 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: false,
+    scenarioTilesUrl: true,
     hasMap: true,
   },
 ];
@@ -100,6 +107,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: false,
     refreshAvailableStands: true,
     hasMap: true,
+    scenarioTilesUrl: false,
   },
   {
     label: 'Co-Benefits',
@@ -109,6 +117,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: false,
     refreshAvailableStands: true,
     hasMap: true,
+    scenarioTilesUrl: false,
   },
   {
     label: 'Include Areas',
@@ -117,6 +126,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeConstraints: false,
     includeExcludedAreas: false,
     refreshAvailableStands: true,
+    scenarioTilesUrl: false,
     hasMap: true,
   },
   {
@@ -127,6 +137,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: true,
     hasMap: true,
+    scenarioTilesUrl: false,
   },
   {
     label: 'Stand-level Constraints',
@@ -137,6 +148,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: true,
     hasMap: true,
+    scenarioTilesUrl: false,
   },
   {
     label: 'Treatment Target',
@@ -147,6 +159,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: false,
     hasMap: true,
+    scenarioTilesUrl: false,
   },
   {
     label: 'Generate Output',
@@ -156,6 +169,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: false,
     hasMap: true,
+    scenarioTilesUrl: false,
   },
 ];
 

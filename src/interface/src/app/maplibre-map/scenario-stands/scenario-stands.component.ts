@@ -31,6 +31,7 @@ import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { MapConfigState } from '../map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FrontendConstants } from '@map/map.constants';
+import { FeatureService } from '@app/features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -43,25 +44,71 @@ export class ScenarioStandsComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
   @Input() mapLibreMap!: MapLibreMap;
-  readonly sourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
+  readonly sourceName = 'scenario-stands-source';
   readonly excludedKey = 'excluded';
   readonly constrainedKey = 'constrained';
   readonly planId = this.route.snapshot.data['planId'];
+  readonly scenarioId = this.route.snapshot.data['scenarioId'];
 
   private standsLoaded = false;
 
-  tilesUrl$ = this.newScenarioState.scenarioConfig$.pipe(
-    filter((config) => !!config.stand_size),
-    map(
-      (config) =>
-        MARTIN_SOURCES.scenarioStands.tilesUrl +
-        `?planning_area_id=${this.planId}&stand_size=${config.stand_size}`
-    ),
+  currentStep$ = this.newScenarioState.currentStep$;
+
+  readonly planningAreaSourceLayer = 'stands_by_planning_area';
+  readonly scenarioSourceLayer = 'stands_by_scenario';
+  sourceLayerName: 'stands_by_planning_area' | 'stands_by_scenario' =
+    this.planningAreaSourceLayer;
+
+  sourceLayerName$ = this.currentStep$.pipe(
+    map((step) => {
+      const useScenarioEndpoint =
+        step?.scenarioTilesUrl &&
+        this.featureService.isFeatureEnabled('ADD_INCLUDES');
+
+      return useScenarioEndpoint
+        ? this.scenarioSourceLayer
+        : this.planningAreaSourceLayer;
+    }),
+    distinctUntilChanged()
+  );
+
+  tilesUrl$ = combineLatest([
+    this.newScenarioState.scenarioConfig$,
+    this.currentStep$,
+  ]).pipe(
+    filter(([config]) => !!config.stand_size),
+    map(([config, step]) => {
+      const useScenarioEndpoint =
+        step?.scenarioTilesUrl &&
+        this.featureService.isFeatureEnabled('ADD_INCLUDES');
+
+      const baseUrl = useScenarioEndpoint
+        ? MARTIN_SOURCES.scenarioStands.tilesUrl.replace(
+            this.planningAreaSourceLayer,
+            this.scenarioSourceLayer
+          )
+        : MARTIN_SOURCES.scenarioStands.tilesUrl;
+
+      const includes = config.included_areas?.join(',');
+
+      const queryParams = useScenarioEndpoint
+        ? `?scenario_id=${this.scenarioId}&stand_size=${config.stand_size}${
+            includes ? `&includes=${includes}` : ''
+          }`
+        : `?planning_area_id=${this.planId}&stand_size=${config.stand_size}`;
+
+      return baseUrl + queryParams;
+    }),
     distinctUntilChanged(),
     // when the stand size changes, set as loading
     tap(() => {
       this.newScenarioState.setLoading(true);
       this.standsLoaded = false;
+    }),
+    tap((tilesUrl) => {
+      console.log('tilesUrl', tilesUrl);
+      console.log('sourceName', this.sourceName);
+      console.log('sourceLayerName', this.sourceLayerName);
     })
   );
 
@@ -75,7 +122,8 @@ export class ScenarioStandsComponent
     private route: ActivatedRoute,
     private newScenarioState: NewScenarioState,
     private zone: NgZone,
-    private mapConfigState: MapConfigState
+    private mapConfigState: MapConfigState,
+    private featureService: FeatureService
   ) {}
 
   filteredStands$: Observable<FilterSpecification | undefined> = combineLatest([
@@ -129,6 +177,12 @@ export class ScenarioStandsComponent
     this.mapLibreMap.on('sourcedata', this.onDataListener);
     this.mapLibreMap.on('styledata', this.onStyleDataListener);
 
+    this.sourceLayerName$
+      .pipe(untilDestroyed(this))
+      .subscribe((sourceLayerName) => {
+        this.sourceLayerName = sourceLayerName;
+      });
+
     // clear constrained stands when navigating to a step that doesn't include constraints (or pre-step).
     this.newScenarioState.currentStep$
       .pipe(
@@ -178,6 +232,7 @@ export class ScenarioStandsComponent
   }
 
   private paintExcludedStands(ids: number[]) {
+    console.log('painting', ids, this.sourceName, this.sourceLayerName);
     this.excludedStands = this.paintStands(
       ids,
       this.excludedKey,
@@ -215,14 +270,22 @@ export class ScenarioStandsComponent
 
   private setFeatureState(id: number, key: string) {
     this.mapLibreMap.setFeatureState(
-      { source: this.sourceName, sourceLayer: this.sourceName, id },
+      {
+        source: this.sourceName,
+        sourceLayer: this.sourceLayerName,
+        id,
+      },
       { [key]: true }
     );
   }
 
   private removeFeatureState(id: number, key: string) {
     this.mapLibreMap.removeFeatureState(
-      { source: this.sourceName, sourceLayer: this.sourceName, id },
+      {
+        source: this.sourceName,
+        sourceLayer: this.sourceLayerName,
+        id,
+      },
       key
     );
   }
