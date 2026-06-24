@@ -5,6 +5,7 @@ import {
   FundingReportProjectDataPoint,
   FundingReportResults,
   ORIGIN_TYPE,
+  Scenario,
 } from '@types';
 
 /**
@@ -133,4 +134,51 @@ export function aggregateBiomassVolumes(
     non_merchantable_hardwood_cuft_ac: sum('non_merchantable_hardwood_cuft_ac'),
     non_merchantable_mixed_cuft_ac: sum('non_merchantable_mixed_cuft_ac'),
   };
+}
+
+export function generateLegendFromReport(
+  results: FundingReportResults | null,
+  selectedAreas: number[],
+  scenario: Scenario
+): any {
+  const legendData = { totalAcres: 0, selectedAcres: 0 };
+  if (!results || !scenario.origin) {
+    return {};
+  }
+  const txAreas = results?.treatment_areas;
+  const idKey = projectIdKey(scenario.origin);
+  const features = scenario.scenario_result?.result.features;
+
+  console.log('resulting features are:', features);
+  console.log('the selected areas are:', selectedAreas);
+  console.log('the report:', results);
+  console.log('the key:', idKey);
+  console.log('txAreas: ', txAreas);
+
+  const selectedFeatures = features?.filter((f) => {
+    if (selectedAreas.length === 0) {
+      return f;
+    } else {
+      return selectedAreas.includes(f.properties[idKey]);
+    }
+  });
+  console.log('selectedFeatures: ', selectedFeatures);
+
+  legendData.totalAcres =
+    features?.reduce((sum, f) => {
+      return sum + (f.properties['area_acres'] || 0);
+    }, 0) ?? 0;
+
+  legendData.selectedAcres =
+    selectedFeatures?.reduce((sum, f) => {
+      return sum + (f.properties['area_acres'] || 0);
+    }, 0) ?? 0;
+
+  //TODO: need a different key for treatment_area.project ids?
+  // const selectedTreatmentResults = selectedAreas.map(
+  //   (areaId: number) => txAreas?.projects[areaId]
+  // );
+  console.log('legend data:', legendData);
+
+  return legendData;
 }

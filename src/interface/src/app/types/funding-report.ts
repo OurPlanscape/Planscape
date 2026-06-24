@@ -88,6 +88,11 @@ export interface FundingReportResults {
   projects: Record<FundingReportMetric, FundingReportProjectDataPoint[]> & {
     BIOMASS_VOLUMES?: FundingReportBiomassVolumesProject[];
   };
+
+  treatment_areas?: {
+    total: Record<string, Record<string, number>>;
+    projects: Record<string, Record<string, number>>;
+  };
 }
 
 // TODO full interface

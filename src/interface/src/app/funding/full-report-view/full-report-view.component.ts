@@ -44,6 +44,7 @@ import {
 import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
 import { FundingReportComponent } from '../funding-report/funding-report.component';
 import { FundingMapConfigState } from '../funding-map-config-state';
+import { generateLegendFromReport } from '../funding-report/funding-report.helper';
 
 interface FilterProjectFormat {
   id: number;
@@ -163,7 +164,7 @@ export class FullReportViewComponent implements OnInit {
     private fundingMapConfigState: FundingMapConfigState,
     private router: Router,
     private route: ActivatedRoute
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.initializeBreadcrumb();
@@ -295,38 +296,14 @@ export class FullReportViewComponent implements OnInit {
     return { ...report, results };
   }
 
-
   legendData$ = combineLatest([
-    this.fetchedReport$, this.selectedProjectAreas$
+    this.fetchedReport$,
+    this.selectedProjectAreas$,
+    this.currentScenario$,
   ]).pipe(
-    map(([report, areas]) =>
-      this.parseReportToLegend(report, areas)
+    map(([report, areas, scenario]) =>
+      generateLegendFromReport(report?.results ?? null, areas, scenario)
     ),
     shareReplay(1)
   );
-
-  // TODO: PoC for legend data...maybe move to helpers once it's working
-  private parseReportToLegend(report: FundingReport | null,
-    selectedAreas: any
-  ) {
-    const legendData = {totalAcres: 0,
-      selectedAcres: 0,
-      
-    };
-
-    if (!report?.results) {
-      return {};
-    }
-
-    console.log('the selected areas are:', selectedAreas);
-    console.log('the results are what?', report);
-    console.log('total acreage');
-    console.log('selected acreage');
-    console.log('no treatment acreage');
-    console.log('rx burn only acreage');
-    console.log('thinning only acreage');
-    console.log('thin and rx burn acreage');
-
-    return legendData;
-  }
 }
