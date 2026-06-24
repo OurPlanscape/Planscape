@@ -83,6 +83,9 @@
         [sliderValue]="(opacity$ | async) ?? 0.5"
         (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
     </app-map-nav-bar>
+    <!-- TODO: remove this container once we pass the data to map -->
+    <ng-container *ngIf="legendData$ | async as legendData">
     <app-funding-report-map></app-funding-report-map>
+    </ng-container>
   </div>
 </section>
