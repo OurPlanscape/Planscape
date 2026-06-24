@@ -1,5 +1,5 @@
 import { AsyncPipe, NgIf } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import {
   LngLat,
   Map as MapLibreMap,
@@ -17,10 +17,11 @@ import {
 import { AuthService, DataLayersService } from '@app/services';
 import { FrontendConstants } from '@app/map/map.constants';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { BehaviorSubject, map, Subject } from 'rxjs';
+import { BehaviorSubject, map, Observable, Subject } from 'rxjs';
 import { EventData } from '@angular/cdk/testing';
 import { MapZoomControlComponent } from '@app/maplibre-map/map-zoom-control/map-zoom-control.component';
 import { MapBaseLayersComponent } from '@app/maplibre-map/map-base-layers/map-base-layers.component';
+import { MapDataLayerComponent } from '@app/maplibre-map/map-data-layer/map-data-layer.component';
 import { FundingDataLayerComponent } from '../funding-data-layer/funding-data-layer.component';
 import { PlanState } from '@app/plan/plan.state';
 import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
@@ -46,6 +47,7 @@ import { FundingMapConfigState } from '../funding-map-config-state';
     FundingDataLayerComponent,
     LayerComponent,
     MapBaseLayersComponent,
+    MapDataLayerComponent,
     MapComponent,
     MapMultiProjectAreasComponent,
     MapTooltipComponent,
@@ -58,7 +60,7 @@ import { FundingMapConfigState } from '../funding-map-config-state';
   templateUrl: './funding-report-map.component.html',
   styleUrl: './funding-report-map.component.scss',
 })
-export class FundingReportMapComponent {
+export class FundingReportMapComponent implements OnInit {
   constructor(
     private fundingMapConfigState: FundingMapConfigState,
     private mapConfigService: MapConfigService,
@@ -74,6 +76,9 @@ export class FundingReportMapComponent {
   }
 
   @Input() allowInteraction = true;
+
+  /** Id of the report's treatment datalayer to display on the map. */
+  @Input() treatmentDataLayerId!: number;
 
   mapLibreMap!: MapLibreMap;
   /**
@@ -113,7 +118,13 @@ export class FundingReportMapComponent {
   hoveredProjectAreaId$ = new Subject<number | null>();
   mouseLngLat: LngLat | null = null;
 
-  fundingDataLayer$ = this.dataLayersService.getDataLayerById(1531);
+  fundingDataLayer$!: Observable<DataLayer>;
+
+  ngOnInit() {
+    this.fundingDataLayer$ = this.dataLayersService.getDataLayerById(
+      this.treatmentDataLayerId
+    );
+  }
 
   mapLoaded(loadedMap: MapLibreMap) {
     this.mapLibreMap = loadedMap;

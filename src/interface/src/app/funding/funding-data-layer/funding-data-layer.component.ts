@@ -35,9 +35,7 @@ const LAYER_ID = 'funding-image-layer';
   imports: [],
   template: '',
 })
-export class FundingDataLayerComponent
-  implements OnInit, OnChanges, OnDestroy
-{
+export class FundingDataLayerComponent implements OnInit, OnChanges, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() dataLayer!: DataLayer;
 
@@ -80,7 +78,11 @@ export class FundingDataLayerComponent
         filter(() => !!this.mapLibreMap?.getLayer(LAYER_ID))
       )
       .subscribe((newOpacity) => {
-        this.mapLibreMap.setPaintProperty(LAYER_ID, 'raster-opacity', newOpacity);
+        this.mapLibreMap.setPaintProperty(
+          LAYER_ID,
+          'raster-opacity',
+          newOpacity
+        );
       });
   }
 
@@ -112,7 +114,7 @@ export class FundingDataLayerComponent
       };
       this.removeRasterLayer();
       this.mapLibreMap.addSource(SOURCE_ID, rasterSource);
-      this.mapLibreMap.addLayer(rasterLayer, 'bottom-layer');
+      this.mapLibreMap.addLayer(rasterLayer, 'map-project-areas-line');
     }
   }
 

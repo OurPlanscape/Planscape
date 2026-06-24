@@ -40,7 +40,9 @@
   <section id="map" class="report-section" *ngIf="isPreview">
     <div class="map-container">
       <app-funding-report-map
-        [allowInteraction]="false"></app-funding-report-map>
+        *ngIf="report?.treatment_datalayer as treatmentDataLayerId"
+        [allowInteraction]="false"
+        [treatmentDataLayerId]="treatmentDataLayerId"></app-funding-report-map>
     </div>
   </section>
 

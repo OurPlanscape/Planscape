@@ -36,6 +36,7 @@ describe('FundingReportService', () => {
       id: 1,
       scenario: 123,
       results: null,
+      treatment_datalayer: null,
     };
     let result: FundingReport | null | undefined;
     service.getReport(123).subscribe((r) => (result = r));

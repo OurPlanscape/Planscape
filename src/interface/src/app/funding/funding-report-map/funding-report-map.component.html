@@ -24,6 +24,10 @@
     [mapLibreMap]="mapLibreMap"
     [dataLayer]="fundingDataLayer"></app-funding-data-layer>
 
+  <app-map-data-layer
+    *ngIf="mapLibreMap"
+    [mapLibreMap]="mapLibreMap"></app-map-data-layer>
+
   <app-map-base-layers
     *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"></app-map-base-layers>

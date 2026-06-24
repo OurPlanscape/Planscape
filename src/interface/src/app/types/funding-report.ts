@@ -99,6 +99,7 @@ export interface FundingReport {
   id: number;
   scenario: number;
   results: FundingReportResults | null;
+  treatment_datalayer: number | null;
 }
 
 export interface FlameLengthRequestParams {
