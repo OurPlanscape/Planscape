@@ -126,11 +126,11 @@ export function aggregateBiomassVolumes(
   const sum = (key: keyof FundingReportBiomassVolumes) =>
     matches.reduce((total, project) => total + (project[key] ?? 0), 0);
   return {
-    merchantable_softwood_bf_ac: sum('merchantable_softwood_bf_ac'),
-    merchantable_hardwood_bf_ac: sum('merchantable_hardwood_bf_ac'),
-    merchantable_mixed_bf_ac: sum('merchantable_mixed_bf_ac'),
-    non_merchantable_softwood_cuft_ac: sum('non_merchantable_softwood_cuft_ac'),
-    non_merchantable_hardwood_cuft_ac: sum('non_merchantable_hardwood_cuft_ac'),
-    non_merchantable_mixed_cuft_ac: sum('non_merchantable_mixed_cuft_ac'),
+    merchantable_softwood_bf: sum('merchantable_softwood_bf'),
+    merchantable_hardwood_bf: sum('merchantable_hardwood_bf'),
+    merchantable_mixed_bf: sum('merchantable_mixed_bf'),
+    non_merchantable_softwood_cuft: sum('non_merchantable_softwood_cuft'),
+    non_merchantable_hardwood_cuft: sum('non_merchantable_hardwood_cuft'),
+    non_merchantable_mixed_cuft: sum('non_merchantable_mixed_cuft'),
   };
 }

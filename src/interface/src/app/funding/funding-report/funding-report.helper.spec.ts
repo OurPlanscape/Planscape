@@ -15,12 +15,12 @@ const METRIC = 'POTENTIAL_SMOKE';
 /** A biomass-volumes block with every field set to `fill`. */
 function biomass(fill: number): FundingReportBiomassVolumes {
   return {
-    merchantable_softwood_bf_ac: fill,
-    merchantable_hardwood_bf_ac: fill,
-    merchantable_mixed_bf_ac: fill,
-    non_merchantable_softwood_cuft_ac: fill,
-    non_merchantable_hardwood_cuft_ac: fill,
-    non_merchantable_mixed_cuft_ac: fill,
+    merchantable_softwood_bf: fill,
+    merchantable_hardwood_bf: fill,
+    merchantable_mixed_bf: fill,
+    non_merchantable_softwood_cuft: fill,
+    non_merchantable_hardwood_cuft: fill,
+    non_merchantable_mixed_cuft: fill,
   };
 }
 
