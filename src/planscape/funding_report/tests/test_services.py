@@ -26,6 +26,7 @@ from funding_report.models import (
     FundingReportMetric,
 )
 from funding_report.services import (
+    _BIOMASS_PIXEL_AREA_ACRES,
     aggregate_delta_pixels,
     calculate_aet_improvement,
     build_datalayer_lookup,
@@ -604,7 +605,6 @@ class BiomassVolumesCalculationTest(TestCase):
             scenario=self.scenario,
             created_by=self.scenario.user,
         )
-        self.pixel_area_sq_m = 100.0  # 10 m × 10 m
 
     def _create_biomass_datalayer(self, role: str, path: Path):
         return DataLayerFactory.create(
@@ -638,12 +638,12 @@ class BiomassVolumesCalculationTest(TestCase):
 
         summary = results["summary"]
         expected_keys = {
-            "merchantable_softwood_bf_ac",
-            "merchantable_hardwood_bf_ac",
-            "merchantable_mixed_bf_ac",
-            "non_merchantable_softwood_cuft_ac",
-            "non_merchantable_hardwood_cuft_ac",
-            "non_merchantable_mixed_cuft_ac",
+            "merchantable_softwood_bf",
+            "merchantable_hardwood_bf",
+            "merchantable_mixed_bf",
+            "non_merchantable_softwood_cuft",
+            "non_merchantable_hardwood_cuft",
+            "non_merchantable_mixed_cuft",
         }
         self.assertEqual(set(summary.keys()), expected_keys)
 
@@ -657,20 +657,44 @@ class BiomassVolumesCalculationTest(TestCase):
 
         results = calculate_biomass_volumes(self.report)
 
-        # Pixel values are already in output units (merch bf/ac, non-merch
-        # cuft/ac), so values are summed directly per wood type with no
-        # unit conversion.
+        # Pixel values are in per-acre output units (merch bf/ac, non-merch
+        # cuft/ac); they're summed per wood type, then multiplied by the
+        # per-pixel acreage to produce totals.
         #
         # Softwood pixels: (0,0) merch=100, nm=50; (1,1) merch=400, nm=100
         # Hardwood pixels: (0,1) merch=200, nm=80
         # Mixed pixels:    (1,0) merch=300, nm=80
         summary = results["summary"]
-        self.assertAlmostEqual(summary["merchantable_softwood_bf_ac"], 100 + 400, places=4)
-        self.assertAlmostEqual(summary["merchantable_hardwood_bf_ac"], 200, places=4)
-        self.assertAlmostEqual(summary["merchantable_mixed_bf_ac"], 300, places=4)
-        self.assertAlmostEqual(summary["non_merchantable_softwood_cuft_ac"], 50 + 100, places=4)
-        self.assertAlmostEqual(summary["non_merchantable_hardwood_cuft_ac"], 80, places=4)
-        self.assertAlmostEqual(summary["non_merchantable_mixed_cuft_ac"], 80, places=4)
+        self.assertAlmostEqual(
+            summary["merchantable_softwood_bf"],
+            (100 + 400) * _BIOMASS_PIXEL_AREA_ACRES,
+            places=4,
+        )
+        self.assertAlmostEqual(
+            summary["merchantable_hardwood_bf"],
+            200 * _BIOMASS_PIXEL_AREA_ACRES,
+            places=4,
+        )
+        self.assertAlmostEqual(
+            summary["merchantable_mixed_bf"],
+            300 * _BIOMASS_PIXEL_AREA_ACRES,
+            places=4,
+        )
+        self.assertAlmostEqual(
+            summary["non_merchantable_softwood_cuft"],
+            (50 + 100) * _BIOMASS_PIXEL_AREA_ACRES,
+            places=4,
+        )
+        self.assertAlmostEqual(
+            summary["non_merchantable_hardwood_cuft"],
+            80 * _BIOMASS_PIXEL_AREA_ACRES,
+            places=4,
+        )
+        self.assertAlmostEqual(
+            summary["non_merchantable_mixed_cuft"],
+            80 * _BIOMASS_PIXEL_AREA_ACRES,
+            places=4,
+        )
 
     def test_calculate_biomass_volumes_nonoverlapping_project_area_returns_zeros(self):
         self._create_all_biomass_datalayers()
