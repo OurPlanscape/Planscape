@@ -76,6 +76,23 @@ class FundingReportLayerKey(models.TextChoices):
         "Mills & Other Biomass Facilities",
     )
 
+
+class FundingReportLayerCategory(models.TextChoices):
+    CARBON = "carbon", "Carbon"
+    WATER = "water", "Water"
+    BIOMASS = "biomass", "Biomass"
+    WILDFIRE_RISK_REDUCTION = "wildfire_risk_reduction", "Wildfire Risk Reduction"
+
+
+FUNDING_REPORT_LAYER_CATEGORIES: Dict[FundingReportLayerKey, FundingReportLayerCategory] = {
+    FundingReportLayerKey.BASELINE_ABOVEGROUND_CARBON_2026: FundingReportLayerCategory.CARBON,
+    FundingReportLayerKey.BASELINE_SMOKE_PRODUCTION_2026: FundingReportLayerCategory.CARBON,
+    FundingReportLayerKey.BASELINE_FLAME_LENGTH_2026: FundingReportLayerCategory.WILDFIRE_RISK_REDUCTION,
+    FundingReportLayerKey.AET_BASELINE: FundingReportLayerCategory.WATER,
+    FundingReportLayerKey.AET_TARGET: FundingReportLayerCategory.WATER,
+    FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES: FundingReportLayerCategory.BIOMASS,
+}
+
 # Label for pixels that are nodata in the treatments raster.
 TREATMENT_NO_TREATMENT_LABEL = "No Treatment"
 
