@@ -8,7 +8,7 @@ from django.conf import settings
 from django.test import TestCase
 from django.contrib.gis.geos import GEOSGeometry
 
-from funding_report.models import FundingReportLayerKey, FundingReportMetric
+from funding_report.models import FundingReportLayerCategory, FundingReportMetric
 
 from modules.base import get_module
 from modules.serializers import FundingReportModuleSerializer
@@ -465,22 +465,18 @@ class FundingReportModuleTest(TestCase):
 
         datalayers: Dict[str, Any] = options["datalayers"]
 
-        self.assertEqual(
-            datalayers[FundingReportLayerKey.BASELINE_ABOVEGROUND_CARBON_2026],
-            [aboveground],
+        self.assertCountEqual(
+            datalayers[FundingReportLayerCategory.CARBON],
+            [aboveground, smoke],
         )
         self.assertEqual(
-            datalayers[FundingReportLayerKey.BASELINE_SMOKE_PRODUCTION_2026], [smoke]
+            datalayers[FundingReportLayerCategory.WILDFIRE_RISK_REDUCTION], [flame]
+        )
+        self.assertCountEqual(
+            datalayers[FundingReportLayerCategory.WATER], [aet_baseline, aet_target]
         )
         self.assertEqual(
-            datalayers[FundingReportLayerKey.BASELINE_FLAME_LENGTH_2026], [flame]
-        )
-        self.assertEqual(
-            datalayers[FundingReportLayerKey.AET_BASELINE], [aet_baseline]
-        )
-        self.assertEqual(datalayers[FundingReportLayerKey.AET_TARGET], [aet_target])
-        self.assertEqual(
-            datalayers[FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES],
+            datalayers[FundingReportLayerCategory.BIOMASS],
             [mill_layer],
         )
 
@@ -497,19 +493,15 @@ class FundingReportModuleTest(TestCase):
 
         serialized_datalayers = data["options"]["datalayers"]
         self.assertEqual(
-            serialized_datalayers[
-                FundingReportLayerKey.BASELINE_ABOVEGROUND_CARBON_2026
-            ][0]["id"],
+            serialized_datalayers[FundingReportLayerCategory.CARBON][0]["id"],
             aboveground.id,
         )
         self.assertEqual(
-            serialized_datalayers[FundingReportLayerKey.BASELINE_SMOKE_PRODUCTION_2026],
+            serialized_datalayers[FundingReportLayerCategory.WILDFIRE_RISK_REDUCTION],
             [],
         )
         self.assertEqual(
-            serialized_datalayers[
-                FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES
-            ][0]["id"],
+            serialized_datalayers[FundingReportLayerCategory.BIOMASS][0]["id"],
             mill_layer.id,
         )
 

@@ -35,6 +35,7 @@ from funding_report.models import (
     BIOMASS_VARIABLE,
     FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
     FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
+    FUNDING_REPORT_LAYER_CATEGORIES,
     FUNDING_REPORT_YEARS,
     TREATMENT_NO_TREATMENT_LABEL,
     TREATMENT_PIXEL_VALUE_LABELS,
@@ -45,6 +46,7 @@ from funding_report.models import (
     BiomassRole,
     TREATMENT_VARIABLE,
     FundingOpportunityReport,
+    FundingReportLayerCategory,
     FundingReportLayerKey,
     FundingReportMetric,
 )
@@ -144,7 +146,7 @@ def get_funding_report_layers_of_interest() -> Dict[str, List[DataLayer]]:
     def _as_list(datalayer: DataLayer | None) -> List[DataLayer]:
         return [datalayer] if datalayer else []
 
-    return {
+    layers_by_key = {
         FundingReportLayerKey.BASELINE_ABOVEGROUND_CARBON_2026: _as_list(
             lookup.get((FundingReportMetric.ABOVEGROUND_TOTAL.value, 2026, True))
         ),
@@ -158,6 +160,14 @@ def get_funding_report_layers_of_interest() -> Dict[str, List[DataLayer]]:
         FundingReportLayerKey.AET_TARGET: _as_list(get_aet_target_datalayer()),
         FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES: get_mills_datalayers(),
     }
+
+    grouped: Dict[str, List[DataLayer]] = {
+        category.value: [] for category in FundingReportLayerCategory
+    }
+    for layer_key, datalayers in layers_by_key.items():
+        category = FUNDING_REPORT_LAYER_CATEGORIES[layer_key]
+        grouped[category.value].extend(datalayers)
+    return grouped
 
 
 def get_treatment_datalayer() -> DataLayer | None:
