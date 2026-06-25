@@ -23,7 +23,7 @@ from funding_report.models import (
     BiomassRole,
     FundingOpportunityReport,
     FundingOpportunityReportStatus,
-    FundingReportLayerKey,
+    FundingReportLayerCategory,
     FundingReportMetric,
 )
 from funding_report.services import (
@@ -763,28 +763,27 @@ class FundingReportLayersOfInterestTest(TestCase):
 
         result = get_funding_report_layers_of_interest()
 
-        self.assertEqual(
-            result[FundingReportLayerKey.BASELINE_ABOVEGROUND_CARBON_2026],
-            [aboveground],
-        )
-        self.assertEqual(
-            result[FundingReportLayerKey.BASELINE_SMOKE_PRODUCTION_2026], [smoke]
-        )
-        self.assertEqual(
-            result[FundingReportLayerKey.BASELINE_FLAME_LENGTH_2026], [flame]
-        )
-        self.assertEqual(result[FundingReportLayerKey.AET_BASELINE], [aet_baseline])
-        self.assertEqual(result[FundingReportLayerKey.AET_TARGET], [aet_target])
         self.assertCountEqual(
-            result[FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES],
+            result[FundingReportLayerCategory.CARBON],
+            [aboveground, smoke],
+        )
+        self.assertCountEqual(
+            result[FundingReportLayerCategory.WATER],
+            [aet_baseline, aet_target],
+        )
+        self.assertEqual(
+            result[FundingReportLayerCategory.WILDFIRE_RISK_REDUCTION], [flame]
+        )
+        self.assertCountEqual(
+            result[FundingReportLayerCategory.BIOMASS],
             [mill_layer_1, mill_layer_2],
         )
 
     def test_returns_empty_lists_when_no_layers_tagged(self):
         result = get_funding_report_layers_of_interest()
 
-        for key in FundingReportLayerKey:
-            self.assertEqual(result[key], [])
+        for category in FundingReportLayerCategory:
+            self.assertEqual(result[category], [])
 
     def test_mills_layers_scoped_to_named_dataset(self):
         mills_dataset = DatasetFactory.create(name=settings.FORISK_MILLS_DATASET_NAME)
@@ -796,6 +795,6 @@ class FundingReportLayersOfInterestTest(TestCase):
         result = get_funding_report_layers_of_interest()
 
         self.assertEqual(
-            result[FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES],
+            result[FundingReportLayerCategory.BIOMASS],
             [mill_layer],
         )
