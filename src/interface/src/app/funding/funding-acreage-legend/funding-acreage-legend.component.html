@@ -1,4 +1,7 @@
-<div class="treatment-acres-legend">
+<div class="treatment-acres-legend"
+#tooltip="matTooltip"
+        matTooltip="TODO tooltip"
+        matTooltipPosition="left">
   <div class="title-header">
     <div class="title">Legend</div>
     <button
@@ -40,20 +43,18 @@
         icon="info"
         class="info-icon"
         [outlined]="true"
-        [matMenuTriggerFor]="popoverMenu"></button>
-      <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
-        TODO tooltip
-      </mat-menu>
+        (click)="tooltip.show()"
+       ></button>
     </div>
     <div class="dynamic-section">
       <div
         class="dynamic-acres-row"
-        *ngFor="let acreageDetail of acreageDetails">
+        *ngFor="let acreageDetail of legendData.treatmentAcres">
         <div class="legend-line">
           <div
             class="swatch-box"
-            [ngStyle]="{ 'background-color': acreageDetail.color }"></div>
-          <div class="swatch-label">{{ acreageDetail.name }}</div>
+            [ngStyle]="{ 'background-color': treatmentColors[acreageDetail.treatment] }"></div>
+          <div class="swatch-label">{{ acreageDetail.treatment }}</div>
         </div>
         <div class="acres-line">
           {{ acreageDetail.acres | number: '1.0-0' }} acres
