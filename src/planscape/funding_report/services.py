@@ -741,6 +741,81 @@ def build_funding_report_results(
     }
 
 
+def build_flame_length_reduction_results(
+    project_results: Iterable[Dict[str, Any]],
+) -> Dict[str, Dict[str, List[Dict[str, Any]]]]:
+    """
+    Like build_funding_report_results, but buckets entries by their flame
+    length "interval" (e.g. "7_4") instead of by metric, since a single
+    funding report run now calculates flame length reduction for multiple
+    intervals. Each result must carry an "interval": {"from": ..., "to": ...}
+    key, as produced by aggregate_flame_length_reduction.
+    """
+    projects: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    summary_values: Dict[Tuple[str, int], Dict[str, Any]] = {}
+
+    for result in project_results:
+        interval = result["interval"]
+        interval_key = f"{int(interval['from'])}_{int(interval['to'])}"
+        year = result["year"]
+        project_result = {
+            "project_id": result["project_id"],
+            "proj_id": result.get("proj_id"),
+            "year": year,
+            "value": result["value"],
+            "baseline": result["baseline"],
+            "delta": result["delta"],
+            "raw_value": result["value"],
+            "total_area": result["baseline"],
+        }
+        projects[interval_key].append(project_result)
+
+        summary = summary_values.setdefault(
+            (interval_key, year),
+            {
+                "year": year,
+                "value": None,
+                "baseline": None,
+                "delta": None,
+                "raw_value": None,
+                "total_area": None,
+            },
+        )
+        for field in ("value", "baseline"):
+            if result[field] is None:
+                continue
+            summary[field] = (summary[field] or 0) + result[field]
+
+    for (_interval_key, _year), summary in summary_values.items():
+        if summary["value"] is None or summary["baseline"] is None:
+            continue
+        summary["delta"] = (
+            summary["value"] / summary["baseline"] * 100
+            if summary["baseline"]
+            else 0.0
+        )
+        summary["raw_value"] = summary["value"]
+        summary["total_area"] = summary["baseline"]
+
+    summary_by_interval: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for (interval_key, _year), summary in summary_values.items():
+        summary_by_interval[interval_key].append(summary)
+
+    return {
+        "summary": {
+            interval_key: sorted(values, key=lambda item: item["year"])
+            for interval_key, values in summary_by_interval.items()
+        },
+        "projects": {
+            interval_key: sorted(
+                values,
+                key=lambda item: (item["year"], item["project_id"]),
+            )
+            for interval_key, values in projects.items()
+        },
+    }
+
+
 def calculate_funding_report_flame_length_reduction(
     report: FundingOpportunityReport,
     from_ft: float,
