@@ -31,6 +31,7 @@ from funding_report.services import (
     aggregate_delta_pixels,
     calculate_aet_improvement,
     build_datalayer_lookup,
+    build_flame_length_reduction_results,
     build_funding_report_results,
     calculate_biomass_volumes,
     calculate_funding_report_flame_length_reduction,
@@ -424,6 +425,143 @@ class FundingReportRasterCalculationTest(TestCase):
                     "delta": 3,
                 },
             ],
+        )
+
+
+class BuildFlameLengthReductionResultsTest(TestCase):
+    def test_buckets_results_by_interval_key(self):
+        results = build_flame_length_reduction_results(
+            [
+                {
+                    "project_id": 1,
+                    "year": 2026,
+                    "value": 10,
+                    "baseline": 40,
+                    "delta": 25.0,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+                {
+                    "project_id": 2,
+                    "year": 2026,
+                    "value": 5,
+                    "baseline": 20,
+                    "delta": 25.0,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+                {
+                    "project_id": 1,
+                    "year": 2026,
+                    "value": 2,
+                    "baseline": 40,
+                    "delta": 5.0,
+                    "interval": {"from": 6.0, "to": 4.0},
+                },
+                {
+                    "project_id": 1,
+                    "year": 2026,
+                    "value": 1,
+                    "baseline": 40,
+                    "delta": 2.5,
+                    "interval": {"from": 4.0, "to": 2.0},
+                },
+            ]
+        )
+
+        self.assertEqual(set(results["summary"].keys()), {"7_4", "6_4", "4_2"})
+        self.assertEqual(set(results["projects"].keys()), {"7_4", "6_4", "4_2"})
+
+        seven_four_summary = results["summary"]["7_4"][0]
+        self.assertEqual(seven_four_summary["value"], 15)
+        self.assertEqual(seven_four_summary["baseline"], 60)
+        self.assertAlmostEqual(seven_four_summary["delta"], 15 / 60 * 100)
+        self.assertEqual(len(results["projects"]["7_4"]), 2)
+
+    def test_summary_includes_raw_value_and_total_area_aliases(self):
+        results = build_flame_length_reduction_results(
+            [
+                {
+                    "project_id": 1,
+                    "year": 2026,
+                    "value": 10,
+                    "baseline": 40,
+                    "delta": 25.0,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+            ]
+        )
+
+        summary = results["summary"]["7_4"][0]
+        self.assertEqual(summary["raw_value"], summary["value"])
+        self.assertEqual(summary["total_area"], summary["baseline"])
+
+    def test_project_entries_include_raw_value_and_total_area_aliases(self):
+        results = build_flame_length_reduction_results(
+            [
+                {
+                    "project_id": 1,
+                    "proj_id": "abc",
+                    "year": 2026,
+                    "value": 10,
+                    "baseline": 40,
+                    "delta": 25.0,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+            ]
+        )
+
+        project_result = results["projects"]["7_4"][0]
+        self.assertEqual(project_result["raw_value"], project_result["value"])
+        self.assertEqual(project_result["total_area"], project_result["baseline"])
+        self.assertEqual(project_result["proj_id"], "abc")
+
+    def test_interval_key_formatting_truncates_to_int(self):
+        results = build_flame_length_reduction_results(
+            [
+                {
+                    "project_id": 1,
+                    "year": 2026,
+                    "value": 10,
+                    "baseline": 40,
+                    "delta": 25.0,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+            ]
+        )
+
+        self.assertIn("7_4", results["summary"])
+        self.assertNotIn("7.0_4.0", results["summary"])
+
+    def test_empty_input_returns_empty_dicts(self):
+        self.assertEqual(
+            build_flame_length_reduction_results([]),
+            {"summary": {}, "projects": {}},
+        )
+
+    def test_sorts_by_year_and_project_id_within_bucket(self):
+        results = build_flame_length_reduction_results(
+            [
+                {
+                    "project_id": 2,
+                    "year": 2026,
+                    "value": 20,
+                    "baseline": 10,
+                    "delta": 3,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+                {
+                    "project_id": 1,
+                    "year": 2026,
+                    "value": 5,
+                    "baseline": 2,
+                    "delta": 1,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+            ]
+        )
+
+        self.assertEqual(
+            [item["project_id"] for item in results["projects"]["7_4"]],
+            [1, 2],
         )
 
 
