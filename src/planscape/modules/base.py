@@ -48,7 +48,7 @@ class BaseModule:
     def get_datalayers(
         self, geometry: Optional[GEOSGeometry] = None, user: Optional[User] = None
     ) -> Dict[str, Any]:
-        raise NotImplementedError
+        return {}
 
     def get_datasets(
         self,
