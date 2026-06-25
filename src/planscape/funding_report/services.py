@@ -45,6 +45,7 @@ from funding_report.models import (
     BiomassRole,
     TREATMENT_VARIABLE,
     FundingOpportunityReport,
+    FundingReportLayerKey,
     FundingReportMetric,
 )
 
@@ -52,6 +53,8 @@ log = logging.getLogger(__name__)
 
 AET_VARIABLE = "AET"
 AET_DELTA_ROLE = "delta"
+AET_BASELINE_ROLE = "baseline"
+AET_TARGET_ROLE = "target"
 
 
 def build_datalayer_lookup() -> Dict[Tuple[str, int, bool], DataLayer]:
@@ -96,6 +99,65 @@ def get_aet_delta_datalayer() -> DataLayer:
     if len(datalayers) > 1:
         raise ValueError("Multiple funding report AET delta datalayers found.")
     return datalayers[0]
+
+
+def _get_aet_role_datalayer(role: str) -> DataLayer | None:
+    datalayers = list(
+        DataLayer.objects.filter(
+            type=DataLayerType.RASTER,
+            metadata__contains={
+                "modules": {
+                    "funding_report": {
+                        "variable": AET_VARIABLE,
+                        "role": role,
+                    }
+                }
+            },
+        )[:2]
+    )
+    if not datalayers:
+        log.warning("Missing funding report AET %s datalayer.", role)
+        return None
+    if len(datalayers) > 1:
+        log.warning("Multiple funding report AET %s datalayers found.", role)
+        return None
+    return datalayers[0]
+
+
+def get_aet_baseline_datalayer() -> DataLayer | None:
+    return _get_aet_role_datalayer(AET_BASELINE_ROLE)
+
+
+def get_aet_target_datalayer() -> DataLayer | None:
+    return _get_aet_role_datalayer(AET_TARGET_ROLE)
+
+
+def get_mills_datalayers() -> List[DataLayer]:
+    return list(
+        DataLayer.objects.filter(dataset__name=settings.FORISK_MILLS_DATASET_NAME)
+    )
+
+
+def get_funding_report_layers_of_interest() -> Dict[str, List[DataLayer]]:
+    lookup = build_datalayer_lookup()
+
+    def _as_list(datalayer: DataLayer | None) -> List[DataLayer]:
+        return [datalayer] if datalayer else []
+
+    return {
+        FundingReportLayerKey.BASELINE_ABOVEGROUND_CARBON_2026: _as_list(
+            lookup.get((FundingReportMetric.ABOVEGROUND_TOTAL.value, 2026, True))
+        ),
+        FundingReportLayerKey.BASELINE_SMOKE_PRODUCTION_2026: _as_list(
+            lookup.get((FundingReportMetric.POTENTIAL_SMOKE.value, 2026, True))
+        ),
+        FundingReportLayerKey.BASELINE_FLAME_LENGTH_2026: _as_list(
+            lookup.get((FundingReportMetric.TOTAL_FLAME_SEVERITY.value, 2026, True))
+        ),
+        FundingReportLayerKey.AET_BASELINE: _as_list(get_aet_baseline_datalayer()),
+        FundingReportLayerKey.AET_TARGET: _as_list(get_aet_target_datalayer()),
+        FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES: get_mills_datalayers(),
+    }
 
 
 def get_treatment_datalayer() -> DataLayer | None:
@@ -711,6 +773,11 @@ _BIOMASS_WOOD_TYPES: Dict[int, str] = {
     WOOD_TYPE_MIXED: "mixed",
 }
 
+# Acres represented by one biomass raster pixel (~30 m x 30 m). The merch/
+# non-merch rasters store per-acre values, so summed pixel values must be
+# multiplied by this to turn a per-acre rate into a total.
+_BIOMASS_PIXEL_AREA_ACRES = 0.2224
+
 
 def get_biomass_datalayer(role: str) -> DataLayer:
     datalayers = list(
@@ -747,8 +814,10 @@ def _extract_raw_biomass_volumes(
     Sums raster pixel values per wood type for one project area geometry.
     Keys: merch_{softwood,hardwood,mixed}_bf_ac and nm_{softwood,hardwood,mixed}_cuft_ac.
 
-    Raster pixels are already in output units (merch in bf/ac, non-merch in
-    cuft/ac), so values are summed directly with no unit conversion.
+    Raster pixels are already in per-acre output units (merch in bf/ac,
+    non-merch in cuft/ac), so values are summed directly here with no area
+    conversion. The per-acre sums are converted to totals downstream in
+    `_biomass_volumes_to_output()`.
     """
     empty: Dict[str, float] = {}
     for name in _BIOMASS_WOOD_TYPES.values():
@@ -785,10 +854,16 @@ def _extract_raw_biomass_volumes(
 
 
 def _biomass_volumes_to_output(raw: Dict[str, float]) -> Dict[str, float]:
+    """
+    Converts raw per-acre pixel sums into totals by multiplying by the
+    per-pixel acreage, and maps them to their output field names.
+    """
     result: Dict[str, float] = {}
     for wt_name in _BIOMASS_WOOD_TYPES.values():
-        result[f"merchantable_{wt_name}_bf_ac"] = raw.get(f"merch_{wt_name}_bf_ac", 0.0)
-        result[f"non_merchantable_{wt_name}_cuft_ac"] = raw.get(f"nm_{wt_name}_cuft_ac", 0.0)
+        merch_bf_ac = raw.get(f"merch_{wt_name}_bf_ac", 0.0)
+        nm_cuft_ac = raw.get(f"nm_{wt_name}_cuft_ac", 0.0)
+        result[f"merchantable_{wt_name}_bf"] = merch_bf_ac * _BIOMASS_PIXEL_AREA_ACRES
+        result[f"non_merchantable_{wt_name}_cuft"] = nm_cuft_ac * _BIOMASS_PIXEL_AREA_ACRES
     return result
 
 

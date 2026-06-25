@@ -55,6 +55,27 @@ class BiomassRole(models.TextChoices):
     NON_MERCHANTABLE = "non_merchantable", "Non-Merchantable"
     WOOD_TYPE = "wood_type", "Wood Type"
 
+
+class FundingReportLayerKey(models.TextChoices):
+    BASELINE_ABOVEGROUND_CARBON_2026 = (
+        "baseline_aboveground_carbon_2026",
+        "Baseline Aboveground Carbon 2026",
+    )
+    BASELINE_SMOKE_PRODUCTION_2026 = (
+        "baseline_smoke_production_2026",
+        "Baseline Smoke Production 2026",
+    )
+    BASELINE_FLAME_LENGTH_2026 = (
+        "baseline_flame_length_2026",
+        "Baseline Flame Length 2026",
+    )
+    AET_BASELINE = "aet_baseline", "AET Baseline"
+    AET_TARGET = "aet_target", "AET Target"
+    MILLS_AND_OTHER_BIOMASS_FACILITIES = (
+        "mills_and_other_biomass_facilities",
+        "Mills & Other Biomass Facilities",
+    )
+
 # Label for pixels that are nodata in the treatments raster.
 TREATMENT_NO_TREATMENT_LABEL = "No Treatment"
 
