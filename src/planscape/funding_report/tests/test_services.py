@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import rasterio
 from datasets.models import DataLayerType
-from datasets.tests.factories import DataLayerFactory
+from datasets.tests.factories import DataLayerFactory, DatasetFactory
 from django.conf import settings
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.test import TestCase
@@ -23,6 +23,7 @@ from funding_report.models import (
     BiomassRole,
     FundingOpportunityReport,
     FundingOpportunityReportStatus,
+    FundingReportLayerKey,
     FundingReportMetric,
 )
 from funding_report.services import (
@@ -38,6 +39,7 @@ from funding_report.services import (
     calculate_project_area_delta,
     get_aet_delta_datalayer,
     get_biomass_datalayer,
+    get_funding_report_layers_of_interest,
 )
 
 
@@ -710,3 +712,90 @@ class BiomassVolumesCalculationTest(TestCase):
         summary = results["summary"]
         for key in summary:
             self.assertEqual(summary[key], 0.0, msg=f"{key} should be 0 for non-overlapping area")
+
+
+class FundingReportLayersOfInterestTest(TestCase):
+    def create_funding_report_datalayer(self, metric, year, baseline):
+        return DataLayerFactory.create(
+            name=f"{'Baseline' if baseline else 'Legalmax'} {year} {metric.value}",
+            type=DataLayerType.RASTER,
+            metadata={
+                "modules": {
+                    "funding_report": {
+                        "year": year,
+                        "variable": metric.value,
+                        "baseline": baseline,
+                    }
+                }
+            },
+        )
+
+    def create_aet_datalayer(self, role):
+        return DataLayerFactory.create(
+            name=f"AET {role}",
+            type=DataLayerType.RASTER,
+            metadata={
+                "modules": {
+                    "funding_report": {
+                        "variable": "AET",
+                        "role": role,
+                    }
+                }
+            },
+        )
+
+    def test_returns_all_keys_with_tagged_layers(self):
+        aboveground = self.create_funding_report_datalayer(
+            FundingReportMetric.ABOVEGROUND_TOTAL, 2026, True
+        )
+        smoke = self.create_funding_report_datalayer(
+            FundingReportMetric.POTENTIAL_SMOKE, 2026, True
+        )
+        flame = self.create_funding_report_datalayer(
+            FundingReportMetric.TOTAL_FLAME_SEVERITY, 2026, True
+        )
+        aet_baseline = self.create_aet_datalayer("baseline")
+        aet_target = self.create_aet_datalayer("target")
+
+        mills_dataset = DatasetFactory.create(name=settings.FORISK_MILLS_DATASET_NAME)
+        mill_layer_1 = DataLayerFactory.create(dataset=mills_dataset)
+        mill_layer_2 = DataLayerFactory.create(dataset=mills_dataset)
+
+        result = get_funding_report_layers_of_interest()
+
+        self.assertEqual(
+            result[FundingReportLayerKey.BASELINE_ABOVEGROUND_CARBON_2026],
+            [aboveground],
+        )
+        self.assertEqual(
+            result[FundingReportLayerKey.BASELINE_SMOKE_PRODUCTION_2026], [smoke]
+        )
+        self.assertEqual(
+            result[FundingReportLayerKey.BASELINE_FLAME_LENGTH_2026], [flame]
+        )
+        self.assertEqual(result[FundingReportLayerKey.AET_BASELINE], [aet_baseline])
+        self.assertEqual(result[FundingReportLayerKey.AET_TARGET], [aet_target])
+        self.assertCountEqual(
+            result[FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES],
+            [mill_layer_1, mill_layer_2],
+        )
+
+    def test_returns_empty_lists_when_no_layers_tagged(self):
+        result = get_funding_report_layers_of_interest()
+
+        for key in FundingReportLayerKey:
+            self.assertEqual(result[key], [])
+
+    def test_mills_layers_scoped_to_named_dataset(self):
+        mills_dataset = DatasetFactory.create(name=settings.FORISK_MILLS_DATASET_NAME)
+        mill_layer = DataLayerFactory.create(dataset=mills_dataset)
+
+        other_dataset = DatasetFactory.create(name="Some Other Dataset")
+        DataLayerFactory.create(dataset=other_dataset)
+
+        result = get_funding_report_layers_of_interest()
+
+        self.assertEqual(
+            result[FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES],
+            [mill_layer],
+        )

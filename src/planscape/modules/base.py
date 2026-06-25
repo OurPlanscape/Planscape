@@ -45,20 +45,31 @@ class BaseModule:
     def get_configuration(self, **kwargs) -> Dict[str, Any]:
         return {"name": self.name, "options": self._get_options(**kwargs)}
 
+    def get_datalayers(
+        self, geometry: Optional[GEOSGeometry] = None, user: Optional[User] = None
+    ) -> Dict[str, Any]:
+        raise NotImplementedError
+
     def get_datasets(
-            self, 
-            geometry: Optional[GEOSGeometry] = None, 
-            user: Optional[User] = None, 
-            **kwargs
-        ) -> QuerySet[Dataset]:
+        self,
+        geometry: Optional[GEOSGeometry] = None,
+        user: Optional[User] = None,
+        **kwargs,
+    ) -> QuerySet[Dataset]:
         queryset = Dataset.objects.all()
         if geometry:
             queryset = queryset.by_outline_intersects(geometry=geometry)
-        
-        return queryset.all().accessible_by(user).filter(
-            modules__contains=[self.name],
-            preferred_display_type__isnull=False,
-        ).select_related("organization").distinct()
+
+        return (
+            queryset.all()
+            .accessible_by(user)
+            .filter(
+                modules__contains=[self.name],
+                preferred_display_type__isnull=False,
+            )
+            .select_related("organization")
+            .distinct()
+        )
 
     def _get_main_datasets(self, **kwargs):
         return self.get_datasets(**kwargs).filter(
@@ -72,10 +83,11 @@ class BaseModule:
 
     def _get_options(self, **kwargs) -> Dict[str, Any]:
         return {
+            "datalayers": self.get_datalayers(**kwargs),
             "datasets": {
                 "main_datasets": self._get_main_datasets(**kwargs),
                 "base_datasets": self._get_base_datasets(**kwargs),
-            }
+            },
         }
 
     def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
@@ -129,18 +141,19 @@ class ImpactsModule(BaseModule):
         return True
 
     def _can_run_scenario(self, runnable: Scenario) -> bool:
-        scenario_geometry = runnable.planning_area.geometry      
+        scenario_geometry = runnable.planning_area.geometry
         return (
-            self.california.contains(scenario_geometry) 
-            and runnable.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+            self.california.contains(scenario_geometry)
+            and runnable.planning_approach
+            != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         )
 
     def get_datasets(
-            self, 
-            geometry: Optional[GEOSGeometry] = None, 
-            user: Optional[User] = None, 
-            **kwargs
-        ) -> QuerySet[Dataset]:
+        self,
+        geometry: Optional[GEOSGeometry] = None,
+        user: Optional[User] = None,
+        **kwargs,
+    ) -> QuerySet[Dataset]:
         return Dataset.objects.none()
 
 
@@ -157,19 +170,25 @@ class MapModule(BaseModule):
         return True
 
     def get_datasets(
-            self, 
-            geometry: Optional[GEOSGeometry] = None, 
-            user: Optional[User] = None, 
-            **kwargs
-        ) -> QuerySet[Dataset]:
+        self,
+        geometry: Optional[GEOSGeometry] = None,
+        user: Optional[User] = None,
+        **kwargs,
+    ) -> QuerySet[Dataset]:
         queryset = Dataset.objects.all()
         if geometry:
             queryset = queryset.by_outline_intersects(geometry=geometry)
-        
-        return queryset.all().accessible_by(user).filter(
-            Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
-            | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
-        ).select_related("organization").distinct()
+
+        return (
+            queryset.all()
+            .accessible_by(user)
+            .filter(
+                Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
+                | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
+            )
+            .select_related("organization")
+            .distinct()
+        )
 
     def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
         return MapModuleSerializer
@@ -194,22 +213,28 @@ class ClimateForesightModule(BaseModule):
         return self.future_climate_coverage.contains(scenario_geometry)
 
     def get_datasets(
-            self, 
-            geometry: Optional[GEOSGeometry] = None, 
-            user: Optional[User] = None, 
-            **kwargs
-        ) -> QuerySet[Dataset]:
+        self,
+        geometry: Optional[GEOSGeometry] = None,
+        user: Optional[User] = None,
+        **kwargs,
+    ) -> QuerySet[Dataset]:
         queryset = Dataset.objects.all()
         if geometry:
             queryset = queryset.by_outline_intersects(geometry=geometry)
 
-        return queryset.all().accessible_by(user).filter(
-            Q(modules__contains=[self.name])
-            & (
-                Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
-                | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
+        return (
+            queryset.all()
+            .accessible_by(user)
+            .filter(
+                Q(modules__contains=[self.name])
+                & (
+                    Q(preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS)
+                    | Q(preferred_display_type=PreferredDisplayType.BASE_DATALAYERS)
+                )
             )
-        ).select_related("organization").distinct()
+            .select_related("organization")
+            .distinct()
+        )
 
 
 class FundingReportModule(BaseModule):
@@ -230,6 +255,16 @@ class FundingReportModule(BaseModule):
         scenario_geometry = runnable.planning_area.geometry
         return self.coverage.contains(scenario_geometry)
 
+    def get_datalayers(
+        self, geometry: Optional[GEOSGeometry] = None, user: Optional[User] = None
+    ) -> Dict[str, Any]:
+        # Deferred import: datasets.services imports modules.base, and
+        # funding_report.services imports datasets.services, so importing
+        # this at module level creates a circular import.
+        from funding_report.services import get_funding_report_layers_of_interest
+
+        return get_funding_report_layers_of_interest()
+
     def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
         return FundingReportModuleSerializer
 
@@ -245,15 +280,14 @@ class PrioritizeSubUnitsModule(BaseModule):
 
     def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
         return PrioritizeSubUnitsModuleSerializer
-    
+
     def _get_options(self, **kwargs):
         user = kwargs.get("user")
         options = super()._get_options(**kwargs)
-        sub_units_layers = DataLayer.objects.all().accessible_by(user).by_meta_module(self.name)
-        return {
-            **options,
-            "sub_units": list(sub_units_layers)
-        }
+        sub_units_layers = (
+            DataLayer.objects.all().accessible_by(user).by_meta_module(self.name)
+        )
+        return {**options, "sub_units": list(sub_units_layers)}
 
 
 def get_module(module_name: str) -> BaseModule:

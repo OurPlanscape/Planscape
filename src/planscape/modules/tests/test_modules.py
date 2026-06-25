@@ -2,12 +2,16 @@ import json
 
 from typing import Any, Dict
 
-from datasets.models import PreferredDisplayType, VisibilityOptions
+from datasets.models import DataLayerType, PreferredDisplayType, VisibilityOptions
 from datasets.tests.factories import DatasetFactory, DataLayerFactory
+from django.conf import settings
 from django.test import TestCase
 from django.contrib.gis.geos import GEOSGeometry
 
+from funding_report.models import FundingReportLayerKey, FundingReportMetric
+
 from modules.base import get_module
+from modules.serializers import FundingReportModuleSerializer
 
 from planscape.tests.factories import UserFactory
 from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
@@ -411,4 +415,101 @@ class ImpactsModulesTest(TestCase):
         self.ca_scenario.save()
 
         self.assertFalse(module.can_run(self.ca_scenario))
+
+
+class FundingReportModuleTest(TestCase):
+    def create_funding_report_datalayer(self, metric, year, baseline):
+        return DataLayerFactory.create(
+            type=DataLayerType.RASTER,
+            metadata={
+                "modules": {
+                    "funding_report": {
+                        "year": year,
+                        "variable": metric.value,
+                        "baseline": baseline,
+                    }
+                }
+            },
+        )
+
+    def create_aet_datalayer(self, role):
+        return DataLayerFactory.create(
+            type=DataLayerType.RASTER,
+            metadata={
+                "modules": {"funding_report": {"variable": "AET", "role": role}}
+            },
+        )
+
+    def test_returns_options_with_layers_of_interest(self):
+        aboveground = self.create_funding_report_datalayer(
+            FundingReportMetric.ABOVEGROUND_TOTAL, 2026, True
+        )
+        smoke = self.create_funding_report_datalayer(
+            FundingReportMetric.POTENTIAL_SMOKE, 2026, True
+        )
+        flame = self.create_funding_report_datalayer(
+            FundingReportMetric.TOTAL_FLAME_SEVERITY, 2026, True
+        )
+        aet_baseline = self.create_aet_datalayer("baseline")
+        aet_target = self.create_aet_datalayer("target")
+
+        mills_dataset = DatasetFactory.create(name=settings.FORISK_MILLS_DATASET_NAME)
+        mill_layer = DataLayerFactory.create(dataset=mills_dataset)
+
+        module = get_module("funding_report")
+        configuration: Dict[str, Any] = module.get_configuration()
+
+        self.assertIn("options", configuration)
+        options: Dict[str, Any] = configuration["options"]
+        self.assertIn("datalayers", options)
+
+        datalayers: Dict[str, Any] = options["datalayers"]
+
+        self.assertEqual(
+            datalayers[FundingReportLayerKey.BASELINE_ABOVEGROUND_CARBON_2026],
+            [aboveground],
+        )
+        self.assertEqual(
+            datalayers[FundingReportLayerKey.BASELINE_SMOKE_PRODUCTION_2026], [smoke]
+        )
+        self.assertEqual(
+            datalayers[FundingReportLayerKey.BASELINE_FLAME_LENGTH_2026], [flame]
+        )
+        self.assertEqual(
+            datalayers[FundingReportLayerKey.AET_BASELINE], [aet_baseline]
+        )
+        self.assertEqual(datalayers[FundingReportLayerKey.AET_TARGET], [aet_target])
+        self.assertEqual(
+            datalayers[FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES],
+            [mill_layer],
+        )
+
+    def test_datalayers_option_serializes_correctly(self):
+        aboveground = self.create_funding_report_datalayer(
+            FundingReportMetric.ABOVEGROUND_TOTAL, 2026, True
+        )
+        mills_dataset = DatasetFactory.create(name=settings.FORISK_MILLS_DATASET_NAME)
+        mill_layer = DataLayerFactory.create(dataset=mills_dataset)
+
+        module = get_module("funding_report")
+        configuration = module.get_configuration()
+        data = FundingReportModuleSerializer(instance=configuration).data
+
+        serialized_datalayers = data["options"]["datalayers"]
+        self.assertEqual(
+            serialized_datalayers[
+                FundingReportLayerKey.BASELINE_ABOVEGROUND_CARBON_2026
+            ][0]["id"],
+            aboveground.id,
+        )
+        self.assertEqual(
+            serialized_datalayers[FundingReportLayerKey.BASELINE_SMOKE_PRODUCTION_2026],
+            [],
+        )
+        self.assertEqual(
+            serialized_datalayers[
+                FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES
+            ][0]["id"],
+            mill_layer.id,
+        )
 
