@@ -35,7 +35,7 @@
         </div>
       </div>
     </div>
-    <div class="treatment-title-line">
+    <div class="treatment-title-line" *ngIf="legendData.treatmentAcres">
       <div class="title">Treatment Type</div>
       <button
         sg-button
@@ -46,7 +46,7 @@
         (click)="tooltip.show()"
        ></button>
     </div>
-    <div class="dynamic-section">
+    <div class="dynamic-section" *ngIf="legendData.treatmentAcres">
       <div
         class="dynamic-acres-row"
         *ngFor="let acreageDetail of legendData.treatmentAcres">
