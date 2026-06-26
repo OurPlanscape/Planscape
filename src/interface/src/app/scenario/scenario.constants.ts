@@ -10,6 +10,7 @@ export interface ScenarioStepConfig {
   refreshAvailableStands: boolean; // if the step needs to refresh available stands
   hasMap: boolean; // if the step shows the map
   showSubUnitToggle?: boolean; // defaults to true; set false to hide the sub unit toggle
+  withIncludes?: boolean;
 }
 
 export const SUB_UNITS_STEP: ScenarioStepConfig = {
@@ -58,6 +59,7 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeConstraints: false,
     includeExcludedAreas: true,
     refreshAvailableStands: true,
+    withIncludes: true,
     hasMap: true,
   },
   {
@@ -68,6 +70,8 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: true,
+    withIncludes: true,
+
     hasMap: true,
   },
   {
@@ -78,6 +82,8 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: false,
+    withIncludes: true,
+
     hasMap: true,
   },
   {
@@ -87,6 +93,8 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: false,
+    withIncludes: true,
+
     hasMap: true,
   },
 ];
@@ -126,6 +134,8 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeConstraints: false,
     includeExcludedAreas: true,
     refreshAvailableStands: true,
+    withIncludes: true,
+
     hasMap: true,
   },
   {
@@ -136,6 +146,8 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: true,
+    withIncludes: true,
+
     hasMap: true,
   },
   {
@@ -146,6 +158,8 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: false,
+    withIncludes: true,
+
     hasMap: true,
   },
   {
@@ -155,6 +169,8 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeConstraints: true,
     includeExcludedAreas: true,
     refreshAvailableStands: false,
+    withIncludes: true,
+
     hasMap: true,
   },
 ];

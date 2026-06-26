@@ -151,7 +151,8 @@ export class ScenarioService {
     stand_size: string,
     excludes?: number[],
     constraints?: Constraint[],
-    subUnitsLayer?: number
+    subUnitsLayer?: number,
+    includes?: number[]
   ) {
     const url =
       environment.backend_endpoint +
@@ -163,6 +164,7 @@ export class ScenarioService {
         excludes,
         constraints,
         sub_unit: subUnitsLayer,
+        includes,
       },
       {
         withCredentials: true,

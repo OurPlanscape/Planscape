@@ -31,6 +31,7 @@ import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { MapConfigState } from '../map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FrontendConstants } from '@map/map.constants';
+import { FeatureService } from '@app/features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -43,22 +44,39 @@ export class ScenarioStandsComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
   @Input() mapLibreMap!: MapLibreMap;
-  readonly sourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
+  readonly sourceName =
+    MARTIN_SOURCES.scenarioStands.sources.standsWithIncludes;
   readonly excludedKey = 'excluded';
   readonly constrainedKey = 'constrained';
-  readonly planId = this.route.snapshot.data['planId'];
+  readonly scenarioId = this.route.snapshot.data['scenarioId'];
 
   private standsLoaded = false;
 
-  tilesUrl$ = this.newScenarioState.scenarioConfig$.pipe(
-    filter((config) => !!config.stand_size),
-    map(
-      (config) =>
-        MARTIN_SOURCES.scenarioStands.tilesUrl +
-        `?planning_area_id=${this.planId}&stand_size=${config.stand_size}`
+  tilesUrl$ = combineLatest([
+    this.newScenarioState.scenarioConfig$.pipe(
+      filter((config) => !!config.stand_size)
     ),
+    this.newScenarioState.includedAreas$,
+    this.newScenarioState.currentStep$,
+  ]).pipe(
+    untilDestroyed(this),
+    map(([config, includes, step]) => {
+      const includesParam =
+        step?.withIncludes &&
+        this.featureService.isFeatureEnabled('ADD_INCLUDES') &&
+        includes?.length
+          ? `&includes=${includes.join(',')}`
+          : '';
+
+      return (
+        MARTIN_SOURCES.scenarioStands.tilesWithIncludesUrl +
+        `?scenario_id=${this.scenarioId}` +
+        `&stand_size=${config.stand_size}` +
+        includesParam +
+        `&datetime=${new Date().toISOString()}`
+      );
+    }),
     distinctUntilChanged(),
-    // when the stand size changes, set as loading
     tap(() => {
       this.newScenarioState.setLoading(true);
       this.standsLoaded = false;
@@ -75,7 +93,8 @@ export class ScenarioStandsComponent
     private route: ActivatedRoute,
     private newScenarioState: NewScenarioState,
     private zone: NgZone,
-    private mapConfigState: MapConfigState
+    private mapConfigState: MapConfigState,
+    private featureService: FeatureService
   ) {}
 
   filteredStands$: Observable<FilterSpecification | undefined> = combineLatest([
