@@ -56,7 +56,7 @@ export class PlanningAreaStandsComponent
     map(
       (config) =>
         MARTIN_SOURCES.scenarioStands.tilesUrl +
-        `?planning_area_id=${this.planId}&stand_size=${config.stand_size}`
+        `?planning_area_id=${this.planId}&stand_size=${config.stand_size}&datetime=${new Date().toISOString()}`
     ),
     distinctUntilChanged(),
     // when the stand size changes, set as loading
