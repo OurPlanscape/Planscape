@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
@@ -8,6 +9,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ViewChild,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -60,6 +62,7 @@ import {
 } from '../funding-map-layers/funding-map-layers.component';
 import { ScrollSpyDirective } from '@app/standalone/scroll-spy-directive/scroll-spy.directive';
 import { FundingMapConfigState } from '../funding-map-config-state';
+import { FundingReportToPdfService } from '../funding-report-to-pdf.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs';
 
@@ -114,11 +117,19 @@ const flameLengthRangeValidator: ValidatorFn = (
     ScrollSpyDirective,
     ButtonComponent,
   ],
-  providers: [FundingMapConfigState],
+  providers: [FundingMapConfigState, FundingReportToPdfService],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',
 })
 export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
+  constructor(private pdfService: FundingReportToPdfService) {}
+
+  /** The scrollable container holding the map + report sections. */
+  @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLElement>;
+
+  /** True while a PDF is being generated, to disable the download control. */
+  generatingPdf = false;
+
   sections: ReportSection[] = [];
   /** Section ids in document order, handed to the scrollspy directive. */
   sectionIds: string[] = [];
@@ -343,6 +354,28 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
 
   get isPreview() {
     return this.reportType === 'preview';
+  }
+
+  /** Export the report (map + sections) as a PDF. */
+  async exportPdf(): Promise<void> {
+    if (this.generatingPdf) {
+      return;
+    }
+    this.generatingPdf = true;
+    try {
+      // In the dashboard preview the map is inside the captured sections. In the
+      // full view it lives in a sibling pane, so grab its canvas to draw on top.
+      const mapCanvas = this.isPreview
+        ? null
+        : document.querySelector<HTMLCanvasElement>('.maplibregl-canvas');
+      await this.pdfService.exportReport(
+        this.scrollContainer.nativeElement,
+        `planscape-funding-report-${this.report.scenario}`,
+        mapCanvas
+      );
+    } finally {
+      this.generatingPdf = false;
+    }
   }
 
   /**

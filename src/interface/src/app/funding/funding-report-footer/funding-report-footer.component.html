@@ -4,8 +4,15 @@
   icon="download"
   [matMenuTriggerFor]="menu"
   #trigger="matMenuTrigger"
+  [disabled]="generatingPdf"
   [variant]="isFullView ? 'primary' : 'ghost'">
-  {{ isFullView ? 'Download Options' : 'Download' }}
+  {{
+    generatingPdf
+      ? 'Generating PDF…'
+      : isFullView
+        ? 'Download Options'
+        : 'Download'
+  }}
   <mat-icon
     class="material-symbols-outlined download-options-down"
     [ngClass]="{ full: isFullView }"

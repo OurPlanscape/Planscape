@@ -1,5 +1,5 @@
 import { NgClass, NgIf } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -19,13 +19,16 @@ export class FundingReportFooterComponent {
   ) {}
 
   @Input() footerType: 'preview' | 'full' = 'preview';
+  @Input() generatingPdf = false;
+
+  @Output() downloadPdf = new EventEmitter<void>();
 
   downloadGeopackage() {
     // TODO
   }
 
   downloadPDF() {
-    // TODO
+    this.downloadPdf.emit();
   }
 
   shareReport() {
