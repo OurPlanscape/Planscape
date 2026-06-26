@@ -17,17 +17,19 @@ import { MARTIN_SOURCES } from '@treatments/map.sources';
 import {
   animationFrameScheduler,
   auditTime,
+  combineLatest,
   concat,
   map,
+  Observable,
   observeOn,
   of,
   tap,
 } from 'rxjs';
 import { distinctUntilChanged, filter } from 'rxjs/operators';
-import { Map as MapLibreMap } from 'maplibre-gl';
+import { FilterSpecification, Map as MapLibreMap } from 'maplibre-gl';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { MapConfigState } from '../map-config.state';
-import { UntilDestroy } from '@ngneat/until-destroy';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FrontendConstants } from '@map/map.constants';
 
 @UntilDestroy()
@@ -37,11 +39,14 @@ import { FrontendConstants } from '@map/map.constants';
   imports: [AsyncPipe, LayerComponent, NgIf, VectorSourceComponent],
   templateUrl: './planning-area-stands.component.html',
 })
+// we can remove all the code related to exclude and constrained from this component once ADD_INCLUDES be released
 export class PlanningAreaStandsComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
   @Input() mapLibreMap!: MapLibreMap;
   readonly sourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
+  readonly excludedKey = 'excluded';
+  readonly constrainedKey = 'constrained';
   readonly planId = this.route.snapshot.data['planId'];
 
   private standsLoaded = false;
@@ -50,9 +55,8 @@ export class PlanningAreaStandsComponent
     filter((config) => !!config.stand_size),
     map(
       (config) =>
-        // passing datetime to clear the cache
         MARTIN_SOURCES.scenarioStands.tilesUrl +
-        `?planning_area_id=${this.planId}&stand_size=${config.stand_size}&datetime=${new Date().toISOString()}`
+        `?planning_area_id=${this.planId}&stand_size=${config.stand_size}`
     ),
     distinctUntilChanged(),
     // when the stand size changes, set as loading
@@ -64,12 +68,28 @@ export class PlanningAreaStandsComponent
 
   opacity$ = this.mapConfigState.opacity$;
 
+  // local copies to reset feature state
+  private excludedStands: number[] = [];
+  private constrainedStands: number[] = [];
+
   constructor(
     private route: ActivatedRoute,
     private newScenarioState: NewScenarioState,
     private zone: NgZone,
     private mapConfigState: MapConfigState
   ) {}
+
+  filteredStands$: Observable<FilterSpecification | undefined> = combineLatest([
+    this.newScenarioState.currentStep$,
+    this.newScenarioState.excludedStands$,
+  ]).pipe(
+    map(([step, excluded]): FilterSpecification | undefined =>
+      // if we are showing both excluded and constraints, filter out the excluded stands on the map.
+      step?.includeExcludedAreas && step?.includeConstraints && excluded.length
+        ? ['!', ['in', ['get', 'id'], ['literal', excluded]]]
+        : undefined
+    )
+  );
 
   // using this concat so we can keep things inside angular lifecycle without adding zone.runs or detectChanges
   standPaint$ = concat(
@@ -83,9 +103,24 @@ export class PlanningAreaStandsComponent
   ).pipe(
     map((opacity) => {
       return {
-        'fill-color': BASE_COLORS.dark_magenta,
+        'fill-color': [
+          'case',
+          ['==', ['feature-state', this.excludedKey], true],
+          BASE_COLORS.dark_gray,
+          ['==', ['feature-state', this.constrainedKey], true],
+          BASE_COLORS.light_gray,
+          BASE_COLORS.dark_magenta, // otherwise
+        ],
         'fill-opacity-transition': { duration: 0 },
-        'fill-outline-color': BASE_COLORS.darker_magenta,
+
+        'fill-outline-color': [
+          'case',
+          ['==', ['feature-state', this.excludedKey], true],
+          BASE_COLORS.dark_gray,
+          ['==', ['feature-state', this.constrainedKey], true],
+          BASE_COLORS.light_gray,
+          BASE_COLORS.darker_magenta, // otherwise
+        ],
         'fill-opacity': opacity,
       } as any;
     })
@@ -93,6 +128,31 @@ export class PlanningAreaStandsComponent
 
   ngOnInit(): void {
     this.mapLibreMap.on('sourcedata', this.onDataListener);
+    this.mapLibreMap.on('styledata', this.onStyleDataListener);
+
+    // clear constrained stands when navigating to a step that doesn't include constraints (or pre-step).
+    this.newScenarioState.currentStep$
+      .pipe(
+        untilDestroyed(this),
+        filter((step) => step === null || !step.includeConstraints)
+      )
+      .subscribe(() => {
+        this.constrainedStands.forEach((id) =>
+          this.removeFeatureState(id, this.constrainedKey)
+        );
+      });
+
+    this.newScenarioState.doesNotMeetConstraintsStands$
+      .pipe(untilDestroyed(this))
+      .subscribe((ids) => {
+        this.paintConstrainedStands(ids);
+      });
+
+    this.newScenarioState.excludedStands$
+      .pipe(untilDestroyed(this))
+      .subscribe((ids) => {
+        this.paintExcludedStands(ids);
+      });
   }
 
   ngAfterViewInit(): void {
@@ -109,7 +169,35 @@ export class PlanningAreaStandsComponent
 
   ngOnDestroy(): void {
     this.mapLibreMap.off('sourcedata', this.onDataListener);
+    this.mapLibreMap.off('styledata', this.onStyleDataListener);
   }
+
+  private paintStands(ids: number[], key: string, current: number[]): number[] {
+    current.forEach((id) => this.removeFeatureState(id, key));
+    ids.forEach((id) => this.setFeatureState(id, key));
+    return ids;
+  }
+
+  private paintExcludedStands(ids: number[]) {
+    this.excludedStands = this.paintStands(
+      ids,
+      this.excludedKey,
+      this.excludedStands
+    );
+  }
+
+  private paintConstrainedStands(ids: number[]) {
+    this.constrainedStands = this.paintStands(
+      ids,
+      this.constrainedKey,
+      this.constrainedStands
+    );
+  }
+
+  private onStyleDataListener = () => {
+    this.paintExcludedStands(this.excludedStands);
+    this.paintConstrainedStands(this.constrainedStands);
+  };
 
   private onDataListener = (event: any) => {
     if (
@@ -125,4 +213,18 @@ export class PlanningAreaStandsComponent
       });
     }
   };
+
+  private setFeatureState(id: number, key: string) {
+    this.mapLibreMap.setFeatureState(
+      { source: this.sourceName, sourceLayer: this.sourceName, id },
+      { [key]: true }
+    );
+  }
+
+  private removeFeatureState(id: number, key: string) {
+    this.mapLibreMap.removeFeatureState(
+      { source: this.sourceName, sourceLayer: this.sourceName, id },
+      key
+    );
+  }
 }
