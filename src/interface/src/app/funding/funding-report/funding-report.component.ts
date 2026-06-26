@@ -10,11 +10,12 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import {
-  ButtonComponent,
   ChartComponent,
   InputDirective,
   InputFieldComponent,
@@ -32,28 +33,24 @@ import {
 import { FundingReportFooterComponent } from '../funding-report-footer/funding-report-footer.component';
 import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
 import {
-  FlameLengthRequestParams,
+  DEFAULT_FLAME_LENGTH_INTERVAL,
+  FLAME_LENGTH_INTERVAL_OPTIONS,
+  FlameLengthInterval,
   FundingReport,
   FundingReportAETSummary,
   FundingReportBiomassVolumes,
-  FundingReportMetric,
+  FundingReportTimeSeriesMetric,
   ORIGIN_TYPE,
 } from '@types';
 import {
   aggregateBiomassVolumes,
+  aggregateFlameLengthSummary,
   aggregateMetricSummary,
+  hasFlameLengthData,
   hasMetricData,
 } from './funding-report.helper';
 import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
-import {
-  AbstractControl,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidationErrors,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   FundingMapLayersComponent,
   MapLayer,
@@ -76,19 +73,6 @@ interface ReportSection {
   label: string;
 }
 
-/** The "greater than" threshold must be above the "lesser than" one. */
-const flameLengthRangeValidator: ValidatorFn = (
-  group: AbstractControl
-): ValidationErrors | null => {
-  const greaterThan = group.get('greaterThan')?.value;
-  const lesserThan = group.get('lesserThan')?.value;
-  // Empties are handled by the per-field required validators.
-  if (greaterThan === null || lesserThan === null) {
-    return null;
-  }
-  return greaterThan > lesserThan ? null : { range: true };
-};
-
 @UntilDestroy()
 @Component({
   selector: 'app-funding-report',
@@ -98,8 +82,10 @@ const flameLengthRangeValidator: ValidatorFn = (
     FundingReportFooterComponent,
     FundingReportMapComponent,
     MatButtonModule,
+    MatFormFieldModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatSelectModule,
     MatTabsModule,
     SectionComponent,
     ChartComponent,
@@ -112,7 +98,6 @@ const flameLengthRangeValidator: ValidatorFn = (
     ReactiveFormsModule,
     MessageCardComponent,
     ScrollSpyDirective,
-    ButtonComponent,
   ],
   providers: [FundingMapConfigState],
   templateUrl: './funding-report.component.html',
@@ -133,12 +118,12 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     { id: 2, name: 'Placeholder' },
   ];
 
-  flameLengthForm = new FormGroup(
-    {
-      greaterThan: new FormControl<number | null>(7, Validators.required),
-      lesserThan: new FormControl<number | null>(4, Validators.required),
-    },
-    { validators: flameLengthRangeValidator }
+  /** Flame length interval options for the selector. */
+  flameLengthOptions = FLAME_LENGTH_INTERVAL_OPTIONS;
+  /** The interval whose pre-calculated reduction the chart currently shows. */
+  flameLengthInterval = new FormControl<FlameLengthInterval>(
+    DEFAULT_FLAME_LENGTH_INTERVAL,
+    { nonNullable: true }
   );
 
   waterAvailabilityControl = new FormControl<number | null>(
@@ -165,15 +150,12 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
    * which is the scroller in the standalone/preview layout.
    */
   @Input() scrollElement?: HTMLElement;
-  /** While true, a loader covers the flame length chart (recalc in flight). */
-  @Input() updatingFlameLength = false;
   /** While true, a loader covers the water stat cards (recalc in flight). */
   @Input() updatingWaterAvailability = false;
 
   // todo datalayer probably
   @Output() showLayer = new EventEmitter<number>();
   @Output() updateWaterAvailability = new EventEmitter<number>();
-  @Output() updateFlameLength = new EventEmitter<FlameLengthRequestParams>();
 
   ngOnInit(): void {
     Chart.register(ChartDataLabels);
@@ -188,6 +170,12 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
         untilDestroyed(this)
       )
       .subscribe((value) => this.updateWaterAvailability.emit(value));
+
+    // Redraw the flame length chart from the already-loaded report whenever the
+    // user picks a different interval — no recalculation request needed.
+    this.flameLengthInterval.valueChanges
+      .pipe(untilDestroyed(this))
+      .subscribe(() => this.buildFlameLengthChart());
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -246,14 +234,10 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
       'ABOVEGROUND_TOTAL',
       'purple'
     );
-    this.flameLengthChart = this.buildSummaryChart(
-      'TOTAL_FLAME_SEVERITY',
-      'orange'
-    );
+    this.buildFlameLengthChart();
 
     this.smokeHasData = this.metricHasData('POTENTIAL_SMOKE');
     this.treeCarbonHasData = this.metricHasData('ABOVEGROUND_TOTAL');
-    this.flameLengthHasData = this.metricHasData('TOTAL_FLAME_SEVERITY');
 
     const results = this.report?.results;
     this.biomass = results
@@ -261,8 +245,37 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
       : undefined;
   }
 
+  /**
+   * Build the flame length chart from the report's pre-calculated reduction for
+   * the selected interval. Called on report/selection changes and whenever the
+   * interval selector changes.
+   */
+  private buildFlameLengthChart(): void {
+    const results = this.report?.results;
+    const interval = this.flameLengthInterval.value;
+    // delta can be null when an interval had no valid pixels; treat it as 0.
+    const deltas = results
+      ? aggregateFlameLengthSummary(
+          results,
+          interval,
+          this.projectAreas,
+          this.origin
+        ).map((point) => point.delta ?? 0)
+      : [];
+    this.flameLengthChart = {
+      data: buildPercentageBarData(this.labels, deltas, 'orange'),
+      options: getPercentageChartOptions(
+        this.xAxisLabel,
+        deltas.length ? deltas : undefined
+      )!,
+    };
+    this.flameLengthHasData =
+      !!results &&
+      hasFlameLengthData(results, interval, this.projectAreas, this.origin);
+  }
+
   /** True when the metric has any non-null data over the current selection. */
-  private metricHasData(metric: FundingReportMetric): boolean {
+  private metricHasData(metric: FundingReportTimeSeriesMetric): boolean {
     const results = this.report?.results;
     return (
       !!results &&
@@ -272,7 +285,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
 
   /** Build a bar chart from a report metric: one bar per year, value = % delta. */
   private buildSummaryChart(
-    metric: FundingReportMetric,
+    metric: FundingReportTimeSeriesMetric,
     color: PercentageBarColor
   ): ChartConfig {
     const deltas = this.deltasForMetric(metric);
@@ -286,7 +299,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   /** Per-year % deltas for a metric over the currently selected project areas. */
-  private deltasForMetric(metric: FundingReportMetric): number[] {
+  private deltasForMetric(metric: FundingReportTimeSeriesMetric): number[] {
     const results = this.report?.results;
     if (!results) {
       return [];
@@ -303,30 +316,6 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   onLayerSelected(layer: MapLayer): void {
     // TODO: drive the map / section-specific behavior off the selected layer.
     this.showLayer.emit(layer.id);
-  }
-
-  /** Keep the flame length fields numeric, updating validity as the user types. */
-  onFlameLengthInput(event: Event, key: 'greaterThan' | 'lesserThan'): void {
-    const input = event.target as HTMLInputElement;
-    const sanitized = input.value.replace(/\D/g, '');
-    if (sanitized !== input.value) {
-      input.value = sanitized;
-    }
-    this.flameLengthForm.controls[key].setValue(
-      sanitized === '' ? null : Number(sanitized)
-    );
-  }
-
-  /** Emit the flame length thresholds (feet) once the whole form is valid. */
-  emitFlameLength(): void {
-    if (this.flameLengthForm.invalid) {
-      return;
-    }
-    const { greaterThan, lesserThan } = this.flameLengthForm.getRawValue();
-    if (greaterThan === null || lesserThan === null) {
-      return;
-    }
-    this.updateFlameLength.emit({ from_ft: greaterThan, to_ft: lesserThan });
   }
 
   /** Keep the water availability field numeric (max 3 digits), updating validity as the user types. */

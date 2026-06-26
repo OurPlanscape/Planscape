@@ -6,7 +6,9 @@ import {
 } from '@types';
 import {
   aggregateBiomassVolumes,
+  aggregateFlameLengthSummary,
   aggregateMetricSummary,
+  hasFlameLengthData,
   percentDelta,
 } from './funding-report.helper';
 
@@ -46,7 +48,7 @@ function makeResults(
   const empty = {
     POTENTIAL_SMOKE: [],
     ABOVEGROUND_TOTAL: [],
-    TOTAL_FLAME_SEVERITY: [],
+    TOTAL_FLAME_SEVERITY: {},
   };
   return {
     summary: {
@@ -154,6 +156,95 @@ describe('funding-report helper', () => {
     });
   });
 
+  describe('flame length intervals', () => {
+    // Flame length is pre-calculated per interval, so it's keyed by interval
+    // rather than being a flat array like the other metrics.
+    const empty = {
+      POTENTIAL_SMOKE: [],
+      ABOVEGROUND_TOTAL: [],
+    };
+    const results: FundingReportResults = {
+      summary: {
+        ...empty,
+        TOTAL_FLAME_SEVERITY: {
+          '7_4': [{ year: 0, value: 70, baseline: 100, delta: 70 }],
+          '4_2': [{ year: 0, value: 40, baseline: 100, delta: 40 }],
+        },
+      },
+      projects: {
+        ...empty,
+        TOTAL_FLAME_SEVERITY: {
+          '7_4': [
+            {
+              project_id: 1,
+              proj_id: 1,
+              year: 0,
+              value: 70,
+              baseline: 100,
+              delta: 70,
+            },
+            {
+              project_id: 2,
+              proj_id: 2,
+              year: 0,
+              value: 30,
+              baseline: 200,
+              delta: 15,
+            },
+          ],
+          '4_2': [
+            {
+              project_id: 1,
+              proj_id: 1,
+              year: 0,
+              value: 40,
+              baseline: 100,
+              delta: 40,
+            },
+          ],
+        },
+      },
+    };
+
+    it('returns the selected interval summary when no areas are selected', () => {
+      expect(aggregateFlameLengthSummary(results, '7_4', [], 'USER')).toEqual([
+        { year: 0, value: 70, baseline: 100, delta: 70 },
+      ]);
+      expect(aggregateFlameLengthSummary(results, '4_2', [], 'USER')).toEqual([
+        { year: 0, value: 40, baseline: 100, delta: 40 },
+      ]);
+    });
+
+    it('aggregates the selected interval over the chosen project areas, as share of area reduced', () => {
+      // Filtering by project area sums value/baseline and recomputes the delta
+      // as the share of total area reduced: 70 / 100 * 100 = 70 (not the
+      // time-series percent-change formula).
+      expect(aggregateFlameLengthSummary(results, '7_4', [1], 'USER')).toEqual([
+        { year: 0, value: 70, baseline: 100, delta: 70 },
+      ]);
+    });
+
+    it('sums value and baseline across selected project areas before the delta', () => {
+      // value = 70 + 30 = 100, baseline = 100 + 200 = 300, delta = 100/300*100.
+      expect(
+        aggregateFlameLengthSummary(results, '7_4', [1, 2], 'USER')
+      ).toEqual([
+        { year: 0, value: 100, baseline: 300, delta: (100 / 300) * 100 },
+      ]);
+    });
+
+    it('returns an empty list for an interval the report has no data for', () => {
+      expect(aggregateFlameLengthSummary(results, '6_4', [], 'USER')).toEqual(
+        []
+      );
+    });
+
+    it('reports whether the selected interval has data', () => {
+      expect(hasFlameLengthData(results, '7_4', [], 'USER')).toBeTrue();
+      expect(hasFlameLengthData(results, '6_4', [], 'USER')).toBeFalse();
+    });
+  });
+
   describe('aggregateBiomassVolumes', () => {
     const summary = biomass(7);
     const projects: FundingReportBiomassVolumesProject[] = [
@@ -164,7 +255,7 @@ describe('funding-report helper', () => {
     const empty = {
       POTENTIAL_SMOKE: [],
       ABOVEGROUND_TOTAL: [],
-      TOTAL_FLAME_SEVERITY: [],
+      TOTAL_FLAME_SEVERITY: {},
     };
     const results: FundingReportResults = {
       summary: { ...empty, BIOMASS_VOLUMES: summary },
