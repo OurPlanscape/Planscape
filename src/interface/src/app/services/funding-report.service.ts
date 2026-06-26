@@ -1,12 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { environment } from '@env/environment';
-import {
-  FlameLengthReductionResponse,
-  FlameLengthRequestParams,
-  FundingReport,
-  FundingReportAETSummary,
-} from '@types';
+import { FundingReport, FundingReportAETSummary } from '@types';
 import { catchError, Observable, of, throwError } from 'rxjs';
 
 @Injectable({
@@ -41,24 +36,10 @@ export class FundingReportService {
     );
   }
 
-  getFlameLengthReduction(
-    scenarioId: number,
-    params: FlameLengthRequestParams
-  ): Observable<FlameLengthReductionResponse> {
-    return this.http.post<FlameLengthReductionResponse>(
-      environment.backend_endpoint +
-        `/v2/scenarios/${scenarioId}/flame-length-reduction/`,
-      { ...params },
-      {
-        withCredentials: true,
-      }
-    );
-  }
-
   /**
    * Recalculate the water availability (AET improvement) metric for a target
-   * percentage increase. Mirrors `getFlameLengthReduction`: returns only the
-   * water portion so the caller can patch it into the report.
+   * percentage increase. Returns only the water portion so the caller can patch
+   * it into the report.
    */
   getWaterAvailability(
     scenarioId: number,
