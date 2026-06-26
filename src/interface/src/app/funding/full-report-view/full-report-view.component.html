@@ -85,8 +85,9 @@
     </app-map-nav-bar>
     <!-- TODO: remove this container once we pass the data to map -->
     <ng-container *ngIf="legendData$ | async as legendData">
-      <div>{{ legendData.selectedAcres}}</div>
-    <app-funding-report-map [legendData]="legendData$ | async"></app-funding-report-map>
+      <div>{{ legendData.selectedAcres }}</div>
+      <app-funding-report-map
+        [legendData]="legendData$ | async"></app-funding-report-map>
     </ng-container>
   </div>
 </section>

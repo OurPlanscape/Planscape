@@ -1,5 +1,6 @@
 import json
 import logging
+import math
 from typing import Any, Dict, Optional
 
 import fiona
@@ -57,6 +58,21 @@ def get_gdal_env(
     return gdal_env
 
 
+def _sanitize_non_finite(value: Any) -> Any:
+    """Replaces NaN/Infinity floats with None.
+
+    Python's json module happily emits the non-standard NaN/Infinity tokens,
+    but PostgreSQL's json/jsonb columns reject them as invalid JSON.
+    """
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    if isinstance(value, dict):
+        return {key: _sanitize_non_finite(val) for key, val in value.items()}
+    if isinstance(value, list):
+        return [_sanitize_non_finite(val) for val in value]
+    return value
+
+
 def info_raster(input_file: str) -> Dict[str, Any]:
     """z
     This copies the original rasterio info CLI util with some changes, so we can call this
@@ -108,7 +124,7 @@ def info_raster(input_file: str) -> Dict[str, Any]:
             info["stats"] = stats
             info["checksum"] = [src.checksum(i) for i in src.indexes]
 
-            return json.loads(json.dumps(info))
+            return _sanitize_non_finite(json.loads(json.dumps(info)))
 
 
 def info_vector_layer(input_file: str, layer: Optional[str] = None) -> Dict[str, Any]:
@@ -133,7 +149,7 @@ def info_vector_layer(input_file: str, layer: Optional[str] = None) -> Dict[str,
             )
 
         info["crs"] = src.crs.to_string()
-        return json.loads(json.dumps(info))
+        return _sanitize_non_finite(json.loads(json.dumps(info)))
 
 
 def info_vector(input_file: str) -> Dict[str, Any]:

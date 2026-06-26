@@ -59,6 +59,7 @@ import {
   MapLayer,
 } from '../funding-map-layers/funding-map-layers.component';
 import { ScrollSpyDirective } from '@app/standalone/scroll-spy-directive/scroll-spy.directive';
+import { FundingMapConfigState } from '../funding-map-config-state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs';
 
@@ -113,6 +114,7 @@ const flameLengthRangeValidator: ValidatorFn = (
     ScrollSpyDirective,
     ButtonComponent,
   ],
+  providers: [FundingMapConfigState],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',
 })
@@ -127,8 +129,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
 
   // TODO placeholder
   mapLayers: MapLayer[] = [
-    { id: 1, name: 'Water Availability with No Treatment' },
-    { id: 2, name: 'Water Availability with Treatment' },
+    { id: 1, name: 'Placeholder' },
+    { id: 2, name: 'Placeholder' },
   ];
 
   flameLengthForm = new FormGroup(

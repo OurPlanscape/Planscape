@@ -35,6 +35,9 @@ class DatasetsOptionsSerializers(serializers.Serializer):
 
 class BaseModuleOptionsSerializer(serializers.Serializer):
     datasets = DatasetsOptionsSerializers()
+    datalayers = serializers.DictField(
+        child=serializers.ListField(child=BrowseDataLayerSerializer())
+    )
 
 
 class OptionDataLayerSerializer(serializers.ModelSerializer):

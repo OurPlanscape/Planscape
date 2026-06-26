@@ -148,6 +148,11 @@ export class FullReportViewComponent implements OnInit {
     shareReplay(1)
   );
 
+  /** Id of the report's treatment datalayer to display on the map. */
+  treatmentDataLayerId$ = this.report$.pipe(
+    map((report) => report?.treatment_datalayer ?? null)
+  );
+
   updatingFlameLength = false;
   updatingWaterAvailability = false;
   /** Apply clicks; `switchMap` cancels any in-flight request when a new one arrives. */

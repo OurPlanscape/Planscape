@@ -1,5 +1,5 @@
 import { AsyncPipe, NgIf } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import {
   LngLat,
   Map as MapLibreMap,
@@ -14,14 +14,15 @@ import {
   addRequestHeaders,
   getBoundsFromGeometry,
 } from '@app/maplibre-map/maplibre.helper';
-import { AuthService } from '@app/services';
+import { AuthService, DataLayersService } from '@app/services';
 import { FrontendConstants } from '@app/map/map.constants';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { BehaviorSubject, map, Subject } from 'rxjs';
+import { BehaviorSubject, map, Observable, Subject } from 'rxjs';
 import { EventData } from '@angular/cdk/testing';
 import { MapZoomControlComponent } from '@app/maplibre-map/map-zoom-control/map-zoom-control.component';
 import { MapBaseLayersComponent } from '@app/maplibre-map/map-base-layers/map-base-layers.component';
 import { MapDataLayerComponent } from '@app/maplibre-map/map-data-layer/map-data-layer.component';
+import { FundingDataLayerComponent } from '../funding-data-layer/funding-data-layer.component';
 import { PlanState } from '@app/plan/plan.state';
 import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
@@ -35,7 +36,10 @@ import { ButtonComponent } from '@styleguide';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@app/shared';
 import { FundingMapConfigState } from '../funding-map-config-state';
-import { FundingAcreageLegendComponent, FundingLegendData } from '../funding-acreage-legend/funding-acreage-legend.component';
+import {
+  FundingAcreageLegendComponent,
+  FundingLegendData,
+} from '../funding-acreage-legend/funding-acreage-legend.component';
 import { MapActionButtonComponent } from '@app/treatments/map-action-button/map-action-button.component';
 
 @Component({
@@ -46,6 +50,7 @@ import { MapActionButtonComponent } from '@app/treatments/map-action-button/map-
     ButtonComponent,
     ControlComponent,
     FundingAcreageLegendComponent,
+    FundingDataLayerComponent,
     LayerComponent,
     MapActionButtonComponent,
     MapBaseLayersComponent,
@@ -62,11 +67,12 @@ import { MapActionButtonComponent } from '@app/treatments/map-action-button/map-
   templateUrl: './funding-report-map.component.html',
   styleUrl: './funding-report-map.component.scss',
 })
-export class FundingReportMapComponent {
+export class FundingReportMapComponent implements OnInit {
   constructor(
     private fundingMapConfigState: FundingMapConfigState,
     private mapConfigService: MapConfigService,
     private dataLayersStateService: DataLayersStateService,
+    private dataLayersService: DataLayersService,
     private authService: AuthService,
     private planState: PlanState,
     private scenarioState: ScenarioState,
@@ -80,6 +86,9 @@ export class FundingReportMapComponent {
   /// TODO: maybe dont pass this through
   // TODO: declare a type when we know it
   @Input() legendData: FundingLegendData | null = null;
+
+  /** Id of the report's treatment datalayer to display on the map. */
+  @Input() treatmentDataLayerId!: number;
 
   mapLibreMap!: MapLibreMap;
   /**
@@ -119,6 +128,14 @@ export class FundingReportMapComponent {
 
   hoveredProjectAreaId$ = new Subject<number | null>();
   mouseLngLat: LngLat | null = null;
+
+  fundingDataLayer$!: Observable<DataLayer>;
+
+  ngOnInit() {
+    this.fundingDataLayer$ = this.dataLayersService.getDataLayerById(
+      this.treatmentDataLayerId
+    );
+  }
 
   mapLoaded(loadedMap: MapLibreMap) {
     this.mapLibreMap = loadedMap;

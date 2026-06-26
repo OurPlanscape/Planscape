@@ -26,3 +26,10 @@ class ScenarioViewPermission(PlanscapePermission):
             case _:
                 # scenario filters this on the queryset
                 return super().has_permission(request, view)
+
+    def has_object_permission(self, request, view, obj):
+        match view.action:
+            case "run_report":
+                return ScenarioPermission.can_change(request.user, obj)
+            case _:
+                return super().has_object_permission(request, view, obj)

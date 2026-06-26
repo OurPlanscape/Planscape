@@ -12,7 +12,7 @@ AET_TARGET_METADATA='{"modules":{"funding_report":{"variable":"AET","role":"targ
 AET_DELTA_METADATA='{"modules":{"funding_report":{"variable":"AET","role":"delta"}}}'
 TREATMENT_METADATA='{"modules":{"funding_report":{"variable":"TREATMENT","role":"treatment"}}}'
 BIOMASS_MERCH_METADATA='{"modules":{"funding_report":{"variable":"BIOMASS","role":"merchantable"}}}'
-BIOMASS_TOTAL_METADATA='{"modules":{"funding_report":{"variable":"BIOMASS","role":"total"}}}'
+BIOMASS_NON_MERCH_METADATA='{"modules":{"funding_report":{"variable":"BIOMASS","role":"non_merchantable"}}}'
 BIOMASS_WOOD_TYPE_METADATA='{"modules":{"funding_report":{"variable":"BIOMASS","role":"wood_type"}}}'
 
 # "${PYTHON_BIN[@]}" manage.py datalayers create "Baseline 2026 aboveground_total_live" --input-file "$RASTER_DIR/Baseline_2026_aboveground_total_live.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --funding
@@ -53,6 +53,6 @@ BIOMASS_WOOD_TYPE_METADATA='{"modules":{"funding_report":{"variable":"BIOMASS","
 # TREATMENT_STYLE_ID=$(echo "$TREATMENT_STYLE_OUTPUT" | sed -E 's/\x1b\[[0-9;]*m//g' | grep -oE "'id': [0-9]+" | head -n 1 | grep -oE '[0-9]+')
 
 "${PYTHON_BIN[@]}" manage.py datalayers create "Treatments" --input-file "$RASTER_DIR/treatments.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$TREATMENT_METADATA"
-# "${PYTHON_BIN[@]}" manage.py datalayers create "Biomass Merchantable" --input-file "$RASTER_DIR/merchantable_biomass.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$BIOMASS_MERCH_METADATA"
-# "${PYTHON_BIN[@]}" manage.py datalayers create "Biomass Total" --input-file "$RASTER_DIR/total_biomass.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$BIOMASS_TOTAL_METADATA"
-# "${PYTHON_BIN[@]}" manage.py datalayers create "Biomass Wood Type" --input-file "$RASTER_DIR/wood_type.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$BIOMASS_WOOD_TYPE_METADATA"
+"${PYTHON_BIN[@]}" manage.py datalayers create "Biomass Merchantable" --input-file "$RASTER_DIR/merch-2026.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$BIOMASS_MERCH_METADATA"
+"${PYTHON_BIN[@]}" manage.py datalayers create "Biomass Non-Merchantable" --input-file "$RASTER_DIR/non-merch-2026.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$BIOMASS_NON_MERCH_METADATA"
+"${PYTHON_BIN[@]}" manage.py datalayers create "Biomass Wood Type" --input-file "$RASTER_DIR/softwood_hardwood_mixed.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$BIOMASS_WOOD_TYPE_METADATA"

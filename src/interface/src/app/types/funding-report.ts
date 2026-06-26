@@ -50,12 +50,12 @@ export interface FundingReportAETImprovementRequest {
  * volumes are cubic-feet per acre (ft³/ac).
  */
 export interface FundingReportBiomassVolumes {
-  merchantable_softwood_bf_ac: number;
-  merchantable_hardwood_bf_ac: number;
-  merchantable_mixed_bf_ac: number;
-  non_merchantable_softwood_cuft_ac: number;
-  non_merchantable_hardwood_cuft_ac: number;
-  non_merchantable_mixed_cuft_ac: number;
+  merchantable_softwood_bf: number;
+  merchantable_hardwood_bf: number;
+  merchantable_mixed_bf: number;
+  non_merchantable_softwood_cuft: number;
+  non_merchantable_hardwood_cuft: number;
+  non_merchantable_mixed_cuft: number;
 }
 
 /** Per-project-area biomass volumes; carries the selection key(s). */
@@ -104,6 +104,7 @@ export interface FundingReport {
   id: number;
   scenario: number;
   results: FundingReportResults | null;
+  treatment_datalayer: number | null;
 }
 
 export interface FlameLengthRequestParams {

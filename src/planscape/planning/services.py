@@ -1695,7 +1695,7 @@ def get_available_stands(
         constraints = list()
     planning_area = scenario.planning_area
     area_transform = Area(Transform("geometry", settings.AREA_SRID))
-    if feature_enabled("ADD_INCLUDES"):
+    if feature_enabled("ADD_INCLUDES") and scenario.treatable_area is not None:
         stands = scenario.get_treatable_area_stands(stand_size=stand_size)
     else:
         stands = planning_area.get_stands(stand_size)

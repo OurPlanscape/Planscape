@@ -1,5 +1,7 @@
 from unittest import mock
 
+from collaboration.models import Permissions, Role
+from collaboration.tests.factories import UserObjectRoleFactory
 from django.urls import reverse
 from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
 from planscape.tests.factories import UserFactory
@@ -12,6 +14,24 @@ from funding_report.models import (
 )
 
 
+def _create_scenario_role_permissions():
+    for role in [Role.OWNER, Role.COLLABORATOR, Role.VIEWER]:
+        Permissions.objects.get_or_create(
+            role=role,
+            permission="view_planningarea",
+        )
+        Permissions.objects.get_or_create(
+            role=role,
+            permission="view_scenario",
+        )
+
+    for role in [Role.OWNER, Role.COLLABORATOR]:
+        Permissions.objects.get_or_create(
+            role=role,
+            permission="change_scenario",
+        )
+
+
 class RunReportTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create()
@@ -21,6 +41,16 @@ class RunReportTest(APITestCase):
             planning_area=self.planning_area,
         )
         self.url = reverse("api:planning:scenarios-run-report", args=[self.scenario.pk])
+        _create_scenario_role_permissions()
+
+    def _share_planning_area(self, user, role):
+        return UserObjectRoleFactory(
+            inviter=self.user,
+            collaborator=user,
+            email=user.email,
+            role=role,
+            associated_model=self.planning_area,
+        )
 
     @mock.patch("planning.views_v2.run_funding_opportunity_report")
     def test_run_report_creates_report_and_returns_202(self, task_mock):
@@ -66,6 +96,50 @@ class RunReportTest(APITestCase):
         self.assertIn("results", data)
         self.assertEqual(data["status"], FundingOpportunityReportStatus.PENDING)
 
+    @mock.patch("planning.views_v2.run_funding_opportunity_report")
+    def test_run_report_allows_owner_role(self, task_mock):
+        owner = UserFactory.create()
+        self._share_planning_area(owner, Role.OWNER)
+
+        self.client.force_authenticate(owner)
+        response = self.client.post(self.url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+
+        report = FundingOpportunityReport.objects.get()
+        self.assertEqual(report.scenario, self.scenario)
+        self.assertEqual(report.created_by, owner)
+
+        task_mock.delay.assert_called_once_with(report.pk)
+
+    @mock.patch("planning.views_v2.run_funding_opportunity_report")
+    def test_run_report_allows_collaborator(self, task_mock):
+        collaborator = UserFactory.create()
+        self._share_planning_area(collaborator, Role.COLLABORATOR)
+
+        self.client.force_authenticate(collaborator)
+        response = self.client.post(self.url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+
+        report = FundingOpportunityReport.objects.get()
+        self.assertEqual(report.scenario, self.scenario)
+        self.assertEqual(report.created_by, collaborator)
+
+        task_mock.delay.assert_called_once_with(report.pk)
+
+    @mock.patch("planning.views_v2.run_funding_opportunity_report")
+    def test_run_report_denies_viewer(self, task_mock):
+        viewer = UserFactory.create()
+        self._share_planning_area(viewer, Role.VIEWER)
+
+        self.client.force_authenticate(viewer)
+        response = self.client.post(self.url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(FundingOpportunityReport.objects.count(), 0)
+        task_mock.delay.assert_not_called()
+
 
 class GetReportTest(APITestCase):
     def setUp(self):
@@ -76,6 +150,16 @@ class GetReportTest(APITestCase):
             planning_area=self.planning_area,
         )
         self.url = reverse("api:planning:scenarios-get-report", args=[self.scenario.pk])
+        _create_scenario_role_permissions()
+
+    def _share_planning_area(self, user, role):
+        return UserObjectRoleFactory(
+            inviter=self.user,
+            collaborator=user,
+            email=user.email,
+            role=role,
+            associated_model=self.planning_area,
+        )
 
     def _create_report(self, report_status=FundingOpportunityReportStatus.PENDING):
         return FundingOpportunityReport.objects.create(
@@ -129,6 +213,42 @@ class GetReportTest(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_report_allows_owner_role(self):
+        self._create_report()
+
+        owner = UserFactory.create()
+        self._share_planning_area(owner, Role.OWNER)
+
+        self.client.force_authenticate(owner)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["scenario"], self.scenario.pk)
+
+    def test_get_report_allows_collaborator(self):
+        self._create_report()
+
+        collaborator = UserFactory.create()
+        self._share_planning_area(collaborator, Role.COLLABORATOR)
+
+        self.client.force_authenticate(collaborator)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["scenario"], self.scenario.pk)
+
+    def test_get_report_allows_viewer(self):
+        self._create_report()
+
+        viewer = UserFactory.create()
+        self._share_planning_area(viewer, Role.VIEWER)
+
+        self.client.force_authenticate(viewer)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["scenario"], self.scenario.pk)
 
 
 class AETImprovementTest(APITestCase):
@@ -244,18 +364,14 @@ class FlameLengthReductionTest(APITestCase):
         )
         self.client.force_authenticate(self.user)
 
-        response = self.client.post(
-            self.url, {"from_ft": 7, "to_ft": 4}, format="json"
-        )
+        response = self.client.post(self.url, {"from_ft": 7, "to_ft": 4}, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
     def test_flame_length_reduction_requires_existing_funding_report(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.post(
-            self.url, {"from_ft": 7, "to_ft": 4}, format="json"
-        )
+        response = self.client.post(self.url, {"from_ft": 7, "to_ft": 4}, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
@@ -318,9 +434,7 @@ class FlameLengthReductionTest(APITestCase):
         }
         self.client.force_authenticate(self.user)
 
-        response = self.client.post(
-            self.url, {"from_ft": 7, "to_ft": 4}, format="json"
-        )
+        response = self.client.post(self.url, {"from_ft": 7, "to_ft": 4}, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), calculate_mock.return_value)
@@ -339,9 +453,7 @@ class FlameLengthReductionTest(APITestCase):
         )
         self.client.force_authenticate(self.user)
 
-        response = self.client.post(
-            self.url, {"from_ft": 7, "to_ft": 4}, format="json"
-        )
+        response = self.client.post(self.url, {"from_ft": 7, "to_ft": 4}, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", response.json())

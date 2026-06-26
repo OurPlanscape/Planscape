@@ -71,6 +71,7 @@ describe('FullReportViewComponent recalculations', () => {
     updated_at: '2026-01-01T00:00:00Z',
     id: 1,
     scenario: 123,
+    treatment_datalayer: null,
     results: {
       summary: {
         POTENTIAL_SMOKE: [{ year: 0, value: 1, baseline: 1, delta: 0 }],
