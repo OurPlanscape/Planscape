@@ -39,6 +39,7 @@ from funding_report.models import (
     FUNDING_REPORT_YEARS,
     TREATMENT_NO_TREATMENT_LABEL,
     TREATMENT_PIXEL_VALUE_LABELS,
+    TREATMENT_CLIP_ROLE,
     TREATMENT_ROLE,
     WOOD_TYPE_HARDWOOD,
     WOOD_TYPE_MIXED,
@@ -511,6 +512,15 @@ def calculate_aet_improvement(
     }
 
 
+def _clip_metadata(source_metadata: dict | None) -> dict:
+    metadata = deepcopy(source_metadata) or {}
+    try:
+        metadata["modules"]["funding_report"]["role"] = TREATMENT_CLIP_ROLE
+    except KeyError:
+        pass
+    return metadata
+
+
 def generate_treatment_clip_datalayer(report: FundingOpportunityReport) -> DataLayer:
     from datasets.tasks import datalayer_uploaded
 
@@ -591,7 +601,7 @@ def generate_treatment_clip_datalayer(report: FundingOpportunityReport) -> DataL
         geometry=geometry_from_info(layer_info, datalayer_type=layer_type),
         info=layer_info,
         mimetype=mimetype,
-        metadata=deepcopy(source.metadata) or {},
+        metadata=_clip_metadata(source.metadata),
         map_service_type=source.map_service_type,
         status=DataLayerStatus.PENDING,
     )
