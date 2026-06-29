@@ -147,6 +147,7 @@ class DataLayerViewSet(RetrieveModelMixin, ListModelMixin, MultiSerializerMixin,
             return DataLayer.objects.all().accessible_by(user).filter(
                 Q(dataset__visibility=VisibilityOptions.PUBLIC)
                 | Q(dataset_id=settings.CLIMATE_FORESIGHT_DATASET_ID)
+                | Q(dataset__modules__contains=["funding_report"])
             )
 
         queryset = DataLayer.objects.all().accessible_by(user)
