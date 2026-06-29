@@ -142,9 +142,9 @@ export function generateLegendFromReport(
   selectedAreas: number[],
   scenario: Scenario
 ): FundingLegendData {
-  const legendData : FundingLegendData = { totalAcres: 0, selectedAcres: 0 };
+  const legendData: FundingLegendData = { totalAcres: 0, selectedAcres: 0 };
   if (!results || !scenario.origin) {
-    return {totalAcres: 0, selectedAcres: 0};
+    return { totalAcres: 0, selectedAcres: 0 };
   }
   const txAreas = results?.treatment_areas;
   const idKey = projectIdKey(scenario.origin);
