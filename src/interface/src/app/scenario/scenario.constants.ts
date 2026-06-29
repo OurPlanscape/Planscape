@@ -11,6 +11,7 @@ export interface ScenarioStepConfig {
   hasMap: boolean; // if the step shows the map
   showSubUnitToggle?: boolean; // defaults to true; set false to hide the sub unit toggle
   withIncludes?: boolean;
+  includePotentialTreatableArea: boolean;
 }
 
 export const SUB_UNITS_STEP: ScenarioStepConfig = {
@@ -23,6 +24,7 @@ export const SUB_UNITS_STEP: ScenarioStepConfig = {
   hasMap: true,
   showSubUnitToggle: false,
   includeSubUnits: true,
+  includePotentialTreatableArea: false,
 };
 
 export const exitModalData = (scenarioName: string) => ({
@@ -42,6 +44,7 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: false,
     refreshAvailableStands: false,
     hasMap: false,
+    includePotentialTreatableArea: false,
   },
   {
     label: 'Include Areas',
@@ -51,16 +54,18 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: false,
     refreshAvailableStands: true,
     hasMap: true,
+    includePotentialTreatableArea: false,
   },
   {
     label: 'Exclude Areas',
     description: 'Include and exclude specific areas based on your plan.',
     icon: '/assets/svg/icons/overview/exclude-areas.svg',
     includeConstraints: false,
-    includeExcludedAreas: true,
+    includeExcludedAreas: false,
     refreshAvailableStands: true,
     withIncludes: true,
     hasMap: true,
+    includePotentialTreatableArea: true,
   },
   {
     label: 'Stand-level Constraints',
@@ -71,7 +76,7 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: true,
     withIncludes: true,
-
+    includePotentialTreatableArea: true,
     hasMap: true,
   },
   {
@@ -83,7 +88,7 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: false,
     withIncludes: true,
-
+    includePotentialTreatableArea: true,
     hasMap: true,
   },
   {
@@ -94,7 +99,7 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: false,
     withIncludes: true,
-
+    includePotentialTreatableArea: true,
     hasMap: true,
   },
 ];
@@ -108,6 +113,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: false,
     refreshAvailableStands: true,
     hasMap: true,
+    includePotentialTreatableArea: false,
   },
   {
     label: 'Co-Benefits',
@@ -117,6 +123,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: false,
     refreshAvailableStands: true,
     hasMap: true,
+    includePotentialTreatableArea: false,
   },
   {
     label: 'Include Areas',
@@ -126,16 +133,17 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: false,
     refreshAvailableStands: true,
     hasMap: true,
+    includePotentialTreatableArea: false,
   },
   {
     label: 'Exclude Areas',
     description: 'Include and exclude specific areas based on your plan.',
     icon: '/assets/svg/icons/overview/exclude-areas.svg',
     includeConstraints: false,
-    includeExcludedAreas: true,
+    includeExcludedAreas: false,
     refreshAvailableStands: true,
     withIncludes: true,
-
+    includePotentialTreatableArea: true,
     hasMap: true,
   },
   {
@@ -147,7 +155,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: true,
     withIncludes: true,
-
+    includePotentialTreatableArea: true,
     hasMap: true,
   },
   {
@@ -159,7 +167,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: false,
     withIncludes: true,
-
+    includePotentialTreatableArea: true,
     hasMap: true,
   },
   {
@@ -170,7 +178,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: false,
     withIncludes: true,
-
+    includePotentialTreatableArea: true,
     hasMap: true,
   },
 ];

@@ -35,6 +35,12 @@ export class ScenarioLegendComponent {
     })
   );
 
+  showPotentialTreatableArea$ = this.newScenarioState.currentStep$.pipe(
+    map((step) => {
+      return !!step?.includePotentialTreatableArea;
+    })
+  );
+
   showConstrainedStands$ = combineLatest([
     this.newScenarioState.currentStep$,
     this.newScenarioState.hasConstrainedStands$,
