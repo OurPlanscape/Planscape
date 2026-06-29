@@ -40,9 +40,16 @@ export class FundingReportToPdfService {
 
     const drawHeader = (pdfInstance: jsPDF) => {
       if (logoDataUrl) {
-        const logoWidth = 32;  // in mm
+        const logoWidth = 32; // in mm
         const logoHeight = 6;
-        pdfInstance.addImage(logoDataUrl, 'PNG', MARGIN_MM, 7, logoWidth, logoHeight);
+        pdfInstance.addImage(
+          logoDataUrl,
+          'PNG',
+          MARGIN_MM,
+          7,
+          logoWidth,
+          logoHeight
+        );
       }
       pdfInstance.setDrawColor('#E2E8F0');
       pdfInstance.setLineWidth(0.5);
@@ -55,8 +62,16 @@ export class FundingReportToPdfService {
 
     // Optional map on page 1 (Nested inside margins)
     if (mapCanvas && mapCanvas.width > 0) {
-      const mapHeight = (mapCanvas.height * TARGET_CONTENT_WIDTH) / mapCanvas.width;
-      pdf.addImage(mapCanvas.toDataURL('image/png'), 'PNG', MARGIN_MM, currentY, TARGET_CONTENT_WIDTH, mapHeight);
+      const mapHeight =
+        (mapCanvas.height * TARGET_CONTENT_WIDTH) / mapCanvas.width;
+      pdf.addImage(
+        mapCanvas.toDataURL('image/png'),
+        'PNG',
+        MARGIN_MM,
+        currentY,
+        TARGET_CONTENT_WIDTH,
+        mapHeight
+      );
       currentY += mapHeight + 10;
     }
 
@@ -69,7 +84,7 @@ export class FundingReportToPdfService {
       const canvas = await html2canvas(card, {
         scale: 2,
         useCORS: true,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
       });
 
       const imgWidth = TARGET_CONTENT_WIDTH;
@@ -81,14 +96,21 @@ export class FundingReportToPdfService {
       const finalX = MARGIN_MM + centeringOffset;
 
       // Check if drawing this element will violate the bottom margin
-      if (currentY + finalHeight > (PAGE_HEIGHT_MM - MARGIN_MM)) {
+      if (currentY + finalHeight > PAGE_HEIGHT_MM - MARGIN_MM) {
         pdf.addPage();
         drawHeader(pdf);
         currentY = 20; // Reset content baseline to the top of the new page
       }
 
       // Draw the element
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', finalX, currentY, finalWidth, finalHeight);
+      pdf.addImage(
+        canvas.toDataURL('image/png'),
+        'PNG',
+        finalX,
+        currentY,
+        finalWidth,
+        finalHeight
+      );
       currentY += finalHeight + 10;
     }
 
@@ -97,7 +119,7 @@ export class FundingReportToPdfService {
   }
 
   /**
-   * Helper to convert an image path/SVG into an HTMLImageElement 
+   * Helper to convert an image path/SVG into an HTMLImageElement
    * so jsPDF can parse it natively.
    */
   private loadLogo(src: string): Promise<string | null> {
