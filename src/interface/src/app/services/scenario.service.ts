@@ -4,6 +4,7 @@ import { catchError, Observable } from 'rxjs';
 import {
   AvailableStands,
   Constraint,
+  ProjectArea,
   Scenario,
   SCENARIO_TYPE,
   ScenarioV3Payload,
@@ -142,6 +143,16 @@ export class ScenarioService {
       {
         withCredentials: true,
         responseType: 'arraybuffer',
+      }
+    );
+  }
+
+  getProjectAreas(scenarioId: number) {
+    return this.http.get<ProjectArea[]>(
+      environment.backend_endpoint +
+        `/v2/scenarios/${scenarioId}/project-areas/`,
+      {
+        withCredentials: true,
       }
     );
   }

@@ -1,4 +1,5 @@
 import { STAND_SIZE } from '@plan/plan-helpers';
+import { Geometry } from 'geojson';
 
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
 export type ORIGIN_TYPE = 'USER' | 'SYSTEM';
@@ -184,4 +185,27 @@ export interface Constraint {
 export interface ScenarioPriority {
   datalayer: number;
   weight: number;
+}
+
+export interface ProjectArea {
+  id: number;
+  scenario: number;
+  name: string;
+  data: {
+    YR: number;
+    proj_id: number;
+    pct_area: number;
+    area_acres: number;
+    attainment?: {
+      [metricName: string]: number;
+    };
+    total_cost: number;
+    stand_count: number;
+    pct_excluded: number;
+    cost_per_acre: number;
+    treatment_rank: number;
+    weightedPriority: number;
+    [key: string]: any;
+  };
+  geometry: Geometry;
 }
