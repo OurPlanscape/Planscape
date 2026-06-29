@@ -1431,9 +1431,10 @@ class PatchScenarioConfigurationTest(APITestCase):
         response = self.client.patch(self.url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        self.assertIn(
-            b'{"configuration":{"included_areas":["Selected included_areas does not generates any valid geometry."]}}',
-            response.content,
+        self.assertEqual(
+            response.json()["errors"]["configuration"]["included_areas"][0],
+            "There are no stands with the selected ownership in your planning area.  "
+            "Please 'View' ownership options to see what area is available in your planning area.",
         )
 
         self.scenario.refresh_from_db()
