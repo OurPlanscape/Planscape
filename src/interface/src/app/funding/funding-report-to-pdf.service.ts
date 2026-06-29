@@ -5,6 +5,7 @@ import html2canvas from 'html2canvas';
 // A4 portrait, in millimeters.
 const PAGE_WIDTH_MM = 210;
 const PAGE_HEIGHT_MM = 297;
+const LOGO_PATH = 'assets/svg/planscape-color-logo.svg';
 
 /**
  * Exports the funding report as a PDF by rasterizing the live report DOM
@@ -28,80 +29,106 @@ export class FundingReportToPdfService {
   ): Promise<void> {
     const pdf = new jsPDF('p', 'mm', 'a4');
 
-    // Optional map on top of the first page.
-    let topOffset = 0;
+    // --- CONFIGURABLE MARGINS & SCALING ---
+    const MARGIN_MM = 15;
+    const COMBINED_MARGINS = MARGIN_MM * 2;
+    const TARGET_CONTENT_WIDTH = PAGE_WIDTH_MM - COMBINED_MARGINS;
+    const scaleMultiplier = 0.7; // Master scaling knob
+
+    // Pre-load the planscape logo so it's ready to paint on the PDF canvas
+    const logoDataUrl = await this.loadLogo(LOGO_PATH);
+
+    const drawHeader = (pdfInstance: jsPDF) => {
+      if (logoDataUrl) {
+        const logoWidth = 32;  // in mm
+        const logoHeight = 6;
+        pdfInstance.addImage(logoDataUrl, 'PNG', MARGIN_MM, 7, logoWidth, logoHeight);
+      }
+      pdfInstance.setDrawColor('#E2E8F0');
+      pdfInstance.setLineWidth(0.5);
+      pdfInstance.line(MARGIN_MM, 16, PAGE_WIDTH_MM - MARGIN_MM, 16);
+    };
+
+    // Initialize Page 1 Header and set initial content baseline below it
+    drawHeader(pdf);
+    let currentY = 20; // 20mm gives breathing room below the header line
+
+    // Optional map on page 1 (Nested inside margins)
     if (mapCanvas && mapCanvas.width > 0) {
-      const mapHeight = (mapCanvas.height * PAGE_WIDTH_MM) / mapCanvas.width;
-      pdf.addImage(
-        mapCanvas.toDataURL('image/png'),
-        'PNG',
-        0,
-        0,
-        PAGE_WIDTH_MM,
-        mapHeight
-      );
-      topOffset = mapHeight;
+      const mapHeight = (mapCanvas.height * TARGET_CONTENT_WIDTH) / mapCanvas.width;
+      pdf.addImage(mapCanvas.toDataURL('image/png'), 'PNG', MARGIN_MM, currentY, TARGET_CONTENT_WIDTH, mapHeight);
+      currentY += mapHeight + 10;
     }
 
-    const canvas = await this.captureFullElement(element);
-    const imgWidth = PAGE_WIDTH_MM;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    const imgData = canvas.toDataURL('image/png');
+    const cards = element.querySelectorAll('.report-section');
+    document.body.classList.add('is-generating-pdf');
 
-    // Draw the (potentially tall) sections image starting below the map on
-    // page 1, then continue on subsequent full pages by shifting it up.
-    pdf.addImage(imgData, 'PNG', 0, topOffset, imgWidth, imgHeight);
-    let shown = PAGE_HEIGHT_MM - topOffset;
-    while (shown < imgHeight) {
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, -shown, imgWidth, imgHeight);
-      shown += PAGE_HEIGHT_MM;
+    for (let i = 0; i < cards.length; i++) {
+      const card = cards[i] as HTMLElement;
+
+      const canvas = await html2canvas(card, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgWidth = TARGET_CONTENT_WIDTH;
+      let imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      const finalWidth = imgWidth * scaleMultiplier;
+      const finalHeight = imgHeight * scaleMultiplier;
+      const centeringOffset = (TARGET_CONTENT_WIDTH - finalWidth) / 2;
+      const finalX = MARGIN_MM + centeringOffset;
+
+      // Check if drawing this element will violate the bottom margin
+      if (currentY + finalHeight > (PAGE_HEIGHT_MM - MARGIN_MM)) {
+        pdf.addPage();
+        drawHeader(pdf);
+        currentY = 20; // Reset content baseline to the top of the new page
+      }
+
+      // Draw the element
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', finalX, currentY, finalWidth, finalHeight);
+      currentY += finalHeight + 10;
     }
 
+    document.body.classList.remove('is-generating-pdf');
     pdf.save(`${fileName}.pdf`);
   }
 
   /**
-   * Captures the full element, including content scrolled out of view.
-   *
-   * The report sections live in an `overflow-y: auto` container, so html2canvas
-   * would otherwise only paint the visible slice and leave the rest blank. We
-   * temporarily lift the height/overflow constraints so the whole content lays
-   * out, capture it, then restore the original inline styles.
+   * Helper to convert an image path/SVG into an HTMLImageElement 
+   * so jsPDF can parse it natively.
    */
-  private async captureFullElement(
-    element: HTMLElement
-  ): Promise<HTMLCanvasElement> {
-    const original = {
-      height: element.style.height,
-      maxHeight: element.style.maxHeight,
-      overflow: element.style.overflow,
-      flex: element.style.flex,
-    };
+  private loadLogo(src: string): Promise<string | null> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
 
-    element.style.height = 'auto';
-    element.style.maxHeight = 'none';
-    element.style.overflow = 'visible';
-    element.style.flex = 'none';
+      img.onload = () => {
+        // Create a temporary canvas to rasterize the SVG into a PNG
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
 
-    // Let the browser reflow (and chart.js canvases settle) before capturing.
-    await new Promise<void>((resolve) =>
-      requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
-    );
+        // Use the SVG's natural size or fallback to standard dimensions
+        canvas.width = img.naturalWidth || 200;
+        canvas.height = img.naturalHeight || 50;
 
-    try {
-      return await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        height: element.scrollHeight,
-        windowHeight: element.scrollHeight,
-      });
-    } finally {
-      element.style.height = original.height;
-      element.style.maxHeight = original.maxHeight;
-      element.style.overflow = original.overflow;
-      element.style.flex = original.flex;
-    }
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          // Convert the canvas to a clean, uncorrupted base64 PNG data URL
+          resolve(canvas.toDataURL('image/png'));
+        } else {
+          resolve(null);
+        }
+      };
+
+      img.onerror = () => {
+        console.error(`Failed to load PDF logo header from: ${src}`);
+        resolve(null);
+      };
+
+      img.src = src;
+    });
   }
 }

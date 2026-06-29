@@ -9,6 +9,33 @@
   height: 100%;
 }
 
+// These styles will ONLY apply during the millisecond html2canvas takes its snapshot
+.is-generating-pdf {
+
+  // Force a specific standard container width so it doesn't try to render 
+  // at ultra-wide 1920px desktop widths
+  .report-container-selector {
+    width: 800px !important;
+  }
+
+  .report-sections {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 16px !important;
+    width: 1024px !important;
+    max-width: 1024px !important;
+  }
+
+  // Explicitly control the size of the child elements 
+  // so they don't stretch
+  .report-section {
+    flex: 0 1 calc(33.33% - 16px) !important;
+    /* Fit 3 items per row, for example */
+    box-sizing: border-box !important;
+  }
+}
+
 .container {
   display: flex;
   height: 100%;
@@ -42,7 +69,7 @@
   position: relative;
 
   @include on-small() {
-    height: 600px; 
+    height: 600px;
     width: 100%;
   }
 }

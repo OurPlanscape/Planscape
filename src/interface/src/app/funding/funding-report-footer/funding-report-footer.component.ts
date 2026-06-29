@@ -17,7 +17,8 @@ export class FundingReportFooterComponent {
     private router: Router,
     private route: ActivatedRoute
   ) {}
-
+  // allow for arbitrary disabling, such as when the map is still loading
+  @Input() buttonDisabled = false;
   @Input() footerType: 'preview' | 'full' = 'preview';
   @Input() generatingPdf = false;
 

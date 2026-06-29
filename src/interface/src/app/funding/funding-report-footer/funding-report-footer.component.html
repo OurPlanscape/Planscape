@@ -4,7 +4,7 @@
   icon="download"
   [matMenuTriggerFor]="menu"
   #trigger="matMenuTrigger"
-  [disabled]="generatingPdf"
+  [disabled]="generatingPdf || buttonDisabled"
   [variant]="isFullView ? 'primary' : 'ghost'">
   {{
     generatingPdf
