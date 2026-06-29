@@ -97,11 +97,24 @@ export class ScenarioService {
       })
       .pipe(
         catchError((error) => {
+          // Configuration errors
+          if (error.error.errors?.configuration) {
+            throw new CreateScenarioError('', {
+              configurationError: true,
+              errorMessages: error.error.errors.configuration,
+            });
+          }
+
+          // Global errors
           const message =
-            error.error.errors?.global?.[0] || 'Failed to save configuration';
-          throw new CreateScenarioError(
-            'Scenario Config is invalid. ' + message
-          );
+            error.error.errors?.global?.[0] ?? 'Failed to save configuration';
+
+          throw new CreateScenarioError(message, {
+            configurationError: false,
+            errorMessages: {
+              global: [message],
+            },
+          });
         })
       );
   }
