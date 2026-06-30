@@ -10,6 +10,7 @@ import { ScenarioState } from '@scenario/scenario.state';
 import { MOCK_SCENARIO } from '@app/services/mocks';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { FundingMapConfigState } from '../funding-map-config-state';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { FundingReportService } from '@services/funding-report.service';
@@ -31,6 +32,10 @@ describe('FullReportViewComponent', () => {
         MockProvider(DataLayersStateService, {
           dataTree$: of(null),
           paths$: of([]),
+          viewedDataLayer$: of(null),
+        }),
+        MockProvider(BaseLayersStateService, {
+          selectedBaseLayers$: of([]),
         }),
         MockProvider(FundingMapConfigState, { selectedProjectAreas$: of([]) }),
         MockProvider(MapConfigState),
@@ -122,6 +127,10 @@ describe('FullReportViewComponent recalculations', () => {
         MockProvider(DataLayersStateService, {
           dataTree$: of(null),
           paths$: of([]),
+          viewedDataLayer$: of(null),
+        }),
+        MockProvider(BaseLayersStateService, {
+          selectedBaseLayers$: of([]),
         }),
         MockProvider(FundingMapConfigState, {
           selectedProjectAreas$: of([]),
