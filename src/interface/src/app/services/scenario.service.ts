@@ -4,6 +4,7 @@ import { catchError, Observable } from 'rxjs';
 import {
   AvailableStands,
   Constraint,
+  ProjectArea,
   Scenario,
   SCENARIO_TYPE,
   ScenarioV3Payload,
@@ -96,11 +97,24 @@ export class ScenarioService {
       })
       .pipe(
         catchError((error) => {
+          // Configuration errors
+          if (error.error.errors?.configuration) {
+            throw new CreateScenarioError('', {
+              configurationError: true,
+              errorMessages: error.error.errors.configuration,
+            });
+          }
+
+          // Global errors
           const message =
-            error.error.errors?.global?.[0] || 'Failed to save configuration';
-          throw new CreateScenarioError(
-            'Scenario Config is invalid. ' + message
-          );
+            error.error.errors?.global?.[0] ?? 'Failed to save configuration';
+
+          throw new CreateScenarioError(message, {
+            configurationError: false,
+            errorMessages: {
+              global: [message],
+            },
+          });
         })
       );
   }
@@ -142,6 +156,16 @@ export class ScenarioService {
       {
         withCredentials: true,
         responseType: 'arraybuffer',
+      }
+    );
+  }
+
+  getProjectAreas(scenarioId: number) {
+    return this.http.get<ProjectArea[]>(
+      environment.backend_endpoint +
+        `/v2/scenarios/${scenarioId}/project-areas/`,
+      {
+        withCredentials: true,
       }
     );
   }

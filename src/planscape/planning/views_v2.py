@@ -608,6 +608,14 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         return Response(details, status=status.HTTP_200_OK)
 
+    @extend_schema(description="List all Project Areas for a Scenario.")
+    @action(methods=["get"], detail=True, url_path="project-areas")
+    def project_areas(self, request, pk=None):
+        scenario = self.get_object()
+        queryset = scenario.project_areas.all()
+        serializer = ProjectAreaSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @action(
         methods=["POST"], detail=True, serializer_class=GetAvailableStandsSerializer
     )

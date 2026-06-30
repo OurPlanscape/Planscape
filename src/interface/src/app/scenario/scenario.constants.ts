@@ -11,6 +11,8 @@ export interface ScenarioStepConfig {
   hasMap: boolean; // if the step shows the map
   showSubUnitToggle?: boolean; // defaults to true; set false to hide the sub unit toggle
   withIncludes?: boolean;
+  includePotentialTreatableArea: boolean;
+  includePercentageTreatable: boolean;
 }
 
 export const SUB_UNITS_STEP: ScenarioStepConfig = {
@@ -23,6 +25,8 @@ export const SUB_UNITS_STEP: ScenarioStepConfig = {
   hasMap: true,
   showSubUnitToggle: false,
   includeSubUnits: true,
+  includePotentialTreatableArea: false,
+  includePercentageTreatable: false,
 };
 
 export const exitModalData = (scenarioName: string) => ({
@@ -42,6 +46,8 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: false,
     refreshAvailableStands: false,
     hasMap: false,
+    includePotentialTreatableArea: false,
+    includePercentageTreatable: false,
   },
   {
     label: 'Include Areas',
@@ -51,6 +57,8 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: false,
     refreshAvailableStands: true,
     hasMap: true,
+    includePotentialTreatableArea: false,
+    includePercentageTreatable: false,
   },
   {
     label: 'Exclude Areas',
@@ -58,9 +66,11 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     icon: '/assets/svg/icons/overview/exclude-areas.svg',
     includeConstraints: false,
     includeExcludedAreas: true,
+    includePercentageTreatable: false,
     refreshAvailableStands: true,
     withIncludes: true,
     hasMap: true,
+    includePotentialTreatableArea: true,
   },
   {
     label: 'Stand-level Constraints',
@@ -71,8 +81,9 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: true,
     withIncludes: true,
-
+    includePotentialTreatableArea: true,
     hasMap: true,
+    includePercentageTreatable: true,
   },
   {
     label: 'Treatment Target',
@@ -83,8 +94,9 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: false,
     withIncludes: true,
-
+    includePotentialTreatableArea: true,
     hasMap: true,
+    includePercentageTreatable: true,
   },
   {
     label: 'Generate Output',
@@ -94,8 +106,9 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: false,
     withIncludes: true,
-
+    includePotentialTreatableArea: true,
     hasMap: true,
+    includePercentageTreatable: true,
   },
 ];
 
@@ -108,6 +121,8 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: false,
     refreshAvailableStands: true,
     hasMap: true,
+    includePotentialTreatableArea: false,
+    includePercentageTreatable: false,
   },
   {
     label: 'Co-Benefits',
@@ -117,6 +132,8 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: false,
     refreshAvailableStands: true,
     hasMap: true,
+    includePotentialTreatableArea: false,
+    includePercentageTreatable: false,
   },
   {
     label: 'Include Areas',
@@ -126,6 +143,8 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: false,
     refreshAvailableStands: true,
     hasMap: true,
+    includePotentialTreatableArea: false,
+    includePercentageTreatable: false,
   },
   {
     label: 'Exclude Areas',
@@ -135,7 +154,8 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: true,
     withIncludes: true,
-
+    includePotentialTreatableArea: true,
+    includePercentageTreatable: false,
     hasMap: true,
   },
   {
@@ -147,8 +167,9 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: true,
     withIncludes: true,
-
+    includePotentialTreatableArea: true,
     hasMap: true,
+    includePercentageTreatable: true,
   },
   {
     label: 'Treatment Target',
@@ -159,8 +180,9 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: false,
     withIncludes: true,
-
+    includePotentialTreatableArea: true,
     hasMap: true,
+    includePercentageTreatable: true,
   },
   {
     label: 'Generate Output',
@@ -170,8 +192,9 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
     includeExcludedAreas: true,
     refreshAvailableStands: false,
     withIncludes: true,
-
+    includePotentialTreatableArea: true,
     hasMap: true,
+    includePercentageTreatable: true,
   },
 ];
 
