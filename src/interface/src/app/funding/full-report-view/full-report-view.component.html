@@ -46,9 +46,7 @@
             [origin]="(currentScenario$ | async)?.origin ?? 'USER'"
             [scrollElement]="reportScroll"
             reportType="full"
-            [updatingFlameLength]="updatingFlameLength"
             [updatingWaterAvailability]="updatingWaterAvailability"
-            (updateFlameLength)="updateFlameLength($event)"
             (updateWaterAvailability)="
               updateWaterAvailability($event)
             "></app-funding-report>
