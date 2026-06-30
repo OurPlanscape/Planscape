@@ -61,8 +61,8 @@ function pointsHaveData(
     projectAreas.length === 0
       ? summary
       : projects.filter((point) =>
-        projectAreas.includes(point[idKey] as number)
-      );
+          projectAreas.includes(point[idKey] as number)
+        );
   return points.some((point) => point.value !== null);
 }
 
@@ -275,7 +275,6 @@ export function generateLegendFromReport(
   });
   console.log('selectedProjectAreas: ', selectedProjectAreas);
 
-
   legendData.totalAcres =
     projectAreas?.reduce((sum, f) => {
       return sum + (f.data.area_acres || 0);
@@ -306,7 +305,7 @@ export function generateLegendFromReport(
     if (Object.prototype.hasOwnProperty.call(totals, key)) {
       treatmentAcresSums.push({
         treatment: key,
-        acres: totals[key]
+        acres: totals[key],
       });
     }
   }
@@ -318,4 +317,3 @@ export function generateLegendFromReport(
 
   return legendData;
 }
-

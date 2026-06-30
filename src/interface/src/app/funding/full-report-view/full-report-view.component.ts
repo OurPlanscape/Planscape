@@ -105,32 +105,39 @@ export class FullReportViewComponent implements OnInit {
       shareReplay(1)
     );
 
-allAvailableProjectAreas$: Observable<ProjectArea[]> = 
-  this.currentScenario$.pipe(
-    switchMap((scenario) => {
-      if (!scenario?.id) {
-        return of([]);
-      }
-      return this.scenarioService.getProjectAreas(scenario.id);
-    }),
-    shareReplay(1) // Ensures the HTTP request only fires once for both subscribers
-  );
+  allAvailableProjectAreas$: Observable<ProjectArea[]> =
+    this.currentScenario$.pipe(
+      switchMap((scenario) => {
+        if (!scenario?.id) {
+          return of([]);
+        }
+        return this.scenarioService.getProjectAreas(scenario.id);
+      }),
+      shareReplay(1) // Ensures the HTTP request only fires once for both subscribers
+    );
 
-// 2. The UI Formatting Stream (Combines the raw data with the scenario origin)
-filterOptions$: Observable<FilterProjectFormat[]> = 
-  combineLatest([this.allAvailableProjectAreas$, this.currentScenario$]).pipe(
+  // 2. The UI Formatting Stream (Combines the raw data with the scenario origin)
+  filterOptions$: Observable<FilterProjectFormat[]> = combineLatest([
+    this.allAvailableProjectAreas$,
+    this.currentScenario$,
+  ]).pipe(
     map(([projectAreas, scenario]) => {
       if (!scenario?.origin || !projectAreas.length) {
         return [];
       }
 
       console.log('project areas from the endpoint:', projectAreas);
-      
+
       // Keep your experiment logic here in the UI stream
-      if (scenario?.planning_approach && isPlanningApproachSubUnits(scenario?.planning_approach)) {
-      projectAreas = projectAreas.filter(pa => pa.data.treatment_rank <= 10); 
+      if (
+        scenario?.planning_approach &&
+        isPlanningApproachSubUnits(scenario?.planning_approach)
+      ) {
+        projectAreas = projectAreas.filter(
+          (pa) => pa.data.treatment_rank <= 10
+        );
       }
-      
+
       return this.projectAreasToSelectionMenu(scenario.origin, projectAreas);
     }),
     shareReplay(1)
@@ -260,10 +267,10 @@ filterOptions$: Observable<FilterProjectFormat[]> =
     projectAreas: ProjectArea[]
   ): FilterProjectFormat[] {
     console.log('here are the project areas we have fetched:', projectAreas);
-        console.log('here are the project areas we have fetched:', projectAreas);
+    console.log('here are the project areas we have fetched:', projectAreas);
 
     return projectAreas.map((projectArea) => {
-      const filterOption : FilterProjectFormat =  {
+      const filterOption: FilterProjectFormat = {
         id: origin === 'USER' ? projectArea.data.proj_id : projectArea.id,
         shortName: projectArea.data.treatment_rank.toString(),
         name: `Project Area ${projectArea.data.treatment_rank}`,
@@ -272,7 +279,6 @@ filterOptions$: Observable<FilterProjectFormat[]> =
       return filterOption;
     });
   }
-
 
   redirectToFunding() {
     this.router.navigate(['..'], { relativeTo: this.route });
@@ -314,10 +320,15 @@ filterOptions$: Observable<FilterProjectFormat[]> =
     this.fetchedReport$,
     this.selectedProjectAreas$,
     this.currentScenario$,
-    this.allAvailableProjectAreas$
+    this.allAvailableProjectAreas$,
   ]).pipe(
     map(([report, areas, scenario, projAreas]) =>
-      generateLegendFromReport(report?.results ?? null, areas, scenario, projAreas)
+      generateLegendFromReport(
+        report?.results ?? null,
+        areas,
+        scenario,
+        projAreas
+      )
     ),
     shareReplay(1)
   );

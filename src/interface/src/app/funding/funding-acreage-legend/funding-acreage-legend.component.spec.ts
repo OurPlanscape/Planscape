@@ -12,8 +12,9 @@ describe('FundingAcreageLegendComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [FundingAcreageLegendComponent],
-      providers: [MockProvider(FundingMapConfigState, { selectedProjectAreas$: of([]) }),
-      ]
+      providers: [
+        MockProvider(FundingMapConfigState, { selectedProjectAreas$: of([]) }),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FundingAcreageLegendComponent);

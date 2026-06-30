@@ -1,8 +1,12 @@
-<div class="treatment-acres-legend"
-#tooltip="matTooltip"
-        matTooltip="All results reflect modeled changes compared to baseline (no-treatment) conditions."
-        matTooltipPosition="left"
-        matTooltipClass="tx-legend-tooltip">
+<div
+  class="treatment-acres-legend"
+  #tooltip="matTooltip"
+  matTooltip="All results reflect modeled changes compared to baseline (no-treatment) conditions."
+  [matTooltipDisabled]="true"
+  #tooltipRef="matTooltip"
+  matTooltipPosition="left"
+  matTooltipClass="tx-legend-tooltip"
+  matTooltipTrigger="manual">
   <div class="title-header">
     <div class="title">Legend</div>
     <button
@@ -22,7 +26,9 @@
             [ngStyle]="{ 'background-color': '#064BBA' }"></div>
           <div class="swatch-label">Total Planning Area Acres</div>
         </div>
-        <div class="acres-line">{{ legendData.totalAcres | number: '1.0-0' }} acres</div>
+        <div class="acres-line">
+          {{ legendData.totalAcres | number: '1.0-0' }} acres
+        </div>
       </div>
       <div class="static-row">
         <div class="legend-line">
@@ -44,8 +50,7 @@
         icon="info"
         class="info-icon"
         [outlined]="true"
-        (click)="tooltip.show()"
-       ></button>
+        (click)="toggleTooltip(tooltip, $event)"></button>
     </div>
     <div class="dynamic-section" *ngIf="legendData.treatmentAcres">
       <div
@@ -54,7 +59,9 @@
         <div class="legend-line">
           <div
             class="swatch-box"
-            [ngStyle]="{ 'background-color': treatmentColors[acreageDetail.treatment] }"></div>
+            [ngStyle]="{
+              'background-color': treatmentColors[acreageDetail.treatment],
+            }"></div>
           <div class="swatch-label">{{ acreageDetail.treatment }}</div>
         </div>
         <div class="acres-line">

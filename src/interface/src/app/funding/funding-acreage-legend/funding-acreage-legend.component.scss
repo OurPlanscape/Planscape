@@ -152,8 +152,9 @@
   border-radius: 6px;
   // padding: 8px 12px !important;
   // overflow: visible !important; /* CRITICAL: Allows the arrow pseudo-element to be seen outside the bubble */
-  // position: relative;
-  
+  position: relative;
+  top: 20px;
+
   .mdc-tooltip__surface {
     background-color: #000000 !important; /* Your custom color */
     color: #ffffff !important;

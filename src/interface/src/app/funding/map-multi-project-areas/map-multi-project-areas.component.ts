@@ -150,7 +150,7 @@ export class MapMultiProjectAreasComponent implements OnInit {
     // if (this.scenarioOrigin === 'USER') {
     //   projectKey = 'id';
     // }
-    const projectKey = 'id'
+    const projectKey = 'id';
     this.mapLibreMap.setPaintProperty(
       this.layers.projectAreasOutline.name,
       'line-width',
@@ -169,7 +169,10 @@ export class MapMultiProjectAreasComponent implements OnInit {
     // }
     const project_identifier = proj.properties['id'];
     console.log('here is what we clicked on the map:', proj);
-    console.log('and here is the project_identifier we are joping to use:', project_identifier);
+    console.log(
+      'and here is the project_identifier we are joping to use:',
+      project_identifier
+    );
     this.fundingMapConfigState.toggleSelectedProjectArea(project_identifier);
   }
 
