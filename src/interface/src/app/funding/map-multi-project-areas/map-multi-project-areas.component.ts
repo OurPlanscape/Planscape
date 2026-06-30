@@ -146,10 +146,11 @@ export class MapMultiProjectAreasComponent implements OnInit {
       return;
 
     const ids = selectedIds || [];
-    let projectKey = 'rank';
-    if (this.scenarioOrigin === 'USER') {
-      projectKey = 'id';
-    }
+    // let projectKey = 'rank';
+    // if (this.scenarioOrigin === 'USER') {
+    //   projectKey = 'id';
+    // }
+    const projectKey = 'id'
     this.mapLibreMap.setPaintProperty(
       this.layers.projectAreasOutline.name,
       'line-width',
@@ -162,10 +163,13 @@ export class MapMultiProjectAreasComponent implements OnInit {
       return;
     }
     const proj = this.getProjectAreaFromFeatures(event.point);
-    let project_identifier = proj.properties['rank'];
-    if (this.scenarioOrigin === 'USER') {
-      project_identifier = proj.properties['id'];
-    }
+    // let project_identifier = proj.properties['rank'];
+    // if (this.scenarioOrigin === 'USER') {
+    //   project_identifier = proj.properties['id'];
+    // }
+    const project_identifier = proj.properties['id'];
+    console.log('here is what we clicked on the map:', proj);
+    console.log('and here is the project_identifier we are joping to use:', project_identifier);
     this.fundingMapConfigState.toggleSelectedProjectArea(project_identifier);
   }
 

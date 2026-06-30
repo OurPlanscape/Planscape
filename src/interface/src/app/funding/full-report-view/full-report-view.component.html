@@ -32,7 +32,7 @@
               shortLabel="shortName"
               noSelectionsLabel="All Project Areas"
               [selectedItems]="(filteredProjectAreas$ | async) ?? []"
-              [menuItems]="(availableProjectAreas$ | async) ?? []"
+              [menuItems]="(filterOptions$ | async) ?? []"
               [showCountChip]="false"
               menuLabel="Project Areas">
             </sg-filter-dropdown>
@@ -83,7 +83,6 @@
     </app-map-nav-bar>
     <!-- TODO: remove this container once we pass the data to map -->
     <ng-container *ngIf="legendData$ | async as legendData">
-      <div>{{ legendData.selectedAcres }}</div>
       <app-funding-report-map
         [legendData]="legendData$ | async"></app-funding-report-map>
     </ng-container>

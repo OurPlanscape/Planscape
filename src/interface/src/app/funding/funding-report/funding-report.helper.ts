@@ -6,6 +6,7 @@ import {
   FundingReportResults,
   FundingReportTimeSeriesMetric,
   ORIGIN_TYPE,
+  ProjectArea,
   Scenario,
 } from '@types';
 import { FundingLegendData } from '../funding-acreage-legend/funding-acreage-legend.component';
@@ -60,8 +61,8 @@ function pointsHaveData(
     projectAreas.length === 0
       ? summary
       : projects.filter((point) =>
-          projectAreas.includes(point[idKey] as number)
-        );
+        projectAreas.includes(point[idKey] as number)
+      );
   return points.some((point) => point.value !== null);
 }
 
@@ -247,7 +248,8 @@ export function aggregateBiomassVolumes(
 export function generateLegendFromReport(
   results: FundingReportResults | null,
   selectedAreas: number[],
-  scenario: Scenario
+  scenario: Scenario,
+  projectAreas: ProjectArea[]
 ): FundingLegendData {
   const legendData: FundingLegendData = { totalAcres: 0, selectedAcres: 0 };
   if (!results || !scenario.origin) {
@@ -255,38 +257,65 @@ export function generateLegendFromReport(
   }
   const txAreas = results?.treatment_areas;
   const idKey = projectIdKey(scenario.origin);
-  const features = scenario.scenario_result?.result.features;
+  // const features = scenario.scenario_result?.result.features;
 
-  console.log('resulting features are:', features);
+  // console.log('resulting features are:', features);
+  console.log('known project areas:', projectAreas);
   console.log('the selected areas are:', selectedAreas);
   console.log('the report:', results);
   console.log('the key:', idKey);
   console.log('txAreas: ', txAreas);
 
-  const selectedFeatures = features?.filter((f) => {
+  const selectedProjectAreas = projectAreas?.filter((f) => {
     if (selectedAreas.length === 0) {
       return f;
     } else {
-      return selectedAreas.includes(f.properties[idKey]);
+      return selectedAreas.includes(f.id);
     }
   });
-  console.log('selectedFeatures: ', selectedFeatures);
+  console.log('selectedProjectAreas: ', selectedProjectAreas);
+
 
   legendData.totalAcres =
-    features?.reduce((sum, f) => {
-      return sum + (f.properties['area_acres'] || 0);
+    projectAreas?.reduce((sum, f) => {
+      return sum + (f.data.area_acres || 0);
     }, 0) ?? 0;
 
   legendData.selectedAcres =
-    selectedFeatures?.reduce((sum, f) => {
-      return sum + (f.properties['area_acres'] || 0);
+    selectedProjectAreas?.reduce((sum, f) => {
+      return sum + (f.data.area_acres || 0);
     }, 0) ?? 0;
 
-  //TODO: need a different key for treatment_area.project ids?
-  // const selectedTreatmentResults = selectedAreas.map(
-  //   (areaId: number) => txAreas?.projects[areaId]
-  // );
+  const selectedTreatmentResults = selectedProjectAreas.map(
+    (area) => txAreas?.projects[area.id]
+  );
+
+  const totals: Record<string, number> = {};
+
+  selectedTreatmentResults.forEach((obj) => {
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const value = obj[key] || 0;
+        totals[key] = (totals[key] || 0) + value;
+      }
+    }
+  });
+
+  const treatmentAcresSums: any[] = [];
+  for (const key in totals) {
+    if (Object.prototype.hasOwnProperty.call(totals, key)) {
+      treatmentAcresSums.push({
+        treatment: key,
+        acres: totals[key]
+      });
+    }
+  }
+
+  console.log('selectedTreatmentResults: ', selectedTreatmentResults);
+  console.log('the totals results:', treatmentAcresSums);
   console.log('legend data:', legendData);
+  legendData.treatmentAcres = treatmentAcresSums;
 
   return legendData;
 }
+

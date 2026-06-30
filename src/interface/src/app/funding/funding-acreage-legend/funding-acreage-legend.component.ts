@@ -6,7 +6,7 @@ import { ButtonComponent } from '@styleguide';
 import { FundingMapConfigState } from '../funding-map-config-state';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-export type TreatmentType = 'No Treatment' | 'RX Burn Only' | 'Thinning Only' | 'Thin and RX Burn';
+export type TreatmentType = 'No Treatment' | 'RX Burn Only' | 'Thinning Only' | 'Thin and Rx Burn';
 export interface FundingLegendData { totalAcres: number; selectedAcres: number, treatmentAcres?: Array<{ treatment: TreatmentType; acres: number }> };
 
 
@@ -41,7 +41,7 @@ treatmentColors: Record<TreatmentType, string> = {
   'No Treatment': '#fff',
   'RX Burn Only': '#FB6F92',
   'Thinning Only': '#90BE6D',
-  'Thin and RX Burn': '#2A9D8F'
+  'Thin and Rx Burn': '#2A9D8F'
 };
 
 
