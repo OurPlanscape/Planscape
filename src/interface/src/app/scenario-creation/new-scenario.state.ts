@@ -169,30 +169,42 @@ export class NewScenarioState {
     this.excludedAreas$,
     this.constraints$,
     this._selectedSubUnitLayer$,
+    this.includedAreas$,
   ]).pipe(
     filter(([standsLoaded]) => !!standsLoaded),
     // only trigger/refresh on the steps that interact with the map
     filter(([_, step]) => step?.refreshAvailableStands ?? false),
-    switchMap(([_, step, standSize, excludedAreas, constraints, subUnits]) => {
-      // Inside the project fn so it runs after switchMap cancels the previous inner (and its
-      // finalize fires) — a tap() before switchMap would be overridden by that finalize.
-      this.setLoading(true);
-      return this.scenarioService
-        .getExcludedStands(
-          this.scenarioId,
-          standSize,
-          step?.includeExcludedAreas ? excludedAreas : undefined,
-          step?.includeConstraints ? constraints : undefined,
-          step?.includeSubUnits ? subUnits?.id : undefined
-        )
-        .pipe(
-          catchError(() => {
-            this.showMapError();
-            return EMPTY;
-          }),
-          finalize(() => this.setLoading(false))
-        );
-    }),
+    switchMap(
+      ([
+        _,
+        step,
+        standSize,
+        excludedAreas,
+        constraints,
+        subUnits,
+        includedAreas,
+      ]) => {
+        // Inside the project fn so it runs after switchMap cancels the previous inner (and its
+        // finalize fires) — a tap() before switchMap would be overridden by that finalize.
+        this.setLoading(true);
+        return this.scenarioService
+          .getExcludedStands(
+            this.scenarioId,
+            standSize,
+            step?.includeExcludedAreas ? excludedAreas : undefined,
+            step?.includeConstraints ? constraints : undefined,
+            step?.includeSubUnits ? subUnits?.id : undefined,
+            step?.withIncludes && includedAreas ? includedAreas : undefined
+          )
+          .pipe(
+            catchError(() => {
+              this.showMapError();
+              return EMPTY;
+            }),
+            finalize(() => this.setLoading(false))
+          );
+      }
+    ),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 

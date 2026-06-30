@@ -569,6 +569,16 @@ class TestPublicAccess(APITestCase):
                 resp = self.client.get(url)
                 self.assertEqual(resp.status_code, 404)
 
+    def test_funding_report_datalayer_urls_are_accessible(self):
+        dataset = DatasetFactory.create(
+            visibility=VisibilityOptions.PRIVATE,
+            modules=["funding_report"],
+        )
+        datalayer = DataLayerFactory.create(dataset=dataset)
+        url = reverse("api:datasets:datalayers-urls", kwargs={"pk": datalayer.pk})
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
     def test_write_still_requires_authentication(self):
         url = reverse("api:datasets:datasets-list")
         resp = self.client.post(url, {})

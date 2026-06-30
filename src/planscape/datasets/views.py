@@ -144,9 +144,10 @@ class DataLayerViewSet(RetrieveModelMixin, ListModelMixin, MultiSerializerMixin,
         user = self.request.user if self.request else None
 
         if self.action == "urls":
-            return DataLayer.objects.all().accessible_by(user).filter(
+            return DataLayer.objects.filter(
                 Q(dataset__visibility=VisibilityOptions.PUBLIC)
                 | Q(dataset_id=settings.CLIMATE_FORESIGHT_DATASET_ID)
+                | Q(dataset__modules__contains=["funding_report"])
             )
 
         queryset = DataLayer.objects.all().accessible_by(user)
