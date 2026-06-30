@@ -7,6 +7,7 @@ import { MapConfigService } from '@app/maplibre-map/map-config.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { of } from 'rxjs';
 import { FundingMapConfigState } from '../funding-map-config-state';
 
@@ -28,6 +29,9 @@ describe('FundingReportComponent', () => {
           dataTree$: of(null),
           paths$: of([]),
           viewedDataLayer$: of(null),
+        }),
+        MockProvider(BaseLayersStateService, {
+          selectedBaseLayers$: of([]),
         }),
         MockProvider(FundingMapConfigState),
         MockProvider(MapConfigService),
