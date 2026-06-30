@@ -39,6 +39,7 @@ import {
 import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
 import { FundingReportComponent } from '../funding-report/funding-report.component';
 import { FundingMapConfigState } from '../funding-map-config-state';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
 
 interface FilterProjectFormat {
   id: number;
@@ -71,7 +72,10 @@ interface FilterProjectFormat {
     OpacitySliderComponent,
     ToggleTabsComponent,
   ],
-  providers: [FundingMapConfigState],
+  providers: [
+    FundingMapConfigState,
+    { provide: MapConfigState, useExisting: FundingMapConfigState },
+  ],
   templateUrl: './full-report-view.component.html',
   styleUrl: './full-report-view.component.scss',
 })
