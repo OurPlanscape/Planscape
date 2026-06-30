@@ -33,15 +33,21 @@ import {
 import { FundingReportFooterComponent } from '../funding-report-footer/funding-report-footer.component';
 import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
 import {
+  BaseLayer,
+  DataLayer,
   DEFAULT_FLAME_LENGTH_INTERVAL,
   FLAME_LENGTH_INTERVAL_OPTIONS,
   FlameLengthInterval,
   FundingReport,
   FundingReportAETSummary,
   FundingReportBiomassVolumes,
+  FundingReportDataLayers,
   FundingReportTimeSeriesMetric,
   ORIGIN_TYPE,
 } from '@types';
+import { FundingModuleService } from '@services/funding-module.service';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import {
   aggregateBiomassVolumes,
   aggregateFlameLengthSummary,
@@ -58,7 +64,7 @@ import {
 import { ScrollSpyDirective } from '@app/standalone/scroll-spy-directive/scroll-spy.directive';
 import { FundingMapConfigState } from '../funding-map-config-state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { debounceTime, distinctUntilChanged, filter } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs';
 
 /** Pause after the last keystroke before recalculating water availability. */
 const WATER_DEBOUNCE_MS = 300;
@@ -112,11 +118,38 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   /** Name of the section whose interactive tooltip was last opened. */
   tooltipName = '';
 
-  // TODO placeholder
-  mapLayers: MapLayer[] = [
-    { id: 1, name: 'Placeholder' },
-    { id: 2, name: 'Placeholder' },
-  ];
+  /**
+   * Map layers shown per report section, keyed by section id. Populated from the
+   * `funding_report` module on init; each entry stays an empty array until then.
+   */
+  sectionLayers: Record<string, MapLayer[]> = {
+    carbon: [],
+    wildfire: [],
+    water: [],
+    biomass: [],
+  };
+
+  /** Raster data layers (carbon/water/wildfire) by id, to drive the map on select. */
+  private layersById = new Map<number, DataLayer>();
+  /** Vector base layers (biomass) by id, to toggle on the map on select. */
+  private baseLayersById = new Map<number, BaseLayer>();
+
+  /**
+   * Id of the raster layer currently shown on the map (from the shared
+   * data-layer state), or null. Drives the single-select sections' radio groups
+   * so only the active layer stays selected, even across sections.
+   */
+  viewedLayerId$ = this.dataLayersStateService.viewedDataLayer$.pipe(
+    map((layer) => layer?.id ?? null)
+  );
+
+  /**
+   * Ids of the base layers currently shown on the map (shared base-layer state).
+   * Drives the biomass section's multi-select checkboxes.
+   */
+  selectedBaseLayerIds$ = this.baseLayersStateService.selectedBaseLayers$.pipe(
+    map((layers) => layers?.map((layer) => layer.id) ?? [])
+  );
 
   /** Flame length interval options for the selector. */
   flameLengthOptions = FLAME_LENGTH_INTERVAL_OPTIONS;
@@ -157,9 +190,16 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   @Output() showLayer = new EventEmitter<number>();
   @Output() updateWaterAvailability = new EventEmitter<number>();
 
+  constructor(
+    private fundingModuleService: FundingModuleService,
+    private dataLayersStateService: DataLayersStateService,
+    private baseLayersStateService: BaseLayersStateService
+  ) {}
+
   ngOnInit(): void {
     Chart.register(ChartDataLabels);
     this.assignSections();
+    this.loadSectionLayers();
 
     // Recalculate water availability as the user types, after a short pause.
     this.waterAvailabilityControl.valueChanges
@@ -200,6 +240,53 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     );
     this.sectionIds = this.sections.map((s) => s.id);
     this.activeId = this.sections[0].id;
+  }
+
+  /**
+   * Fetch the `funding_report` module and fan its data layers out to the
+   * matching report sections. The module groups layers under
+   * `wildfire_risk_reduction`, which maps to this report's `wildfire` section.
+   */
+  private loadSectionLayers(): void {
+    this.fundingModuleService
+      .loadFundingModule()
+      .pipe(untilDestroyed(this))
+      .subscribe((module) => {
+        const datalayers: FundingReportDataLayers = module.options.datalayers;
+        this.sectionLayers = {
+          carbon: this.toMapLayers(datalayers.carbon),
+          wildfire: this.toMapLayers(datalayers.wildfire_risk_reduction),
+          water: this.toMapLayers(datalayers.water),
+          biomass: this.toBaseMapLayers(datalayers.biomass),
+        };
+        // Raster sections drive the single-select data-layer state.
+        this.layersById = new Map(
+          [
+            ...datalayers.carbon,
+            ...datalayers.wildfire_risk_reduction,
+            ...datalayers.water,
+          ].map((layer) => [layer.id, layer])
+        );
+        // Biomass (vector) layers drive the multi-select base-layer state.
+        this.baseLayersById = new Map(
+          datalayers.biomass.map((layer) => [layer.id, layer])
+        );
+      });
+  }
+
+  /** Reduce raster data layers to the id/name the radio selector needs. */
+  private toMapLayers(layers: DataLayer[] = []): MapLayer[] {
+    return layers.map((layer) => ({ id: layer.id, name: layer.name }));
+  }
+
+  /** Reduce vector base layers to id/name plus the swatch colors for checkboxes. */
+  private toBaseMapLayers(layers: BaseLayer[] = []): MapLayer[] {
+    return layers.map((layer) => ({
+      id: layer.id,
+      name: layer.name,
+      color: layer.styles[0]?.data['fill-color'],
+      outlineColor: layer.styles[0]?.data['fill-outline-color'],
+    }));
   }
 
   ngOnDestroy(): void {
@@ -314,8 +401,27 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onLayerSelected(layer: MapLayer): void {
-    // TODO: drive the map / section-specific behavior off the selected layer.
+    // Apply the chosen layer to the shared data-layer state. The funding report
+    // map reads `viewedDataLayer$` from this same service (provided at the
+    // scenario module level, shared with the Data Layers tab), so this renders
+    // the layer on the map and shows its label.
+    const dataLayer = this.layersById.get(layer.id);
+    if (dataLayer) {
+      this.dataLayersStateService.selectDataLayer(dataLayer);
+    }
     this.showLayer.emit(layer.id);
+  }
+
+  /**
+   * Toggle a biomass (vector) layer on the map via the shared base-layer state,
+   * the same plumbing the Base Layers tab and Ownership layers use. `isMulti`
+   * is true so multiple mills layers can be shown at once.
+   */
+  onBaseLayerToggled(layer: MapLayer): void {
+    const baseLayer = this.baseLayersById.get(layer.id);
+    if (baseLayer) {
+      this.baseLayersStateService.updateBaseLayers(baseLayer, true);
+    }
   }
 
   /** Keep the water availability field numeric (max 3 digits), updating validity as the user types. */

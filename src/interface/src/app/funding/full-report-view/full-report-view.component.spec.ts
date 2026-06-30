@@ -31,6 +31,7 @@ describe('FullReportViewComponent', () => {
         MockProvider(DataLayersStateService, {
           dataTree$: of(null),
           paths$: of([]),
+          viewedDataLayer$: of(null),
         }),
         MockProvider(FundingMapConfigState, { selectedProjectAreas$: of([]) }),
         MockProvider(MapConfigState),
@@ -122,6 +123,7 @@ describe('FullReportViewComponent recalculations', () => {
         MockProvider(DataLayersStateService, {
           dataTree$: of(null),
           paths$: of([]),
+          viewedDataLayer$: of(null),
         }),
         MockProvider(FundingMapConfigState, {
           selectedProjectAreas$: of([]),
