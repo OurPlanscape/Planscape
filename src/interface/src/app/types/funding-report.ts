@@ -10,12 +10,17 @@ export interface FundingReportProjectDataPoint extends FundingReportDataPoint {
   project_id: number;
   // Present for SYSTEM-origin scenarios, where selection is keyed by the
   // 1-based project index (treatment rank) rather than the project area id.
-  proj_id?: number;
+  // USER-origin scenarios get an explicit null.
+  proj_id?: number | null;
 }
 
-export type FundingReportMetric =
+/** Time-series metrics whose report data is a flat, per-year array. */
+export type FundingReportTimeSeriesMetric =
   | 'POTENTIAL_SMOKE'
-  | 'ABOVEGROUND_TOTAL'
+  | 'ABOVEGROUND_TOTAL';
+
+export type FundingReportMetric =
+  | FundingReportTimeSeriesMetric
   | 'TOTAL_FLAME_SEVERITY';
 
 /**
@@ -50,12 +55,12 @@ export interface FundingReportAETImprovementRequest {
  * volumes are cubic-feet per acre (ft³/ac).
  */
 export interface FundingReportBiomassVolumes {
-  merchantable_softwood_bf_ac: number;
-  merchantable_hardwood_bf_ac: number;
-  merchantable_mixed_bf_ac: number;
-  non_merchantable_softwood_cuft_ac: number;
-  non_merchantable_hardwood_cuft_ac: number;
-  non_merchantable_mixed_cuft_ac: number;
+  merchantable_softwood_bf: number;
+  merchantable_hardwood_bf: number;
+  merchantable_mixed_bf: number;
+  non_merchantable_softwood_cuft: number;
+  non_merchantable_hardwood_cuft: number;
+  non_merchantable_mixed_cuft: number;
 }
 
 /** Per-project-area biomass volumes; carries the selection key(s). */
@@ -73,7 +78,10 @@ export interface FundingReportResults {
    * Whole-scenario totals per metric. The time-series metrics are arrays; the
    * water metric (`AET`) is a single summary object instead.
    */
-  summary: Record<FundingReportMetric, FundingReportDataPoint[]> & {
+  summary: Record<FundingReportTimeSeriesMetric, FundingReportDataPoint[]> & {
+    // Pre-calculated for every flame length interval; the FE reads the
+    // interval the user has selected (see FLAME_LENGTH_INTERVAL_OPTIONS).
+    TOTAL_FLAME_SEVERITY?: FlameLengthIntervalSummary;
     AET?: FundingReportAETSummary;
     BIOMASS_VOLUMES?: FundingReportBiomassVolumes;
   };
@@ -85,7 +93,11 @@ export interface FundingReportResults {
    * the FE doesn't model or read the per-project AET the backend sends.
    */
   // AET?: FundingReportAETImprovementProjectArea[];
-  projects: Record<FundingReportMetric, FundingReportProjectDataPoint[]> & {
+  projects: Record<
+    FundingReportTimeSeriesMetric,
+    FundingReportProjectDataPoint[]
+  > & {
+    TOTAL_FLAME_SEVERITY?: FlameLengthIntervalProjects;
     BIOMASS_VOLUMES?: FundingReportBiomassVolumesProject[];
   };
 }
@@ -99,25 +111,47 @@ export interface FundingReport {
   id: number;
   scenario: number;
   results: FundingReportResults | null;
+  treatment_datalayer: number | null;
 }
 
-export interface FlameLengthRequestParams {
-  from_ft: number;
-  to_ft: number;
-}
+/**
+ * Flame length reduction intervals the report pre-calculates. The key encodes
+ * the from/to thresholds in feet (e.g. '7_4' is area reduced from >7 ft to
+ * <4 ft), matching the backend's interval keys under `TOTAL_FLAME_SEVERITY`.
+ */
+export type FlameLengthInterval = '7_4' | '6_4' | '4_2';
+
+/** Flame length interval options for the selector, in display order. */
+export const FLAME_LENGTH_INTERVAL_OPTIONS: {
+  value: FlameLengthInterval;
+  label: string;
+}[] = [
+  { value: '7_4', label: 'Greater than (>) 7 ft to less than (<) 4 ft' },
+  { value: '6_4', label: 'Greater than (>) 6 ft to less than (<) 4 ft' },
+  { value: '4_2', label: 'Greater than (>) 4 ft to less than (<) 2 ft' },
+];
+
+/** Interval shown by default, before the user picks one. */
+export const DEFAULT_FLAME_LENGTH_INTERVAL: FlameLengthInterval = '7_4';
 
 /** A per-project flame length data point; carries the 1-based project index too. */
 export interface FlameLengthReductionProjectDataPoint
   extends FundingReportProjectDataPoint {
-  proj_id: number;
+  proj_id: number | null;
 }
 
 /**
- * Response of the flame-length-reduction endpoint: recomputed
- * `TOTAL_FLAME_SEVERITY` for the whole scenario and per project area.
+ * Whole-scenario flame length reduction, keyed by interval. Lives under
+ * `results.summary.TOTAL_FLAME_SEVERITY`.
  */
-export interface FlameLengthReductionResponse {
-  interval: { from: number; to: number };
-  summary: FundingReportDataPoint[];
-  projects: FlameLengthReductionProjectDataPoint[];
-}
+export type FlameLengthIntervalSummary = Partial<
+  Record<FlameLengthInterval, FundingReportDataPoint[]>
+>;
+
+/**
+ * Per-project-area flame length reduction, keyed by interval. Lives under
+ * `results.projects.TOTAL_FLAME_SEVERITY`.
+ */
+export type FlameLengthIntervalProjects = Partial<
+  Record<FlameLengthInterval, FlameLengthReductionProjectDataPoint[]>
+>;

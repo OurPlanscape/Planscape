@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import rasterio
 from datasets.models import DataLayerType
-from datasets.tests.factories import DataLayerFactory
+from datasets.tests.factories import DataLayerFactory, DatasetFactory
 from django.conf import settings
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.test import TestCase
@@ -23,12 +23,15 @@ from funding_report.models import (
     BiomassRole,
     FundingOpportunityReport,
     FundingOpportunityReportStatus,
+    FundingReportLayerCategory,
     FundingReportMetric,
 )
 from funding_report.services import (
+    _BIOMASS_PIXEL_AREA_ACRES,
     aggregate_delta_pixels,
     calculate_aet_improvement,
     build_datalayer_lookup,
+    build_flame_length_reduction_results,
     build_funding_report_results,
     calculate_biomass_volumes,
     calculate_funding_report_flame_length_reduction,
@@ -37,6 +40,7 @@ from funding_report.services import (
     calculate_project_area_delta,
     get_aet_delta_datalayer,
     get_biomass_datalayer,
+    get_funding_report_layers_of_interest,
 )
 
 
@@ -424,6 +428,143 @@ class FundingReportRasterCalculationTest(TestCase):
         )
 
 
+class BuildFlameLengthReductionResultsTest(TestCase):
+    def test_buckets_results_by_interval_key(self):
+        results = build_flame_length_reduction_results(
+            [
+                {
+                    "project_id": 1,
+                    "year": 2026,
+                    "value": 10,
+                    "baseline": 40,
+                    "delta": 25.0,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+                {
+                    "project_id": 2,
+                    "year": 2026,
+                    "value": 5,
+                    "baseline": 20,
+                    "delta": 25.0,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+                {
+                    "project_id": 1,
+                    "year": 2026,
+                    "value": 2,
+                    "baseline": 40,
+                    "delta": 5.0,
+                    "interval": {"from": 6.0, "to": 4.0},
+                },
+                {
+                    "project_id": 1,
+                    "year": 2026,
+                    "value": 1,
+                    "baseline": 40,
+                    "delta": 2.5,
+                    "interval": {"from": 4.0, "to": 2.0},
+                },
+            ]
+        )
+
+        self.assertEqual(set(results["summary"].keys()), {"7_4", "6_4", "4_2"})
+        self.assertEqual(set(results["projects"].keys()), {"7_4", "6_4", "4_2"})
+
+        seven_four_summary = results["summary"]["7_4"][0]
+        self.assertEqual(seven_four_summary["value"], 15)
+        self.assertEqual(seven_four_summary["baseline"], 60)
+        self.assertAlmostEqual(seven_four_summary["delta"], 15 / 60 * 100)
+        self.assertEqual(len(results["projects"]["7_4"]), 2)
+
+    def test_summary_includes_raw_value_and_total_area_aliases(self):
+        results = build_flame_length_reduction_results(
+            [
+                {
+                    "project_id": 1,
+                    "year": 2026,
+                    "value": 10,
+                    "baseline": 40,
+                    "delta": 25.0,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+            ]
+        )
+
+        summary = results["summary"]["7_4"][0]
+        self.assertEqual(summary["raw_value"], summary["value"])
+        self.assertEqual(summary["total_area"], summary["baseline"])
+
+    def test_project_entries_include_raw_value_and_total_area_aliases(self):
+        results = build_flame_length_reduction_results(
+            [
+                {
+                    "project_id": 1,
+                    "proj_id": "abc",
+                    "year": 2026,
+                    "value": 10,
+                    "baseline": 40,
+                    "delta": 25.0,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+            ]
+        )
+
+        project_result = results["projects"]["7_4"][0]
+        self.assertEqual(project_result["raw_value"], project_result["value"])
+        self.assertEqual(project_result["total_area"], project_result["baseline"])
+        self.assertEqual(project_result["proj_id"], "abc")
+
+    def test_interval_key_formatting_truncates_to_int(self):
+        results = build_flame_length_reduction_results(
+            [
+                {
+                    "project_id": 1,
+                    "year": 2026,
+                    "value": 10,
+                    "baseline": 40,
+                    "delta": 25.0,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+            ]
+        )
+
+        self.assertIn("7_4", results["summary"])
+        self.assertNotIn("7.0_4.0", results["summary"])
+
+    def test_empty_input_returns_empty_dicts(self):
+        self.assertEqual(
+            build_flame_length_reduction_results([]),
+            {"summary": {}, "projects": {}},
+        )
+
+    def test_sorts_by_year_and_project_id_within_bucket(self):
+        results = build_flame_length_reduction_results(
+            [
+                {
+                    "project_id": 2,
+                    "year": 2026,
+                    "value": 20,
+                    "baseline": 10,
+                    "delta": 3,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+                {
+                    "project_id": 1,
+                    "year": 2026,
+                    "value": 5,
+                    "baseline": 2,
+                    "delta": 1,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+            ]
+        )
+
+        self.assertEqual(
+            [item["project_id"] for item in results["projects"]["7_4"]],
+            [1, 2],
+        )
+
+
 class FlameLengthReductionCalculationTest(TestCase):
     def setUp(self):
         tmp_dir = tempfile.TemporaryDirectory()
@@ -604,7 +745,6 @@ class BiomassVolumesCalculationTest(TestCase):
             scenario=self.scenario,
             created_by=self.scenario.user,
         )
-        self.pixel_area_sq_m = 100.0  # 10 m × 10 m
 
     def _create_biomass_datalayer(self, role: str, path: Path):
         return DataLayerFactory.create(
@@ -638,12 +778,12 @@ class BiomassVolumesCalculationTest(TestCase):
 
         summary = results["summary"]
         expected_keys = {
-            "merchantable_softwood_bf_ac",
-            "merchantable_hardwood_bf_ac",
-            "merchantable_mixed_bf_ac",
-            "non_merchantable_softwood_cuft_ac",
-            "non_merchantable_hardwood_cuft_ac",
-            "non_merchantable_mixed_cuft_ac",
+            "merchantable_softwood_bf",
+            "merchantable_hardwood_bf",
+            "merchantable_mixed_bf",
+            "non_merchantable_softwood_cuft",
+            "non_merchantable_hardwood_cuft",
+            "non_merchantable_mixed_cuft",
         }
         self.assertEqual(set(summary.keys()), expected_keys)
 
@@ -657,20 +797,44 @@ class BiomassVolumesCalculationTest(TestCase):
 
         results = calculate_biomass_volumes(self.report)
 
-        # Pixel values are already in output units (merch bf/ac, non-merch
-        # cuft/ac), so values are summed directly per wood type with no
-        # unit conversion.
+        # Pixel values are in per-acre output units (merch bf/ac, non-merch
+        # cuft/ac); they're summed per wood type, then multiplied by the
+        # per-pixel acreage to produce totals.
         #
         # Softwood pixels: (0,0) merch=100, nm=50; (1,1) merch=400, nm=100
         # Hardwood pixels: (0,1) merch=200, nm=80
         # Mixed pixels:    (1,0) merch=300, nm=80
         summary = results["summary"]
-        self.assertAlmostEqual(summary["merchantable_softwood_bf_ac"], 100 + 400, places=4)
-        self.assertAlmostEqual(summary["merchantable_hardwood_bf_ac"], 200, places=4)
-        self.assertAlmostEqual(summary["merchantable_mixed_bf_ac"], 300, places=4)
-        self.assertAlmostEqual(summary["non_merchantable_softwood_cuft_ac"], 50 + 100, places=4)
-        self.assertAlmostEqual(summary["non_merchantable_hardwood_cuft_ac"], 80, places=4)
-        self.assertAlmostEqual(summary["non_merchantable_mixed_cuft_ac"], 80, places=4)
+        self.assertAlmostEqual(
+            summary["merchantable_softwood_bf"],
+            (100 + 400) * _BIOMASS_PIXEL_AREA_ACRES,
+            places=4,
+        )
+        self.assertAlmostEqual(
+            summary["merchantable_hardwood_bf"],
+            200 * _BIOMASS_PIXEL_AREA_ACRES,
+            places=4,
+        )
+        self.assertAlmostEqual(
+            summary["merchantable_mixed_bf"],
+            300 * _BIOMASS_PIXEL_AREA_ACRES,
+            places=4,
+        )
+        self.assertAlmostEqual(
+            summary["non_merchantable_softwood_cuft"],
+            (50 + 100) * _BIOMASS_PIXEL_AREA_ACRES,
+            places=4,
+        )
+        self.assertAlmostEqual(
+            summary["non_merchantable_hardwood_cuft"],
+            80 * _BIOMASS_PIXEL_AREA_ACRES,
+            places=4,
+        )
+        self.assertAlmostEqual(
+            summary["non_merchantable_mixed_cuft"],
+            80 * _BIOMASS_PIXEL_AREA_ACRES,
+            places=4,
+        )
 
     def test_calculate_biomass_volumes_nonoverlapping_project_area_returns_zeros(self):
         self._create_all_biomass_datalayers()
@@ -686,3 +850,89 @@ class BiomassVolumesCalculationTest(TestCase):
         summary = results["summary"]
         for key in summary:
             self.assertEqual(summary[key], 0.0, msg=f"{key} should be 0 for non-overlapping area")
+
+
+class FundingReportLayersOfInterestTest(TestCase):
+    def create_funding_report_datalayer(self, metric, year, baseline):
+        return DataLayerFactory.create(
+            name=f"{'Baseline' if baseline else 'Legalmax'} {year} {metric.value}",
+            type=DataLayerType.RASTER,
+            metadata={
+                "modules": {
+                    "funding_report": {
+                        "year": year,
+                        "variable": metric.value,
+                        "baseline": baseline,
+                    }
+                }
+            },
+        )
+
+    def create_aet_datalayer(self, role):
+        return DataLayerFactory.create(
+            name=f"AET {role}",
+            type=DataLayerType.RASTER,
+            metadata={
+                "modules": {
+                    "funding_report": {
+                        "variable": "AET",
+                        "role": role,
+                    }
+                }
+            },
+        )
+
+    def test_returns_all_keys_with_tagged_layers(self):
+        aboveground = self.create_funding_report_datalayer(
+            FundingReportMetric.ABOVEGROUND_TOTAL, 2026, True
+        )
+        smoke = self.create_funding_report_datalayer(
+            FundingReportMetric.POTENTIAL_SMOKE, 2026, True
+        )
+        flame = self.create_funding_report_datalayer(
+            FundingReportMetric.TOTAL_FLAME_SEVERITY, 2026, True
+        )
+        aet_baseline = self.create_aet_datalayer("baseline")
+        aet_target = self.create_aet_datalayer("target")
+
+        mills_dataset = DatasetFactory.create(name=settings.FORISK_MILLS_DATASET_NAME)
+        mill_layer_1 = DataLayerFactory.create(dataset=mills_dataset)
+        mill_layer_2 = DataLayerFactory.create(dataset=mills_dataset)
+
+        result = get_funding_report_layers_of_interest()
+
+        self.assertCountEqual(
+            result[FundingReportLayerCategory.CARBON],
+            [aboveground, smoke],
+        )
+        self.assertCountEqual(
+            result[FundingReportLayerCategory.WATER],
+            [aet_baseline, aet_target],
+        )
+        self.assertEqual(
+            result[FundingReportLayerCategory.WILDFIRE_RISK_REDUCTION], [flame]
+        )
+        self.assertCountEqual(
+            result[FundingReportLayerCategory.BIOMASS],
+            [mill_layer_1, mill_layer_2],
+        )
+
+    def test_returns_empty_lists_when_no_layers_tagged(self):
+        result = get_funding_report_layers_of_interest()
+
+        for category in FundingReportLayerCategory:
+            self.assertEqual(result[category], [])
+
+    def test_mills_layers_scoped_to_named_dataset(self):
+        mills_dataset = DatasetFactory.create(name=settings.FORISK_MILLS_DATASET_NAME)
+        mill_layer = DataLayerFactory.create(dataset=mills_dataset)
+
+        other_dataset = DatasetFactory.create(name="Some Other Dataset")
+        DataLayerFactory.create(dataset=other_dataset)
+
+        result = get_funding_report_layers_of_interest()
+
+        self.assertEqual(
+            result[FundingReportLayerCategory.BIOMASS],
+            [mill_layer],
+        )

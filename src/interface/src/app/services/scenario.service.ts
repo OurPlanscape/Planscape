@@ -4,6 +4,7 @@ import { catchError, Observable } from 'rxjs';
 import {
   AvailableStands,
   Constraint,
+  ProjectArea,
   Scenario,
   SCENARIO_TYPE,
   ScenarioV3Payload,
@@ -146,12 +147,23 @@ export class ScenarioService {
     );
   }
 
+  getProjectAreas(scenarioId: number) {
+    return this.http.get<ProjectArea[]>(
+      environment.backend_endpoint +
+        `/v2/scenarios/${scenarioId}/project-areas/`,
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
   getExcludedStands(
     scenarioId: number,
     stand_size: string,
     excludes?: number[],
     constraints?: Constraint[],
-    subUnitsLayer?: number
+    subUnitsLayer?: number,
+    includes?: number[]
   ) {
     const url =
       environment.backend_endpoint +
@@ -163,6 +175,7 @@ export class ScenarioService {
         excludes,
         constraints,
         sub_unit: subUnitsLayer,
+        includes,
       },
       {
         withCredentials: true,

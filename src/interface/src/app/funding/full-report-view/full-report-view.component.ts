@@ -21,12 +21,7 @@ import {
   ToggleButtonsConfig,
   ToggleTabsComponent,
 } from '@styleguide/toggle-tabs/toggle-tabs.component';
-import {
-  FlameLengthReductionResponse,
-  FlameLengthRequestParams,
-  FundingReport,
-  FundingReportAETSummary,
-} from '@types';
+import { FundingReport, FundingReportAETSummary } from '@types';
 import {
   BehaviorSubject,
   combineLatest,
@@ -44,6 +39,7 @@ import {
 import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
 import { FundingReportComponent } from '../funding-report/funding-report.component';
 import { FundingMapConfigState } from '../funding-map-config-state';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
 
 interface FilterProjectFormat {
   id: number;
@@ -76,7 +72,10 @@ interface FilterProjectFormat {
     OpacitySliderComponent,
     ToggleTabsComponent,
   ],
-  providers: [FundingMapConfigState],
+  providers: [
+    FundingMapConfigState,
+    { provide: MapConfigState, useExisting: FundingMapConfigState },
+  ],
   templateUrl: './full-report-view.component.html',
   styleUrl: './full-report-view.component.scss',
 })
@@ -128,29 +127,21 @@ export class FullReportViewComponent implements OnInit {
     shareReplay(1)
   );
 
-  /** Latest flame-length recalculation, patched into the report locally. */
-  private flameLength$ =
-    new BehaviorSubject<FlameLengthReductionResponse | null>(null);
-
   /** Latest water-availability recalculation, patched into the report locally. */
   private water$ = new BehaviorSubject<FundingReportAETSummary | null>(null);
 
-  /** The fetched report with any local flame-length / water recalculation applied. */
-  report$ = combineLatest([
-    this.fetchedReport$,
-    this.flameLength$,
-    this.water$,
-  ]).pipe(
-    map(([report, flameLength, water]) =>
-      this.applyRecalculations(report, flameLength, water)
-    ),
+  /** The fetched report with any local water recalculation applied. */
+  report$ = combineLatest([this.fetchedReport$, this.water$]).pipe(
+    map(([report, water]) => this.applyRecalculations(report, water)),
     shareReplay(1)
   );
 
-  updatingFlameLength = false;
+  /** Id of the report's treatment datalayer to display on the map. */
+  treatmentDataLayerId$ = this.report$.pipe(
+    map((report) => report?.treatment_datalayer ?? null)
+  );
+
   updatingWaterAvailability = false;
-  /** Apply clicks; `switchMap` cancels any in-flight request when a new one arrives. */
-  private flameLengthRequest$ = new Subject<FlameLengthRequestParams>();
   /** Water % entered; `switchMap` cancels any in-flight request when a new one arrives. */
   private waterRequest$ = new Subject<number>();
 
@@ -189,25 +180,6 @@ export class FullReportViewComponent implements OnInit {
       icon: 'close',
       blackText: true,
     });
-
-    this.flameLengthRequest$
-      .pipe(
-        switchMap((params) => {
-          // Set inside switchMap so a re-apply re-arms the loader *after* the
-          // cancelled request's finalize has cleared it.
-          this.updatingFlameLength = true;
-          return this.scenarioState.currentScenarioId$.pipe(
-            filter((id): id is number => id !== null),
-            take(1),
-            switchMap((id) =>
-              this.fundingReportService.getFlameLengthReduction(id, params)
-            ),
-            finalize(() => (this.updatingFlameLength = false))
-          );
-        }),
-        untilDestroyed(this)
-      )
-      .subscribe((flameLength) => this.flameLength$.next(flameLength));
 
     this.waterRequest$
       .pipe(
@@ -250,45 +222,32 @@ export class FullReportViewComponent implements OnInit {
     this.router.navigate(['..'], { relativeTo: this.route });
   }
 
-  updateFlameLength(params: FlameLengthRequestParams) {
-    this.flameLengthRequest$.next(params);
-  }
-
   updateWaterAvailability(increasePercent: number) {
     this.waterRequest$.next(increasePercent);
   }
 
   /**
-   * Apply the locally-triggered recalculations on top of the fetched report,
-   * leaving any metric without a recalculation untouched. Returns a new report
-   * object so change detection picks it up.
+   * Apply the locally-triggered water recalculation on top of the fetched
+   * report, leaving everything else untouched. Returns a new report object so
+   * change detection picks it up.
    *
-   * - Flame length patches `TOTAL_FLAME_SEVERITY` for both the summary and the
-   *   per-project breakdown.
-   * - Water patches only `summary.AET`: the report always displays the
-   *   whole-scenario water summary (see the funding-report component's `water`
-   *   getter) and never breaks AET down by project area, so the per-project AET
-   *   the endpoint also returns is ignored.
+   * Water patches only `summary.AET`: the report always displays the
+   * whole-scenario water summary (see the funding-report component's `water`
+   * getter) and never breaks AET down by project area, so the per-project AET
+   * the endpoint also returns is ignored.
+   *
+   * Flame length is no longer recalculated here: a single report run now
+   * pre-calculates every interval, and the funding-report component reads the
+   * selected one straight from the report.
    */
   private applyRecalculations(
     report: FundingReport | null,
-    flameLength: FlameLengthReductionResponse | null,
     water: FundingReportAETSummary | null
   ): FundingReport | null {
     if (!report?.results) {
       return report;
     }
     const results = { ...report.results };
-    if (flameLength) {
-      results.summary = {
-        ...results.summary,
-        TOTAL_FLAME_SEVERITY: flameLength.summary,
-      };
-      results.projects = {
-        ...results.projects,
-        TOTAL_FLAME_SEVERITY: flameLength.projects,
-      };
-    }
     if (water) {
       results.summary = { ...results.summary, AET: water };
     }

@@ -46,9 +46,7 @@
             [origin]="(currentScenario$ | async)?.origin ?? 'USER'"
             [scrollElement]="reportScroll"
             reportType="full"
-            [updatingFlameLength]="updatingFlameLength"
             [updatingWaterAvailability]="updatingWaterAvailability"
-            (updateFlameLength)="updateFlameLength($event)"
             (updateWaterAvailability)="
               updateWaterAvailability($event)
             "></app-funding-report>
@@ -83,6 +81,8 @@
         [sliderValue]="(opacity$ | async) ?? 0.5"
         (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
     </app-map-nav-bar>
-    <app-funding-report-map></app-funding-report-map>
+    <app-funding-report-map
+      *ngIf="treatmentDataLayerId$ | async as treatmentDataLayerId"
+      [treatmentDataLayerId]="treatmentDataLayerId"></app-funding-report-map>
   </div>
 </section>

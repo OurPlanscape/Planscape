@@ -35,9 +35,11 @@ from funding_report.models import (
     BIOMASS_VARIABLE,
     FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
     FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
+    FUNDING_REPORT_LAYER_CATEGORIES,
     FUNDING_REPORT_YEARS,
     TREATMENT_NO_TREATMENT_LABEL,
     TREATMENT_PIXEL_VALUE_LABELS,
+    TREATMENT_CLIP_ROLE,
     TREATMENT_ROLE,
     WOOD_TYPE_HARDWOOD,
     WOOD_TYPE_MIXED,
@@ -45,6 +47,8 @@ from funding_report.models import (
     BiomassRole,
     TREATMENT_VARIABLE,
     FundingOpportunityReport,
+    FundingReportLayerCategory,
+    FundingReportLayerKey,
     FundingReportMetric,
 )
 
@@ -52,6 +56,8 @@ log = logging.getLogger(__name__)
 
 AET_VARIABLE = "AET"
 AET_DELTA_ROLE = "delta"
+AET_BASELINE_ROLE = "baseline"
+AET_TARGET_ROLE = "target"
 
 
 def build_datalayer_lookup() -> Dict[Tuple[str, int, bool], DataLayer]:
@@ -96,6 +102,73 @@ def get_aet_delta_datalayer() -> DataLayer:
     if len(datalayers) > 1:
         raise ValueError("Multiple funding report AET delta datalayers found.")
     return datalayers[0]
+
+
+def _get_aet_role_datalayer(role: str) -> DataLayer | None:
+    datalayers = list(
+        DataLayer.objects.filter(
+            type=DataLayerType.RASTER,
+            metadata__contains={
+                "modules": {
+                    "funding_report": {
+                        "variable": AET_VARIABLE,
+                        "role": role,
+                    }
+                }
+            },
+        )[:2]
+    )
+    if not datalayers:
+        log.warning("Missing funding report AET %s datalayer.", role)
+        return None
+    if len(datalayers) > 1:
+        log.warning("Multiple funding report AET %s datalayers found.", role)
+        return None
+    return datalayers[0]
+
+
+def get_aet_baseline_datalayer() -> DataLayer | None:
+    return _get_aet_role_datalayer(AET_BASELINE_ROLE)
+
+
+def get_aet_target_datalayer() -> DataLayer | None:
+    return _get_aet_role_datalayer(AET_TARGET_ROLE)
+
+
+def get_mills_datalayers() -> List[DataLayer]:
+    return list(
+        DataLayer.objects.filter(dataset__name=settings.FORISK_MILLS_DATASET_NAME)
+    )
+
+
+def get_funding_report_layers_of_interest() -> Dict[str, List[DataLayer]]:
+    lookup = build_datalayer_lookup()
+
+    def _as_list(datalayer: DataLayer | None) -> List[DataLayer]:
+        return [datalayer] if datalayer else []
+
+    layers_by_key = {
+        FundingReportLayerKey.BASELINE_ABOVEGROUND_CARBON_2026: _as_list(
+            lookup.get((FundingReportMetric.ABOVEGROUND_TOTAL.value, 2026, True))
+        ),
+        FundingReportLayerKey.BASELINE_SMOKE_PRODUCTION_2026: _as_list(
+            lookup.get((FundingReportMetric.POTENTIAL_SMOKE.value, 2026, True))
+        ),
+        FundingReportLayerKey.BASELINE_FLAME_LENGTH_2026: _as_list(
+            lookup.get((FundingReportMetric.TOTAL_FLAME_SEVERITY.value, 2026, True))
+        ),
+        FundingReportLayerKey.AET_BASELINE: _as_list(get_aet_baseline_datalayer()),
+        FundingReportLayerKey.AET_TARGET: _as_list(get_aet_target_datalayer()),
+        FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES: get_mills_datalayers(),
+    }
+
+    grouped: Dict[str, List[DataLayer]] = {
+        category.value: [] for category in FundingReportLayerCategory
+    }
+    for layer_key, datalayers in layers_by_key.items():
+        category = FUNDING_REPORT_LAYER_CATEGORIES[layer_key]
+        grouped[category.value].extend(datalayers)
+    return grouped
 
 
 def get_treatment_datalayer() -> DataLayer | None:
@@ -439,6 +512,15 @@ def calculate_aet_improvement(
     }
 
 
+def _clip_metadata(source_metadata: dict | None) -> dict:
+    metadata = deepcopy(source_metadata) or {}
+    try:
+        metadata["modules"]["funding_report"]["role"] = TREATMENT_CLIP_ROLE
+    except KeyError:
+        pass
+    return metadata
+
+
 def generate_treatment_clip_datalayer(report: FundingOpportunityReport) -> DataLayer:
     from datasets.tasks import datalayer_uploaded
 
@@ -519,7 +601,7 @@ def generate_treatment_clip_datalayer(report: FundingOpportunityReport) -> DataL
         geometry=geometry_from_info(layer_info, datalayer_type=layer_type),
         info=layer_info,
         mimetype=mimetype,
-        metadata=deepcopy(source.metadata) or {},
+        metadata=_clip_metadata(source.metadata),
         map_service_type=source.map_service_type,
         status=DataLayerStatus.PENDING,
     )
@@ -669,6 +751,81 @@ def build_funding_report_results(
     }
 
 
+def build_flame_length_reduction_results(
+    project_results: Iterable[Dict[str, Any]],
+) -> Dict[str, Dict[str, List[Dict[str, Any]]]]:
+    """
+    Like build_funding_report_results, but buckets entries by their flame
+    length "interval" (e.g. "7_4") instead of by metric, since a single
+    funding report run now calculates flame length reduction for multiple
+    intervals. Each result must carry an "interval": {"from": ..., "to": ...}
+    key, as produced by aggregate_flame_length_reduction.
+    """
+    projects: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    summary_values: Dict[Tuple[str, int], Dict[str, Any]] = {}
+
+    for result in project_results:
+        interval = result["interval"]
+        interval_key = f"{int(interval['from'])}_{int(interval['to'])}"
+        year = result["year"]
+        project_result = {
+            "project_id": result["project_id"],
+            "proj_id": result.get("proj_id"),
+            "year": year,
+            "value": result["value"],
+            "baseline": result["baseline"],
+            "delta": result["delta"],
+            "raw_value": result["value"],
+            "total_area": result["baseline"],
+        }
+        projects[interval_key].append(project_result)
+
+        summary = summary_values.setdefault(
+            (interval_key, year),
+            {
+                "year": year,
+                "value": None,
+                "baseline": None,
+                "delta": None,
+                "raw_value": None,
+                "total_area": None,
+            },
+        )
+        for field in ("value", "baseline"):
+            if result[field] is None:
+                continue
+            summary[field] = (summary[field] or 0) + result[field]
+
+    for (_interval_key, _year), summary in summary_values.items():
+        if summary["value"] is None or summary["baseline"] is None:
+            continue
+        summary["delta"] = (
+            summary["value"] / summary["baseline"] * 100
+            if summary["baseline"]
+            else 0.0
+        )
+        summary["raw_value"] = summary["value"]
+        summary["total_area"] = summary["baseline"]
+
+    summary_by_interval: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for (interval_key, _year), summary in summary_values.items():
+        summary_by_interval[interval_key].append(summary)
+
+    return {
+        "summary": {
+            interval_key: sorted(values, key=lambda item: item["year"])
+            for interval_key, values in summary_by_interval.items()
+        },
+        "projects": {
+            interval_key: sorted(
+                values,
+                key=lambda item: (item["year"], item["project_id"]),
+            )
+            for interval_key, values in projects.items()
+        },
+    }
+
+
 def calculate_funding_report_flame_length_reduction(
     report: FundingOpportunityReport,
     from_ft: float,
@@ -711,6 +868,11 @@ _BIOMASS_WOOD_TYPES: Dict[int, str] = {
     WOOD_TYPE_MIXED: "mixed",
 }
 
+# Acres represented by one biomass raster pixel (~30 m x 30 m). The merch/
+# non-merch rasters store per-acre values, so summed pixel values must be
+# multiplied by this to turn a per-acre rate into a total.
+_BIOMASS_PIXEL_AREA_ACRES = 0.2224
+
 
 def get_biomass_datalayer(role: str) -> DataLayer:
     datalayers = list(
@@ -747,8 +909,10 @@ def _extract_raw_biomass_volumes(
     Sums raster pixel values per wood type for one project area geometry.
     Keys: merch_{softwood,hardwood,mixed}_bf_ac and nm_{softwood,hardwood,mixed}_cuft_ac.
 
-    Raster pixels are already in output units (merch in bf/ac, non-merch in
-    cuft/ac), so values are summed directly with no unit conversion.
+    Raster pixels are already in per-acre output units (merch in bf/ac,
+    non-merch in cuft/ac), so values are summed directly here with no area
+    conversion. The per-acre sums are converted to totals downstream in
+    `_biomass_volumes_to_output()`.
     """
     empty: Dict[str, float] = {}
     for name in _BIOMASS_WOOD_TYPES.values():
@@ -785,10 +949,16 @@ def _extract_raw_biomass_volumes(
 
 
 def _biomass_volumes_to_output(raw: Dict[str, float]) -> Dict[str, float]:
+    """
+    Converts raw per-acre pixel sums into totals by multiplying by the
+    per-pixel acreage, and maps them to their output field names.
+    """
     result: Dict[str, float] = {}
     for wt_name in _BIOMASS_WOOD_TYPES.values():
-        result[f"merchantable_{wt_name}_bf_ac"] = raw.get(f"merch_{wt_name}_bf_ac", 0.0)
-        result[f"non_merchantable_{wt_name}_cuft_ac"] = raw.get(f"nm_{wt_name}_cuft_ac", 0.0)
+        merch_bf_ac = raw.get(f"merch_{wt_name}_bf_ac", 0.0)
+        nm_cuft_ac = raw.get(f"nm_{wt_name}_cuft_ac", 0.0)
+        result[f"merchantable_{wt_name}_bf"] = merch_bf_ac * _BIOMASS_PIXEL_AREA_ACRES
+        result[f"non_merchantable_{wt_name}_cuft"] = nm_cuft_ac * _BIOMASS_PIXEL_AREA_ACRES
     return result
 
 

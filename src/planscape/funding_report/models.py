@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 from core.models import CreatedAtMixin, UpdatedAtMixin
 from django.contrib.auth.models import User
@@ -20,6 +20,14 @@ FUNDING_REPORT_YEARS = (2026, 2031, 2036, 2041, 2046)
 
 FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT = 7.0
 FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT = 4.0
+
+# (from_ft, to_ft) intervals calculated and stored for every funding report run.
+FLAME_LENGTH_REDUCTION_INTERVALS: Tuple[Tuple[float, float], ...] = (
+    (7.0, 4.0),
+    (6.0, 4.0),
+    (4.0, 2.0),
+)
+
 AET_IMPROVEMENT_DEFAULT_PERCENTAGE = 25.0
 
 
@@ -42,6 +50,7 @@ FUNDING_REPORT_DATALAYER_NAME_REGEX = re.compile(
 
 TREATMENT_VARIABLE = "TREATMENT"
 TREATMENT_ROLE = "treatment"
+TREATMENT_CLIP_ROLE = "treatment_clip"
 
 BIOMASS_VARIABLE = "BIOMASS"
 
@@ -54,6 +63,44 @@ class BiomassRole(models.TextChoices):
     MERCHANTABLE = "merchantable", "Merchantable"
     NON_MERCHANTABLE = "non_merchantable", "Non-Merchantable"
     WOOD_TYPE = "wood_type", "Wood Type"
+
+
+class FundingReportLayerKey(models.TextChoices):
+    BASELINE_ABOVEGROUND_CARBON_2026 = (
+        "baseline_aboveground_carbon_2026",
+        "Baseline Aboveground Carbon 2026",
+    )
+    BASELINE_SMOKE_PRODUCTION_2026 = (
+        "baseline_smoke_production_2026",
+        "Baseline Smoke Production 2026",
+    )
+    BASELINE_FLAME_LENGTH_2026 = (
+        "baseline_flame_length_2026",
+        "Baseline Flame Length 2026",
+    )
+    AET_BASELINE = "aet_baseline", "AET Baseline"
+    AET_TARGET = "aet_target", "AET Target"
+    MILLS_AND_OTHER_BIOMASS_FACILITIES = (
+        "mills_and_other_biomass_facilities",
+        "Mills & Other Biomass Facilities",
+    )
+
+
+class FundingReportLayerCategory(models.TextChoices):
+    CARBON = "carbon", "Carbon"
+    WATER = "water", "Water"
+    BIOMASS = "biomass", "Biomass"
+    WILDFIRE_RISK_REDUCTION = "wildfire_risk_reduction", "Wildfire Risk Reduction"
+
+
+FUNDING_REPORT_LAYER_CATEGORIES: Dict[FundingReportLayerKey, FundingReportLayerCategory] = {
+    FundingReportLayerKey.BASELINE_ABOVEGROUND_CARBON_2026: FundingReportLayerCategory.CARBON,
+    FundingReportLayerKey.BASELINE_SMOKE_PRODUCTION_2026: FundingReportLayerCategory.CARBON,
+    FundingReportLayerKey.BASELINE_FLAME_LENGTH_2026: FundingReportLayerCategory.WILDFIRE_RISK_REDUCTION,
+    FundingReportLayerKey.AET_BASELINE: FundingReportLayerCategory.WATER,
+    FundingReportLayerKey.AET_TARGET: FundingReportLayerCategory.WATER,
+    FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES: FundingReportLayerCategory.BIOMASS,
+}
 
 # Label for pixels that are nodata in the treatments raster.
 TREATMENT_NO_TREATMENT_LABEL = "No Treatment"
