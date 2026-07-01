@@ -3,6 +3,7 @@ from unittest import mock
 from django.core.cache import cache
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from planscape.tests.factories import UserFactory
 
 from core.backup_state import (
     BACKUP_STATE_FAILED,
@@ -21,8 +22,6 @@ from core.backup_state import (
     set_restore_status,
 )
 from core.tasks import generate_backup_data_task, load_latest_catalog_backup_task
-from planscape.tests.factories import UserFactory
-
 
 TEST_CACHES = {
     "default": {
@@ -42,6 +41,7 @@ class TestAdminBackupTrigger(TestCase):
         self.trigger_url = reverse("admin:trigger_backup_data")
         self.restore_url = reverse("admin:trigger_restore_data")
 
+    @override_settings(ENV="staging")
     def test_index_shows_enabled_button_when_backup_not_running(self):
         self.client.force_login(self.superuser)
 
@@ -49,17 +49,20 @@ class TestAdminBackupTrigger(TestCase):
 
         self.assertContains(response, "Run backup")
         self.assertNotContains(response, "Backup in progress")
-        self.assertContains(response, "Restore from latest catalog")
+        self.assertContains(response, "Restore from prod")
+        self.assertNotContains(response, "Restore from latest catalog")
         self.assertNotContains(response, "Restore in progress")
 
-    @override_settings(ENV="catalog")
-    def test_index_hides_restore_box_in_catalog_environment(self):
+    @override_settings(ENV="production")
+    def test_index_hides_restore_box_in_production_environment(self):
         self.client.force_login(self.superuser)
 
         response = self.client.get(self.index_url)
 
         self.assertContains(response, "Run backup")
+        self.assertNotContains(response, "Restore from prod")
         self.assertNotContains(response, "Restore from latest catalog")
+        self.assertNotContains(response, "Restore in progress")
 
     def test_index_shows_disabled_button_when_backup_running(self):
         self.client.force_login(self.superuser)
@@ -111,6 +114,7 @@ class TestAdminBackupTrigger(TestCase):
         delay_mock.assert_not_called()
         self.assertContains(response, "A backup is already queued or running.")
 
+    @override_settings(ENV="staging")
     def test_index_shows_disabled_restore_button_when_restore_running(self):
         self.client.force_login(self.superuser)
         acquire_restore_lock()
