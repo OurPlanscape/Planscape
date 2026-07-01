@@ -23,13 +23,10 @@
     [title]="tooltipName"
     width="small"
     [hasSecondaryButton]="false"
-    [hasLinkButton]="true"
     primaryButtonText="Learn Mode"
-    linkButtonText="Download Dataset"
-    linkButtonIcon="download"
     (clickedClose)="close()"
     (clickedPrimary)="close()">
-    <div modalBodyContent>Tooltip for: {{ tooltipName }}<br /></div>
+    <div modalBodyContent [innerHTML]="currentTooltipCopy"></div>
   </sg-modal>
 </ng-template>
 
