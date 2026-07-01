@@ -1,6 +1,28 @@
 <h5>{{ heading }}</h5>
-<mat-radio-group (change)="selectedLayer.emit($event.value)">
-  <mat-radio-button *ngFor="let layer of layers" [value]="layer">
+
+<div *ngIf="multiSelect; else singleSelect" class="checkbox-list">
+  <mat-checkbox
+    *ngFor="let layer of layers"
+    [checked]="isChecked(layer)"
+    class="layer-checkbox"
+    (change)="selectedLayer.emit(layer)">
     {{ layer.name }}
-  </mat-radio-button>
-</mat-radio-group>
+    <span
+      class="base-layer-legend"
+      *ngIf="isChecked(layer)"
+      [style.backgroundColor]="layer.color || BASE_LAYERS_DEFAULT.COLOR"
+      [style.border-color]="
+        layer.outlineColor || BASE_LAYERS_DEFAULT.COLOR
+      "></span>
+  </mat-checkbox>
+</div>
+
+<ng-template #singleSelect>
+  <mat-radio-group
+    [value]="selected"
+    (change)="selectedLayer.emit($event.value)">
+    <mat-radio-button *ngFor="let layer of layers" [value]="layer">
+      {{ layer.name }}
+    </mat-radio-button>
+  </mat-radio-group>
+</ng-template>

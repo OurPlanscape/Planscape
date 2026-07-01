@@ -59,7 +59,8 @@
     <div class="summary-card" *ngIf="!isPreview">
       <app-funding-map-layers
         heading="Map Layers (no treatment)"
-        [layers]="mapLayers"
+        [layers]="sectionLayers['carbon']"
+        [selectedLayerId]="viewedLayerId$ | async"
         (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
     </div>
 
@@ -100,7 +101,8 @@
     <div class="summary-card" *ngIf="!isPreview">
       <app-funding-map-layers
         heading="Map Layers (no treatment)"
-        [layers]="mapLayers"
+        [layers]="sectionLayers['wildfire']"
+        [selectedLayerId]="viewedLayerId$ | async"
         (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
     </div>
     <div>
@@ -170,7 +172,8 @@
     <div class="summary-card" *ngIf="!isPreview">
       <app-funding-map-layers
         heading="Map Layers"
-        [layers]="mapLayers"
+        [layers]="sectionLayers['water']"
+        [selectedLayerId]="viewedLayerId$ | async"
         (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
     </div>
     <div class="summary-card" *ngIf="!isPreview">
@@ -227,6 +230,14 @@
     (tooltipClicked)="tooltipName = 'Biomass'"
     [isCollapsible]="true"
     [defaultExpanded]="true">
+    <div class="summary-card" *ngIf="!isPreview">
+      <app-funding-map-layers
+        heading="Map Layers"
+        [multiSelect]="true"
+        [layers]="sectionLayers['biomass']"
+        [selectedLayerIds]="(selectedBaseLayerIds$ | async) ?? []"
+        (selectedLayer)="onBaseLayerToggled($event)"></app-funding-map-layers>
+    </div>
     <div *ngIf="biomass; else noData">
       <p class="biomass-intro">
         The table shows estimated available biomass with no treatment.
