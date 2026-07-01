@@ -117,6 +117,7 @@ def cog(
         web_optimized=True,
         overview_level=overview_level,
         overview_resampling="nearest",
+        use_cog_driver=True,
         **options,
     )
 
@@ -218,6 +219,7 @@ def to_cog_streaming(
         web_optimized=True,
         overview_level=overview_level,
         overview_resampling="nearest",
+        use_cog_driver=True,
     )
 
     log.info(f"COG conversion complete: {output_file}")
