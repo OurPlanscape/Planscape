@@ -294,4 +294,6 @@
 </ng-template>
 
 <app-funding-report-footer
-  [footerType]="reportType"></app-funding-report-footer>
+  [footerType]="reportType"
+  [generatingPdf]="generatingPdf"
+  (downloadPdf)="exportPdf()"></app-funding-report-footer>
