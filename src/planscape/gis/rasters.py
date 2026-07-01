@@ -105,7 +105,7 @@ def cog(
 
     # Dataset Open option (see gdalwarp `-oo` option)
     config = get_gdal_env()
-    overview_level = options.pop("overview_level", 4) or 4
+    overview_level = options.pop("overview_level", None)
 
     cog_translate(
         input_file,
@@ -116,6 +116,7 @@ def cog(
         quiet=True,
         web_optimized=True,
         overview_level=overview_level,
+        overview_resampling="nearest",
         **options,
     )
 
@@ -169,7 +170,7 @@ def to_cog_streaming(
     input_file: str,
     output_file: str,
     cog_profile: str = "deflate",
-    overview_level: int = 4,
+    overview_level: Optional[int] = None,
     in_memory: bool = False,
 ) -> str:
     """
@@ -182,7 +183,7 @@ def to_cog_streaming(
         input_file: Path to input raster file (local or cloud URL)
         output_file: Path for output COG file (local or cloud URL)
         cog_profile: COG profile to use (default: "deflate")
-        overview_level: Pyramid overview level (default: 4)
+        overview_level: Pyramid overview level (default: None, auto-computed by rio-cogeo based on raster size)
         in_memory: Process in memory (default: False) - useful for small rasters
 
     Returns:
@@ -216,6 +217,7 @@ def to_cog_streaming(
         quiet=True,
         web_optimized=True,
         overview_level=overview_level,
+        overview_resampling="nearest",
     )
 
     log.info(f"COG conversion complete: {output_file}")

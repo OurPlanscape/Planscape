@@ -382,17 +382,20 @@ class Command(PlanscapeCommand):
         upload_to_url = upload_to.get("url")
         upload_url_path = Path(datalayer.get("url"))
         object_name = "/".join(upload_url_path.parts[2:])
+        content_type = datalayer.get("mimetype")
         if "s3.amazonaws.com" in upload_to_url:
             return upload_to_s3(
                 object_name=object_name,
                 input_file=input_files[0],
                 upload_to=upload_to,
+                content_type=content_type,
             )
         elif "storage.googleapis.com" in upload_to_url:
             return upload_to_gcs(
                 object_name=object_name,
                 input_file=input_files[0],
                 url=upload_to_url,
+                content_type=content_type,
             )
 
     def _apply_style_request(

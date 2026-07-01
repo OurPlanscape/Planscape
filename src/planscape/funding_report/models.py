@@ -136,7 +136,10 @@ def get_funding_report_metadata(input_file: str) -> Dict[str, Any]:
                 "baseline": match.group("kind").lower() == "baseline",
                 "variable": metric.value,
                 "year": year,
-            }
+            },
+            "map": {
+                "enabled": True,
+            },
         }
     }
 
