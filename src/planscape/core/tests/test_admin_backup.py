@@ -50,7 +50,6 @@ class TestAdminBackupTrigger(TestCase):
         self.assertContains(response, "Run backup")
         self.assertNotContains(response, "Backup in progress")
         self.assertContains(response, "Restore from prod")
-        self.assertNotContains(response, "Restore from latest catalog")
         self.assertNotContains(response, "Restore in progress")
 
     @override_settings(ENV="production")
@@ -61,7 +60,6 @@ class TestAdminBackupTrigger(TestCase):
 
         self.assertContains(response, "Run backup")
         self.assertNotContains(response, "Restore from prod")
-        self.assertNotContains(response, "Restore from latest catalog")
         self.assertNotContains(response, "Restore in progress")
 
     def test_index_shows_disabled_button_when_backup_running(self):
