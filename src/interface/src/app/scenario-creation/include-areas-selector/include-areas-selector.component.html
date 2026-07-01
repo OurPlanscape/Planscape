@@ -10,13 +10,14 @@
   </div>
   <section>
     <form [formGroup]="form">
-      <div
-        class="ng-invalid error-message"
-        *ngIf="
-          form.controls.includedAreas.invalid &&
-          form.controls.includedAreas.touched
-        ">
-        Please select an area to include to continue.
+      <div class="ng-invalid error-message">
+        <span
+          *ngIf="
+            form.controls.includedAreas.invalid &&
+            form.controls.includedAreas.touched
+          ">
+          Please select an area to include to continue.
+        </span>
       </div>
       <sg-selectable-list
         colorPath="styles[0].data.fill-color"
