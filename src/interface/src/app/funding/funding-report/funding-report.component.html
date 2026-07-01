@@ -40,7 +40,9 @@
   <section id="map" class="report-section" *ngIf="isPreview">
     <div class="map-container">
       <app-funding-report-map
-        [allowInteraction]="false"></app-funding-report-map>
+        *ngIf="report?.treatment_datalayer as treatmentDataLayerId"
+        [allowInteraction]="false"
+        [treatmentDataLayerId]="treatmentDataLayerId"></app-funding-report-map>
     </div>
   </section>
 
@@ -57,7 +59,8 @@
     <div class="summary-card" *ngIf="!isPreview">
       <app-funding-map-layers
         heading="Map Layers (no treatment)"
-        [layers]="mapLayers"
+        [layers]="sectionLayers['carbon']"
+        [selectedLayerId]="viewedLayerId$ | async"
         (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
     </div>
 
@@ -98,7 +101,8 @@
     <div class="summary-card" *ngIf="!isPreview">
       <app-funding-map-layers
         heading="Map Layers (no treatment)"
-        [layers]="mapLayers"
+        [layers]="sectionLayers['wildfire']"
+        [selectedLayerId]="viewedLayerId$ | async"
         (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
     </div>
     <div>
@@ -111,65 +115,23 @@
           (opened)="tooltipName = 'Flame Length'"></sg-popover>
       </h5>
       <div class="summary-card" *ngIf="!isPreview">
-        (%) Percentage of area with flame length reduced from:
-        <div class="summary-flex" [formGroup]="flameLengthForm">
-          <sg-input-field
-            label="Greater than (>)"
-            suffix="feet"
-            showSupportMessage="on-error"
-            [supportMessage]="
-              flameLengthForm.controls.greaterThan.invalid
-                ? 'Field is required'
-                : ''
-            "
-            [error]="
-              flameLengthForm.controls.greaterThan.invalid ||
-              flameLengthForm.hasError('range')
-            ">
-            <input
-              sgInput
-              type="text"
-              inputmode="numeric"
-              required
-              formControlName="greaterThan"
-              (input)="onFlameLengthInput($event, 'greaterThan')" />
-          </sg-input-field>
-          <div class="summary-to">to</div>
-
-          <sg-input-field
-            label="Lesser than (<)"
-            suffix="feet"
-            showSupportMessage="on-error"
-            [supportMessage]="
-              flameLengthForm.controls.lesserThan.invalid
-                ? 'Field is required'
-                : ''
-            "
-            [error]="
-              flameLengthForm.controls.lesserThan.invalid ||
-              flameLengthForm.hasError('range')
-            ">
-            <input
-              sgInput
-              type="text"
-              inputmode="numeric"
-              required
-              formControlName="lesserThan"
-              (input)="onFlameLengthInput($event, 'lesserThan')" />
-          </sg-input-field>
-
-          <button
-            sg-button
-            type="button"
-            class="flame-length-button"
-            [disabled]="flameLengthForm.invalid"
-            (click)="emitFlameLength()">
-            Apply
-          </button>
-        </div>
-        <div class="field-error" *ngIf="flameLengthForm.hasError('range')">
-          Greater than must exceed lesser than
-        </div>
+        <label class="flame-length-label" for="flame-length-interval">
+          (%) Percentage of area with flame length reduced from
+        </label>
+        <mat-form-field
+          appearance="outline"
+          subscriptSizing="dynamic"
+          class="flame-length-select">
+          <mat-select
+            id="flame-length-interval"
+            [formControl]="flameLengthInterval">
+            <mat-option
+              *ngFor="let option of flameLengthOptions"
+              [value]="option.value">
+              {{ option.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
       </div>
       <p class="chart-subtitle" *ngIf="isPreview && flameLengthHasData">
         (%) Percentage Change After Treatment
@@ -181,9 +143,6 @@
           [data]="flameLengthChart.data"
           [options]="flameLengthChart.options"
           type="bar"></sg-chart>
-        <div class="chart-loader" *ngIf="updatingFlameLength">
-          <mat-spinner diameter="36"></mat-spinner>
-        </div>
       </div>
     </div>
     <div class="top-section-divider">
@@ -213,7 +172,8 @@
     <div class="summary-card" *ngIf="!isPreview">
       <app-funding-map-layers
         heading="Map Layers"
-        [layers]="mapLayers"
+        [layers]="sectionLayers['water']"
+        [selectedLayerId]="viewedLayerId$ | async"
         (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
     </div>
     <div class="summary-card" *ngIf="!isPreview">
@@ -270,6 +230,14 @@
     (tooltipClicked)="tooltipName = 'Biomass'"
     [isCollapsible]="true"
     [defaultExpanded]="true">
+    <div class="summary-card" *ngIf="!isPreview">
+      <app-funding-map-layers
+        heading="Map Layers"
+        [multiSelect]="true"
+        [layers]="sectionLayers['biomass']"
+        [selectedLayerIds]="(selectedBaseLayerIds$ | async) ?? []"
+        (selectedLayer)="onBaseLayerToggled($event)"></app-funding-map-layers>
+    </div>
     <div *ngIf="biomass; else noData">
       <p class="biomass-intro">
         The table shows estimated available biomass with no treatment.
@@ -285,21 +253,21 @@
         </thead>
         <tbody>
           <tr>
-            <th scope="row">Merchantable Volume (bf/ac)</th>
-            <td>{{ biomass.merchantable_hardwood_bf_ac | number: '1.0-1' }}</td>
-            <td>{{ biomass.merchantable_softwood_bf_ac | number: '1.0-1' }}</td>
-            <td>{{ biomass.merchantable_mixed_bf_ac | number: '1.0-1' }}</td>
+            <th scope="row">Merchantable Volume (bf)</th>
+            <td>{{ biomass.merchantable_hardwood_bf | number: '1.0-1' }}</td>
+            <td>{{ biomass.merchantable_softwood_bf | number: '1.0-1' }}</td>
+            <td>{{ biomass.merchantable_mixed_bf | number: '1.0-1' }}</td>
           </tr>
           <tr>
-            <th scope="row">Non-Merchantable Volume (ft³/ac)</th>
+            <th scope="row">Non-Merchantable Volume (ft³)</th>
             <td>
-              {{ biomass.non_merchantable_hardwood_cuft_ac | number: '1.0-1' }}
+              {{ biomass.non_merchantable_hardwood_cuft | number: '1.0-1' }}
             </td>
             <td>
-              {{ biomass.non_merchantable_softwood_cuft_ac | number: '1.0-1' }}
+              {{ biomass.non_merchantable_softwood_cuft | number: '1.0-1' }}
             </td>
             <td>
-              {{ biomass.non_merchantable_mixed_cuft_ac | number: '1.0-1' }}
+              {{ biomass.non_merchantable_mixed_cuft | number: '1.0-1' }}
             </td>
           </tr>
         </tbody>

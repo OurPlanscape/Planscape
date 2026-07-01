@@ -10,14 +10,11 @@ import { ScenarioState } from '@scenario/scenario.state';
 import { MOCK_SCENARIO } from '@app/services/mocks';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { FundingMapConfigState } from '../funding-map-config-state';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { FundingReportService } from '@services/funding-report.service';
-import {
-  FlameLengthReductionResponse,
-  FundingReport,
-  FundingReportAETSummary,
-} from '@types';
+import { FundingReport, FundingReportAETSummary } from '@types';
 
 describe('FullReportViewComponent', () => {
   let component: FullReportViewComponent;
@@ -35,6 +32,10 @@ describe('FullReportViewComponent', () => {
         MockProvider(DataLayersStateService, {
           dataTree$: of(null),
           paths$: of([]),
+          viewedDataLayer$: of(null),
+        }),
+        MockProvider(BaseLayersStateService, {
+          selectedBaseLayers$: of([]),
         }),
         MockProvider(FundingMapConfigState, { selectedProjectAreas$: of([]) }),
         MockProvider(MapConfigState),
@@ -71,11 +72,14 @@ describe('FullReportViewComponent recalculations', () => {
     updated_at: '2026-01-01T00:00:00Z',
     id: 1,
     scenario: 123,
+    treatment_datalayer: null,
     results: {
       summary: {
         POTENTIAL_SMOKE: [{ year: 0, value: 1, baseline: 1, delta: 0 }],
         ABOVEGROUND_TOTAL: [{ year: 0, value: 1, baseline: 1, delta: 0 }],
-        TOTAL_FLAME_SEVERITY: [{ year: 0, value: 1, baseline: 1, delta: 0 }],
+        TOTAL_FLAME_SEVERITY: {
+          '7_4': [{ year: 0, value: 1, baseline: 1, delta: 0 }],
+        },
         AET: {
           percentage: 10,
           improved_acres: 5,
@@ -86,19 +90,20 @@ describe('FullReportViewComponent recalculations', () => {
       projects: {
         POTENTIAL_SMOKE: [],
         ABOVEGROUND_TOTAL: [],
-        TOTAL_FLAME_SEVERITY: [
-          { project_id: 1, year: 0, value: 1, baseline: 1, delta: 0 },
-        ],
+        TOTAL_FLAME_SEVERITY: {
+          '7_4': [
+            {
+              project_id: 1,
+              proj_id: 1,
+              year: 0,
+              value: 1,
+              baseline: 1,
+              delta: 0,
+            },
+          ],
+        },
       },
     },
-  };
-
-  const flameResponse: FlameLengthReductionResponse = {
-    interval: { from: 4, to: 7 },
-    summary: [{ year: 0, value: 2, baseline: 1, delta: 100 }],
-    projects: [
-      { project_id: 1, proj_id: 1, year: 0, value: 2, baseline: 1, delta: 100 },
-    ],
   };
 
   const waterResponse: FundingReportAETSummary = {
@@ -122,6 +127,10 @@ describe('FullReportViewComponent recalculations', () => {
         MockProvider(DataLayersStateService, {
           dataTree$: of(null),
           paths$: of([]),
+          viewedDataLayer$: of(null),
+        }),
+        MockProvider(BaseLayersStateService, {
+          selectedBaseLayers$: of([]),
         }),
         MockProvider(FundingMapConfigState, {
           selectedProjectAreas$: of([]),
@@ -135,7 +144,6 @@ describe('FullReportViewComponent recalculations', () => {
         }),
         MockProvider(FundingReportService, {
           getReport: () => of(baseReport),
-          getFlameLengthReduction: () => of(flameResponse),
           getWaterAvailability: () => of(waterResponse),
         }),
         { provide: ActivatedRoute, useValue: { firstChild: {} } },
@@ -154,33 +162,13 @@ describe('FullReportViewComponent recalculations', () => {
   /**
    * Subscribes to `report$` and returns a getter for its latest value. The
    * subscription stays open, so the returned getter reflects re-emissions
-   * triggered by `updateFlameLength` / `updateWaterAvailability` (all
-   * synchronous with the mocked deps).
+   * triggered by `updateWaterAvailability` (synchronous with the mocked deps).
    */
   function trackReport(): () => FundingReport {
     let report!: FundingReport;
     component.report$.subscribe((r) => (report = r as FundingReport));
     return () => report;
   }
-
-  it('patches TOTAL_FLAME_SEVERITY summary and projects on a flame-length recalculation', () => {
-    const report = trackReport();
-    component.updateFlameLength({ from_ft: 7, to_ft: 4 });
-
-    expect(report().results?.summary.TOTAL_FLAME_SEVERITY).toEqual(
-      flameResponse.summary
-    );
-    expect(report().results?.projects.TOTAL_FLAME_SEVERITY).toEqual(
-      flameResponse.projects
-    );
-    // Other metrics and the water summary are left untouched.
-    expect(report().results?.summary.POTENTIAL_SMOKE).toEqual(
-      baseReport.results!.summary.POTENTIAL_SMOKE
-    );
-    expect(report().results?.summary.AET).toEqual(
-      baseReport.results!.summary.AET
-    );
-  });
 
   it('patches only summary.AET on a water recalculation, never the projects', () => {
     const report = trackReport();
@@ -190,23 +178,9 @@ describe('FullReportViewComponent recalculations', () => {
     // Water never touches the per-project breakdown.
     expect(report().results?.projects).toEqual(baseReport.results!.projects);
     expect('AET' in report().results!.projects).toBeFalse();
-    // Time-series metrics are left untouched.
+    // Pre-calculated flame length data is left untouched.
     expect(report().results?.summary.TOTAL_FLAME_SEVERITY).toEqual(
       baseReport.results!.summary.TOTAL_FLAME_SEVERITY
     );
-  });
-
-  it('applies flame-length and water recalculations independently', () => {
-    const report = trackReport();
-    component.updateFlameLength({ from_ft: 7, to_ft: 4 });
-    component.updateWaterAvailability(25);
-
-    expect(report().results?.summary.TOTAL_FLAME_SEVERITY).toEqual(
-      flameResponse.summary
-    );
-    expect(report().results?.projects.TOTAL_FLAME_SEVERITY).toEqual(
-      flameResponse.projects
-    );
-    expect(report().results?.summary.AET).toEqual(waterResponse);
   });
 });

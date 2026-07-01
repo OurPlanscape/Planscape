@@ -1492,13 +1492,17 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
         stand_inputs = export_scenario_inputs_to_geopackage(scenario, temp_file)
 
         if scenario.result_status == ScenarioResultStatus.SUCCESS:
+            export_scenario_project_areas_outputs_to_geopackage(
+                scenario, temp_file, stand_inputs
+            )
+
             if (
                 scenario.planning_approach
                 == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
             ):
-                export_scenario_sub_units_outputs_to_geopackage(scenario, temp_file, stand_inputs)
-            else:
-                export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file, stand_inputs)
+                export_scenario_sub_units_outputs_to_geopackage(
+                    scenario, temp_file, stand_inputs
+                )
 
             export_scenario_stand_outputs_to_geopackage(
                 scenario, temp_file, stand_inputs
@@ -1695,7 +1699,7 @@ def get_available_stands(
         constraints = list()
     planning_area = scenario.planning_area
     area_transform = Area(Transform("geometry", settings.AREA_SRID))
-    if feature_enabled("ADD_INCLUDES"):
+    if feature_enabled("ADD_INCLUDES") and scenario.treatable_area is not None:
         stands = scenario.get_treatable_area_stands(stand_size=stand_size)
     else:
         stands = planning_area.get_stands(stand_size)

@@ -753,7 +753,10 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         )
 
         if not treatable_area or treatable_area.area == 0:
-            raise serializers.ValidationError("Selected included_areas does not generates any valid geometry.")
+            raise serializers.ValidationError(
+                "There are no stands with the selected ownership in your planning area.  "
+                "Please 'View' ownership options to see what area is available in your planning area."
+            )
         
         return included_areas
 

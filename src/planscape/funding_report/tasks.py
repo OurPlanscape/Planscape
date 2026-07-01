@@ -7,6 +7,9 @@ from django.utils import timezone
 from datasets.models import DataLayer
 from funding_report.models import (
     AET_IMPROVEMENT_DEFAULT_PERCENTAGE,
+    FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
+    FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
+    FLAME_LENGTH_REDUCTION_INTERVALS,
     FUNDING_REPORT_YEARS,
     FundingOpportunityReport,
     FundingOpportunityReportStatus,
@@ -14,6 +17,7 @@ from funding_report.models import (
 )
 from funding_report.services import (
     build_datalayer_lookup,
+    build_flame_length_reduction_results,
     build_funding_report_results,
     calculate_aet_improvement,
     calculate_biomass_volumes,
@@ -47,6 +51,8 @@ def async_calculate_funding_report_delta(
     value_layer_id: int,
     year: int,
     metric: str,
+    from_ft: float = FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
+    to_ft: float = FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
 ) -> dict | None:
     try:
         project_area = ProjectArea.objects.get(pk=project_area_id)
@@ -67,6 +73,8 @@ def async_calculate_funding_report_delta(
             metric=metric,
             year=year,
             datalayer_lookup=datalayer_lookup,
+            from_ft=from_ft,
+            to_ft=to_ft,
         )
     except Exception as exc:
         log.exception(
@@ -202,7 +210,14 @@ def async_finalize_funding_report_results(
             case _:
                 successes.append(result)
 
-    results = build_funding_report_results(successes)
+    flame_successes = [r for r in successes if "interval" in r]
+    non_flame_successes = [r for r in successes if "interval" not in r]
+
+    results = build_funding_report_results(non_flame_successes)
+    flame_results = build_flame_length_reduction_results(flame_successes)
+    if flame_results["summary"] or flame_results["projects"]:
+        results["summary"]["TOTAL_FLAME_SEVERITY"] = flame_results["summary"]
+        results["projects"]["TOTAL_FLAME_SEVERITY"] = flame_results["projects"]
     if aet_improvement is not None:
         results["summary"]["AET"] = {
             "percentage": aet_improvement["percentage"],
@@ -283,16 +298,29 @@ def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
                         "Missing funding report datalayer for variable="
                         f"{metric.value!r}, year={year}."
                     )
-                tasks.extend(
-                    async_calculate_funding_report_delta.si(
-                        project_area_id=project_area_id,
-                        baseline_layer_id=baseline_layer.pk,
-                        value_layer_id=value_layer.pk,
-                        year=year,
-                        metric=metric.value,
+                intervals = (
+                    FLAME_LENGTH_REDUCTION_INTERVALS
+                    if metric == FundingReportMetric.TOTAL_FLAME_SEVERITY
+                    else (
+                        (
+                            FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
+                            FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
+                        ),
                     )
-                    for project_area_id in project_area_ids
                 )
+                for from_ft, to_ft in intervals:
+                    tasks.extend(
+                        async_calculate_funding_report_delta.si(
+                            project_area_id=project_area_id,
+                            baseline_layer_id=baseline_layer.pk,
+                            value_layer_id=value_layer.pk,
+                            year=year,
+                            metric=metric.value,
+                            from_ft=from_ft,
+                            to_ft=to_ft,
+                        )
+                        for project_area_id in project_area_ids
+                    )
         tasks.append(
             async_generate_treatment_datalayer.si(
                 funding_opportunity_report_id=funding_opportunity_report_id,

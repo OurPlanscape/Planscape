@@ -4,6 +4,7 @@ import { catchError, Observable } from 'rxjs';
 import {
   AvailableStands,
   Constraint,
+  ProjectArea,
   Scenario,
   SCENARIO_TYPE,
   ScenarioV3Payload,
@@ -96,11 +97,24 @@ export class ScenarioService {
       })
       .pipe(
         catchError((error) => {
+          // Configuration errors
+          if (error.error.errors?.configuration) {
+            throw new CreateScenarioError('', {
+              configurationError: true,
+              errorMessages: error.error.errors.configuration,
+            });
+          }
+
+          // Global errors
           const message =
-            error.error.errors?.global?.[0] || 'Failed to save configuration';
-          throw new CreateScenarioError(
-            'Scenario Config is invalid. ' + message
-          );
+            error.error.errors?.global?.[0] ?? 'Failed to save configuration';
+
+          throw new CreateScenarioError(message, {
+            configurationError: false,
+            errorMessages: {
+              global: [message],
+            },
+          });
         })
       );
   }
@@ -146,12 +160,23 @@ export class ScenarioService {
     );
   }
 
+  getProjectAreas(scenarioId: number) {
+    return this.http.get<ProjectArea[]>(
+      environment.backend_endpoint +
+        `/v2/scenarios/${scenarioId}/project-areas/`,
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
   getExcludedStands(
     scenarioId: number,
     stand_size: string,
     excludes?: number[],
     constraints?: Constraint[],
-    subUnitsLayer?: number
+    subUnitsLayer?: number,
+    includes?: number[]
   ) {
     const url =
       environment.backend_endpoint +
@@ -163,6 +188,7 @@ export class ScenarioService {
         excludes,
         constraints,
         sub_unit: subUnitsLayer,
+        includes,
       },
       {
         withCredentials: true,
