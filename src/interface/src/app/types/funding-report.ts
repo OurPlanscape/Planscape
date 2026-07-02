@@ -100,6 +100,11 @@ export interface FundingReportResults {
     TOTAL_FLAME_SEVERITY?: FlameLengthIntervalProjects;
     BIOMASS_VOLUMES?: FundingReportBiomassVolumesProject[];
   };
+
+  treatment_areas?: {
+    total: Record<string, Record<string, number>>;
+    projects: Record<string, Record<string, number>>;
+  };
 }
 
 // TODO full interface

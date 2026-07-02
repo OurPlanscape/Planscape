@@ -353,7 +353,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
 
     const results = this.report?.results;
     this.biomass = results
-      ? aggregateBiomassVolumes(results, this.projectAreas, this.origin)
+      ? aggregateBiomassVolumes(results, this.projectAreas)
       : undefined;
   }
 
@@ -367,12 +367,9 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     const interval = this.flameLengthInterval.value;
     // delta can be null when an interval had no valid pixels; treat it as 0.
     const deltas = results
-      ? aggregateFlameLengthSummary(
-          results,
-          interval,
-          this.projectAreas,
-          this.origin
-        ).map((point) => point.delta ?? 0)
+      ? aggregateFlameLengthSummary(results, interval, this.projectAreas).map(
+          (point) => point.delta ?? 0
+        )
       : [];
     this.flameLengthChart = {
       data: buildPercentageBarData(this.labels, deltas, 'orange'),
@@ -382,17 +379,13 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
       )!,
     };
     this.flameLengthHasData =
-      !!results &&
-      hasFlameLengthData(results, interval, this.projectAreas, this.origin);
+      !!results && hasFlameLengthData(results, interval, this.projectAreas);
   }
 
   /** True when the metric has any non-null data over the current selection. */
   private metricHasData(metric: FundingReportTimeSeriesMetric): boolean {
     const results = this.report?.results;
-    return (
-      !!results &&
-      hasMetricData(results, metric, this.projectAreas, this.origin)
-    );
+    return !!results && hasMetricData(results, metric, this.projectAreas);
   }
 
   /** Build a bar chart from a report metric: one bar per year, value = % delta. */
@@ -417,12 +410,9 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
       return [];
     }
     // delta can be null when a metric had no valid pixels; treat it as 0.
-    return aggregateMetricSummary(
-      results,
-      metric,
-      this.projectAreas,
-      this.origin
-    ).map((point) => point.delta ?? 0);
+    return aggregateMetricSummary(results, metric, this.projectAreas).map(
+      (point) => point.delta ?? 0
+    );
   }
 
   onLayerSelected(layer: MapLayer): void {
