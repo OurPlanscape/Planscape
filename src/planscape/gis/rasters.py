@@ -24,7 +24,7 @@ from shapely.geometry import mapping, shape
 from shapely.geometry.base import BaseGeometry
 
 from gis.core import get_layer_info, get_random_output_file, with_vsi_prefix
-from gis.info import get_gdal_env
+from gis.info import get_gdal_env, resolve_num_threads
 from gis.quadtree import build_raster_tree, union_data_area
 
 log = logging.getLogger(__name__)
@@ -40,6 +40,7 @@ def get_profile(
     blockxsize: int = 512,
     blockysize: int = 512,
     compress: str = "DEFLATE",
+    nodata: Optional[Number] = None,
 ) -> Dict[str, Any]:
     return {
         **input_profile,
@@ -52,6 +53,7 @@ def get_profile(
         "width": width,
         "height": height,
         "bigtiff": "IF_SAFER",
+        "nodata": nodata,
     }
 
 
@@ -76,8 +78,12 @@ def to_planscape(input_file: str) -> List[str]:
         log.info("Raster DataLayer already has EPSG:3857 projection.")
         warped_raster = input_file
 
+    # strict=True treats warnings (e.g. missing overviews) as failures;
+    # without it the tiled GTiff produced by warp() passes validation and
+    # gets uploaded without overviews.
     is_valid, _errors, warnings = cog_validate(
-        src_path=input_file,
+        src_path=warped_raster,
+        strict=True,
         quiet=True,
     )
     if not is_valid:
@@ -85,7 +91,7 @@ def to_planscape(input_file: str) -> List[str]:
         cog_raster = cog(input_file=warped_raster, output_file=cog_output)
     else:
         log.info(f"Raster DataLayer already is a COG. possible warnings: {warnings}")
-        cog_raster = input_file
+        cog_raster = warped_raster
 
     return [cog_raster, warped_raster]
 
@@ -114,7 +120,10 @@ def cog(
         config=config,
         in_memory=False,
         quiet=True,
-        web_optimized=True,
+        # web_optimized re-grids the raster onto the GoogleMapsCompatible tile
+        # scheme, resampling every pixel; we only want a valid COG in the CRS
+        # produced by warp(), with values untouched.
+        web_optimized=False,
         overview_level=overview_level,
         overview_resampling="nearest",
         use_cog_driver=True,
@@ -128,12 +137,14 @@ def warp(
     input_file: str,
     output_file: str,
     crs: str,
-    num_threads: str = "ALL_CPUS",
+    num_threads: Optional[int] = None,
     resampling_method: Resampling = Resampling.nearest,
 ) -> str:
     log.info(f"Warping raster {input_file}")
+    resolved_threads = num_threads if num_threads is not None else resolve_num_threads()
     with rasterio.Env(**get_gdal_env()):
         with rasterio.open(input_file) as source:
+            source_nodata = source.nodata
             left, bottom, right, top = source.bounds
             transform, width, height = calculate_default_transform(
                 src_crs=source.crs,
@@ -151,6 +162,7 @@ def warp(
                 transform=transform,
                 width=width,  # type: ignore
                 height=height,  # type: ignore
+                nodata=source_nodata,
             )
 
             with rasterio.open(output_file, "w", **output_profile) as destination:
@@ -162,7 +174,10 @@ def warp(
                         src_crs=source.crs,
                         dst_transform=transform,
                         dst_crs=crs,
+                        src_nodata=source_nodata,
+                        dst_nodata=source_nodata,
                         resampling=resampling_method,
+                        num_threads=resolved_threads,
                     )
             return output_file
 
@@ -216,7 +231,7 @@ def to_cog_streaming(
         config=config,
         in_memory=in_memory,
         quiet=True,
-        web_optimized=True,
+        web_optimized=False,
         overview_level=overview_level,
         overview_resampling="nearest",
         use_cog_driver=True,
@@ -281,6 +296,7 @@ def to_planscape_streaming(input_file: str, output_file: str) -> str:
 
     is_valid, _errors, warnings = cog_validate(
         src_path=processing_file,
+        strict=True,
         quiet=True,
     )
 

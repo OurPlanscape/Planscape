@@ -537,6 +537,10 @@ class Command(PlanscapeCommand):
                 processed_files = to_planscape_raster(
                     input_file=input_file,
                 )
+                # layer_info must describe the transformed COG that gets
+                # uploaded, not the original input; the frontend derives
+                # rendering parameters (e.g. blockxsize) from it.
+                _, layer_info = get_layer_info(input_file=processed_files[0])
 
             case _:
                 if len(layer_info.keys()) > 1:
