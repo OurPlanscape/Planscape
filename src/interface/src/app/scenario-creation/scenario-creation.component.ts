@@ -329,9 +329,9 @@ export class ScenarioCreationComponent implements OnInit {
           // Invalid configuration error
           if (e.options.configurationError) {
             let errorMessage = 'Scenario Config is invalid.';
-            // Included areas error
-            if (e.errorMessages['included_areas']?.length) {
-              errorMessage = e.errorMessages['included_areas'][0];
+            // Configuration global errors
+            if (e.errorMessages['global']?.length) {
+              errorMessage = e.errorMessages['global'][0];
             }
             this.dialog.open(ScenarioErrorModalComponent, {
               data: {
