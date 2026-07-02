@@ -51,7 +51,7 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
   },
   {
     label: 'Include Areas',
-    description: 'Include and exclude specific areas based on your plan.',
+    description: 'Include stands based on their ownership.',
     icon: '/assets/svg/icons/overview/include-areas.svg',
     includeConstraints: false,
     includeExcludedAreas: false,
@@ -62,7 +62,7 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
   },
   {
     label: 'Exclude Areas',
-    description: 'Include and exclude specific areas based on your plan.',
+    description: 'Exclude stands based on management characteristics.',
     icon: '/assets/svg/icons/overview/exclude-areas.svg',
     includeConstraints: false,
     includeExcludedAreas: true,
@@ -137,7 +137,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
   },
   {
     label: 'Include Areas',
-    description: 'Include and exclude specific areas based on your plan.',
+    description: 'Include stands based on their ownership.',
     icon: '/assets/svg/icons/overview/include-areas.svg',
     includeConstraints: false,
     includeExcludedAreas: false,
@@ -148,7 +148,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
   },
   {
     label: 'Exclude Areas',
-    description: 'Include and exclude specific areas based on your plan.',
+    description: 'Exclude stands based on management characteristics.',
     icon: '/assets/svg/icons/overview/exclude-areas.svg',
     includeConstraints: false,
     includeExcludedAreas: true,
