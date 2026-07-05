@@ -115,7 +115,10 @@ interface ReportSection {
 export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   constructor(
     private pdfService: FundingReportToPdfService,
-    private fundingMapConfigState: FundingMapConfigState
+    private fundingMapConfigState: FundingMapConfigState,
+    private fundingModuleService: FundingModuleService,
+    private dataLayersStateService: DataLayersStateService,
+    private baseLayersStateService: BaseLayersStateService
   ) {}
 
   /** The scrollable container holding the map + report sections. */
@@ -230,12 +233,6 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   // todo datalayer probably
   @Output() showLayer = new EventEmitter<number>();
   @Output() updateWaterAvailability = new EventEmitter<number>();
-
-  constructor(
-    private fundingModuleService: FundingModuleService,
-    private dataLayersStateService: DataLayersStateService,
-    private baseLayersStateService: BaseLayersStateService
-  ) {}
 
   ngOnInit(): void {
     Chart.register(ChartDataLabels);
