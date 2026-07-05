@@ -7,6 +7,13 @@ export class FundingMapConfigState extends MapConfigState {
   private _selectedProjectAreas$ = new BehaviorSubject<number[]>([]);
   public selectedProjectAreas$ = this._selectedProjectAreas$.asObservable();
 
+  private _mapLoading$ = new BehaviorSubject<boolean>(false);
+  public mapLoading$ = this._mapLoading$.asObservable();
+
+  isMapLoading(loaded: boolean) {
+    this._mapLoading$.next(loaded);
+  }
+
   /**  note that 'ids' here is either based on:
   /*  the project_id for USER origin or the rank for SYSTEM origin
   */

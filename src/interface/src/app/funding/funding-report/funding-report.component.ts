@@ -122,10 +122,15 @@ const flameLengthRangeValidator: ValidatorFn = (
   styleUrl: './funding-report.component.scss',
 })
 export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
-  constructor(private pdfService: FundingReportToPdfService) {}
+  constructor(
+    private pdfService: FundingReportToPdfService,
+    private fundingMapConfigState: FundingMapConfigState
+  ) {}
 
   /** The scrollable container holding the map + report sections. */
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLElement>;
+
+  mapLoading$ = this.fundingMapConfigState.mapLoading$;
 
   /** True while a PDF is being generated, to disable the download control. */
   generatingPdf = false;

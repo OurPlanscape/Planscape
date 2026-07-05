@@ -329,5 +329,6 @@
 
 <app-funding-report-footer
   [footerType]="reportType"
+  [buttonDisabled]="(mapLoading$ | async) === true"
   [generatingPdf]="generatingPdf"
   (downloadPdf)="exportPdf()"></app-funding-report-footer>
