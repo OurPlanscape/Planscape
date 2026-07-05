@@ -10,7 +10,7 @@ from django.utils import timezone
 from planscape.exceptions import InvalidGeometry
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
-from stands.models import StandSizeChoices
+from stands.models import Stand, StandSizeChoices
 
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
@@ -745,17 +745,33 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         
         if len(included_areas) == 0:
             raise serializers.ValidationError("Cannot set an empty list of included_areas.")
-        
-        scenario = self.parent.instance
-        treatable_area = calculate_scenario_treatable_area(
-            scenario=scenario,
-            includes=included_areas
-        )
-
-        if not treatable_area or treatable_area.area == 0:
-            raise serializers.ValidationError("Selected included_areas does not generates any valid geometry.")
-        
+               
         return included_areas
+    
+    def validate(self, attrs):
+
+        included_areas = attrs.get("included_areas_ids")
+        if included_areas:
+            scenario = self.parent.instance
+            treatable_area = calculate_scenario_treatable_area(
+                scenario=scenario,
+                includes=included_areas
+            )
+
+            if not treatable_area or treatable_area.area == 0:
+                raise serializers.ValidationError(
+                    "There are no stands with the selected ownership in your planning area.  "
+                    "Please 'View' ownership options to see what area is available in your planning area."
+                )
+            stand_size = attrs.get("stand_size") or scenario.get_stand_size()
+
+            if not Stand.objects.within_polygon(treatable_area, stand_size).exists():
+                raise serializers.ValidationError(
+                    "There are no stands with the selected ownership in your planning area.  "
+                    "Please 'View' ownership options to see what area is available in your planning area."
+                )
+
+        return super().validate(attrs)
 
 
     def update(self, instance, validated_data):

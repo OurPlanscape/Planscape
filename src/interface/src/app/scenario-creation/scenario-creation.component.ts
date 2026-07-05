@@ -19,6 +19,7 @@ import {
   shareReplay,
   switchMap,
   take,
+  throwError,
 } from 'rxjs';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -74,6 +75,7 @@ import { SubUnitsTreatmentTargetComponent } from './sub-units-treatment-target/s
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { FeatureService } from '@app/features/feature.service';
 import { IncludeAreasSelectorComponent } from './include-areas-selector/include-areas-selector.component';
+import { CreateScenarioError } from '@app/services/errors';
 
 @UntilDestroy()
 @Component({
@@ -323,9 +325,25 @@ export class ScenarioCreationComponent implements OnInit {
       .patchScenarioConfig(this.scenarioId, payload)
       .pipe(
         map((result) => !!result),
-        catchError((e) => {
-          console.error('Patch error:', e);
-          return of(false);
+        catchError((e: CreateScenarioError) => {
+          // Invalid configuration error
+          if (e.options.configurationError) {
+            let errorMessage = 'Scenario Config is invalid.';
+            // Configuration global errors
+            if (e.errorMessages['global']?.length) {
+              errorMessage = e.errorMessages['global'][0];
+            }
+            this.dialog.open(ScenarioErrorModalComponent, {
+              data: {
+                title: 'Invalid Scenario Configuration',
+                message: errorMessage,
+              },
+            });
+            return of(false);
+          }
+
+          // Rethrow unexpected errors so they can be captured by Sentry
+          return throwError(() => e);
         }),
         finalize(() => this.newScenarioState.setLoading(false))
       );

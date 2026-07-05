@@ -29,13 +29,15 @@ import { DataLayerNameComponent } from '@data-layers/data-layer-name/data-layer-
 import { FrontendConstants } from '@map/map.constants';
 import { ScenarioLegendComponent } from '@scenario-creation/scenario-legend/scenario-legend.component';
 import { FeaturesModule } from '@features/features.module';
-import { ScenarioStandsComponent } from '@maplibre-map/scenario-stands/scenario-stands.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { MapBaseLayersComponent } from '@maplibre-map/map-base-layers/map-base-layers.component';
 import { ApiModule, Scenario, SubUnits } from '@types';
 import { SubUnitToggleComponent } from '@maplibre-map/sub-unit-toggle/sub-unit-toggle.component';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
+import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.component';
+import { PlanningAreaStandsComponent } from '../planning-area-stands/planning-area-stands.component';
+import { FeatureService } from '@app/features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -60,6 +62,7 @@ import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
     MatProgressSpinnerModule,
     MapBaseLayersComponent,
     SubUnitToggleComponent,
+    PlanningAreaStandsComponent,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
@@ -73,7 +76,8 @@ export class ScenarioMapComponent {
     private mapConfigService: MapConfigService,
     private newScenarioState: NewScenarioState,
     private moduleService: ModuleService,
-    private baseLayersStateService: BaseLayersStateService
+    private baseLayersStateService: BaseLayersStateService,
+    private featureService: FeatureService
   ) {
     this.mapConfigService.initialize();
   }
@@ -102,6 +106,14 @@ export class ScenarioMapComponent {
           return scenario?.scenario_result?.status === 'DRAFT';
         })
       );
+    })
+  );
+
+  showStandsWithIncludes$ = this.newScenarioState.currentStep$.pipe(
+    map((step) => {
+      return this.featureService.isFeatureEnabled('ADD_INCLUDES')
+        ? step?.withIncludes
+        : false;
     })
   );
 

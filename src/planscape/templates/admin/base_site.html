@@ -146,20 +146,20 @@
         </form>
       </div>
     </div>
-    {% if ENV != "catalog" %}
+    {% if ENV != "production" %}
       <div class="admin-backup-trigger-wrap">
         <div class="admin-backup-trigger">
           <div>
-            <div class="admin-backup-trigger__title">Restore from latest catalog</div>
+            <div class="admin-backup-trigger__title">Restore from latest prod</div>
             <p class="admin-backup-trigger__text">
-              Trigger the `load_backup_data` management command with the default latest catalog backup.
+              Trigger the `load_backup_data` management command with the default latest production backup.
               Current status: {{ restore_status.state }}.
             </p>
           </div>
-          <form action="{{ trigger_restore_data_url }}" method="post" onsubmit="return confirm('Restore data from the latest catalog backup?');">
+          <form action="{{ trigger_restore_data_url }}" method="post" onsubmit="return confirm('Restore data from the latest production backup?');">
             {% csrf_token %}
             <button class="admin-backup-trigger__button" type="submit" {% if restore_in_progress %}disabled{% endif %}>
-              {% if restore_in_progress %}Restore in progress{% else %}Restore from latest catalog{% endif %}
+              {% if restore_in_progress %}Restore in progress{% else %}Restore from prod{% endif %}
             </button>
           </form>
         </div>

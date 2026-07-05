@@ -16,3 +16,28 @@ mat-radio-button {
   display: block;
   margin-left: -8px;
 }
+
+.layer-checkbox {
+  display: block;
+  margin-left: -8px;
+
+  ::ng-deep .mdc-form-field {
+    width: 100%;
+  }
+
+  ::ng-deep .mdc-label {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.base-layer-legend {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  display: inline-flex;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+}

@@ -110,10 +110,21 @@ h5 {
   }
 }
 
-.summary-flex {
-  display: flex;
-  gap: 8px;
-  margin-top: 16px;
+.flame-length-label {
+  display: block;
+  color: $color-dark-gray;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  margin-bottom: 8px;
+}
+
+.flame-length-select {
+  width: 100%;
+
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    background-color: $color-white;
+  }
 }
 
 .chart-wrapper {
@@ -128,10 +139,6 @@ h5 {
   justify-content: center;
   background-color: rgba(255, 255, 255, 0.6);
   z-index: 1;
-}
-
-.summary-to {
-  margin-top: 40px;
 }
 
 .field-error {
@@ -303,8 +310,4 @@ h5 {
     font-weight: 600;
     line-height: 32px;
   }
-}
-
-.flame-length-button {
-  margin-top: 31px;
 }

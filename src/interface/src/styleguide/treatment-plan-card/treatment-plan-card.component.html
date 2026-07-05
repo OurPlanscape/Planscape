@@ -1,11 +1,15 @@
-<a [routerLink]="treatmentLink" class="card-link">
-  <div class="card">
+<a
+  [routerLink]="isDisabled ? null : treatmentLink"
+  [class.disabled-link]="isDisabled"
+  class="card-link">
+  <div class="card" [class.disabled]="isDisabled">
     <div class="title-row">
       <div class="record-name">{{ name }}</div>
 
       <div class="controls-section">
         <button
           [matMenuTriggerFor]="menu"
+          [disabled]="isDisabled"
           aria-label="More options"
           class="more-menu-button"
           (click)="stopEventPropagation($event)"
@@ -18,8 +22,7 @@
             mat-menu-item
             class="action-button"
             [disabled]="!userCanEdit"
-            (click)="rename.emit()"
-            [disabled]="isDisabled">
+            (click)="rename.emit()">
             <mat-icon class="material-symbols-outlined">edit</mat-icon>
             <span>Rename</span>
           </button>

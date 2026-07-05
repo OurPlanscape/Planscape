@@ -1126,7 +1126,7 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.user = UserFactory()
         self.other_user = UserFactory()
 
-        self.planning_area = PlanningAreaFactory(user=self.user)
+        self.planning_area = PlanningAreaFactory(user=self.user, with_stands=True)
         self.treatment_goal = TreatmentGoalFactory()
 
         self.scenario = ScenarioFactory(
@@ -1256,6 +1256,7 @@ class PatchScenarioConfigurationTest(APITestCase):
         }
         payload5 = {
             "configuration": {
+                "stand_size": "LARGE",
                 "included_areas": included_ids,
                 "constraints": [constraint],
             }
@@ -1431,9 +1432,43 @@ class PatchScenarioConfigurationTest(APITestCase):
         response = self.client.patch(self.url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-        self.assertIn(
-            b'{"configuration":{"included_areas":["Selected included_areas does not generates any valid geometry."]}}',
-            response.content,
+        self.assertEqual(
+            response.json()["errors"]["configuration"]["global"][0],
+            "There are no stands with the selected ownership in your planning area.  "
+            "Please 'View' ownership options to see what area is available in your planning area.",
+        )
+
+        self.scenario.refresh_from_db()
+        self.assertIsNone(self.scenario.treatable_area)
+        calculate_scenario_treatable_area_mock.assert_called()
+
+    @mock.patch(
+        "planning.serializers.calculate_scenario_treatable_area", 
+        return_value=MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
+    )
+    def test_patch_scenario_with_includes_no_stands(self, calculate_scenario_treatable_area_mock):
+        included_layers = DataLayerFactory.create_batch(
+            2,
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        included_ids = [layer.pk for layer in included_layers]
+
+        payload = {
+            "configuration": {
+                "stand_size": "SMALL", # no small stands in this test
+                "included_areas": included_ids,
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.assertEqual(
+            response.json()["errors"]["configuration"]["global"][0],
+            "There are no stands with the selected ownership in your planning area.  "
+            "Please 'View' ownership options to see what area is available in your planning area.",
         )
 
         self.scenario.refresh_from_db()

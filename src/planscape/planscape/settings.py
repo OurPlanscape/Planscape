@@ -530,6 +530,11 @@ WEEKLY_NEW_USERS_REPORT_ENABLED = config(
     "WEEKLY_NEW_USERS_REPORT_ENABLED", default=False, cast=bool
 )
 
+WEEKLY_NEW_USERS_REPORT_EMAIL = config(
+    "WEEKLY_NEW_USERS_REPORT_EMAIL",
+    default="signups@planscape.org",
+)
+
 AREA_SRID = 5070
 # Global hex grid origin (EPSG:5070) used to align ALL dynamic stands
 HEX_GRID_ORIGIN_X = config("HEX_GRID_ORIGIN_X", default=-2356881.4306262177, cast=float)

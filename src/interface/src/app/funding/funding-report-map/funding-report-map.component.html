@@ -8,6 +8,7 @@
   [preserveDrawingBuffer]="true"
   [fitBoundsOptions]="{ padding: { top: 70, bottom: 40, left: 20, right: 20 } }"
   [fitBounds]="bounds"
+  [style]="(baseLayerUrl$ | async) || ''"
   (mapLoad)="mapLoaded($event)"
   (mapError)="onMapError($event)"
   [scrollZoom]="allowInteraction"

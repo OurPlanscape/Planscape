@@ -1492,13 +1492,17 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> Optional[str]:
         stand_inputs = export_scenario_inputs_to_geopackage(scenario, temp_file)
 
         if scenario.result_status == ScenarioResultStatus.SUCCESS:
+            export_scenario_project_areas_outputs_to_geopackage(
+                scenario, temp_file, stand_inputs
+            )
+
             if (
                 scenario.planning_approach
                 == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
             ):
-                export_scenario_sub_units_outputs_to_geopackage(scenario, temp_file, stand_inputs)
-            else:
-                export_scenario_project_areas_outputs_to_geopackage(scenario, temp_file, stand_inputs)
+                export_scenario_sub_units_outputs_to_geopackage(
+                    scenario, temp_file, stand_inputs
+                )
 
             export_scenario_stand_outputs_to_geopackage(
                 scenario, temp_file, stand_inputs
@@ -1978,7 +1982,7 @@ def calculate_and_update_rx_leverage(scenario: Scenario, features: List) -> List
         attainment = feature.get("properties").get("attainment")
         att_values = [attainment.get(name) for name in names]
         area_acres = feature.get("properties").get("area_acres")
-        rx_leverage = (sum(att_values) / area_acres) * 1000 if area_acres else None
+        rx_leverage = (sum(att_values) / area_acres) * 10000 if area_acres else None
         feature["properties"]["rx_leverage"] = rx_leverage
 
     return features
