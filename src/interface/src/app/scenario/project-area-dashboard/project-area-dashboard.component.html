@@ -32,7 +32,13 @@
         (toolClicked)="onToolClick($event)"></app-scenario-tools>
     </div>
     <div right-column class="project-area-column">
-      <app-project-area-coming-soon></app-project-area-coming-soon>
+      <app-project-area-coming-soon
+        *ngIf="
+          isPrioritizeProjectsFlagEnabled === false
+        "></app-project-area-coming-soon>
+      <app-project-areas-empty-list
+        [plan]="plan"
+        *ngIf="isPrioritizeProjectsFlagEnabled"></app-project-areas-empty-list>
     </div>
   </sg-dashboard-layout>
 </ng-container>

@@ -14,6 +14,8 @@ import { MapViewerCardComponent } from '@app/plan/map-viewer-card/map-viewer-car
 import { ProjectAreaComingSoonComponent } from '../project-area-coming-soon/project-area-coming-soon.component';
 import { ScenarioState } from '../scenario.state';
 import { ScenarioToolsComponent } from '@scenario/scenario-tools/scenario-tools.component';
+import { ProjectAreasEmptyListComponent } from '../project-areas-empty-list/project-areas-empty-list.component';
+import { FeatureService } from '@app/features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -27,8 +29,10 @@ import { ScenarioToolsComponent } from '@scenario/scenario-tools/scenario-tools.
     NavBarComponent,
     DetailsCardComponent,
     ProjectAreaComingSoonComponent,
+    ProjectAreasEmptyListComponent,
     OverlayLoaderComponent,
     ScenarioToolsComponent,
+    ProjectAreasEmptyListComponent,
   ],
   templateUrl: './project-area-dashboard.component.html',
   styleUrl: './project-area-dashboard.component.scss',
@@ -53,7 +57,8 @@ export class ProjectAreaDashboardComponent implements OnInit {
     private planState: PlanState,
     private breadcrumbService: BreadcrumbService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private featureService: FeatureService
   ) {}
 
   ngOnInit(): void {
@@ -72,5 +77,9 @@ export class ProjectAreaDashboardComponent implements OnInit {
       });
       this.router.navigate([route], { relativeTo: this.route });
     }
+  }
+
+  get isPrioritizeProjectsFlagEnabled() {
+    return this.featureService.isFeatureEnabled('PRIORITIZE_PROJECT_AREAS');
   }
 }
