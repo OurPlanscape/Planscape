@@ -43,7 +43,6 @@
             *ngIf="report.status === 'SUCCESS'; else loadingReport"
             [report]="report"
             [projectAreas]="(selectedProjectAreas$ | async) ?? []"
-            [origin]="(currentScenario$ | async)?.origin ?? 'USER'"
             [scrollElement]="reportScroll"
             reportType="full"
             [updatingWaterAvailability]="updatingWaterAvailability"
