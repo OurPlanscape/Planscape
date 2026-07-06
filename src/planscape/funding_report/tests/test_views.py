@@ -10,6 +10,7 @@ from rest_framework.test import APITestCase
 
 from funding_report.models import (
     FundingOpportunityReport,
+    FundingOpportunityReportRun,
     FundingOpportunityReportStatus,
 )
 
@@ -59,10 +60,38 @@ class RunReportTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
         self.assertEqual(FundingOpportunityReport.objects.count(), 1)
+
         report = FundingOpportunityReport.objects.get()
         self.assertEqual(report.scenario, self.scenario)
         self.assertEqual(report.created_by, self.user)
+
+        report_run = FundingOpportunityReportRun.objects.get()
+        self.assertEqual(report_run.report, report)
+        self.assertEqual(report_run.user, self.user)
+        self.assertEqual(report_run.email, self.user.email)
+
         task_mock.delay.assert_called_once_with(report.pk)
+
+    @mock.patch("planning.views_v2.run_funding_opportunity_report")
+    def test_run_report_reuses_existing_report_and_tracks_new_run(self, task_mock):
+        existing = FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.user,
+        )
+
+        self.client.force_authenticate(self.user)
+        response = self.client.post(self.url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(FundingOpportunityReport.objects.count(), 1)
+        self.assertEqual(FundingOpportunityReportRun.objects.count(), 1)
+
+        report_run = FundingOpportunityReportRun.objects.get()
+        self.assertEqual(report_run.report, existing)
+        self.assertEqual(report_run.user, self.user)
+        self.assertEqual(report_run.email, self.user.email)
+
+        task_mock.delay.assert_called_once_with(existing.pk)
 
     @mock.patch("planning.views_v2.run_funding_opportunity_report")
     def test_run_report_reuses_existing_report(self, task_mock):

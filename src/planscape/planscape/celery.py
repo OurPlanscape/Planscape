@@ -80,6 +80,12 @@ if settings.WEEKLY_NEW_USERS_REPORT_ENABLED:
         "schedule": crontab(day_of_week="monday", hour=13, minute=0),
     }
 
+if settings.WEEKLY_FUNDING_REPORT_USERS_REPORT_ENABLED:
+    beat_schedule["send-weekly-funding-report-users-report"] = {
+        "task": "funding_report.tasks.send_weekly_funding_report_users_report",
+        "schedule": crontab(day_of_week="monday", hour=13, minute=0),
+    }
+
 beat_schedule.update(get_catalog_backup_schedule())
 beat_schedule.update(get_catalog_restore_schedule())
 beat_schedule.update(get_forisk_mills_schedule())
