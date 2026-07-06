@@ -38,8 +38,7 @@ export function percentOfArea(value: number, baseline: number): number {
  * when nothing was computed; if every point is null the chart should be hidden.
  *
  * An empty `projectAreas` checks the whole-scenario summary; a non-empty list
- * checks only the selected project areas. `origin` decides which per-project
- * field the selection ids are matched against.
+ * checks only the selected project areas.
  */
 function pointsHaveData(
   summary: FundingReportDataPoint[],
@@ -61,8 +60,7 @@ function pointsHaveData(
  * An empty `projectAreas` means "all areas" and returns the precomputed
  * whole-scenario summary as-is. A non-empty list aggregates only those projects
  * the same way the backend builds the summary: sum value & baseline per year,
- * then recompute the percentage delta. `origin` decides which per-project field
- * the selection ids are matched against.
+ * then recompute the percentage delta.
  */
 function aggregateSummary(
   summary: FundingReportDataPoint[],
@@ -191,7 +189,6 @@ export function aggregateFlameLengthSummary(
  * already-converted per-area outputs yields the same totals.
  *
  * Returns `undefined` when no biomass data is available for the selection.
- * `origin` decides which per-project field the selection ids are matched against.
  */
 export function aggregateBiomassVolumes(
   results: FundingReportResults,

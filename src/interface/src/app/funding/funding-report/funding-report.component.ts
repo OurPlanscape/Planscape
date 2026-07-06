@@ -43,7 +43,6 @@ import {
   FundingReportBiomassVolumes,
   FundingReportDataLayers,
   FundingReportTimeSeriesMetric,
-  ORIGIN_TYPE,
 } from '@types';
 import { FundingModuleService } from '@services/funding-module.service';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
@@ -195,12 +194,6 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   @Input() report!: FundingReport;
   /** Selected project area ids; empty means show the whole-scenario summary. */
   @Input() projectAreas: number[] = [];
-  /**
-   * Scenario origin. Decides which per-project field the selected
-   * `projectAreas` ids are matched against: `project_id` for USER scenarios,
-   * `proj_id` (treatment rank) for SYSTEM ones.
-   */
-  @Input() origin: ORIGIN_TYPE = 'USER';
   /**
    * The element that actually scrolls the report. When the report is embedded
    * in a host that owns the scroll (e.g. full-report-view), the host passes its
