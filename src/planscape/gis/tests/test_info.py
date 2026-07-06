@@ -1,13 +1,15 @@
 import json
+import os
 import tempfile
 from pathlib import Path
+from unittest import mock
 
 import numpy as np
 import rasterio
 from django.test import SimpleTestCase
 from rasterio.transform import from_origin
 
-from gis.info import info_raster
+from gis.info import info_raster, resolve_num_threads
 
 
 def write_test_raster(path: Path, nodata: float) -> None:
@@ -53,3 +55,21 @@ class InfoRasterNonFiniteValuesTests(SimpleTestCase):
         info = info_raster(str(path))
 
         self.assertEqual(info["nodata"], -9999.0)
+
+
+class ResolveNumThreadsTests(SimpleTestCase):
+    def test_all_cpus_resolves_to_cpu_count(self):
+        with mock.patch.object(os, "cpu_count", return_value=8):
+            self.assertEqual(resolve_num_threads("ALL_CPUS"), 8)
+            self.assertEqual(resolve_num_threads("all_cpus"), 8)
+
+    def test_numeric_string_resolves_to_int(self):
+        self.assertEqual(resolve_num_threads("4"), 4)
+
+    def test_defaults_to_settings_gdal_num_threads(self):
+        with self.settings(GDAL_NUM_THREADS="6"):
+            self.assertEqual(resolve_num_threads(), 6)
+
+        with self.settings(GDAL_NUM_THREADS="ALL_CPUS"):
+            with mock.patch.object(os, "cpu_count", return_value=3):
+                self.assertEqual(resolve_num_threads(), 3)
