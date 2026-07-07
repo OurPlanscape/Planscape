@@ -146,14 +146,10 @@ export class MapMultiProjectAreasComponent implements OnInit {
       return;
 
     const ids = selectedIds || [];
-    let projectKey = 'rank';
-    if (this.scenarioOrigin === 'USER') {
-      projectKey = 'id';
-    }
     this.mapLibreMap.setPaintProperty(
       this.layers.projectAreasOutline.name,
       'line-width',
-      ['case', ['in', ['get', projectKey], ['literal', ids]], 6, 2]
+      ['case', ['in', ['get', 'id'], ['literal', ids]], 6, 2]
     );
   }
 
@@ -162,11 +158,7 @@ export class MapMultiProjectAreasComponent implements OnInit {
       return;
     }
     const proj = this.getProjectAreaFromFeatures(event.point);
-    let project_identifier = proj.properties['rank'];
-    if (this.scenarioOrigin === 'USER') {
-      project_identifier = proj.properties['id'];
-    }
-    this.fundingMapConfigState.toggleSelectedProjectArea(project_identifier);
+    this.fundingMapConfigState.toggleSelectedProjectArea(proj.properties['id']);
   }
 
   setCursor() {

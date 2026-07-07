@@ -59,8 +59,16 @@
     >Click project area to select</app-map-tooltip
   >
 
-  <mgl-control position="top-right">
-    <!-- TODO: add the funding legend -->
+  <mgl-control position="top-right" *ngIf="allowInteraction">
+    <app-action-button
+      *ngIf="(showFundingLegend$ | async) === false"
+      (clickedActionButton)="openFundingLegend()"
+      tooltipContent="Funding Report Legend"
+      icon="legend-toggle">
+    </app-action-button>
+    <app-funding-acreage-legend
+      *ngIf="(showFundingLegend$ | async) && legendData"
+      [legendData]="legendData"></app-funding-acreage-legend>
   </mgl-control>
 
   <mgl-control
