@@ -21,6 +21,7 @@ export const BASE_COLORS = {
   darker_magenta: '#860747',
   dark_gray: '#646464',
   light_gray: '#909090',
+  dark_green: '#344F42',
 } as const;
 
 export const SELECTED_STANDS_PAINT = {
