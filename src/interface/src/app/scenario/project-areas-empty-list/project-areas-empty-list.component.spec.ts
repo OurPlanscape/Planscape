@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProjectAreasEmptyListComponent } from './project-areas-empty-list.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 describe('ProjectAreasEmptyListComponent', () => {
   let component: ProjectAreasEmptyListComponent;
@@ -8,7 +9,7 @@ describe('ProjectAreasEmptyListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ProjectAreasEmptyListComponent],
+      imports: [MatDialogModule, ProjectAreasEmptyListComponent],
     }).compileComponents();
     fixture = TestBed.createComponent(ProjectAreasEmptyListComponent);
     component = fixture.componentInstance;
