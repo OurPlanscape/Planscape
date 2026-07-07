@@ -414,8 +414,13 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
         name=validated_data["name"],
         planning_area=planning_area,
         user=user,
-        configuration={k: v for k, v in {"stand_size": validated_data.get("stand_size")}.items() if v is not None},
+        configuration={
+            k: v
+            for k, v in {"stand_size": validated_data.get("stand_size")}.items()
+            if v is not None
+        },
         origin=ScenarioOrigin.USER,
+        type=ScenarioType.PROJECT_AREAS,
     )
     scenario.capabilities = compute_scenario_capabilities(scenario)
     scenario.save(update_fields=["capabilities"])
@@ -938,8 +943,8 @@ def map_property_for_numeric_export(key_value_pair):
 
 
 def get_schema(
-    geojson: Union[Collection[Dict[str, Any]], Dict[str, Any]], 
-    extra_properties: Dict[str, Any] = {}
+    geojson: Union[Collection[Dict[str, Any]], Dict[str, Any]],
+    extra_properties: Dict[str, Any] = {},
 ) -> Dict[str, Any]:
     feature = {}
     match geojson:
@@ -950,7 +955,7 @@ def get_schema(
         case list() as features:
             feature = features[0]
 
-    merged_properties = feature.get("properties", {}) | extra_properties 
+    merged_properties = feature.get("properties", {}) | extra_properties
     field_type_pairs = list(map(map_property, merged_properties.items()))
     schema = {
         "geometry": feature.get("geometry", {}).get("type", "MultiPolygon")
@@ -989,9 +994,7 @@ def _get_sub_units_lookup_table(scenario: Scenario) -> Optional[Dict[int, Any]]:
     ret = {}
     for feature in geojson.get("features", []):
         proj_id = feature["properties"].get("proj_id")
-        ret[proj_id] = {
-            **feature
-        }
+        ret[proj_id] = {**feature}
     return ret
 
 
@@ -1027,8 +1030,12 @@ def get_flatten_geojson(scenario: Scenario) -> Dict[str, Any]:
 def get_weighing_from_input(stand_inputs: Dict[int, Dict]):
     weighting_data = {}
     if stand_inputs:
-         sample_stand_data = dict(list(stand_inputs.values())[0])
-         weighting_data = {k: v for k, v in sample_stand_data.items() if k.lower().endswith("_weighting")}
+        sample_stand_data = dict(list(stand_inputs.values())[0])
+        weighting_data = {
+            k: v
+            for k, v in sample_stand_data.items()
+            if k.lower().endswith("_weighting")
+        }
     return weighting_data
 
 
@@ -1093,7 +1100,9 @@ def export_scenario_stand_outputs_to_geopackage(
                         properties[key] = int(value)
                         if sub_units_lookup_table:
                             properties["treatment_rank"] = (
-                                sub_units_lookup_table.get(int(value), {}).get("properties", {}).get("treatment_rank")
+                                sub_units_lookup_table.get(int(value), {})
+                                .get("properties", {})
+                                .get("treatment_rank")
                             )
                     case _:
                         try:
@@ -1124,11 +1133,14 @@ def export_scenario_stand_outputs_to_geopackage(
             properties["WKT"] = geometry
             properties["stand_size"] = stand_size
             fields_from_inputs = [
-                key for key in stand_inputs.get(stand_id, {}) 
+                key
+                for key in stand_inputs.get(stand_id, {})
                 if key.lower().endswith("_pcp") or key.lower().endswith("_weighting")
             ]
             for inputed_field in fields_from_inputs:
-                properties[inputed_field] = stand_inputs.get(stand_id, {}).get(inputed_field)
+                properties[inputed_field] = stand_inputs.get(stand_id, {}).get(
+                    inputed_field
+                )
             scenario_outputs[stand_id] = properties
 
     if scenario_outputs:
@@ -1149,7 +1161,9 @@ def export_scenario_stand_outputs_to_geopackage(
                 )
 
         properties = features[0].get("properties", {})
-        field_type_pairs = list(map(map_property_for_numeric_export, properties.items()))
+        field_type_pairs = list(
+            map(map_property_for_numeric_export, properties.items())
+        )
         schema = {
             "geometry": "MultiPolygon",
             "properties": field_type_pairs,
@@ -1183,7 +1197,9 @@ def export_scenario_inputs_to_geopackage(
     tx_goal = scenario.treatment_goal
     if tx_goal:
         weighted_datalayers = []
-        for usage in tx_goal.datalayer_usages.filter(usage_type=TreatmentGoalUsageType.PRIORITY):
+        for usage in tx_goal.datalayer_usages.filter(
+            usage_type=TreatmentGoalUsageType.PRIORITY
+        ):
             item = {
                 "datalayer": usage.datalayer.id,
                 "name": usage.datalayer.name,
@@ -1250,7 +1266,7 @@ def export_scenario_inputs_to_geopackage(
             properties["stand_size"] = stand_size
             for wd in weighted_datalayers:
                 wd_key = sanitize_shp_field_name(f"{wd.get('name')}_weighting")
-                properties[wd_key] = float(wd.get("weight")) # type: ignore
+                properties[wd_key] = float(wd.get("weight"))  # type: ignore
             stand_id = int(row.get("stand_id"))  # type: ignore
             scenario_inputs[stand_id] = properties
 
@@ -1293,7 +1309,9 @@ def export_scenario_inputs_to_geopackage(
 
 
 def export_scenario_project_areas_outputs_to_geopackage(
-    scenario: Scenario, geopackage_path: Path, stand_inputs: Dict[int, Dict],
+    scenario: Scenario,
+    geopackage_path: Path,
+    stand_inputs: Dict[int, Dict],
 ) -> None:
     geojson = get_flatten_geojson(scenario)
 
@@ -1315,10 +1333,7 @@ def export_scenario_project_areas_outputs_to_geopackage(
                 for feature in geojson.get("features", []):
                     geometry = to_multi(feature.get("geometry"))
                     feature["properties"] = {**feature["properties"], **weighting_data}
-                    feature = {
-                        **feature,
-                        "geometry": geometry
-                    }
+                    feature = {**feature, "geometry": geometry}
                     out.write(feature)
     except Exception as e:
         logger.exception(
@@ -1328,7 +1343,9 @@ def export_scenario_project_areas_outputs_to_geopackage(
 
 
 def export_scenario_sub_units_outputs_to_geopackage(
-    scenario: Scenario, geopackage_path: Path, stand_inputs: Dict[int, Dict],
+    scenario: Scenario,
+    geopackage_path: Path,
+    stand_inputs: Dict[int, Dict],
 ) -> None:
     geojson = get_flatten_geojson(scenario)
 
@@ -1380,6 +1397,7 @@ def export_scenario_sub_units_outputs_to_geopackage(
         )
         raise e
 
+
 def export_treatable_area_to_geopackage(
     scenario: Scenario, geopackage_path: Path
 ) -> None:
@@ -1387,7 +1405,7 @@ def export_treatable_area_to_geopackage(
     if not geometry:
         logger.warning("Scenario has no treatable area (Legacy). Skipping.")
         return
-    
+
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     schema = {
         "geometry": "MultiPolygon",
@@ -1417,7 +1435,9 @@ def export_treatable_area_to_geopackage(
                 out.write(feature)
     except Exception as e:
         logger.exception(
-            "Error exporting Scenario's Treatable Area %s to geopackage: %s", scenario.pk, e
+            "Error exporting Scenario's Treatable Area %s to geopackage: %s",
+            scenario.pk,
+            e,
         )
         raise e
 
@@ -1703,7 +1723,7 @@ def get_available_stands(
         stands = scenario.get_treatable_area_stands(stand_size=stand_size)
     else:
         stands = planning_area.get_stands(stand_size)
-    
+
     stands = stands.annotate(area=area_transform)
     total_area = stands.all().aggregate(total_area_m2=Sum("area"))["total_area_m2"]
 
@@ -1720,7 +1740,9 @@ def get_available_stands(
     ):
         # Exclude stands that is not included to any sub-unit
         stands_queryset = stands.all()
-        sub_units_stands = get_stands_from_sub_units(stands_queryset, planning_area, scenario.get_stand_size(), sub_unit)
+        sub_units_stands = get_stands_from_sub_units(
+            stands_queryset, planning_area, scenario.get_stand_size(), sub_unit
+        )
         sub_units_stands_ids = set(sub_units_stands.values_list("id", flat=True))
         stand_ids = stands_queryset.exclude(id__in=sub_units_stands_ids).values_list(
             "id", flat=True
@@ -1819,7 +1841,7 @@ def get_available_stand_ids(
 
 
 def calculate_scenario_treatable_area(
-    scenario: Scenario, 
+    scenario: Scenario,
     includes: Optional[QuerySet[DataLayer]] = None,
 ) -> Optional[MultiPolygon]:
     planning_area = scenario.planning_area
@@ -1833,12 +1855,12 @@ def calculate_scenario_treatable_area(
                 continue
 
             DynamicModel = model_from_fiona(included)
-            queryset = DynamicModel.objects.filter(geometry__bboverlaps=pa_geometry).filter(
-                geometry__intersects=pa_geometry
-            )
-            layer_geometry = queryset.all().aggregate(
-                geometry=UnionOp("geometry")
-            )["geometry"]
+            queryset = DynamicModel.objects.filter(
+                geometry__bboverlaps=pa_geometry
+            ).filter(geometry__intersects=pa_geometry)
+            layer_geometry = queryset.all().aggregate(geometry=UnionOp("geometry"))[
+                "geometry"
+            ]
             if not layer_geometry:
                 continue
             layer_geometry = layer_geometry.intersection(pa_geometry)
@@ -1847,7 +1869,7 @@ def calculate_scenario_treatable_area(
                 included_geometry = layer_geometry
             else:
                 included_geometry = included_geometry.union(layer_geometry)
-    
+
     return to_multipolygon(included_geometry) if included_geometry else None
 
 
@@ -1961,7 +1983,9 @@ def calculate_and_update_scenario_result(scenario: Scenario):
     features = results.result.get("features")
 
     features = calculate_and_update_rx_leverage(scenario=scenario, features=features)
-    features = calculate_and_update_pct_treatable_area(scenario=scenario, features=features)
+    features = calculate_and_update_pct_treatable_area(
+        scenario=scenario, features=features
+    )
 
     results.result["features"] = features
     results.save(update_fields=["result"])
@@ -1998,7 +2022,9 @@ def calculate_and_update_pct_treatable_area(scenario: Scenario, features: List) 
 
     for feature in features:
         proj_area_acres = feature.get("properties").get("area_acres")
-        pct_treatable_area = proj_area_acres / treatable_area if treatable_area else None
+        pct_treatable_area = (
+            proj_area_acres / treatable_area if treatable_area else None
+        )
         feature["properties"]["pct_treatable_area"] = pct_treatable_area
 
     return features
