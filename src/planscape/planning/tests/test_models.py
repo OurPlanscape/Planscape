@@ -111,3 +111,10 @@ class ScenarioModelTest(TestCase):
         )
         datalayers = scenario.get_raster_datalayers()
         self.assertEqual(len(datalayers), 5)
+
+    def test_scenario_can_have_parent(self):
+        parent = ScenarioFactory.create()
+        child = ScenarioFactory.create(parent=parent)
+
+        self.assertEqual(child.parent, parent)
+        self.assertIn(child, parent.children.all())

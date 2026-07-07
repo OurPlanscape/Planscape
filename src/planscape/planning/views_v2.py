@@ -260,7 +260,27 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             )
             .prefetch_related("project_areas")
         )
+        if self.action == "list":
+            qs = qs.filter(parent__isnull=True)
         return qs
+
+    @action(methods=["get"], detail=True, url_path="child")
+    def child(self, request, pk=None):
+        parent = self.get_object()
+
+        children = (
+            self.get_queryset()
+            .filter(parent=parent)
+            .select_related("planning_area", "user", "results")
+            .prefetch_related("project_areas")
+        )
+
+        serializer = ListScenarioSerializer(
+            children,
+            many=True,
+            context={"request": request},
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(description="Retrieve a Scenario (auto-detects version).")
     def retrieve(self, request, *args, **kwargs):
