@@ -23,6 +23,9 @@ export class ProjectAreasEmptyListComponent {
   }
 
   public openScenarioSetupDialog(type: SCENARIO_TYPE) {
+    // TODO: add specific backend attribute (once available) to
+    // differentiate this type of scenario from others
+
     return this.dialog.open(ScenarioSetupModalComponent, {
       maxWidth: '560px',
       data: {
