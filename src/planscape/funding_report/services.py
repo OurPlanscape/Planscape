@@ -58,6 +58,7 @@ AET_VARIABLE = "AET"
 AET_DELTA_ROLE = "delta"
 AET_BASELINE_ROLE = "baseline"
 AET_TARGET_ROLE = "target"
+AET_PERCENTUAL_ROLE = "percentual"
 
 
 def build_datalayer_lookup() -> Dict[Tuple[str, int, bool], DataLayer]:
@@ -135,6 +136,10 @@ def get_aet_target_datalayer() -> DataLayer | None:
     return _get_aet_role_datalayer(AET_TARGET_ROLE)
 
 
+def get_aet_percentual_datalayer() -> DataLayer | None:
+    return _get_aet_role_datalayer(AET_PERCENTUAL_ROLE)
+
+
 def get_mills_datalayers() -> List[DataLayer]:
     return list(
         DataLayer.objects.filter(dataset__name=settings.FORISK_MILLS_DATASET_NAME)
@@ -157,8 +162,9 @@ def get_funding_report_layers_of_interest() -> Dict[str, List[DataLayer]]:
         FundingReportLayerKey.BASELINE_FLAME_LENGTH_2026: _as_list(
             lookup.get((FundingReportMetric.TOTAL_FLAME_SEVERITY.value, 2026, True))
         ),
-        FundingReportLayerKey.AET_BASELINE: _as_list(get_aet_baseline_datalayer()),
-        FundingReportLayerKey.AET_TARGET: _as_list(get_aet_target_datalayer()),
+        FundingReportLayerKey.AET_PERCENTUAL_CHANGE: _as_list(
+            get_aet_percentual_datalayer()
+        ),
         FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES: get_mills_datalayers(),
     }
 
