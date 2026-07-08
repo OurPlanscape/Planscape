@@ -34,10 +34,6 @@
   padding: 16px;
   overflow-y: auto;
 
-  ::ng-deep #map .maplibregl-map{
-    border-radius: 8px;
-  }
-
   &.fullview {
     background-color: $color-soft-purple;
 
@@ -58,6 +54,7 @@
   border-radius: 8px;
   background-color: $color-soft-gray;
   border: 1px solid $color-light-purple;
+  overflow: hidden;
 }
 
 .report-footer {
