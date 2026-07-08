@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import {
   FeatureComponent,
   GeoJSONSourceComponent,
@@ -24,10 +24,10 @@ import { MARTIN_SOURCES } from '@treatments/map.sources';
   ],
   templateUrl: './planning-area-layer.component.html',
 })
-export class PlanningAreaLayerComponent {
+export class PlanningAreaLayerComponent implements OnInit {
   @Input() before = '';
 
-  readonly lineColor = BASE_COLORS.blue;
+  @Input() lineColor: string = BASE_COLORS.blue;
 
   linePaint = {
     'line-color': this.lineColor,
@@ -36,6 +36,10 @@ export class PlanningAreaLayerComponent {
   } as any;
 
   constructor(private planState: PlanState) {}
+
+  ngOnInit() {
+    this.linePaint['line-color'] = this.lineColor;
+  }
 
   tilesUrl$ = this.planState.currentPlanId$.pipe(
     map((id) => {
