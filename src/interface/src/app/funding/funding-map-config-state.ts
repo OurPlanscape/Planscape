@@ -10,20 +10,21 @@ export class FundingMapConfigState extends MapConfigState {
   private _mapLoading$ = new BehaviorSubject<boolean>(false);
   public mapLoading$ = this._mapLoading$.asObservable();
 
+  private _showFundingLegend$ = new BehaviorSubject(false);
+  public showFundingLegend$ = this._showFundingLegend$.asObservable();
+
   isMapLoading(loaded: boolean) {
     this._mapLoading$.next(loaded);
   }
 
-  /**  note that 'ids' here is either based on:
-  /*  the project_id for USER origin or the rank for SYSTEM origin
-  */
+  setFundingLegendVisibility(value: boolean) {
+    this._showFundingLegend$.next(value);
+  }
+
   updateSelectedProjectAreas(ids: number[]) {
     this._selectedProjectAreas$.next(ids);
   }
 
-  /**  note that 'id' here is either based on:
-  /*  the project_id for USER origin or the rank for SYSTEM origin
-  */
   toggleSelectedProjectArea(id: any) {
     const currentSelection = this._selectedProjectAreas$.getValue();
     // if the id is already selected, we remove it.

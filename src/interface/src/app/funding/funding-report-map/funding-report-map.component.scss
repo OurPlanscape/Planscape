@@ -22,6 +22,12 @@ mgl-map {
   min-width: 0;
 }
 
+:host ::ng-deep .maplibregl-ctrl-top-right .maplibregl-ctrl {
+ top: 60px;
+ position: relative;
+}
+
+
 .selected-layer-control {
   border-top-right-radius: 8px;
 }

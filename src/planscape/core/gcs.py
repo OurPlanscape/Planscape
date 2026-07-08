@@ -1,4 +1,5 @@
 import logging
+import mimetypes
 from pathlib import Path
 from typing import Any, Collection, Dict, Optional
 
@@ -142,10 +143,17 @@ def upload_file_via_api(
     object_name: str,
     input_file: str,
     url: str,
+    content_type: Optional[str] = None,
     chunk_size: int = 3 * 1024 * 1024 * 1024,  # 3GB chunk size
 ):
     logger.info(f"Uploading file {object_name}.")
     file_size = Path(input_file).stat().st_size
+    resolved_content_type = (
+        content_type
+        or mimetypes.guess_type(input_file)[0]
+        or "application/octet-stream"
+    )
+    headers = {"Content-Type": resolved_content_type}
 
     total_uploaded = 0
 
@@ -155,6 +163,7 @@ def upload_file_via_api(
             response = requests.put(
                 url,
                 data=f,
+                headers=headers,
             )
             if response.status_code not in (200, 201):
                 logger.error(f"Failed to upload {object_name}.")
@@ -171,6 +180,7 @@ def upload_file_via_api(
                     url,
                     data=chunk,
                     headers={
+                        **headers,
                         "Content-Range": f"bytes {total_uploaded}-{total_uploaded + len(chunk) - 1}/{file_size}",
                     },
                 )

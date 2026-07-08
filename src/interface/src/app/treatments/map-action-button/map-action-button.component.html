@@ -4,9 +4,15 @@
       mat-icon-button
       type="button"
       (click)="handleClick()"
-      matTooltip="Treatment Legend"
+      [matTooltip]="tooltipContent"
       matTooltipPosition="below">
-      <mat-icon class="material-symbols-outlined">layers</mat-icon>
+      <mat-icon *ngIf="icon === 'layers'" class="material-symbols-outlined">{{
+        icon
+      }}</mat-icon>
+      <div
+        *ngIf="icon === 'legend-toggle'"
+        [style.mask-image]="'url(/assets/svg/icons/actions/legend_toggle.svg)'"
+        class="svg-icon icon"></div>
     </button>
   </div>
 </mgl-control>

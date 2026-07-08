@@ -80,6 +80,7 @@ class FundingReportLayerKey(models.TextChoices):
     )
     AET_BASELINE = "aet_baseline", "AET Baseline"
     AET_TARGET = "aet_target", "AET Target"
+    AET_PERCENTUAL_CHANGE = "aet_percentual_change", "AET Percentual Change"
     MILLS_AND_OTHER_BIOMASS_FACILITIES = (
         "mills_and_other_biomass_facilities",
         "Mills & Other Biomass Facilities",
@@ -93,12 +94,15 @@ class FundingReportLayerCategory(models.TextChoices):
     WILDFIRE_RISK_REDUCTION = "wildfire_risk_reduction", "Wildfire Risk Reduction"
 
 
-FUNDING_REPORT_LAYER_CATEGORIES: Dict[FundingReportLayerKey, FundingReportLayerCategory] = {
+FUNDING_REPORT_LAYER_CATEGORIES: Dict[
+    FundingReportLayerKey, FundingReportLayerCategory
+] = {
     FundingReportLayerKey.BASELINE_ABOVEGROUND_CARBON_2026: FundingReportLayerCategory.CARBON,
     FundingReportLayerKey.BASELINE_SMOKE_PRODUCTION_2026: FundingReportLayerCategory.CARBON,
     FundingReportLayerKey.BASELINE_FLAME_LENGTH_2026: FundingReportLayerCategory.WILDFIRE_RISK_REDUCTION,
     FundingReportLayerKey.AET_BASELINE: FundingReportLayerCategory.WATER,
     FundingReportLayerKey.AET_TARGET: FundingReportLayerCategory.WATER,
+    FundingReportLayerKey.AET_PERCENTUAL_CHANGE: FundingReportLayerCategory.WATER,
     FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES: FundingReportLayerCategory.BIOMASS,
 }
 
@@ -136,7 +140,10 @@ def get_funding_report_metadata(input_file: str) -> Dict[str, Any]:
                 "baseline": match.group("kind").lower() == "baseline",
                 "variable": metric.value,
                 "year": year,
-            }
+            },
+            "map": {
+                "enabled": True,
+            },
         }
     }
 
@@ -182,3 +189,31 @@ class FundingOpportunityReport(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
     class Meta(TypedModelMeta):
         ordering = ["scenario", "-created_at"]
+
+
+class FundingOpportunityReportRun(CreatedAtMixin, models.Model):
+    id: int
+
+    report_id: int
+    report = models.ForeignKey(
+        FundingOpportunityReport,
+        related_name="runs",
+        on_delete=models.CASCADE,
+    )
+
+    user_id: Optional[int]
+    user = models.ForeignKey(
+        User,
+        related_name="funding_opportunity_report_runs",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+    email = models.EmailField(blank=True)
+
+    class Meta(TypedModelMeta):
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["created_at"]),
+        ]

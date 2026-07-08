@@ -4,11 +4,19 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonComponent } from '@styleguide';
+import { FeaturesModule } from '@features/features.module';
 
 @Component({
   selector: 'app-funding-report-footer',
   standalone: true,
-  imports: [ButtonComponent, MatIconModule, MatMenuModule, NgIf, NgClass],
+  imports: [
+    ButtonComponent,
+    MatIconModule,
+    MatMenuModule,
+    NgIf,
+    NgClass,
+    FeaturesModule,
+  ],
   templateUrl: './funding-report-footer.component.html',
   styleUrl: './funding-report-footer.component.scss',
 })

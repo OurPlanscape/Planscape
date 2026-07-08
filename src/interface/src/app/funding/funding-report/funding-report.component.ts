@@ -45,7 +45,6 @@ import {
   FundingReportBiomassVolumes,
   FundingReportDataLayers,
   FundingReportTimeSeriesMetric,
-  ORIGIN_TYPE,
 } from '@types';
 import { FundingModuleService } from '@services/funding-module.service';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
@@ -215,12 +214,6 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   /** Selected project area ids; empty means show the whole-scenario summary. */
   @Input() projectAreas: number[] = [];
   /**
-   * Scenario origin. Decides which per-project field the selected
-   * `projectAreas` ids are matched against: `project_id` for USER scenarios,
-   * `proj_id` (treatment rank) for SYSTEM ones.
-   */
-  @Input() origin: ORIGIN_TYPE = 'USER';
-  /**
    * The element that actually scrolls the report. When the report is embedded
    * in a host that owns the scroll (e.g. full-report-view), the host passes its
    * scroll container here. Defaults to the component's own `#scrollContainer`,
@@ -366,7 +359,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
 
     const results = this.report?.results;
     this.biomass = results
-      ? aggregateBiomassVolumes(results, this.projectAreas, this.origin)
+      ? aggregateBiomassVolumes(results, this.projectAreas)
       : undefined;
   }
 
@@ -380,12 +373,9 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     const interval = this.flameLengthInterval.value;
     // delta can be null when an interval had no valid pixels; treat it as 0.
     const deltas = results
-      ? aggregateFlameLengthSummary(
-          results,
-          interval,
-          this.projectAreas,
-          this.origin
-        ).map((point) => point.delta ?? 0)
+      ? aggregateFlameLengthSummary(results, interval, this.projectAreas).map(
+          (point) => point.delta ?? 0
+        )
       : [];
     this.flameLengthChart = {
       data: buildPercentageBarData(this.labels, deltas, 'orange'),
@@ -395,17 +385,13 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
       )!,
     };
     this.flameLengthHasData =
-      !!results &&
-      hasFlameLengthData(results, interval, this.projectAreas, this.origin);
+      !!results && hasFlameLengthData(results, interval, this.projectAreas);
   }
 
   /** True when the metric has any non-null data over the current selection. */
   private metricHasData(metric: FundingReportTimeSeriesMetric): boolean {
     const results = this.report?.results;
-    return (
-      !!results &&
-      hasMetricData(results, metric, this.projectAreas, this.origin)
-    );
+    return !!results && hasMetricData(results, metric, this.projectAreas);
   }
 
   /** Build a bar chart from a report metric: one bar per year, value = % delta. */
@@ -430,12 +416,9 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
       return [];
     }
     // delta can be null when a metric had no valid pixels; treat it as 0.
-    return aggregateMetricSummary(
-      results,
-      metric,
-      this.projectAreas,
-      this.origin
-    ).map((point) => point.delta ?? 0);
+    return aggregateMetricSummary(results, metric, this.projectAreas).map(
+      (point) => point.delta ?? 0
+    );
   }
 
   onLayerSelected(layer: MapLayer): void {

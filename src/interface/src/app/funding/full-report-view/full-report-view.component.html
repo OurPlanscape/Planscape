@@ -24,7 +24,7 @@
             <div>Viewing outcomes for:</div>
             <sg-filter-dropdown
               class="outcome-areas-dropdown"
-              size="large"
+              size="medium"
               (confirmedSelection)="handleFilterSelection($event)"
               [styleType]="'white'"
               [hasSearch]="false"
@@ -32,7 +32,7 @@
               shortLabel="shortName"
               noSelectionsLabel="All Project Areas"
               [selectedItems]="(filteredProjectAreas$ | async) ?? []"
-              [menuItems]="(availableProjectAreas$ | async) ?? []"
+              [menuItems]="(filterOptions$ | async) ?? []"
               [showCountChip]="false"
               menuLabel="Project Areas">
             </sg-filter-dropdown>
@@ -43,7 +43,6 @@
             *ngIf="report.status === 'SUCCESS'; else loadingReport"
             [report]="report"
             [projectAreas]="(selectedProjectAreas$ | async) ?? []"
-            [origin]="(currentScenario$ | async)?.origin ?? 'USER'"
             [scrollElement]="reportScroll"
             reportType="full"
             [updatingWaterAvailability]="updatingWaterAvailability"
@@ -83,6 +82,7 @@
     </app-map-nav-bar>
     <app-funding-report-map
       *ngIf="treatmentDataLayerId$ | async as treatmentDataLayerId"
-      [treatmentDataLayerId]="treatmentDataLayerId"></app-funding-report-map>
+      [treatmentDataLayerId]="treatmentDataLayerId"
+      [legendData]="legendData$ | async"></app-funding-report-map>
   </div>
 </section>

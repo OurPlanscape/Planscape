@@ -1,10 +1,17 @@
 import logging
+from collections import Counter
 from datetime import timedelta
 
 from celery import chord
-from django.db import transaction
-from django.utils import timezone
 from datasets.models import DataLayer
+from django.conf import settings
+from django.core.mail import send_mail
+from django.db import transaction
+from django.template.loader import render_to_string
+from django.utils import timezone
+from planning.models import ProjectArea
+from planscape.celery import app
+
 from funding_report.models import (
     AET_IMPROVEMENT_DEFAULT_PERCENTAGE,
     FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
@@ -12,6 +19,7 @@ from funding_report.models import (
     FLAME_LENGTH_REDUCTION_INTERVALS,
     FUNDING_REPORT_YEARS,
     FundingOpportunityReport,
+    FundingOpportunityReportRun,
     FundingOpportunityReportStatus,
     FundingReportMetric,
 )
@@ -26,8 +34,6 @@ from funding_report.services import (
     generate_treatment_clip_datalayer,
     get_treatment_datalayer,
 )
-from planning.models import ProjectArea
-from planscape.celery import app
 
 log = logging.getLogger(__name__)
 
@@ -106,9 +112,7 @@ def async_generate_treatment_datalayer(
         return None
 
     try:
-        report = FundingOpportunityReport.objects.get(
-            pk=funding_opportunity_report_id
-        )
+        report = FundingOpportunityReport.objects.get(pk=funding_opportunity_report_id)
         datalayer = generate_treatment_clip_datalayer(report=report)
         return {"kind": "treatment_datalayer", "datalayer_id": datalayer.pk}
     except Exception as exc:
@@ -132,9 +136,7 @@ def async_calculate_treatment_areas(
         return None
 
     try:
-        report = FundingOpportunityReport.objects.get(
-            pk=funding_opportunity_report_id
-        )
+        report = FundingOpportunityReport.objects.get(pk=funding_opportunity_report_id)
         result = calculate_treatment_pixel_areas(report=report)
         return {"kind": "treatment_areas", **result}
     except Exception as exc:
@@ -202,7 +204,10 @@ def async_finalize_funding_report_results(
             case "treatment_datalayer":
                 treatment_datalayer_id = result["datalayer_id"]
             case "treatment_areas":
-                treatment_areas = {"projects": result["projects"], "total": result["total"]}
+                treatment_areas = {
+                    "projects": result["projects"],
+                    "total": result["total"],
+                }
             case "aet_improvement":
                 aet_improvement = result
             case "biomass_volumes":
@@ -276,7 +281,9 @@ def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
             return
         report.status = FundingOpportunityReportStatus.RUNNING
         report.save(update_fields=["status", "updated_at"])
-        project_area_ids = list(report.scenario.project_areas.values_list("id", flat=True))
+        project_area_ids = list(
+            report.scenario.project_areas.values_list("id", flat=True)
+        )
 
     try:
         if not project_area_ids:
@@ -355,3 +362,54 @@ def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
             pk=funding_opportunity_report_id
         ).update(status=FundingOpportunityReportStatus.FAILED)
         raise
+
+
+@app.task()
+def send_weekly_funding_report_users_report() -> None:
+    recipient_email = settings.WEEKLY_FUNDING_REPORT_USERS_REPORT_EMAIL
+    if not recipient_email:
+        log.warning("No recipient configured for weekly funding report users report.")
+        return
+
+    end = timezone.now()
+    start = end - timedelta(days=7)
+
+    emails = FundingOpportunityReportRun.objects.filter(
+        created_at__gte=start,
+        created_at__lt=end,
+    ).values_list("email", flat=True)
+
+    email_counts = Counter(
+        email.strip().lower() for email in emails if email and email.strip()
+    )
+
+    rows = [
+        {"email": email, "count": count}
+        for email, count in sorted(email_counts.items())
+    ]
+
+    context = {
+        "start": start,
+        "end": end,
+        "rows": rows,
+        "total_runs": sum(email_counts.values()),
+        "unique_users": len(rows),
+    }
+
+    subject = "Weekly Planscape Funding Report Users"
+    txt = render_to_string(
+        "email/funding_report/weekly_report_users.txt",
+        context,
+    )
+    html = render_to_string(
+        "email/funding_report/weekly_report_users.html",
+        context,
+    )
+
+    send_mail(
+        subject=subject,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[recipient_email],
+        message=txt,
+        html_message=html,
+    )
