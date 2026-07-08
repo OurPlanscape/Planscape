@@ -33,12 +33,16 @@
     </div>
     <div right-column class="project-area-column">
       <app-project-area-coming-soon
-        *ngIf="
-          isPrioritizeProjectsFlagEnabled === false
+        *appFeatureFlag="
+          'PRIORITIZE_PROJECT_AREAS';
+          hide: true
         "></app-project-area-coming-soon>
       <app-project-areas-empty-list
         [plan]="plan"
-        *ngIf="isPrioritizeProjectsFlagEnabled"></app-project-areas-empty-list>
+        *appFeatureFlag="
+          'PRIORITIZE_PROJECT_AREAS';
+          hide: false
+        "></app-project-areas-empty-list>
     </div>
   </sg-dashboard-layout>
 </ng-container>
