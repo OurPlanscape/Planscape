@@ -1,0 +1,73 @@
+<div
+  class="treatment-acres-legend"
+  #tooltip="matTooltip"
+  matTooltip="All results reflect modeled changes compared to baseline (no-treatment) conditions."
+  [matTooltipDisabled]="true"
+  #tooltipRef="matTooltip"
+  matTooltipPosition="left"
+  matTooltipClass="tx-legend-tooltip"
+  matTooltipTrigger="manual">
+  <div class="title-header">
+    <div class="title">Legend</div>
+    <button
+      sg-button
+      variant="icon-only"
+      class="close-button"
+      (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <div class="acres-section">
+    <div class="static-section">
+      <div class="static-row">
+        <div class="legend-line">
+          <div
+            class="swatch-box"
+            [ngStyle]="{ 'background-color': '#064BBA' }"></div>
+          <div class="swatch-label">Total Planning Area Acres</div>
+        </div>
+        <div *ngIf="currentPlan$ | async as plan" class="acres-line">
+          {{ plan.area_acres | number: '1.0-0' }} acres
+        </div>
+      </div>
+      <div class="static-row">
+        <div class="legend-line">
+          <div
+            class="swatch-box"
+            [ngStyle]="{ 'background-color': '#344F42' }"></div>
+          <div class="swatch-label">Selected Project Area Acres</div>
+        </div>
+        <div class="acres-line">
+          {{ legendData.selectedAcres | number: '1.0-0' }} acres
+        </div>
+      </div>
+    </div>
+    <div class="treatment-title-line" *ngIf="legendData.treatmentAcresTotals">
+      <div class="title">Treatment Type</div>
+      <button
+        sg-button
+        variant="icon-only"
+        icon="info"
+        class="info-icon"
+        [outlined]="true"
+        (click)="toggleTooltip(tooltip, $event)"></button>
+    </div>
+    <div class="dynamic-section" *ngIf="legendData.treatmentAcresTotals">
+      <div
+        class="dynamic-acres-row"
+        *ngFor="let acreageDetail of legendData.treatmentAcresTotals">
+        <div class="legend-line">
+          <div
+            class="swatch-box"
+            [ngStyle]="{
+              'background-color': treatmentColors[acreageDetail.treatment],
+            }"></div>
+          <div class="swatch-label">{{ acreageDetail.treatment }}</div>
+        </div>
+        <div class="acres-line">
+          {{ acreageDetail.acres | number: '1.0-0' }} acres
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

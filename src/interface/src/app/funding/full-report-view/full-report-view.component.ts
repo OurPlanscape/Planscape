@@ -13,7 +13,7 @@ import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.co
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
-import { ScenarioResult } from '@app/types';
+import { ProjectArea } from '@app/types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FundingReportService } from '@services/funding-report.service';
 import { FilterDropdownComponent, OpacitySliderComponent } from '@styleguide';
@@ -29,6 +29,7 @@ import {
   finalize,
   map,
   Observable,
+  of,
   shareReplay,
   Subject,
   switchMap,
@@ -39,9 +40,12 @@ import {
 import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
 import { FundingReportComponent } from '../funding-report/funding-report.component';
 import { FundingMapConfigState } from '../funding-map-config-state';
+import { generateLegendFromReport } from '../funding-report/funding-report.helper';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { ScenarioService } from '@app/services';
+import { isPlanningApproachSubUnits } from '@app/scenario/scenario-helper';
 
-interface FilterProjectFormat {
+export interface FilterProjectFormat {
   id: number;
   name: string;
   shortName: string;
@@ -89,20 +93,44 @@ export class FullReportViewComponent implements OnInit {
   currentScenario$ = this.scenarioState.currentScenario$;
   selectedProjectAreas$ = this.fundingMapConfigState.selectedProjectAreas$;
   opacity$ = this.fundingMapConfigState.opacity$;
-  availableProjectAreas$: Observable<FilterProjectFormat[]> =
+
+  allAvailableProjectAreas$: Observable<ProjectArea[]> =
     this.currentScenario$.pipe(
-      map((scenario) => {
-        if (!scenario?.origin || !scenario?.scenario_result) return [];
-        return this.resultsToSelectionMenu(
-          scenario.origin,
-          scenario.scenario_result
-        );
+      switchMap((scenario) => {
+        if (!scenario?.id) {
+          return of([]);
+        }
+        return this.scenarioService.getProjectAreas(scenario.id);
       }),
       shareReplay(1)
     );
 
+  filterOptions$: Observable<FilterProjectFormat[]> = combineLatest([
+    this.allAvailableProjectAreas$,
+    this.currentScenario$,
+  ]).pipe(
+    map(([projectAreas, scenario]) => {
+      if (!projectAreas.length) {
+        return [];
+      }
+
+      // filter the top 10 for subunit approaches
+      if (
+        scenario?.planning_approach &&
+        isPlanningApproachSubUnits(scenario?.planning_approach)
+      ) {
+        projectAreas = projectAreas.filter(
+          (pa) => pa.data.treatment_rank <= 10
+        );
+      }
+
+      return this.projectAreasToSelectionMenu(projectAreas);
+    }),
+    shareReplay(1)
+  );
+
   readonly filteredProjectAreas$: Observable<FilterProjectFormat[]> =
-    combineLatest(this.availableProjectAreas$, this.selectedProjectAreas$).pipe(
+    combineLatest(this.filterOptions$, this.selectedProjectAreas$).pipe(
       map(([available, selectedIds]) => {
         if (!selectedIds?.length) return [];
         return available.filter((area) => selectedIds.includes(area.id));
@@ -150,6 +178,7 @@ export class FullReportViewComponent implements OnInit {
   constructor(
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
+    private scenarioService: ScenarioService,
     private fundingReportService: FundingReportService,
     private fundingMapConfigState: FundingMapConfigState,
     private router: Router,
@@ -204,18 +233,21 @@ export class FullReportViewComponent implements OnInit {
       .subscribe((water) => this.water$.next(water));
   }
 
-  resultsToSelectionMenu(
-    origin: string,
-    results: ScenarioResult
+  projectAreasToSelectionMenu(
+    projectAreas: ProjectArea[]
   ): FilterProjectFormat[] {
-    return results.result.features.map((featureCollection) => {
-      const props = featureCollection.properties;
-      return {
-        id: origin === 'USER' ? props.project_id : props.treatment_rank,
-        shortName: props.treatment_rank,
-        name: `Project Area ${props.treatment_rank}`,
-      };
-    });
+    return projectAreas
+      .map((projectArea) => {
+        const filterOption: FilterProjectFormat = {
+          id: projectArea.id,
+          shortName: projectArea.data.treatment_rank.toString(),
+          name: `Project Area ${projectArea.data.treatment_rank}`,
+        };
+        return filterOption; // sort the resulting array so 'Project 10' is after 'Project 2'
+      })
+      .sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { numeric: true })
+      );
   }
 
   redirectToFunding() {
@@ -253,4 +285,15 @@ export class FullReportViewComponent implements OnInit {
     }
     return { ...report, results };
   }
+
+  legendData$ = combineLatest([
+    this.fetchedReport$,
+    this.selectedProjectAreas$,
+    this.allAvailableProjectAreas$,
+  ]).pipe(
+    map(([report, areas, projAreas]) =>
+      generateLegendFromReport(report?.results ?? null, areas, projAreas)
+    ),
+    shareReplay(1)
+  );
 }

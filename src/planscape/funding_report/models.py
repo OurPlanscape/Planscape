@@ -80,6 +80,7 @@ class FundingReportLayerKey(models.TextChoices):
     )
     AET_BASELINE = "aet_baseline", "AET Baseline"
     AET_TARGET = "aet_target", "AET Target"
+    AET_PERCENTUAL_CHANGE = "aet_percentual_change", "AET Percentual Change"
     MILLS_AND_OTHER_BIOMASS_FACILITIES = (
         "mills_and_other_biomass_facilities",
         "Mills & Other Biomass Facilities",
@@ -101,6 +102,7 @@ FUNDING_REPORT_LAYER_CATEGORIES: Dict[
     FundingReportLayerKey.BASELINE_FLAME_LENGTH_2026: FundingReportLayerCategory.WILDFIRE_RISK_REDUCTION,
     FundingReportLayerKey.AET_BASELINE: FundingReportLayerCategory.WATER,
     FundingReportLayerKey.AET_TARGET: FundingReportLayerCategory.WATER,
+    FundingReportLayerKey.AET_PERCENTUAL_CHANGE: FundingReportLayerCategory.WATER,
     FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES: FundingReportLayerCategory.BIOMASS,
 }
 
