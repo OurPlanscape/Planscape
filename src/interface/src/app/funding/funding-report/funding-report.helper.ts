@@ -1,6 +1,5 @@
 import {
   FlameLengthInterval,
-  FundingReportBiomassVolumes,
   FundingReportDataPoint,
   FundingReportProjectDataPoint,
   FundingReportResults,
@@ -177,48 +176,6 @@ export function aggregateFlameLengthSummary(
     projectAreas,
     percentOfArea
   );
-}
-
-/**
- * Estimated biomass volumes for the chosen project areas.
- *
- * An empty `projectAreas` means "all areas" and returns the precomputed
- * whole-scenario summary as-is. A non-empty list sums each volume field over
- * the selected project areas, mirroring the backend, which accumulates raw
- * per-area values before the (linear) unit conversion — so summing the
- * already-converted per-area outputs yields the same totals.
- *
- * Returns `undefined` when no biomass data is available for the selection.
- */
-export function aggregateBiomassVolumes(
-  results: FundingReportResults,
-  projectAreas: number[]
-): FundingReportBiomassVolumes | undefined {
-  if (projectAreas.length === 0) {
-    return results.summary.BIOMASS_VOLUMES;
-  }
-  const projects = results.projects.BIOMASS_VOLUMES;
-  if (!projects) {
-    return undefined;
-  }
-  const idKey = 'project_id';
-  const selected = new Set(projectAreas);
-  const matches = projects.filter((project) =>
-    selected.has(project[idKey] as number)
-  );
-  if (matches.length === 0) {
-    return undefined;
-  }
-  const sum = (key: keyof FundingReportBiomassVolumes) =>
-    matches.reduce((total, project) => total + (project[key] ?? 0), 0);
-  return {
-    merchantable_softwood_bf: sum('merchantable_softwood_bf'),
-    merchantable_hardwood_bf: sum('merchantable_hardwood_bf'),
-    merchantable_mixed_bf: sum('merchantable_mixed_bf'),
-    non_merchantable_softwood_cuft: sum('non_merchantable_softwood_cuft'),
-    non_merchantable_hardwood_cuft: sum('non_merchantable_hardwood_cuft'),
-    non_merchantable_mixed_cuft: sum('non_merchantable_mixed_cuft'),
-  };
 }
 
 export function generateLegendFromReport(
