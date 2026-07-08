@@ -48,7 +48,6 @@ import { FundingModuleService } from '@services/funding-module.service';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import {
-  aggregateBiomassVolumes,
   aggregateFlameLengthSummary,
   aggregateMetricSummary,
   hasFlameLengthData,
@@ -372,10 +371,10 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     this.smokeHasData = this.metricHasData('POTENTIAL_SMOKE');
     this.treeCarbonHasData = this.metricHasData('ABOVEGROUND_TOTAL');
 
-    const results = this.report?.results;
-    this.biomass = results
-      ? aggregateBiomassVolumes(results, this.projectAreas)
-      : undefined;
+    // Biomass, like the water (AET) section, is always shown as the
+    // whole-scenario summary and is deliberately NOT broken down by the
+    // selected project areas.
+    this.biomass = this.report?.results?.summary?.BIOMASS_VOLUMES;
   }
 
   /**
