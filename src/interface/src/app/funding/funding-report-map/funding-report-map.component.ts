@@ -42,6 +42,7 @@ import {
 } from '../funding-acreage-legend/funding-acreage-legend.component';
 import { MapActionButtonComponent } from '@app/treatments/map-action-button/map-action-button.component';
 import { MapLayerColorLegendComponent } from '@app/maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
+import { BASE_COLORS } from '@app/treatments/map.styles';
 
 @Component({
   selector: 'app-funding-report-map',
@@ -83,6 +84,8 @@ export class FundingReportMapComponent implements OnInit {
     this.mapConfigService.initialize();
     this.loading$.next(true);
   }
+
+  readonly BASE_COLORS = BASE_COLORS;
 
   @Input() allowInteraction = true;
 
