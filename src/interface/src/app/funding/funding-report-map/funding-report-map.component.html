@@ -59,6 +59,10 @@
     >Click project area to select</app-map-tooltip
   >
 
+  <mgl-control position="top-left">
+    <app-map-layer-color-legend></app-map-layer-color-legend>
+  </mgl-control>
+
   <mgl-control position="top-right" *ngIf="allowInteraction">
     <app-action-button
       *ngIf="(showFundingLegend$ | async) === false"

@@ -151,6 +151,13 @@ export class MapMultiProjectAreasComponent implements OnInit {
       'line-width',
       ['case', ['in', ['get', 'id'], ['literal', ids]], 6, 2]
     );
+
+    // Set the line color to green
+    this.mapLibreMap.setPaintProperty(
+      this.layers.projectAreasOutline.name,
+      'line-color',
+      BASE_COLORS.dark_green
+    );
   }
 
   handleLayerClick(event: MapMouseEvent) {

@@ -41,6 +41,7 @@ import {
   FundingLegendData,
 } from '../funding-acreage-legend/funding-acreage-legend.component';
 import { MapActionButtonComponent } from '@app/treatments/map-action-button/map-action-button.component';
+import { MapLayerColorLegendComponent } from '@app/maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
 
 @Component({
   selector: 'app-funding-report-map',
@@ -56,6 +57,7 @@ import { MapActionButtonComponent } from '@app/treatments/map-action-button/map-
     MapBaseLayersComponent,
     MapDataLayerComponent,
     MapComponent,
+    MapLayerColorLegendComponent,
     MapMultiProjectAreasComponent,
     MapTooltipComponent,
     MapZoomControlComponent,
