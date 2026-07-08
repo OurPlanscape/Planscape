@@ -7,16 +7,17 @@ export class FundingMapConfigState extends MapConfigState {
   private _selectedProjectAreas$ = new BehaviorSubject<number[]>([]);
   public selectedProjectAreas$ = this._selectedProjectAreas$.asObservable();
 
-  /**  note that 'ids' here is either based on:
-  /*  the project_id for USER origin or the rank for SYSTEM origin
-  */
+  private _showFundingLegend$ = new BehaviorSubject(false);
+  public showFundingLegend$ = this._showFundingLegend$.asObservable();
+
+  setFundingLegendVisibility(value: boolean) {
+    this._showFundingLegend$.next(value);
+  }
+
   updateSelectedProjectAreas(ids: number[]) {
     this._selectedProjectAreas$.next(ids);
   }
 
-  /**  note that 'id' here is either based on:
-  /*  the project_id for USER origin or the rank for SYSTEM origin
-  */
   toggleSelectedProjectArea(id: any) {
     const currentSelection = this._selectedProjectAreas$.getValue();
     // if the id is already selected, we remove it.

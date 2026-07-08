@@ -1,0 +1,166 @@
+@import 'colors';
+@import 'mixins';
+@import 'variables';
+
+:host {
+  box-sizing: border-box;
+  pointer-events: all;
+  /* specifying font family here, since the control defaults to helvetica */
+  font-family: 'Public Sans';
+}
+
+.treatment-acres-legend {
+  border-radius: 4px;
+  border: 1px solid #000;
+  background: rgba(42, 42, 42, 0.9);
+  backdrop-filter: blur(10px);
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(2px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  height: auto;
+  max-height: calc(100% - $map-nav-bar-height);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  transition:
+    width 0.8s ease,
+    height 0.8s ease;
+  white-space: nowrap;
+
+  padding: 0;
+  width: 240px;
+  position: relative;
+}
+
+.title-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 16px;
+  flex: 1;
+  justify-content: space-between;
+  border-bottom: 1px #ffffff19 solid;
+}
+
+.treatment-title-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  flex: 1;
+  justify-content: space-between;
+  border-top: 1px #ffffff19 solid;
+  padding: 12px 0;
+}
+
+.acres-section {
+  padding: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.title {
+  @include standard-label();
+  font-size: 14px;
+  font-weight: 600;
+  color: $color-white;
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.close-button,
+.info-icon {
+  color: $color-white;
+}
+
+.legend-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  color: $color-white;
+}
+
+.acres-line {
+  @include small-input-label();
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  color: $color-white;
+  padding: 0 20px;
+}
+
+.swatch-box {
+  height: 14px;
+  width: 14px;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+
+.swatch-label {
+  @include small-input-label();
+  font-family: 'Public Sans';
+  line-height: 14px;
+  color: $color-white;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.static-row,
+.dynamic-acres-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+.static-section,
+.dynamic-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+.swatch-gradient {
+  width: 14px;
+  min-height: 160px;
+  flex-shrink: 0;
+}
+
+::ng-deep .tx-legend-tooltip {
+  color:$color-white;
+  border-radius: 6px;
+  position: relative;
+  top: 20px;
+
+  .mdc-tooltip__surface {
+    background-color: $color-black !important;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    transform: translateY(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent transparent $color-black;
+  }
+}
