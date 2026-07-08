@@ -1,4 +1,10 @@
-<button sg-button icon="share_outlined" (click)="shareReport()">Share</button>
+<button
+  sg-button
+  icon="share_outlined"
+  (click)="shareReport()"
+  *appFeatureFlag="'SHARE_FUNDING_REPORTS'">
+  Share
+</button>
 <button
   sg-button
   icon="download"
