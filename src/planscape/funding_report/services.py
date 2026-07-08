@@ -1,12 +1,14 @@
 import json
 import logging
+import re
 import tempfile
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 from uuid import uuid4
 
+import fiona
 import numpy as np
 import rasterio
 from datasets.models import (
@@ -21,15 +23,18 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry
+from fiona.crs import from_epsg
 from gis.core import fetch_geometry_type, get_layer_info, with_vsi_prefix
 from gis.geometry import maybe_transform
+from gis.info import get_gdal_env
 from gis.io import detect_mimetype
 from gis.rasters import to_cog_streaming
-from planning.models import ProjectArea, Scenario
-from planning.services import get_acreage
+from planning.models import GeoPackageStatus, ProjectArea, Scenario
+from planning.services import get_acreage, map_property_for_numeric_export
 from pyproj import Geod
 from rasterio.features import geometry_mask
 from rasterio.mask import mask
+from utils.geometry import to_multi
 
 from funding_report.models import (
     BIOMASS_VARIABLE,
@@ -1017,3 +1022,289 @@ def calculate_biomass_volumes(report: FundingOpportunityReport) -> Dict[str, Any
         "summary": _biomass_volumes_to_output(accumulated),
         "project_areas": project_area_results,
     }
+
+
+_INVALID_COLUMN_CHARS = re.compile(r"[^0-9a-zA-Z_]+")
+
+
+def _sanitize_column_name(name: str) -> str:
+    """
+    Replaces characters that aren't safe in a GeoPackage/SQL column name
+    with underscores, preserving case. Unlike `sanitize_shp_field_name`
+    (Django's `slugify`), this does not lowercase or use hyphens - hyphens
+    aren't valid in an unquoted SQL identifier, and lowercasing would
+    obscure the metric names (e.g. "ABOVEGROUND_TOTAL_2026_value").
+    """
+    return _INVALID_COLUMN_CHARS.sub("_", str(name)).strip("_")
+
+
+def flatten_report_metrics(prefix: str, value: Any, out: Dict[str, Any]) -> None:
+    """
+    Flattens the nested `results["summary"]`/`results["projects"]` structure
+    into a flat dict of columns suitable for a GeoPackage attribute table.
+
+    - dicts recurse, appending the key to the prefix (e.g. "AET" + "percentage"
+      -> "AET_percentage").
+    - lists of dicts (one row per year, or per project per year) recurse per
+      item, appending the item's "year" to the prefix when present (e.g.
+      "ABOVEGROUND_TOTAL" + year 2026 -> "ABOVEGROUND_TOTAL_2026"). The
+      "project_id"/"proj_id"/"year" keys are dropped from the item itself
+      since they're identifying metadata, not a result column.
+    - anything else is a leaf value, written under the sanitized prefix.
+    """
+    if isinstance(value, dict):
+        for key, sub_value in value.items():
+            sub_prefix = f"{prefix}_{key}" if prefix else str(key)
+            flatten_report_metrics(sub_prefix, sub_value, out)
+    elif isinstance(value, list):
+        for item in value:
+            if not isinstance(item, dict):
+                continue
+            year = item.get("year")
+            sub_prefix = f"{prefix}_{int(year)}" if year is not None else prefix
+            filtered_item = {
+                k: v for k, v in item.items() if k not in ("project_id", "proj_id", "year")
+            }
+            flatten_report_metrics(sub_prefix, filtered_item, out)
+    elif prefix:
+        out[_sanitize_column_name(prefix)] = value
+
+
+def _filter_by_project_id(value: Any, project_id: int) -> Any:
+    """
+    Walks the `results["projects"]` structure, keeping only list items whose
+    "project_id" matches. Handles both flat per-metric lists (e.g.
+    ABOVEGROUND_TOTAL, AET, BIOMASS_VOLUMES) and the nested
+    {interval_key: [...]} shape used by TOTAL_FLAME_SEVERITY.
+    """
+    if isinstance(value, list):
+        return [
+            item
+            for item in value
+            if isinstance(item, dict) and item.get("project_id") == project_id
+        ]
+    if isinstance(value, dict):
+        return {key: _filter_by_project_id(sub, project_id) for key, sub in value.items()}
+    return value
+
+
+def build_planning_area_feature(report: FundingOpportunityReport) -> Dict[str, Any]:
+    scenario = report.scenario
+    planning_area = scenario.planning_area
+    results = report.results or {}
+
+    properties: Dict[str, Any] = {
+        "id": planning_area.pk,
+        "name": planning_area.name,
+        "region_name": planning_area.region_name or "",
+        "scenario_id": scenario.pk,
+    }
+    flatten_report_metrics("", results.get("summary", {}), properties)
+    flatten_report_metrics(
+        "TREATMENT_AREA", results.get("treatment_areas", {}).get("total", {}), properties
+    )
+
+    geometry_json = json.loads(
+        planning_area.geometry.transform(settings.CRS_GEOPACKAGE_EXPORT, clone=True).json
+    )
+    return {
+        "geometry": to_multi(geometry_json),
+        "properties": properties,
+    }
+
+
+def build_project_area_features(report: FundingOpportunityReport) -> List[Dict[str, Any]]:
+    scenario = report.scenario
+    results = report.results or {}
+    projects_results = results.get("projects", {})
+    treatment_area_projects = results.get("treatment_areas", {}).get("projects", {})
+
+    features = []
+    for project_area in scenario.project_areas.all():
+        properties: Dict[str, Any] = {
+            "id": project_area.pk,
+            "proj_id": (project_area.data or {}).get("proj_id"),
+            "name": project_area.name,
+        }
+        filtered = _filter_by_project_id(projects_results, project_area.pk)
+        flatten_report_metrics("", filtered, properties)
+        flatten_report_metrics(
+            "TREATMENT_AREA",
+            treatment_area_projects.get(str(project_area.pk), {}),
+            properties,
+        )
+
+        geometry_json = json.loads(
+            project_area.geometry.transform(settings.CRS_GEOPACKAGE_EXPORT, clone=True).json
+        )
+        features.append(
+            {
+                "geometry": to_multi(geometry_json),
+                "properties": properties,
+            }
+        )
+    return features
+
+
+def export_planning_area_results_to_geopackage(
+    report: FundingOpportunityReport, geopackage_path: Path
+) -> None:
+    feature = build_planning_area_feature(report)
+    field_type_pairs = list(
+        map(map_property_for_numeric_export, feature["properties"].items())
+    )
+    schema = {"geometry": "MultiPolygon", "properties": field_type_pairs}
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+            with fiona.open(
+                str(geopackage_path),
+                "w",
+                layer="planning_area",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                out.write(feature)
+    except Exception as e:
+        log.exception(
+            "Error exporting planning area results for funding report %s to geopackage: %s",
+            report.pk,
+            e,
+        )
+        raise e
+
+
+def export_project_areas_results_to_geopackage(
+    report: FundingOpportunityReport, geopackage_path: Path
+) -> None:
+    features = build_project_area_features(report)
+    if not features:
+        log.warning(
+            "Funding report %s has no project areas. Skipping project_areas "
+            "geopackage layer.",
+            report.pk,
+        )
+        return
+
+    field_type_pairs = list(
+        map(map_property_for_numeric_export, features[0]["properties"].items())
+    )
+    schema = {"geometry": "MultiPolygon", "properties": field_type_pairs}
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+            with fiona.open(
+                str(geopackage_path),
+                "w",
+                layer="project_areas",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                for feature in features:
+                    out.write(feature)
+    except Exception as e:
+        log.exception(
+            "Error exporting project area results for funding report %s to geopackage: %s",
+            report.pk,
+            e,
+        )
+        raise e
+
+
+def export_treatment_raster_to_geopackage(
+    report: FundingOpportunityReport, geopackage_path: Path
+) -> None:
+    datalayer = report.treatment_datalayer
+    if datalayer is None or not datalayer.url:
+        log.warning(
+            "Funding report %s has no treatment datalayer. Skipping treatment_clip "
+            "geopackage raster layer.",
+            report.pk,
+        )
+        return
+
+    try:
+        with rasterio.open(with_vsi_prefix(datalayer.url)) as src:
+            data = src.read()
+            profile = {
+                "driver": "GPKG",
+                "height": src.height,
+                "width": src.width,
+                "count": src.count,
+                "dtype": src.dtypes[0],
+                "crs": src.crs,
+                "transform": src.transform,
+                "nodata": src.nodata,
+            }
+
+        with rasterio.open(
+            str(geopackage_path),
+            "w",
+            RASTER_TABLE="treatment_clip",
+            APPEND_SUBDATASET="YES",
+            **profile,
+        ) as dst:
+            dst.write(data)
+    except Exception as e:
+        log.exception(
+            "Error exporting treatment raster for funding report %s to geopackage: %s",
+            report.pk,
+            e,
+        )
+        raise e
+
+
+def export_funding_report_to_geopackage(
+    report: FundingOpportunityReport,
+) -> Optional[str]:
+    report = FundingOpportunityReport.objects.select_related(
+        "scenario__planning_area", "treatment_datalayer"
+    ).get(pk=report.pk)
+    try:
+        report.geopackage_status = GeoPackageStatus.PROCESSING
+        report.save(update_fields=["geopackage_status", "updated_at"])
+
+        temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
+        if not temp_folder.exists():
+            temp_folder.mkdir(parents=True)
+        temp_file = temp_folder / f"funding_report_{report.pk}.gpkg"
+        temp_file.unlink(missing_ok=True)
+
+        export_planning_area_results_to_geopackage(report, temp_file)
+        export_project_areas_results_to_geopackage(report, temp_file)
+        export_treatment_raster_to_geopackage(report, temp_file)
+
+        object_name = f"{settings.GEOPACKAGES_FOLDER}/funding_report_{report.pk}.gpkg"
+        if settings.PROVIDER == "gcp":
+            from core.gcs import upload_file_via_cli
+
+            geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{object_name}"
+            upload_file_via_cli(
+                object_name=object_name,
+                input_file=str(temp_file),
+                bucket_name=settings.GCS_MEDIA_BUCKET,
+            )
+        else:
+            from core.s3 import upload_file_via_s3_client
+
+            geopackage_path = f"s3://{settings.S3_BUCKET}/{object_name}"
+            upload_file_via_s3_client(
+                object_name=object_name,
+                input_file=str(temp_file),
+            )
+
+        temp_file.unlink(missing_ok=True)
+        report.geopackage_url = geopackage_path
+        report.geopackage_status = GeoPackageStatus.SUCCEEDED
+        report.save(update_fields=["geopackage_url", "geopackage_status", "updated_at"])
+        return geopackage_path
+    except Exception:
+        log.exception("Failed to export funding report %s to geopackage.", report.pk)
+        report.geopackage_url = None
+        report.geopackage_status = GeoPackageStatus.FAILED
+        report.save(update_fields=["geopackage_url", "geopackage_status", "updated_at"])
+        return None

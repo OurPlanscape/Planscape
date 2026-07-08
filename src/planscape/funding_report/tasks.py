@@ -31,6 +31,7 @@ from funding_report.services import (
     calculate_biomass_volumes,
     calculate_project_area_delta,
     calculate_treatment_pixel_areas,
+    export_funding_report_to_geopackage,
     generate_treatment_clip_datalayer,
     get_treatment_datalayer,
 )
@@ -181,6 +182,22 @@ def async_calculate_biomass_volumes(
 
 
 @app.task()
+def async_generate_funding_report_geopackage(
+    funding_opportunity_report_id: int,
+) -> None:
+    try:
+        report = FundingOpportunityReport.objects.select_related("scenario").get(
+            pk=funding_opportunity_report_id
+        )
+        export_funding_report_to_geopackage(report)
+    except Exception:
+        log.exception(
+            "Failed to generate geopackage for funding report %s.",
+            funding_opportunity_report_id,
+        )
+
+
+@app.task()
 def async_finalize_funding_report_results(
     project_results: list[dict | None],
     funding_opportunity_report_id: int,
@@ -255,6 +272,9 @@ def async_finalize_funding_report_results(
     FundingOpportunityReport.objects.filter(pk=funding_opportunity_report_id).update(
         **update_fields
     )
+
+    if update_fields["status"] == FundingOpportunityReportStatus.SUCCESS:
+        async_generate_funding_report_geopackage.delay(funding_opportunity_report_id)
 
 
 @app.task()
