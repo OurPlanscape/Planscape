@@ -17,6 +17,19 @@ mat-radio-button {
   margin-left: -8px;
 }
 
+.layer-radio {
+  ::ng-deep .mdc-form-field {
+    width: 100%;
+  }
+
+  ::ng-deep .mdc-label {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
 .layer-checkbox {
   display: block;
   margin-left: -8px;
@@ -40,4 +53,15 @@ mat-radio-button {
   display: inline-flex;
   box-sizing: border-box;
   border: 1px solid transparent;
+}
+
+.right-items {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.side-spinner {
+  flex-shrink: 0;
 }

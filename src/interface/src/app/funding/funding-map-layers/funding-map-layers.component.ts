@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BASE_LAYERS_DEFAULT } from '@shared';
 
 export interface MapLayer {
@@ -23,7 +24,13 @@ export interface MapLayer {
 @Component({
   selector: 'app-funding-map-layers',
   standalone: true,
-  imports: [NgFor, NgIf, MatRadioModule, MatCheckboxModule],
+  imports: [
+    NgFor,
+    NgIf,
+    MatRadioModule,
+    MatCheckboxModule,
+    MatProgressSpinnerModule,
+  ],
   templateUrl: './funding-map-layers.component.html',
   styleUrl: './funding-map-layers.component.scss',
 })
@@ -36,6 +43,8 @@ export class FundingMapLayersComponent {
   @Input() selectedLayerId: number | null = null;
   /** Ids of the layers currently shown on the map (multi-select). */
   @Input() selectedLayerIds: number[] = [];
+  /** Ids of the layers currently loading onto the map; each shows a spinner. */
+  @Input() loadingLayerIds: number[] = [];
   @Output() selectedLayer = new EventEmitter<MapLayer>();
 
   BASE_LAYERS_DEFAULT = BASE_LAYERS_DEFAULT;
@@ -53,5 +62,9 @@ export class FundingMapLayersComponent {
 
   isChecked(layer: MapLayer): boolean {
     return this.selectedLayerIds.includes(layer.id);
+  }
+
+  isLoading(layer: MapLayer): boolean {
+    return this.loadingLayerIds.includes(layer.id);
   }
 }

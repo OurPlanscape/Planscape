@@ -58,6 +58,7 @@
         heading="Map Layers (no treatment)"
         [layers]="sectionLayers['carbon']"
         [selectedLayerId]="viewedLayerId$ | async"
+        [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
         (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
     </div>
 
@@ -100,6 +101,7 @@
         heading="Map Layers (no treatment)"
         [layers]="sectionLayers['wildfire']"
         [selectedLayerId]="viewedLayerId$ | async"
+        [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
         (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
     </div>
     <div>
@@ -171,6 +173,7 @@
         heading="Map Layers"
         [layers]="sectionLayers['water']"
         [selectedLayerId]="viewedLayerId$ | async"
+        [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
         (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
     </div>
     <div class="summary-card" *ngIf="!isPreview">
@@ -233,6 +236,7 @@
         [multiSelect]="true"
         [layers]="sectionLayers['biomass']"
         [selectedLayerIds]="(selectedBaseLayerIds$ | async) ?? []"
+        [loadingLayerIds]="(loadingBaseLayerIds$ | async) ?? []"
         (selectedLayer)="onBaseLayerToggled($event)"></app-funding-map-layers>
     </div>
     <div *ngIf="biomass; else noData">
