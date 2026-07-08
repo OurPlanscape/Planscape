@@ -33,9 +33,11 @@ describe('FullReportViewComponent', () => {
           dataTree$: of(null),
           paths$: of([]),
           viewedDataLayer$: of(null),
+          loadingLayer$: of(false),
         }),
         MockProvider(BaseLayersStateService, {
           selectedBaseLayers$: of([]),
+          loadingLayers$: of([]),
         }),
         MockProvider(FundingMapConfigState, { selectedProjectAreas$: of([]) }),
         MockProvider(MapConfigState),
@@ -128,9 +130,11 @@ describe('FullReportViewComponent recalculations', () => {
           dataTree$: of(null),
           paths$: of([]),
           viewedDataLayer$: of(null),
+          loadingLayer$: of(false),
         }),
         MockProvider(BaseLayersStateService, {
           selectedBaseLayers$: of([]),
+          loadingLayers$: of([]),
         }),
         MockProvider(FundingMapConfigState, {
           selectedProjectAreas$: of([]),
