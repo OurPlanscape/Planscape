@@ -1,12 +1,9 @@
 import {
-  FundingReportBiomassVolumes,
-  FundingReportBiomassVolumesProject,
   FundingReportProjectDataPoint,
   FundingReportResults,
   ProjectArea,
 } from '@types';
 import {
-  aggregateBiomassVolumes,
   aggregateFlameLengthSummary,
   aggregateMetricSummary,
   hasFlameLengthData,
@@ -17,18 +14,6 @@ import {
 import { MOCK_GEOMETRY } from '@app/services/mocks';
 
 const METRIC = 'POTENTIAL_SMOKE';
-
-/** A biomass-volumes block with every field set to `fill`. */
-function biomass(fill: number): FundingReportBiomassVolumes {
-  return {
-    merchantable_softwood_bf: fill,
-    merchantable_hardwood_bf: fill,
-    merchantable_mixed_bf: fill,
-    non_merchantable_softwood_cuft: fill,
-    non_merchantable_hardwood_cuft: fill,
-    non_merchantable_mixed_cuft: fill,
-  };
-}
 
 function project(
   project_id: number,
@@ -207,50 +192,6 @@ describe('funding-report helper', () => {
     it('reports whether the selected interval has data', () => {
       expect(hasFlameLengthData(results, '7_4', [])).toBeTrue();
       expect(hasFlameLengthData(results, '6_4', [])).toBeFalse();
-    });
-  });
-
-  describe('aggregateBiomassVolumes', () => {
-    const summary = biomass(7);
-    const projects: FundingReportBiomassVolumesProject[] = [
-      { project_id: 1, proj_id: null, ...biomass(10) },
-      { project_id: 2, proj_id: null, ...biomass(3) },
-    ];
-
-    const empty = {
-      POTENTIAL_SMOKE: [],
-      ABOVEGROUND_TOTAL: [],
-      TOTAL_FLAME_SEVERITY: {},
-    };
-    const results: FundingReportResults = {
-      summary: { ...empty, BIOMASS_VOLUMES: summary },
-      projects: { ...empty, BIOMASS_VOLUMES: projects },
-    };
-
-    it('returns the whole-scenario summary when no areas are selected', () => {
-      // passthrough — same reference, not a recompute
-      expect(aggregateBiomassVolumes(results, [])).toBe(summary);
-    });
-
-    it('sums each volume field across the selected project areas', () => {
-      expect(aggregateBiomassVolumes(results, [1, 2])).toEqual(biomass(13));
-    });
-
-    it('sums only the selected project areas', () => {
-      expect(aggregateBiomassVolumes(results, [2])).toEqual(biomass(3));
-    });
-
-    it('returns undefined when no selected ids match', () => {
-      expect(aggregateBiomassVolumes(results, [99])).toBeUndefined();
-    });
-
-    it('returns undefined when the report carries no biomass data', () => {
-      const noBiomass: FundingReportResults = {
-        summary: { ...empty },
-        projects: { ...empty },
-      };
-      expect(aggregateBiomassVolumes(noBiomass, [])).toBeUndefined();
-      expect(aggregateBiomassVolumes(noBiomass, [1])).toBeUndefined();
     });
   });
 });
