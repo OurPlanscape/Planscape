@@ -64,7 +64,13 @@ import {
 import { ScrollSpyDirective } from '@app/standalone/scroll-spy-directive/scroll-spy.directive';
 import { FundingMapConfigState } from '../funding-map-config-state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs';
+import {
+  combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  map,
+} from 'rxjs';
 
 /** Pause after the last keystroke before recalculating water availability. */
 const WATER_DEBOUNCE_MS = 300;
@@ -174,6 +180,28 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
    */
   selectedBaseLayerIds$ = this.baseLayersStateService.selectedBaseLayers$.pipe(
     map((layers) => layers?.map((layer) => layer.id) ?? [])
+  );
+
+  /**
+   * Id of the raster layer currently loading onto the map, wrapped in an array
+   * so the single-select sections can show a spinner next to it. The data-layer
+   * loading flag is global, so it's paired with the viewed layer's id: only the
+   * active layer (in whichever section owns it) spins.
+   */
+  loadingLayerIds$ = combineLatest([
+    this.viewedLayerId$,
+    this.dataLayersStateService.loadingLayer$,
+  ]).pipe(
+    map(([layerId, loading]) => (loading && layerId !== null ? [layerId] : []))
+  );
+
+  /**
+   * Ids of the base layers currently loading onto the map, for the biomass
+   * multi-select spinners. The base-layer state tracks these as `source_<id>`
+   * strings, so they're parsed back to numeric ids here.
+   */
+  loadingBaseLayerIds$ = this.baseLayersStateService.loadingLayers$.pipe(
+    map((ids) => ids.map((id) => Number(id.replace('source_', ''))))
   );
 
   /** Flame length interval options for the selector. */
