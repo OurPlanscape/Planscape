@@ -257,21 +257,21 @@ class FundingOpportunityReportInvite(CreatedAtMixin, UpdatedAtMixin, DeletedAtMi
     report_id: int
     report = models.ForeignKey(
         FundingOpportunityReport,
-        related_name="invites",
+        related_name="funding_opportunity_report_invites",
         on_delete=models.CASCADE,
     )
 
     inviter_id: int
     inviter = models.ForeignKey(
         User,
-        related_name="funding_opportunity_report_invites",
+        related_name="funding_opportunity_report_inviters",
         on_delete=models.CASCADE,
     )
 
     invitee_email = models.EmailField()
     invitee = models.ForeignKey(
         User,
-        related_name="funding_opportunity_report_invites",
+        related_name="funding_opportunity_report_invitees",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -285,7 +285,7 @@ class FundingOpportunitReportSharedLink(CreatedAtMixin, DeletedAtMixin):
     report_id: int
     report = models.ForeignKey(
         FundingOpportunityReport,
-        related_name="invites",
+        related_name="funding_opportunity_report_shared_links",
         on_delete=models.CASCADE,
     )
 
