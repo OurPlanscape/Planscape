@@ -892,8 +892,7 @@ class FundingReportLayersOfInterestTest(TestCase):
         flame = self.create_funding_report_datalayer(
             FundingReportMetric.TOTAL_FLAME_SEVERITY, 2026, True
         )
-        aet_baseline = self.create_aet_datalayer("baseline")
-        aet_target = self.create_aet_datalayer("target")
+        aet_percentual = self.create_aet_datalayer("percentual")
 
         mills_dataset = DatasetFactory.create(name=settings.FORISK_MILLS_DATASET_NAME)
         mill_layer_1 = DataLayerFactory.create(dataset=mills_dataset)
@@ -907,7 +906,7 @@ class FundingReportLayersOfInterestTest(TestCase):
         )
         self.assertCountEqual(
             result[FundingReportLayerCategory.WATER],
-            [aet_baseline, aet_target],
+            [aet_percentual],
         )
         self.assertEqual(
             result[FundingReportLayerCategory.WILDFIRE_RISK_REDUCTION], [flame]
