@@ -1,4 +1,5 @@
 import logging
+import smtplib
 from collections import Counter
 from datetime import timedelta
 
@@ -39,6 +40,56 @@ from funding_report.services import (
 log = logging.getLogger(__name__)
 
 STALE_RUNNING_TIMEOUT = timedelta(minutes=30)
+
+
+@app.task(
+    bind=True,
+    autoretry_for=(Exception, smtplib.SMTPDataError),
+    retry_backoff=True,
+    retry_jitter=True,
+    retry_kwargs={"max_retries": 3},
+)
+def send_funding_opportunity_report_shared_link(
+    self,
+    recipient_email: str,
+    public_url: str,
+    inviter_name: str,
+) -> None:
+    context = {
+        "public_url": public_url,
+        "inviter_name": inviter_name,
+    }
+    subject = f"[Planscape] Funding opportunity report shared from {inviter_name}"
+    txt = render_to_string(
+        "email/funding_report/shared_link_invite.txt",
+        context,
+    )
+    html = render_to_string(
+        "email/funding_report/shared_link_invite.html",
+        context,
+    )
+
+    try:
+        send_mail(
+            subject=subject,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[recipient_email],
+            message=txt,
+            html_message=html,
+        )
+        log.info("Funding opportunity report shared link sent to %s", recipient_email)
+    except smtplib.SMTPDataError:
+        if self.request.retries >= self.max_retries:
+            log.exception("Failed to send funding report shared link email.")
+        else:
+            log.warning("Failed to send funding report shared link email. Retrying.")
+        raise
+    except Exception:
+        if self.request.retries >= self.max_retries:
+            log.exception("Unexpected failure sending funding report shared link email.")
+        else:
+            log.warning("Unexpected failure sending funding report shared link email. Retrying.")
+        raise
 
 
 @app.task()

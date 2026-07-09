@@ -3,6 +3,7 @@ import logging
 from core.serializers import MultiSerializerMixin
 from datasets.models import DataLayer
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.db.models import Q
 from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
@@ -11,16 +12,18 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from funding_report.models import (
     FundingOpportunityReport,
+    FundingOpportunityReportInvite,
     FundingOpportunityReportRun,
     FundingOpportunityReportStatus,
     FundingOpportunityReportSharedLink,
-    FundingOpportunityReportInvite,
 )
 from funding_report.openapi_examples import (
     FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE,
     FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE,
 )
 from funding_report.serializers import (
+    FundingOpportunityReportInviteSharedLinkRequestSerializer,
+    FundingOpportunityReportInviteSharedLinkResponseSerializer,
     FundingOpportunityReportSerializer,
     FundingReportAETImprovementRequestSerializer,
     FundingReportAETImprovementResponseSerializer,
@@ -32,7 +35,10 @@ from funding_report.services import (
     calculate_aet_improvement,
     calculate_funding_report_flame_length_reduction,
 )
-from funding_report.tasks import run_funding_opportunity_report
+from funding_report.tasks import (
+    run_funding_opportunity_report,
+    send_funding_opportunity_report_shared_link,
+)
 from modules.base import compute_scenario_capabilities
 from planscape.serializers import BaseErrorMessageSerializer
 from rest_framework import mixins, pagination, permissions, status, viewsets
@@ -660,7 +666,70 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             out_serializer.data,
             status=status.HTTP_200_OK,
         )
-    
+
+    @extend_schema(
+        description=(
+            "Create funding opportunity report invites for the submitted emails "
+            "and send a shared report link."
+        ),
+        request=FundingOpportunityReportInviteSharedLinkRequestSerializer,
+        responses={
+            201: FundingOpportunityReportInviteSharedLinkResponseSerializer,
+        },
+    )
+    @action(methods=["POST"], detail=True, url_path="funding-report-invites")
+    def create_funding_opportunity_report_invites(self, request, pk=None):
+        scenario = self.get_object()
+        serializer = FundingOpportunityReportInviteSharedLinkRequestSerializer(
+            data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        report = get_object_or_404(FundingOpportunityReport, scenario=scenario)
+        emails = validated_data["emails"]
+        configuration = {
+            "aet": validated_data["aet"],
+            "total_flame_severity": validated_data["total_flame_severity"],
+        }
+
+        User = get_user_model()
+        with transaction.atomic():
+            shared_link, _ = FundingOpportunityReportSharedLink.objects.get_or_create(
+                report=report,
+                configuration=configuration,
+            )
+            for email in emails:
+                invite_exists = FundingOpportunityReportInvite.objects.filter(
+                    report=report,
+                    invitee_email=email,
+                    deleted_at__isnull=True,
+                ).exists()
+                if invite_exists:
+                    continue
+
+                invitee = User.objects.filter(email__iexact=email).first()
+                FundingOpportunityReportInvite.objects.create(
+                    report=report,
+                    inviter=request.user,
+                    invitee_email=email,
+                    invitee=invitee,
+                )
+
+        public_url = shared_link.get_public_url()
+        inviter_name = request.user.get_full_name() or request.user.email
+        for email in emails:
+            send_funding_opportunity_report_shared_link.delay(
+                email,
+                public_url,
+                inviter_name,
+            )
+
+        return Response(
+            {"emails": emails, "public_url": public_url},
+            status=status.HTTP_201_CREATED,
+        )
+
     @action(
         methods=["GET"], detail=True, url_path="funding-report-invites-shared-link"
     )
