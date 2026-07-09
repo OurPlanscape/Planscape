@@ -17,7 +17,7 @@ import {
 import { AuthService, DataLayersService } from '@app/services';
 import { FrontendConstants } from '@app/map/map.constants';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { BehaviorSubject, map, Observable, Subject } from 'rxjs';
+import { map, Observable, Subject } from 'rxjs';
 import { EventData } from '@angular/cdk/testing';
 import { MapZoomControlComponent } from '@app/maplibre-map/map-zoom-control/map-zoom-control.component';
 import { MapBaseLayersComponent } from '@app/maplibre-map/map-base-layers/map-base-layers.component';
@@ -82,7 +82,7 @@ export class FundingReportMapComponent implements OnInit {
     private matSnackBar: MatSnackBar
   ) {
     this.mapConfigService.initialize();
-    this.loading$.next(true);
+    this.fundingMapConfigState.isMapLoading(true);
   }
 
   readonly BASE_COLORS = BASE_COLORS;
@@ -93,6 +93,8 @@ export class FundingReportMapComponent implements OnInit {
 
   /** Id of the report's treatment datalayer to display on the map. */
   @Input() treatmentDataLayerId!: number;
+
+  mapLoading$ = this.fundingMapConfigState.mapLoading$;
 
   mapLibreMap!: MapLibreMap;
   /**
@@ -105,8 +107,6 @@ export class FundingReportMapComponent implements OnInit {
   showFundingLegend$ = this.fundingMapConfigState.showFundingLegend$;
 
   opacity$ = this.fundingMapConfigState.opacity$;
-
-  loading$ = new BehaviorSubject<boolean>(false);
 
   projectAreaCount$ = this.scenarioState.currentScenario$.pipe(
     map((scenario) => {
@@ -143,7 +143,7 @@ export class FundingReportMapComponent implements OnInit {
 
   mapLoaded(loadedMap: MapLibreMap) {
     this.mapLibreMap = loadedMap;
-    this.loading$.next(false);
+    this.fundingMapConfigState.isMapLoading(false);
   }
 
   handleOpacityChange(opacity: number) {
