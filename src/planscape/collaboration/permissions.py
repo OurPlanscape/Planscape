@@ -181,12 +181,11 @@ class ScenarioPermission(CheckPermissionMixin):
     @staticmethod
     def can_remove(user: AbstractUser, scenario: Scenario):
         planning_creator = is_creator(user, scenario.planning_area)
-        scenario_creator = is_creator(user, scenario)
         has_permission = check_for_permission(
             user.pk, scenario.planning_area, "remove_scenario"
         )
 
-        return any([planning_creator, scenario_creator, has_permission])
+        return any([planning_creator, has_permission])
 
 
 class ClimateForesightPermission(CheckPermissionMixin):
