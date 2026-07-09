@@ -10,6 +10,7 @@ from rest_framework.test import APITestCase
 
 from funding_report.models import (
     FundingOpportunityReport,
+    FundingOpportunityReportInvite,
     FundingOpportunityReportRun,
     FundingOpportunityReportSharedLink,
     FundingOpportunityReportStatus,
@@ -416,6 +417,108 @@ class FundingOpportunityReportInvitesSharedLinkTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["emails"], [invite.invitee_email])
+
+
+class CreateFundingOpportunityReportInvitesTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+        )
+        self.url = reverse(
+            "api:planning:scenarios-create-funding-opportunity-report-invites",
+            args=[self.scenario.pk],
+        )
+        _create_scenario_role_permissions()
+        self.report = FundingOpportunityReportFactory(
+            scenario=self.scenario,
+            created_by=self.user,
+        )
+        self.payload = {
+            "emails": ["First@Example.com", "second@example.com", "first@example.com"],
+            "aet": 10,
+            "total_flame_severity": "high",
+        }
+
+    def test_requires_authentication(self):
+        response = self.client.post(self.url, self.payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_requires_required_fields(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(
+            self.url,
+            {"emails": ["first@example.com"], "aet": 10},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("total_flame_severity", response.json().get("errors"))
+
+    def test_returns_404_when_report_does_not_exist(self):
+        scenario_wo_report = ScenarioFactory.create(user=self.user)
+        url = reverse(
+            "api:planning:scenarios-create-funding-opportunity-report-invites",
+            args=[scenario_wo_report.pk],
+        )
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(url, self.payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    @mock.patch("planning.views_v2.send_funding_opportunity_report_shared_link")
+    def test_creates_invites_shared_link_and_sends_emails(self, task_mock):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(self.url, self.payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(FundingOpportunityReportInvite.objects.count(), 2)
+        self.assertCountEqual(
+            FundingOpportunityReportInvite.objects.values_list(
+                "invitee_email",
+                flat=True,
+            ),
+            ["first@example.com", "second@example.com"],
+        )
+        self.assertEqual(FundingOpportunityReportSharedLink.objects.count(), 1)
+        shared_link = FundingOpportunityReportSharedLink.objects.get()
+        self.assertEqual(
+            shared_link.configuration,
+            {"aet": 10, "total_flame_severity": "high"},
+        )
+        self.assertEqual(response.json()["public_url"], shared_link.get_public_url())
+        self.assertCountEqual(
+            response.json()["emails"],
+            ["first@example.com", "second@example.com"],
+        )
+        self.assertEqual(task_mock.delay.call_count, 2)
+
+    @mock.patch("planning.views_v2.send_funding_opportunity_report_shared_link")
+    def test_reuses_existing_invite_and_shared_link(self, task_mock):
+        FundingOpportunityReportInviteFactory(
+            report=self.report,
+            inviter=self.user,
+            invitee_email="first@example.com",
+        )
+        shared_link = FundingOpportunityReportSharedLinkFactory(
+            report=self.report,
+            configuration={"aet": 10, "total_flame_severity": "high"},
+        )
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(self.url, self.payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(FundingOpportunityReportInvite.objects.count(), 2)
+        self.assertEqual(FundingOpportunityReportSharedLink.objects.count(), 1)
+        self.assertEqual(response.json()["public_url"], shared_link.get_public_url())
+        self.assertEqual(task_mock.delay.call_count, 2)
 
 
 class AETImprovementTest(APITestCase):

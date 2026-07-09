@@ -89,3 +89,29 @@ class FundingOpportunityReportSharedLinkQuerySerializer(serializers.Serializer):
     aet = serializers.CharField(required=True)
     total_flame_severity = serializers.CharField(required=True)
 
+
+class FundingOpportunityReportInviteSharedLinkRequestSerializer(serializers.Serializer):
+    emails = serializers.ListField(
+        child=serializers.EmailField(),
+        min_length=1,
+    )
+    aet = serializers.IntegerField()
+    total_flame_severity = serializers.CharField()
+
+    def validate_emails(self, emails):
+        normalized_emails = []
+        seen_emails = set()
+
+        for email in emails:
+            normalized_email = email.strip().lower()
+            if normalized_email in seen_emails:
+                continue
+            normalized_emails.append(normalized_email)
+            seen_emails.add(normalized_email)
+
+        return normalized_emails
+
+
+class FundingOpportunityReportInviteSharedLinkResponseSerializer(serializers.Serializer):
+    emails = serializers.ListField(child=serializers.EmailField())
+    public_url = serializers.CharField()
