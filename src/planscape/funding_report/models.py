@@ -289,9 +289,11 @@ class FundingOpportunitReportSharedLink(CreatedAtMixin, DeletedAtMixin):
         on_delete=models.CASCADE,
     )
 
+    # set of selected key/values to be shared (e.g. AET, TOTAL_FLAME_SEVERITY)
     configuration = models.JSONField()
     
     def get_public_url(self):
+        #TODO: Update the public URL once the path is defined
         base_url = get_base_url(settings.ENV)
         return f"{base_url}/for/{self.uuid}"
 
