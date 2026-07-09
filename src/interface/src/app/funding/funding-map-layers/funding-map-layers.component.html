@@ -7,13 +7,19 @@
     class="layer-checkbox"
     (change)="selectedLayer.emit(layer)">
     {{ layer.name }}
-    <span
-      class="base-layer-legend"
-      *ngIf="isChecked(layer)"
-      [style.backgroundColor]="layer.color || BASE_LAYERS_DEFAULT.COLOR"
-      [style.border-color]="
-        layer.outlineColor || BASE_LAYERS_DEFAULT.COLOR
-      "></span>
+    <span class="right-items">
+      <mat-spinner
+        class="side-spinner"
+        diameter="20"
+        *ngIf="isLoading(layer)"></mat-spinner>
+      <span
+        class="base-layer-legend"
+        *ngIf="isChecked(layer)"
+        [style.backgroundColor]="layer.color || BASE_LAYERS_DEFAULT.COLOR"
+        [style.border-color]="
+          layer.outlineColor || BASE_LAYERS_DEFAULT.COLOR
+        "></span>
+    </span>
   </mat-checkbox>
 </div>
 
@@ -21,8 +27,15 @@
   <mat-radio-group
     [value]="selected"
     (change)="selectedLayer.emit($event.value)">
-    <mat-radio-button *ngFor="let layer of layers" [value]="layer">
+    <mat-radio-button
+      *ngFor="let layer of layers"
+      [value]="layer"
+      class="layer-radio">
       {{ layer.name }}
+      <mat-spinner
+        class="side-spinner"
+        diameter="20"
+        *ngIf="isLoading(layer)"></mat-spinner>
     </mat-radio-button>
   </mat-radio-group>
 </ng-template>

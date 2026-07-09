@@ -1,9 +1,13 @@
+from typing import Optional
+
 from rest_framework import serializers
 
 from funding_report.models import FundingOpportunityReport
 
 
 class FundingOpportunityReportSerializer(serializers.ModelSerializer):
+    geopackage_url = serializers.SerializerMethodField()
+
     class Meta:
         model = FundingOpportunityReport
         fields = [
@@ -15,8 +19,13 @@ class FundingOpportunityReportSerializer(serializers.ModelSerializer):
             "status",
             "results",
             "treatment_datalayer",
+            "geopackage_status",
+            "geopackage_url",
         ]
         read_only_fields = fields
+
+    def get_geopackage_url(self, instance: FundingOpportunityReport) -> Optional[str]:
+        return instance.get_geopackage_url()
 
 
 class FundingReportAETImprovementRequestSerializer(serializers.Serializer):
@@ -74,3 +83,9 @@ class FundingReportFlameLengthReductionResponseSerializer(serializers.Serializer
     )
     summary = FundingReportFlameLengthReductionSummarySerializer(many=True)
     projects = FundingReportFlameLengthReductionProjectSerializer(many=True)
+
+
+class FundingOpportunityReportSharedLinkQuerySerializer(serializers.Serializer):
+    aet = serializers.CharField(required=True)
+    total_flame_severity = serializers.CharField(required=True)
+

@@ -50,7 +50,6 @@ import { FundingModuleService } from '@services/funding-module.service';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import {
-  aggregateBiomassVolumes,
   aggregateFlameLengthSummary,
   aggregateMetricSummary,
   hasFlameLengthData,
@@ -66,7 +65,13 @@ import { ScrollSpyDirective } from '@app/standalone/scroll-spy-directive/scroll-
 import { FundingMapConfigState } from '../funding-map-config-state';
 import { FundingReportToPdfService } from '../funding-report-to-pdf.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs';
+import {
+  combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  map,
+} from 'rxjs';
 
 /** Pause after the last keystroke before recalculating water availability. */
 const WATER_DEBOUNCE_MS = 300;
@@ -192,6 +197,28 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
    */
   selectedBaseLayerIds$ = this.baseLayersStateService.selectedBaseLayers$.pipe(
     map((layers) => layers?.map((layer) => layer.id) ?? [])
+  );
+
+  /**
+   * Id of the raster layer currently loading onto the map, wrapped in an array
+   * so the single-select sections can show a spinner next to it. The data-layer
+   * loading flag is global, so it's paired with the viewed layer's id: only the
+   * active layer (in whichever section owns it) spins.
+   */
+  loadingLayerIds$ = combineLatest([
+    this.viewedLayerId$,
+    this.dataLayersStateService.loadingLayer$,
+  ]).pipe(
+    map(([layerId, loading]) => (loading && layerId !== null ? [layerId] : []))
+  );
+
+  /**
+   * Ids of the base layers currently loading onto the map, for the biomass
+   * multi-select spinners. The base-layer state tracks these as `source_<id>`
+   * strings, so they're parsed back to numeric ids here.
+   */
+  loadingBaseLayerIds$ = this.baseLayersStateService.loadingLayers$.pipe(
+    map((ids) => ids.map((id) => Number(id.replace('source_', ''))))
   );
 
   /** Flame length interval options for the selector. */
@@ -357,10 +384,10 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     this.smokeHasData = this.metricHasData('POTENTIAL_SMOKE');
     this.treeCarbonHasData = this.metricHasData('ABOVEGROUND_TOTAL');
 
-    const results = this.report?.results;
-    this.biomass = results
-      ? aggregateBiomassVolumes(results, this.projectAreas)
-      : undefined;
+    // Biomass, like the water (AET) section, is always shown as the
+    // whole-scenario summary and is deliberately NOT broken down by the
+    // selected project areas.
+    this.biomass = this.report?.results?.summary?.BIOMASS_VOLUMES;
   }
 
   /**

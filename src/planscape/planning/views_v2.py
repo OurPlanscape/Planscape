@@ -13,6 +13,8 @@ from funding_report.models import (
     FundingOpportunityReport,
     FundingOpportunityReportRun,
     FundingOpportunityReportStatus,
+    FundingOpportunityReportSharedLink,
+    FundingOpportunityReportInvite,
 )
 from funding_report.openapi_examples import (
     FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE,
@@ -24,6 +26,7 @@ from funding_report.serializers import (
     FundingReportAETImprovementResponseSerializer,
     FundingReportFlameLengthReductionRequestSerializer,
     FundingReportFlameLengthReductionResponseSerializer,
+    FundingOpportunityReportSharedLinkQuerySerializer,
 )
 from funding_report.services import (
     calculate_aet_improvement,
@@ -260,7 +263,27 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             )
             .prefetch_related("project_areas")
         )
+        if self.action == "list":
+            qs = qs.filter(parent__isnull=True)
         return qs
+
+    @action(methods=["get"], detail=True, url_path="child")
+    def child(self, request, pk=None):
+        parent = self.get_object()
+
+        children = (
+            self.get_queryset()
+            .filter(parent=parent)
+            .select_related("planning_area", "user", "results")
+            .prefetch_related("project_areas")
+        )
+
+        serializer = ListScenarioSerializer(
+            children,
+            many=True,
+            context={"request": request},
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(description="Retrieve a Scenario (auto-detects version).")
     def retrieve(self, request, *args, **kwargs):
@@ -636,6 +659,36 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         return Response(
             out_serializer.data,
             status=status.HTTP_200_OK,
+        )
+    
+    @action(
+        methods=["GET"], detail=True, url_path="funding-report-invites-shared-link"
+    )
+    def funding_opportunity_report_invites_shared_link(self, request, pk=None):
+        scenario = self.get_object()
+
+        query_serializer = FundingOpportunityReportSharedLinkQuerySerializer(
+            data=request.query_params
+        )
+        query_serializer.is_valid(raise_exception=True)
+
+        report = get_object_or_404(FundingOpportunityReport, scenario=scenario)
+
+        shared_link, _ = FundingOpportunityReportSharedLink.objects.get_or_create(
+            report=report,
+            configuration=query_serializer.validated_data
+        )
+        emails = list(
+            FundingOpportunityReportInvite.objects.filter(
+                report=report, 
+                deleted_at__isnull=True
+            ).values_list("invitee_email", flat=True)
+        )
+        return Response(
+            {
+                "emails": emails,
+                "public_url": shared_link.get_public_url()
+            }
         )
 
 

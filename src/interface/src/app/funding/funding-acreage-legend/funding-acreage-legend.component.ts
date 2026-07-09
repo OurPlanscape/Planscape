@@ -54,10 +54,8 @@ export class FundingAcreageLegendComponent {
 
   selectedAcres = this.legendData?.selectedAcres ?? 0;
 
-  // TODO: these are different than the assignments in PRESCRIPTION_COLORS,
-  //  so confirm that these are what we want
   treatmentColors: Record<LegendTreatmentType, string> = {
-    'No Treatment': '#fff',
+    'No Treatment': 'transparent',
     'Rx Burn': '#FB6F92',
     'Thinning Only': '#90BE6D',
     'Thin and Rx Burn': '#2A9D8F',

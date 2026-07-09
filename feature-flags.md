@@ -16,3 +16,5 @@ The name and value of the flag will be shared by frontend and backend.
 `SHARE_FUNDING_REPORTS`: Enables Sharing funding reports
 
 `ADD_INCLUDES`: Enables the user to add includes during scenario creation
+
+`PRIORITIZE_PROJECT_AREAS`: Enables features for prioritize project areas epic

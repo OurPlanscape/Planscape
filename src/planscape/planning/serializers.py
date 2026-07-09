@@ -596,6 +596,7 @@ class TargetsSerializer(serializers.Serializer):
 
         return super().validate(attrs)
 
+
 class WeighedPriorityObjectiveField(serializers.Serializer):
     datalayer = serializers.IntegerField()
     weight = serializers.IntegerField()
@@ -603,7 +604,7 @@ class WeighedPriorityObjectiveField(serializers.Serializer):
     def validate_weight(self, value):
         if value < 0 or value > 100:
             raise serializers.ValidationError("Invalid priority objective weight.")
-        
+
         return value
 
 
@@ -738,24 +739,25 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
 
     def validate_sub_units_layer(self, sub_units_layer):
         return sub_units_layer.pk
-    
+
     def validate_included_areas(self, included_areas):
         if included_areas is None:
             return None
-        
+
         if len(included_areas) == 0:
-            raise serializers.ValidationError("Cannot set an empty list of included_areas.")
-               
+            raise serializers.ValidationError(
+                "Cannot set an empty list of included_areas."
+            )
+
         return included_areas
-    
+
     def validate(self, attrs):
 
         included_areas = attrs.get("included_areas_ids")
         if included_areas:
             scenario = self.parent.instance
             treatable_area = calculate_scenario_treatable_area(
-                scenario=scenario,
-                includes=included_areas
+                scenario=scenario, includes=included_areas
             )
 
             if not treatable_area or treatable_area.area == 0:
@@ -772,7 +774,6 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
                 )
 
         return super().validate(attrs)
-
 
     def update(self, instance, validated_data):
         instance.configuration = {
@@ -938,6 +939,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "version",
             "capabilities",
             "planning_approach",
+            "parent",
         )
         model = Scenario
 
@@ -979,6 +981,7 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "geopackage_url",
             "geopackage_status",
             "capabilities",
+            "parent",
         )
         model = Scenario
 
@@ -1003,6 +1006,7 @@ class CreateScenarioV2Serializer(serializers.ModelSerializer):
             "notes",
             "configuration",
             "treatment_goal",
+            "parent",
         )
 
 
@@ -1081,6 +1085,7 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "geopackage_status",
             "capabilities",
             "planning_approach",
+            "parent",
         )
         model = Scenario
 
@@ -1093,6 +1098,11 @@ class UpsertScenarioV3Serializer(serializers.ModelSerializer):
         required=True,
         write_only=True,
     )
+    parent = serializers.PrimaryKeyRelatedField(
+        queryset=Scenario.objects.all(),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = Scenario
@@ -1102,8 +1112,8 @@ class UpsertScenarioV3Serializer(serializers.ModelSerializer):
             "name",
             "type",
             "origin",
-            "type",
             "notes",
+            "parent",
         )
 
     def update(self, instance, validated_data):
@@ -1126,11 +1136,17 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         help_text="Treatment goal of the scenario.",
     )
 
+    parent = serializers.PrimaryKeyRelatedField(
+        queryset=Scenario.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+
     configuration = UpsertConfigurationV3Serializer()
 
     class Meta:
         model = Scenario
-        fields = ("planning_approach", "treatment_goal", "configuration")
+        fields = ("planning_approach", "treatment_goal", "configuration", "parent")
 
     def update(self, instance: Scenario, validated_data):
         if "treatment_goal" in validated_data:
@@ -1146,20 +1162,26 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
             if included_areas_ids:
                 included_areas = DataLayer.objects.filter(pk__in=included_areas_ids)
                 treatable_area = calculate_scenario_treatable_area(
-                    scenario=instance,
-                    includes=included_areas
+                    scenario=instance, includes=included_areas
                 )
                 instance.treatable_area = treatable_area
 
         if "planning_approach" in validated_data:
             instance.planning_approach = validated_data["planning_approach"]
 
+        if "parent" in validated_data:
+            instance.parent = validated_data["parent"]
+            if instance.parent:
+                instance.planning_area = instance.parent.planning_area
+
         instance.save(
             update_fields=[
-                "treatment_goal", 
-                "configuration", 
+                "treatment_goal",
+                "configuration",
                 "planning_approach",
                 "treatable_area",
+                "parent",
+                "planning_area",
             ]
         )
         instance.refresh_from_db()
@@ -1406,7 +1428,10 @@ class GeoJSONSerializer(serializers.Serializer):
 class UploadedScenarioDataSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100, required=True)
     stand_size = serializers.ChoiceField(
-        choices=["SMALL", "MEDIUM", "LARGE"], required=False, allow_null=True, default=None
+        choices=["SMALL", "MEDIUM", "LARGE"],
+        required=False,
+        allow_null=True,
+        default=None,
     )
     planning_area = serializers.IntegerField(min_value=1, required=True)
     geometry = serializers.JSONField(required=True)
@@ -1432,7 +1457,11 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
 
         if not self._is_inside_planning_area(geometry, planning_area_id, stand_size):
             raise serializers.ValidationError(
-                {"global": ["The uploaded geometry is not within the selected planning area."]}
+                {
+                    "global": [
+                        "The uploaded geometry is not within the selected planning area."
+                    ]
+                }
             )
         return attrs
 
@@ -1498,10 +1527,13 @@ class GetAvailableStandsSerializer(serializers.Serializer):
         required=False,
     )
     sub_unit = serializers.PrimaryKeyRelatedField(
-        queryset=DataLayer.objects.filter(type=DataLayerType.VECTOR, status=DataLayerStatus.READY).all(),
+        queryset=DataLayer.objects.filter(
+            type=DataLayerType.VECTOR, status=DataLayerStatus.READY
+        ).all(),
         required=False,
         help_text="Vector Layer ID that contains Sub Units.",
     )
+
 
 class UnavailableStandsSerializer(serializers.Serializer):
     by_inclusions = serializers.ListField(child=serializers.IntegerField())
