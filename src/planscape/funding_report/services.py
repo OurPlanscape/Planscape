@@ -1188,9 +1188,17 @@ def export_project_areas_results_to_geopackage(
         )
         return
 
-    field_type_pairs = list(
-        map(map_property_for_numeric_export, features[0]["properties"].items())
-    )
+    # Different project areas can have different sets of metric keys (e.g. a
+    # metric/year missing from one project's filtered results), so the schema
+    # must be built from the union of all features' fields, and every feature
+    # padded with None for keys it doesn't have.
+    all_fields: Dict[str, Any] = {}
+    for feature in features:
+        for key, value in feature["properties"].items():
+            if key not in all_fields or all_fields[key] is None:
+                all_fields[key] = value
+
+    field_type_pairs = list(map(map_property_for_numeric_export, all_fields.items()))
     schema = {"geometry": "MultiPolygon", "properties": field_type_pairs}
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     try:
@@ -1205,7 +1213,10 @@ def export_project_areas_results_to_geopackage(
                 allow_unsupported_drivers=True,
             ) as out:
                 for feature in features:
-                    out.write(feature)
+                    properties = {
+                        key: feature["properties"].get(key) for key in all_fields
+                    }
+                    out.write({"geometry": feature["geometry"], "properties": properties})
     except Exception as e:
         log.exception(
             "Error exporting project area results for funding report %s to geopackage: %s",
@@ -1228,18 +1239,19 @@ def export_treatment_raster_to_geopackage(
         return
 
     try:
-        with rasterio.open(with_vsi_prefix(datalayer.url)) as src:
-            data = src.read()
-            profile = {
-                "driver": "GPKG",
-                "height": src.height,
-                "width": src.width,
-                "count": src.count,
-                "dtype": src.dtypes[0],
-                "crs": src.crs,
-                "transform": src.transform,
-                "nodata": src.nodata,
-            }
+        with rasterio.Env(**get_gdal_env(allowed_extensions=".tif")):
+            with rasterio.open(with_vsi_prefix(datalayer.url)) as src:
+                data = src.read()
+                profile = {
+                    "driver": "GPKG",
+                    "height": src.height,
+                    "width": src.width,
+                    "count": src.count,
+                    "dtype": src.dtypes[0],
+                    "crs": src.crs,
+                    "transform": src.transform,
+                    "nodata": src.nodata,
+                }
 
         with rasterio.open(
             str(geopackage_path),
