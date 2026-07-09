@@ -14,6 +14,8 @@ import { MapViewerCardComponent } from '@app/plan/map-viewer-card/map-viewer-car
 import { ProjectAreaComingSoonComponent } from '../project-area-coming-soon/project-area-coming-soon.component';
 import { ScenarioState } from '../scenario.state';
 import { ScenarioToolsComponent } from '@scenario/scenario-tools/scenario-tools.component';
+import { ProjectAreasEmptyListComponent } from '../project-areas-empty-list/project-areas-empty-list.component';
+import { FeaturesModule } from '@features/features.module';
 
 @UntilDestroy()
 @Component({
@@ -21,14 +23,17 @@ import { ScenarioToolsComponent } from '@scenario/scenario-tools/scenario-tools.
   standalone: true,
   imports: [
     CommonModule,
+    FeaturesModule,
     SharedModule,
     DashboardLayoutComponent,
     MapViewerCardComponent,
     NavBarComponent,
     DetailsCardComponent,
     ProjectAreaComingSoonComponent,
+    ProjectAreasEmptyListComponent,
     OverlayLoaderComponent,
     ScenarioToolsComponent,
+    ProjectAreasEmptyListComponent,
   ],
   templateUrl: './project-area-dashboard.component.html',
   styleUrl: './project-area-dashboard.component.scss',
