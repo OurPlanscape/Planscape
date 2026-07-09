@@ -1,6 +1,7 @@
 import re
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
+import uuid
 
 from core.gcs import create_download_url as create_gcs_download_url
 from core.gcs import get_bucket_and_key as get_gcs_bucket_and_key
@@ -278,9 +279,9 @@ class FundingOpportunityReportInvite(CreatedAtMixin, UpdatedAtMixin, DeletedAtMi
     )
 
 
-class FundingOpportunitReportSharedLink(CreatedAtMixin, DeletedAtMixin):
+class FundingOpportunityReportSharedLink(CreatedAtMixin, DeletedAtMixin):
     id: int
-    uuid = models.UUIDField(auto_created=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     report_id: int
     report = models.ForeignKey(
