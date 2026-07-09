@@ -16,7 +16,6 @@ from planning.models import (
     ScenarioCapability,
     ScenarioPlanningApproach,
     ScenarioResult,
-    ScenarioResultStatus,
     ScenarioType,
     ScenarioVersion,
     TreatmentGoalGroup,
