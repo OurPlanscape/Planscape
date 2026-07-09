@@ -103,6 +103,13 @@ export class FundingDashboardComponent implements OnInit {
   );
   hasError$ = this.report$.pipe(map((r) => r?.status === 'FAILED'));
 
+  geopackageReady$ = this.report$.pipe(
+    map(
+      (report) =>
+        report?.geopackage_status === 'SUCCEEDED' && report?.geopackage_url
+    )
+  );
+
   /** Empty state shows only before a report exists and before the user asks. */
   showEmptyState$ = combineLatest([
     this.report$,
@@ -116,12 +123,36 @@ export class FundingDashboardComponent implements OnInit {
   private pollReport(scenarioId: number) {
     return timer(0, POLLING_INTERVAL).pipe(
       exhaustMap(() => this.fundingReportService.getReport(scenarioId)),
-      takeWhile((report) => this.isGenerating(report), true)
+      takeWhile((report) => {
+        const processingResult = this.isStillProcessing(report);
+        console.log('processing status:', processingResult, report);
+        return processingResult;
+      }, true)
     );
   }
 
   private isGenerating(report: FundingReport | null): boolean {
     return report?.status === 'PENDING' || report?.status === 'RUNNING';
+  }
+
+  private isStillProcessing(report: FundingReport | null): boolean {
+    if (!report) return false;
+    if (report.status === 'FAILED') return false;
+
+    const reportIsGenerating =
+      report.status === 'PENDING' || report.status === 'RUNNING';
+
+    const geoPackagePending =
+      report.geopackage_status === 'PENDING' ||
+      report.geopackage_status === 'PROCESSING';
+    console.log(
+      'report status:',
+      report.status,
+      '- geopackage status:',
+      report.geopackage_status
+    );
+
+    return reportIsGenerating || geoPackagePending;
   }
 
   /** Whether a (successful) report actually carries results to display. */

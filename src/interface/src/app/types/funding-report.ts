@@ -117,6 +117,8 @@ export interface FundingReport {
   scenario: number;
   results: FundingReportResults | null;
   treatment_datalayer: number | null;
+  geopackage_status: 'SUCCEEDED' | 'PROCESSING' | 'PENDING' | 'FAILED';
+  geopackage_url: string;
 }
 
 /**
