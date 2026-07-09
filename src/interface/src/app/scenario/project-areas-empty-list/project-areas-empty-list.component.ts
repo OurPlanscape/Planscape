@@ -14,7 +14,7 @@ import { MatDialog } from '@angular/material/dialog';
   styleUrl: './project-areas-empty-list.component.scss',
 })
 export class ProjectAreasEmptyListComponent {
-  @Input() plan!: Plan | null;
+  @Input({ required: true }) plan!: Plan;
 
   constructor(private dialog: MatDialog) {}
 
@@ -29,7 +29,7 @@ export class ProjectAreasEmptyListComponent {
     return this.dialog.open(ScenarioSetupModalComponent, {
       maxWidth: '560px',
       data: {
-        planId: this.plan?.id,
+        planId: this.plan.id,
         fromClone: false,
         type: type,
       },
