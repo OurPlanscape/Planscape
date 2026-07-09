@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django_stubs_ext.db.models import TypedModelMeta
 from planning.models import GeoPackageStatus, Scenario
-from utils.frontend import get_base_url, get_domain
+from utils.frontend import get_base_url
 from django.conf import settings
 
 
