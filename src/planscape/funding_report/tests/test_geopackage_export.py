@@ -140,6 +140,52 @@ class GeopackageExportTest(TestCase):
             self.assertEqual(data[0, 0], 1)
             self.assertEqual(data[0, 1], 2)
 
+    def test_project_areas_with_different_metric_keys(self):
+        other_project_area = ProjectAreaFactory.create(
+            scenario=self.scenario, geometry=self.geometry
+        )
+        self.report.results = {
+            "summary": {},
+            "projects": {
+                "ABOVEGROUND_TOTAL": [
+                    {
+                        "project_id": self.project_area.pk,
+                        "year": 2026,
+                        "value": 30,
+                        "baseline": 20,
+                        "delta": 50.0,
+                    }
+                ],
+                "POTENTIAL_SMOKE": [
+                    {
+                        "project_id": other_project_area.pk,
+                        "year": 2026,
+                        "value": 5,
+                        "baseline": 4,
+                        "delta": 1.0,
+                    }
+                ],
+            },
+        }
+        self.report.save(update_fields=["results"])
+
+        export_project_areas_results_to_geopackage(self.report, self.out_path)
+
+        with fiona.open(str(self.out_path), layer="project_areas") as layer:
+            features = {f["properties"]["id"]: f["properties"] for f in layer}
+            self.assertEqual(
+                features[self.project_area.pk]["ABOVEGROUND_TOTAL_2026_value"], 30
+            )
+            self.assertIsNone(
+                features[self.project_area.pk]["POTENTIAL_SMOKE_2026_value"]
+            )
+            self.assertEqual(
+                features[other_project_area.pk]["POTENTIAL_SMOKE_2026_value"], 5
+            )
+            self.assertIsNone(
+                features[other_project_area.pk]["ABOVEGROUND_TOTAL_2026_value"]
+            )
+
     def test_skips_raster_layer_when_no_treatment_datalayer(self):
         self.report.treatment_datalayer = None
         self.report.save(update_fields=["treatment_datalayer"])

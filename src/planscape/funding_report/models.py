@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional, Tuple
 from core.gcs import create_download_url as create_gcs_download_url
 from core.gcs import get_bucket_and_key as get_gcs_bucket_and_key
 from core.gcs import is_gcs_file
-from core.models import CreatedAtMixin, UpdatedAtMixin
+from core.models import CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin
 from core.s3 import create_download_url as create_s3_download_url
 from core.s3 import get_bucket_and_key as get_s3_bucket_and_key
 from core.s3 import is_s3_file
@@ -13,6 +13,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django_stubs_ext.db.models import TypedModelMeta
 from planning.models import GeoPackageStatus, Scenario
+from utils.frontend import get_base_url
+from django.conf import settings
 
 
 class FundingOpportunityReportStatus(models.TextChoices):
@@ -247,3 +249,51 @@ class FundingOpportunityReportRun(CreatedAtMixin, models.Model):
         indexes = [
             models.Index(fields=["created_at"]),
         ]
+
+
+class FundingOpportunityReportInvite(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin):
+    id: int
+
+    report_id: int
+    report = models.ForeignKey(
+        FundingOpportunityReport,
+        related_name="funding_opportunity_report_invites",
+        on_delete=models.CASCADE,
+    )
+
+    inviter_id: int
+    inviter = models.ForeignKey(
+        User,
+        related_name="funding_opportunity_report_inviters",
+        on_delete=models.CASCADE,
+    )
+
+    invitee_email = models.EmailField()
+    invitee = models.ForeignKey(
+        User,
+        related_name="funding_opportunity_report_invitees",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+
+
+class FundingOpportunitReportSharedLink(CreatedAtMixin, DeletedAtMixin):
+    id: int
+    uuid = models.UUIDField(auto_created=True)
+
+    report_id: int
+    report = models.ForeignKey(
+        FundingOpportunityReport,
+        related_name="funding_opportunity_report_shared_links",
+        on_delete=models.CASCADE,
+    )
+
+    # set of selected key/values to be shared (e.g. AET, TOTAL_FLAME_SEVERITY)
+    configuration = models.JSONField()
+    
+    def get_public_url(self):
+        #TODO: Update the public URL once the path is defined
+        base_url = get_base_url(settings.ENV)
+        return f"{base_url}/for/{self.uuid}"
+
