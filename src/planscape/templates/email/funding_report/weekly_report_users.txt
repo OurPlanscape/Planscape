@@ -1,0 +1,16 @@
+Weekly Planscape Funding Report Users
+
+Date range:
+{{ start }} to {{ end }}
+
+Total report generations: {{ total_runs }}
+Unique users: {{ unique_users }}
+
+{% if rows %}
+Users:
+{% for row in rows %}
+- {{ row.email }}{% if row.count > 1 %} ({{ row.count }} reports){% endif %}
+{% endfor %}
+{% else %}
+No users generated funding reports this week.
+{% endif %}

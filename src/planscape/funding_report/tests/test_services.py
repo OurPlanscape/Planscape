@@ -28,16 +28,20 @@ from funding_report.models import (
 )
 from funding_report.services import (
     _BIOMASS_PIXEL_AREA_ACRES,
+    _filter_by_project_id,
     aggregate_delta_pixels,
     calculate_aet_improvement,
     build_datalayer_lookup,
     build_flame_length_reduction_results,
     build_funding_report_results,
+    build_planning_area_feature,
+    build_project_area_features,
     calculate_biomass_volumes,
     calculate_funding_report_flame_length_reduction,
     calculate_pixel_deltas,
     calculate_project_area_aet_improvement,
     calculate_project_area_delta,
+    flatten_report_metrics,
     get_aet_delta_datalayer,
     get_biomass_datalayer,
     get_funding_report_layers_of_interest,
@@ -892,8 +896,7 @@ class FundingReportLayersOfInterestTest(TestCase):
         flame = self.create_funding_report_datalayer(
             FundingReportMetric.TOTAL_FLAME_SEVERITY, 2026, True
         )
-        aet_baseline = self.create_aet_datalayer("baseline")
-        aet_target = self.create_aet_datalayer("target")
+        aet_percentual = self.create_aet_datalayer("percentual")
 
         mills_dataset = DatasetFactory.create(name=settings.FORISK_MILLS_DATASET_NAME)
         mill_layer_1 = DataLayerFactory.create(dataset=mills_dataset)
@@ -907,7 +910,7 @@ class FundingReportLayersOfInterestTest(TestCase):
         )
         self.assertCountEqual(
             result[FundingReportLayerCategory.WATER],
-            [aet_baseline, aet_target],
+            [aet_percentual],
         )
         self.assertEqual(
             result[FundingReportLayerCategory.WILDFIRE_RISK_REDUCTION], [flame]
@@ -936,3 +939,223 @@ class FundingReportLayersOfInterestTest(TestCase):
             result[FundingReportLayerCategory.BIOMASS],
             [mill_layer],
         )
+
+
+class FlattenReportMetricsTest(TestCase):
+    def test_flattens_yearly_series_using_year_suffix(self):
+        out = {}
+        flatten_report_metrics(
+            "",
+            {
+                "ABOVEGROUND_TOTAL": [
+                    {"year": 2026, "value": 10, "baseline": 8, "delta": 25.0},
+                    {"year": 2031, "value": 12, "baseline": 8, "delta": 50.0},
+                ]
+            },
+            out,
+        )
+        self.assertEqual(
+            out,
+            {
+                "ABOVEGROUND_TOTAL_2026_value": 10,
+                "ABOVEGROUND_TOTAL_2026_baseline": 8,
+                "ABOVEGROUND_TOTAL_2026_delta": 25.0,
+                "ABOVEGROUND_TOTAL_2031_value": 12,
+                "ABOVEGROUND_TOTAL_2031_baseline": 8,
+                "ABOVEGROUND_TOTAL_2031_delta": 50.0,
+            },
+        )
+
+    def test_flattens_wide_dict_without_year_suffix(self):
+        out = {}
+        flatten_report_metrics(
+            "",
+            {
+                "AET": {
+                    "percentage": 25.0,
+                    "improved_acres": 1234.5,
+                    "total_project_area_acres": 5000.0,
+                    "improved_area_percent": 24.69,
+                }
+            },
+            out,
+        )
+        self.assertEqual(
+            out,
+            {
+                "AET_percentage": 25.0,
+                "AET_improved_acres": 1234.5,
+                "AET_total_project_area_acres": 5000.0,
+                "AET_improved_area_percent": 24.69,
+            },
+        )
+
+    def test_flattens_list_of_dicts_without_year_using_shared_prefix(self):
+        out = {}
+        flatten_report_metrics(
+            "",
+            {
+                "BIOMASS_VOLUMES": [
+                    {
+                        "project_id": 14,
+                        "proj_id": None,
+                        "merchantable_softwood_bf": 1820.5,
+                    }
+                ]
+            },
+            out,
+        )
+        self.assertEqual(out, {"BIOMASS_VOLUMES_merchantable_softwood_bf": 1820.5})
+
+    def test_flattens_nested_interval_dict_of_lists(self):
+        out = {}
+        flatten_report_metrics(
+            "",
+            {
+                "TOTAL_FLAME_SEVERITY": {
+                    "7_4": [{"year": 2026, "value": 320.5, "baseline": 5000.0, "delta": 6.41}],
+                    "6_4": [{"year": 2026, "value": 100.0, "baseline": 5000.0, "delta": 2.0}],
+                }
+            },
+            out,
+        )
+        self.assertEqual(
+            out,
+            {
+                "TOTAL_FLAME_SEVERITY_7_4_2026_value": 320.5,
+                "TOTAL_FLAME_SEVERITY_7_4_2026_baseline": 5000.0,
+                "TOTAL_FLAME_SEVERITY_7_4_2026_delta": 6.41,
+                "TOTAL_FLAME_SEVERITY_6_4_2026_value": 100.0,
+                "TOTAL_FLAME_SEVERITY_6_4_2026_baseline": 5000.0,
+                "TOTAL_FLAME_SEVERITY_6_4_2026_delta": 2.0,
+            },
+        )
+
+    def test_empty_prefix_scalar_is_dropped(self):
+        out = {}
+        flatten_report_metrics("", None, out)
+        self.assertEqual(out, {})
+
+
+class FilterByProjectIdTest(TestCase):
+    def test_filters_flat_list_by_project_id(self):
+        value = {
+            "ABOVEGROUND_TOTAL": [
+                {"project_id": 1, "year": 2026, "value": 10},
+                {"project_id": 2, "year": 2026, "value": 20},
+            ]
+        }
+        filtered = _filter_by_project_id(value, 1)
+        self.assertEqual(
+            filtered,
+            {"ABOVEGROUND_TOTAL": [{"project_id": 1, "year": 2026, "value": 10}]},
+        )
+
+    def test_filters_nested_interval_dict_by_project_id(self):
+        value = {
+            "TOTAL_FLAME_SEVERITY": {
+                "7_4": [
+                    {"project_id": 1, "year": 2026, "value": 10},
+                    {"project_id": 2, "year": 2026, "value": 20},
+                ]
+            }
+        }
+        filtered = _filter_by_project_id(value, 2)
+        self.assertEqual(
+            filtered,
+            {
+                "TOTAL_FLAME_SEVERITY": {
+                    "7_4": [{"project_id": 2, "year": 2026, "value": 20}]
+                }
+            },
+        )
+
+
+class BuildGeopackageFeaturesTest(TestCase):
+    def setUp(self):
+        self.geometry = MultiPolygon(
+            Polygon(((1, 1), (1, 2), (2, 2), (1, 1)), srid=4269), srid=4269
+        )
+        self.planning_area = PlanningAreaFactory.create(
+            with_stands=False, geometry=self.geometry, region_name="sierra-nevada"
+        )
+        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
+        self.project_area_1 = ProjectAreaFactory.create(
+            scenario=self.scenario, geometry=self.geometry
+        )
+        self.project_area_2 = ProjectAreaFactory.create(
+            scenario=self.scenario, geometry=self.geometry
+        )
+        self.report = FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.scenario.user,
+            results={
+                "summary": {
+                    "ABOVEGROUND_TOTAL": [
+                        {"year": 2026, "value": 30, "baseline": 20, "delta": 50.0}
+                    ],
+                },
+                "projects": {
+                    "ABOVEGROUND_TOTAL": [
+                        {
+                            "project_id": self.project_area_1.pk,
+                            "proj_id": None,
+                            "year": 2026,
+                            "value": 10,
+                            "baseline": 8,
+                            "delta": 25.0,
+                        },
+                        {
+                            "project_id": self.project_area_2.pk,
+                            "proj_id": None,
+                            "year": 2026,
+                            "value": 20,
+                            "baseline": 12,
+                            "delta": 66.67,
+                        },
+                    ],
+                },
+                "treatment_areas": {
+                    "projects": {
+                        str(self.project_area_1.pk): {"Rx Burn": 5.0},
+                    },
+                    "total": {"Rx Burn": 5.0},
+                },
+            },
+        )
+
+    def test_build_planning_area_feature_includes_flattened_summary(self):
+        feature = build_planning_area_feature(self.report)
+
+        properties = feature["properties"]
+        self.assertEqual(properties["id"], self.planning_area.pk)
+        self.assertEqual(properties["region_name"], "sierra-nevada")
+        self.assertEqual(properties["scenario_id"], self.scenario.pk)
+        self.assertEqual(properties["ABOVEGROUND_TOTAL_2026_value"], 30)
+        self.assertEqual(properties["ABOVEGROUND_TOTAL_2026_delta"], 50.0)
+        self.assertEqual(properties["TREATMENT_AREA_Rx_Burn"], 5.0)
+        self.assertEqual(feature["geometry"]["type"], "MultiPolygon")
+
+    def test_build_project_area_features_scopes_results_per_project(self):
+        features = build_project_area_features(self.report)
+        self.assertEqual(len(features), 2)
+
+        by_id = {f["properties"]["id"]: f["properties"] for f in features}
+
+        project_1 = by_id[self.project_area_1.pk]
+        self.assertEqual(project_1["ABOVEGROUND_TOTAL_2026_value"], 10)
+        self.assertEqual(project_1["TREATMENT_AREA_Rx_Burn"], 5.0)
+
+        project_2 = by_id[self.project_area_2.pk]
+        self.assertEqual(project_2["ABOVEGROUND_TOTAL_2026_value"], 20)
+        self.assertNotIn("TREATMENT_AREA_Rx_Burn", project_2)
+
+    def test_build_project_area_features_empty_when_no_project_areas(self):
+        empty_scenario = ScenarioFactory.create(planning_area=self.planning_area)
+        empty_report = FundingOpportunityReport.objects.create(
+            scenario=empty_scenario,
+            created_by=empty_scenario.user,
+            results={"summary": {}, "projects": {}},
+        )
+
+        self.assertEqual(build_project_area_features(empty_report), [])

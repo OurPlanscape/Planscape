@@ -1,30 +1,19 @@
 import {
-  FundingReportBiomassVolumes,
-  FundingReportBiomassVolumesProject,
   FundingReportProjectDataPoint,
   FundingReportResults,
+  ProjectArea,
 } from '@types';
 import {
-  aggregateBiomassVolumes,
   aggregateFlameLengthSummary,
   aggregateMetricSummary,
   hasFlameLengthData,
   percentDelta,
+  generateLegendFromReport,
+  calculateTreatmentAcreSums,
 } from './funding-report.helper';
+import { MOCK_GEOMETRY } from '@app/services/mocks';
 
 const METRIC = 'POTENTIAL_SMOKE';
-
-/** A biomass-volumes block with every field set to `fill`. */
-function biomass(fill: number): FundingReportBiomassVolumes {
-  return {
-    merchantable_softwood_bf: fill,
-    merchantable_hardwood_bf: fill,
-    merchantable_mixed_bf: fill,
-    non_merchantable_softwood_cuft: fill,
-    non_merchantable_hardwood_cuft: fill,
-    non_merchantable_mixed_cuft: fill,
-  };
-}
 
 function project(
   project_id: number,
@@ -82,32 +71,27 @@ describe('funding-report helper', () => {
 
     it('returns the whole-scenario summary when no areas are selected', () => {
       // passthrough — same reference, not a recompute
-      expect(aggregateMetricSummary(results, METRIC, [], 'USER')).toBe(
+      expect(aggregateMetricSummary(results, METRIC, [])).toBe(
         results.summary[METRIC]
       );
     });
 
     it('aggregates a single selected project, year-sorted', () => {
-      expect(aggregateMetricSummary(results, METRIC, [1], 'USER')).toEqual([
+      expect(aggregateMetricSummary(results, METRIC, [1])).toEqual([
         { year: 0, value: 120, baseline: 100, delta: 20 },
         { year: 5, value: 90, baseline: 100, delta: -10 },
       ]);
     });
 
     it('sums value and baseline across selected projects, recomputing delta', () => {
-      expect(aggregateMetricSummary(results, METRIC, [1, 2], 'USER')).toEqual([
+      expect(aggregateMetricSummary(results, METRIC, [1, 2])).toEqual([
         { year: 0, value: 200, baseline: 200, delta: 0 },
         { year: 5, value: 240, baseline: 200, delta: 20 },
       ]);
     });
 
     it('excludes projects that are not selected', () => {
-      const onlyProjectTwo = aggregateMetricSummary(
-        results,
-        METRIC,
-        [2],
-        'USER'
-      );
+      const onlyProjectTwo = aggregateMetricSummary(results, METRIC, [2]);
       expect(onlyProjectTwo).toEqual([
         { year: 0, value: 80, baseline: 100, delta: -20 },
         { year: 5, value: 150, baseline: 100, delta: 50 },
@@ -115,44 +99,14 @@ describe('funding-report helper', () => {
     });
 
     it('returns an empty list when no selected ids match the report', () => {
-      expect(aggregateMetricSummary(results, METRIC, [99], 'USER')).toEqual([]);
+      expect(aggregateMetricSummary(results, METRIC, [99])).toEqual([]);
     });
 
     it('yields a 0 delta when the aggregated baseline is 0', () => {
       const zeroBaseline = makeResults([project(1, 0, 50, 0)]);
-      expect(aggregateMetricSummary(zeroBaseline, METRIC, [1], 'USER')).toEqual(
-        [{ year: 0, value: 50, baseline: 0, delta: 0 }]
-      );
-    });
-
-    it('matches SYSTEM-origin selections against proj_id, not project_id', () => {
-      // project_id and proj_id diverge: selecting by proj_id picks a different
-      // point than the same id would under USER origin.
-      const systemResults = makeResults([
-        {
-          project_id: 10,
-          proj_id: 1,
-          year: 0,
-          value: 120,
-          baseline: 100,
-          delta: 20,
-        },
-        {
-          project_id: 20,
-          proj_id: 2,
-          year: 0,
-          value: 80,
-          baseline: 100,
-          delta: -20,
-        },
+      expect(aggregateMetricSummary(zeroBaseline, METRIC, [1])).toEqual([
+        { year: 0, value: 50, baseline: 0, delta: 0 },
       ]);
-      expect(
-        aggregateMetricSummary(systemResults, METRIC, [1], 'SYSTEM')
-      ).toEqual([{ year: 0, value: 120, baseline: 100, delta: 20 }]);
-      // The same id under USER origin matches nothing (no project_id === 1).
-      expect(
-        aggregateMetricSummary(systemResults, METRIC, [1], 'USER')
-      ).toEqual([]);
     });
   });
 
@@ -207,10 +161,10 @@ describe('funding-report helper', () => {
     };
 
     it('returns the selected interval summary when no areas are selected', () => {
-      expect(aggregateFlameLengthSummary(results, '7_4', [], 'USER')).toEqual([
+      expect(aggregateFlameLengthSummary(results, '7_4', [])).toEqual([
         { year: 0, value: 70, baseline: 100, delta: 70 },
       ]);
-      expect(aggregateFlameLengthSummary(results, '4_2', [], 'USER')).toEqual([
+      expect(aggregateFlameLengthSummary(results, '4_2', [])).toEqual([
         { year: 0, value: 40, baseline: 100, delta: 40 },
       ]);
     });
@@ -219,95 +173,244 @@ describe('funding-report helper', () => {
       // Filtering by project area sums value/baseline and recomputes the delta
       // as the share of total area reduced: 70 / 100 * 100 = 70 (not the
       // time-series percent-change formula).
-      expect(aggregateFlameLengthSummary(results, '7_4', [1], 'USER')).toEqual([
+      expect(aggregateFlameLengthSummary(results, '7_4', [1])).toEqual([
         { year: 0, value: 70, baseline: 100, delta: 70 },
       ]);
     });
 
     it('sums value and baseline across selected project areas before the delta', () => {
       // value = 70 + 30 = 100, baseline = 100 + 200 = 300, delta = 100/300*100.
-      expect(
-        aggregateFlameLengthSummary(results, '7_4', [1, 2], 'USER')
-      ).toEqual([
+      expect(aggregateFlameLengthSummary(results, '7_4', [1, 2])).toEqual([
         { year: 0, value: 100, baseline: 300, delta: (100 / 300) * 100 },
       ]);
     });
 
     it('returns an empty list for an interval the report has no data for', () => {
-      expect(aggregateFlameLengthSummary(results, '6_4', [], 'USER')).toEqual(
-        []
-      );
+      expect(aggregateFlameLengthSummary(results, '6_4', [])).toEqual([]);
     });
 
     it('reports whether the selected interval has data', () => {
-      expect(hasFlameLengthData(results, '7_4', [], 'USER')).toBeTrue();
-      expect(hasFlameLengthData(results, '6_4', [], 'USER')).toBeFalse();
+      expect(hasFlameLengthData(results, '7_4', [])).toBeTrue();
+      expect(hasFlameLengthData(results, '6_4', [])).toBeFalse();
+    });
+  });
+});
+
+describe('calculateTreatmentAcreSums', () => {
+  it('should return empty array for empty input', () => {
+    const result = calculateTreatmentAcreSums([]);
+    expect(result).toEqual([]);
+  });
+
+  it('should aggregate treatment acres from realistic input', () => {
+    const input = [
+      { 'No Treatment': 101, 'Thin and Rx Burn': 654 },
+      { 'Rx Burn': 444, 'No Treatment': 105, 'Thin and Rx Burn': 101 },
+      { 'Rx Burn': 555, 'No Treatment': 200, 'Thin and Rx Burn': 333 },
+    ] as Record<string, number>[];
+    const result = calculateTreatmentAcreSums(input);
+    expect(result).toEqual([
+      { treatment: 'No Treatment', acres: 406 },
+      { treatment: 'Rx Burn', acres: 999 },
+      { treatment: 'Thin and Rx Burn', acres: 1088 },
+    ]);
+  });
+});
+
+describe('generateLegendFromReport', () => {
+  const mockProjectAreas: ProjectArea[] = [
+    {
+      id: 1,
+      scenario: 666666,
+      name: 'Proj Area 1',
+      data: {
+        YR: 2026,
+        proj_id: 20001,
+        pct_area: 10,
+        area_acres: 500,
+        total_cost: 27000,
+        stand_count: 15,
+        pct_excluded: 1,
+        cost_per_acre: 2700,
+        treatment_rank: 1,
+        weightedPriority: 1,
+      },
+      geometry: MOCK_GEOMETRY,
+    },
+    {
+      id: 2,
+      scenario: 666666,
+      name: 'Proj Area 2',
+      data: {
+        YR: 2026,
+        proj_id: 20002,
+        pct_area: 20,
+        area_acres: 1000,
+        total_cost: 54000,
+        stand_count: 30,
+        pct_excluded: 2,
+        cost_per_acre: 2700,
+        treatment_rank: 2,
+        weightedPriority: 2,
+      },
+      geometry: MOCK_GEOMETRY,
+    },
+    {
+      id: 3,
+      scenario: 666666,
+      name: 'Proj Area 3',
+      data: {
+        YR: 2026,
+        proj_id: 20003,
+        pct_area: 15,
+        area_acres: 750,
+        total_cost: 40500,
+        stand_count: 22,
+        pct_excluded: 1.5,
+        cost_per_acre: 2700,
+        treatment_rank: 3,
+        weightedPriority: 1.5,
+      },
+      geometry: MOCK_GEOMETRY,
+    },
+    {
+      id: 4,
+      scenario: 777777,
+      name: 'Proj Area 4',
+      data: {
+        YR: 2027,
+        proj_id: 30001,
+        pct_area: 25,
+        area_acres: 1250,
+        total_cost: 67500,
+        stand_count: 35,
+        pct_excluded: 3,
+        cost_per_acre: 2700,
+        treatment_rank: 1,
+        weightedPriority: 3,
+      },
+      geometry: MOCK_GEOMETRY,
+    },
+  ];
+
+  // Mock treatment areas matching the project area IDs
+  const mockTreatmentAreas = {
+    total: {},
+    projects: {
+      '1': {
+        'Rx Burn': 157,
+        'No Treatment': 250,
+        'Thin and Rx Burn': 250,
+      },
+      '2': {
+        'No Treatment': 400,
+        'Rx Burn': 600,
+        'Thin and Rx Burn': 0,
+      },
+      '3': {
+        'No Treatment': 300,
+        'Rx Burn': 300,
+        'Thin and Rx Burn': 150,
+      },
+      '4': {
+        'Rx Burn': 21,
+        'No Treatment': 450,
+        'Thin and Rx Burn': 800,
+      },
+    },
+  };
+
+  const empty = {
+    POTENTIAL_SMOKE: [],
+    ABOVEGROUND_TOTAL: [],
+  };
+  const mockResults: FundingReportResults = {
+    summary: {
+      ...empty,
+      POTENTIAL_SMOKE: [{ year: 0, value: 999, baseline: 999, delta: 42 }],
+    },
+    projects: {
+      ...empty,
+      TOTAL_FLAME_SEVERITY: {
+        '7_4': [
+          {
+            project_id: 1,
+            proj_id: 1,
+            year: 0,
+            value: 70,
+            baseline: 100,
+            delta: 70,
+          },
+          {
+            project_id: 2,
+            proj_id: 2,
+            year: 0,
+            value: 30,
+            baseline: 200,
+            delta: 15,
+          },
+        ],
+        '4_2': [
+          {
+            project_id: 1,
+            proj_id: 1,
+            year: 0,
+            value: 40,
+            baseline: 100,
+            delta: 40,
+          },
+        ],
+      },
+    },
+    treatment_areas: mockTreatmentAreas,
+  };
+
+  it('should return zeros when results is null', () => {
+    const result = generateLegendFromReport(null, [1, 2], mockProjectAreas);
+    expect(result).toEqual({ selectedAcres: 0 });
+  });
+
+  it('should calculate selectedAcres from selected areas (ids 1 and 3: 500 + 750 = 1250)', () => {
+    const result = generateLegendFromReport(
+      mockResults,
+      [1, 3],
+      mockProjectAreas
+    );
+    expect(result.selectedAcres).toBe(1250);
+  });
+
+  it('should calculate treatment totals using mock treatment areas', () => {
+    const result = generateLegendFromReport(
+      mockResults,
+      [1, 2, 3, 4],
+      mockProjectAreas
+    );
+    expect(result).toEqual({
+      selectedAcres: 3500,
+      treatmentAcresTotals: [
+        { treatment: 'No Treatment', acres: 1400 },
+        { treatment: 'Rx Burn', acres: 1078 },
+        { treatment: 'Thin and Rx Burn', acres: 1200 },
+      ],
     });
   });
 
-  describe('aggregateBiomassVolumes', () => {
-    const summary = biomass(7);
-    const projects: FundingReportBiomassVolumesProject[] = [
-      { project_id: 1, proj_id: null, ...biomass(10) },
-      { project_id: 2, proj_id: null, ...biomass(3) },
-    ];
+  it('should filter treatment results by selectedAreas (only ids 1 and 3)', () => {
+    const result = generateLegendFromReport(
+      mockResults,
+      [1, 3],
+      mockProjectAreas
+    );
+    expect(result.selectedAcres).toBe(1250);
+    expect(result.treatmentAcresTotals).toEqual([
+      { treatment: 'No Treatment', acres: 550 },
+      { treatment: 'Rx Burn', acres: 457 },
+      { treatment: 'Thin and Rx Burn', acres: 400 },
+    ]);
+  });
 
-    const empty = {
-      POTENTIAL_SMOKE: [],
-      ABOVEGROUND_TOTAL: [],
-      TOTAL_FLAME_SEVERITY: {},
-    };
-    const results: FundingReportResults = {
-      summary: { ...empty, BIOMASS_VOLUMES: summary },
-      projects: { ...empty, BIOMASS_VOLUMES: projects },
-    };
-
-    it('returns the whole-scenario summary when no areas are selected', () => {
-      // passthrough — same reference, not a recompute
-      expect(aggregateBiomassVolumes(results, [], 'USER')).toBe(summary);
-    });
-
-    it('sums each volume field across the selected project areas', () => {
-      expect(aggregateBiomassVolumes(results, [1, 2], 'USER')).toEqual(
-        biomass(13)
-      );
-    });
-
-    it('sums only the selected project areas', () => {
-      expect(aggregateBiomassVolumes(results, [2], 'USER')).toEqual(biomass(3));
-    });
-
-    it('returns undefined when no selected ids match', () => {
-      expect(aggregateBiomassVolumes(results, [99], 'USER')).toBeUndefined();
-    });
-
-    it('returns undefined when the report carries no biomass data', () => {
-      const noBiomass: FundingReportResults = {
-        summary: { ...empty },
-        projects: { ...empty },
-      };
-      expect(aggregateBiomassVolumes(noBiomass, [], 'USER')).toBeUndefined();
-      expect(aggregateBiomassVolumes(noBiomass, [1], 'USER')).toBeUndefined();
-    });
-
-    it('matches SYSTEM-origin selections against proj_id, not project_id', () => {
-      const systemResults: FundingReportResults = {
-        summary: { ...empty, BIOMASS_VOLUMES: summary },
-        projects: {
-          ...empty,
-          BIOMASS_VOLUMES: [
-            { project_id: 10, proj_id: 1, ...biomass(10) },
-            { project_id: 20, proj_id: 2, ...biomass(3) },
-          ],
-        },
-      };
-      expect(aggregateBiomassVolumes(systemResults, [1], 'SYSTEM')).toEqual(
-        biomass(10)
-      );
-      // The same id under USER origin matches nothing (no project_id === 1).
-      expect(
-        aggregateBiomassVolumes(systemResults, [1], 'USER')
-      ).toBeUndefined();
-    });
+  it('should select all areas when selectedAreas is empty', () => {
+    const result = generateLegendFromReport(mockResults, [], mockProjectAreas);
+    expect(result.selectedAcres).toBe(3500);
   });
 });

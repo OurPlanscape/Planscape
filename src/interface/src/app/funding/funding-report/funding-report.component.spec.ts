@@ -29,9 +29,11 @@ describe('FundingReportComponent', () => {
           dataTree$: of(null),
           paths$: of([]),
           viewedDataLayer$: of(null),
+          loadingLayer$: of(false),
         }),
         MockProvider(BaseLayersStateService, {
           selectedBaseLayers$: of([]),
+          loadingLayers$: of([]),
         }),
         MockProvider(FundingMapConfigState),
         MockProvider(MapConfigService),

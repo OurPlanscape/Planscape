@@ -3,12 +3,34 @@ import logging
 from core.serializers import MultiSerializerMixin
 from datasets.models import DataLayer
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.db.models.expressions import RawSQL
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from funding_report.models import (
+    FundingOpportunityReport,
+    FundingOpportunityReportRun,
+    FundingOpportunityReportStatus,
+)
+from funding_report.openapi_examples import (
+    FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE,
+    FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE,
+)
+from funding_report.serializers import (
+    FundingOpportunityReportSerializer,
+    FundingReportAETImprovementRequestSerializer,
+    FundingReportAETImprovementResponseSerializer,
+    FundingReportFlameLengthReductionRequestSerializer,
+    FundingReportFlameLengthReductionResponseSerializer,
+)
+from funding_report.services import (
+    calculate_aet_improvement,
+    calculate_funding_report_flame_length_reduction,
+)
+from funding_report.tasks import run_funding_opportunity_report
+from modules.base import compute_scenario_capabilities
 from planscape.serializers import BaseErrorMessageSerializer
 from rest_framework import mixins, pagination, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -55,27 +77,6 @@ from planning.serializers import (
     UpsertConfigurationV2Serializer,
     UpsertScenarioV3Serializer,
 )
-from funding_report.models import (
-    FundingOpportunityReport,
-    FundingOpportunityReportStatus,
-)
-from funding_report.openapi_examples import (
-    FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE,
-    FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE,
-)
-from funding_report.serializers import (
-    FundingOpportunityReportSerializer,
-    FundingReportAETImprovementRequestSerializer,
-    FundingReportAETImprovementResponseSerializer,
-    FundingReportFlameLengthReductionRequestSerializer,
-    FundingReportFlameLengthReductionResponseSerializer,
-)
-from funding_report.services import (
-    calculate_aet_improvement,
-    calculate_funding_report_flame_length_reduction,
-)
-from funding_report.tasks import run_funding_opportunity_report
-from modules.base import compute_scenario_capabilities
 from planning.services import (
     create_config,
     create_planning_area,
@@ -259,7 +260,27 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             )
             .prefetch_related("project_areas")
         )
+        if self.action == "list":
+            qs = qs.filter(parent__isnull=True)
         return qs
+
+    @action(methods=["get"], detail=True, url_path="child")
+    def child(self, request, pk=None):
+        parent = self.get_object()
+
+        children = (
+            self.get_queryset()
+            .filter(parent=parent)
+            .select_related("planning_area", "user", "results")
+            .prefetch_related("project_areas")
+        )
+
+        serializer = ListScenarioSerializer(
+            children,
+            many=True,
+            context={"request": request},
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(description="Retrieve a Scenario (auto-detects version).")
     def retrieve(self, request, *args, **kwargs):
@@ -431,6 +452,13 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             scenario=scenario,
             defaults={"created_by": request.user},
         )
+
+        FundingOpportunityReportRun.objects.create(
+            report=report,
+            user=request.user,
+            email=request.user.email or "",
+        )
+
         run_funding_opportunity_report.delay(report.pk)
         serializer = FundingOpportunityReportSerializer(instance=report)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)

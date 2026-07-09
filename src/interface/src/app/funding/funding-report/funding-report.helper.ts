@@ -1,23 +1,16 @@
 import {
   FlameLengthInterval,
-  FundingReportBiomassVolumes,
   FundingReportDataPoint,
   FundingReportProjectDataPoint,
   FundingReportResults,
   FundingReportTimeSeriesMetric,
-  ORIGIN_TYPE,
+  ProjectArea,
 } from '@types';
-
-/**
- * The per-project field that selection ids are matched against. USER scenarios
- * select by project area id (`project_id`); SYSTEM scenarios select by the
- * 1-based project index / treatment rank (`proj_id`).
- */
-function projectIdKey(
-  origin: ORIGIN_TYPE
-): keyof Pick<FundingReportProjectDataPoint, 'project_id' | 'proj_id'> {
-  return origin === 'SYSTEM' ? 'proj_id' : 'project_id';
-}
+import {
+  FundingLegendData,
+  LegendTreatmentType,
+  TREATMENT_ORDER,
+} from '../funding-acreage-legend/funding-acreage-legend.component';
 
 /**
  * Percentage change after treatment for a year, mirroring the backend's
@@ -44,21 +37,18 @@ export function percentOfArea(value: number, baseline: number): number {
  * when nothing was computed; if every point is null the chart should be hidden.
  *
  * An empty `projectAreas` checks the whole-scenario summary; a non-empty list
- * checks only the selected project areas. `origin` decides which per-project
- * field the selection ids are matched against.
+ * checks only the selected project areas.
  */
 function pointsHaveData(
   summary: FundingReportDataPoint[],
   projects: FundingReportProjectDataPoint[],
-  projectAreas: number[],
-  origin: ORIGIN_TYPE
+  projectAreas: number[]
 ): boolean {
-  const idKey = projectIdKey(origin);
   const points =
     projectAreas.length === 0
       ? summary
       : projects.filter((point) =>
-          projectAreas.includes(point[idKey] as number)
+          projectAreas.includes(point['project_id'] as number)
         );
   return points.some((point) => point.value !== null);
 }
@@ -69,20 +59,18 @@ function pointsHaveData(
  * An empty `projectAreas` means "all areas" and returns the precomputed
  * whole-scenario summary as-is. A non-empty list aggregates only those projects
  * the same way the backend builds the summary: sum value & baseline per year,
- * then recompute the percentage delta. `origin` decides which per-project field
- * the selection ids are matched against.
+ * then recompute the percentage delta.
  */
 function aggregateSummary(
   summary: FundingReportDataPoint[],
   projects: FundingReportProjectDataPoint[],
   projectAreas: number[],
-  origin: ORIGIN_TYPE,
   computeDelta: (value: number, baseline: number) => number = percentDelta
 ): FundingReportDataPoint[] {
   if (projectAreas.length === 0) {
     return summary;
   }
-  const idKey = projectIdKey(origin);
+  const idKey = 'project_id';
   const selected = new Set(projectAreas);
   const byYear = new Map<number, { value: number; baseline: number }>();
   for (const point of projects) {
@@ -108,14 +96,12 @@ function aggregateSummary(
 export function hasMetricData(
   results: FundingReportResults,
   metric: FundingReportTimeSeriesMetric,
-  projectAreas: number[],
-  origin: ORIGIN_TYPE
+  projectAreas: number[]
 ): boolean {
   return pointsHaveData(
     results.summary[metric],
     results.projects[metric],
-    projectAreas,
-    origin
+    projectAreas
   );
 }
 
@@ -123,14 +109,12 @@ export function hasMetricData(
 export function aggregateMetricSummary(
   results: FundingReportResults,
   metric: FundingReportTimeSeriesMetric,
-  projectAreas: number[],
-  origin: ORIGIN_TYPE
+  projectAreas: number[]
 ): FundingReportDataPoint[] {
   return aggregateSummary(
     results.summary[metric],
     results.projects[metric],
-    projectAreas,
-    origin
+    projectAreas
   );
 }
 
@@ -166,14 +150,12 @@ function flameProjectPoints(
 export function hasFlameLengthData(
   results: FundingReportResults,
   interval: FlameLengthInterval,
-  projectAreas: number[],
-  origin: ORIGIN_TYPE
+  projectAreas: number[]
 ): boolean {
   return pointsHaveData(
     flameSummaryPoints(results, interval),
     flameProjectPoints(results, interval),
-    projectAreas,
-    origin
+    projectAreas
   );
 }
 
@@ -186,58 +168,80 @@ export function hasFlameLengthData(
 export function aggregateFlameLengthSummary(
   results: FundingReportResults,
   interval: FlameLengthInterval,
-  projectAreas: number[],
-  origin: ORIGIN_TYPE
+  projectAreas: number[]
 ): FundingReportDataPoint[] {
   return aggregateSummary(
     flameSummaryPoints(results, interval),
     flameProjectPoints(results, interval),
     projectAreas,
-    origin,
     percentOfArea
   );
 }
 
-/**
- * Estimated biomass volumes for the chosen project areas.
- *
- * An empty `projectAreas` means "all areas" and returns the precomputed
- * whole-scenario summary as-is. A non-empty list sums each volume field over
- * the selected project areas, mirroring the backend, which accumulates raw
- * per-area values before the (linear) unit conversion — so summing the
- * already-converted per-area outputs yields the same totals.
- *
- * Returns `undefined` when no biomass data is available for the selection.
- * `origin` decides which per-project field the selection ids are matched against.
- */
-export function aggregateBiomassVolumes(
-  results: FundingReportResults,
-  projectAreas: number[],
-  origin: ORIGIN_TYPE
-): FundingReportBiomassVolumes | undefined {
-  if (projectAreas.length === 0) {
-    return results.summary.BIOMASS_VOLUMES;
+export function generateLegendFromReport(
+  results: FundingReportResults | null,
+  selectedAreas: number[],
+  projectAreas: ProjectArea[]
+): FundingLegendData {
+  const legendData: FundingLegendData = { selectedAcres: 0 };
+  if (!results) {
+    return { selectedAcres: 0 };
   }
-  const projects = results.projects.BIOMASS_VOLUMES;
-  if (!projects) {
-    return undefined;
-  }
-  const idKey = projectIdKey(origin);
-  const selected = new Set(projectAreas);
-  const matches = projects.filter((project) =>
-    selected.has(project[idKey] as number)
+  const txAreas = results?.treatment_areas;
+
+  const selectedProjectAreas = projectAreas?.filter((f) => {
+    if (selectedAreas.length === 0) {
+      return f;
+    } else {
+      return selectedAreas.includes(f.id);
+    }
+  });
+
+  legendData.selectedAcres =
+    selectedProjectAreas?.reduce((sum, f) => {
+      return sum + (f.data.area_acres || 0);
+    }, 0) ?? 0;
+
+  // calculate dynamic totals
+  const selectedTreatmentResults = selectedProjectAreas.map(
+    (area) => txAreas?.projects[area.id]
   );
-  if (matches.length === 0) {
-    return undefined;
+  legendData.treatmentAcresTotals = calculateTreatmentAcreSums(
+    selectedTreatmentResults
+  );
+  return legendData;
+}
+
+export function calculateTreatmentAcreSums(
+  selectedTreatmentResults: (Record<string, number | undefined> | undefined)[]
+): { treatment: LegendTreatmentType; acres: number }[] {
+  const totals: Record<string, number> = {};
+
+  selectedTreatmentResults.forEach((obj) => {
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const value = obj[key] || 0;
+        totals[key] = (totals[key] || 0) + value;
+      }
+    }
+  });
+
+  const treatmentAcresSums: {
+    treatment: LegendTreatmentType;
+    acres: number;
+  }[] = [];
+  for (const key in totals) {
+    if (Object.prototype.hasOwnProperty.call(totals, key)) {
+      treatmentAcresSums.push({
+        treatment: key as LegendTreatmentType,
+        acres: totals[key],
+      });
+    }
   }
-  const sum = (key: keyof FundingReportBiomassVolumes) =>
-    matches.reduce((total, project) => total + (project[key] ?? 0), 0);
-  return {
-    merchantable_softwood_bf: sum('merchantable_softwood_bf'),
-    merchantable_hardwood_bf: sum('merchantable_hardwood_bf'),
-    merchantable_mixed_bf: sum('merchantable_mixed_bf'),
-    non_merchantable_softwood_cuft: sum('non_merchantable_softwood_cuft'),
-    non_merchantable_hardwood_cuft: sum('non_merchantable_hardwood_cuft'),
-    non_merchantable_mixed_cuft: sum('non_merchantable_mixed_cuft'),
-  };
+
+  return treatmentAcresSums.sort(
+    (a, b) =>
+      TREATMENT_ORDER.indexOf(a.treatment) -
+      TREATMENT_ORDER.indexOf(b.treatment)
+  );
 }

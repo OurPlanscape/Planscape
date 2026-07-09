@@ -36,6 +36,13 @@ import { ButtonComponent } from '@styleguide';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@app/shared';
 import { FundingMapConfigState } from '../funding-map-config-state';
+import {
+  FundingAcreageLegendComponent,
+  FundingLegendData,
+} from '../funding-acreage-legend/funding-acreage-legend.component';
+import { MapActionButtonComponent } from '@app/treatments/map-action-button/map-action-button.component';
+import { MapLayerColorLegendComponent } from '@app/maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
+import { BASE_COLORS } from '@app/treatments/map.styles';
 
 @Component({
   selector: 'app-funding-report-map',
@@ -44,11 +51,14 @@ import { FundingMapConfigState } from '../funding-map-config-state';
     AsyncPipe,
     ButtonComponent,
     ControlComponent,
+    FundingAcreageLegendComponent,
     FundingDataLayerComponent,
     LayerComponent,
+    MapActionButtonComponent,
     MapBaseLayersComponent,
     MapDataLayerComponent,
     MapComponent,
+    MapLayerColorLegendComponent,
     MapMultiProjectAreasComponent,
     MapTooltipComponent,
     MapZoomControlComponent,
@@ -75,7 +85,11 @@ export class FundingReportMapComponent implements OnInit {
     this.loading$.next(true);
   }
 
+  readonly BASE_COLORS = BASE_COLORS;
+
   @Input() allowInteraction = true;
+
+  @Input() legendData: FundingLegendData | null = null;
 
   /** Id of the report's treatment datalayer to display on the map. */
   @Input() treatmentDataLayerId!: number;
@@ -88,6 +102,7 @@ export class FundingReportMapComponent implements OnInit {
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
   baseLayerUrl$ = this.fundingMapConfigState.baseMapUrl$;
+  showFundingLegend$ = this.fundingMapConfigState.showFundingLegend$;
 
   opacity$ = this.fundingMapConfigState.opacity$;
 
@@ -152,6 +167,10 @@ export class FundingReportMapComponent implements OnInit {
         panelClass: ['snackbar-error', 'snackbar-error-multiline'],
       }
     );
+  }
+
+  openFundingLegend() {
+    this.fundingMapConfigState.setFundingLegendVisibility(true);
   }
 
   setHoveredProjectAreaId(value: number | null) {

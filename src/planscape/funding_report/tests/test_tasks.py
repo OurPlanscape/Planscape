@@ -3,7 +3,8 @@ from unittest import mock
 
 from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
-from django.test import TestCase
+from django.conf import settings
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -18,6 +19,7 @@ from funding_report.models import (
     FLAME_LENGTH_REDUCTION_INTERVALS,
     FUNDING_REPORT_YEARS,
     FundingOpportunityReport,
+    FundingOpportunityReportRun,
     FundingOpportunityReportStatus,
     FundingReportMetric,
 )
@@ -26,6 +28,7 @@ from funding_report.tasks import (
     async_calculate_funding_report_delta,
     async_finalize_funding_report_results,
     run_funding_opportunity_report,
+    send_weekly_funding_report_users_report,
 )
 
 
@@ -96,7 +99,11 @@ class FundingOpportunityReportTaskTest(TestCase):
             metric=FundingReportMetric.ABOVEGROUND_TOTAL.value,
             year=2026,
             datalayer_lookup={
-                (FundingReportMetric.ABOVEGROUND_TOTAL.value, 2026, True): baseline_layer,
+                (
+                    FundingReportMetric.ABOVEGROUND_TOTAL.value,
+                    2026,
+                    True,
+                ): baseline_layer,
                 (FundingReportMetric.ABOVEGROUND_TOTAL.value, 2026, False): value_layer,
             },
             from_ft=FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
@@ -137,8 +144,16 @@ class FundingOpportunityReportTaskTest(TestCase):
             metric=FundingReportMetric.TOTAL_FLAME_SEVERITY.value,
             year=2026,
             datalayer_lookup={
-                (FundingReportMetric.TOTAL_FLAME_SEVERITY.value, 2026, True): baseline_layer,
-                (FundingReportMetric.TOTAL_FLAME_SEVERITY.value, 2026, False): value_layer,
+                (
+                    FundingReportMetric.TOTAL_FLAME_SEVERITY.value,
+                    2026,
+                    True,
+                ): baseline_layer,
+                (
+                    FundingReportMetric.TOTAL_FLAME_SEVERITY.value,
+                    2026,
+                    False,
+                ): value_layer,
             },
             from_ft=6.0,
             to_ft=4.0,
@@ -255,7 +270,9 @@ class FundingOpportunityReportTaskTest(TestCase):
             results["summary"][FundingReportMetric.ABOVEGROUND_TOTAL],
             [{"year": 2026, "value": 10, "baseline": 8, "delta": 25.0}],
         )
-        self.assertNotIn("raw_value", results["summary"][FundingReportMetric.ABOVEGROUND_TOTAL][0])
+        self.assertNotIn(
+            "raw_value", results["summary"][FundingReportMetric.ABOVEGROUND_TOTAL][0]
+        )
 
         flame_summary = results["summary"]["TOTAL_FLAME_SEVERITY"]
         flame_projects = results["projects"]["TOTAL_FLAME_SEVERITY"]
@@ -266,12 +283,16 @@ class FundingOpportunityReportTaskTest(TestCase):
         self.assertEqual(seven_four_summary["value"], 10)
         self.assertEqual(seven_four_summary["baseline"], 40)
         self.assertEqual(seven_four_summary["raw_value"], seven_four_summary["value"])
-        self.assertEqual(seven_four_summary["total_area"], seven_four_summary["baseline"])
+        self.assertEqual(
+            seven_four_summary["total_area"], seven_four_summary["baseline"]
+        )
 
         seven_four_project = flame_projects["7_4"][0]
         self.assertEqual(seven_four_project["project_id"], self.project_area.pk)
         self.assertEqual(seven_four_project["raw_value"], seven_four_project["value"])
-        self.assertEqual(seven_four_project["total_area"], seven_four_project["baseline"])
+        self.assertEqual(
+            seven_four_project["total_area"], seven_four_project["baseline"]
+        )
 
         six_four_summary = flame_summary["6_4"][0]
         self.assertEqual(six_four_summary["value"], 5)
@@ -341,19 +362,28 @@ class FundingOpportunityReportTaskTest(TestCase):
         flame_tasks = [
             task
             for task in tasks
-            if task.kwargs.get("metric") == FundingReportMetric.TOTAL_FLAME_SEVERITY.value
+            if task.kwargs.get("metric")
+            == FundingReportMetric.TOTAL_FLAME_SEVERITY.value
         ]
-        self.assertEqual(len(flame_tasks), len(FUNDING_REPORT_YEARS) * len(FLAME_LENGTH_REDUCTION_INTERVALS))
-        intervals_used = {(task.kwargs["from_ft"], task.kwargs["to_ft"]) for task in flame_tasks}
+        self.assertEqual(
+            len(flame_tasks),
+            len(FUNDING_REPORT_YEARS) * len(FLAME_LENGTH_REDUCTION_INTERVALS),
+        )
+        intervals_used = {
+            (task.kwargs["from_ft"], task.kwargs["to_ft"]) for task in flame_tasks
+        }
         self.assertEqual(intervals_used, set(FLAME_LENGTH_REDUCTION_INTERVALS))
 
         non_flame_tasks = [
             task
             for task in tasks
-            if task.kwargs.get("metric") not in (None, FundingReportMetric.TOTAL_FLAME_SEVERITY.value)
+            if task.kwargs.get("metric")
+            not in (None, FundingReportMetric.TOTAL_FLAME_SEVERITY.value)
         ]
         for task in non_flame_tasks:
-            self.assertEqual(task.kwargs["from_ft"], FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT)
+            self.assertEqual(
+                task.kwargs["from_ft"], FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT
+            )
             self.assertEqual(task.kwargs["to_ft"], FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT)
 
     @mock.patch("funding_report.tasks.chord")
@@ -399,3 +429,54 @@ class FundingOpportunityReportTaskTest(TestCase):
         chord_mock.assert_called_once()
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.RUNNING)
+
+    @override_settings(
+        WEEKLY_FUNDING_REPORT_USERS_REPORT_EMAIL="signups@planscape.org",
+    )
+    @mock.patch("funding_report.tasks.send_mail")
+    def test_send_weekly_funding_report_users_report(self, send_mail_mock):
+        FundingOpportunityReportRun.objects.create(
+            report=self.report,
+            user=self.user,
+            email="planner@example.com",
+        )
+        FundingOpportunityReportRun.objects.create(
+            report=self.report,
+            user=self.user,
+            email="planner@example.com",
+        )
+        FundingOpportunityReportRun.objects.create(
+            report=self.report,
+            user=self.user,
+            email="other@example.com",
+        )
+
+        send_weekly_funding_report_users_report()
+
+        send_mail_mock.assert_called_once()
+        kwargs = send_mail_mock.call_args.kwargs
+
+        self.assertEqual(kwargs["recipient_list"], ["signups@planscape.org"])
+        self.assertEqual(kwargs["from_email"], settings.DEFAULT_FROM_EMAIL)
+        self.assertIn("Weekly Planscape Funding Report Users", kwargs["subject"])
+        self.assertIn("planner@example.com", kwargs["message"])
+        self.assertIn("other@example.com", kwargs["message"])
+        self.assertIn("(2 reports)", kwargs["message"])
+        self.assertIn("planner@example.com", kwargs["html_message"])
+        self.assertIn("other@example.com", kwargs["html_message"])
+
+    @override_settings(WEEKLY_FUNDING_REPORT_USERS_REPORT_EMAIL="")
+    @mock.patch("funding_report.tasks.send_mail")
+    def test_send_weekly_funding_report_users_report_skips_without_recipient(
+        self,
+        send_mail_mock,
+    ):
+        FundingOpportunityReportRun.objects.create(
+            report=self.report,
+            user=self.user,
+            email="planner@example.com",
+        )
+
+        send_weekly_funding_report_users_report()
+
+        send_mail_mock.assert_not_called()

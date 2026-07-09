@@ -1,6 +1,7 @@
 import json
 import logging
 import math
+import os
 from typing import Any, Dict, Optional
 
 import fiona
@@ -11,6 +12,17 @@ from fiona.errors import DriverError
 from rasterio.transform import from_gcps
 
 logger = logging.getLogger(__name__)
+
+
+def resolve_num_threads(raw: Optional[str] = None) -> int:
+    """Resolves a GDAL-style thread count config (e.g. settings.GDAL_NUM_THREADS,
+    which may be a number or the literal "ALL_CPUS") into a real int, since
+    rasterio's Python APIs (unlike the GDAL CLI/config option) require an int.
+    """
+    value = raw if raw is not None else settings.GDAL_NUM_THREADS
+    if str(value).strip().upper() == "ALL_CPUS":
+        return os.cpu_count() or 1
+    return int(value)
 
 
 def get_gdal_env(
