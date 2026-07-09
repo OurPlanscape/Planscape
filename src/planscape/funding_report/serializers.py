@@ -83,3 +83,9 @@ class FundingReportFlameLengthReductionResponseSerializer(serializers.Serializer
     )
     summary = FundingReportFlameLengthReductionSummarySerializer(many=True)
     projects = FundingReportFlameLengthReductionProjectSerializer(many=True)
+
+
+class FundingOpportunityReportSharedLinkQuerySerializer(serializers.Serializer):
+    aet = serializers.CharField(required=True)
+    total_flame_severity = serializers.CharField(required=True)
+

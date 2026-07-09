@@ -11,7 +11,13 @@ from rest_framework.test import APITestCase
 from funding_report.models import (
     FundingOpportunityReport,
     FundingOpportunityReportRun,
+    FundingOpportunityReportSharedLink,
     FundingOpportunityReportStatus,
+)
+from funding_report.tests.factories import (
+    FundingOpportunityReportFactory,
+    FundingOpportunityReportInviteFactory,
+    FundingOpportunityReportSharedLinkFactory,
 )
 
 
@@ -278,6 +284,138 @@ class GetReportTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["scenario"], self.scenario.pk)
+
+
+class FundingOpportunityReportInvitesSharedLinkTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+        )
+        self.url = reverse(
+            "api:planning:scenarios-funding-opportunity-report-invites-shared-link",
+            args=[self.scenario.pk],
+        )
+        self.query_params = {
+            "aet": "10",
+            "total_flame_severity": "high",
+        }
+        _create_scenario_role_permissions()
+        self.report = FundingOpportunityReportFactory(
+            scenario=self.scenario,
+            created_by=self.user,
+        )
+
+    def test_requires_authentication(self):
+        response = self.client.get(self.url, self.query_params)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_requires_required_query_params(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(self.url, {"aet": "10"})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("total_flame_severity", response.json().get("errors"))
+
+    def test_returns_404_when_report_does_not_exist(self):
+        self.client.force_authenticate(self.user)
+
+        scenario_wo_report = ScenarioFactory.create(
+            user=self.user,
+        )
+
+        url = reverse(
+            "api:planning:scenarios-funding-opportunity-report-invites-shared-link",
+            args=[scenario_wo_report.pk],
+        )
+        response = self.client.get(url, self.query_params)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_creates_shared_link_and_returns_invite_emails_and_public_url(self):
+        invite_1 = FundingOpportunityReportInviteFactory(
+            report=self.report,
+            inviter=self.user,
+            invitee_email="first@example.com",
+        )
+        invite_2 = FundingOpportunityReportInviteFactory(
+            report=self.report,
+            inviter=self.user,
+            invitee_email="second@example.com",
+        )
+        deleted_invite = FundingOpportunityReportInviteFactory(
+            report=self.report,
+            inviter=self.user,
+            invitee_email="deleted@example.com",
+        )
+        deleted_invite.delete()
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(self.url, self.query_params)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(FundingOpportunityReportSharedLink.objects.count(), 1)
+        shared_link = FundingOpportunityReportSharedLink.objects.get()
+        self.assertEqual(shared_link.report, self.report)
+        self.assertEqual(shared_link.configuration, self.query_params)
+        self.assertEqual(response.json()["public_url"], shared_link.get_public_url())
+        self.assertCountEqual(
+            response.json()["emails"],
+            [invite_1.invitee_email, invite_2.invitee_email],
+        )
+
+    def test_reuses_existing_shared_link_for_same_configuration(self):
+        shared_link = FundingOpportunityReportSharedLinkFactory(
+            report=self.report,
+            configuration=self.query_params,
+        )
+        FundingOpportunityReportInviteFactory(report=self.report, inviter=self.user)
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(self.url, self.query_params)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(FundingOpportunityReportSharedLink.objects.count(), 1)
+        self.assertEqual(response.json()["public_url"], shared_link.get_public_url())
+
+    def test_creates_new_shared_link_for_different_configuration(self):
+        FundingOpportunityReportSharedLinkFactory(
+            report=self.report,
+            configuration={"aet": "5", "total_flame_severity": "medium"},
+        )
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(self.url, self.query_params)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(FundingOpportunityReportSharedLink.objects.count(), 2)
+        self.assertTrue(
+            FundingOpportunityReportSharedLink.objects.filter(
+                report=self.report,
+                configuration=self.query_params,
+            ).exists()
+        )
+
+    def test_allows_viewer_with_scenario_access(self):
+        invite = FundingOpportunityReportInviteFactory(report=self.report, inviter=self.user)
+        viewer = UserFactory.create()
+        UserObjectRoleFactory(
+            inviter=self.user,
+            collaborator=viewer,
+            email=viewer.email,
+            role=Role.VIEWER,
+            associated_model=self.planning_area,
+        )
+        self.client.force_authenticate(viewer)
+
+        response = self.client.get(self.url, self.query_params)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["emails"], [invite.invitee_email])
 
 
 class AETImprovementTest(APITestCase):
