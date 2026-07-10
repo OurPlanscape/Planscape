@@ -89,7 +89,6 @@ export class FundingDashboardComponent implements OnInit {
     map(([report, requested]) => {
       // A finished report always wins over a pending click.
       if (!this.isStillProcessing(report)) {
-        console.log('we are not still processing anymore!');
         return false;
       }
       return requested || this.isGenerating(report);
@@ -119,7 +118,6 @@ export class FundingDashboardComponent implements OnInit {
       exhaustMap(() => this.fundingReportService.getReport(scenarioId)),
       takeWhile((report) => {
         const processingResult = this.isStillProcessing(report);
-        console.log('processing status:', processingResult, report);
         return processingResult;
       }, true)
     );
@@ -139,13 +137,6 @@ export class FundingDashboardComponent implements OnInit {
     const geoPackagePending =
       report.geopackage_status === 'PENDING' ||
       report.geopackage_status === 'PROCESSING';
-
-    console.log(
-      'report status:',
-      report.status,
-      '- geopackage status:',
-      report.geopackage_status
-    );
 
     return reportIsGenerating || geoPackagePending;
   }

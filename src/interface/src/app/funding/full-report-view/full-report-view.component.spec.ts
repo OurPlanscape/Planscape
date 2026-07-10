@@ -69,6 +69,8 @@ describe('FullReportViewComponent recalculations', () => {
 
   const baseReport: FundingReport = {
     status: 'SUCCESS',
+    geopackage_status: null,
+    geopackage_url: null,
     created_at: '2026-01-01T00:00:00Z',
     created_by: 1,
     updated_at: '2026-01-01T00:00:00Z',
