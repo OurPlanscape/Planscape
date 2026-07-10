@@ -88,7 +88,8 @@ export class FundingDashboardComponent implements OnInit {
   isGenerating$ = combineLatest([this.report$, this.generationRequested$]).pipe(
     map(([report, requested]) => {
       // A finished report always wins over a pending click.
-      if (report?.status === 'SUCCESS' || report?.status === 'FAILED') {
+      if (!this.isStillProcessing(report)) {
+        console.log('we are not still processing anymore!');
         return false;
       }
       return requested || this.isGenerating(report);
@@ -102,13 +103,6 @@ export class FundingDashboardComponent implements OnInit {
     map((r) => r?.status === 'SUCCESS' && !this.hasResults(r))
   );
   hasError$ = this.report$.pipe(map((r) => r?.status === 'FAILED'));
-
-  geopackageReady$ = this.report$.pipe(
-    map(
-      (report) =>
-        report?.geopackage_status === 'SUCCEEDED' && report?.geopackage_url
-    )
-  );
 
   /** Empty state shows only before a report exists and before the user asks. */
   showEmptyState$ = combineLatest([
@@ -145,6 +139,7 @@ export class FundingDashboardComponent implements OnInit {
     const geoPackagePending =
       report.geopackage_status === 'PENDING' ||
       report.geopackage_status === 'PROCESSING';
+
     console.log(
       'report status:',
       report.status,
