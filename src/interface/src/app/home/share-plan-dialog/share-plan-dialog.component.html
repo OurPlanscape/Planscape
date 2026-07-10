@@ -1,45 +1,20 @@
-<div class="main" *ngIf="!showHelp">
-  <section class="header">
+<app-share-dialog
+  [title]="'Share ' + data.plan.name"
+  [submitting]="submitting"
+  [primaryLabel]="emails.length > 0 ? 'INVITE' : 'DONE'"
+  [showHelpButton]="true"
+  [twoColumnForm]="true"
+  [allowStartOver]="true"
+  [hideBodyWhileComposing]="true"
+  (emailsChange)="emails = $event"
+  (primaryAction)="emails.length > 0 ? invite() : close()"
+  (close)="close()">
+  <div shareDialogRoleSelector>
     <button
-      sg-button
-      icon="arrow_back"
-      (click)="startOver()"
-      *ngIf="showMessageBox"
-      variant="icon-only"></button>
-
-    <h2>Share {{ data.plan.name }}</h2>
-
-    <button
-      sg-button
-      icon="help_outlined"
-      (click)="showHelp = true"
-      aria-label="help"
-      variant="icon-only"></button>
-
-    <button
-      sg-button
-      icon="close"
-      (click)="close()"
-      aria-label="close"
-      variant="icon-only"></button>
-  </section>
-
-  <app-form-message
-    [messageType]="errorType"
-    *ngIf="invalidEmail"
-    title="Invalid email"
-    message="An email must contain a single @">
-  </app-form-message>
-
-  <form class="invitations-form">
-    <app-chip-input
-      [emails]="emails"
-      [placeholder]="showMessageBox ? '' : 'enter email'"
-      (addEmail)="addEmail($event)"
-      (removeEmail)="removeEmail($event)"
-      (isInvalid)="invalidEmail = $event"></app-chip-input>
-
-    <button mat-button [matMenuTriggerFor]="roleMenu" class="invite-role">
+      type="button"
+      mat-button
+      [matMenuTriggerFor]="roleMenu"
+      class="invite-role">
       {{ selectedRole }}
       <mat-icon>arrow_drop_down</mat-icon>
     </button>
@@ -58,23 +33,25 @@
         {{ role }}
       </button>
     </mat-menu>
+  </div>
 
-    <mat-form-field
-      appearance="outline"
-      class="invite-message"
-      *ngIf="showMessageBox">
-      <textarea
-        matInput
-        placeholder="Message"
-        [(ngModel)]="message"
-        name="questionText"></textarea>
-    </mat-form-field>
-  </form>
+  <mat-form-field
+    shareDialogMessage
+    appearance="outline"
+    class="invite-message">
+    <textarea
+      matInput
+      placeholder="Message"
+      [(ngModel)]="message"
+      name="questionText"></textarea>
+  </mat-form-field>
+
   <app-section-loader
+    shareDialogBody
     [isLoading]="isLoading"
     [hasData]="true"
     [ngClass]="{ loading: isLoading }">
-    <section class="invited-users-list" *ngIf="!showMessageBox">
+    <section class="invited-users-list">
       <h3>People with access</h3>
       <div class="invited-user" *ngIf="showCreator$ | async">
         <div class="name">{{ data.plan.creator }}</div>
@@ -115,52 +92,26 @@
     </section>
   </app-section-loader>
 
-  <section class="footer">
-    <button
-      class="action"
-      mat-flat-button
-      type="button"
-      color="primary"
-      [disabled]="submitting"
-      (click)="emails.length > 0 ? invite() : close()">
-      {{ emails.length > 0 ? 'INVITE' : 'DONE' }}
-    </button>
+  <section shareDialogHelp class="help">
+    <div class="help-content">
+      <h4>What can I do as an Owner?</h4>
+      <p>
+        Full administrative control. You can manage planning area permissions,
+        and have unrestricted rights to create, edit, or delete content across
+        all features.
+      </p>
+
+      <h4>What can I do as a Collaborator?</h4>
+      <p>
+        Management access. You can create and edit, but you do not have
+        permission to share access with others or delete.
+      </p>
+
+      <h4>What can I do as a Viewer?</h4>
+      <p>
+        Read-only access to all dashboards or reports. You cannot edit, create,
+        or delete data.
+      </p>
+    </div>
   </section>
-</div>
-
-<div class="help" *ngIf="showHelp">
-  <section class="header">
-    <button
-      sg-button
-      icon="arrow_back"
-      (click)="showHelp = false"
-      variant="icon-only"></button>
-
-    <h2>Help</h2>
-    <button
-      sg-button
-      icon="close"
-      (click)="close()"
-      variant="icon-only"></button>
-  </section>
-  <section class="help-content">
-    <h4>What can I do as an Owner?</h4>
-    <p>
-      Full administrative control. You can manage planning area permissions, and
-      have unrestricted rights to create, edit, or delete content across all
-      features.
-    </p>
-
-    <h4>What can I do as a Collaborator?</h4>
-    <p>
-      Management access. You can create and edit, but you do not have permission
-      to share access with others or delete.
-    </p>
-
-    <h4>What can I do as a Viewer?</h4>
-    <p>
-      Read-only access to all dashboards or reports. You cannot edit, create, or
-      delete data.
-    </p>
-  </section>
-</div>
+</app-share-dialog>

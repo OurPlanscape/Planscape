@@ -1,0 +1,30 @@
+@import "mixins";
+@import "colors";
+
+.report-sent-to {
+  padding: 16px;
+  color: $color-black;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  max-height: 300px;
+  overflow-y: auto;
+
+  h3 {
+    @include small-input-label();
+    margin: 0;
+    color: $color-dark-gray;
+  }
+
+  .empty {
+    @include small-input-label();
+    margin: 0;
+    color: $color-text-gray;
+  }
+
+  .shared-email {
+    @include small-input-label();
+    color: $color-black;
+  }
+}

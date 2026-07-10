@@ -1,0 +1,91 @@
+@import "mixins";
+@import "colors";
+
+:host {
+  display: block;
+  width: 538px;
+}
+
+.main {
+  // material overrides
+  ::ng-deep {
+    .mat-form-field-infix {
+      border-top-width: 0;
+    }
+
+    .mat-form-field-appearance-outline .mat-form-field-wrapper {
+      padding: 0;
+    }
+
+    .mat-button-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  ::ng-deep .message-box {
+    margin: 16px;
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid $color-soft-gray;
+
+  h2 {
+    @include top-level-label();
+    font-size: 18px;
+    margin: 0 auto 0 0;
+  }
+
+  button + h2 {
+    margin-left: 8px;
+  }
+
+  button + button {
+    margin-left: 8px;
+  }
+}
+
+.invitations-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: flex-start;
+  gap: 16px 12px;
+  margin: 16px;
+
+  position: relative;
+
+  &.two-column {
+    grid-template-columns: 1fr 142px;
+  }
+
+  &::after {
+    content: "";
+    display: block;
+    left: 0;
+    border-bottom: 1px solid $color-soft-gray;
+    position: absolute;
+    right: 0;
+    bottom: -16px;
+  }
+}
+
+.footer {
+  border-top: 1px solid $color-soft-gray;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+
+  // Keep the "Copy Link" action pinned to the left while the primary button
+  // stays on the right.
+  a[sg-button].link-button,
+  button[sg-button].link-button {
+    margin-right: auto;
+  }
+}

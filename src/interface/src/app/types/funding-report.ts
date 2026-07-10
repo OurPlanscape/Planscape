@@ -152,6 +152,15 @@ export interface FundingReport {
 }
 
 /**
+ * Response of the funding-report share endpoints: the emails the report has
+ * already been shared with, plus the public link for the current configuration.
+ */
+export interface FundingReportShareInfo {
+  emails: string[];
+  public_url: string;
+}
+
+/**
  * Flame length reduction intervals the report pre-calculates. The key encodes
  * the from/to thresholds in feet (e.g. '7_4' is area reduced from >7 ft to
  * <4 ft), matching the backend's interval keys under `TOTAL_FLAME_SEVERITY`.

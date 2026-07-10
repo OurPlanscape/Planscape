@@ -331,4 +331,5 @@
   [generatingPdf]="(generatingPdf$ | async) || false"
   [downloadingGeopackage]="(downloadingGeopackage$ | async) || false"
   (downloadPdf)="exportPdf()"
-  (downloadGeopackage)="downloadGeopackage()"></app-funding-report-footer>
+  (downloadGeopackage)="downloadGeopackage()"
+  (share)="openShareDialog()"></app-funding-report-footer>

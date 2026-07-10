@@ -74,10 +74,15 @@ import {
   distinctUntilChanged,
   filter,
   map,
+  take,
 } from 'rxjs';
+
 import { SNACK_ERROR_CONFIG, SUPPORT_URL } from '@app/shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DataLayersService, FileSaverService } from '@app/services';
+import { MatDialog } from '@angular/material/dialog';
+import { ScenarioState } from '@scenario/scenario.state';
+import { ShareFundingReportDialogComponent } from '../share-funding-report-dialog/share-funding-report-dialog.component';
 
 /** Pause after the last keystroke before recalculating water availability. */
 const WATER_DEBOUNCE_MS = 300;
@@ -135,8 +140,30 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     private baseLayersStateService: BaseLayersStateService,
     private snackbar: MatSnackBar,
     private fileSaverService: FileSaverService,
-    private dataLayersService: DataLayersService
+    private dataLayersService: DataLayersService,
+    private dialog: MatDialog,
+    private scenarioState: ScenarioState
   ) {}
+
+  /**
+   * Open the share modal for this report, seeded with the currently-selected
+   * report configuration (water target + flame interval) so the shared link
+   * points at the same view the user is looking at.
+   */
+  openShareDialog() {
+    this.scenarioState.currentScenario$.pipe(take(1)).subscribe((scenario) => {
+      this.dialog.open(ShareFundingReportDialogComponent, {
+        data: {
+          scenarioId: this.report.scenario,
+          name: scenario.name,
+          aet: this.waterAvailabilityControl.value ?? 0,
+          totalFlameSeverity: this.flameLengthInterval.value,
+        },
+        restoreFocus: false,
+        panelClass: 'no-padding-dialog',
+      });
+    });
+  }
 
   /** The scrollable container holding the map + report sections. */
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLElement>;

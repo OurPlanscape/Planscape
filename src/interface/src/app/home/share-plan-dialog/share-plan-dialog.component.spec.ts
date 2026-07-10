@@ -9,6 +9,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { Plan, User } from '@types';
 import { ChipInputComponent } from '@home/chip-input/chip-input.component';
 import { SectionLoaderComponent } from '@shared';
+import { ShareDialogComponent } from '@shared/share-dialog/share-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { PlanState } from '@plan/plan.state';
@@ -30,7 +31,11 @@ describe('SharePlanDialogComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [
         SharePlanDialogComponent,
-        MockComponents(ChipInputComponent, SectionLoaderComponent),
+        MockComponents(
+          ChipInputComponent,
+          SectionLoaderComponent,
+          ShareDialogComponent
+        ),
       ],
       imports: [
         LegacyMaterialModule,
@@ -70,29 +75,6 @@ describe('SharePlanDialogComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-  });
-
-  describe('add email', () => {
-    it('should add an email to the email list', () => {
-      component.emails = ['john@planscape.com', 'jane@planscape.com'];
-      component.addEmail('richard@planscape.com');
-      expect(component.emails.length).toBe(3);
-    });
-  });
-
-  describe('remove email', () => {
-    it('should remove an email to the email list', () => {
-      component.emails = [
-        'john@planscape.com',
-        'jane@planscape.com',
-        'richard@planscape.com',
-      ];
-      component.removeEmail('john@planscape.com');
-      expect(component.emails).toEqual([
-        'jane@planscape.com',
-        'richard@planscape.com',
-      ]);
-    });
   });
 
   describe('invite users', () => {

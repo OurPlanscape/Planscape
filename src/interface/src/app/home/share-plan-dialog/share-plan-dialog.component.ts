@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 
-import { FormMessageType, Invite, INVITE_ROLE, Plan, User } from '@types';
+import { Invite, INVITE_ROLE, Plan, User } from '@types';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 import { AuthService, InvitesService } from '@services';
 import { filter, map, tap } from 'rxjs';
@@ -31,9 +31,6 @@ export class SharePlanDialogComponent {
   ) {}
 
   emails: string[] = [];
-  errorType = FormMessageType.ERROR;
-  invalidEmail = false;
-  showHelp = false;
   submitting = false;
   message = '';
   isLoading = true;
@@ -55,18 +52,6 @@ export class SharePlanDialogComponent {
   roles: INVITE_ROLE[] = Object.keys(Roles) as INVITE_ROLE[];
 
   selectedRole = this.roles[0] as INVITE_ROLE;
-
-  addEmail(email: string): void {
-    this.emails.push(email);
-  }
-
-  removeEmail(email: string): void {
-    const index = this.emails.indexOf(email);
-
-    if (index >= 0) {
-      this.emails.splice(index, 1);
-    }
-  }
 
   close() {
     this.dialogRef.close();
@@ -93,15 +78,6 @@ export class SharePlanDialogComponent {
           this.submitting = false;
         },
       });
-  }
-
-  get showMessageBox() {
-    return this.invalidEmail || this.emails.length > 0;
-  }
-
-  startOver() {
-    this.invalidEmail = false;
-    this.emails = [];
   }
 
   changeRole(invite: Invite, newRole: INVITE_ROLE) {
