@@ -369,7 +369,7 @@ describe('generateLegendFromReport', () => {
 
   it('should return zeros when results is null', () => {
     const result = generateLegendFromReport(null, [1, 2], mockProjectAreas);
-    expect(result).toEqual({ selectedAcres: 0 });
+    expect(result).toEqual({ selectedAcres: 0, noTreatmentAcres: 0 });
   });
 
   it('should calculate selectedAcres from selected areas (ids 1 and 3: 500 + 750 = 1250)', () => {
@@ -393,7 +393,7 @@ describe('generateLegendFromReport', () => {
         { treatment: 'Rx Burn', acres: 1078 },
         { treatment: 'Thin and Rx Burn', acres: 1200 },
       ],
-      noTreatments: 1400,
+      noTreatmentAcres: 1400,
     });
   });
 
@@ -408,7 +408,7 @@ describe('generateLegendFromReport', () => {
       { treatment: 'Rx Burn', acres: 457 },
       { treatment: 'Thin and Rx Burn', acres: 400 },
     ]);
-    expect(result.noTreatments).toBe(550);
+    expect(result.noTreatmentAcres).toBe(550);
   });
 
   it('should select all areas when selectedAreas is empty', () => {

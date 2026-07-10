@@ -183,9 +183,12 @@ export function generateLegendFromReport(
   selectedAreas: number[],
   projectAreas: ProjectArea[]
 ): FundingLegendData {
-  const legendData: FundingLegendData = { selectedAcres: 0 };
+  const legendData: FundingLegendData = {
+    selectedAcres: 0,
+    noTreatmentAcres: 0,
+  };
   if (!results) {
-    return { selectedAcres: 0 };
+    return { selectedAcres: 0, noTreatmentAcres: 0 };
   }
   const txAreas = results?.treatment_areas;
 
@@ -209,7 +212,7 @@ export function generateLegendFromReport(
 
   const calculatedSums = calculateTreatmentAcreSums(selectedTreatmentResults);
   legendData.treatmentAcresTotals = calculatedSums.treatmentSums;
-  legendData.noTreatments = calculatedSums.noTreatmentSum;
+  legendData.noTreatmentAcres = calculatedSums.noTreatmentSum;
   return legendData;
 }
 
