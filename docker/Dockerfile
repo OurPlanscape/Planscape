@@ -1,6 +1,6 @@
 FROM ghcr.io/astral-sh/uv:latest AS builder
 
-FROM python:3.14.0-slim-trixie
+FROM python:3.10-slim-bookworm
 COPY --from=builder /uv /uvx /bin/
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -35,6 +35,8 @@ RUN uv sync --locked --no-install-project --dev
 RUN uv run opentelemetry-bootstrap --action=install
 
 COPY . /app
+
+WORKDIR /app/src/planscape
 
 EXPOSE 8000
 
