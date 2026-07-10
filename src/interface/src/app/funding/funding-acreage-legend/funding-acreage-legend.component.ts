@@ -19,6 +19,7 @@ export type LegendTreatmentType = (typeof TREATMENT_ORDER)[number];
 
 export interface FundingLegendData {
   selectedAcres: number;
+  noTreatments?: number;
   treatmentAcresTotals?: Array<{
     treatment: LegendTreatmentType;
     acres: number;

@@ -199,7 +199,7 @@ describe('funding-report helper', () => {
 describe('calculateTreatmentAcreSums', () => {
   it('should return empty array for empty input', () => {
     const result = calculateTreatmentAcreSums([]);
-    expect(result).toEqual([]);
+    expect(result).toEqual({ noTreatmentSum: 0, treatmentSums: [] });
   });
 
   it('should aggregate treatment acres from realistic input', () => {
@@ -209,11 +209,13 @@ describe('calculateTreatmentAcreSums', () => {
       { 'Rx Burn': 555, 'No Treatment': 200, 'Thin and Rx Burn': 333 },
     ] as Record<string, number>[];
     const result = calculateTreatmentAcreSums(input);
-    expect(result).toEqual([
-      { treatment: 'No Treatment', acres: 406 },
-      { treatment: 'Rx Burn', acres: 999 },
-      { treatment: 'Thin and Rx Burn', acres: 1088 },
-    ]);
+    expect(result).toEqual({
+      treatmentSums: [
+        { treatment: 'Rx Burn', acres: 999 },
+        { treatment: 'Thin and Rx Burn', acres: 1088 },
+      ],
+      noTreatmentSum: 406,
+    });
   });
 });
 
@@ -388,10 +390,10 @@ describe('generateLegendFromReport', () => {
     expect(result).toEqual({
       selectedAcres: 3500,
       treatmentAcresTotals: [
-        { treatment: 'No Treatment', acres: 1400 },
         { treatment: 'Rx Burn', acres: 1078 },
         { treatment: 'Thin and Rx Burn', acres: 1200 },
       ],
+      noTreatments: 1400,
     });
   });
 
@@ -403,10 +405,10 @@ describe('generateLegendFromReport', () => {
     );
     expect(result.selectedAcres).toBe(1250);
     expect(result.treatmentAcresTotals).toEqual([
-      { treatment: 'No Treatment', acres: 550 },
       { treatment: 'Rx Burn', acres: 457 },
       { treatment: 'Thin and Rx Burn', acres: 400 },
     ]);
+    expect(result.noTreatments).toBe(550);
   });
 
   it('should select all areas when selectedAreas is empty', () => {
