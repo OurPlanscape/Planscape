@@ -124,12 +124,12 @@
   border-radius: 4px;
 
   &.total-acres {
-    background-color: #064bba;
+    background-color: $color-standard-blue;
     border: 1.5px solid #6b93d4;
   }
 
   &.selected-acres {
-    background-color: #344f42;
+    background-color: $color-brand-green;
     border: 1.5px solid #709482;
   }
 }
