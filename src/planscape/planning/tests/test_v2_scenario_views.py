@@ -2309,7 +2309,7 @@ class DeleteScenarioTest(APITestCase):
 
         response = self.client.delete(url)
 
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 403)
 
     def test_delete_collab_scenario_as_viewer(self):
         url = reverse("api:planning:scenarios-detail", args=[self.collab_scenario.pk])

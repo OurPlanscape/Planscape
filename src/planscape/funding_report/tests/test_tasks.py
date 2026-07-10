@@ -27,6 +27,7 @@ from funding_report.tasks import (
     STALE_RUNNING_TIMEOUT,
     async_calculate_funding_report_delta,
     async_finalize_funding_report_results,
+    async_send_email_funding_report_finished,
     run_funding_opportunity_report,
     send_weekly_funding_report_users_report,
 )
@@ -188,7 +189,13 @@ class FundingOpportunityReportTaskTest(TestCase):
             },
         )
 
-    def test_finalize_task_saves_results_and_success_status(self):
+    @mock.patch("funding_report.tasks.async_generate_funding_report_geopackage.delay")
+    @mock.patch("funding_report.tasks.async_send_email_funding_report_finished.delay")
+    def test_finalize_task_saves_results_and_success_status(
+        self,
+        email_task_mock,
+        geopackage_task_mock,
+    ):
         async_finalize_funding_report_results(
             project_results=[
                 {
@@ -205,6 +212,8 @@ class FundingOpportunityReportTaskTest(TestCase):
 
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.SUCCESS)
+        geopackage_task_mock.assert_called_once_with(self.report.pk)
+        email_task_mock.assert_called_once_with(self.report.pk)
         self.assertEqual(
             self.report.results,
             {
@@ -228,7 +237,13 @@ class FundingOpportunityReportTaskTest(TestCase):
             },
         )
 
-    def test_finalize_task_buckets_flame_severity_by_interval(self):
+    @mock.patch("funding_report.tasks.async_generate_funding_report_geopackage.delay")
+    @mock.patch("funding_report.tasks.async_send_email_funding_report_finished.delay")
+    def test_finalize_task_buckets_flame_severity_by_interval(
+        self,
+        email_task_mock,
+        geopackage_task_mock,
+    ):
         async_finalize_funding_report_results(
             project_results=[
                 {
@@ -263,6 +278,8 @@ class FundingOpportunityReportTaskTest(TestCase):
 
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.SUCCESS)
+        geopackage_task_mock.assert_called_once_with(self.report.pk)
+        email_task_mock.assert_called_once_with(self.report.pk)
         results = self.report.results
 
         # Non-flame metrics keep their existing flat shape, untouched.
@@ -298,7 +315,13 @@ class FundingOpportunityReportTaskTest(TestCase):
         self.assertEqual(six_four_summary["value"], 5)
         self.assertEqual(six_four_summary["raw_value"], 5)
 
-    def test_finalize_task_sets_failed_status_with_errors(self):
+    @mock.patch("funding_report.tasks.async_generate_funding_report_geopackage.delay")
+    @mock.patch("funding_report.tasks.async_send_email_funding_report_finished.delay")
+    def test_finalize_task_sets_failed_status_with_errors(
+        self,
+        email_task_mock,
+        geopackage_task_mock,
+    ):
         async_finalize_funding_report_results(
             project_results=[
                 {
@@ -322,6 +345,8 @@ class FundingOpportunityReportTaskTest(TestCase):
 
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.FAILED)
+        geopackage_task_mock.assert_not_called()
+        email_task_mock.assert_not_called()
         self.assertEqual(
             self.report.results["errors"],
             [
@@ -480,3 +505,23 @@ class FundingOpportunityReportTaskTest(TestCase):
         send_weekly_funding_report_users_report()
 
         send_mail_mock.assert_not_called()
+
+    @mock.patch("funding_report.tasks.send_mail")
+    def test_send_email_funding_report_finished_sends_to_report_creator(
+        self,
+        send_mail_mock,
+    ):
+        self.user.email = "planner@example.com"
+        self.user.first_name = "Test"
+        self.user.last_name = "Planner"
+        self.user.save(update_fields=["email", "first_name", "last_name"])
+
+        async_send_email_funding_report_finished(self.report.pk)
+
+        send_mail_mock.assert_called_once()
+        kwargs = send_mail_mock.call_args.kwargs
+        self.assertEqual(kwargs["recipient_list"], ["planner@example.com"])
+        self.assertEqual(kwargs["from_email"], settings.DEFAULT_FROM_EMAIL)
+        self.assertIn("Funding Opportunity Report", kwargs["subject"])
+        self.assertIn("message", kwargs)
+        self.assertIn("html_message", kwargs)

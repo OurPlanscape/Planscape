@@ -1,4 +1,5 @@
 import logging
+import smtplib
 from collections import Counter
 from datetime import timedelta
 
@@ -11,6 +12,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from planning.models import ProjectArea
 from planscape.celery import app
+from utils.frontend import get_frontend_url
 
 from funding_report.models import (
     AET_IMPROVEMENT_DEFAULT_PERCENTAGE,
@@ -39,6 +41,56 @@ from funding_report.services import (
 log = logging.getLogger(__name__)
 
 STALE_RUNNING_TIMEOUT = timedelta(minutes=30)
+
+
+@app.task(
+    bind=True,
+    autoretry_for=(Exception, smtplib.SMTPDataError),
+    retry_backoff=True,
+    retry_jitter=True,
+    retry_kwargs={"max_retries": 3},
+)
+def send_funding_opportunity_report_shared_link(
+    self,
+    recipient_email: str,
+    public_url: str,
+    inviter_name: str,
+) -> None:
+    context = {
+        "public_url": public_url,
+        "inviter_name": inviter_name,
+    }
+    subject = f"[Planscape] Funding opportunity report shared from {inviter_name}"
+    txt = render_to_string(
+        "email/funding_report/shared_link_invite.txt",
+        context,
+    )
+    html = render_to_string(
+        "email/funding_report/shared_link_invite.html",
+        context,
+    )
+
+    try:
+        send_mail(
+            subject=subject,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[recipient_email],
+            message=txt,
+            html_message=html,
+        )
+        log.info("Funding opportunity report shared link sent to %s", recipient_email)
+    except smtplib.SMTPDataError:
+        if self.request.retries >= self.max_retries:
+            log.exception("Failed to send funding report shared link email.")
+        else:
+            log.warning("Failed to send funding report shared link email. Retrying.")
+        raise
+    except Exception:
+        if self.request.retries >= self.max_retries:
+            log.exception("Unexpected failure sending funding report shared link email.")
+        else:
+            log.warning("Unexpected failure sending funding report shared link email. Retrying.")
+        raise
 
 
 @app.task()
@@ -165,6 +217,70 @@ def async_calculate_aet_improvement(
         return {"kind": "aet_improvement", "error": str(exc)}
 
 
+@app.task(
+    autoretry_for=(smtplib.SMTPException, OSError),
+    retry_backoff=True,
+    retry_jitter=True,
+    retry_kwargs={"max_retries": 3},
+)
+def async_send_email_funding_report_finished(
+    funding_opportunity_report_id: int,
+) -> None:
+    try:
+        report = FundingOpportunityReport.objects.select_related(
+            "created_by",
+            "scenario",
+            "scenario__planning_area",
+        ).get(pk=funding_opportunity_report_id)
+    except FundingOpportunityReport.DoesNotExist:
+        log.warning(
+            "FundingOpportunityReport with pk %s does not exist. Cannot send email.",
+            funding_opportunity_report_id,
+        )
+        return
+
+    user = report.created_by
+    if not user:
+        log.info(
+            "FundingOpportunityReport %s completed but has no created_by user; skipping email.",
+            funding_opportunity_report_id,
+        )
+        return
+
+    funding_report_link = get_frontend_url(
+        f"plan/{report.scenario.planning_area_id}/scenario/{report.scenario_id}"
+    )
+
+    context = {
+        "user_full_name": user.get_full_name(),
+        "scenario_name": report.scenario.name,
+        "funding_report_link": funding_report_link,
+    }
+
+    subject = "Planscape Funding Opportunity Report is Ready"
+    txt = render_to_string(
+        "email/funding_report/funding_report_completed.txt",
+        context,
+    )
+    html = render_to_string(
+        "email/funding_report/funding_report_completed.html",
+        context,
+    )
+
+    send_mail(
+        subject=subject,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        message=txt,
+        html_message=html,
+    )
+
+    log.info(
+        "Email sent informing user that FundingOpportunityReport %s is finished.",
+        report.pk,
+    )
+
+
 @app.task()
 def async_calculate_biomass_volumes(
     funding_opportunity_report_id: int,
@@ -258,13 +374,15 @@ def async_finalize_funding_report_results(
     if errors:
         results["errors"] = errors
 
+    final_status = (
+        FundingOpportunityReportStatus.FAILED
+        if errors
+        else FundingOpportunityReportStatus.SUCCESS
+    )
+
     update_fields: dict = {
         "results": results,
-        "status": (
-            FundingOpportunityReportStatus.FAILED
-            if errors
-            else FundingOpportunityReportStatus.SUCCESS
-        ),
+        "status": final_status,
     }
     if treatment_datalayer_id is not None:
         update_fields["treatment_datalayer_id"] = treatment_datalayer_id
@@ -273,8 +391,9 @@ def async_finalize_funding_report_results(
         **update_fields
     )
 
-    if update_fields["status"] == FundingOpportunityReportStatus.SUCCESS:
+    if final_status == FundingOpportunityReportStatus.SUCCESS:
         async_generate_funding_report_geopackage.delay(funding_opportunity_report_id)
+        async_send_email_funding_report_finished.delay(funding_opportunity_report_id)
 
 
 @app.task()
