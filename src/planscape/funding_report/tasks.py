@@ -248,7 +248,7 @@ def async_send_email_funding_report_finished(
         return
 
     funding_report_link = get_frontend_url(
-        f"plan/{report.scenario.planning_area_id}/scenario/{report.scenario_id}"
+        f"plan/{report.scenario.planning_area_id}/scenario/{report.scenario_id}/funding"
     )
 
     context = {

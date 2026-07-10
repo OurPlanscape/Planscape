@@ -10,7 +10,7 @@ export class FundingMapConfigState extends MapConfigState {
   private _mapLoading$ = new BehaviorSubject<boolean>(false);
   public mapLoading$ = this._mapLoading$.asObservable();
 
-  private _showFundingLegend$ = new BehaviorSubject(false);
+  private _showFundingLegend$ = new BehaviorSubject(true);
   public showFundingLegend$ = this._showFundingLegend$.asObservable();
 
   isMapLoading(loaded: boolean) {
