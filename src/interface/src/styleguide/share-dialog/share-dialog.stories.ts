@@ -1,4 +1,10 @@
-import { Meta, StoryObj, moduleMetadata } from '@storybook/angular';
+import {
+  Meta,
+  StoryObj,
+  applicationConfig,
+  moduleMetadata,
+} from '@storybook/angular';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 import { ShareDialogComponent } from './share-dialog.component';
 
@@ -16,6 +22,7 @@ const meta: Meta<ShareDialogComponent> = {
   tags: ['autodocs'],
   decorators: [
     moduleMetadata({ imports: [ShareDialogComponent] }),
+    applicationConfig({ providers: [provideAnimations()] }),
     (story) => {
       const s = story();
       return {

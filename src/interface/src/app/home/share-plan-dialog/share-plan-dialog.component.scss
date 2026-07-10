@@ -1,9 +1,6 @@
 @import "mixins";
 @import "colors";
 
-// The share UI now lives in sg-share-dialog. This host only projects the help
-// panel, so it just styles that.
-
 .help {
   color: $color-black;
 
