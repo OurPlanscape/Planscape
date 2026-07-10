@@ -23,10 +23,11 @@
       justify-content: space-between;
     }
   }
+}
 
-  ::ng-deep .message-box {
-    margin: 16px;
-  }
+.invalid-banner {
+  display: block;
+  margin: 16px;
 }
 
 .header {
@@ -72,6 +73,99 @@
     right: 0;
     bottom: -16px;
   }
+}
+
+.invite-role {
+  @include small-input-label();
+  border: 1px solid $color-dark-gray;
+  line-height: 38px;
+}
+
+.invite-message {
+  grid-column: 1 / -1;
+
+  textarea {
+    resize: none;
+  }
+
+  ::ng-deep {
+    .mat-form-field-outline-start,
+    .mat-form-field-outline-end {
+      background-color: $color-light-gray;
+    }
+
+    .mat-form-field-flex {
+      height: 100px;
+    }
+  }
+}
+
+.invited-users-list {
+  padding: 16px;
+  color: $color-black;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  max-height: 300px;
+  overflow-y: auto;
+
+  h3 {
+    @include small-input-label();
+    margin: 0;
+    color: $color-dark-gray;
+  }
+
+  .empty {
+    @include small-input-label();
+    margin: 0;
+    color: $color-text-gray;
+  }
+
+  .spinner {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0;
+  }
+}
+
+.invited-user {
+  @include small-input-label();
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  button {
+    line-height: 24px;
+  }
+
+  .name {
+    color: $color-black;
+  }
+
+  .non-editable {
+    color: $color-text-gray;
+  }
+}
+
+.menu-divider {
+  border-top: 1px solid $color-fields-gray;
+}
+
+.menu-roles {
+  .mat-icon {
+    margin: 0;
+  }
+
+  .spacer {
+    display: inline-block;
+    width: 32px;
+  }
+}
+
+// the menu is on the cdk overlay layer, so target its class from outside.
+::ng-deep .list-menu .mat-menu-content {
+  padding: 0;
 }
 
 .footer {

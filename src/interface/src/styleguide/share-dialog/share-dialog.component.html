@@ -1,0 +1,173 @@
+<div class="main" *ngIf="!showHelp">
+  <section class="header">
+    <button
+      sg-button
+      icon="arrow_back"
+      (click)="startOver()"
+      *ngIf="allowStartOver && showMessageBox"
+      variant="icon-only"></button>
+
+    <h2>{{ title }}</h2>
+
+    <button
+      sg-button
+      icon="help_outlined"
+      (click)="openHelp()"
+      *ngIf="showHelpButton"
+      aria-label="help"
+      variant="icon-only"></button>
+
+    <button
+      sg-button
+      icon="close"
+      (click)="closed.emit()"
+      aria-label="close"
+      variant="icon-only"></button>
+  </section>
+
+  <sg-banner type="error" class="invalid-banner" *ngIf="invalidEmail">
+    <strong>Invalid email</strong>&nbsp;— an email must contain a single &#64;
+  </sg-banner>
+
+  <form
+    class="invitations-form"
+    [class.two-column]="showRoles"
+    (submit)="$event.preventDefault()">
+    <sg-chip-input
+      [emails]="emails"
+      [placeholder]="showMessageBox ? '' : placeholder"
+      (addEmail)="addEmail($event)"
+      (removeEmail)="removeEmail($event)"
+      (isInvalid)="setInvalidEmail($event)"></sg-chip-input>
+
+    <ng-container *ngIf="showRoles">
+      <button
+        type="button"
+        mat-button
+        [matMenuTriggerFor]="batchRoleMenu"
+        class="invite-role">
+        {{ selectedRole }}
+        <mat-icon>arrow_drop_down</mat-icon>
+      </button>
+      <mat-menu
+        #batchRoleMenu="matMenu"
+        class="list-menu list-input"
+        xPosition="before">
+        <button
+          type="button"
+          mat-menu-item
+          *ngFor="let role of roles"
+          class="menu-roles"
+          (click)="selectRole(role)">
+          <span class="spacer">
+            <mat-icon *ngIf="role === selectedRole">check_small</mat-icon>
+          </span>
+          {{ role }}
+        </button>
+      </mat-menu>
+    </ng-container>
+
+    <mat-form-field
+      appearance="outline"
+      class="invite-message"
+      *ngIf="showMessage && showMessageBox">
+      <textarea
+        matInput
+        placeholder="Message"
+        name="message"
+        [(ngModel)]="message"></textarea>
+    </mat-form-field>
+  </form>
+
+  <section class="invited-users-list" *ngIf="showBody">
+    <h3 *ngIf="peopleLabel">{{ peopleLabel }}</h3>
+
+    <div class="spinner" *ngIf="peopleLoading; else peopleList">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <ng-template #peopleList>
+      <p class="empty" *ngIf="peopleEmptyText && !peopleRows.length">
+        {{ peopleEmptyText }}
+      </p>
+
+      <div class="invited-user" *ngFor="let person of peopleRows">
+        <div class="name">{{ person.name }}</div>
+
+        <ng-container *ngIf="showRoles && person.editable; else plainRole">
+          <button type="button" mat-button [matMenuTriggerFor]="roleMenu">
+            {{ person.role }}
+            <mat-icon>arrow_drop_down</mat-icon>
+          </button>
+          <mat-menu #roleMenu="matMenu" class="list-menu" xPosition="before">
+            <button
+              type="button"
+              mat-menu-item
+              *ngFor="let role of roles"
+              class="menu-roles"
+              (click)="changePersonRole(person, role)">
+              <span class="spacer">
+                <mat-icon *ngIf="role === person.role">check_small</mat-icon>
+              </span>
+              {{ role }}
+            </button>
+            <button
+              type="button"
+              mat-menu-item
+              class="menu-divider"
+              (click)="resend.emit(person)">
+              Resend Code
+            </button>
+            <button
+              type="button"
+              mat-menu-item
+              (click)="removeAccess.emit(person)">
+              Remove Access
+            </button>
+          </mat-menu>
+        </ng-container>
+        <ng-template #plainRole>
+          <div class="non-editable" *ngIf="person.role">{{ person.role }}</div>
+        </ng-template>
+      </div>
+    </ng-template>
+  </section>
+
+  <section class="footer">
+    <button
+      sg-button
+      *ngIf="showCopyLink"
+      icon="link"
+      variant="link"
+      (click)="copyLink.emit()">
+      Copy Link
+    </button>
+    <button
+      class="action"
+      mat-flat-button
+      type="button"
+      color="primary"
+      [disabled]="primaryButtonDisabled"
+      (click)="emitPrimary()">
+      {{ displayLabel }}
+    </button>
+  </section>
+</div>
+
+<div class="help" *ngIf="showHelp">
+  <section class="header">
+    <button
+      sg-button
+      icon="arrow_back"
+      (click)="showHelp = false"
+      variant="icon-only"></button>
+
+    <h2>Help</h2>
+    <button
+      sg-button
+      icon="close"
+      (click)="closed.emit()"
+      variant="icon-only"></button>
+  </section>
+  <ng-content select="[shareDialogHelp]"></ng-content>
+</div>

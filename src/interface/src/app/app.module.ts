@@ -17,8 +17,8 @@ import {
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ButtonComponent, OverlayLoaderComponent } from '@styleguide';
-import { ChipInputComponent } from '@home/chip-input/chip-input.component';
-import { ShareDialogComponent } from '@shared/share-dialog/share-dialog.component';
+import { ChipInputComponent } from '@styleguide/chip-input/chip-input.component';
+import { ShareDialogComponent } from '@styleguide/share-dialog/share-dialog.component';
 
 import { FeaturesModule } from '@features/features.module';
 import { HomeComponent } from '@home/home.component';

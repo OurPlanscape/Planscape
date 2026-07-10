@@ -1,15 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SharePlanDialogComponent } from './share-plan-dialog.component';
 import { LegacyMaterialModule } from '@material/legacy-material.module';
-import { MockComponents, MockProvider } from 'ng-mocks';
+import { MockComponent, MockProvider } from 'ng-mocks';
 
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { AuthService, InvitesService } from '@services';
 import { BehaviorSubject, of } from 'rxjs';
 import { Plan, User } from '@types';
-import { ChipInputComponent } from '@home/chip-input/chip-input.component';
-import { SectionLoaderComponent } from '@shared';
-import { ShareDialogComponent } from '@shared/share-dialog/share-dialog.component';
+import {
+  ShareDialogComponent,
+  SharePerson,
+} from '@styleguide/share-dialog/share-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { PlanState } from '@plan/plan.state';
@@ -23,19 +24,21 @@ describe('SharePlanDialogComponent', () => {
     id: 2,
     inviter: 2,
     object_pk: 3,
-    role: 'owner',
+    role: 'Owner',
     email: 'some@asd.com',
+  };
+  const inviteRow: SharePerson = {
+    id: 2,
+    name: 'some@asd.com',
+    role: 'Viewer',
+    editable: true,
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [
         SharePlanDialogComponent,
-        MockComponents(
-          ChipInputComponent,
-          SectionLoaderComponent,
-          ShareDialogComponent
-        ),
+        MockComponent(ShareDialogComponent),
       ],
       imports: [
         LegacyMaterialModule,
@@ -50,13 +53,16 @@ describe('SharePlanDialogComponent', () => {
         MockProvider(MatDialogRef),
         MockProvider(AuthService, {
           loggedInUser$: new BehaviorSubject<User | null | undefined>({
+            id: 99,
             firstName: 'Joe',
             lastName: 'Smith',
-          }),
+          } as User),
         }),
         MockProvider(InvitesService, {
-          getInvites: () => of([]),
+          getInvites: () => of([mockInvite]),
           inviteUsers: () => of(mockInvite),
+          changeRole: () => of(mockInvite),
+          deleteInvite: () => of([]),
         }),
         {
           provide: MAT_DIALOG_DATA,
@@ -69,7 +75,6 @@ describe('SharePlanDialogComponent', () => {
 
     fixture = TestBed.createComponent(SharePlanDialogComponent);
     component = fixture.componentInstance;
-    component.isLoading = false;
     fixture.detectChanges();
   });
 
@@ -77,62 +82,84 @@ describe('SharePlanDialogComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('invite users', () => {
-    it('should call inviteService with corresponding data', () => {
-      component.emails = ['john@planscape.com', 'jane@planscape.com'];
-      component.selectedRole = 'Owner';
-      component.message = 'Test message';
-
-      const service = TestBed.inject(InvitesService);
-      spyOn(service, 'inviteUsers').and.callThrough();
-
-      component.invite();
-      fixture.detectChanges();
-
-      expect(service.inviteUsers).toHaveBeenCalledWith(
-        component.emails,
-        component.selectedRole,
-        MOCK_PLAN.id,
-        component.message
-      );
+  describe('people$', () => {
+    it('builds creator, you and invite rows', (done) => {
+      component.people$.subscribe((rows) => {
+        expect(rows.length).toBe(3);
+        expect(rows[1].name).toContain('(You)');
+        expect(rows[2]).toEqual(
+          jasmine.objectContaining({ id: 2, editable: true })
+        );
+        done();
+      });
     });
   });
 
-  describe('changeRole ', () => {
-    it('should call inviteService with corresponding data', () => {
+  describe('onPrimary', () => {
+    it('invites users with the submitted emails, role and message', () => {
+      const service = TestBed.inject(InvitesService);
+      spyOn(service, 'inviteUsers').and.callThrough();
+
+      component.onPrimary({
+        emails: ['john@planscape.com', 'jane@planscape.com'],
+        role: 'Owner',
+        message: 'Test message',
+      });
+
+      expect(service.inviteUsers).toHaveBeenCalledWith(
+        ['john@planscape.com', 'jane@planscape.com'],
+        'Owner',
+        MOCK_PLAN.id,
+        'Test message'
+      );
+    });
+
+    it('closes without inviting when there are no emails', () => {
+      const service = TestBed.inject(InvitesService);
+      spyOn(service, 'inviteUsers');
+      const closeSpy = spyOn(component, 'close');
+
+      component.onPrimary({ emails: [], message: '' });
+
+      expect(service.inviteUsers).not.toHaveBeenCalled();
+      expect(closeSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('onChangeRole', () => {
+    it('calls changeRole with the row id and new role', () => {
       const service = TestBed.inject(InvitesService);
       spyOn(service, 'changeRole').and.returnValue(of(mockInvite));
 
-      component.changeRole(mockInvite, 'Collaborator');
-      fixture.detectChanges();
-      expect(service.changeRole).toHaveBeenCalledWith(
-        mockInvite.id,
-        'Collaborator'
-      );
+      component.onChangeRole({ person: inviteRow, role: 'Collaborator' });
+
+      expect(service.changeRole).toHaveBeenCalledWith(2, 'Collaborator');
     });
   });
 
-  describe('changeInvitationsRole', () => {
-    it('should change the role for the invites', () => {
-      component.selectedRole = 'Viewer';
-      component.changeInvitationsRole('Owner');
-      expect(component.selectedRole).toBe('Owner');
-    });
-  });
-
-  describe('resendCode', () => {
-    it('should call invite service with corresponding data', () => {
+  describe('onResend', () => {
+    it("re-invites using the invite's email and role", () => {
       const service = TestBed.inject(InvitesService);
       spyOn(service, 'inviteUsers').and.callThrough();
 
-      component.selectedRole = 'Owner';
-      component.resendCode(mockInvite);
-      fixture.detectChanges();
+      component.onResend(inviteRow);
+
       expect(service.inviteUsers).toHaveBeenCalledWith(
-        [mockInvite.email],
-        component.selectedRole,
+        ['some@asd.com'],
+        'Owner',
         MOCK_PLAN.id
       );
+    });
+  });
+
+  describe('onRemoveAccess', () => {
+    it('deletes the invite by id', () => {
+      const service = TestBed.inject(InvitesService);
+      spyOn(service, 'deleteInvite').and.returnValue(of([]));
+
+      component.onRemoveAccess(inviteRow);
+
+      expect(service.deleteInvite).toHaveBeenCalledWith(2);
     });
   });
 });

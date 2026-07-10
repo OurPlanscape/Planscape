@@ -1,22 +1,13 @@
-<app-share-dialog
+<sg-share-dialog
   [title]="title"
+  [(emails)]="emails"
   [submitting]="submitting"
   primaryLabel="Send"
-  [primaryDisabled]="emails.length === 0"
   [showCopyLink]="true"
-  (emailsChange)="emails = $event"
-  (primaryAction)="send()"
+  [people]="(people$ | async) || []"
+  [peopleLoading]="isLoading"
+  peopleLabel="Report summary sent to:"
+  peopleEmptyText="This report hasn't been shared yet."
+  (primaryAction)="onPrimary($event)"
   (copyLink)="copyLink()"
-  (close)="close()">
-  <section shareDialogBody class="report-sent-to">
-    <h3>Report summary sent to:</h3>
-    <ng-container *ngIf="sharedEmails$ | async as sharedEmails">
-      <p *ngIf="sharedEmails.length === 0" class="empty">
-        This report hasn't been shared yet.
-      </p>
-      <div class="shared-email" *ngFor="let email of sharedEmails">
-        {{ email }}
-      </div>
-    </ng-container>
-  </section>
-</app-share-dialog>
+  (closed)="close()"></sg-share-dialog>

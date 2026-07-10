@@ -1,97 +1,22 @@
-<app-share-dialog
+<sg-share-dialog
   [title]="'Share ' + data.plan.name"
   [submitting]="submitting"
-  [primaryLabel]="emails.length > 0 ? 'INVITE' : 'DONE'"
+  [showRoles]="true"
+  [roles]="roles"
+  [people]="(people$ | async) || []"
+  [peopleLoading]="isLoading"
+  peopleLabel="People with access"
+  [showMessage]="true"
   [showHelpButton]="true"
-  [twoColumnForm]="true"
   [allowStartOver]="true"
   [hideBodyWhileComposing]="true"
-  (emailsChange)="emails = $event"
-  (primaryAction)="emails.length > 0 ? invite() : close()"
-  (close)="close()">
-  <div shareDialogRoleSelector>
-    <button
-      type="button"
-      mat-button
-      [matMenuTriggerFor]="roleMenu"
-      class="invite-role">
-      {{ selectedRole }}
-      <mat-icon>arrow_drop_down</mat-icon>
-    </button>
-    <mat-menu
-      #roleMenu="matMenu"
-      class="list-menu list-input"
-      xPosition="before">
-      <button
-        mat-menu-item
-        *ngFor="let role of roles"
-        class="menu-roles"
-        (click)="changeInvitationsRole(role)">
-        <span class="spacer">
-          <mat-icon *ngIf="role === selectedRole">check_small</mat-icon>
-        </span>
-        {{ role }}
-      </button>
-    </mat-menu>
-  </div>
-
-  <mat-form-field
-    shareDialogMessage
-    appearance="outline"
-    class="invite-message">
-    <textarea
-      matInput
-      placeholder="Message"
-      [(ngModel)]="message"
-      name="questionText"></textarea>
-  </mat-form-field>
-
-  <app-section-loader
-    shareDialogBody
-    [isLoading]="isLoading"
-    [hasData]="true"
-    [ngClass]="{ loading: isLoading }">
-    <section class="invited-users-list">
-      <h3>People with access</h3>
-      <div class="invited-user" *ngIf="showCreator$ | async">
-        <div class="name">{{ data.plan.creator }}</div>
-        <div class="non-editable">Creator</div>
-      </div>
-      <div class="invited-user">
-        <div class="name">{{ fullname$ | async }} <span>(You)</span></div>
-        <div class="non-editable">{{ data.plan.role }}</div>
-      </div>
-      <div *ngFor="let invite of invites$ | async" class="invited-user">
-        <div class="name">{{ invite.collaborator_name || invite.email }}</div>
-        <button mat-button [matMenuTriggerFor]="menu">
-          {{ invite.role }}
-          <mat-icon>arrow_drop_down</mat-icon>
-        </button>
-        <mat-menu #menu="matMenu" class="list-menu" xPosition="before">
-          <button
-            mat-menu-item
-            *ngFor="let role of roles"
-            class="menu-roles"
-            (click)="changeRole(invite, role)">
-            <span class="spacer">
-              <mat-icon *ngIf="role === invite.role">check_small</mat-icon>
-            </span>
-            {{ role }}
-          </button>
-          <button
-            mat-menu-item
-            class="menu-divider"
-            (click)="resendCode(invite)">
-            Resend Code
-          </button>
-          <button mat-menu-item (click)="removeAccess(invite)">
-            Remove Access
-          </button>
-        </mat-menu>
-      </div>
-    </section>
-  </app-section-loader>
-
+  primaryLabel="INVITE"
+  idleLabel="DONE"
+  (primaryAction)="onPrimary($event)"
+  (roleChange)="onChangeRole($event)"
+  (resend)="onResend($event)"
+  (removeAccess)="onRemoveAccess($event)"
+  (closed)="close()">
   <section shareDialogHelp class="help">
     <div class="help-content">
       <h4>What can I do as an Owner?</h4>
@@ -114,4 +39,4 @@
       </p>
     </div>
   </section>
-</app-share-dialog>
+</sg-share-dialog>

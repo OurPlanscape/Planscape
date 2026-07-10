@@ -3,12 +3,23 @@ import { Clipboard } from '@angular/cdk/clipboard';
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BehaviorSubject, catchError, map, of, switchMap, take } from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  map,
+  of,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 
 import { FlameLengthInterval, FundingReportShareInfo } from '@types';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 import { FundingReportService } from '@services/funding-report.service';
-import { ShareDialogComponent } from '@shared/share-dialog/share-dialog.component';
+import {
+  ShareDialogComponent,
+  SharePrimaryEvent,
+} from '@styleguide/share-dialog/share-dialog.component';
 
 export interface ShareFundingReportDialogData {
   scenarioId: number;
@@ -25,7 +36,6 @@ export interface ShareFundingReportDialogData {
   standalone: true,
   imports: [CommonModule, ShareDialogComponent],
   templateUrl: './share-funding-report-dialog.component.html',
-  styleUrls: ['./share-funding-report-dialog.component.scss'],
 })
 export class ShareFundingReportDialogComponent {
   constructor(
@@ -39,11 +49,12 @@ export class ShareFundingReportDialogComponent {
 
   emails: string[] = [];
   submitting = false;
+  isLoading = true;
 
   private reload$ = new BehaviorSubject<void>(undefined);
 
   /** Current share state (already-invited emails + public link) for this config. */
-  shareInfo$ = this.reload$.pipe(
+  private shareInfo$ = this.reload$.pipe(
     switchMap(() =>
       this.fundingReportService
         .getReportShareInfo(
@@ -52,34 +63,40 @@ export class ShareFundingReportDialogComponent {
           this.data.totalFlameSeverity
         )
         .pipe(
-          catchError(() => of({ emails: [], public_url: '' } as FundingReportShareInfo))
+          catchError(() =>
+            of({ emails: [], public_url: '' } as FundingReportShareInfo)
+          )
         )
     )
   );
 
-  sharedEmails$ = this.shareInfo$.pipe(map((info) => info.emails));
+  /** Emails the report has already been shared with. */
+  people$ = this.shareInfo$.pipe(
+    map((info) => info.emails),
+    tap(() => (this.isLoading = false))
+  );
 
   get title(): string {
     return `Send "${this.data.name}" Summary Link`;
   }
 
-  send(): void {
-    if (this.emails.length === 0) {
+  onPrimary(event: SharePrimaryEvent): void {
+    if (event.emails.length === 0) {
       return;
     }
     this.submitting = true;
     this.fundingReportService
       .shareReport(
         this.data.scenarioId,
-        this.emails,
+        event.emails,
         this.data.aet,
         this.data.totalFlameSeverity
       )
       .subscribe({
         next: () => {
           this.showSnackbar('Report summary link sent');
-          this.emails = [];
           this.submitting = false;
+          this.emails = [];
           this.reload$.next();
         },
         error: () => {
