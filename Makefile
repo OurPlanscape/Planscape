@@ -207,6 +207,7 @@ cloud-run-push:
 	@BUILDS=$$(gcloud builds list --filter="images:$(DOCKER_TAG)" --format=json); \
 	if [ "$$BUILDS" = "[]" ]; then \
 		echo "Pushing image $(DOCKER_TAG) ."; \
+		cd docker/;\
 		gcloud builds submit --tag $(DOCKER_TAG);\
 	else \
 		echo "Image $(DOCKER_TAG) already submitted"; \
@@ -216,6 +217,9 @@ cloud-run-deploy:
 	gcloud run deploy $(APP) --image $(DOCKER_TAG) --platform managed --region $(REGION)
 
 cloud-run-build-deploy: cloud-run-build cloud-run-push cloud-run-deploy
+
+cloud-run-docker-tag:
+	echo "$(DOCKER_TAG)"
 
 # Reset relevant tables and load development fixture data
 load-dev-data:
