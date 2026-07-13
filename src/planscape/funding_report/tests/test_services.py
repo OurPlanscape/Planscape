@@ -15,6 +15,7 @@ from planning.tests.factories import (
     ProjectAreaFactory,
     ScenarioFactory,
 )
+from pyproj import Geod, Transformer
 from rasterio.transform import from_origin
 from rasterio.mask import mask
 
@@ -67,6 +68,28 @@ def raster_bounds_geometry(raster_path: Path) -> MultiPolygon:
             srid=src.crs.to_epsg(),
         )
     return MultiPolygon(polygon.transform(4269, clone=True), srid=4269)
+
+
+def geodesic_pixel_area_acres(raster_path: Path, row: int = 0) -> float:
+    """
+    Independently-computed (not reusing the implementation under test) true
+    ground area of one pixel in `row`, used as the expected value for tests
+    against rasters in a projected CRS like EPSG:3857, where a pixel's area
+    isn't simply its nominal resolution squared.
+    """
+    with rasterio.open(raster_path) as src:
+        transform = src.transform
+        to_lonlat = Transformer.from_crs(src.crs, "EPSG:4326", always_xy=True)
+        corners = [
+            transform * (0, row),
+            transform * (1, row),
+            transform * (1, row + 1),
+            transform * (0, row + 1),
+        ]
+        lons, lats = zip(*(to_lonlat.transform(x, y) for x, y in corners))
+        geod = Geod(ellps="WGS84")
+        area_sq_meters, _perimeter = geod.polygon_area_perimeter(lons, lats)
+    return abs(area_sq_meters) / settings.CONVERSION_SQM_ACRES
 
 
 def expected_raster_aggregate(geometry: MultiPolygon) -> dict:
@@ -270,18 +293,21 @@ class FundingReportRasterCalculationTest(TestCase):
                 raster_srid=raster_srid,
             )
 
-        self.assertAlmostEqual(
-            improved_acres,
-            300 / settings.CONVERSION_SQM_ACRES,
-            places=6,
-        )
+        # Threshold 15 selects (row 0, col 1)=15, (row 1, col 0)=20, (row 1, col 1)=30.
+        expected_acres = geodesic_pixel_area_acres(
+            delta_layer.url, row=0
+        ) + 2 * geodesic_pixel_area_acres(delta_layer.url, row=1)
+        self.assertAlmostEqual(improved_acres, expected_acres, places=6)
 
     def test_calculate_aet_improvement_returns_acres_and_percent(self):
-        self.create_aet_datalayer(role="percentual")
+        percentual_layer = self.create_aet_datalayer(role="percentual")
 
         results = calculate_aet_improvement(self.report, percentage=15)
 
-        expected_acres = 300 / settings.CONVERSION_SQM_ACRES
+        # Threshold 15 selects (row 0, col 1)=15, (row 1, col 0)=20, (row 1, col 1)=30.
+        expected_acres = geodesic_pixel_area_acres(
+            percentual_layer.url, row=0
+        ) + 2 * geodesic_pixel_area_acres(percentual_layer.url, row=1)
         expected_total = get_acreage(self.project_area.geometry)
         self.assertEqual(results["percentage"], 15)
         self.assertAlmostEqual(results["improved_acres"], expected_acres, places=6)
@@ -598,7 +624,8 @@ class FlameLengthReductionCalculationTest(TestCase):
             self.create_flame_datalayer(year=year, baseline=False)
 
         self.datalayer_lookup = build_datalayer_lookup()
-        self.pixel_area_acres = 100 / settings.CONVERSION_SQM_ACRES
+        self.row0_pixel_acres = geodesic_pixel_area_acres(self.baseline_path, row=0)
+        self.row1_pixel_acres = geodesic_pixel_area_acres(self.baseline_path, row=1)
 
     def create_flame_datalayer(self, year, baseline):
         return DataLayerFactory.create(
@@ -625,7 +652,8 @@ class FlameLengthReductionCalculationTest(TestCase):
         )
 
         expected_project_area_acres = get_acreage(self.project_area.geometry)
-        expected_reduced_acres = 2 * self.pixel_area_acres
+        # (row 0, col 0)=8/3 and (row 1, col 1)=8/3 satisfy from_ft=7, to_ft=4.
+        expected_reduced_acres = self.row0_pixel_acres + self.row1_pixel_acres
 
         self.assertEqual(result["interval"], {"from": 7.0, "to": 4.0})
         self.assertAlmostEqual(result["value"], expected_reduced_acres, places=6)
@@ -648,7 +676,8 @@ class FlameLengthReductionCalculationTest(TestCase):
             to_ft=3.0,
         )
 
-        expected_reduced_acres = 3 * self.pixel_area_acres
+        # (row 0, col 0), (row 1, col 0), (row 1, col 1) satisfy from_ft=2, to_ft=3.
+        expected_reduced_acres = self.row0_pixel_acres + 2 * self.row1_pixel_acres
 
         self.assertEqual(result["interval"], {"from": 2.0, "to": 3.0})
         self.assertAlmostEqual(result["value"], expected_reduced_acres, places=6)
@@ -668,7 +697,7 @@ class FlameLengthReductionCalculationTest(TestCase):
         )
 
         # Pixels (0,0) and (1,1) have baseline==8 >= 8 and value<=4 → selected.
-        expected_reduced_acres = 2 * self.pixel_area_acres
+        expected_reduced_acres = self.row0_pixel_acres + self.row1_pixel_acres
         self.assertEqual(result["interval"], {"from": 8.0, "to": 4.0})
         self.assertAlmostEqual(result["value"], expected_reduced_acres, places=6)
 
