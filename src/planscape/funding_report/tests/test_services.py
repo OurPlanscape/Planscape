@@ -176,22 +176,22 @@ class FundingReportRasterCalculationTest(TestCase):
             },
         )
 
-    def create_aet_delta_datalayer(self):
+    def create_aet_datalayer(self, role="delta"):
         tmp_dir = tempfile.TemporaryDirectory()
         self.addCleanup(tmp_dir.cleanup)
-        raster_path = Path(tmp_dir.name) / "AET_legalmax_difference_fvsmasked.tif"
+        raster_path = Path(tmp_dir.name) / f"AET_{role}.tif"
         write_aet_delta_raster(raster_path)
         self.project_area.geometry = raster_bounds_geometry(raster_path)
         self.project_area.save(update_fields=["geometry"])
         return DataLayerFactory.create(
-            name="AET delta",
+            name=f"AET {role}",
             type=DataLayerType.RASTER,
             url=str(raster_path),
             metadata={
                 "modules": {
                     "funding_report": {
                         "variable": "AET",
-                        "role": "delta",
+                        "role": role,
                     }
                 }
             },
@@ -254,12 +254,12 @@ class FundingReportRasterCalculationTest(TestCase):
         )
 
     def test_get_aet_delta_datalayer_uses_variable_and_role(self):
-        delta_layer = self.create_aet_delta_datalayer()
+        delta_layer = self.create_aet_datalayer(role="delta")
 
         self.assertEqual(get_aet_delta_datalayer(), delta_layer)
 
     def test_calculate_project_area_aet_improvement_uses_threshold(self):
-        delta_layer = self.create_aet_delta_datalayer()
+        delta_layer = self.create_aet_datalayer(role="delta")
 
         with rasterio.open(delta_layer.url) as delta_src:
             raster_srid = delta_src.crs.to_epsg()
@@ -277,7 +277,7 @@ class FundingReportRasterCalculationTest(TestCase):
         )
 
     def test_calculate_aet_improvement_returns_acres_and_percent(self):
-        self.create_aet_delta_datalayer()
+        self.create_aet_datalayer(role="percentual")
 
         results = calculate_aet_improvement(self.report, percentage=15)
 
