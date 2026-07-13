@@ -197,19 +197,18 @@ cloud-run-build:
 	@BUILDS=$$(gcloud builds list --filter="images:$(DOCKER_TAG)" --format=json); \
 	if [ "$$BUILDS" = "[]" ]; then \
 		echo "Building image with tag $(DOCKER_TAG).";\
-		docker build -f docker/Dockerfile -t $(DOCKER_TAG) .;\
+		docker build -t $(DOCKER_TAG) .;\
 	else \
 		echo "Docker image already pushed to artifact repo (tag: $(DOCKER_TAG))";\
 	fi;
 
 cloud-run-build-force:
-	docker build -f docker/Dockerfile -t $(DOCKER_TAG) .
+	docker build -f Dockerfile -t $(DOCKER_TAG) .
 
 cloud-run-push:
 	@BUILDS=$$(gcloud builds list --filter="images:$(DOCKER_TAG)" --format=json); \
 	if [ "$$BUILDS" = "[]" ]; then \
 		echo "Pushing image $(DOCKER_TAG) ."; \
-		cd docker/;\
 		gcloud builds submit --tag $(DOCKER_TAG);\
 	else \
 		echo "Image $(DOCKER_TAG) already submitted"; \
