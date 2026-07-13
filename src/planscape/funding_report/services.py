@@ -474,9 +474,11 @@ def calculate_aet_improvement(
         pk=report.pk
     )
     project_areas = list(report.scenario.project_areas.all())
-    delta_layer = get_aet_delta_datalayer()
+    percentual_layer = get_aet_percentual_datalayer()
+    if percentual_layer is None:
+        raise ValueError("Missing funding report AET percentual datalayer.")
 
-    with rasterio.open(_datalayer_path(delta_layer)) as delta_src:
+    with rasterio.open(_datalayer_path(percentual_layer)) as delta_src:
         raster_srid = delta_src.crs.to_epsg() if delta_src.crs else None
         if raster_srid is None:
             raise ValueError(
