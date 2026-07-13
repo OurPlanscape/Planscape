@@ -1,5 +1,4 @@
 data/
-.env
 .venv/
 .ruff_cache
 .git/
