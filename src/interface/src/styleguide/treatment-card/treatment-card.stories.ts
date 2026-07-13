@@ -4,7 +4,7 @@ import { TreatmentCardComponent } from './treatment-card.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 const meta: Meta<TreatmentCardComponent> = {
-  title: 'Components/Treatment Card',
+  title: 'Cards/Treatment Card',
   component: TreatmentCardComponent,
   tags: ['autodocs'],
   decorators: [
