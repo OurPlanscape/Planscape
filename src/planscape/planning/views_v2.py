@@ -24,12 +24,13 @@ from funding_report.openapi_examples import (
 from funding_report.serializers import (
     FundingOpportunityReportInviteSharedLinkRequestSerializer,
     FundingOpportunityReportInviteSharedLinkResponseSerializer,
+    FundingOpportunityReportPublicUrlResponseSerializer,
     FundingOpportunityReportSerializer,
+    FundingOpportunityReportSharedLinkQuerySerializer,
     FundingReportAETImprovementRequestSerializer,
     FundingReportAETImprovementResponseSerializer,
     FundingReportFlameLengthReductionRequestSerializer,
     FundingReportFlameLengthReductionResponseSerializer,
-    FundingOpportunityReportSharedLinkQuerySerializer,
 )
 from funding_report.services import (
     calculate_aet_improvement,
@@ -672,25 +673,39 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         )
 
     @extend_schema(
+        methods=["GET"],
+        description="List funding opportunity report invite emails.",
+        responses={200: FundingOpportunityReportInviteSharedLinkResponseSerializer},
+    )
+    @extend_schema(
+        methods=["POST"],
         description=(
             "Create funding opportunity report invites for the submitted emails "
             "and send a shared report link."
         ),
         request=FundingOpportunityReportInviteSharedLinkRequestSerializer,
-        responses={
-            201: FundingOpportunityReportInviteSharedLinkResponseSerializer,
-        },
+        responses={201: FundingOpportunityReportInviteSharedLinkResponseSerializer},
     )
-    @action(methods=["POST"], detail=True, url_path="funding-report-invites")
+    @action(methods=["GET", "POST"], detail=True, url_path="funding-report-invites")
     def create_funding_opportunity_report_invites(self, request, pk=None):
         scenario = self.get_object()
+        report = get_object_or_404(FundingOpportunityReport, scenario=scenario)
+
+        active_invites = FundingOpportunityReportInvite.objects.filter(
+            report=report,
+            deleted_at__isnull=True,
+        )
+
+        if request.method == "GET":
+            emails = list(active_invites.values_list("invitee_email", flat=True))
+            return Response({"emails": emails}, status=status.HTTP_200_OK)
+
         serializer = FundingOpportunityReportInviteSharedLinkRequestSerializer(
             data=request.data
         )
         serializer.is_valid(raise_exception=True)
         validated_data = serializer.validated_data
 
-        report = get_object_or_404(FundingOpportunityReport, scenario=scenario)
         emails = validated_data["emails"]
         configuration = {
             "aet": validated_data["aet"],
@@ -720,24 +735,30 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                     invitee=invitee,
                 )
 
+        recipient_emails = emails
+        if validated_data["resent_to_all_invitees"]:
+            recipient_emails = emails + list(
+                active_invites.values_list("invitee_email", flat=True)
+            )
+            recipient_emails = list(dict.fromkeys(recipient_emails))
+
         public_url = shared_link.get_public_url()
         inviter_name = request.user.get_full_name() or request.user.email
-        for email in emails:
+        for email in recipient_emails:
             send_funding_opportunity_report_shared_link.delay(
                 email,
                 public_url,
                 inviter_name,
             )
 
-        return Response(
-            {"emails": emails, "public_url": public_url},
-            status=status.HTTP_201_CREATED,
-        )
+        return Response({"emails": emails}, status=status.HTTP_201_CREATED)
 
-    @action(
-        methods=["GET"], detail=True, url_path="funding-report-invites-shared-link"
+    @extend_schema(
+        parameters=[FundingOpportunityReportSharedLinkQuerySerializer],
+        responses={200: FundingOpportunityReportPublicUrlResponseSerializer},
     )
-    def funding_opportunity_report_invites_shared_link(self, request, pk=None):
+    @action(methods=["GET"], detail=True, url_path="funding-report-public-url")
+    def funding_opportunity_report_public_url(self, request, pk=None):
         scenario = self.get_object()
 
         query_serializer = FundingOpportunityReportSharedLinkQuerySerializer(
@@ -749,20 +770,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         shared_link, _ = FundingOpportunityReportSharedLink.objects.get_or_create(
             report=report,
-            configuration=query_serializer.validated_data
+            configuration=query_serializer.validated_data,
         )
-        emails = list(
-            FundingOpportunityReportInvite.objects.filter(
-                report=report, 
-                deleted_at__isnull=True
-            ).values_list("invitee_email", flat=True)
-        )
-        return Response(
-            {
-                "emails": emails,
-                "public_url": shared_link.get_public_url()
-            }
-        )
+        return Response({"public_url": shared_link.get_public_url()})
 
 
 # TODO: migrate this to an action inside the planning area viewset
