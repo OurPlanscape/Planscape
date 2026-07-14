@@ -86,6 +86,41 @@
 }
 
 
+.no-access {
+  text-align: center;
+  flex-direction: column;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  gap: 8px;
+  justify-content: center;
+
+  section {
+    max-width: 640px;
+  }
+}
+
+.no-access-icon {
+  fill: $color-md-gray;
+}
+
+.no-access-title {
+  margin-bottom: 4px;
+  color: $color-black;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 32px;
+}
+
+.no-access-text {
+  color: $color-md-gray;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+}
+
+
 app-funding-report {
   flex: 1;
   align-self: stretch;

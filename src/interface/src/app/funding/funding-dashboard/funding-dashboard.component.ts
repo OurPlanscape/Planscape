@@ -6,10 +6,12 @@ import { NavBarComponent } from '@standalone/nav-bar/nav-bar.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   exhaustMap,
   filter,
   map,
+  of,
   shareReplay,
   startWith,
   switchMap,
@@ -26,7 +28,10 @@ import { ButtonComponent, ToolInfoCardComponent } from '@styleguide';
 import { ScenarioState } from '@scenario/scenario.state';
 import { scenarioHasCapability } from '@scenario/scenario-helper';
 import { FundingReportService } from '@services/funding-report.service';
-import { FundingReport } from '@types';
+import { AuthService } from '@services/auth.service';
+import { FundingReport, User } from '@types';
+import { PlanState } from '@plan/plan.state';
+import { canEditScenario } from '@plan/permissions';
 import { POLLING_INTERVAL } from '@plan/plan-helpers';
 import { SNACK_ERROR_CONFIG, SUPPORT_URL } from '@shared';
 import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
@@ -54,6 +59,8 @@ export class FundingDashboardComponent implements OnInit {
   constructor(
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
+    private planState: PlanState,
+    private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
     private fundingReportService: FundingReportService,
@@ -103,11 +110,35 @@ export class FundingDashboardComponent implements OnInit {
   );
   hasError$ = this.report$.pipe(map((r) => r?.status === 'FAILED'));
 
-  /** Empty state shows only before a report exists and before the user asks. */
-  showEmptyState$ = combineLatest([
+  /** Report hasn't been generated yet (and the user hasn't just asked for it). */
+  private reportNotGenerated$ = combineLatest([
     this.report$,
     this.generationRequested$,
   ]).pipe(map(([report, requested]) => report === null && !requested));
+
+  /**
+   * Whether the current user is an owner/editor of the planning area (and can
+   * therefore generate the report). Viewers get the no-access message instead.
+   */
+  private canEdit$ = combineLatest([
+    this.planState.currentPlan$,
+    this.authService.loggedInUser$.pipe(filter((u): u is User => !!u)),
+  ]).pipe(
+    map(([plan, user]) => !!canEditScenario(plan, user)),
+    catchError(() => of(false)),
+    shareReplay(1)
+  );
+
+  /** Show the "generate report" empty state: no report yet and the user can edit. */
+  showEmptyState$ = combineLatest([
+    this.reportNotGenerated$,
+    this.canEdit$,
+  ]).pipe(map(([notGenerated, canEdit]) => notGenerated && canEdit));
+
+  /** Show the no-access message: no report yet and the user cannot edit. */
+  showNoAccess$ = combineLatest([this.reportNotGenerated$, this.canEdit$]).pipe(
+    map(([notGenerated, canEdit]) => notGenerated && !canEdit)
+  );
 
   /**
    * Polls the report every `POLLING_INTERVAL` while it is still generating,
@@ -147,7 +178,22 @@ export class FundingDashboardComponent implements OnInit {
       label: 'Scenario Dashboard ',
       backUrl: '../dashboard',
     });
+    this.redirectIfScenarioUnavailable();
     this.redirectIfFundingReportUnavailable();
+  }
+
+  /**
+   * Kick the user out to home if the scenario query fails — e.g. they don't
+   * have permission to view it (the view permission lives on the planning area).
+   */
+  private redirectIfScenarioUnavailable() {
+    this.scenarioState.currentScenarioResource$
+      .pipe(
+        filter((resource) => !!resource.error),
+        take(1),
+        untilDestroyed(this)
+      )
+      .subscribe(() => this.router.navigate(['/home']));
   }
 
   generateReport() {
