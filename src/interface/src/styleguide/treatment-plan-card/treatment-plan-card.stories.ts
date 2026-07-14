@@ -5,7 +5,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
 
 const meta: Meta<TreatmentPlanCardComponent> = {
-  title: 'Components/Treatment Plan Card',
+  title: 'Cards/Treatment Plan Card',
   component: TreatmentPlanCardComponent,
   tags: ['autodocs'],
   decorators: [

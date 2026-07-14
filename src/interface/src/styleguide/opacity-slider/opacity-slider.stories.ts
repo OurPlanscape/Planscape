@@ -4,7 +4,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { OpacitySliderComponent } from './opacity-slider.component';
 
 const meta: Meta<OpacitySliderComponent> = {
-  title: 'Components/Opacity Slider Card',
+  title: 'Components/Opacity Slider',
   component: OpacitySliderComponent,
   decorators: [
     applicationConfig({

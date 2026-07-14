@@ -21,7 +21,7 @@ const mockDetails: CardDetails[] = [
 ];
 
 const meta: Meta<DetailsCardComponent> = {
-  title: 'Components/Details Card',
+  title: 'Cards/Details Card',
   component: DetailsCardComponent,
   tags: ['autodocs'],
 

@@ -8,7 +8,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
 
 const meta: Meta<MessageCardComponent> = {
-  title: 'Components/Message Card',
+  title: 'Cards/Message Card',
   component: MessageCardComponent,
   tags: ['autodocs'],
 
