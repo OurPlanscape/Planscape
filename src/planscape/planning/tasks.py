@@ -428,7 +428,10 @@ def trigger_geopackage_generation():
 
 
 @app.task()
-def async_generate_scenario_geopackage(scenario_id: int) -> None:
+def async_generate_scenario_geopackage(
+    scenario_id: int,
+    regenerate: bool = False,
+) -> None:
     """
     This function is a placeholder for the actual implementation of generating
     a scenario geopackage. It should be implemented in the future.
@@ -444,13 +447,16 @@ def async_generate_scenario_geopackage(scenario_id: int) -> None:
         )
         return
 
-    if scenario.geopackage_status != GeoPackageStatus.PENDING:
+    if not regenerate and scenario.geopackage_status != GeoPackageStatus.PENDING:
         log.warning(
             f"Geopackage status for scenario {scenario_id} is {scenario.geopackage_status}. Will not generate geopackage."
         )
         return
 
-    geopackage_path = export_to_geopackage(scenario)
+    geopackage_path = export_to_geopackage(
+        scenario,
+        regenerate=regenerate,
+    )
     log.info(f"Geopackage generated at {geopackage_path}")
     return
 
