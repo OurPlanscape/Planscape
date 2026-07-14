@@ -31,7 +31,7 @@ from gis.io import detect_mimetype
 from gis.rasters import to_cog_streaming
 from planning.models import GeoPackageStatus, ProjectArea, Scenario
 from planning.services import get_acreage, map_property_for_numeric_export
-from pyproj import Geod
+from pyproj import Geod, Transformer
 from rasterio.features import geometry_mask
 from rasterio.mask import mask
 from utils.geometry import to_multi
@@ -238,27 +238,31 @@ def _datalayer_path(datalayer: DataLayer) -> str:
     return with_vsi_prefix(datalayer.url)
 
 
-def _projected_pixel_area_acres(src: rasterio.DatasetReader) -> float:
-    transform = src.transform
-    unit_factor = 1.0
-    if src.crs and src.crs.is_projected:
-        linear_units_factor = src.crs.linear_units_factor
-        if isinstance(linear_units_factor, tuple):
-            unit_factor = float(linear_units_factor[-1])
-    pixel_area = abs(transform.a * transform.e) * unit_factor * unit_factor
-    return pixel_area / settings.CONVERSION_SQM_ACRES
-
-
-def _geographic_pixel_area_acres(transform, row: int) -> float:
-    geod = Geod(ellps="WGS84")
+def _pixel_area_acres(
+    transform,
+    row: int,
+    to_lonlat: Transformer | None,
+) -> float:
+    """
+    Geodesic ground area (in acres) of one raster pixel in row `row`. Pixel
+    corners are read straight from the raster's own transform - whatever its
+    native resolution actually is - then converted to lon/lat (if not already
+    geographic) so the area reflects true ground distance. This matters for
+    CRSs like EPSG:3857 (Web Mercator), which is conformal but not
+    equal-area: its scale factor grows with latitude, so treating its
+    "meters" as ground meters silently inflates area away from the equator.
+    """
     corners = [
         transform * (0, row),
         transform * (1, row),
         transform * (1, row + 1),
         transform * (0, row + 1),
     ]
+    if to_lonlat is not None:
+        corners = [to_lonlat.transform(x, y) for x, y in corners]
     lons = [corner[0] for corner in corners]
     lats = [corner[1] for corner in corners]
+    geod = Geod(ellps="WGS84")
     area_sq_meters, _perimeter = geod.polygon_area_perimeter(lons, lats)
     return abs(area_sq_meters) / settings.CONVERSION_SQM_ACRES
 
@@ -270,15 +274,16 @@ def _selected_pixel_area_acres(
 ) -> float:
     if not selected_pixels.any():
         return 0.0
-    if src.crs and src.crs.is_projected:
-        return float(selected_pixels.sum()) * _projected_pixel_area_acres(src)
-    if src.crs and src.crs.is_geographic:
-        rows, counts = np.unique(np.where(selected_pixels)[0], return_counts=True)
-        return sum(
-            int(count) * _geographic_pixel_area_acres(transform, int(row))
-            for row, count in zip(rows, counts)
-        )
-    raise ValueError("AET delta raster must use a projected or geographic CRS.")
+    to_lonlat = (
+        None
+        if src.crs and src.crs.is_geographic
+        else Transformer.from_crs(src.crs, "EPSG:4326", always_xy=True)
+    )
+    rows, counts = np.unique(np.where(selected_pixels)[0], return_counts=True)
+    return sum(
+        int(count) * _pixel_area_acres(transform, int(row), to_lonlat)
+        for row, count in zip(rows, counts)
+    )
 
 
 def _valid_pixel_mask(
