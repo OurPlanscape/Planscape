@@ -68,7 +68,7 @@ export class FundingDashboardComponent implements OnInit {
   );
 
   /** Fires on init and after `generateReport()` to (re)start polling. */
-  private reload$ = new BehaviorSubject<void>(undefined);
+  reload$ = new BehaviorSubject<void>(undefined);
 
   /** Set the moment the user clicks generate, so the view switches instantly. */
   private generationRequested$ = new BehaviorSubject<boolean>(false);
