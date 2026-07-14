@@ -312,3 +312,51 @@ h5 {
     line-height: 32px;
   }
 }
+
+.tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  color: $color-black;
+}
+
+.tooltip-links {
+  border-top: 1px solid $color-soft-gray;
+  padding: 24px 24px 0;
+  margin: 0 -24px;
+}
+
+.tooltip-links-heading {
+  margin: 0 0 12px;
+  color: $color-black;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.tooltip-links-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: $color-standard-blue;
+    text-decoration: underline;
+    font-weight: 600;
+
+    &:hover {
+      color: $color-active-blue;
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
