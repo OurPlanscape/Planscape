@@ -16,8 +16,8 @@ from planning.tests.factories import (
     ScenarioFactory,
 )
 from pyproj import Geod, Transformer
-from rasterio.transform import from_origin
 from rasterio.mask import mask
+from rasterio.transform import from_origin
 
 from funding_report.models import (
     FUNDING_REPORT_YEARS,
@@ -31,12 +31,12 @@ from funding_report.services import (
     _BIOMASS_PIXEL_AREA_ACRES,
     _filter_by_project_id,
     aggregate_delta_pixels,
-    calculate_aet_improvement,
     build_datalayer_lookup,
     build_flame_length_reduction_results,
     build_funding_report_results,
     build_planning_area_feature,
     build_project_area_features,
+    calculate_aet_improvement,
     calculate_biomass_volumes,
     calculate_funding_report_flame_length_reduction,
     calculate_pixel_deltas,
@@ -47,7 +47,6 @@ from funding_report.services import (
     get_biomass_datalayer,
     get_funding_report_layers_of_interest,
 )
-
 
 TEST_DATA = Path("funding_report/tests/test_data")
 BASELINE_RASTER = TEST_DATA / "Baseline_2026_aboveground_total_live.tif"
@@ -121,9 +120,7 @@ def expected_raster_aggregate(geometry: MultiPolygon) -> dict:
     value_values = np.ma.array(value, mask=~valid, dtype=float)
     baseline_sum = float(baseline_values.sum())
     value_sum = float(value_values.sum())
-    delta = (
-        (value_sum - baseline_sum) / baseline_sum * 100 if baseline_sum else 0.0
-    )
+    delta = (value_sum - baseline_sum) / baseline_sum * 100 if baseline_sum else 0.0
     return {
         "baseline": baseline_sum,
         "value": value_sum,
@@ -784,16 +781,22 @@ class BiomassVolumesCalculationTest(TestCase):
             name=f"Biomass {role}",
             type=DataLayerType.RASTER,
             url=str(path),
-            metadata={"modules": {"funding_report": {"variable": "BIOMASS", "role": role}}},
+            metadata={
+                "modules": {"funding_report": {"variable": "BIOMASS", "role": role}}
+            },
         )
 
     def _create_all_biomass_datalayers(self):
         self._create_biomass_datalayer(BiomassRole.MERCHANTABLE, self.merch_path)
-        self._create_biomass_datalayer(BiomassRole.NON_MERCHANTABLE, self.non_merch_path)
+        self._create_biomass_datalayer(
+            BiomassRole.NON_MERCHANTABLE, self.non_merch_path
+        )
         self._create_biomass_datalayer(BiomassRole.WOOD_TYPE, self.wt_path)
 
     def test_get_biomass_datalayer_returns_correct_layer(self):
-        layer = self._create_biomass_datalayer(BiomassRole.MERCHANTABLE, self.merch_path)
+        layer = self._create_biomass_datalayer(
+            BiomassRole.MERCHANTABLE, self.merch_path
+        )
 
         self.assertEqual(get_biomass_datalayer(BiomassRole.MERCHANTABLE), layer)
 
@@ -823,7 +826,9 @@ class BiomassVolumesCalculationTest(TestCase):
         self.assertEqual(len(results["project_areas"]), 1)
         project_result = results["project_areas"][0]
         self.assertEqual(project_result["project_id"], self.project_area.pk)
-        self.assertEqual(set(project_result.keys()), expected_keys | {"project_id", "proj_id"})
+        self.assertEqual(
+            set(project_result.keys()), expected_keys | {"project_id", "proj_id"}
+        )
 
     def test_calculate_biomass_volumes_correct_values(self):
         self._create_all_biomass_datalayers()
@@ -882,7 +887,9 @@ class BiomassVolumesCalculationTest(TestCase):
 
         summary = results["summary"]
         for key in summary:
-            self.assertEqual(summary[key], 0.0, msg=f"{key} should be 0 for non-overlapping area")
+            self.assertEqual(
+                summary[key], 0.0, msg=f"{key} should be 0 for non-overlapping area"
+            )
 
 
 class FundingReportLayersOfInterestTest(TestCase):
@@ -1042,8 +1049,17 @@ class FlattenReportMetricsTest(TestCase):
             "",
             {
                 "TOTAL_FLAME_SEVERITY": {
-                    "7_4": [{"year": 2026, "value": 320.5, "baseline": 5000.0, "delta": 6.41}],
-                    "6_4": [{"year": 2026, "value": 100.0, "baseline": 5000.0, "delta": 2.0}],
+                    "7_4": [
+                        {
+                            "year": 2026,
+                            "value": 320.5,
+                            "baseline": 5000.0,
+                            "delta": 6.41,
+                        }
+                    ],
+                    "6_4": [
+                        {"year": 2026, "value": 100.0, "baseline": 5000.0, "delta": 2.0}
+                    ],
                 }
             },
             out,
