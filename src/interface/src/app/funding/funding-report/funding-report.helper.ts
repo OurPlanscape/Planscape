@@ -183,9 +183,12 @@ export function generateLegendFromReport(
   selectedAreas: number[],
   projectAreas: ProjectArea[]
 ): FundingLegendData {
-  const legendData: FundingLegendData = { selectedAcres: 0 };
+  const legendData: FundingLegendData = {
+    selectedAcres: 0,
+    noTreatmentAcres: 0,
+  };
   if (!results) {
-    return { selectedAcres: 0 };
+    return { selectedAcres: 0, noTreatmentAcres: 0 };
   }
   const txAreas = results?.treatment_areas;
 
@@ -206,22 +209,35 @@ export function generateLegendFromReport(
   const selectedTreatmentResults = selectedProjectAreas.map(
     (area) => txAreas?.projects[area.id]
   );
-  legendData.treatmentAcresTotals = calculateTreatmentAcreSums(
-    selectedTreatmentResults
-  );
+
+  const calculatedSums = calculateTreatmentAcreSums(selectedTreatmentResults);
+  legendData.treatmentAcresTotals = calculatedSums.treatmentSums;
+  legendData.noTreatmentAcres = calculatedSums.noTreatmentSum;
   return legendData;
+}
+
+interface TreatmentSumsResult {
+  treatmentSums: { treatment: LegendTreatmentType; acres: number }[];
+  noTreatmentSum: number;
 }
 
 export function calculateTreatmentAcreSums(
   selectedTreatmentResults: (Record<string, number | undefined> | undefined)[]
-): { treatment: LegendTreatmentType; acres: number }[] {
+): TreatmentSumsResult {
   const totals: Record<string, number> = {};
+  let noTreatmentAcres = 0;
 
   selectedTreatmentResults.forEach((obj) => {
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const value = obj[key] || 0;
-        totals[key] = (totals[key] || 0) + value;
+
+        // capture no treatments separately
+        if (key === 'No Treatment') {
+          noTreatmentAcres += value;
+        } else {
+          totals[key] = (totals[key] || 0) + value;
+        }
       }
     }
   });
@@ -239,9 +255,15 @@ export function calculateTreatmentAcreSums(
     }
   }
 
-  return treatmentAcresSums.sort(
+  const sortedTreatments = treatmentAcresSums.sort(
     (a, b) =>
       TREATMENT_ORDER.indexOf(a.treatment) -
       TREATMENT_ORDER.indexOf(b.treatment)
   );
+
+  // Return them in one interface
+  return {
+    treatmentSums: sortedTreatments,
+    noTreatmentSum: noTreatmentAcres,
+  };
 }

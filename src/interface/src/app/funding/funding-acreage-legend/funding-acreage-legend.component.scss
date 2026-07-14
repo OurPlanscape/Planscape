@@ -78,6 +78,18 @@
   text-transform: capitalize;
 }
 
+.no-treatment-title {
+  @include standard-label();
+  font-size: 14px;
+  color: $color-white;
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+  text-transform: capitalize;
+  padding: 16px 0 8px;
+  border-top: 1px #ffffff19 solid;
+}
+
 .close-button,
 .info-icon {
   color: $color-white;
@@ -99,6 +111,10 @@
   width: 100%;
   color: $color-white;
   padding: 0 20px;
+
+  &.no-treatment-acres {
+    padding: 0;
+  }
 }
 
 .swatch-box {
@@ -106,6 +122,16 @@
   width: 14px;
   flex-shrink: 0;
   border-radius: 4px;
+
+  &.total-acres {
+    background-color: $color-standard-blue;
+    border: 1.5px solid #6b93d4;
+  }
+
+  &.selected-acres {
+    background-color: $color-brand-green;
+    border: 1.5px solid #709482;
+  }
 }
 
 .swatch-label {
@@ -144,7 +170,7 @@
 }
 
 ::ng-deep .tx-legend-tooltip {
-  color:$color-white;
+  color: $color-white;
   border-radius: 6px;
   position: relative;
   top: 20px;
@@ -154,7 +180,7 @@
   }
 
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     top: 50%;
     left: 100%;
