@@ -67,6 +67,29 @@
         </div>
       </div>
 
+      <div class="no-access" *ngIf="showNoAccess$ | async">
+        <svg
+          class="no-access-icon"
+          width="36"
+          height="36"
+          viewBox="0 0 36 36"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M7.5 6V15.0375V15V30V6ZM7.5 33C6.675 33 5.96875 32.7063 5.38125 32.1188C4.79375 31.5312 4.5 30.825 4.5 30V6C4.5 5.175 4.79375 4.46875 5.38125 3.88125C5.96875 3.29375 6.675 3 7.5 3H19.5L28.5 12V15.75C28.025 15.55 27.5375 15.3938 27.0375 15.2812C26.5375 15.1687 26.025 15.0875 25.5 15.0375V13.5H18V6H7.5V30H16.5375C16.9375 30.6 17.3875 31.1563 17.8875 31.6688C18.3875 32.1813 18.9375 32.625 19.5375 33H7.5ZM27.4125 27.4125C28.1375 26.6875 28.5 25.8 28.5 24.75C28.5 23.7 28.1375 22.8125 27.4125 22.0875C26.6875 21.3625 25.8 21 24.75 21C23.7 21 22.8125 21.3625 22.0875 22.0875C21.3625 22.8125 21 23.7 21 24.75C21 25.8 21.3625 26.6875 22.0875 27.4125C22.8125 28.1375 23.7 28.5 24.75 28.5C25.8 28.5 26.6875 28.1375 27.4125 27.4125ZM32.4 34.5L28.35 30.45C27.825 30.8 27.2563 31.0625 26.6437 31.2375C26.0312 31.4125 25.4 31.5 24.75 31.5C22.875 31.5 21.2812 30.8438 19.9688 29.5312C18.6562 28.2188 18 26.625 18 24.75C18 22.875 18.6562 21.2812 19.9688 19.9688C21.2812 18.6562 22.875 18 24.75 18C26.625 18 28.2188 18.6562 29.5312 19.9688C30.8438 21.2812 31.5 22.875 31.5 24.75C31.5 25.4 31.4125 26.0312 31.2375 26.6437C31.0625 27.2563 30.8 27.825 30.45 28.35L34.5 32.4L32.4 34.5Z"
+            fill="#767575" />
+        </svg>
+
+        <section>
+          <div class="no-access-title">Awaiting Funding Opportunity Report</div>
+          <div class="no-access-text">
+            Once a Collaborator or Owner generates the funding opportunity
+            report, it will be available to view. To generate the report, please
+            contact the planning area owner to request permission.
+          </div>
+        </section>
+      </div>
+
       <!-- Report succeeded but produced no results -->
       <div *ngIf="hasNoResults$ | async" class="generating-error">
         <div class="generating-error-card">
