@@ -26,7 +26,12 @@
   </mat-icon>
 </button>
 <mat-menu #menu="matMenu">
-  <button mat-menu-item (click)="downloadGeopackage()">Geopackage</button>
+  <button
+    mat-menu-item
+    (click)="downloadGeopackage()"
+    [disabled]="!geoPackageUrl">
+    Geopackage
+  </button>
   <button mat-menu-item (click)="downloadPDF()">PDF</button>
 </mat-menu>
 <button

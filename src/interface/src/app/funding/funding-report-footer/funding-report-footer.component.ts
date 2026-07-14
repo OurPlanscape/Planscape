@@ -41,7 +41,6 @@ export class FundingReportFooterComponent {
 
   downloadingGeopackage = false;
 
-  //TODO: or just emit this to the parent?
   downloadGeopackage() {
     this.downloadingGeopackage = true;
 

@@ -298,5 +298,5 @@
   [footerType]="reportType"
   [buttonDisabled]="(mapLoading$ | async) === true"
   [generatingPdf]="generatingPdf"
-  [geoPackageUrl]="report.geopackage_url ?? null"
+  [geoPackageUrl]="report?.geopackage_url ?? null"
   (downloadPdf)="exportPdf()"></app-funding-report-footer>
