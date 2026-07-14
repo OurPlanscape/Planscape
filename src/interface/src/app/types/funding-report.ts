@@ -152,11 +152,18 @@ export interface FundingReport {
 }
 
 /**
- * Response of the funding-report share endpoints: the emails the report has
- * already been shared with, plus the public link for the current configuration.
+ * Response of the funding-report invite endpoints (`funding-report-invites`,
+ * GET and POST): the emails the report has already been shared with.
  */
-export interface FundingReportShareInfo {
+export interface FundingReportInviteEmails {
   emails: string[];
+}
+
+/**
+ * Response of the `funding-report-public-url` endpoint: the public link for the
+ * current report configuration (water % + flame interval).
+ */
+export interface FundingReportPublicUrl {
   public_url: string;
 }
 

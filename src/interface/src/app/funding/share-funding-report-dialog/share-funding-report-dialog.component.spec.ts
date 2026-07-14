@@ -20,10 +20,8 @@ describe('ShareFundingReportDialogComponent', () => {
     aet: 25,
     totalFlameSeverity: '7_4' as const,
   };
-  const shareInfo = {
-    emails: ['a@x.com'],
-    public_url: 'https://link/for/uuid',
-  };
+  const inviteEmails = { emails: ['a@x.com'] };
+  const publicUrl = { public_url: 'https://link/for/uuid' };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -36,8 +34,9 @@ describe('ShareFundingReportDialogComponent', () => {
       providers: [
         MockProvider(MatDialogRef),
         MockProvider(FundingReportService, {
-          getReportShareInfo: () => of(shareInfo),
-          shareReport: () => of(shareInfo),
+          getInviteEmails: () => of(inviteEmails),
+          getPublicUrl: () => of(publicUrl),
+          shareReport: () => of(inviteEmails),
         }),
         MockProvider(Clipboard, { copy: () => true }),
         { provide: MAT_DIALOG_DATA, useValue: data },
@@ -127,9 +126,7 @@ describe('ShareFundingReportDialogComponent', () => {
 
   it('does not copy when the link is not ready yet', () => {
     const service = TestBed.inject(FundingReportService);
-    spyOn(service, 'getReportShareInfo').and.returnValue(
-      of({ emails: [], public_url: '' })
-    );
+    spyOn(service, 'getPublicUrl').and.returnValue(of({ public_url: '' }));
     const clipboard = TestBed.inject(Clipboard);
     const copySpy = spyOn(clipboard, 'copy');
     const snackbar = spyOn<any>(component, 'showSnackbar');

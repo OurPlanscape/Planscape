@@ -6,14 +6,16 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   BehaviorSubject,
   catchError,
+  defer,
   map,
   of,
+  shareReplay,
   switchMap,
   take,
   tap,
 } from 'rxjs';
 
-import { FlameLengthInterval, FundingReportShareInfo } from '@types';
+import { FlameLengthInterval } from '@types';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 import { FundingReportService } from '@services/funding-report.service';
 import {
@@ -53,27 +55,28 @@ export class ShareFundingReportDialogComponent {
 
   private reload$ = new BehaviorSubject<void>(undefined);
 
-  /** Current share state (already-invited emails + public link) for this config. */
-  private shareInfo$ = this.reload$.pipe(
+  /** Emails the report has already been shared with. */
+  people$ = this.reload$.pipe(
     switchMap(() =>
       this.fundingReportService
-        .getReportShareInfo(
-          this.data.scenarioId,
-          this.data.aet,
-          this.data.totalFlameSeverity
-        )
-        .pipe(
-          catchError(() =>
-            of({ emails: [], public_url: '' } as FundingReportShareInfo)
-          )
-        )
-    )
-  );
-
-  /** Emails the report has already been shared with. */
-  people$ = this.shareInfo$.pipe(
+        .getInviteEmails(this.data.scenarioId)
+        .pipe(catchError(() => of({ emails: [] })))
+    ),
     map((info) => info.emails),
     tap(() => (this.isLoading = false))
+  );
+
+  /** Public link for the current report configuration. */
+  private publicUrl$ = defer(() =>
+    this.fundingReportService.getPublicUrl(
+      this.data.scenarioId,
+      this.data.aet,
+      this.data.totalFlameSeverity
+    )
+  ).pipe(
+    map((info) => info.public_url),
+    catchError(() => of('')),
+    shareReplay(1)
   );
 
   get title(): string {
@@ -109,12 +112,12 @@ export class ShareFundingReportDialogComponent {
   }
 
   copyLink(): void {
-    this.shareInfo$.pipe(take(1)).subscribe((info) => {
-      if (!info.public_url) {
+    this.publicUrl$.pipe(take(1)).subscribe((url) => {
+      if (!url) {
         this.showSnackbar('The link is not available yet. Please try again.');
         return;
       }
-      this.clipboard.copy(info.public_url);
+      this.clipboard.copy(url);
       this.showSnackbar('Link copied');
     });
   }
