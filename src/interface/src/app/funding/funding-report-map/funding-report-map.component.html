@@ -104,9 +104,7 @@
 
 <div
   class="loader"
-  [class.visible]="mapLoading$ | async"
-  [attr.aria-hidden]="
-    (mapLoading$ | async) === false || (mapLoading$ | async) === null
-  ">
+  [class.visible]="(mapLoaded$ | async) === false"
+  [attr.aria-hidden]="(mapLoaded$ | async) !== false">
   <mat-spinner diameter="32"></mat-spinner>
 </div>
