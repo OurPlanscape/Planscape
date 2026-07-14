@@ -129,7 +129,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   /** The scrollable container holding the map + report sections. */
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLElement>;
 
-  mapLoading$ = this.fundingMapConfigState.mapLoading$;
+  mapLoaded$ = this.fundingMapConfigState.mapLoaded$;
 
   /** True while a PDF is being generated, to disable the download control. */
   generatingPdf = false;
@@ -467,6 +467,16 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
 
   get isPreview() {
     return this.reportType === 'preview';
+  }
+
+  /**
+   * Whether the preview map will render. When it does, the download control
+   * stays disabled until the map reports it has loaded (the export captures the
+   * map canvas). Derived from stable state so the footer's disabled binding
+   * never changes mid-change-detection.
+   */
+  get willShowMap(): boolean {
+    return this.isPreview && !!this.report?.treatment_datalayer;
   }
 
   /** Export the report (map + sections) as a PDF. */

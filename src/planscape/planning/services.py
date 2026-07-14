@@ -2003,8 +2003,8 @@ def calculate_and_update_rx_leverage(scenario: Scenario, features: List) -> List
     names = [name[0] for name in names]
 
     for feature in features:
-        attainment = feature.get("properties").get("attainment")
-        att_values = [attainment.get(name) for name in names]
+        attainment = feature.get("properties").get("attainment") or {}
+        att_values = [attainment.get(name) or 0 for name in names]
         area_acres = feature.get("properties").get("area_acres")
         rx_leverage = (sum(att_values) / area_acres) * 10000 if area_acres else None
         feature["properties"]["rx_leverage"] = rx_leverage

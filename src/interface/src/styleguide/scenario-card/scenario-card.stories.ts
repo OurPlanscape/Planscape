@@ -4,7 +4,7 @@ import { ScenarioCardComponent } from './scenario-card.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 const meta: Meta<ScenarioCardComponent> = {
-  title: 'Components/Scenario Card',
+  title: 'Cards/Scenario Card',
   component: ScenarioCardComponent,
   decorators: [
     applicationConfig({

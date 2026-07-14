@@ -3,7 +3,7 @@ import { argsToTemplate } from '@storybook/angular';
 import { ActionCardComponent } from './action-card.component';
 
 const meta: Meta<ActionCardComponent> = {
-  title: 'Components/Action Card',
+  title: 'Cards/Action Card',
   component: ActionCardComponent,
   tags: ['autodocs'],
   render: (args) => ({

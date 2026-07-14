@@ -17,7 +17,7 @@ import { MatInputModule } from '@angular/material/input';
 import { InputDirective, InputFieldComponent } from '..';
 
 const meta: Meta<ModalComponent> = {
-  title: 'Components/Modal',
+  title: 'Dialogs & Modals/Modal',
   component: ModalComponent,
   tags: ['autodocs'],
   decorators: [

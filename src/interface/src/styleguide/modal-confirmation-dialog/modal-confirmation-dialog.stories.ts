@@ -15,7 +15,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 const meta: Meta<ModalConfirmationDialogComponent> = {
-  title: 'Components/Modal Confirmation Dialog',
+  title: 'Dialogs & Modals/Modal Confirmation Dialog',
   component: ModalConfirmationDialogComponent,
   tags: ['autodocs'],
   decorators: [

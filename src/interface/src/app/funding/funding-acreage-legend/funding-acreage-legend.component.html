@@ -21,9 +21,7 @@
     <div class="static-section">
       <div class="static-row">
         <div class="legend-line">
-          <div
-            class="swatch-box"
-            [ngStyle]="{ 'background-color': '#064BBA' }"></div>
+          <div class="swatch-box total-acres"></div>
           <div class="swatch-label">Total Planning Area Acres</div>
         </div>
         <div *ngIf="currentPlan$ | async as plan" class="acres-line">
@@ -32,9 +30,7 @@
       </div>
       <div class="static-row">
         <div class="legend-line">
-          <div
-            class="swatch-box"
-            [ngStyle]="{ 'background-color': '#344F42' }"></div>
+          <div class="swatch-box selected-acres"></div>
           <div class="swatch-label">Selected Project Area Acres</div>
         </div>
         <div class="acres-line">
@@ -66,6 +62,14 @@
         </div>
         <div class="acres-line">
           {{ acreageDetail.acres | number: '1.0-0' }} acres
+        </div>
+      </div>
+    </div>
+    <div class="no-treatment">
+      <div class="no-treatment-title">No Treatment</div>
+      <div class="static-row">
+        <div class="acres-line no-treatment-acres">
+          {{ legendData.noTreatmentAcres | number: '1.0-0' }} acres
         </div>
       </div>
     </div>
