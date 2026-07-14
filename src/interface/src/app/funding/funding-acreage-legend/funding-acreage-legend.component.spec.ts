@@ -15,6 +15,7 @@ describe('FundingAcreageLegendComponent', () => {
   let testLegendData: FundingLegendData = {
     selectedAcres: 100,
     treatmentAcresTotals: [],
+    noTreatmentAcres: 0,
   };
 
   beforeEach(async () => {
