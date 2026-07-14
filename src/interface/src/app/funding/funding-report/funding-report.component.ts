@@ -55,6 +55,7 @@ import {
   hasFlameLengthData,
   hasMetricData,
 } from './funding-report.helper';
+import { FUNDING_TOOLTIPS, FundingTooltip } from './funding-tooltips';
 import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
@@ -128,7 +129,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   /** The scrollable container holding the map + report sections. */
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLElement>;
 
-  mapLoading$ = this.fundingMapConfigState.mapLoading$;
+  mapLoaded$ = this.fundingMapConfigState.mapLoaded$;
 
   /** True while a PDF is being generated, to disable the download control. */
   generatingPdf = false;
@@ -141,29 +142,9 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   /** Name of the section whose interactive tooltip was last opened. */
   tooltipName = '';
 
-  readonly tooltipCopy: Record<string, string> = {
-    Carbon: `
-       Carbon metrics are estimated using the Forest Vegetation Simulator
-       (FVS) with spatially explicit forest conditions from the USFS
-       TreeMap dataset (30 m resolution).
-       TreeMap (2022 baseline) is projected to the 2025 modeling start year,
-       and pre- and post-treatment scenarios are simulated in 5-year time steps to
-       quantify changes in standing live aboveground carbon and potential smoke emissions relative to baseline.
-      `,
-    Water: `Change in Water Availability is calculated as the difference between pre- and post-treatment AETmax surfaces.
-    Lower post-treatment AETmax indicates reduced vegetation water use and therefore greater water availability
-    following treatment.`,
-    Biomass: `Biomass is estimated using the Forest Vegetation Simulator (FVS) with 30 m USFS TreeMap data.
-    The 2022 baseline is projected to 2025, and pre- and post-treatment scenarios are simulated to estimate
-    available merchantable and non-merchantable biomass, reported by hardwood, softwood, and mixed forest types.`,
-    'Flame Length': `Estimated using the Forest Vegetation Simulator (FVS) with 30 m USFS TreeMap data.
-    The 2022 baseline is projected to 2025, and pre- and post-treatment scenarios are simulated in 5-year increments.
-    Results show the area where modeled flame lengths are reduced from >4 feet to <4 feet relative to baseline.`,
-  };
-
-  /** HTML copy for the currently open tooltip; empty when none is defined. */
-  get currentTooltipCopy(): string {
-    return this.tooltipCopy[this.tooltipName] ?? '';
+  /** Content (copy + learn-more links) for the currently open tooltip. */
+  get currentTooltip(): FundingTooltip | undefined {
+    return FUNDING_TOOLTIPS[this.tooltipName];
   }
 
   /**
@@ -486,6 +467,16 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
 
   get isPreview() {
     return this.reportType === 'preview';
+  }
+
+  /**
+   * Whether the preview map will render. When it does, the download control
+   * stays disabled until the map reports it has loaded (the export captures the
+   * map canvas). Derived from stable state so the footer's disabled binding
+   * never changes mid-change-detection.
+   */
+  get willShowMap(): boolean {
+    return this.isPreview && !!this.report?.treatment_datalayer;
   }
 
   /** Export the report (map + sections) as a PDF. */

@@ -82,7 +82,6 @@ export class FundingReportMapComponent implements OnInit {
     private matSnackBar: MatSnackBar
   ) {
     this.mapConfigService.initialize();
-    this.fundingMapConfigState.isMapLoading(true);
   }
 
   readonly BASE_COLORS = BASE_COLORS;
@@ -94,7 +93,7 @@ export class FundingReportMapComponent implements OnInit {
   /** Id of the report's treatment datalayer to display on the map. */
   @Input() treatmentDataLayerId!: number;
 
-  mapLoading$ = this.fundingMapConfigState.mapLoading$;
+  mapLoaded$ = this.fundingMapConfigState.mapLoaded$;
 
   mapLibreMap!: MapLibreMap;
   /**
@@ -143,7 +142,7 @@ export class FundingReportMapComponent implements OnInit {
 
   mapLoaded(loadedMap: MapLibreMap) {
     this.mapLibreMap = loadedMap;
-    this.fundingMapConfigState.isMapLoading(false);
+    this.fundingMapConfigState.setMapLoaded(true);
   }
 
   handleOpacityChange(opacity: number) {
