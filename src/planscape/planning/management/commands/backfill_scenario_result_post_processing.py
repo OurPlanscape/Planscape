@@ -4,16 +4,16 @@ from typing import Any
 from django.core.management.base import BaseCommand
 
 from planning.models import Scenario, ScenarioResultStatus
-from planning.services import (
-    calculate_and_update_scenario_result,
-    export_to_geopackage,
-)
+from planning.services import calculate_and_update_scenario_result
+from planning.tasks import async_generate_scenario_geopackage
 
 log = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Backfill scenario post-processing data, optionally regenerating GeoPackages."
+    help = (
+        "Backfill scenario post-processing data, optionally regenerating GeoPackages."
+    )
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -64,7 +64,7 @@ class Command(BaseCommand):
         self.stdout.write(f"Found {total} successful scenario(s).")
 
         backfilled_count = 0
-        geopackage_count = 0
+        geopackage_queued_count = 0
         skipped_geopackage_count = 0
         failed_count = 0
 
@@ -87,21 +87,16 @@ class Command(BaseCommand):
                         continue
 
                     self.stdout.write(
-                        f"Regenerating GeoPackage for scenario {scenario.pk}"
+                        f"Queueing GeoPackage regeneration for scenario {scenario.pk}"
                     )
 
                     if not dry_run:
-                        geopackage_url = export_to_geopackage(
-                            scenario,
+                        async_generate_scenario_geopackage.delay(
+                            scenario_id=scenario.pk,
                             regenerate=True,
                         )
 
-                        if not geopackage_url:
-                            raise RuntimeError(
-                                f"GeoPackage regeneration failed for scenario {scenario.pk}"
-                            )
-
-                    geopackage_count += 1
+                    geopackage_queued_count += 1
 
             except Exception:
                 failed_count += 1
@@ -111,9 +106,13 @@ class Command(BaseCommand):
                 )
                 self.stderr.write(f"[FAIL] Scenario {scenario.pk}")
 
+        backfill_action = "Would backfill" if dry_run else "Backfilled"
+        geopackage_action = "Would queue" if dry_run else "Queued"
+
         self.stdout.write(
-            f"Done. Backfilled {backfilled_count} scenario result(s). "
-            f"Regenerated {geopackage_count} GeoPackage(s). "
+            f"Done. {backfill_action} {backfilled_count} scenario result(s). "
+            f"{geopackage_action} {geopackage_queued_count} "
+            "GeoPackage regeneration task(s). "
             f"Skipped {skipped_geopackage_count} GeoPackage(s). "
             f"Failed {failed_count} scenario(s)."
         )
