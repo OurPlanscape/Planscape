@@ -41,14 +41,18 @@ describe('FundingDashboardComponent', () => {
   let activatedRoute: ActivatedRoute;
   let fundingReportService: FundingReportService;
 
-  function makeScenario(id: number, capabilities: Capabilities[]): Scenario {
+  function makeScenario(
+    id: number,
+    capabilities: Capabilities[],
+    user = 1
+  ): Scenario {
     return {
       id,
       name: 'scenario',
       planning_area: 1,
       status: 'ACTIVE',
       type: 'PRESET',
-      user: 1,
+      user,
       geopackage_status: 'PENDING',
       geopackage_url: null,
       configuration: {},
@@ -160,11 +164,11 @@ describe('FundingDashboardComponent', () => {
     expect(canEdit).toBeTrue();
   });
 
-  it('treats an editor (change_scenario permission) as able to edit', async () => {
+  it('treats a collaborator (add_scenario permission) as able to edit', async () => {
     await setup(
       makeScenario(123, ['FUNDING_REPORT']),
       '123',
-      makePlan(999, ['change_scenario']),
+      makePlan(999, ['view_planningarea', 'view_scenario', 'add_scenario']),
       { id: 7 } as User
     );
     let canEdit: boolean | undefined;
@@ -172,11 +176,11 @@ describe('FundingDashboardComponent', () => {
     expect(canEdit).toBeTrue();
   });
 
-  it('treats a non-owner viewer as unable to edit', async () => {
+  it('treats a viewer (view permissions only) as unable to edit', async () => {
     await setup(
       makeScenario(123, ['FUNDING_REPORT']),
       '123',
-      makePlan(999, []),
+      makePlan(999, ['view_planningarea', 'view_scenario']),
       { id: 7 } as User
     );
     let canEdit: boolean | undefined;
@@ -215,6 +219,20 @@ describe('FundingDashboardComponent', () => {
     await setup(makeScenario(123, ['FUNDING_REPORT']), '123', makePlan(7), {
       id: 7,
     } as User);
+    await resolveNoReport();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('app-funding-empty-state')).toBeTruthy();
+    expect(el.querySelector('.no-access')).toBeNull();
+  });
+
+  it('shows the generate empty state for a collaborator when no report has been generated', async () => {
+    await setup(
+      makeScenario(123, ['FUNDING_REPORT']),
+      '123',
+      makePlan(999, ['view_planningarea', 'view_scenario', 'add_scenario']),
+      { id: 7 } as User
+    );
     await resolveNoReport();
 
     const el: HTMLElement = fixture.nativeElement;

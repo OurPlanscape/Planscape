@@ -31,7 +31,7 @@ import { FundingReportService } from '@services/funding-report.service';
 import { AuthService } from '@services/auth.service';
 import { FundingReport, User } from '@types';
 import { PlanState } from '@plan/plan.state';
-import { canEditScenario } from '@plan/permissions';
+import { canAddScenario } from '@plan/permissions';
 import { POLLING_INTERVAL } from '@plan/plan-helpers';
 import { SNACK_ERROR_CONFIG, SUPPORT_URL } from '@shared';
 import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
@@ -117,14 +117,14 @@ export class FundingDashboardComponent implements OnInit {
   ]).pipe(map(([report, requested]) => report === null && !requested));
 
   /**
-   * Whether the current user is an owner/editor of the planning area (and can
-   * therefore generate the report). Viewers get the no-access message instead.
+   * Whether the current user can generate the report. Collaborators and Owners
+   * can (`add_scenario`); only Viewers get the no-access message instead.
    */
   private canEdit$ = combineLatest([
     this.planState.currentPlan$,
     this.authService.loggedInUser$.pipe(filter((u): u is User => !!u)),
   ]).pipe(
-    map(([plan, user]) => !!canEditScenario(plan, user)),
+    map(([plan, user]) => plan.user === user.id || !!canAddScenario(plan)),
     catchError(() => of(false)),
     shareReplay(1)
   );
