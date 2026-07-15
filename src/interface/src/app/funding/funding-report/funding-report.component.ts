@@ -72,6 +72,8 @@ import {
   filter,
   map,
 } from 'rxjs';
+import { SNACK_ERROR_CONFIG, SUPPORT_URL } from '@app/shared';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 /** Pause after the last keystroke before recalculating water availability. */
 const WATER_DEBOUNCE_MS = 300;
@@ -122,7 +124,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     private fundingMapConfigState: FundingMapConfigState,
     private fundingModuleService: FundingModuleService,
     private dataLayersStateService: DataLayersStateService,
-    private baseLayersStateService: BaseLayersStateService
+    private baseLayersStateService: BaseLayersStateService,
+    private snackbar: MatSnackBar
   ) {}
 
   /** The scrollable container holding the map + report sections. */
@@ -505,6 +508,19 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
         `planscape-funding-report-${this.report.scenario}`,
         mapCanvas
       );
+    } catch (error) {
+      const snackBarConfig = {
+        ...SNACK_ERROR_CONFIG,
+        verticalPosition: 'bottom' as const,
+      };
+      const downloadErrorSnackbar = this.snackbar.open(
+        'Unable to download PDF.',
+        'Submit Feedback',
+        snackBarConfig
+      );
+      downloadErrorSnackbar.onAction().subscribe(() => {
+        window.open(SUPPORT_URL, '_blank');
+      });
     } finally {
       this.generatingPdf = false;
     }

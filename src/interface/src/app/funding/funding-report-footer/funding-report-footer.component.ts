@@ -7,7 +7,7 @@ import { ButtonComponent } from '@styleguide';
 import { FeaturesModule } from '@features/features.module';
 import { FileSaverService } from '@app/services';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SNACK_ERROR_CONFIG } from '@app/shared';
+import { SNACK_ERROR_CONFIG, SUPPORT_URL } from '@app/shared';
 
 @Component({
   selector: 'app-funding-report-footer',
@@ -38,10 +38,33 @@ export class FundingReportFooterComponent {
   @Output() downloadPdf = new EventEmitter<void>();
 
   @Input() geoPackageUrl: string | null = null;
+  @Input() geoPackageStatus: string | null = null;
 
   downloadingGeopackage = false;
 
+  displayDownloadErrorSnackbar() {
+    const snackBarConfig = {
+      ...SNACK_ERROR_CONFIG,
+      verticalPosition: 'bottom' as const,
+    };
+
+    const downloadErrorSnackbar = this.snackbar.open(
+      'Unable to download GeoPackage.',
+      'Submit Feedback',
+      snackBarConfig
+    );
+
+    downloadErrorSnackbar.onAction().subscribe(() => {
+      window.open(SUPPORT_URL, '_blank');
+    });
+  }
+
   downloadGeopackage() {
+    // if we presume it's failed before the click
+    if (!this.geoPackageStatus || this.geoPackageStatus === 'FAILED') {
+      this.displayDownloadErrorSnackbar();
+    }
+
     this.downloadingGeopackage = true;
 
     //TODO: grab this from ... generated file or...compose it?
@@ -59,11 +82,8 @@ export class FundingReportFooterComponent {
         error: (e) => {
           this.downloadingGeopackage = false;
           console.error('Error downloading: ', e);
-          this.snackbar.open(
-            `Error: Could not generate a GeoPackage.`,
-            'Dismiss',
-            SNACK_ERROR_CONFIG
-          );
+          // if it's failed for some other reason, after the click
+          this.displayDownloadErrorSnackbar();
         },
       });
     }

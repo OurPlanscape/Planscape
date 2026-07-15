@@ -299,4 +299,5 @@
   [buttonDisabled]="(mapLoading$ | async) === true"
   [generatingPdf]="generatingPdf"
   [geoPackageUrl]="report?.geopackage_url ?? null"
+  [geoPackageStatus]="report?.geopackage_status ?? null"
   (downloadPdf)="exportPdf()"></app-funding-report-footer>
