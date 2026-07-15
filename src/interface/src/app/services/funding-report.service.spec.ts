@@ -114,9 +114,9 @@ describe('FundingReportService', () => {
     );
     expect(req.request.method).toBe('GET');
     expect(req.request.withCredentials).toBeTrue();
-    req.flush({ emails: ['a@x.com'] });
+    req.flush({ emails: ['a@example.com'] });
 
-    expect(result).toEqual({ emails: ['a@x.com'] });
+    expect(result).toEqual({ emails: ['a@example.com'] });
   });
 
   it('getPublicUrl GETs the public url with the config as query params', () => {
@@ -138,7 +138,7 @@ describe('FundingReportService', () => {
   it('shareReport POSTs the emails and config, defaulting resent_to_all_invitees to false', () => {
     let result: { emails: string[] } | undefined;
     service
-      .shareReport(123, ['a@x.com'], 25, '7_4')
+      .shareReport(123, ['a@example.com'], 25, '7_4')
       .subscribe((r) => (result = r));
 
     const req = httpMock.expectOne((r) =>
@@ -146,24 +146,24 @@ describe('FundingReportService', () => {
     );
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({
-      emails: ['a@x.com'],
+      emails: ['a@example.com'],
       aet: 25,
       total_flame_severity: '7_4',
       resent_to_all_invitees: false,
     });
     expect(req.request.withCredentials).toBeTrue();
-    req.flush({ emails: ['a@x.com'] });
+    req.flush({ emails: ['a@example.com'] });
 
-    expect(result).toEqual({ emails: ['a@x.com'] });
+    expect(result).toEqual({ emails: ['a@example.com'] });
   });
 
   it('shareReport forwards resent_to_all_invitees when resending to all', () => {
-    service.shareReport(123, ['a@x.com'], 25, '7_4', true).subscribe();
+    service.shareReport(123, ['a@example.com'], 25, '7_4', true).subscribe();
 
     const req = httpMock.expectOne((r) =>
       r.url.endsWith('v2/scenarios/123/funding-report-invites/')
     );
     expect(req.request.body.resent_to_all_invitees).toBeTrue();
-    req.flush({ emails: ['a@x.com'] });
+    req.flush({ emails: ['a@example.com'] });
   });
 });

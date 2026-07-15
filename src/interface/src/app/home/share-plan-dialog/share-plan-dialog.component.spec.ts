@@ -101,13 +101,13 @@ describe('SharePlanDialogComponent', () => {
       spyOn(service, 'inviteUsers').and.callThrough();
 
       component.onPrimary({
-        emails: ['john@planscape.com', 'jane@planscape.com'],
+        emails: ['john@planscape.com', 'jane@example.com'],
         role: 'Owner',
         message: 'Test message',
       });
 
       expect(service.inviteUsers).toHaveBeenCalledWith(
-        ['john@planscape.com', 'jane@planscape.com'],
+        ['john@planscape.com', 'jane@example.com'],
         'Owner',
         MOCK_PLAN.id,
         'Test message'
