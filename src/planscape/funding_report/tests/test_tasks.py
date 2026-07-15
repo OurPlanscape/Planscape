@@ -27,6 +27,7 @@ from funding_report.tasks import (
     STALE_RUNNING_TIMEOUT,
     async_calculate_funding_report_delta,
     async_finalize_funding_report_results,
+    async_generate_aet_datalayer,
     async_send_email_funding_report_finished,
     run_funding_opportunity_report,
     send_weekly_funding_report_users_report,
@@ -188,6 +189,76 @@ class FundingOpportunityReportTaskTest(TestCase):
                 "year": 2026,
             },
         )
+
+    @mock.patch("funding_report.tasks.generate_aet_clip_datalayer")
+    @mock.patch("funding_report.tasks.get_aet_percentual_datalayer")
+    def test_generate_aet_datalayer_task_returns_datalayer_id(
+        self,
+        get_source_mock,
+        generate_mock,
+    ):
+        get_source_mock.return_value = DataLayerFactory.create(
+            type=DataLayerType.RASTER
+        )
+        clipped_datalayer = DataLayerFactory.create(type=DataLayerType.RASTER)
+        generate_mock.return_value = clipped_datalayer
+
+        result = async_generate_aet_datalayer(self.report.pk)
+
+        self.assertEqual(
+            result, {"kind": "aet_datalayer", "datalayer_id": clipped_datalayer.pk}
+        )
+        generate_mock.assert_called_once()
+
+    @mock.patch("funding_report.tasks.generate_aet_clip_datalayer")
+    @mock.patch("funding_report.tasks.get_aet_percentual_datalayer")
+    def test_generate_aet_datalayer_task_skips_without_source(
+        self,
+        get_source_mock,
+        generate_mock,
+    ):
+        get_source_mock.return_value = None
+
+        result = async_generate_aet_datalayer(self.report.pk)
+
+        self.assertIsNone(result)
+        generate_mock.assert_not_called()
+
+    @mock.patch("funding_report.tasks.generate_aet_clip_datalayer")
+    @mock.patch("funding_report.tasks.get_aet_percentual_datalayer")
+    def test_generate_aet_datalayer_task_returns_error_marker_on_failure(
+        self,
+        get_source_mock,
+        generate_mock,
+    ):
+        get_source_mock.return_value = DataLayerFactory.create(
+            type=DataLayerType.RASTER
+        )
+        generate_mock.side_effect = ValueError("boom")
+
+        result = async_generate_aet_datalayer(self.report.pk)
+
+        self.assertEqual(result, {"kind": "aet_datalayer", "error": "boom"})
+
+    @mock.patch("funding_report.tasks.async_generate_funding_report_geopackage.delay")
+    @mock.patch("funding_report.tasks.async_send_email_funding_report_finished.delay")
+    def test_finalize_task_saves_aet_datalayer_id(
+        self,
+        email_task_mock,
+        geopackage_task_mock,
+    ):
+        clipped_datalayer = DataLayerFactory.create(type=DataLayerType.RASTER)
+
+        async_finalize_funding_report_results(
+            project_results=[
+                {"kind": "aet_datalayer", "datalayer_id": clipped_datalayer.pk},
+            ],
+            funding_opportunity_report_id=self.report.pk,
+        )
+
+        self.report.refresh_from_db()
+        self.assertEqual(self.report.status, FundingOpportunityReportStatus.SUCCESS)
+        self.assertEqual(self.report.aet_datalayer_id, clipped_datalayer.pk)
 
     @mock.patch("funding_report.tasks.async_generate_funding_report_geopackage.delay")
     @mock.patch("funding_report.tasks.async_send_email_funding_report_finished.delay")
@@ -374,7 +445,7 @@ class FundingOpportunityReportTaskTest(TestCase):
             len(tasks),
             1 * non_flame_metric_count * len(FUNDING_REPORT_YEARS)
             + 1 * len(FUNDING_REPORT_YEARS) * len(FLAME_LENGTH_REDUCTION_INTERVALS)
-            + 4,
+            + 5,
         )
 
     @mock.patch("funding_report.tasks.chord")
