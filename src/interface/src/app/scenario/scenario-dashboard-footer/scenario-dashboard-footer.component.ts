@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FileSaverService, ScenarioService } from '@app/services';
+import { FileSaverService } from '@app/services';
 import { Scenario } from '@app/types';
 import { ButtonComponent } from '@styleguide';
 import { ScenarioState } from '../scenario.state';
@@ -38,9 +38,8 @@ export class ScenarioDashboardFooterComponent {
   buttonLabels = GEO_PACKAGE_LABELS;
 
   constructor(
-    private scenarioService: ScenarioService,
     private scenarioState: ScenarioState,
-    private fileServerService: FileSaverService,
+    private fileSaverService: FileSaverService,
     private snackbar: MatSnackBar,
     private dialog: MatDialog,
     private router: Router,
@@ -61,7 +60,7 @@ export class ScenarioDashboardFooterComponent {
 
     if (this.scenario?.geopackage_url && this.scenario?.name) {
       const filename = getSafeFileName(this.scenario.name) + '.zip';
-      this.scenarioService
+      this.fileSaverService
         .downloadGeopackage(this.scenario.geopackage_url)
         .subscribe({
           next: (data) => {
@@ -69,7 +68,7 @@ export class ScenarioDashboardFooterComponent {
             const blob = new Blob([data], {
               type: 'application/zip',
             });
-            this.fileServerService.saveAs(blob, filename);
+            this.fileSaverService.saveAs(blob, filename);
           },
           error: (e) => {
             this.downloadingScenario = false;

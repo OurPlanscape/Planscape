@@ -75,7 +75,7 @@ export class FundingDashboardComponent implements OnInit {
   );
 
   /** Fires on init and after `generateReport()` to (re)start polling. */
-  private reload$ = new BehaviorSubject<void>(undefined);
+  reload$ = new BehaviorSubject<void>(undefined);
 
   /** Set the moment the user clicks generate, so the view switches instantly. */
   private generationRequested$ = new BehaviorSubject<boolean>(false);
@@ -95,7 +95,7 @@ export class FundingDashboardComponent implements OnInit {
   isGenerating$ = combineLatest([this.report$, this.generationRequested$]).pipe(
     map(([report, requested]) => {
       // A finished report always wins over a pending click.
-      if (report?.status === 'SUCCESS' || report?.status === 'FAILED') {
+      if (!this.isStillProcessing(report)) {
         return false;
       }
       return requested || this.isGenerating(report);
@@ -147,12 +147,29 @@ export class FundingDashboardComponent implements OnInit {
   private pollReport(scenarioId: number) {
     return timer(0, POLLING_INTERVAL).pipe(
       exhaustMap(() => this.fundingReportService.getReport(scenarioId)),
-      takeWhile((report) => this.isGenerating(report), true)
+      takeWhile((report) => {
+        const processingResult = this.isStillProcessing(report);
+        return processingResult;
+      }, true)
     );
   }
 
   private isGenerating(report: FundingReport | null): boolean {
     return report?.status === 'PENDING' || report?.status === 'RUNNING';
+  }
+
+  private isStillProcessing(report: FundingReport | null): boolean {
+    if (!report) return false;
+    if (report.status === 'FAILED') return false;
+
+    const reportIsGenerating =
+      report.status === 'PENDING' || report.status === 'RUNNING';
+
+    const geoPackagePending =
+      report.geopackage_status === 'PENDING' ||
+      report.geopackage_status === 'PROCESSING';
+
+    return reportIsGenerating || geoPackagePending;
   }
 
   /** Whether a (successful) report actually carries results to display. */

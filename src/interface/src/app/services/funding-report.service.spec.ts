@@ -37,6 +37,8 @@ describe('FundingReportService', () => {
       scenario: 123,
       results: null,
       treatment_datalayer: null,
+      geopackage_status: null,
+      geopackage_url: null,
     };
     let result: FundingReport | null | undefined;
     service.getReport(123).subscribe((r) => (result = r));

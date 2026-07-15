@@ -50,7 +50,7 @@ export class ScenarioResultsComponent implements OnChanges, OnInit {
 
   constructor(
     private scenarioService: ScenarioService,
-    private fileServerService: FileSaverService,
+    private fileSaverService: FileSaverService,
     private chartService: ScenarioResultsChartsService,
     private baseLayersStateService: BaseLayersStateService
   ) {
@@ -84,7 +84,7 @@ export class ScenarioResultsComponent implements OnChanges, OnInit {
           const blob = new Blob([data], {
             type: 'application/zip',
           });
-          this.fileServerService.saveAs(blob, filename);
+          this.fileSaverService.saveAs(blob, filename);
         });
     }
   }
@@ -98,7 +98,7 @@ export class ScenarioResultsComponent implements OnChanges, OnInit {
           const blob = new Blob([data], {
             type: 'application/zip',
           });
-          this.fileServerService.saveAs(blob, filename);
+          this.fileSaverService.saveAs(blob, filename);
         });
     }
   }

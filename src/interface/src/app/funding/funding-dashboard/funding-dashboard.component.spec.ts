@@ -1,19 +1,33 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { FundingDashboardComponent } from '@app/funding/funding-dashboard/funding-dashboard.component';
 import { MockProvider } from 'ng-mocks';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { ScenarioState } from '@scenario/scenario.state';
 import { PlanState } from '@plan/plan.state';
 import { AuthService } from '@services/auth.service';
-import { Capabilities, Plan, Resource, Scenario, User } from '@types';
+import {
+  Capabilities,
+  FundingReport,
+  Plan,
+  Resource,
+  Scenario,
+  User,
+} from '@types';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { FundingReportService } from '@app/services/funding-report.service';
+import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
 
 describe('FundingDashboardComponent', () => {
   let component: FundingDashboardComponent;
@@ -25,6 +39,7 @@ describe('FundingDashboardComponent', () => {
   let currentPlan$: BehaviorSubject<Plan>;
   let loggedInUser$: BehaviorSubject<User | null | undefined>;
   let activatedRoute: ActivatedRoute;
+  let fundingReportService: FundingReportService;
 
   function makeScenario(id: number, capabilities: Capabilities[]): Scenario {
     return {
@@ -226,4 +241,86 @@ describe('FundingDashboardComponent', () => {
       relativeTo: activatedRoute,
     });
   });
+
+  it('should continue polling while report is RUNNING even if geopackage is SUCCEEDED', fakeAsync(async () => {
+    await setup(makeScenario(123, ['FUNDING_REPORT']));
+    fundingReportService = TestBed.inject(FundingReportService);
+
+    const report1 = {
+      status: 'RUNNING',
+      geopackage_status: 'SUCCEEDED',
+    } as FundingReport;
+    const report2 = {
+      status: 'SUCCESS',
+      geopackage_status: 'SUCCEEDED',
+      results: {},
+    } as FundingReport;
+
+    const reportSpy = spyOn(fundingReportService, 'getReport').and.returnValues(
+      of(report1),
+      of(report2)
+    );
+
+    component.reload$.next();
+    tick(0); // First immediate poll (timer delay 0)
+
+    expect(reportSpy).toHaveBeenCalledTimes(1);
+
+    tick(POLLING_INTERVAL);
+    expect(reportSpy).toHaveBeenCalledTimes(2);
+
+    // it should have stopped because report2 is a terminal state
+    tick(POLLING_INTERVAL);
+    expect(reportSpy).toHaveBeenCalledTimes(2);
+  }));
+
+  it('should continue polling while geopackage is PROCESSING even if report is SUCCESS', fakeAsync(async () => {
+    await setup(makeScenario(123, ['FUNDING_REPORT']));
+    fundingReportService = TestBed.inject(FundingReportService);
+
+    const report1 = {
+      status: 'SUCCESS',
+      geopackage_status: 'PROCESSING',
+    } as FundingReport;
+    const report2 = {
+      status: 'SUCCESS',
+      geopackage_status: 'SUCCEEDED',
+      results: {},
+    } as FundingReport;
+
+    const reportSpy = spyOn(fundingReportService, 'getReport').and.returnValues(
+      of(report1),
+      of(report2)
+    );
+
+    component.reload$.next();
+    tick(0); // Call 1
+    expect(reportSpy).toHaveBeenCalledTimes(1);
+
+    tick(POLLING_INTERVAL); // Call 2
+    expect(reportSpy).toHaveBeenCalledTimes(2);
+
+    tick(POLLING_INTERVAL); // Stream should be complete, no Call 3
+    expect(reportSpy).toHaveBeenCalledTimes(2);
+  }));
+
+  it('should stop polling immediately if the report status fails', fakeAsync(async () => {
+    await setup(makeScenario(123, ['FUNDING_REPORT']));
+    fundingReportService = TestBed.inject(FundingReportService);
+    const report1 = {
+      status: 'FAILED',
+      geopackage_status: 'PENDING',
+    } as FundingReport;
+    const reportSpy = spyOn(fundingReportService, 'getReport').and.returnValue(
+      of(report1)
+    );
+
+    component.reload$.next();
+    tick(0);
+    expect(reportSpy).toHaveBeenCalledTimes(1);
+
+    // Even though geopackage was PENDING, report FAILED is an immediate dealbreaker
+    tick(POLLING_INTERVAL);
+    expect(reportSpy).toHaveBeenCalledTimes(1);
+  }));
 });

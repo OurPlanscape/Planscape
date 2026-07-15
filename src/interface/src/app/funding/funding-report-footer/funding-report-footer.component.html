@@ -10,15 +10,9 @@
   icon="download"
   [matMenuTriggerFor]="menu"
   #trigger="matMenuTrigger"
-  [disabled]="generatingPdf || buttonDisabled"
+  [disabled]="generatingPdf || downloadingGeopackage || buttonDisabled"
   [variant]="isFullView ? 'primary' : 'ghost'">
-  {{
-    generatingPdf
-      ? 'Generating PDF…'
-      : isFullView
-        ? 'Download Options'
-        : 'Download'
-  }}
+  {{ buttonLabel }}
   <mat-icon
     class="material-symbols-outlined download-options-down"
     [ngClass]="{ full: isFullView }"
@@ -26,8 +20,8 @@
   </mat-icon>
 </button>
 <mat-menu #menu="matMenu">
-  <button mat-menu-item (click)="downloadGeopackage()">Geopackage</button>
-  <button mat-menu-item (click)="downloadPDF()">PDF</button>
+  <button mat-menu-item (click)="handleGeopackageDownload()">Geopackage</button>
+  <button mat-menu-item (click)="handleDownloadPdf()">PDF</button>
 </mat-menu>
 <button
   sg-button

@@ -67,12 +67,16 @@ import { FundingMapConfigState } from '../funding-map-config-state';
 import { FundingReportToPdfService } from '../funding-report-to-pdf.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
+  BehaviorSubject,
   combineLatest,
   debounceTime,
   distinctUntilChanged,
   filter,
   map,
 } from 'rxjs';
+import { SNACK_ERROR_CONFIG, SUPPORT_URL } from '@app/shared';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { FileSaverService } from '@app/services';
 
 /** Pause after the last keystroke before recalculating water availability. */
 const WATER_DEBOUNCE_MS = 300;
@@ -123,7 +127,9 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     private fundingMapConfigState: FundingMapConfigState,
     private fundingModuleService: FundingModuleService,
     private dataLayersStateService: DataLayersStateService,
-    private baseLayersStateService: BaseLayersStateService
+    private baseLayersStateService: BaseLayersStateService,
+    private snackbar: MatSnackBar,
+    private fileSaverService: FileSaverService
   ) {}
 
   /** The scrollable container holding the map + report sections. */
@@ -132,7 +138,10 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   mapLoaded$ = this.fundingMapConfigState.mapLoaded$;
 
   /** True while a PDF is being generated, to disable the download control. */
-  generatingPdf = false;
+  generatingPdf$ = new BehaviorSubject<boolean>(false);
+
+  /** True while a Geopackage is being downloadeed, to disable the download control. */
+  downloadingGeopackage$ = new BehaviorSubject<boolean>(false);
 
   sections: ReportSection[] = [];
   /** Section ids in document order, handed to the scrollspy directive. */
@@ -481,10 +490,10 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
 
   /** Export the report (map + sections) as a PDF. */
   async exportPdf(): Promise<void> {
-    if (this.generatingPdf) {
+    if (this.generatingPdf$.value === true) {
       return;
     }
-    this.generatingPdf = true;
+    this.generatingPdf$.next(true);
     try {
       // In the dashboard preview the map is inside the captured sections. In the
       // full view it lives in a sibling pane, so grab its canvas to draw on top.
@@ -496,8 +505,59 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
         `planscape-funding-report-${this.report.scenario}`,
         mapCanvas
       );
+    } catch (error) {
+      this.displayDownloadErrorSnackbar;
     } finally {
-      this.generatingPdf = false;
+      this.generatingPdf$.next(false);
+    }
+  }
+
+  displayDownloadErrorSnackbar() {
+    const snackBarConfig = {
+      ...SNACK_ERROR_CONFIG,
+      verticalPosition: 'bottom' as const,
+    };
+
+    const downloadErrorSnackbar = this.snackbar.open(
+      'Unable to download.',
+      'Submit Feedback',
+      snackBarConfig
+    );
+
+    downloadErrorSnackbar.onAction().subscribe(() => {
+      window.open(SUPPORT_URL, '_blank');
+    });
+  }
+
+  downloadGeopackage() {
+    // if we presume it's failed before the click
+    if (
+      !this.report.geopackage_status ||
+      this.report.geopackage_status === 'FAILED'
+    ) {
+      this.displayDownloadErrorSnackbar();
+    }
+    this.downloadingGeopackage$.next(true);
+    const filename = `geopackage-${this.report.scenario.toString()}.gpkg`;
+
+    if (this.report.geopackage_url) {
+      this.fileSaverService
+        .downloadGeopackage(this.report.geopackage_url)
+        .subscribe({
+          next: (data) => {
+            this.downloadingGeopackage$.next(false);
+            const blob = new Blob([data], {
+              type: 'application/zip',
+            });
+            this.fileSaverService.saveAs(blob, filename);
+          },
+          error: (e) => {
+            this.downloadingGeopackage$.next(false);
+            console.error('Error downloading: ', e);
+            // if it's failed for some other reason, after the click
+            this.displayDownloadErrorSnackbar();
+          },
+        });
     }
   }
 

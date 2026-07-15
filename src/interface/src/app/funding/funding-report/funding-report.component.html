@@ -307,5 +307,7 @@
 <app-funding-report-footer
   [footerType]="reportType"
   [buttonDisabled]="willShowMap && (mapLoaded$ | async) === false"
-  [generatingPdf]="generatingPdf"
-  (downloadPdf)="exportPdf()"></app-funding-report-footer>
+  [generatingPdf]="(generatingPdf$ | async) || false"
+  [downloadingGeopackage]="(downloadingGeopackage$ | async) || false"
+  (downloadPdf)="exportPdf()"
+  (downloadGeopackage)="downloadGeopackage()"></app-funding-report-footer>

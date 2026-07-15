@@ -29,14 +29,27 @@ export class FundingReportFooterComponent {
   @Input() buttonDisabled = false;
   @Input() footerType: 'preview' | 'full' = 'preview';
   @Input() generatingPdf = false;
+  @Input() downloadingGeopackage = false;
 
   @Output() downloadPdf = new EventEmitter<void>();
+  @Output() downloadGeopackage = new EventEmitter<void>();
 
-  downloadGeopackage() {
-    // TODO
+  get buttonLabel() {
+    if (this.generatingPdf) {
+      return 'Generating PDF...';
+    } else if (this.downloadingGeopackage) {
+      return 'Downloading GeoPackage...';
+    } else if (this.isFullView) {
+      return 'Download Options';
+    }
+    return 'Download';
   }
 
-  downloadPDF() {
+  handleGeopackageDownload() {
+    this.downloadGeopackage.emit();
+  }
+
+  handleDownloadPdf() {
     this.downloadPdf.emit();
   }
 
