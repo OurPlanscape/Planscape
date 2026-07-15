@@ -30,6 +30,6 @@ class ScenarioViewPermission(PlanscapePermission):
     def has_object_permission(self, request, view, obj):
         match view.action:
             case "run_report":
-                return ScenarioPermission.can_change(request.user, obj)
+                return ScenarioPermission.can_add(request.user, obj)
             case _:
                 return super().has_object_permission(request, view, obj)
