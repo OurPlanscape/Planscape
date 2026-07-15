@@ -55,6 +55,10 @@
     width: 100%;
     max-width: 100%;
   }
+
+  @include on-extra-large() {
+    max-width: $funding-sidebar-xl-width;
+  }
 }
 
 .right-side {
@@ -142,6 +146,10 @@
 
   @include on-small() {
     width: 100%;
+  }
+
+  @include on-extra-large() {
+    width: $funding-sidebar-xl-width;
   }
 }
 

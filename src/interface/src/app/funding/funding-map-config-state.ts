@@ -7,14 +7,14 @@ export class FundingMapConfigState extends MapConfigState {
   private _selectedProjectAreas$ = new BehaviorSubject<number[]>([]);
   public selectedProjectAreas$ = this._selectedProjectAreas$.asObservable();
 
-  private _mapLoading$ = new BehaviorSubject<boolean>(false);
-  public mapLoading$ = this._mapLoading$.asObservable();
+  private _mapLoaded$ = new BehaviorSubject<boolean>(false);
+  public mapLoaded$ = this._mapLoaded$.asObservable();
 
-  private _showFundingLegend$ = new BehaviorSubject(false);
+  private _showFundingLegend$ = new BehaviorSubject(true);
   public showFundingLegend$ = this._showFundingLegend$.asObservable();
 
-  isMapLoading(loaded: boolean) {
-    this._mapLoading$.next(loaded);
+  setMapLoaded(loaded: boolean) {
+    this._mapLoaded$.next(loaded);
   }
 
   setFundingLegendVisibility(value: boolean) {

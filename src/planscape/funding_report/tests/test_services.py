@@ -15,8 +15,9 @@ from planning.tests.factories import (
     ProjectAreaFactory,
     ScenarioFactory,
 )
-from rasterio.transform import from_origin
+from pyproj import Geod, Transformer
 from rasterio.mask import mask
+from rasterio.transform import from_origin
 
 from funding_report.models import (
     FUNDING_REPORT_YEARS,
@@ -30,12 +31,12 @@ from funding_report.services import (
     _BIOMASS_PIXEL_AREA_ACRES,
     _filter_by_project_id,
     aggregate_delta_pixels,
-    calculate_aet_improvement,
     build_datalayer_lookup,
     build_flame_length_reduction_results,
     build_funding_report_results,
     build_planning_area_feature,
     build_project_area_features,
+    calculate_aet_improvement,
     calculate_biomass_volumes,
     calculate_funding_report_flame_length_reduction,
     calculate_pixel_deltas,
@@ -46,7 +47,6 @@ from funding_report.services import (
     get_biomass_datalayer,
     get_funding_report_layers_of_interest,
 )
-
 
 TEST_DATA = Path("funding_report/tests/test_data")
 BASELINE_RASTER = TEST_DATA / "Baseline_2026_aboveground_total_live.tif"
@@ -67,6 +67,28 @@ def raster_bounds_geometry(raster_path: Path) -> MultiPolygon:
             srid=src.crs.to_epsg(),
         )
     return MultiPolygon(polygon.transform(4269, clone=True), srid=4269)
+
+
+def geodesic_pixel_area_acres(raster_path: Path, row: int = 0) -> float:
+    """
+    Independently-computed (not reusing the implementation under test) true
+    ground area of one pixel in `row`, used as the expected value for tests
+    against rasters in a projected CRS like EPSG:3857, where a pixel's area
+    isn't simply its nominal resolution squared.
+    """
+    with rasterio.open(raster_path) as src:
+        transform = src.transform
+        to_lonlat = Transformer.from_crs(src.crs, "EPSG:4326", always_xy=True)
+        corners = [
+            transform * (0, row),
+            transform * (1, row),
+            transform * (1, row + 1),
+            transform * (0, row + 1),
+        ]
+        lons, lats = zip(*(to_lonlat.transform(x, y) for x, y in corners))
+        geod = Geod(ellps="WGS84")
+        area_sq_meters, _perimeter = geod.polygon_area_perimeter(lons, lats)
+    return abs(area_sq_meters) / settings.CONVERSION_SQM_ACRES
 
 
 def expected_raster_aggregate(geometry: MultiPolygon) -> dict:
@@ -98,9 +120,7 @@ def expected_raster_aggregate(geometry: MultiPolygon) -> dict:
     value_values = np.ma.array(value, mask=~valid, dtype=float)
     baseline_sum = float(baseline_values.sum())
     value_sum = float(value_values.sum())
-    delta = (
-        (value_sum - baseline_sum) / baseline_sum * 100 if baseline_sum else 0.0
-    )
+    delta = (value_sum - baseline_sum) / baseline_sum * 100 if baseline_sum else 0.0
     return {
         "baseline": baseline_sum,
         "value": value_sum,
@@ -176,22 +196,22 @@ class FundingReportRasterCalculationTest(TestCase):
             },
         )
 
-    def create_aet_delta_datalayer(self):
+    def create_aet_datalayer(self, role="delta"):
         tmp_dir = tempfile.TemporaryDirectory()
         self.addCleanup(tmp_dir.cleanup)
-        raster_path = Path(tmp_dir.name) / "AET_legalmax_difference_fvsmasked.tif"
+        raster_path = Path(tmp_dir.name) / f"AET_{role}.tif"
         write_aet_delta_raster(raster_path)
         self.project_area.geometry = raster_bounds_geometry(raster_path)
         self.project_area.save(update_fields=["geometry"])
         return DataLayerFactory.create(
-            name="AET delta",
+            name=f"AET {role}",
             type=DataLayerType.RASTER,
             url=str(raster_path),
             metadata={
                 "modules": {
                     "funding_report": {
                         "variable": "AET",
-                        "role": "delta",
+                        "role": role,
                     }
                 }
             },
@@ -254,12 +274,12 @@ class FundingReportRasterCalculationTest(TestCase):
         )
 
     def test_get_aet_delta_datalayer_uses_variable_and_role(self):
-        delta_layer = self.create_aet_delta_datalayer()
+        delta_layer = self.create_aet_datalayer(role="delta")
 
         self.assertEqual(get_aet_delta_datalayer(), delta_layer)
 
     def test_calculate_project_area_aet_improvement_uses_threshold(self):
-        delta_layer = self.create_aet_delta_datalayer()
+        delta_layer = self.create_aet_datalayer(role="delta")
 
         with rasterio.open(delta_layer.url) as delta_src:
             raster_srid = delta_src.crs.to_epsg()
@@ -270,18 +290,21 @@ class FundingReportRasterCalculationTest(TestCase):
                 raster_srid=raster_srid,
             )
 
-        self.assertAlmostEqual(
-            improved_acres,
-            300 / settings.CONVERSION_SQM_ACRES,
-            places=6,
-        )
+        # Threshold 15 selects (row 0, col 1)=15, (row 1, col 0)=20, (row 1, col 1)=30.
+        expected_acres = geodesic_pixel_area_acres(
+            delta_layer.url, row=0
+        ) + 2 * geodesic_pixel_area_acres(delta_layer.url, row=1)
+        self.assertAlmostEqual(improved_acres, expected_acres, places=6)
 
     def test_calculate_aet_improvement_returns_acres_and_percent(self):
-        self.create_aet_delta_datalayer()
+        percentual_layer = self.create_aet_datalayer(role="percentual")
 
         results = calculate_aet_improvement(self.report, percentage=15)
 
-        expected_acres = 300 / settings.CONVERSION_SQM_ACRES
+        # Threshold 15 selects (row 0, col 1)=15, (row 1, col 0)=20, (row 1, col 1)=30.
+        expected_acres = geodesic_pixel_area_acres(
+            percentual_layer.url, row=0
+        ) + 2 * geodesic_pixel_area_acres(percentual_layer.url, row=1)
         expected_total = get_acreage(self.project_area.geometry)
         self.assertEqual(results["percentage"], 15)
         self.assertAlmostEqual(results["improved_acres"], expected_acres, places=6)
@@ -598,7 +621,8 @@ class FlameLengthReductionCalculationTest(TestCase):
             self.create_flame_datalayer(year=year, baseline=False)
 
         self.datalayer_lookup = build_datalayer_lookup()
-        self.pixel_area_acres = 100 / settings.CONVERSION_SQM_ACRES
+        self.row0_pixel_acres = geodesic_pixel_area_acres(self.baseline_path, row=0)
+        self.row1_pixel_acres = geodesic_pixel_area_acres(self.baseline_path, row=1)
 
     def create_flame_datalayer(self, year, baseline):
         return DataLayerFactory.create(
@@ -625,7 +649,8 @@ class FlameLengthReductionCalculationTest(TestCase):
         )
 
         expected_project_area_acres = get_acreage(self.project_area.geometry)
-        expected_reduced_acres = 2 * self.pixel_area_acres
+        # (row 0, col 0)=8/3 and (row 1, col 1)=8/3 satisfy from_ft=7, to_ft=4.
+        expected_reduced_acres = self.row0_pixel_acres + self.row1_pixel_acres
 
         self.assertEqual(result["interval"], {"from": 7.0, "to": 4.0})
         self.assertAlmostEqual(result["value"], expected_reduced_acres, places=6)
@@ -648,7 +673,8 @@ class FlameLengthReductionCalculationTest(TestCase):
             to_ft=3.0,
         )
 
-        expected_reduced_acres = 3 * self.pixel_area_acres
+        # (row 0, col 0), (row 1, col 0), (row 1, col 1) satisfy from_ft=2, to_ft=3.
+        expected_reduced_acres = self.row0_pixel_acres + 2 * self.row1_pixel_acres
 
         self.assertEqual(result["interval"], {"from": 2.0, "to": 3.0})
         self.assertAlmostEqual(result["value"], expected_reduced_acres, places=6)
@@ -668,7 +694,7 @@ class FlameLengthReductionCalculationTest(TestCase):
         )
 
         # Pixels (0,0) and (1,1) have baseline==8 >= 8 and value<=4 → selected.
-        expected_reduced_acres = 2 * self.pixel_area_acres
+        expected_reduced_acres = self.row0_pixel_acres + self.row1_pixel_acres
         self.assertEqual(result["interval"], {"from": 8.0, "to": 4.0})
         self.assertAlmostEqual(result["value"], expected_reduced_acres, places=6)
 
@@ -755,16 +781,22 @@ class BiomassVolumesCalculationTest(TestCase):
             name=f"Biomass {role}",
             type=DataLayerType.RASTER,
             url=str(path),
-            metadata={"modules": {"funding_report": {"variable": "BIOMASS", "role": role}}},
+            metadata={
+                "modules": {"funding_report": {"variable": "BIOMASS", "role": role}}
+            },
         )
 
     def _create_all_biomass_datalayers(self):
         self._create_biomass_datalayer(BiomassRole.MERCHANTABLE, self.merch_path)
-        self._create_biomass_datalayer(BiomassRole.NON_MERCHANTABLE, self.non_merch_path)
+        self._create_biomass_datalayer(
+            BiomassRole.NON_MERCHANTABLE, self.non_merch_path
+        )
         self._create_biomass_datalayer(BiomassRole.WOOD_TYPE, self.wt_path)
 
     def test_get_biomass_datalayer_returns_correct_layer(self):
-        layer = self._create_biomass_datalayer(BiomassRole.MERCHANTABLE, self.merch_path)
+        layer = self._create_biomass_datalayer(
+            BiomassRole.MERCHANTABLE, self.merch_path
+        )
 
         self.assertEqual(get_biomass_datalayer(BiomassRole.MERCHANTABLE), layer)
 
@@ -794,7 +826,9 @@ class BiomassVolumesCalculationTest(TestCase):
         self.assertEqual(len(results["project_areas"]), 1)
         project_result = results["project_areas"][0]
         self.assertEqual(project_result["project_id"], self.project_area.pk)
-        self.assertEqual(set(project_result.keys()), expected_keys | {"project_id", "proj_id"})
+        self.assertEqual(
+            set(project_result.keys()), expected_keys | {"project_id", "proj_id"}
+        )
 
     def test_calculate_biomass_volumes_correct_values(self):
         self._create_all_biomass_datalayers()
@@ -853,7 +887,9 @@ class BiomassVolumesCalculationTest(TestCase):
 
         summary = results["summary"]
         for key in summary:
-            self.assertEqual(summary[key], 0.0, msg=f"{key} should be 0 for non-overlapping area")
+            self.assertEqual(
+                summary[key], 0.0, msg=f"{key} should be 0 for non-overlapping area"
+            )
 
 
 class FundingReportLayersOfInterestTest(TestCase):
@@ -1013,8 +1049,17 @@ class FlattenReportMetricsTest(TestCase):
             "",
             {
                 "TOTAL_FLAME_SEVERITY": {
-                    "7_4": [{"year": 2026, "value": 320.5, "baseline": 5000.0, "delta": 6.41}],
-                    "6_4": [{"year": 2026, "value": 100.0, "baseline": 5000.0, "delta": 2.0}],
+                    "7_4": [
+                        {
+                            "year": 2026,
+                            "value": 320.5,
+                            "baseline": 5000.0,
+                            "delta": 6.41,
+                        }
+                    ],
+                    "6_4": [
+                        {"year": 2026, "value": 100.0, "baseline": 5000.0, "delta": 2.0}
+                    ],
                 }
             },
             out,

@@ -186,7 +186,22 @@ export class FullReportViewComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.redirectIfScenarioUnavailable();
     this.initializeBreadcrumb();
+  }
+
+  /**
+   * Kick the user out to home if the scenario query fails — e.g. they don't
+   * have permission to view it (the view permission lives on the planning area).
+   */
+  private redirectIfScenarioUnavailable(): void {
+    this.scenarioState.currentScenarioResource$
+      .pipe(
+        filter((resource) => !!resource.error),
+        take(1),
+        untilDestroyed(this)
+      )
+      .subscribe(() => this.router.navigate(['/home']));
   }
 
   handleFilterSelection(selectedAreas: FilterProjectFormat[]): void {

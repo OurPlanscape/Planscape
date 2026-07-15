@@ -45,6 +45,10 @@ describe('FullReportViewComponent', () => {
         MockProvider(ScenarioState, {
           currentScenarioId$: new BehaviorSubject<number | null>(null),
           currentScenario$: new BehaviorSubject(MOCK_SCENARIO),
+          currentScenarioResource$: new BehaviorSubject({
+            isLoading: false,
+            data: MOCK_SCENARIO,
+          }),
         }),
         { provide: ActivatedRoute, useValue: { firstChild: {} } },
         {
@@ -147,6 +151,10 @@ describe('FullReportViewComponent recalculations', () => {
         MockProvider(ScenarioState, {
           currentScenarioId$: new BehaviorSubject<number | null>(123),
           currentScenario$: new BehaviorSubject(MOCK_SCENARIO),
+          currentScenarioResource$: new BehaviorSubject({
+            isLoading: false,
+            data: MOCK_SCENARIO,
+          }),
         }),
         MockProvider(FundingReportService, {
           getReport: () => of(baseReport),
