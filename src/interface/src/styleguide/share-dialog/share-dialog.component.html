@@ -26,7 +26,10 @@
   </section>
 
   <sg-banner type="error" class="invalid-banner" *ngIf="invalidEmail">
-    <strong>Invalid email</strong>&nbsp;— an email must contain a single &#64;
+    <div>
+      <strong>Invalid email</strong>&nbsp;
+      <div>An email address must contain a single &#64; and a valid domain</div>
+    </div>
   </sg-banner>
 
   <form
