@@ -56,8 +56,8 @@
     max-width: 100%;
   }
 
-  @include on-extra-large() {
-    max-width: $funding-sidebar-xl-width;
+  @include on-extra-extra-large() {
+    max-width: $funding-sidebar-xxl-width;
   }
 }
 
@@ -148,8 +148,8 @@
     width: 100%;
   }
 
-  @include on-extra-large() {
-    width: $funding-sidebar-xl-width;
+  @include on-extra-extra-large() {
+    width: $funding-sidebar-xxl-width;
   }
 }
 
