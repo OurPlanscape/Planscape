@@ -23,10 +23,22 @@
     [title]="tooltipName"
     width="small"
     [hasSecondaryButton]="false"
-    primaryButtonText="Learn Mode"
-    (clickedClose)="close()"
-    (clickedPrimary)="close()">
-    <div modalBodyContent [innerHTML]="currentTooltipCopy"></div>
+    [hasFooter]="false"
+    (clickedClose)="close()">
+    <div modalBodyContent class="tooltip-content">
+      <div class="tooltip-copy" [innerHTML]="currentTooltip?.copy"></div>
+      <div class="tooltip-links" *ngIf="currentTooltip?.links?.length">
+        <h5 class="tooltip-links-heading">Learn more:</h5>
+        <ul class="tooltip-links-list">
+          <li *ngFor="let link of currentTooltip?.links">
+            <a [href]="link.url" target="_blank" rel="noopener noreferrer">
+              {{ link.label }}
+              <mat-icon>open_in_new</mat-icon>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
   </sg-modal>
 </ng-template>
 
@@ -94,8 +106,6 @@
     headline="Wildfire Risk Reduction"
     [isCollapsible]="true"
     [defaultExpanded]="true">
-    <div>Metrics reflect outcomes within forested land only.</div>
-
     <div class="summary-card" *ngIf="!isPreview">
       <app-funding-map-layers
         heading="Map Layers (no treatment)"
@@ -296,6 +306,8 @@
 
 <app-funding-report-footer
   [footerType]="reportType"
-  [buttonDisabled]="(mapLoading$ | async) === true"
-  [generatingPdf]="generatingPdf"
-  (downloadPdf)="exportPdf()"></app-funding-report-footer>
+  [buttonDisabled]="willShowMap && (mapLoaded$ | async) === false"
+  [generatingPdf]="(generatingPdf$ | async) || false"
+  [downloadingGeopackage]="(downloadingGeopackage$ | async) || false"
+  (downloadPdf)="exportPdf()"
+  (downloadGeopackage)="downloadGeopackage()"></app-funding-report-footer>

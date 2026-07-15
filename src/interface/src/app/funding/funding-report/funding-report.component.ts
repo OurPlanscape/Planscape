@@ -55,6 +55,7 @@ import {
   hasFlameLengthData,
   hasMetricData,
 } from './funding-report.helper';
+import { FUNDING_TOOLTIPS, FundingTooltip } from './funding-tooltips';
 import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
@@ -66,12 +67,16 @@ import { FundingMapConfigState } from '../funding-map-config-state';
 import { FundingReportToPdfService } from '../funding-report-to-pdf.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
+  BehaviorSubject,
   combineLatest,
   debounceTime,
   distinctUntilChanged,
   filter,
   map,
 } from 'rxjs';
+import { SNACK_ERROR_CONFIG, SUPPORT_URL } from '@app/shared';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { FileSaverService } from '@app/services';
 
 /** Pause after the last keystroke before recalculating water availability. */
 const WATER_DEBOUNCE_MS = 300;
@@ -122,16 +127,21 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     private fundingMapConfigState: FundingMapConfigState,
     private fundingModuleService: FundingModuleService,
     private dataLayersStateService: DataLayersStateService,
-    private baseLayersStateService: BaseLayersStateService
+    private baseLayersStateService: BaseLayersStateService,
+    private snackbar: MatSnackBar,
+    private fileSaverService: FileSaverService
   ) {}
 
   /** The scrollable container holding the map + report sections. */
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLElement>;
 
-  mapLoading$ = this.fundingMapConfigState.mapLoading$;
+  mapLoaded$ = this.fundingMapConfigState.mapLoaded$;
 
   /** True while a PDF is being generated, to disable the download control. */
-  generatingPdf = false;
+  generatingPdf$ = new BehaviorSubject<boolean>(false);
+
+  /** True while a Geopackage is being downloadeed, to disable the download control. */
+  downloadingGeopackage$ = new BehaviorSubject<boolean>(false);
 
   sections: ReportSection[] = [];
   /** Section ids in document order, handed to the scrollspy directive. */
@@ -141,29 +151,9 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   /** Name of the section whose interactive tooltip was last opened. */
   tooltipName = '';
 
-  readonly tooltipCopy: Record<string, string> = {
-    Carbon: `
-       Carbon metrics are estimated using the Forest Vegetation Simulator
-       (FVS) with spatially explicit forest conditions from the USFS
-       TreeMap dataset (30 m resolution).
-       TreeMap (2022 baseline) is projected to the 2025 modeling start year,
-       and pre- and post-treatment scenarios are simulated in 5-year time steps to
-       quantify changes in standing live aboveground carbon and potential smoke emissions relative to baseline.
-      `,
-    Water: `Change in Water Availability is calculated as the difference between pre- and post-treatment AETmax surfaces.
-    Lower post-treatment AETmax indicates reduced vegetation water use and therefore greater water availability
-    following treatment.`,
-    Biomass: `Biomass is estimated using the Forest Vegetation Simulator (FVS) with 30 m USFS TreeMap data.
-    The 2022 baseline is projected to 2025, and pre- and post-treatment scenarios are simulated to estimate
-    available merchantable and non-merchantable biomass, reported by hardwood, softwood, and mixed forest types.`,
-    'Flame Length': `Estimated using the Forest Vegetation Simulator (FVS) with 30 m USFS TreeMap data.
-    The 2022 baseline is projected to 2025, and pre- and post-treatment scenarios are simulated in 5-year increments.
-    Results show the area where modeled flame lengths are reduced from >4 feet to <4 feet relative to baseline.`,
-  };
-
-  /** HTML copy for the currently open tooltip; empty when none is defined. */
-  get currentTooltipCopy(): string {
-    return this.tooltipCopy[this.tooltipName] ?? '';
+  /** Content (copy + learn-more links) for the currently open tooltip. */
+  get currentTooltip(): FundingTooltip | undefined {
+    return FUNDING_TOOLTIPS[this.tooltipName];
   }
 
   /**
@@ -488,12 +478,22 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     return this.reportType === 'preview';
   }
 
+  /**
+   * Whether the preview map will render. When it does, the download control
+   * stays disabled until the map reports it has loaded (the export captures the
+   * map canvas). Derived from stable state so the footer's disabled binding
+   * never changes mid-change-detection.
+   */
+  get willShowMap(): boolean {
+    return this.isPreview && !!this.report?.treatment_datalayer;
+  }
+
   /** Export the report (map + sections) as a PDF. */
   async exportPdf(): Promise<void> {
-    if (this.generatingPdf) {
+    if (this.generatingPdf$.value === true) {
       return;
     }
-    this.generatingPdf = true;
+    this.generatingPdf$.next(true);
     try {
       // In the dashboard preview the map is inside the captured sections. In the
       // full view it lives in a sibling pane, so grab its canvas to draw on top.
@@ -505,8 +505,59 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
         `planscape-funding-report-${this.report.scenario}`,
         mapCanvas
       );
+    } catch (error) {
+      this.displayDownloadErrorSnackbar;
     } finally {
-      this.generatingPdf = false;
+      this.generatingPdf$.next(false);
+    }
+  }
+
+  displayDownloadErrorSnackbar() {
+    const snackBarConfig = {
+      ...SNACK_ERROR_CONFIG,
+      verticalPosition: 'bottom' as const,
+    };
+
+    const downloadErrorSnackbar = this.snackbar.open(
+      'Unable to download.',
+      'Submit Feedback',
+      snackBarConfig
+    );
+
+    downloadErrorSnackbar.onAction().subscribe(() => {
+      window.open(SUPPORT_URL, '_blank');
+    });
+  }
+
+  downloadGeopackage() {
+    // if we presume it's failed before the click
+    if (
+      !this.report.geopackage_status ||
+      this.report.geopackage_status === 'FAILED'
+    ) {
+      this.displayDownloadErrorSnackbar();
+    }
+    this.downloadingGeopackage$.next(true);
+    const filename = `geopackage-${this.report.scenario.toString()}.gpkg`;
+
+    if (this.report.geopackage_url) {
+      this.fileSaverService
+        .downloadGeopackage(this.report.geopackage_url)
+        .subscribe({
+          next: (data) => {
+            this.downloadingGeopackage$.next(false);
+            const blob = new Blob([data], {
+              type: 'application/zip',
+            });
+            this.fileSaverService.saveAs(blob, filename);
+          },
+          error: (e) => {
+            this.downloadingGeopackage$.next(false);
+            console.error('Error downloading: ', e);
+            // if it's failed for some other reason, after the click
+            this.displayDownloadErrorSnackbar();
+          },
+        });
     }
   }
 
