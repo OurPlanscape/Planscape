@@ -64,6 +64,7 @@ AET_DELTA_ROLE = "delta"
 AET_BASELINE_ROLE = "baseline"
 AET_TARGET_ROLE = "target"
 AET_PERCENTUAL_ROLE = "percentual"
+AET_PERCENTUAL_CLIP_ROLE = "percentual_clip"
 
 
 def build_datalayer_lookup() -> Dict[Tuple[str, int, bool], DataLayer]:
@@ -530,10 +531,10 @@ def calculate_aet_improvement(
     }
 
 
-def _clip_metadata(source_metadata: dict | None) -> dict:
+def _clip_metadata(source_metadata: dict | None, role: str) -> dict:
     metadata = deepcopy(source_metadata) or {}
     try:
-        metadata["modules"]["funding_report"]["role"] = TREATMENT_CLIP_ROLE
+        metadata["modules"]["funding_report"]["role"] = role
     except KeyError:
         pass
     return metadata
@@ -619,7 +620,106 @@ def generate_treatment_clip_datalayer(report: FundingOpportunityReport) -> DataL
         geometry=geometry_from_info(layer_info, datalayer_type=layer_type),
         info=layer_info,
         mimetype=mimetype,
-        metadata=_clip_metadata(source.metadata),
+        metadata=_clip_metadata(source.metadata, TREATMENT_CLIP_ROLE),
+        map_service_type=source.map_service_type,
+        status=DataLayerStatus.PENDING,
+    )
+    DataLayerHasStyle.objects.bulk_create(
+        [
+            DataLayerHasStyle(
+                datalayer=datalayer,
+                style_id=style_id,
+                default=default,
+            )
+            for style_id, default in style_associations
+        ]
+    )
+
+    datalayer_uploaded.delay(datalayer.pk, status=DataLayerStatus.READY)
+    return datalayer
+
+
+def generate_aet_clip_datalayer(report: FundingOpportunityReport) -> DataLayer:
+    from datasets.tasks import datalayer_uploaded
+
+    source = get_aet_percentual_datalayer()
+    if source is None:
+        raise ValueError("Missing funding report AET percentual datalayer.")
+
+    report = FundingOpportunityReport.objects.select_related("scenario").get(
+        pk=report.pk
+    )
+    scenario = report.scenario
+    geometry = get_project_areas_union(scenario)
+
+    with rasterio.open(_datalayer_path(source)) as src:
+        raster_srid = src.crs.to_epsg() if src.crs else None
+        if raster_srid is None:
+            raise ValueError(f"Raster CRS {src.crs} does not resolve to an EPSG SRID.")
+        clip_geometry = json.loads(maybe_transform(geometry, raster_srid).geojson)
+        data, transform = mask(src, [clip_geometry], crop=True)
+
+        profile = src.profile.copy()
+        profile.update(
+            {
+                "height": data.shape[1],
+                "width": data.shape[2],
+                "transform": transform,
+            }
+        )
+
+        with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as tmp:
+            clipped_path = tmp.name
+        with rasterio.open(clipped_path, "w", **profile) as dst:
+            dst.write(data)
+
+    try:
+        organization = source.organization
+        uuid_value = str(uuid4())
+        original_name = f"funding_report_aet_percentual_scenario_{scenario.pk}.tif"
+        storage_url = get_storage_url(
+            organization_id=organization.pk,
+            uuid=uuid_value,
+            original_name=original_name,
+            mimetype="image/tiff",
+        )
+        to_cog_streaming(input_file=clipped_path, output_file=storage_url)
+    finally:
+        Path(clipped_path).unlink(missing_ok=True)
+
+    vsi_output = with_vsi_prefix(storage_url)
+    layer_type, layer_info = get_layer_info(input_file=vsi_output)
+    mimetype = detect_mimetype(input_file=vsi_output) or "image/tiff"
+    geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
+
+    style_associations = [
+        (association.style_id, association.default)
+        for association in source.rel_styles.all()
+    ]
+
+    user_model = get_user_model()
+    created_by = user_model.objects.get(email=settings.DEFAULT_ADMIN_EMAIL)
+
+    name = f"Funding Report AET Percentual - Scenario {scenario.pk}"
+    DataLayer.dead_or_alive.filter(dataset=source.dataset, name=name).delete()
+
+    datalayer = DataLayer.objects.create(
+        name=name,
+        uuid=uuid_value,
+        dataset=source.dataset,
+        category=source.category,
+        organization=organization,
+        workspace=source.workspace,
+        created_by=created_by,
+        original_name=original_name,
+        url=storage_url,
+        type=layer_type,
+        storage_type=StorageTypeChoices.DATABASE,
+        geometry_type=geometry_type,
+        geometry=geometry_from_info(layer_info, datalayer_type=layer_type),
+        info=layer_info,
+        mimetype=mimetype,
+        metadata=_clip_metadata(source.metadata, AET_PERCENTUAL_CLIP_ROLE),
         map_service_type=source.map_service_type,
         status=DataLayerStatus.PENDING,
     )

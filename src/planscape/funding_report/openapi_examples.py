@@ -36,6 +36,7 @@ FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE = OpenApiExample(
         "updated_at": "2026-06-01T00:05:00Z",
         "status": "SUCCESS",
         "treatment_datalayer": 482,
+        "aet_datalayer": 483,
         "geopackage_status": "SUCCEEDED",
         "geopackage_url": "https://storage.googleapis.com/bucket/funding_report_1.gpkg?signature=...",
         "results": {

@@ -19,6 +19,7 @@ class FundingOpportunityReportSerializer(serializers.ModelSerializer):
             "status",
             "results",
             "treatment_datalayer",
+            "aet_datalayer",
             "geopackage_status",
             "geopackage_url",
         ]

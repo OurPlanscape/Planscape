@@ -34,7 +34,9 @@ from funding_report.services import (
     calculate_project_area_delta,
     calculate_treatment_pixel_areas,
     export_funding_report_to_geopackage,
+    generate_aet_clip_datalayer,
     generate_treatment_clip_datalayer,
+    get_aet_percentual_datalayer,
     get_treatment_datalayer,
 )
 
@@ -174,6 +176,30 @@ def async_generate_treatment_datalayer(
             funding_opportunity_report_id,
         )
         return {"kind": "treatment_datalayer", "error": str(exc)}
+
+
+@app.task()
+def async_generate_aet_datalayer(
+    funding_opportunity_report_id: int,
+) -> dict | None:
+    if get_aet_percentual_datalayer() is None:
+        log.warning(
+            "No funding report AET percentual datalayer configured. Skipping "
+            "AET datalayer generation for report %s.",
+            funding_opportunity_report_id,
+        )
+        return None
+
+    try:
+        report = FundingOpportunityReport.objects.get(pk=funding_opportunity_report_id)
+        datalayer = generate_aet_clip_datalayer(report=report)
+        return {"kind": "aet_datalayer", "datalayer_id": datalayer.pk}
+    except Exception as exc:
+        log.exception(
+            "Failed to generate AET datalayer for funding report %s.",
+            funding_opportunity_report_id,
+        )
+        return {"kind": "aet_datalayer", "error": str(exc)}
 
 
 @app.task()
@@ -322,6 +348,7 @@ def async_finalize_funding_report_results(
     errors = []
     treatment_errors = []
     treatment_datalayer_id = None
+    aet_datalayer_id = None
     treatment_areas = None
     aet_improvement = None
     biomass_volumes = None
@@ -336,6 +363,8 @@ def async_finalize_funding_report_results(
         match kind:
             case "treatment_datalayer":
                 treatment_datalayer_id = result["datalayer_id"]
+            case "aet_datalayer":
+                aet_datalayer_id = result["datalayer_id"]
             case "treatment_areas":
                 treatment_areas = {
                     "projects": result["projects"],
@@ -386,6 +415,8 @@ def async_finalize_funding_report_results(
     }
     if treatment_datalayer_id is not None:
         update_fields["treatment_datalayer_id"] = treatment_datalayer_id
+    if aet_datalayer_id is not None:
+        update_fields["aet_datalayer_id"] = aet_datalayer_id
 
     FundingOpportunityReport.objects.filter(pk=funding_opportunity_report_id).update(
         **update_fields
@@ -479,6 +510,11 @@ def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
         )
         tasks.append(
             async_calculate_aet_improvement.si(
+                funding_opportunity_report_id=funding_opportunity_report_id,
+            )
+        )
+        tasks.append(
+            async_generate_aet_datalayer.si(
                 funding_opportunity_report_id=funding_opportunity_report_id,
             )
         )
