@@ -483,6 +483,31 @@ class FundingOpportunityReportTaskTest(TestCase):
             self.assertEqual(task.kwargs["to_ft"], FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT)
 
     @mock.patch("funding_report.tasks.chord")
+    def test_run_task_sets_empty_status_when_no_project_areas(self, chord_mock):
+        self.project_area.delete()
+
+        run_funding_opportunity_report(self.report.pk)
+
+        self.report.refresh_from_db()
+        self.assertEqual(self.report.status, FundingOpportunityReportStatus.EMPTY)
+        chord_mock.assert_not_called()
+
+    @mock.patch("funding_report.tasks.treatment_layer_has_valid_data")
+    @mock.patch("funding_report.tasks.chord")
+    def test_run_task_sets_empty_status_when_treatment_layer_has_no_valid_data(
+        self, chord_mock, has_valid_data_mock
+    ):
+        self.create_all_datalayers()
+        has_valid_data_mock.return_value = False
+
+        run_funding_opportunity_report(self.report.pk)
+
+        self.report.refresh_from_db()
+        self.assertEqual(self.report.status, FundingOpportunityReportStatus.EMPTY)
+        chord_mock.assert_not_called()
+        has_valid_data_mock.assert_called_once_with(self.scenario)
+
+    @mock.patch("funding_report.tasks.chord")
     def test_run_task_sets_failed_on_exception(self, chord_mock):
         self.create_all_datalayers()
         chord_mock.side_effect = ValueError("bad data")
