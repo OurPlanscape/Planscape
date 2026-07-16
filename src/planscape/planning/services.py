@@ -1995,6 +1995,22 @@ def get_rx_leverage_priority_names(
     scenario: Scenario,
     features: List,
 ) -> List[str]:
+    stored_names = {
+        name
+        for feature in features
+        for name in (((feature.get("properties") or {}).get("attainment") or {}).keys())
+    }
+
+    historical_names = [
+        datalayer.get("name")
+        for datalayer in (scenario.forsys_input or {}).get("datalayers", [])
+        if datalayer.get("usage_type") == TreatmentGoalUsageType.PRIORITY
+        and datalayer.get("name")
+    ]
+
+    if historical_names and all(name in stored_names for name in historical_names):
+        return historical_names
+
     if scenario.type == ScenarioType.CUSTOM:
         configuration = scenario.configuration or {}
         priorities = configuration.get("priorities") or []
@@ -2020,21 +2036,12 @@ def get_rx_leverage_priority_names(
         current_names = list(
             scenario.treatment_goal.datalayer_usages.filter(
                 usage_type=TreatmentGoalUsageType.PRIORITY
-            ).values_list(
-                "datalayer__name",
-                flat=True,
-            )
+            ).values_list("datalayer__name", flat=True)
         )
         expected_count = len(current_names)
 
     else:
         return []
-
-    stored_names = {
-        name
-        for feature in features
-        for name in (((feature.get("properties") or {}).get("attainment") or {}).keys())
-    }
 
     matching_names = [name for name in current_names if name in stored_names]
 
