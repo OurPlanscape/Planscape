@@ -240,6 +240,11 @@
     (tooltipClicked)="tooltipName = 'Biomass'"
     [isCollapsible]="true"
     [defaultExpanded]="true">
+    <div class="biomass-intro">
+      The table shows estimated available biomass with no treatment.
+      <br />
+      This data will not change with your project area selection.
+    </div>
     <div class="summary-card" *ngIf="!isPreview">
       <app-funding-map-layers
         heading="Map Layers"
@@ -250,9 +255,6 @@
         (selectedLayer)="onBaseLayerToggled($event)"></app-funding-map-layers>
     </div>
     <div *ngIf="biomass; else noData">
-      <p class="biomass-intro">
-        The table shows estimated available biomass with no treatment.
-      </p>
       <table class="biomass-table">
         <thead>
           <tr>
