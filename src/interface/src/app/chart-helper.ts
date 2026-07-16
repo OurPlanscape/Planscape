@@ -302,12 +302,8 @@ export const getPercentageChartOptions = (
     plugins: {
       tooltip: { enabled: false },
       datalabels: {
-        color: '#fff',
-        anchor: 'center',
-        align: 'center',
+        ...getSharedDataLabelsConfig(),
         font: { ...(baseFont as any), size: 11, weight: 'normal' },
-        formatter: (value: number) =>
-          value % 1 === 0 ? value.toString() : value.toFixed(1),
       },
     },
     scales: {
