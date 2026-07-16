@@ -50,7 +50,6 @@ from funding_report.services import (
     get_aet_delta_datalayer,
     get_biomass_datalayer,
     get_funding_report_layers_of_interest,
-    get_treatment_datalayer,
 )
 
 TEST_DATA = Path("funding_report/tests/test_data")
@@ -633,9 +632,7 @@ class TreatmentPixelAreaTest(TestCase):
 
         result = calculate_treatment_pixel_areas(self.report)
 
-        expected_half_pixel_acres = (
-            geodesic_pixel_area_acres(str(raster_path), row=0) / 2
-        )
+        expected_half_pixel_acres = geodesic_pixel_area_acres(raster_path, row=0) / 2
         project_result = result["projects"][project_area.pk]
         self.assertAlmostEqual(
             project_result["Rx Burn"], expected_half_pixel_acres, places=4
