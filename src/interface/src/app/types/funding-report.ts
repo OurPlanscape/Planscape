@@ -109,7 +109,7 @@ export interface FundingReportResults {
 
 // TODO full interface
 export interface FundingReport {
-  status: 'SUCCESS' | 'PENDING' | 'RUNNING' | 'FAILED';
+  status: 'SUCCESS' | 'PENDING' | 'RUNNING' | 'FAILED' | 'EMPTY';
   created_at: string;
   created_by: number;
   updated_at: string;
