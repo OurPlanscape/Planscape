@@ -169,15 +169,31 @@
   flex-shrink: 0;
 }
 
-::ng-deep .tx-legend-tooltip {
-  color: $color-white;
-  border-radius: 6px;
-  position: relative;
-  top: 20px;
+.no-anim-tooltip-menu {
+  // transform: translate(-260px, 300px) !important;
+  transition: none !important;
+  animation: none !important;
+}
 
-  .mdc-tooltip__surface {
-    background-color: $color-black !important;
-  }
+::ng-deep .tx-legend-tooltip-panel {
+  background-color: $color-black;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: 220px;
+  overflow: visible;
+ transform: translate(-260px, 300px); 
+  height: fit-content;
+
+// transition: none !important;
+//   animation: none !important;
+
+  font-size: 14px;
+  line-height: 19px;
+  font-weight: 500;
+  letter-spacing: normal;
+  color: #fff;
+  padding: 8px 12px;
+  @include small-input-label();
 
   &::after {
     content: '';

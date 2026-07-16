@@ -1,12 +1,7 @@
 <div
   class="treatment-acres-legend"
-  #tooltip="matTooltip"
-  matTooltip="All results reflect modeled changes compared to baseline (no-treatment) conditions."
-  [matTooltipDisabled]="true"
-  #tooltipRef="matTooltip"
-  matTooltipPosition="left"
-  matTooltipClass="tx-legend-tooltip"
-  matTooltipTrigger="manual">
+  #menuTrigger="matMenuTrigger"
+  [matMenuTriggerFor]="legendMenu">
   <div class="title-header">
     <div class="title">Legend</div>
     <button
@@ -46,7 +41,7 @@
         icon="info"
         class="info-icon"
         [outlined]="true"
-        (click)="toggleTooltip(tooltip, $event)"></button>
+        (click)="menuTrigger.openMenu(); $event.stopPropagation()"></button>
     </div>
     <div class="dynamic-section" *ngIf="legendData.treatmentAcresTotals">
       <div
@@ -75,3 +70,18 @@
     </div>
   </div>
 </div>
+<mat-menu
+  [@.disabled]="true"
+  #legendMenu="matMenu"
+  xPosition="before"
+  yPosition="above"
+  [overlapTrigger]="false"
+  panelClass="no-anim-tooltip-menu"
+  class="tx-legend-tooltip-panel">
+  <div class="tooltip-content" (click)="$event.stopPropagation()">
+    Treatments are derived from protected area status and vegetation type.
+    <div>
+      <a href="/your-learn-more-path" target="_blank">Learn More.</a>
+    </div>
+  </div>
+</mat-menu>
