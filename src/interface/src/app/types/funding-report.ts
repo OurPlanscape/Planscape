@@ -117,6 +117,12 @@ export interface FundingReport {
   scenario: number;
   results: FundingReportResults | null;
   treatment_datalayer: number | null;
+  /**
+   * Id of the "percentage change in water availability after treatment" data
+   * layer, produced by the report itself. Shown as the sole layer in the water
+   * section (the module's water layers are not used there).
+   */
+  aet_datalayer: number | null;
   geopackage_status: null | 'SUCCEEDED' | 'PROCESSING' | 'PENDING' | 'FAILED';
   geopackage_url: null | string;
 }

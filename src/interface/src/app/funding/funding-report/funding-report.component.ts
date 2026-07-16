@@ -76,10 +76,14 @@ import {
 } from 'rxjs';
 import { SNACK_ERROR_CONFIG, SUPPORT_URL } from '@app/shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { FileSaverService } from '@app/services';
+import { DataLayersService, FileSaverService } from '@app/services';
 
 /** Pause after the last keystroke before recalculating water availability. */
 const WATER_DEBOUNCE_MS = 300;
+
+/** Display name for the report's AET (water availability) data layer. */
+const AET_LAYER_NAME =
+  'Percentage change in water availability after treatment';
 
 interface ChartConfig {
   data: ChartData<'bar'>;
@@ -129,7 +133,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     private dataLayersStateService: DataLayersStateService,
     private baseLayersStateService: BaseLayersStateService,
     private snackbar: MatSnackBar,
-    private fileSaverService: FileSaverService
+    private fileSaverService: FileSaverService,
+    private dataLayersService: DataLayersService
   ) {}
 
   /** The scrollable container holding the map + report sections. */
@@ -304,16 +309,16 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
         this.sectionLayers = {
           carbon: this.toMapLayers(datalayers.carbon),
           wildfire: this.toMapLayers(datalayers.wildfire_risk_reduction),
-          water: this.toMapLayers(datalayers.water),
+          // The water section shows the report's own AET layer (a bare id),
+          // not the module's water layers.
+          water: this.waterMapLayers(),
           biomass: this.toBaseMapLayers(datalayers.biomass),
         };
         // Raster sections drive the single-select data-layer state.
         this.layersById = new Map(
-          [
-            ...datalayers.carbon,
-            ...datalayers.wildfire_risk_reduction,
-            ...datalayers.water,
-          ].map((layer) => [layer.id, layer])
+          [...datalayers.carbon, ...datalayers.wildfire_risk_reduction].map(
+            (layer) => [layer.id, layer]
+          )
         );
         // Biomass (vector) layers drive the multi-select base-layer state.
         this.baseLayersById = new Map(
@@ -325,6 +330,15 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   /** Reduce raster data layers to the id/name the radio selector needs. */
   private toMapLayers(layers: DataLayer[] = []): MapLayer[] {
     return layers.map((layer) => ({ id: layer.id, name: layer.name }));
+  }
+
+  /**
+   * The water section's single map layer, built from the report's `aet_datalayer`
+   * id with a hardcoded name. Empty when the report carries no AET layer.
+   */
+  private waterMapLayers(): MapLayer[] {
+    const id = this.report?.aet_datalayer;
+    return id != null ? [{ id, name: AET_LAYER_NAME }] : [];
   }
 
   /** Reduce vector base layers to id/name plus the swatch colors for checkboxes. */
@@ -446,6 +460,16 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     const dataLayer = this.layersById.get(layer.id);
     if (dataLayer) {
       this.dataLayersStateService.selectDataLayer(dataLayer);
+    } else {
+      // The water (AET) layer comes from the report as a bare id, not the
+      // module, so it isn't preloaded in `layersById` — fetch the full data
+      // layer before handing it to the shared state to render.
+      this.dataLayersService
+        .getDataLayerById(layer.id)
+        .pipe(untilDestroyed(this))
+        .subscribe((fetched) =>
+          this.dataLayersStateService.selectDataLayer(fetched)
+        );
     }
     this.showLayer.emit(layer.id);
   }
