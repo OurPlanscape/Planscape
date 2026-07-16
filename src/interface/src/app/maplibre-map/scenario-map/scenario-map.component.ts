@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   ControlComponent,
@@ -32,7 +32,7 @@ import { FeaturesModule } from '@features/features.module';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { MapBaseLayersComponent } from '@maplibre-map/map-base-layers/map-base-layers.component';
-import { ApiModule, Scenario, SubUnits } from '@types';
+import { ApiModule, BaseLayer, Scenario, SubUnits } from '@types';
 import { SubUnitToggleComponent } from '@maplibre-map/sub-unit-toggle/sub-unit-toggle.component';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.component';
@@ -67,7 +67,14 @@ import { FeatureService } from '@app/features/feature.service';
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
 })
-export class ScenarioMapComponent {
+export class ScenarioMapComponent implements OnDestroy {
+  /**
+   * The sub-unit layer currently pushed into the app-wide BaseLayersStateService.
+   * Tracked so it can be removed on destroy — otherwise it leaks into every other
+   * map in the app (the state service is a root singleton).
+   */
+  private addedSubUnitLayer: BaseLayer | null = null;
+
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService,
@@ -181,7 +188,10 @@ export class ScenarioMapComponent {
   ]).pipe(
     map(([show, layer]) => (show && layer ? layer : null)),
     tap((layer) => {
-      if (layer) this.baseLayersStateService.addBaseLayer(layer);
+      if (layer) {
+        this.baseLayersStateService.addBaseLayer(layer);
+        this.addedSubUnitLayer = layer;
+      }
     }),
     untilDestroyed(this)
   );
@@ -247,4 +257,13 @@ export class ScenarioMapComponent {
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
+
+  ngOnDestroy(): void {
+    // Remove the sub-unit layer we pushed into the app-wide base layers state,
+    // otherwise it stays visible on other maps after leaving the scenario.
+    if (this.addedSubUnitLayer) {
+      this.baseLayersStateService.removeBaseLayer(this.addedSubUnitLayer);
+      this.addedSubUnitLayer = null;
+    }
+  }
 }
