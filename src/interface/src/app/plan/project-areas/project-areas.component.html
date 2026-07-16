@@ -15,30 +15,30 @@
         [style.border-left-color]="getColorByPosition(area.rank)">
         {{ area.rank }}
       </td>
-      <td data-id="acres" class="right">{{ area.acres | number: '1.0-0' }}</td>
+      <td data-id="acres" class="right">{{ format(area.acres, 'acres') }}</td>
       <td data-id="percentTotal" class="right">
-        {{ area.percentTreatableArea | percent: '1.0-2' }}
+        {{ format(area.percentTreatableArea, 'percentTreatableArea') }}
       </td>
       <td data-id="rxLeverage" class="right" *ngIf="showRxLeverage">
-        {{ area.rxLeverage | number: '1.0-2' }}%
+        {{ format(area.rxLeverage, 'rxLeverage') }}
       </td>
       <td data-id="estimatedCost" class="right">
-        {{ area.estimatedCost | currency: 'USD' : 'symbol' : '1.0-0' }}
+        {{ format(area.estimatedCost, 'estimatedCost') }}
       </td>
     </tr>
     <tr class="total-row">
       <td></td>
       <td data-id="total-acres" class="right">
-        {{ total.acres | number: '1.0-0' }}
+        {{ format(total.acres, 'acres') }}
       </td>
       <td data-id="total-percent" class="right">
-        {{ total.percentTreatableArea | percent: '1.0-2' }}
+        {{ format(total.percentTreatableArea, 'percentTreatableArea') }}
       </td>
       <td data-id="total-rx-leverage" class="right" *ngIf="showRxLeverage">
-        {{ total.rxLeverage | number: '1.0-2' }}%
+        {{ format(total.rxLeverage, 'rxLeverage') }}
       </td>
       <td data-id="total-estimatedCost" class="right">
-        {{ total.estimatedCost | currency: 'USD' : 'symbol' : '1.0-0' }}
+        {{ format(total.estimatedCost, 'estimatedCost') }}
       </td>
     </tr>
   </tbody>

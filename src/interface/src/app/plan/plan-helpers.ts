@@ -59,24 +59,71 @@ export function parseResultsToProjectAreas(
   });
 }
 
+/** Angular formatter used to display a project-area value. */
+export type ColumnFormat = 'number' | 'percent' | 'currency';
+/** How a column's per-area values combine into the totals row. */
+export type AggregationMethod = 'sum' | 'average';
+
+export interface ProjectAreaColumn {
+  /** How the value is shown (mirrors the number/percent/currency pipes). */
+  format: ColumnFormat;
+  /** digitsInfo passed to the formatter, e.g. '1.0-2'. */
+  digitsInfo: string;
+  /** How the totals row combines the per-area values. */
+  aggregation: AggregationMethod;
+  /** Literal appended after the formatted value, e.g. '%'. */
+  suffix?: string;
+}
+
+/**
+ * Single source of truth for each project-area column: it ties how a value is
+ * shown to how its total is computed. A percentage is displayed as a percent
+ * AND averaged; acres are a plain number AND summed. The component's `format()`
+ * reads this for display and `parseResultsToTotals` reads it for aggregation,
+ * so the two can't drift. Listing every ProjectTotalReport field (Record) makes
+ * a new column a compile error until both are chosen.
+ */
+export const PROJECT_AREA_COLUMNS: Record<
+  keyof ProjectTotalReport,
+  ProjectAreaColumn
+> = {
+  acres: { format: 'number', digitsInfo: '1.0-0', aggregation: 'sum' },
+  percentTreatableArea: {
+    format: 'percent',
+    digitsInfo: '1.0-2',
+    aggregation: 'average',
+  },
+  rxLeverage: {
+    format: 'number',
+    digitsInfo: '1.0-2',
+    aggregation: 'average',
+    suffix: '%',
+  },
+  estimatedCost: {
+    format: 'currency',
+    digitsInfo: '1.0-0',
+    aggregation: 'sum',
+  },
+};
+
 export function parseResultsToTotals(
   areaReports: ProjectAreaReport[]
 ): ProjectTotalReport {
-  return areaReports.reduce(
-    (acc, value) => {
-      acc.acres += value.acres;
-      acc.estimatedCost += value.estimatedCost;
-      acc.percentTreatableArea += value.percentTreatableArea;
-      acc.rxLeverage += value.rxLeverage;
-      return acc;
-    },
-    {
-      acres: 0,
-      percentTreatableArea: 0,
-      estimatedCost: 0,
-      rxLeverage: 0,
-    }
-  );
+  const totals: ProjectTotalReport = {
+    acres: 0,
+    percentTreatableArea: 0,
+    estimatedCost: 0,
+    rxLeverage: 0,
+  };
+  const count = areaReports.length;
+  (Object.keys(totals) as (keyof ProjectTotalReport)[]).forEach((key) => {
+    const sum = areaReports.reduce((acc, area) => acc + area[key], 0);
+    totals[key] =
+      PROJECT_AREA_COLUMNS[key].aggregation === 'average' && count > 0
+        ? sum / count
+        : sum;
+  });
+  return totals;
 }
 
 export function getColorForProjectPosition(rank: number) {
