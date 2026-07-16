@@ -37,6 +37,7 @@ describe('FundingReportService', () => {
       scenario: 123,
       results: null,
       treatment_datalayer: null,
+      aet_datalayer: null,
       geopackage_status: null,
       geopackage_url: null,
     };
