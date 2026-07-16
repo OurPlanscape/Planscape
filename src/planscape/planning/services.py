@@ -1991,24 +1991,94 @@ def calculate_and_update_scenario_result(scenario: Scenario):
     results.save(update_fields=["result"])
 
 
-def calculate_and_update_rx_leverage(scenario: Scenario, features: List) -> List:
+def get_rx_leverage_priority_names(
+    scenario: Scenario,
+    features: List,
+) -> List[str]:
     if scenario.type == ScenarioType.CUSTOM:
-        cfg = scenario.configuration or {}
-        priority_ids = [p["datalayer"] for p in cfg.get("priorities", [])]
-        names = DataLayer.objects.filter(pk__in=priority_ids).values_list("name")
+        configuration = scenario.configuration or {}
+        priorities = configuration.get("priorities") or []
+
+        if priorities:
+            priority_ids = [
+                priority.get("datalayer")
+                for priority in priorities
+                if priority.get("datalayer")
+            ]
+        else:
+            priority_ids = configuration.get("priority_objectives") or []
+
+        current_names = list(
+            DataLayer.objects.filter(pk__in=priority_ids).values_list(
+                "name",
+                flat=True,
+            )
+        )
+        expected_count = len(priority_ids)
+
+    elif scenario.treatment_goal:
+        current_names = list(
+            scenario.treatment_goal.datalayer_usages.filter(
+                usage_type=TreatmentGoalUsageType.PRIORITY
+            ).values_list(
+                "datalayer__name",
+                flat=True,
+            )
+        )
+        expected_count = len(current_names)
+
     else:
-        names = scenario.treatment_goal.datalayer_usages.filter(
-            usage_type="PRIORITY"
-        ).values_list("datalayer__name")
-    names = [name[0] for name in names]
+        return []
 
+    stored_names = {
+        name
+        for feature in features
+        for name in (((feature.get("properties") or {}).get("attainment") or {}).keys())
+    }
+
+    matching_names = [name for name in current_names if name in stored_names]
+
+    if len(matching_names) == expected_count:
+        return matching_names
+
+    if expected_count > 0 and len(stored_names) == expected_count:
+        logger.warning(
+            "Using stored attainment names for legacy scenario %s. "
+            "Current names: %s. Stored names: %s.",
+            scenario.pk,
+            current_names,
+            sorted(stored_names),
+        )
+        return sorted(stored_names)
+
+    raise ValueError(
+        f"Could not safely match priority names for scenario {scenario.pk}. "
+        f"Expected {expected_count} priority value(s), but found "
+        f"{sorted(stored_names)}."
+    )
+
+
+def calculate_and_update_rx_leverage(
+    scenario: Scenario,
+    features: List,
+) -> List:
+    if not features:
+        return features
+    names = get_rx_leverage_priority_names(
+        scenario=scenario,
+        features=features,
+    )
+    if not names:
+        return features
     for feature in features:
-        attainment = feature.get("properties").get("attainment") or {}
+        properties = feature.get("properties") or {}
+        attainment = properties.get("attainment") or {}
         att_values = [attainment.get(name) or 0 for name in names]
-        area_acres = feature.get("properties").get("area_acres")
-        rx_leverage = (sum(att_values) / area_acres) * 10000 if area_acres else None
-        feature["properties"]["rx_leverage"] = rx_leverage
-
+        area_acres = properties.get("area_acres")
+        properties["rx_leverage"] = (
+            (sum(att_values) / area_acres) * 10000 if area_acres else None
+        )
+        feature["properties"] = properties
     return features
 
 
