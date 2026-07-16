@@ -129,8 +129,7 @@ describe('ProjectAreasComponent', () => {
     const percentTotal = fixture.debugElement.query(
       By.css('[data-id="total-percent"]')
     ).nativeElement;
-    // A percentage is averaged, not summed: mean(0.2, 0.2, 0.2) = 0.2.
-    expect(percentTotal.innerHTML.trim()).toBe('20%');
+    expect(percentTotal.innerHTML.trim()).toBe('60%');
 
     const estimatedCost = fixture.debugElement.query(
       By.css('[data-id="total-estimatedCost"]')

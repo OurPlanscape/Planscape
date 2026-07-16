@@ -91,7 +91,7 @@ export const PROJECT_AREA_COLUMNS: Record<
   percentTreatableArea: {
     format: 'percent',
     digitsInfo: '1.0-2',
-    aggregation: 'average',
+    aggregation: 'sum',
   },
   rxLeverage: {
     format: 'number',
