@@ -219,6 +219,34 @@ def get_project_areas_union(scenario: Scenario) -> GEOSGeometry:
     return geometry
 
 
+def treatment_layer_has_valid_data(scenario: Scenario) -> bool:
+    """
+    True if the treatment layer has any valid (non-nodata) pixel within the
+    union of `scenario`'s project areas. Returns True (i.e. "don't block")
+    when no treatment datalayer is configured at all - that's an existing,
+    separate soft-skip case (see async_generate_treatment_datalayer), not a
+    "no data for this scenario" case.
+    """
+    source = get_treatment_datalayer()
+    if source is None:
+        return True
+
+    geometry = get_project_areas_union(scenario)
+
+    with rasterio.open(_datalayer_path(source)) as src:
+        raster_srid = src.crs.to_epsg() if src.crs else None
+        if raster_srid is None:
+            raise ValueError(f"Raster CRS {src.crs} does not resolve to an EPSG SRID.")
+        clip_geometry = json.loads(maybe_transform(geometry, raster_srid).geojson)
+        try:
+            data, _ = mask(src, [clip_geometry], crop=True, filled=False)
+        except ValueError:
+            # Union geometry doesn't overlap the raster extent at all.
+            return False
+
+    return bool((~np.ma.getmaskarray(data[0])).any())
+
+
 def _get_datalayer(
     datalayer_lookup: Dict[Tuple[str, int, bool], DataLayer],
     metric: str,

@@ -50,6 +50,7 @@ from funding_report.services import (
     get_aet_delta_datalayer,
     get_biomass_datalayer,
     get_funding_report_layers_of_interest,
+    treatment_layer_has_valid_data,
 )
 
 TEST_DATA = Path("funding_report/tests/test_data")
@@ -642,6 +643,109 @@ class TreatmentPixelAreaTest(TestCase):
             expected_half_pixel_acres,
             places=4,
         )
+
+
+class TreatmentLayerHasValidDataTest(TestCase):
+    def setUp(self):
+        self.planning_area = PlanningAreaFactory.create(with_stands=False)
+        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
+
+    def create_treatment_datalayer(self, raster_path):
+        return DataLayerFactory.create(
+            name="Treatment",
+            type=DataLayerType.RASTER,
+            url=str(raster_path),
+            metadata={
+                "modules": {
+                    "funding_report": {
+                        "variable": TREATMENT_VARIABLE,
+                        "role": TREATMENT_ROLE,
+                    }
+                }
+            },
+        )
+
+    def test_no_treatment_datalayer_configured_returns_true(self):
+        self.assertTrue(treatment_layer_has_valid_data(self.scenario))
+
+    def test_all_nodata_under_project_areas_returns_false(self):
+        tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp_dir.cleanup)
+        raster_path = Path(tmp_dir.name) / "treatment_all_nodata.tif"
+        values = np.zeros((10, 10), dtype=np.uint8)
+        write_treatment_raster(
+            raster_path,
+            values,
+            origin_x=-121.0,
+            origin_y=39.0,
+            px=0.001,
+            py=0.001,
+            nodata=0,
+        )
+        self.create_treatment_datalayer(raster_path)
+        ProjectAreaFactory.create(
+            scenario=self.scenario,
+            geometry=raster_bounds_geometry(raster_path),
+        )
+
+        self.assertFalse(treatment_layer_has_valid_data(self.scenario))
+
+    def test_some_valid_pixels_under_project_areas_returns_true(self):
+        tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp_dir.cleanup)
+        raster_path = Path(tmp_dir.name) / "treatment_partial.tif"
+        values = np.zeros((10, 10), dtype=np.uint8)
+        values[0, 0] = 1
+        write_treatment_raster(
+            raster_path,
+            values,
+            origin_x=-121.0,
+            origin_y=39.0,
+            px=0.001,
+            py=0.001,
+            nodata=0,
+        )
+        self.create_treatment_datalayer(raster_path)
+        ProjectAreaFactory.create(
+            scenario=self.scenario,
+            geometry=raster_bounds_geometry(raster_path),
+        )
+
+        self.assertTrue(treatment_layer_has_valid_data(self.scenario))
+
+    def test_project_areas_outside_raster_extent_returns_false(self):
+        tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp_dir.cleanup)
+        raster_path = Path(tmp_dir.name) / "treatment_offset.tif"
+        values = np.ones((10, 10), dtype=np.uint8)
+        write_treatment_raster(
+            raster_path,
+            values,
+            origin_x=-121.0,
+            origin_y=39.0,
+            px=0.001,
+            py=0.001,
+            nodata=0,
+        )
+        self.create_treatment_datalayer(raster_path)
+        # Far away from the raster's extent entirely.
+        ProjectAreaFactory.create(
+            scenario=self.scenario,
+            geometry=MultiPolygon(
+                Polygon(
+                    (
+                        (-100.0, 10.0),
+                        (-100.0, 10.001),
+                        (-99.999, 10.001),
+                        (-99.999, 10.0),
+                        (-100.0, 10.0),
+                    )
+                ),
+                srid=4269,
+            ),
+        )
+
+        self.assertFalse(treatment_layer_has_valid_data(self.scenario))
 
 
 class BuildFlameLengthReductionResultsTest(TestCase):
