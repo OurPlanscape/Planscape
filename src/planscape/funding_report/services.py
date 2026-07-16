@@ -34,6 +34,7 @@ from planning.services import get_acreage, map_property_for_numeric_export
 from pyproj import Geod, Transformer
 from rasterio.features import geometry_mask
 from rasterio.mask import mask
+from shapely.geometry import Polygon, shape
 from utils.geometry import to_multi
 
 from funding_report.models import (
@@ -285,6 +286,64 @@ def _selected_pixel_area_acres(
         int(count) * _pixel_area_acres(transform, int(row), to_lonlat)
         for row, count in zip(rows, counts)
     )
+
+
+def _fractional_pixel_contributions(
+    pixels: np.ma.MaskedArray,
+    touched_by_geometry: np.ndarray,
+    src: rasterio.DatasetReader,
+    transform,
+    project_geometry: Polygon,
+) -> Dict[Optional[int], float]:
+    """
+    Area-weighted acres per raster value for every pixel touched by
+    `project_geometry`, keyed by the pixel's integer value (or None for a
+    touched pixel with no raster data - i.e. "no treatment").
+
+    Whole-pixel inclusion (count each touched pixel's full area) only
+    approximates true polygon area when pixels are small relative to the
+    polygon. When the treatment raster's native pixel size approaches or
+    exceeds the size of a project area, a single pixel that only clips a
+    small corner of the polygon would otherwise still contribute its full
+    area - this instead weights each pixel's contribution by the actual
+    fraction of it that overlaps the polygon.
+    """
+    contributions: Dict[Optional[int], float] = defaultdict(float)
+    if not touched_by_geometry.any():
+        return contributions
+
+    to_lonlat = (
+        None
+        if src.crs and src.crs.is_geographic
+        else Transformer.from_crs(src.crs, "EPSG:4326", always_xy=True)
+    )
+    data_mask = np.ma.getmaskarray(pixels)
+    raw_values = pixels.filled(0)
+    pixel_area_cache: Dict[int, float] = {}
+
+    for row, col in zip(*np.where(touched_by_geometry)):
+        row, col = int(row), int(col)
+        pixel_polygon = Polygon(
+            [
+                transform * (col, row),
+                transform * (col + 1, row),
+                transform * (col + 1, row + 1),
+                transform * (col, row + 1),
+            ]
+        )
+        if pixel_polygon.area <= 0:
+            continue
+        fraction = pixel_polygon.intersection(project_geometry).area / pixel_polygon.area
+        if fraction <= 0:
+            continue
+
+        if row not in pixel_area_cache:
+            pixel_area_cache[row] = _pixel_area_acres(transform, row, to_lonlat)
+
+        key = None if data_mask[row, col] else int(raw_values[row, col])
+        contributions[key] += pixel_area_cache[row] * fraction
+
+    return contributions
 
 
 def _valid_pixel_mask(
@@ -761,44 +820,39 @@ def calculate_treatment_pixel_areas(report: FundingOpportunityReport) -> Dict[st
                 maybe_transform(project_area.geometry, raster_srid).geojson
             )
             try:
-                data, transform = mask(src, [geometry], crop=True, filled=False)
+                data, transform = mask(
+                    src, [geometry], crop=True, filled=False, all_touched=True
+                )
             except ValueError:
                 projects[project_area.pk] = {}
                 continue
 
             pixels = data[0]
-            data_mask = np.ma.getmaskarray(pixels)
-            valid_mask = ~data_mask
-            values = np.ma.array(pixels, mask=~valid_mask).compressed()
-
-            inside_geometry = ~geometry_mask(
+            touched_by_geometry = ~geometry_mask(
                 [geometry],
                 out_shape=pixels.shape,
                 transform=transform,
                 invert=False,
+                all_touched=True,
+            )
+
+            contributions = _fractional_pixel_contributions(
+                pixels=pixels,
+                touched_by_geometry=touched_by_geometry,
+                src=src,
+                transform=transform,
+                project_geometry=shape(geometry),
             )
 
             project_result: Dict[str, float] = {}
-            for value in np.unique(values):
-                selected_pixels = valid_mask & (pixels.filled(np.nan) == value)
-                acres = _selected_pixel_area_acres(
-                    selected_pixels=selected_pixels,
-                    src=src,
-                    transform=transform,
+            for value, acres in contributions.items():
+                label = (
+                    TREATMENT_NO_TREATMENT_LABEL
+                    if value is None
+                    else TREATMENT_PIXEL_VALUE_LABELS.get(value, str(value))
                 )
-                label = TREATMENT_PIXEL_VALUE_LABELS.get(int(value), str(int(value)))
-                project_result[label] = acres
+                project_result[label] = project_result.get(label, 0.0) + acres
                 total[label] += acres
-
-            no_treatment_pixels = inside_geometry & data_mask
-            if no_treatment_pixels.any():
-                acres = _selected_pixel_area_acres(
-                    selected_pixels=no_treatment_pixels,
-                    src=src,
-                    transform=transform,
-                )
-                project_result[TREATMENT_NO_TREATMENT_LABEL] = acres
-                total[TREATMENT_NO_TREATMENT_LABEL] += acres
 
             projects[project_area.pk] = project_result
 
