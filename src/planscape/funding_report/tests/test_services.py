@@ -21,6 +21,9 @@ from rasterio.transform import from_origin
 
 from funding_report.models import (
     FUNDING_REPORT_YEARS,
+    TREATMENT_NO_TREATMENT_LABEL,
+    TREATMENT_ROLE,
+    TREATMENT_VARIABLE,
     BiomassRole,
     FundingOpportunityReport,
     FundingOpportunityReportStatus,
@@ -42,10 +45,12 @@ from funding_report.services import (
     calculate_pixel_deltas,
     calculate_project_area_aet_improvement,
     calculate_project_area_delta,
+    calculate_treatment_pixel_areas,
     flatten_report_metrics,
     get_aet_delta_datalayer,
     get_biomass_datalayer,
     get_funding_report_layers_of_interest,
+    get_treatment_datalayer,
 )
 
 TEST_DATA = Path("funding_report/tests/test_data")
@@ -452,6 +457,193 @@ class FundingReportRasterCalculationTest(TestCase):
                     "delta": 3,
                 },
             ],
+        )
+
+
+def write_treatment_raster(
+    path: Path,
+    values: np.ndarray,
+    origin_x: float,
+    origin_y: float,
+    px: float,
+    py: float,
+    crs: str = "EPSG:4269",
+    nodata: int = 0,
+) -> None:
+    transform = from_origin(origin_x, origin_y, px, py)
+    with rasterio.open(
+        path,
+        "w",
+        driver="GTiff",
+        height=values.shape[0],
+        width=values.shape[1],
+        count=1,
+        dtype=values.dtype,
+        crs=crs,
+        transform=transform,
+        nodata=nodata,
+    ) as dst:
+        dst.write(values, 1)
+
+
+class TreatmentPixelAreaTest(TestCase):
+    """
+    Covers calculate_treatment_pixel_areas, which previously had no tests -
+    the whole-pixel-inclusion bug (a touched pixel's full area counted
+    regardless of how much of it actually overlaps the project area) went
+    undetected because nothing asserted raster-derived acres against the
+    project area's true vector acreage.
+    """
+
+    def setUp(self):
+        self.planning_area = PlanningAreaFactory.create(with_stands=False)
+        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
+        self.report = FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.scenario.user,
+        )
+
+    def create_treatment_datalayer(self, raster_path):
+        return DataLayerFactory.create(
+            name="Treatment",
+            type=DataLayerType.RASTER,
+            url=str(raster_path),
+            metadata={
+                "modules": {
+                    "funding_report": {
+                        "variable": TREATMENT_VARIABLE,
+                        "role": TREATMENT_ROLE,
+                    }
+                }
+            },
+        )
+
+    def test_pixel_aligned_project_area_matches_vector_acreage(self):
+        tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp_dir.cleanup)
+        raster_path = Path(tmp_dir.name) / "treatment_aligned.tif"
+        values = np.ones((10, 10), dtype=np.uint8)
+        write_treatment_raster(
+            raster_path, values, origin_x=-121.0, origin_y=39.0, px=0.001, py=0.001
+        )
+        self.create_treatment_datalayer(raster_path)
+
+        project_area = ProjectAreaFactory.create(
+            scenario=self.scenario,
+            geometry=raster_bounds_geometry(raster_path),
+        )
+
+        result = calculate_treatment_pixel_areas(self.report)
+
+        expected_acres = get_acreage(project_area.geometry)
+        self.assertAlmostEqual(
+            result["projects"][project_area.pk]["Rx Burn"], expected_acres, places=4
+        )
+        self.assertAlmostEqual(result["total"]["Rx Burn"], expected_acres, places=4)
+
+    def test_irregular_small_project_area_on_coarse_raster_uses_fractional_coverage(
+        self,
+    ):
+        tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp_dir.cleanup)
+        raster_path = Path(tmp_dir.name) / "treatment_coarse.tif"
+        # ~300m pixels, uniform "Rx Burn" (value=1) everywhere.
+        values = np.ones((100, 100), dtype=np.uint8)
+        write_treatment_raster(
+            raster_path,
+            values,
+            origin_x=-121.01,
+            origin_y=39.01,
+            px=0.0027,
+            py=0.0027,
+        )
+        self.create_treatment_datalayer(raster_path)
+
+        # Irregular pentagon (~8.3 true acres), deliberately unaligned to the
+        # pixel grid and small relative to a ~300m pixel. Whole-pixel
+        # inclusion at this resolution can be off by 2x or more (a single
+        # touched pixel contributes its full ~22-acre area); fractional
+        # coverage should track the true polygon area closely.
+        project_area = ProjectAreaFactory.create(
+            scenario=self.scenario,
+            geometry=MultiPolygon(
+                Polygon(
+                    (
+                        (-121.0000, 39.0000),
+                        (-120.9970, 39.0003),
+                        (-120.9975, 39.0012),
+                        (-120.9990, 39.0015),
+                        (-121.0005, 39.0008),
+                        (-121.0000, 39.0000),
+                    )
+                ),
+                srid=4269,
+            ),
+        )
+
+        result = calculate_treatment_pixel_areas(self.report)
+
+        expected_acres = get_acreage(project_area.geometry)
+        actual_acres = result["projects"][project_area.pk]["Rx Burn"]
+        self.assertAlmostEqual(
+            actual_acres, expected_acres, delta=max(expected_acres * 0.02, 0.01)
+        )
+
+    def test_no_treatment_pixels_get_fractional_weighting(self):
+        tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp_dir.cleanup)
+        raster_path = Path(tmp_dir.name) / "treatment_partial_nodata.tif"
+        # 1 row x 2 cols: left pixel = Rx Burn (1), right pixel = nodata (0).
+        values = np.array([[1, 0]], dtype=np.uint8)
+        px = py = 0.01
+        origin_x, origin_y = -121.0, 39.0
+        write_treatment_raster(
+            raster_path,
+            values,
+            origin_x=origin_x,
+            origin_y=origin_y,
+            px=px,
+            py=py,
+            nodata=0,
+        )
+        self.create_treatment_datalayer(raster_path)
+
+        # Spans exactly the right half of pixel 0 and the left half of pixel
+        # 1, full pixel height - each half should contribute exactly half of
+        # one pixel's true geodesic area.
+        minx = origin_x + 0.5 * px
+        maxx = origin_x + 1.5 * px
+        miny = origin_y - py
+        maxy = origin_y
+        project_area = ProjectAreaFactory.create(
+            scenario=self.scenario,
+            geometry=MultiPolygon(
+                Polygon(
+                    (
+                        (minx, miny),
+                        (minx, maxy),
+                        (maxx, maxy),
+                        (maxx, miny),
+                        (minx, miny),
+                    )
+                ),
+                srid=4269,
+            ),
+        )
+
+        result = calculate_treatment_pixel_areas(self.report)
+
+        expected_half_pixel_acres = (
+            geodesic_pixel_area_acres(str(raster_path), row=0) / 2
+        )
+        project_result = result["projects"][project_area.pk]
+        self.assertAlmostEqual(
+            project_result["Rx Burn"], expected_half_pixel_acres, places=4
+        )
+        self.assertAlmostEqual(
+            project_result[TREATMENT_NO_TREATMENT_LABEL],
+            expected_half_pixel_acres,
+            places=4,
         )
 
 
