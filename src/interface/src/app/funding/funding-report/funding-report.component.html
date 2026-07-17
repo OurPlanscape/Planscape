@@ -1,310 +1,329 @@
-<nav
-  mat-tab-nav-bar
-  [tabPanel]="tabPanel"
-  class="funding-report-tabs"
-  [ngClass]="{ fullview: !isPreview }"
-  [appScrollSpy]="sectionIds"
-  [spyRoot]="scrollElement || scrollContainer"
-  (activeSection)="activeId = $event"
-  #spy="appScrollSpy">
-  <a
-    mat-tab-link
-    *ngFor="let s of sections"
-    [active]="activeId === s.id"
-    [href]="'#' + s.id"
-    (click)="$event.preventDefault(); spy.scrollTo(s.id)">
-    {{ s.label }}
-  </a>
-</nav>
-<mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
+@if (noTreatmentForProjectArea$) {
+  <div
+    class="no-project-area-data-view"
+    #scrollContainer
+    [ngClass]="{ fullview: !isPreview }">
+    <sg-message-card
+      cardType="warning"
+      cardTitle="Report Unavailable: No Forested Land Found"
+      class="no-forested-land-card"
+      [withBorders]="false">
+      Your selected project area contains no forested land. Reports are only
+      available for forested areas. Please select a new project area with forest
+      cover.
+    </sg-message-card>
+  </div>
+} @else {
+  <nav
+    mat-tab-nav-bar
+    [tabPanel]="tabPanel"
+    class="funding-report-tabs"
+    [ngClass]="{ fullview: !isPreview }"
+    [appScrollSpy]="sectionIds"
+    [spyRoot]="scrollElement || scrollContainer"
+    (activeSection)="activeId = $event"
+    #spy="appScrollSpy">
+    <a
+      mat-tab-link
+      *ngFor="let s of sections"
+      [active]="activeId === s.id"
+      [href]="'#' + s.id"
+      (click)="$event.preventDefault(); spy.scrollTo(s.id)">
+      {{ s.label }}
+    </a>
+  </nav>
+  <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
 
-<ng-template #tooltipContent let-close="close">
-  <sg-modal
-    [title]="tooltipName"
-    width="small"
-    [hasSecondaryButton]="false"
-    [hasFooter]="false"
-    (clickedClose)="close()">
-    <div modalBodyContent class="tooltip-content">
-      <div class="tooltip-copy" [innerHTML]="currentTooltip?.copy"></div>
-      <div class="tooltip-links" *ngIf="currentTooltip?.links?.length">
-        <h5 class="tooltip-links-heading">Learn more:</h5>
-        <ul class="tooltip-links-list">
-          <li *ngFor="let link of currentTooltip?.links">
-            <a [href]="link.url" target="_blank" rel="noopener noreferrer">
-              {{ link.label }}
-              <mat-icon>open_in_new</mat-icon>
-            </a>
-          </li>
-        </ul>
+  <ng-template #tooltipContent let-close="close">
+    <sg-modal
+      [title]="tooltipName"
+      width="small"
+      [hasSecondaryButton]="false"
+      [hasFooter]="false"
+      (clickedClose)="close()">
+      <div modalBodyContent class="tooltip-content">
+        <div class="tooltip-copy" [innerHTML]="currentTooltip?.copy"></div>
+        <div class="tooltip-links" *ngIf="currentTooltip?.links?.length">
+          <h5 class="tooltip-links-heading">Learn more:</h5>
+          <ul class="tooltip-links-list">
+            <li *ngFor="let link of currentTooltip?.links">
+              <a [href]="link.url" target="_blank" rel="noopener noreferrer">
+                {{ link.label }}
+                <mat-icon>open_in_new</mat-icon>
+              </a>
+            </li>
+          </ul>
+        </div>
       </div>
-    </div>
-  </sg-modal>
-</ng-template>
+    </sg-modal>
+  </ng-template>
 
-<div
-  class="report-sections"
-  #scrollContainer
-  [ngClass]="{ fullview: !isPreview }">
-  <section id="map" class="report-section" *ngIf="isPreview">
-    <div class="map-container">
-      <app-funding-report-map
-        *ngIf="report?.treatment_datalayer as treatmentDataLayerId"
-        [allowInteraction]="false"
-        [treatmentDataLayerId]="treatmentDataLayerId"></app-funding-report-map>
-    </div>
-  </section>
+  <div
+    class="report-sections"
+    #scrollContainer
+    [ngClass]="{ fullview: !isPreview }">
+    <section id="map" class="report-section" *ngIf="isPreview">
+      <div class="map-container">
+        <app-funding-report-map
+          *ngIf="report?.treatment_datalayer as treatmentDataLayerId"
+          [allowInteraction]="false"
+          [treatmentDataLayerId]="
+            treatmentDataLayerId
+          "></app-funding-report-map>
+      </div>
+    </section>
 
-  <sg-section
-    id="carbon"
-    class="report-section"
-    headline="Carbon"
-    tooltipSize="medium"
-    [tooltipTemplate]="tooltipContent"
-    [tooltipInteractive]="true"
-    (tooltipClicked)="tooltipName = 'Carbon'"
-    [isCollapsible]="true"
-    [defaultExpanded]="true">
-    <div class="summary-card" *ngIf="!isPreview">
-      <app-funding-map-layers
-        heading="Map Layers (no treatment)"
-        [layers]="sectionLayers['carbon']"
-        [selectedLayerId]="viewedLayerId$ | async"
-        [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
-        (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
-    </div>
-
-    <div>
-      <h5>Unhealthy Smoke Production</h5>
-      <p class="chart-subtitle" *ngIf="smokeHasData">
-        (%) Percentage Change After Treatment
-      </p>
-      <sg-chart
-        *ngIf="smokeHasData; else noData"
-        class="no-margin"
-        [data]="smokeChart.data"
-        [options]="smokeChart.options"
-        type="bar"></sg-chart>
-    </div>
-    <div class="top-section-divider">
-      <h5>Standing Aboveground Live Tree Carbon</h5>
-      <p class="chart-subtitle" *ngIf="treeCarbonHasData">
-        (%) Percentage Change After Treatment
-      </p>
-      <sg-chart
-        *ngIf="treeCarbonHasData; else noData"
-        class="no-margin"
-        [data]="treeCarbonChart.data"
-        [options]="treeCarbonChart.options"
-        type="bar"></sg-chart>
-    </div>
-  </sg-section>
-
-  <sg-section
-    id="wildfire"
-    class="report-section"
-    headline="Wildfire Risk Reduction"
-    [isCollapsible]="true"
-    [defaultExpanded]="true">
-    <div class="summary-card" *ngIf="!isPreview">
-      <app-funding-map-layers
-        heading="Map Layers (no treatment)"
-        [layers]="sectionLayers['wildfire']"
-        [selectedLayerId]="viewedLayerId$ | async"
-        [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
-        (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
-    </div>
-    <div>
-      <h5>
-        Flame Length
-        <sg-popover
-          [modal]="true"
-          icon="info"
-          [contentTemplate]="tooltipContent"
-          (opened)="tooltipName = 'Flame Length'"></sg-popover>
-      </h5>
+    <sg-section
+      id="carbon"
+      class="report-section"
+      headline="Carbon"
+      tooltipSize="medium"
+      [tooltipTemplate]="tooltipContent"
+      [tooltipInteractive]="true"
+      (tooltipClicked)="tooltipName = 'Carbon'"
+      [isCollapsible]="true"
+      [defaultExpanded]="true">
       <div class="summary-card" *ngIf="!isPreview">
-        <label class="flame-length-label" for="flame-length-interval">
-          (%) Percentage of area with flame length reduced from
-        </label>
-        <mat-form-field
-          appearance="outline"
-          subscriptSizing="dynamic"
-          class="flame-length-select">
-          <mat-select
-            id="flame-length-interval"
-            [formControl]="flameLengthInterval">
-            <mat-option
-              *ngFor="let option of flameLengthOptions"
-              [value]="option.value">
-              {{ option.label }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+        <app-funding-map-layers
+          heading="Map Layers (no treatment)"
+          [layers]="sectionLayers['carbon']"
+          [selectedLayerId]="viewedLayerId$ | async"
+          [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
+          (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
       </div>
-      <p class="chart-subtitle" *ngIf="isPreview && flameLengthHasData">
-        (%) Percentage Change After Treatment
-      </p>
-      <div class="chart-wrapper">
+
+      <div>
+        <h5>Unhealthy Smoke Production</h5>
+        <p class="chart-subtitle" *ngIf="smokeHasData">
+          (%) Percentage Change After Treatment
+        </p>
         <sg-chart
-          *ngIf="flameLengthHasData; else noData"
+          *ngIf="smokeHasData; else noData"
           class="no-margin"
-          [data]="flameLengthChart.data"
-          [options]="flameLengthChart.options"
+          [data]="smokeChart.data"
+          [options]="smokeChart.options"
           type="bar"></sg-chart>
       </div>
-    </div>
-    <div class="top-section-divider">
-      <div class="coming-soon">
-        <div class="coming-soon-header">
-          <mat-icon>access_time</mat-icon>
-          <h4>Burn Probability is coming soon!</h4>
-        </div>
-        <div>
-          This section is currently under construction. Soon, you will be able
-          to explore how treatments influence wildfire burn probability over
-          time across your planning area.
-        </div>
+      <div class="top-section-divider">
+        <h5>Standing Aboveground Live Tree Carbon</h5>
+        <p class="chart-subtitle" *ngIf="treeCarbonHasData">
+          (%) Percentage Change After Treatment
+        </p>
+        <sg-chart
+          *ngIf="treeCarbonHasData; else noData"
+          class="no-margin"
+          [data]="treeCarbonChart.data"
+          [options]="treeCarbonChart.options"
+          type="bar"></sg-chart>
       </div>
-    </div>
-  </sg-section>
+    </sg-section>
 
-  <sg-section
-    id="water"
-    class="report-section"
-    headline="Water"
-    [tooltipTemplate]="tooltipContent"
-    [tooltipInteractive]="true"
-    (tooltipClicked)="tooltipName = 'Water'"
-    [isCollapsible]="true"
-    [defaultExpanded]="true">
-    <div class="summary-card" *ngIf="!isPreview">
-      <app-funding-map-layers
-        heading="Map Layers"
-        [layers]="sectionLayers['water']"
-        [selectedLayerId]="viewedLayerId$ | async"
-        [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
-        (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
-    </div>
-    <div class="summary-card" *ngIf="!isPreview">
-      <div class="summary-water">
-        Water availability increased by:
-        <sg-input-field
-          suffix="%"
-          [error]="waterAvailabilityControl.invalid"
-          class="water-input">
-          <input
-            sgInput
-            type="text"
-            inputmode="numeric"
-            maxlength="3"
-            required
-            [formControl]="waterAvailabilityControl"
-            (input)="onWaterAvailabilityInput($event)" />
-        </sg-input-field>
+    <sg-section
+      id="wildfire"
+      class="report-section"
+      headline="Wildfire Risk Reduction"
+      [isCollapsible]="true"
+      [defaultExpanded]="true">
+      <div class="summary-card" *ngIf="!isPreview">
+        <app-funding-map-layers
+          heading="Map Layers (no treatment)"
+          [layers]="sectionLayers['wildfire']"
+          [selectedLayerId]="viewedLayerId$ | async"
+          [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
+          (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
       </div>
-
-      <div class="field-error" *ngIf="waterAvailabilityControl.invalid">
-        Field is required
+      <div>
+        <h5>
+          Flame Length
+          <sg-popover
+            [modal]="true"
+            icon="info"
+            [contentTemplate]="tooltipContent"
+            (opened)="tooltipName = 'Flame Length'"></sg-popover>
+        </h5>
+        <div class="summary-card" *ngIf="!isPreview">
+          <label class="flame-length-label" for="flame-length-interval">
+            (%) Percentage of area with flame length reduced from
+          </label>
+          <mat-form-field
+            appearance="outline"
+            subscriptSizing="dynamic"
+            class="flame-length-select">
+            <mat-select
+              id="flame-length-interval"
+              [formControl]="flameLengthInterval">
+              <mat-option
+                *ngFor="let option of flameLengthOptions"
+                [value]="option.value">
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <p class="chart-subtitle" *ngIf="isPreview && flameLengthHasData">
+          (%) Percentage Change After Treatment
+        </p>
+        <div class="chart-wrapper">
+          <sg-chart
+            *ngIf="flameLengthHasData; else noData"
+            class="no-margin"
+            [data]="flameLengthChart.data"
+            [options]="flameLengthChart.options"
+            type="bar"></sg-chart>
+        </div>
       </div>
-    </div>
-    <div class="stat-cards-wrapper">
-      <div class="stat-cards">
-        <div class="stat-card">
-          <div class="stat-value">
-            {{ water?.improved_area_percent | number: '1.0-0'
-            }}<span class="stat-unit">%</span>
+      <div class="top-section-divider">
+        <div class="coming-soon">
+          <div class="coming-soon-header">
+            <mat-icon>access_time</mat-icon>
+            <h4>Burn Probability is coming soon!</h4>
           </div>
-          <div class="stat-label">of Planning Area</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">
-            {{ water?.improved_acres | number: '1.0-0'
-            }}<span class="stat-unit">acres</span>
+          <div>
+            This section is currently under construction. Soon, you will be able
+            to explore how treatments influence wildfire burn probability over
+            time across your planning area.
           </div>
-          <div class="stat-label">of Total Planning Area</div>
         </div>
       </div>
-      <div class="chart-loader" *ngIf="updatingWaterAvailability">
-        <mat-spinner diameter="36"></mat-spinner>
+    </sg-section>
+
+    <sg-section
+      id="water"
+      class="report-section"
+      headline="Water"
+      [tooltipTemplate]="tooltipContent"
+      [tooltipInteractive]="true"
+      (tooltipClicked)="tooltipName = 'Water'"
+      [isCollapsible]="true"
+      [defaultExpanded]="true">
+      <div class="summary-card" *ngIf="!isPreview">
+        <app-funding-map-layers
+          heading="Map Layers"
+          [layers]="sectionLayers['water']"
+          [selectedLayerId]="viewedLayerId$ | async"
+          [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
+          (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
       </div>
-    </div>
-  </sg-section>
+      <div class="summary-card" *ngIf="!isPreview">
+        <div class="summary-water">
+          Water availability increased by:
+          <sg-input-field
+            suffix="%"
+            [error]="waterAvailabilityControl.invalid"
+            class="water-input">
+            <input
+              sgInput
+              type="text"
+              inputmode="numeric"
+              maxlength="3"
+              required
+              [formControl]="waterAvailabilityControl"
+              (input)="onWaterAvailabilityInput($event)" />
+          </sg-input-field>
+        </div>
 
-  <sg-section
-    id="biomass"
-    class="report-section"
-    headline="Biomass"
-    [tooltipTemplate]="tooltipContent"
-    [tooltipInteractive]="true"
-    (tooltipClicked)="tooltipName = 'Biomass'"
-    [isCollapsible]="true"
-    [defaultExpanded]="true">
-    <div class="biomass-intro">
-      The table shows estimated available biomass with no treatment.
-      <br />
-      This data will not change with your project area selection.
-    </div>
-    <div class="summary-card" *ngIf="!isPreview">
-      <app-funding-map-layers
-        heading="Map Layers (Mills & other biomass facilities)"
-        [multiSelect]="true"
-        [layers]="sectionLayers['biomass']"
-        [selectedLayerIds]="(selectedBaseLayerIds$ | async) ?? []"
-        [loadingLayerIds]="(loadingBaseLayerIds$ | async) ?? []"
-        (selectedLayer)="onBaseLayerToggled($event)"></app-funding-map-layers>
-    </div>
-    <div *ngIf="biomass; else noData">
-      <table class="biomass-table">
-        <thead>
-          <tr>
-            <th>Tree Class</th>
-            <th>Hardwood</th>
-            <th>Softwood</th>
-            <th>Mixed</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row">Merchantable Volume (bf)</th>
-            <td>{{ biomass.merchantable_hardwood_bf | number: '1.0-1' }}</td>
-            <td>{{ biomass.merchantable_softwood_bf | number: '1.0-1' }}</td>
-            <td>{{ biomass.merchantable_mixed_bf | number: '1.0-1' }}</td>
-          </tr>
-          <tr>
-            <th scope="row">Non-Merchantable Volume (ft³)</th>
-            <td>
-              {{ biomass.non_merchantable_hardwood_cuft | number: '1.0-1' }}
-            </td>
-            <td>
-              {{ biomass.non_merchantable_softwood_cuft | number: '1.0-1' }}
-            </td>
-            <td>
-              {{ biomass.non_merchantable_mixed_cuft | number: '1.0-1' }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </sg-section>
-</div>
+        <div class="field-error" *ngIf="waterAvailabilityControl.invalid">
+          Field is required
+        </div>
+      </div>
+      <div class="stat-cards-wrapper">
+        <div class="stat-cards">
+          <div class="stat-card">
+            <div class="stat-value">
+              {{ water?.improved_area_percent | number: '1.0-0'
+              }}<span class="stat-unit">%</span>
+            </div>
+            <div class="stat-label">of Planning Area</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">
+              {{ water?.improved_acres | number: '1.0-0'
+              }}<span class="stat-unit">acres</span>
+            </div>
+            <div class="stat-label">of Total Planning Area</div>
+          </div>
+        </div>
+        <div class="chart-loader" *ngIf="updatingWaterAvailability">
+          <mat-spinner diameter="36"></mat-spinner>
+        </div>
+      </div>
+    </sg-section>
 
-<ng-template #noData>
-  <sg-message-card
-    cardType="warning"
-    cardTitle="Data Unavailable"
-    class="no-data-card"
-    [withBorders]="false">
-    We couldn’t find data for your selected area. To proceed, please:
-    <ul>
-      <li>Select a different Outcome from the dropdown menu.</li>
-      <li>
-        Adjust your Planning or Project boundaries to a location with available
-        data and run again.
-      </li>
-    </ul>
-  </sg-message-card>
-</ng-template>
+    <sg-section
+      id="biomass"
+      class="report-section"
+      headline="Biomass"
+      [tooltipTemplate]="tooltipContent"
+      [tooltipInteractive]="true"
+      (tooltipClicked)="tooltipName = 'Biomass'"
+      [isCollapsible]="true"
+      [defaultExpanded]="true">
+      <div class="biomass-intro">
+        The table shows estimated available biomass with no treatment.
+        <br />
+        This data will not change with your project area selection.
+      </div>
+      <div class="summary-card" *ngIf="!isPreview">
+        <app-funding-map-layers
+          heading="Map Layers (Mills & other biomass facilities)"
+          [multiSelect]="true"
+          [layers]="sectionLayers['biomass']"
+          [selectedLayerIds]="(selectedBaseLayerIds$ | async) ?? []"
+          [loadingLayerIds]="(loadingBaseLayerIds$ | async) ?? []"
+          (selectedLayer)="onBaseLayerToggled($event)"></app-funding-map-layers>
+      </div>
+      <div *ngIf="biomass; else noData">
+        <table class="biomass-table">
+          <thead>
+            <tr>
+              <th>Tree Class</th>
+              <th>Hardwood</th>
+              <th>Softwood</th>
+              <th>Mixed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Merchantable Volume (bf)</th>
+              <td>{{ biomass.merchantable_hardwood_bf | number: '1.0-1' }}</td>
+              <td>{{ biomass.merchantable_softwood_bf | number: '1.0-1' }}</td>
+              <td>{{ biomass.merchantable_mixed_bf | number: '1.0-1' }}</td>
+            </tr>
+            <tr>
+              <th scope="row">Non-Merchantable Volume (ft³)</th>
+              <td>
+                {{ biomass.non_merchantable_hardwood_cuft | number: '1.0-1' }}
+              </td>
+              <td>
+                {{ biomass.non_merchantable_softwood_cuft | number: '1.0-1' }}
+              </td>
+              <td>
+                {{ biomass.non_merchantable_mixed_cuft | number: '1.0-1' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </sg-section>
+  </div>
+
+  <ng-template #noData>
+    <sg-message-card
+      cardType="warning"
+      cardTitle="Data Unavailable"
+      class="no-data-card"
+      [withBorders]="false">
+      We couldn’t find data for your selected area. To proceed, please:
+      <ul>
+        <li>Select a different Outcome from the dropdown menu.</li>
+        <li>
+          Adjust your Planning or Project boundaries to a location with
+          available data and run again.
+        </li>
+      </ul>
+    </sg-message-card>
+  </ng-template>
+}
 
 <app-funding-report-footer
   [footerType]="reportType"

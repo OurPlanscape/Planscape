@@ -216,6 +216,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     map((ids) => ids.map((id) => Number(id.replace('source_', ''))))
   );
 
+  noTreatmentForProjectArea$ = new BehaviorSubject(true);
+
   /** Flame length interval options for the selector. */
   flameLengthOptions = FLAME_LENGTH_INTERVAL_OPTIONS;
   /** The interval whose pre-calculated reduction the chart currently shows. */
