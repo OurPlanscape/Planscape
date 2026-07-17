@@ -1,4 +1,4 @@
-@if (selectedAreasHaveData()) {
+@if (selectedAreasHaveData() && false) {
   <nav
     mat-tab-nav-bar
     [tabPanel]="tabPanel"
@@ -293,20 +293,20 @@
   </div>
 
   <ng-template #noData>
-    <div
-      class="no-project-area-data-view"
-      #scrollContainer
-      [ngClass]="{ fullview: !isPreview }">
-      <sg-message-card
-        cardType="warning"
-        cardTitle="Report Unavailable: No Forested Land Found"
-        class="no-data-card"
-        [withBorders]="true">
-        Your selected project area contains no forested land. Reports are only
-        available for forested areas. Please select a new project area with
-        forest cover.
-      </sg-message-card>
-    </div>
+    <sg-message-card
+      cardType="warning"
+      cardTitle="Data Unavailable"
+      class="no-data-card"
+      [withBorders]="false">
+      We couldn’t find data for your selected area. To proceed, please:
+      <ul>
+        <li>Select a different Outcome from the dropdown menu.</li>
+        <li>
+          Adjust your Planning or Project boundaries to a location with
+          available data and run again.
+        </li>
+      </ul>
+    </sg-message-card>
   </ng-template>
 } @else {
   <div
