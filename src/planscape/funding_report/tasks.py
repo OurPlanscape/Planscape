@@ -58,10 +58,15 @@ def send_funding_opportunity_report_shared_link(
     recipient_email: str,
     public_url: str,
     inviter_name: str,
+    scenario_name: str,
 ) -> None:
     context = {
-        "public_url": public_url,
-        "inviter_name": inviter_name,
+        "PUBLIC_URL": public_url,
+        "INVITER_NAME": inviter_name,
+        "SCENARIO_NAME": scenario_name,
+        "LOGO_URL": get_frontend_url("assets/svg/planscape-color-logo.svg"),
+        # TODO: replace placeholder
+        "RESULTS_PREVIEW_URL": get_frontend_url("assets/png/placeholders/for-sharing-planceholder.png"),
     }
     subject = f"[Planscape] Funding opportunity report shared from {inviter_name}"
     txt = render_to_string(
