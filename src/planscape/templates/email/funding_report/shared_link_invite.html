@@ -1,5 +1,176 @@
-<p>{{ inviter_name }} shared a Planscape funding opportunity report with you.</p>
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Planscape Results Summary</title>
 
-<p>
-  <a href="{{ public_url }}">View the report</a>
-</p>
+  <!--[if mso]>
+  <xml>
+    <o:OfficeDocumentSettings>
+      <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+  </xml>
+  <![endif]-->
+
+  <style>
+    html,
+    body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      background-color: #ffffff;
+    }
+
+    table,
+    td {
+      border-collapse: collapse !important;
+      mso-table-lspace: 0pt !important;
+      mso-table-rspace: 0pt !important;
+    }
+
+    img {
+      border: 0;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+      display: block;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    @media screen and (max-width: 680px) {
+      .email-container {
+        width: 100% !important;
+      }
+
+      .mobile-padding {
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+      }
+
+      .hero-cell {
+        padding: 46px 24px !important;
+      }
+
+      .hero-image {
+        width: 100% !important;
+        max-width: 478px !important;
+        height: auto !important;
+      }
+
+      .headline {
+        font-size: 24px !important;
+        line-height: 31px !important;
+      }
+
+      .body-copy {
+        font-size: 18px !important;
+        line-height: 29px !important;
+      }
+    }
+  </style>
+</head>
+
+<body style="margin:0; padding:0; background-color:#ffffff;">
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent; mso-hide:all;">
+    {{ INVITER_NAME }} invited you to view the {{ SCENARIO_NAME }} results summary in Planscape.
+  </div>
+
+  <center role="article" aria-roledescription="email" lang="en" style="width:100%; background-color:#ffffff;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%; background-color:#ffffff;">
+      <tr>
+        <td align="center" style="padding:20px 16px 12px 16px;">
+
+          <table role="presentation" class="email-container" width="720" cellpadding="0" cellspacing="0" border="0" style="width:720px; max-width:720px; margin:0 auto;">
+            <!-- Header / logo -->
+            <tr>
+              <td align="left" style="padding:0 0 32px 0;">
+                <img
+                  src="{{ LOGO_URL }}"
+                  width="224"
+                  alt="Planscape"
+                  style="width:224px; max-width:100%; height:auto; font-family:Arial, Helvetica, sans-serif; font-size:28px; font-weight:700; color:#111111;"
+                >
+              </td>
+            </tr>
+
+            <!-- Main card -->
+            <tr>
+              <td style="border:2px solid #dedede; border-radius:10px; overflow:hidden;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;">
+                  <!-- Hero image area -->
+                  <tr>
+                    <td class="hero-cell" align="center" bgcolor="#dff3ea" style="background-color:#dff3ea; padding:68px 38px;">
+                      <!-- Replace {{RESULTS_PREVIEW_URL}} with an absolute HTTPS URL. Recommended source width: at least 956 px. -->
+                      <img
+                        class="hero-image"
+                        src="{{ RESULTS_PREVIEW_URL }}"
+                        width="478"
+                        alt="Preview of the Planscape results summary"
+                        style="width:478px; max-width:100%; height:auto; background-color:#ffffff;"
+                      >
+                    </td>
+                  </tr>
+
+                  <!-- Content -->
+                  <tr>
+                    <td class="mobile-padding" style="padding:34px 28px 28px 28px; background-color:#ffffff;">
+                      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;">
+                        <tr>
+                          <td class="headline" style="font-family:Arial, Helvetica, sans-serif; font-size:23px; line-height:30px; font-weight:700; color:#111111; padding:0 0 12px 0;">
+                            A results summary has been sent to you
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td class="body-copy" style="font-family:Arial, Helvetica, sans-serif; font-size:20px; line-height:31px; font-weight:400; color:#111111; padding:0 0 20px 0;">
+                            {{ INVITER_NAME }} has invited you to view the {{ SCENARIO_NAME }} summary in Planscape.
+                          </td>
+                        </tr>
+
+                        <!-- Bulletproof button -->
+                        <tr>
+                          <td align="center" style="padding:0;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;">
+                              <tr>
+                                <td align="center" bgcolor="#2b00c9" style="border-radius:5px; background-color:#2b00c9;">
+                                  <!--[if mso]>
+                                  <v:roundrect href="{{RESULTS_SUMMARY_URL}}" style="height:48px; v-text-anchor:middle; width:660px;" arcsize="10%" stroke="f" fillcolor="#2b00c9">
+                                    <w:anchorlock/>
+                                    <center style="color:#ffffff; font-family:Arial, Helvetica, sans-serif; font-size:17px; font-weight:400;">
+                                      View Results Summary
+                                    </center>
+                                  </v:roundrect>
+                                  <![endif]-->
+                                  <!--[if !mso]><!-- -->
+                                  <a
+                                    href="{{ PUBLIC_URL }}"
+                                    target="_blank"
+                                    style="display:block; width:100%; padding:13px 0; border-radius:5px; background-color:#2b00c9; color:#ffffff; font-family:Arial, Helvetica, sans-serif; font-size:17px; line-height:22px; font-weight:400; text-align:center;"
+                                  >View Results Summary</a>
+                                  <!--<![endif]-->
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+  </center>
+</body>
+</html>
