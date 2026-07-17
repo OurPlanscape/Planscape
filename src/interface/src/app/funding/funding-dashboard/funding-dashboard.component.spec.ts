@@ -341,4 +341,26 @@ describe('FundingDashboardComponent', () => {
     tick(POLLING_INTERVAL);
     expect(reportSpy).toHaveBeenCalledTimes(1);
   }));
+
+  it('should show the no-results state when the report status is EMPTY', fakeAsync(async () => {
+    await setup(makeScenario(123, ['FUNDING_REPORT']));
+    fundingReportService = TestBed.inject(FundingReportService);
+    const report = {
+      status: 'EMPTY',
+      results: null,
+      geopackage_status: null,
+    } as FundingReport;
+    spyOn(fundingReportService, 'getReport').and.returnValue(of(report));
+
+    component.reload$.next();
+    tick(0);
+
+    let hasNoResults: boolean | undefined;
+    let hasOutput: boolean | undefined;
+    component.hasNoResults$.subscribe((v) => (hasNoResults = v));
+    component.hasOutput$.subscribe((v) => (hasOutput = v));
+
+    expect(hasNoResults).toBe(true);
+    expect(hasOutput).toBe(false);
+  }));
 });
