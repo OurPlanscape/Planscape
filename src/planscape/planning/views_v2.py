@@ -749,6 +749,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 email,
                 public_url,
                 inviter_name,
+                scenario.name,
             )
 
         return Response({"emails": emails}, status=status.HTTP_201_CREATED)

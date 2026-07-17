@@ -23,6 +23,7 @@ class FundingOpportunityReportStatus(models.TextChoices):
     RUNNING = "RUNNING", "Running"
     SUCCESS = "SUCCESS", "Success"
     FAILED = "FAILED", "Failed"
+    EMPTY = "EMPTY", "Empty"
 
 
 FUNDING_REPORT_YEARS = (2026, 2031, 2036, 2041, 2046)

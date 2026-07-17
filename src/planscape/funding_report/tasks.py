@@ -38,6 +38,7 @@ from funding_report.services import (
     generate_treatment_clip_datalayer,
     get_aet_percentual_datalayer,
     get_treatment_datalayer,
+    treatment_layer_has_valid_data,
 )
 
 log = logging.getLogger(__name__)
@@ -57,10 +58,15 @@ def send_funding_opportunity_report_shared_link(
     recipient_email: str,
     public_url: str,
     inviter_name: str,
+    scenario_name: str,
 ) -> None:
     context = {
-        "public_url": public_url,
-        "inviter_name": inviter_name,
+        "PUBLIC_URL": public_url,
+        "INVITER_NAME": inviter_name,
+        "SCENARIO_NAME": scenario_name,
+        "LOGO_URL": get_frontend_url("assets/svg/planscape-color-logo.svg"),
+        # TODO: replace placeholder
+        "RESULTS_PREVIEW_URL": get_frontend_url("assets/png/placeholders/for-sharing-planceholder.png"),
     }
     subject = f"[Planscape] Funding opportunity report shared from {inviter_name}"
     txt = render_to_string(
@@ -390,6 +396,7 @@ def async_finalize_funding_report_results(
             "percentage": aet_improvement["percentage"],
             "improved_acres": aet_improvement["improved_acres"],
             "total_project_area_acres": aet_improvement["total_project_area_acres"],
+            "planning_area_acres": aet_improvement["planning_area_acres"],
             "improved_area_percent": aet_improvement["improved_area_percent"],
         }
         results["projects"]["AET"] = aet_improvement["project_areas"]
@@ -456,11 +463,12 @@ def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
         )
 
     try:
-        if not project_area_ids:
-            async_finalize_funding_report_results(
-                project_results=[],
-                funding_opportunity_report_id=funding_opportunity_report_id,
-            )
+        if not project_area_ids or not treatment_layer_has_valid_data(
+            report.scenario
+        ):
+            FundingOpportunityReport.objects.filter(
+                pk=funding_opportunity_report_id
+            ).update(status=FundingOpportunityReportStatus.EMPTY)
             return
 
         datalayer_lookup = build_datalayer_lookup()
