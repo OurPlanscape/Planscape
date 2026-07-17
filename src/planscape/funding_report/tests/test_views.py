@@ -679,7 +679,8 @@ class AETImprovementTest(APITestCase):
             "percentage": 15,
             "improved_acres": 12.5,
             "total_project_area_acres": 100,
-            "improved_area_percent": 12.5,
+            "planning_area_acres": 500,
+            "improved_area_percent": 2.5,
             "project_areas": [
                 {
                     "project_id": 1,
@@ -695,6 +696,7 @@ class AETImprovementTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["improved_acres"], 12.5)
+        self.assertEqual(response.json()["planning_area_acres"], 500)
         self.assertEqual(len(response.json()["project_areas"]), 1)
         calculate_mock.assert_called_once_with(report=report, percentage=15.0)
 

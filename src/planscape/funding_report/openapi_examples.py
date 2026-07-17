@@ -48,7 +48,8 @@ FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE = OpenApiExample(
                     "percentage": 25.0,
                     "improved_acres": 1234.5,
                     "total_project_area_acres": 5000.0,
-                    "improved_area_percent": 24.69,
+                    "planning_area_acres": 6500.0,
+                    "improved_area_percent": 18.99,
                 },
                 "BIOMASS_VOLUMES": {
                     "merchantable_softwood_bf": 1820.5,

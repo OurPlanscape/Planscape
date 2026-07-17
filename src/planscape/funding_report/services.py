@@ -563,10 +563,11 @@ def calculate_project_area_aet_improvement(
 def calculate_aet_improvement(
     report: FundingOpportunityReport, percentage: float
 ) -> Dict[str, Any]:
-    report = FundingOpportunityReport.objects.select_related("scenario").get(
-        pk=report.pk
-    )
+    report = FundingOpportunityReport.objects.select_related(
+        "scenario", "scenario__planning_area"
+    ).get(pk=report.pk)
     project_areas = list(report.scenario.project_areas.all())
+    planning_area_acres = get_acreage(report.scenario.planning_area.geometry)
     percentual_layer = get_aet_percentual_datalayer()
     if percentual_layer is None:
         raise ValueError("Missing funding report AET percentual datalayer.")
@@ -604,15 +605,14 @@ def calculate_aet_improvement(
     )
     improved_acres = sum(result["improved_acres"] for result in project_area_results)
     improved_area_percent = (
-        improved_acres / total_project_area_acres * 100
-        if total_project_area_acres
-        else 0.0
+        improved_acres / planning_area_acres * 100 if planning_area_acres else 0.0
     )
 
     return {
         "percentage": percentage,
         "improved_acres": improved_acres,
         "total_project_area_acres": total_project_area_acres,
+        "planning_area_acres": planning_area_acres,
         "improved_area_percent": improved_area_percent,
         "project_areas": project_area_results,
     }

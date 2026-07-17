@@ -311,14 +311,24 @@ class FundingReportRasterCalculationTest(TestCase):
             percentual_layer.url, row=0
         ) + 2 * geodesic_pixel_area_acres(percentual_layer.url, row=1)
         expected_total = get_acreage(self.project_area.geometry)
+        expected_planning_area_acres = get_acreage(self.planning_area.geometry)
+        # The planning area (set from BASELINE_RASTER's real-world bounds in
+        # setUp) is vastly larger than the project area (overwritten to the
+        # tiny synthetic AET raster's bounds above), so this also proves the
+        # percentage is computed against the planning area, not the project
+        # area total.
+        self.assertNotAlmostEqual(expected_planning_area_acres, expected_total)
         self.assertEqual(results["percentage"], 15)
         self.assertAlmostEqual(results["improved_acres"], expected_acres, places=6)
         self.assertAlmostEqual(
             results["total_project_area_acres"], expected_total, places=6
         )
         self.assertAlmostEqual(
+            results["planning_area_acres"], expected_planning_area_acres, places=6
+        )
+        self.assertAlmostEqual(
             results["improved_area_percent"],
-            expected_acres / expected_total * 100,
+            expected_acres / expected_planning_area_acres * 100,
             places=6,
         )
 
@@ -335,6 +345,56 @@ class FundingReportRasterCalculationTest(TestCase):
             project_area_result["improved_area_percent"],
             expected_acres / expected_total * 100,
             places=6,
+        )
+
+    def test_calculate_aet_improvement_percent_uses_planning_area_across_projects(
+        self,
+    ):
+        percentual_layer = self.create_aet_datalayer(role="percentual")
+        # Second project area sharing the same tiny synthetic raster bounds as
+        # self.project_area, so its improved/total acres double the first's.
+        second_project_area = ProjectAreaFactory.create(
+            scenario=self.scenario,
+            geometry=self.project_area.geometry,
+        )
+
+        results = calculate_aet_improvement(self.report, percentage=15)
+
+        expected_acres_per_project = geodesic_pixel_area_acres(
+            percentual_layer.url, row=0
+        ) + 2 * geodesic_pixel_area_acres(percentual_layer.url, row=1)
+        expected_total_per_project = get_acreage(self.project_area.geometry)
+        expected_planning_area_acres = get_acreage(self.planning_area.geometry)
+
+        expected_improved_acres = 2 * expected_acres_per_project
+        expected_total_project_area_acres = 2 * expected_total_per_project
+
+        self.assertEqual(len(results["project_areas"]), 2)
+        self.assertAlmostEqual(
+            results["improved_acres"], expected_improved_acres, places=6
+        )
+        self.assertAlmostEqual(
+            results["total_project_area_acres"],
+            expected_total_project_area_acres,
+            places=6,
+        )
+        self.assertAlmostEqual(
+            results["planning_area_acres"], expected_planning_area_acres, places=6
+        )
+        # The percentage must track the constant planning area total, not the
+        # sum of the (here, two) project areas' own acreage.
+        self.assertAlmostEqual(
+            results["improved_area_percent"],
+            expected_improved_acres / expected_planning_area_acres * 100,
+            places=6,
+        )
+        self.assertNotAlmostEqual(
+            results["improved_area_percent"],
+            expected_improved_acres / expected_total_project_area_acres * 100,
+        )
+        self.assertEqual(
+            {r["project_id"] for r in results["project_areas"]},
+            {self.project_area.pk, second_project_area.pk},
         )
 
     def test_calculate_project_area_delta_raises_for_missing_datalayer(self):

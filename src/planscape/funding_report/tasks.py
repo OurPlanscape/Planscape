@@ -391,6 +391,7 @@ def async_finalize_funding_report_results(
             "percentage": aet_improvement["percentage"],
             "improved_acres": aet_improvement["improved_acres"],
             "total_project_area_acres": aet_improvement["total_project_area_acres"],
+            "planning_area_acres": aet_improvement["planning_area_acres"],
             "improved_area_percent": aet_improvement["improved_area_percent"],
         }
         results["projects"]["AET"] = aet_improvement["project_areas"]
