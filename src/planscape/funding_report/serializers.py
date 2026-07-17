@@ -57,6 +57,7 @@ class FundingReportAETImprovementResponseSerializer(serializers.Serializer):
     percentage = serializers.FloatField()
     improved_acres = serializers.FloatField()
     total_project_area_acres = serializers.FloatField()
+    planning_area_acres = serializers.FloatField()
     improved_area_percent = serializers.FloatField()
     project_areas = FundingReportAETImprovementProjectAreaSerializer(many=True)
 
