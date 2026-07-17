@@ -109,7 +109,6 @@ export class FundingDashboardComponent implements OnInit {
     map((r) => r?.status === 'SUCCESS' && !this.hasResults(r))
   );
   hasError$ = this.report$.pipe(map((r) => r?.status === 'FAILED'));
-  hasEmptyResults$ = this.report$.pipe(map((r) => r?.status === 'EMPTY'));
 
   /** Report hasn't been generated yet (and the user hasn't just asked for it). */
   private reportNotGenerated$ = combineLatest([

@@ -216,12 +216,6 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     map((ids) => ids.map((id) => Number(id.replace('source_', ''))))
   );
 
-  selectedAreasHaveTreatments() {
-    return (
-      this.smokeHasData || this.treeCarbonHasData || this.flameLengthHasData
-    );
-  }
-
   /** Flame length interval options for the selector. */
   flameLengthOptions = FLAME_LENGTH_INTERVAL_OPTIONS;
   /** The interval whose pre-calculated reduction the chart currently shows. */
@@ -376,6 +370,16 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   smokeHasData = false;
   treeCarbonHasData = false;
   flameLengthHasData = false;
+
+  /**
+   *
+   * convenience function to check whether *any* sections have data for the current selection
+   */
+  selectedAreasHaveData() {
+    return (
+      this.smokeHasData || this.treeCarbonHasData || this.flameLengthHasData
+    );
+  }
 
   /**
    * Estimated biomass volumes for the current selection, or undefined when the
