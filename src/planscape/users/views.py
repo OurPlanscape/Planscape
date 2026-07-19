@@ -2,7 +2,6 @@ import json
 import logging
 from urllib.parse import urlparse
 
-from allauth.account.utils import has_verified_email
 from dj_rest_auth.jwt_auth import JWTCookieAuthentication
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -22,14 +21,6 @@ from users.serializers import MartinResourceSerializer, UserSerializer
 logger = logging.getLogger(__name__)
 
 
-@api_view(["GET", "POST"])
-def get_user(request: HttpRequest) -> User:
-    user = None
-    if hasattr(request, "user") and request.user.is_authenticated:
-        user = request.user
-    return user
-
-
 @api_view(["GET"])
 def get_user_by_id(request: HttpRequest) -> HttpResponse:
     try:
@@ -39,30 +30,6 @@ def get_user_by_id(request: HttpRequest) -> HttpResponse:
             raise ValueError("Must specify user_id")
         user = User.objects.get(id=user_id)
         return JsonResponse(UserSerializer(user).data, safe=False)
-    except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
-
-
-@api_view(["POST"])
-def delete_user(request: HttpRequest) -> HttpResponse:
-    try:
-        logged_in_user = request.user
-        if logged_in_user is None:
-            raise ValueError("Must be logged in")
-        body = json.loads(request.body)
-        user_email_to_delete = body.get("email", None)
-        password = body.get("password", None)
-        if user_email_to_delete is None or not isinstance(user_email_to_delete, str):
-            raise ValueError("User email must be provided as a string")
-        if not logged_in_user.check_password(password):
-            raise ValueError("Invalid password")
-        if user_email_to_delete != logged_in_user.email:
-            raise ValueError("Cannot delete another user account")
-
-        # Deactivate user account
-        logged_in_user.is_active = False
-        logged_in_user.save()
-        return JsonResponse({"deleted": True})
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -145,19 +112,6 @@ def deactivate_user(request: Request) -> Response:
             response.data = {"detail": "An error has occurred."}
             response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     return response
-
-
-@api_view(["GET"])
-def is_verified_user(request: HttpRequest) -> HttpResponse:
-    try:
-        logged_in_user = request.user
-        if logged_in_user is None:
-            raise ValueError("Must be logged in")
-        if not has_verified_email(logged_in_user):
-            raise ValueError("Email not verified.")
-        return JsonResponse({"verified": True})
-    except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
 @api_view(["POST", "GET"])
