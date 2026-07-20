@@ -531,7 +531,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
         mapCanvas
       );
     } catch (error) {
-      this.displayDownloadErrorSnackbar;
+      this.displayDownloadErrorSnackbar();
     } finally {
       this.generatingPdf$.next(false);
     }
