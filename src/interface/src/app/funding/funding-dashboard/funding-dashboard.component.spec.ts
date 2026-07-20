@@ -10,7 +10,7 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, NEVER, of } from 'rxjs';
 import { FundingDashboardComponent } from '@app/funding/funding-dashboard/funding-dashboard.component';
 import { MockProvider } from 'ng-mocks';
 import { BreadcrumbService } from '@services/breadcrumb.service';
@@ -362,5 +362,25 @@ describe('FundingDashboardComponent', () => {
 
     expect(hasNoResults).toBe(true);
     expect(hasOutput).toBe(false);
+  }));
+
+  it('should show the generating spinner instantly on click, before the server responds', fakeAsync(async () => {
+    await setup(makeScenario(123, ['FUNDING_REPORT']));
+    fundingReportService = TestBed.inject(FundingReportService);
+    // No report exists yet: the poll resolves to null.
+    spyOn(fundingReportService, 'getReport').and.returnValue(of(null));
+    // Never resolves during this test, so isGenerating$ can only be driven by
+    // the pending click, not by a poll landing a PENDING report.
+    spyOn(fundingReportService, 'generateReport').and.returnValue(NEVER);
+
+    component.reload$.next();
+    tick(0);
+
+    let isGenerating: boolean | undefined;
+    component.isGenerating$.subscribe((v) => (isGenerating = v));
+    expect(isGenerating).toBe(false);
+
+    component.generateReport();
+    expect(isGenerating).toBe(true);
   }));
 });
