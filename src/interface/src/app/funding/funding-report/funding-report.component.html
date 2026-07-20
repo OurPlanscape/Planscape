@@ -157,54 +157,11 @@
             type="bar"></sg-chart>
         </div>
       </div>
-    </div>
-  </sg-section>
-
-  <sg-section
-    id="water"
-    class="report-section"
-    headline="Water"
-    [tooltipTemplate]="tooltipContent"
-    [tooltipInteractive]="true"
-    (tooltipClicked)="tooltipName = 'Water'"
-    [isCollapsible]="true"
-    [defaultExpanded]="true">
-    <div class="summary-card" *ngIf="!isPreview">
-      <app-funding-map-layers
-        heading="Map Layers"
-        [layers]="sectionLayers['water']"
-        [selectedLayerId]="viewedLayerId$ | async"
-        [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
-        (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
-    </div>
-    <div class="summary-card" *ngIf="!isPreview">
-      <div class="summary-water">
-        Water availability increased by:
-        <sg-input-field
-          suffix="%"
-          [error]="waterAvailabilityControl.invalid"
-          class="water-input">
-          <input
-            sgInput
-            type="text"
-            inputmode="numeric"
-            maxlength="3"
-            required
-            [formControl]="waterAvailabilityControl"
-            (input)="onWaterAvailabilityInput($event)" />
-        </sg-input-field>
-      </div>
-
-      <div class="field-error" *ngIf="waterAvailabilityControl.invalid">
-        Field is required
-      </div>
-    </div>
-    <div class="stat-cards-wrapper">
-      <div class="stat-cards">
-        <div class="stat-card">
-          <div class="stat-value">
-            {{ water?.improved_area_percent | number: '1.0-1'
-            }}<span class="stat-unit">%</span>
+      <div class="top-section-divider">
+        <div class="coming-soon">
+          <div class="coming-soon-header">
+            <mat-icon>access_time</mat-icon>
+            <h4>Burn Probability is coming soon!</h4>
           </div>
           <div>
             This section is currently under construction. Soon, you will be able
@@ -258,7 +215,7 @@
         <div class="stat-cards">
           <div class="stat-card">
             <div class="stat-value">
-              {{ water?.improved_area_percent | number: '1.0-0'
+              {{ water?.improved_area_percent | number: '1.0-1'
               }}<span class="stat-unit">%</span>
             </div>
             <div class="stat-label">of Planning Area</div>
