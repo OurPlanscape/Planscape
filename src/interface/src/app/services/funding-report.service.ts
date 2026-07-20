@@ -1,7 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { environment } from '@env/environment';
-import { FundingReport, FundingReportAETSummary } from '@types';
+import {
+  FlameLengthInterval,
+  FundingReport,
+  FundingReportAETSummary,
+  FundingReportInviteEmails,
+  FundingReportPublicUrl,
+} from '@types';
 import { catchError, Observable, of, throwError } from 'rxjs';
 
 @Injectable({
@@ -49,6 +55,68 @@ export class FundingReportService {
       environment.backend_endpoint +
         `/v2/scenarios/${scenarioId}/aet-improvement/`,
       { percentage },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /**
+   * Fetch the emails the report has already been shared with.
+   */
+  getInviteEmails(scenarioId: number): Observable<FundingReportInviteEmails> {
+    return this.http.get<FundingReportInviteEmails>(
+      environment.backend_endpoint +
+        `/v2/scenarios/${scenarioId}/funding-report-invites/`,
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /**
+   * Fetch the public link for the given report configuration (water % + flame
+   * interval).
+   */
+  getPublicUrl(
+    scenarioId: number,
+    aet: number,
+    totalFlameSeverity: FlameLengthInterval
+  ): Observable<FundingReportPublicUrl> {
+    return this.http.get<FundingReportPublicUrl>(
+      environment.backend_endpoint +
+        `/v2/scenarios/${scenarioId}/funding-report-public-url/`,
+      {
+        params: {
+          aet: aet,
+          total_flame_severity: totalFlameSeverity,
+        },
+        withCredentials: true,
+      }
+    );
+  }
+
+  /**
+   * Create funding-report invites for the given emails and return the emails
+   * the report has now been shared with. When `resendToAllInvitees` is true the
+   * link is re-sent to everyone already invited, not just the new emails.
+   */
+  shareReport(
+    scenarioId: number,
+    emails: string[],
+    aet: number,
+    totalFlameSeverity: FlameLengthInterval,
+    resendToAllInvitees = false
+  ): Observable<FundingReportInviteEmails> {
+    return this.http.post<FundingReportInviteEmails>(
+      environment.backend_endpoint +
+        `/v2/scenarios/${scenarioId}/funding-report-invites/`,
+      {
+        emails,
+        aet,
+        total_flame_severity: totalFlameSeverity,
+        resent_to_all_invitees: resendToAllInvitees,
+      },
       {
         withCredentials: true,
       }

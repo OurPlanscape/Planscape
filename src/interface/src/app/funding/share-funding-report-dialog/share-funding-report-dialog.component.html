@@ -1,0 +1,13 @@
+<sg-share-dialog
+  [title]="title"
+  [(emails)]="emails"
+  [submitting]="submitting"
+  primaryLabel="Send"
+  [showCopyLink]="true"
+  [people]="(people$ | async) || []"
+  [peopleLoading]="isLoading"
+  peopleLabel="Report summary sent to:"
+  peopleEmptyText="This report hasn't been shared yet."
+  (primaryAction)="onPrimary($event)"
+  (copyLink)="copyLink()"
+  (closed)="close()"></sg-share-dialog>

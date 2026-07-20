@@ -12,7 +12,9 @@ import { of } from 'rxjs';
 import { FundingMapConfigState } from '../funding-map-config-state';
 import { FundingModuleService } from '@services/funding-module.service';
 import { DataLayersService } from '@app/services';
-import { DataLayer, FundingReport } from '@types';
+import { DataLayer, FundingReport, Scenario } from '@types';
+import { MatDialog } from '@angular/material/dialog';
+import { ScenarioState } from '@scenario/scenario.state';
 
 const AET_LAYER_NAME =
   'Percentage change in water availability after treatment';
@@ -82,6 +84,11 @@ describe('FundingReportComponent', () => {
             of({ options: { datalayers: EMPTY_DATALAYERS } } as any),
         }),
         MockProvider(DataLayersService, { getDataLayerById }),
+
+        MockProvider(MatDialog),
+        MockProvider(ScenarioState, {
+          currentScenario$: of({ name: 'Test Scenario' } as Scenario),
+        }),
       ],
     }).compileComponents();
 

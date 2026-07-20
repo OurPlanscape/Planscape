@@ -1,17 +1,25 @@
 import { Component, Inject } from '@angular/core';
 
-import { FormMessageType, Invite, INVITE_ROLE, Plan, User } from '@types';
+import { Invite, INVITE_ROLE, Plan, User } from '@types';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 import { AuthService, InvitesService } from '@services';
-import { filter, map, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import {
+  RoleChange,
+  SharePerson,
+  SharePrimaryEvent,
+} from '@styleguide/share-dialog/share-dialog.component';
 
-const Roles: Record<INVITE_ROLE, INVITE_ROLE> = {
-  Viewer: 'Viewer',
-  Collaborator: 'Collaborator',
-  Owner: 'Owner',
-};
+const ROLES: INVITE_ROLE[] = ['Viewer', 'Collaborator', 'Owner'];
 
 @Component({
   selector: 'app-share-plan-dialog',
@@ -30,59 +38,72 @@ export class SharePlanDialogComponent {
     }
   ) {}
 
-  emails: string[] = [];
-  errorType = FormMessageType.ERROR;
-  invalidEmail = false;
-  showHelp = false;
   submitting = false;
-  message = '';
   isLoading = true;
+  roles = ROLES;
 
-  invites$ = this.inviteService
-    .getInvites(this.data.plan.id)
-    .pipe(tap((_) => (this.isLoading = false)));
+  /** Latest invites, kept so row actions can resolve an invite by id. */
+  private invitesSnapshot: Invite[] = [];
+  private reload$ = new BehaviorSubject<void>(undefined);
 
-  fullname$ = this.authService.loggedInUser$.pipe(
-    filter((user): user is User => !!user),
-    map((user) => [user.firstName, user.lastName].join(' '))
+  private invites$ = this.reload$.pipe(
+    switchMap(() => this.inviteService.getInvites(this.data.plan.id)),
+    tap((invites) => (this.invitesSnapshot = invites))
   );
 
-  showCreator$ = this.authService.loggedInUser$.pipe(
-    filter((user): user is User => !!user),
-    map((user) => user.id != this.data.plan.user)
+  private user$ = this.authService.loggedInUser$.pipe(
+    filter((user): user is User => !!user)
   );
 
-  roles: INVITE_ROLE[] = Object.keys(Roles) as INVITE_ROLE[];
+  people$ = combineLatest([this.invites$, this.user$]).pipe(
+    map(([invites, user]) => this.buildRows(invites, user)),
+    tap(() => (this.isLoading = false))
+  );
 
-  selectedRole = this.roles[0] as INVITE_ROLE;
-
-  addEmail(email: string): void {
-    this.emails.push(email);
-  }
-
-  removeEmail(email: string): void {
-    const index = this.emails.indexOf(email);
-
-    if (index >= 0) {
-      this.emails.splice(index, 1);
+  private buildRows(invites: Invite[], user: User): SharePerson[] {
+    const rows: SharePerson[] = [];
+    if (user.id != this.data.plan.user) {
+      rows.push({
+        name: this.data.plan.creator,
+        role: 'Creator',
+        editable: false,
+      });
     }
+    rows.push({
+      name: `${[user.firstName, user.lastName].join(' ')} (You)`,
+      role: this.data.plan.role,
+      editable: false,
+    });
+    for (const invite of invites) {
+      rows.push({
+        id: invite.id,
+        name: invite.collaborator_name || invite.email,
+        role: invite.role,
+        editable: true,
+      });
+    }
+    return rows;
   }
 
   close() {
     this.dialogRef.close();
   }
 
-  invite() {
+  onPrimary(event: SharePrimaryEvent) {
+    if (event.emails.length === 0) {
+      this.close();
+      return;
+    }
     this.submitting = true;
     this.inviteService
       .inviteUsers(
-        this.emails,
-        this.selectedRole,
+        event.emails,
+        (event.role as INVITE_ROLE) ?? ROLES[0],
         this.data.plan.id,
-        this.message
+        event.message
       )
       .subscribe({
-        next: (result) => {
+        next: () => {
           this.showSnackbar('Users invited');
           this.close();
         },
@@ -95,66 +116,57 @@ export class SharePlanDialogComponent {
       });
   }
 
-  get showMessageBox() {
-    return this.invalidEmail || this.emails.length > 0;
-  }
-
-  startOver() {
-    this.invalidEmail = false;
-    this.emails = [];
-  }
-
-  changeRole(invite: Invite, newRole: INVITE_ROLE) {
-    this.selectedRole = Roles[newRole];
-    this.inviteService.changeRole(invite.id, newRole).subscribe({
-      next: () => {
-        invite.role = newRole;
-        this.showSnackbar('Access Updated');
-      },
-      error: () => {
-        this.showSnackbar(
-          `There was an error trying to update the role of ${invite.email}. Please try again.`
-        );
-      },
-    });
-  }
-
-  changeInvitationsRole(role: INVITE_ROLE) {
-    this.selectedRole = Roles[role];
-  }
-
-  resendCode(invite: Invite) {
+  onChangeRole(event: RoleChange) {
+    if (event.person.id == null) {
+      return;
+    }
     this.inviteService
-      .inviteUsers([invite.email], this.selectedRole, this.data.plan.id)
+      .changeRole(Number(event.person.id), event.role as INVITE_ROLE)
       .subscribe({
-        next: (result) => {
-          this.showSnackbar(`Email sent to ${invite.email}`);
-        },
+        next: () => this.showSnackbar('Access Updated'),
         error: () => {
           this.showSnackbar(
-            `There was an error trying to resend code to ${invite.email}. Please try again.`
+            `There was an error trying to update the role of ${event.person.name}. Please try again.`
           );
+          // Roll back the optimistic update by reloading the authoritative list.
+          this.reload$.next();
         },
       });
   }
 
-  reloadInvites() {
-    this.invites$ = this.inviteService
-      .getInvites(this.data.plan.id)
-      .pipe(tap((_) => (this.isLoading = false)));
+  onResend(person: SharePerson) {
+    const invite = this.invitesSnapshot.find((i) => i.id === person.id);
+    if (!invite) {
+      return;
+    }
+    this.inviteService
+      .inviteUsers(
+        [invite.email],
+        invite.role as INVITE_ROLE,
+        this.data.plan.id
+      )
+      .subscribe({
+        next: () => this.showSnackbar(`Email sent to ${invite.email}`),
+        error: () =>
+          this.showSnackbar(
+            `There was an error trying to resend code to ${invite.email}. Please try again.`
+          ),
+      });
   }
 
-  removeAccess(invite: Invite) {
-    this.inviteService.deleteInvite(invite.id).subscribe({
+  onRemoveAccess(person: SharePerson) {
+    if (person.id == null) {
+      return;
+    }
+    this.inviteService.deleteInvite(Number(person.id)).subscribe({
       next: () => {
-        this.showSnackbar(`Removed  ${invite.email}`);
-        this.reloadInvites();
+        this.showSnackbar(`Removed ${person.name}`);
+        this.reload$.next();
       },
-      error: () => {
+      error: () =>
         this.showSnackbar(
-          `There was an error trying to revoke access for ${invite.email}. Please try again.`
-        );
-      },
+          `There was an error trying to revoke access for ${person.name}. Please try again.`
+        ),
     });
   }
 

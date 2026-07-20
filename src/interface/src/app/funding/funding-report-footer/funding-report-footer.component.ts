@@ -33,6 +33,7 @@ export class FundingReportFooterComponent {
 
   @Output() downloadPdf = new EventEmitter<void>();
   @Output() downloadGeopackage = new EventEmitter<void>();
+  @Output() share = new EventEmitter<void>();
 
   get buttonLabel() {
     if (this.generatingPdf) {
@@ -54,7 +55,7 @@ export class FundingReportFooterComponent {
   }
 
   shareReport() {
-    // TODO
+    this.share.emit();
   }
 
   openFullView() {

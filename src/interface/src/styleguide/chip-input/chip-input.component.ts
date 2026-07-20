@@ -1,13 +1,23 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
-import { EMAIL_VALIDATION_REGEX } from '@shared';
 import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { NgForOf } from '@angular/common';
 
+/**
+ * Basic email validation. Inlined here so the styleguide stays free of app
+ * imports (mirrors `EMAIL_VALIDATION_REGEX` in the app's shared constants).
+ */
+const EMAIL_VALIDATION_REGEX = /^[\w+\.-]+@[\w+\.-]+\.[a-zA-Z]{2,}$/;
+
+/**
+ * Free-text email entry rendered as removable chips. Tokenizes on comma / space
+ * / newline (and `Name <email>` segments), validates each token and emits the
+ * valid ones; invalid input raises `isInvalid`.
+ */
 @Component({
-  selector: 'app-chip-input',
+  selector: 'sg-chip-input',
   templateUrl: './chip-input.component.html',
   styleUrls: ['./chip-input.component.scss'],
   standalone: true,
