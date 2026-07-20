@@ -3,7 +3,9 @@ import {
   FundingReportResults,
   ProjectArea,
 } from '@types';
+import { FundingReportAETSummary } from '@types';
 import {
+  aggregateAetSummary,
   aggregateFlameLengthSummary,
   aggregateMetricSummary,
   hasFlameLengthData,
@@ -107,6 +109,68 @@ describe('funding-report helper', () => {
       expect(aggregateMetricSummary(zeroBaseline, METRIC, [1])).toEqual([
         { year: 0, value: 50, baseline: 0, delta: 0 },
       ]);
+    });
+  });
+
+  describe('aggregateAetSummary', () => {
+    const summary: FundingReportAETSummary = {
+      percentage: 15,
+      improved_acres: 30,
+      total_project_area_acres: 300,
+      planning_area_acres: 1000,
+      improved_area_percent: 3,
+    };
+    const projects = [
+      {
+        project_id: 1,
+        improved_acres: 10,
+        total_acres: 100,
+        improved_area_percent: 10,
+      },
+      {
+        project_id: 2,
+        improved_acres: 20,
+        total_acres: 200,
+        improved_area_percent: 10,
+      },
+    ];
+
+    it('returns the whole-scenario summary as-is when no areas are selected', () => {
+      expect(aggregateAetSummary(summary, projects, [])).toEqual({
+        improved_acres: 30,
+        improved_area_percent: 3,
+      });
+    });
+
+    it('sums the improved acres of the selected project only, over the planning area', () => {
+      // 10 improved acres / 1000 planning-area acres * 100 = 1%
+      expect(aggregateAetSummary(summary, projects, [1])).toEqual({
+        improved_acres: 10,
+        improved_area_percent: 1,
+      });
+    });
+
+    it('sums improved acres across several selected projects', () => {
+      // (10 + 20) / 1000 * 100 = 3%
+      expect(aggregateAetSummary(summary, projects, [1, 2])).toEqual({
+        improved_acres: 30,
+        improved_area_percent: 3,
+      });
+    });
+
+    it('yields zero when no selected ids match the report', () => {
+      expect(aggregateAetSummary(summary, projects, [99])).toEqual({
+        improved_acres: 0,
+        improved_area_percent: 0,
+      });
+    });
+
+    it('yields a 0 percent when the planning area acreage is missing', () => {
+      const noPlanningArea = { ...summary, planning_area_acres: 0 };
+      expect(aggregateAetSummary(noPlanningArea, projects, [1])).toEqual({
+        improved_acres: 10,
+        improved_area_percent: 0,
+      });
     });
   });
 

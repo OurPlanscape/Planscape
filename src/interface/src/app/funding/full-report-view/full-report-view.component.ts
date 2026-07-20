@@ -278,10 +278,10 @@ export class FullReportViewComponent implements OnInit {
    * report, leaving everything else untouched. Returns a new report object so
    * change detection picks it up.
    *
-   * Water patches only `summary.AET`: the report always displays the
-   * whole-scenario water summary (see the funding-report component's `water`
-   * getter) and never breaks AET down by project area, so the per-project AET
-   * the endpoint also returns is ignored.
+   * Water patches both `summary.AET` (the whole-scenario totals) and
+   * `projects.AET` (the per-project breakdown the funding-report component
+   * re-aggregates over the selected project areas), keeping them in sync for the
+   * new percentage.
    *
    * Flame length is no longer recalculated here: a single report run now
    * pre-calculates every interval, and the funding-report component reads the
@@ -297,6 +297,10 @@ export class FullReportViewComponent implements OnInit {
     const results = { ...report.results };
     if (water) {
       results.summary = { ...results.summary, AET: water };
+      results.projects = {
+        ...results.projects,
+        AET: water.project_areas ?? [],
+      };
     }
     return { ...report, results };
   }

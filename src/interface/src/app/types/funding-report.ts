@@ -24,21 +24,48 @@ export type FundingReportMetric =
   | 'TOTAL_FLAME_SEVERITY';
 
 /**
+ * Per-project-area AET (water availability) improvement. Lives under
+ * `results.projects.AET`, and is also carried in the `project_areas` array of
+ * the `aet-improvement` endpoint response. Used to re-aggregate the water
+ * figures over the selected project areas, mirroring the charts.
+ */
+export interface FundingReportAETImprovementProjectArea {
+  project_id: number;
+  /** Acres in this project area with a significant increase in water availability. */
+  improved_acres: number;
+  total_acres: number;
+  /** Percent of this project area with a significant increase (0-100). */
+  improved_area_percent: number;
+}
+
+/**
  * AET (water availability) summary block. Lives under `results.summary.AET` in
  * the report, and is also the response of the `aet-improvement` endpoint.
  *
- * Note: the backend also returns a per-project-area AET breakdown
- * (`project_areas`), but the report only ever displays this whole-scenario
- * summary, so the FE deliberately ignores it (it isn't typed or read anywhere).
+ * `improved_acres` / `improved_area_percent` are the whole-scenario totals (all
+ * project areas). To show figures for a selected subset of project areas, the
+ * FE re-aggregates from the per-project `results.projects.AET` breakdown — see
+ * `aggregateAetSummary`.
  */
 export interface FundingReportAETSummary {
   /** The target percentage increase the calculation was run for. */
   percentage: number;
-  /** Acres with a significant increase in water availability. */
+  /** Acres with a significant increase in water availability (whole scenario). */
   improved_acres: number;
   total_project_area_acres: number;
-  /** Percent of the project area with a significant increase (0-100). */
+  /**
+   * Total acreage of the planning area — the denominator for
+   * `improved_area_percent`, unchanged by the project-area selection.
+   */
+  planning_area_acres: number;
+  /** Percent of the planning area with a significant increase (0-100). */
   improved_area_percent: number;
+  /**
+   * Per-project-area breakdown. Present on the `aet-improvement` endpoint
+   * response; the report itself carries the same array under
+   * `results.projects.AET` instead.
+   */
+  project_areas?: FundingReportAETImprovementProjectArea[];
 }
 
 /** Request body for the `aet-improvement` endpoint. */
@@ -86,18 +113,15 @@ export interface FundingReportResults {
     BIOMASS_VOLUMES?: FundingReportBiomassVolumes;
   };
   /**
-   * Same metrics, broken down per project area.
-   *
-   * AET is intentionally omitted here: the water section always shows the
-   * whole-scenario `summary.AET` and is never broken down by project area, so
-   * the FE doesn't model or read the per-project AET the backend sends.
+   * Same metrics, broken down per project area. The water section re-aggregates
+   * `AET` over the selected project areas (see `aggregateAetSummary`).
    */
-  // AET?: FundingReportAETImprovementProjectArea[];
   projects: Record<
     FundingReportTimeSeriesMetric,
     FundingReportProjectDataPoint[]
   > & {
     TOTAL_FLAME_SEVERITY?: FlameLengthIntervalProjects;
+    AET?: FundingReportAETImprovementProjectArea[];
     BIOMASS_VOLUMES?: FundingReportBiomassVolumesProject[];
   };
 

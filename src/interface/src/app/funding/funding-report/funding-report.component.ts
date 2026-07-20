@@ -41,7 +41,6 @@ import {
   FLAME_LENGTH_INTERVAL_OPTIONS,
   FlameLengthInterval,
   FundingReport,
-  FundingReportAETSummary,
   FundingReportBiomassVolumes,
   FundingReportDataLayers,
   FundingReportTimeSeriesMetric,
@@ -50,6 +49,8 @@ import { FundingModuleService } from '@services/funding-module.service';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import {
+  AetTileFigures,
+  aggregateAetSummary,
   aggregateFlameLengthSummary,
   aggregateMetricSummary,
   hasFlameLengthData,
@@ -540,7 +541,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
         mapCanvas
       );
     } catch (error) {
-      this.displayDownloadErrorSnackbar;
+      this.displayDownloadErrorSnackbar();
     } finally {
       this.generatingPdf$.next(false);
     }
@@ -598,13 +599,20 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   /**
    * Water (AET) figures for the template, if the report carries them.
    *
-   * Unlike the time-series metrics (smoke, carbon, flame length), AET is always
-   * shown as the whole-scenario summary and is NOT broken down by the selected
-   * `projectAreas`. The backend also returns a per-project AET breakdown, but
-   * the FE deliberately doesn't model or read it, so the water section stays the
-   * same whatever the project-area filter is set to.
+   * Like the time-series metrics (smoke, carbon, flame length), the water
+   * figures are re-aggregated over the selected `projectAreas`: the acres are
+   * summed from the per-project breakdown and expressed as a percent of the
+   * whole planning area. An empty selection shows the whole-scenario summary.
    */
-  get water(): FundingReportAETSummary | undefined {
-    return this.report?.results?.summary?.AET;
+  get water(): AetTileFigures | undefined {
+    const summary = this.report?.results?.summary?.AET;
+    if (!summary) {
+      return undefined;
+    }
+    return aggregateAetSummary(
+      summary,
+      this.report?.results?.projects?.AET ?? [],
+      this.projectAreas
+    );
   }
 }
