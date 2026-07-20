@@ -11,7 +11,6 @@
 
 // These styles will ONLY apply during the millisecond html2canvas takes its snapshot
 .is-generating-pdf {
-
   .report-container-selector {
     width: 800px !important;
   }
@@ -25,7 +24,7 @@
     max-width: 1024px !important;
   }
 
-  // Limit the size of the child elements 
+  // Limit the size of the child elements
   .report-section {
     flex: 0 1 calc(33.33% - 16px) !important;
     box-sizing: border-box !important;
@@ -99,6 +98,9 @@
 
 .outcomes-row {
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 
   .view-outcomes-row {
     position: sticky;
@@ -129,12 +131,14 @@
 
 .report-view {
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 .report-spinner {
   margin: 48px auto;
 }
-
 
 .data-layers-view {
   background-color: $color-white;
@@ -168,7 +172,10 @@
   }
 }
 
-.map-layers-tabs::ng-deep .mat-mdc-tab-header .mat-mdc-tab-label-container .mat-mdc-tab {
+.map-layers-tabs::ng-deep
+  .mat-mdc-tab-header
+  .mat-mdc-tab-label-container
+  .mat-mdc-tab {
   flex-grow: 1;
 }
 

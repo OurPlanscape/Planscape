@@ -373,6 +373,16 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   flameLengthHasData = false;
 
   /**
+   *
+   * convenience function to check whether *any* sections have data for the current selection
+   */
+  selectedAreasHaveData() {
+    return (
+      this.smokeHasData || this.treeCarbonHasData || this.flameLengthHasData
+    );
+  }
+
+  /**
    * Estimated biomass volumes for the current selection, or undefined when the
    * report carries no biomass data. Rebuilt alongside the charts.
    */

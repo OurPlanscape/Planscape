@@ -39,7 +39,6 @@
 
     .report-section {
       scroll-margin-top: 184px;
-
     }
   }
 }
@@ -65,7 +64,6 @@
   justify-content: flex-end;
   gap: 8px;
 }
-
 
 h5 {
   font-size: 14px;
@@ -147,7 +145,6 @@ h5 {
   margin-top: 4px;
 }
 
-
 .summary-label {
   color: $color-md-gray;
   font-size: 16px;
@@ -168,7 +165,7 @@ h5 {
 .summary-water {
   display: flex;
   align-items: center;
-  gap: 12px
+  gap: 12px;
 }
 
 .water-input {
@@ -186,10 +183,10 @@ h5 {
 }
 
 .stat-card {
-  border: 1px solid #e1e1e1;
+  border: 1px solid $color-soft-gray;
   border-radius: 4px;
   padding: 16px;
-  flex: 1
+  flex: 1;
 }
 
 .stat-label {
@@ -202,7 +199,7 @@ h5 {
   font-size: 28px;
   font-weight: 700;
   line-height: 1.1;
-  color: #000;
+  color: $color-black;
 }
 
 .stat-unit {
@@ -222,7 +219,7 @@ h5 {
   border-collapse: collapse;
   font-size: 14px;
   border-radius: 4px;
-  border: 1px solid #E1E1E1;
+  border: 1px solid $color-soft-gray;
 
   th,
   td {
@@ -238,12 +235,10 @@ h5 {
     font-weight: 600;
   }
 
-
   tbody td {
     background: $color-white;
   }
 }
-
 
 .top-section-divider {
   border-top: 1px solid $color-soft-gray;
@@ -259,7 +254,6 @@ h5 {
 .report-section ::ng-deep sg-chart .canvas-wrapper {
   height: 312px;
 }
-
 
 .burn-probability-banner {
   margin: 16px 0;
@@ -278,7 +272,6 @@ h5 {
   }
 }
 
-
 .coming-soon {
   display: flex;
   padding: 24px;
@@ -293,7 +286,6 @@ h5 {
   font-weight: 400;
   line-height: 26px;
 }
-
 
 .coming-soon-header {
   display: flex;
@@ -359,5 +351,18 @@ h5 {
       width: 20px;
       height: 20px;
     }
+  }
+}
+
+.no-project-area-data-view {
+  padding: 16px;
+  background-color: $color-soft-purple;
+  display: flex;
+  flex-grow: 1;
+
+  .no-forested-land-card {
+    padding: 16px;
+    border: 1px $color-light-purple solid;
+    max-height: 120px;
   }
 }
