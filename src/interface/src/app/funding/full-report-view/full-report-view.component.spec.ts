@@ -93,12 +93,21 @@ describe('FullReportViewComponent recalculations', () => {
           percentage: 10,
           improved_acres: 5,
           total_project_area_acres: 100,
-          improved_area_percent: 5,
+          planning_area_acres: 500,
+          improved_area_percent: 1,
         },
       },
       projects: {
         POTENTIAL_SMOKE: [],
         ABOVEGROUND_TOTAL: [],
+        AET: [
+          {
+            project_id: 1,
+            improved_acres: 5,
+            total_acres: 100,
+            improved_area_percent: 5,
+          },
+        ],
         TOTAL_FLAME_SEVERITY: {
           '7_4': [
             {
@@ -119,7 +128,16 @@ describe('FullReportViewComponent recalculations', () => {
     percentage: 25,
     improved_acres: 50,
     total_project_area_acres: 100,
-    improved_area_percent: 50,
+    planning_area_acres: 500,
+    improved_area_percent: 10,
+    project_areas: [
+      {
+        project_id: 1,
+        improved_acres: 50,
+        total_acres: 100,
+        improved_area_percent: 50,
+      },
+    ],
   };
 
   let fixture: ComponentFixture<FullReportViewComponent>;
@@ -185,14 +203,18 @@ describe('FullReportViewComponent recalculations', () => {
     return () => report;
   }
 
-  it('patches only summary.AET on a water recalculation, never the projects', () => {
+  it('patches summary.AET and projects.AET on a water recalculation', () => {
     const report = trackReport();
     component.updateWaterAvailability(25);
 
     expect(report().results?.summary.AET).toEqual(waterResponse);
-    // Water never touches the per-project breakdown.
-    expect(report().results?.projects).toEqual(baseReport.results!.projects);
-    expect('AET' in report().results!.projects).toBeFalse();
+    // The per-project breakdown is kept in sync so the water section can
+    // re-aggregate over the selected project areas at the new percentage.
+    expect(report().results?.projects.AET).toEqual(waterResponse.project_areas);
+    // Other per-project metrics are left untouched.
+    expect(report().results?.projects.POTENTIAL_SMOKE).toEqual(
+      baseReport.results!.projects.POTENTIAL_SMOKE
+    );
     // Pre-calculated flame length data is left untouched.
     expect(report().results?.summary.TOTAL_FLAME_SEVERITY).toEqual(
       baseReport.results!.summary.TOTAL_FLAME_SEVERITY

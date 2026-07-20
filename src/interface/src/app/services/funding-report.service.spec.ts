@@ -80,7 +80,16 @@ describe('FundingReportService', () => {
       percentage: 25,
       improved_acres: 50,
       total_project_area_acres: 100,
-      improved_area_percent: 50,
+      planning_area_acres: 500,
+      improved_area_percent: 10,
+      project_areas: [
+        {
+          project_id: 1,
+          improved_acres: 50,
+          total_acres: 100,
+          improved_area_percent: 50,
+        },
+      ],
     };
     let result: FundingReportAETSummary | undefined;
     service.getWaterAvailability(123, 25).subscribe((r) => (result = r));
