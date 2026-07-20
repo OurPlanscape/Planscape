@@ -1,5 +1,7 @@
 import {
   FlameLengthInterval,
+  FundingReportAETImprovementProjectArea,
+  FundingReportAETSummary,
   FundingReportDataPoint,
   FundingReportProjectDataPoint,
   FundingReportResults,
@@ -176,6 +178,47 @@ export function aggregateFlameLengthSummary(
     projectAreas,
     percentOfArea
   );
+}
+
+/** Water (AET) figures shown in the two stat cards of the water section. */
+export interface AetTileFigures {
+  /** Improved ("raw") acres over the chosen project areas. */
+  improved_acres: number;
+  /** Those acres as a percent of the whole planning area (0-100). */
+  improved_area_percent: number;
+}
+
+/**
+ * Water (AET) figures over the chosen project areas, mirroring the way the
+ * charts aggregate (`aggregateSummary`).
+ *
+ * An empty `projectAreas` means "all areas" and returns the precomputed
+ * whole-scenario summary as-is. A non-empty list sums the improved ("raw")
+ * acres of only the selected project areas and expresses that as a percent of
+ * the whole planning area — the denominator never changes with the selection.
+ */
+export function aggregateAetSummary(
+  summary: FundingReportAETSummary,
+  projects: FundingReportAETImprovementProjectArea[],
+  projectAreas: number[]
+): AetTileFigures {
+  if (projectAreas.length === 0) {
+    return {
+      improved_acres: summary.improved_acres,
+      improved_area_percent: summary.improved_area_percent,
+    };
+  }
+  const selected = new Set(projectAreas);
+  const improvedAcres = projects
+    .filter((project) => selected.has(project.project_id))
+    .reduce((sum, project) => sum + (project.improved_acres ?? 0), 0);
+  const planningAreaAcres = summary.planning_area_acres;
+  return {
+    improved_acres: improvedAcres,
+    improved_area_percent: planningAreaAcres
+      ? (improvedAcres / planningAreaAcres) * 100
+      : 0,
+  };
 }
 
 export function generateLegendFromReport(
