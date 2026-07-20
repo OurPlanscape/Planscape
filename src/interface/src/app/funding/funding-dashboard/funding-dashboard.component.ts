@@ -94,8 +94,10 @@ export class FundingDashboardComponent implements OnInit {
 
   isGenerating$ = combineLatest([this.report$, this.generationRequested$]).pipe(
     map(([report, requested]) => {
-      // A finished report always wins over a pending click.
-      if (!this.isStillProcessing(report)) {
+      // A finished (terminal) report always wins over a pending click. When no
+      // report exists yet, honor the click so the spinner shows instantly
+      // instead of waiting for the server to respond and the first poll to land.
+      if (report && !this.isStillProcessing(report)) {
         return false;
       }
       return requested || this.isGenerating(report);
