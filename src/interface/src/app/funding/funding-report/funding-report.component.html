@@ -70,7 +70,7 @@
       [defaultExpanded]="true">
       <div class="summary-card" *ngIf="!isPreview">
         <app-funding-map-layers
-          heading="Map Layers (no treatment)"
+          heading="Map Layers"
           [layers]="sectionLayers['carbon']"
           [selectedLayerId]="viewedLayerId$ | async"
           [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
@@ -111,7 +111,7 @@
       [defaultExpanded]="true">
       <div class="summary-card" *ngIf="!isPreview">
         <app-funding-map-layers
-          heading="Map Layers (no treatment)"
+          heading="Map Layers"
           [layers]="sectionLayers['wildfire']"
           [selectedLayerId]="viewedLayerId$ | async"
           [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
