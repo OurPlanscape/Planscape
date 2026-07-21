@@ -84,6 +84,7 @@
     <app-funding-report-map
       *ngIf="treatmentDataLayerId$ | async as treatmentDataLayerId"
       [treatmentDataLayerId]="treatmentDataLayerId"
+      [aetDataLayerId]="aetDataLayerId$ | async"
       [legendData]="legendData$ | async"></app-funding-report-map>
   </div>
 </section>

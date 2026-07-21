@@ -93,6 +93,13 @@ export class FundingReportMapComponent implements OnInit {
   /** Id of the report's treatment datalayer to display on the map. */
   @Input() treatmentDataLayerId!: number;
 
+  /**
+   * Id of the report's water-availability (AET) datalayer. When this layer is
+   * the one being viewed, it renders on top of the treatment layer instead of
+   * below the rest of the data layers.
+   */
+  @Input() aetDataLayerId: number | null = null;
+
   mapLoaded$ = this.fundingMapConfigState.mapLoaded$;
 
   mapLibreMap!: MapLibreMap;

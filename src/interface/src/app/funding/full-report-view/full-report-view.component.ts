@@ -169,6 +169,11 @@ export class FullReportViewComponent implements OnInit {
     map((report) => report?.treatment_datalayer ?? null)
   );
 
+  /** Id of the report's water-availability (AET) datalayer, shown on top. */
+  aetDataLayerId$ = this.report$.pipe(
+    map((report) => report?.aet_datalayer ?? null)
+  );
+
   updatingWaterAvailability = false;
   /** Water % entered; `switchMap` cancels any in-flight request when a new one arrives. */
   private waterRequest$ = new Subject<number>();
