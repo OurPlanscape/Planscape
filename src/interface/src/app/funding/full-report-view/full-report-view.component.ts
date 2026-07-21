@@ -225,6 +225,16 @@ export class FullReportViewComponent implements OnInit {
       blackText: true,
     });
 
+    // Once the scenario loads, append its name to the breadcrumb.
+    this.currentScenario$.pipe(untilDestroyed(this)).subscribe((scenario) =>
+      this.breadcrumbService.updateBreadCrumb({
+        label: `Funding Opportunity Report: ${scenario.name}`,
+        backUrl: '..',
+        icon: 'close',
+        blackText: true,
+      })
+    );
+
     this.waterRequest$
       .pipe(
         switchMap((increasePercent) => {
