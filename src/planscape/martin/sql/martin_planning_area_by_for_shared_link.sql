@@ -8,16 +8,15 @@ BEGIN
     SELECT
       pa.id AS "id",
       ST_Transform(pa.geometry, 3857) AS geom
-    FROM fundingreport_fundingopportunityreportsharedlink shared_link
-    INNER JOIN fundingreport_fundingopportunityreport report ON shared_link.report_id = report.id
+    FROM funding_report_fundingopportunityreportsharedlink shared_link
+    INNER JOIN funding_report_fundingopportunityreport report ON shared_link.report_id = report.id
     INNER JOIN planning_scenario scenario ON report.scenario_id = scenario.id
     INNER JOIN planning_planningarea pa ON scenario.planning_area_id = pa.id
     WHERE
       pa.deleted_at IS NULL AND
       scenario.deleted_at IS NULL AND
-      report.deleted_at IS NULL AND
       shared_link.deleted_at IS NULL AND
-      shared_link.uuid = (query_params->>'uuid')::int AND
+      shared_link.uuid = (query_params->>'uuid') AND
       pa.geometry && ST_Transform(ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)), 4269)
   ), mvt AS (
     SELECT
