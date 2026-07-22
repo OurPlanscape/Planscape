@@ -127,7 +127,7 @@ interface ReportSection {
     MessageCardComponent,
     ScrollSpyDirective,
   ],
-  providers: [FundingMapConfigState, FundingReportToPdfService],
+  providers: [FundingReportToPdfService],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',
 })
@@ -499,6 +499,9 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     if (dataLayer) {
       this.dataLayersStateService.selectDataLayer(dataLayer);
     } else {
+      // change opacity JUST for the water layer
+      this.fundingMapConfigState.setOpacity(0.2);
+
       // The water (AET) layer comes from the report as a bare id, not the
       // module, so it isn't preloaded in `layersById` — fetch the full data
       // layer before handing it to the shared state to render.
