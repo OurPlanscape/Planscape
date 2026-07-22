@@ -10,14 +10,13 @@ BEGIN
 
   SELECT INTO 
     p_scenario_id 
-    scenario.id FROM fundingreport_fundingopportunityreportsharedlink shared_link
-    INNER JOIN fundingreport_fundingopportunityreport report ON shared_link.report_id = report.id
+    scenario.id FROM funding_report_fundingopportunityreportsharedlink shared_link
+    INNER JOIN funding_report_fundingopportunityreport report ON shared_link.report_id = report.id
     INNER JOIN planning_scenario scenario ON report.scenario_id = scenario.id
     WHERE 
       scenario.deleted_at IS NULL AND
-      report.deleted_at IS NULL AND
       shared_link.deleted_at IS NULL AND
-      shared_link.uuid = (query_params->>'uuid')::int;
+      shared_link.uuid = (query_params->>'uuid');
 
 
   IF p_scenario_id IS NULL THEN
@@ -62,7 +61,7 @@ BEGIN
     FROM planning_projectarea pa
     WHERE 
         pa.deleted_at is NULL AND
-        pa.scenario_id = p_scenario_id::int AND
+        pa.scenario_id = p_scenario_id AND
         pa.geometry && ST_Transform(ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)), 4269)
   ), mvtpoly AS (
     SELECT
