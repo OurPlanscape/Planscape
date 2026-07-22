@@ -219,32 +219,6 @@ class PlanningAreaSerializer(
         geo_field = "geometry"
 
 
-class ValidatePlanningAreaSerializer(gis_serializers.GeoModelSerializer):
-    geometry = gis_serializers.GeometryField()
-
-    def validate_geometry(self, geometry):
-        try:
-            geometry = coerce_geometry(geometry)
-        except (InvalidGeometry, ValueError) as valEx:
-            raise serializers.ValidationError(str(valEx))
-
-        if not geometry.valid:
-            raise serializers.ValidationError(str(geometry.valid_reason))
-
-        if geometry.srid != settings.DEFAULT_CRS:
-            geometry = geometry.transform(settings.DEFAULT_CRS, clone=True)
-
-        return geometry
-
-    class Meta:
-        model = PlanningArea
-        fields = ("geometry",)
-
-
-class ValidatePlanningAreaOutputSerializer(serializers.Serializer):
-    area_acres = serializers.FloatField()
-
-
 class PlanningAreaNoteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data["user"] = self.context["user"] or None
@@ -483,32 +457,6 @@ class ConfigurationV2Serializer(serializers.Serializer):
         allow_null=True,
         help_text="Optional seed for reproducible randomization.",
     )
-
-
-class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
-    excluded_areas = serializers.ListField(
-        source="excluded_areas_ids",
-        child=serializers.PrimaryKeyRelatedField(
-            queryset=DataLayer.objects.filter(
-                type=DataLayerType.VECTOR,
-                geometry_type__in=[GeometryType.POLYGON, GeometryType.MULTIPOLYGON],
-            ),
-        ),
-        allow_empty=True,
-        min_length=0,
-        required=False,
-    )
-
-    def validate_excluded_areas(self, excluded_areas):
-        return [excluded_area.pk for excluded_area in excluded_areas]
-
-    def update(self, instance, validated_data):
-        instance.configuration = {
-            **(instance.configuration or {}),
-            **validated_data,
-        }
-        instance.save(update_fields=["configuration"])
-        return instance
 
 
 class ConstraintSerializer(serializers.Serializer):
@@ -984,30 +932,6 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "parent",
         )
         model = Scenario
-
-
-class CreateScenarioV2Serializer(serializers.ModelSerializer):
-    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    treatment_goal = serializers.PrimaryKeyRelatedField(
-        queryset=TreatmentGoal.objects.all(),
-        required=True,
-        help_text="Treatment goal of the scenario.",
-    )
-    configuration = UpsertConfigurationV2Serializer()
-
-    class Meta:
-        model = Scenario
-        fields = (
-            "user",
-            "planning_area",
-            "name",
-            "origin",
-            "type",
-            "notes",
-            "configuration",
-            "treatment_goal",
-            "parent",
-        )
 
 
 class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):

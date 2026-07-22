@@ -13,7 +13,6 @@ from typing import Any, Dict, List
 
 from celery import chain, chord, group
 from django.db import transaction
-from planning.models import GeoPackageStatus
 
 from climate_foresight.models import (
     ClimateForesightLandscapeRollup,
@@ -27,7 +26,6 @@ from climate_foresight.models import (
     InputDataLayerStatus,
 )
 from climate_foresight.tasks import (
-    async_generate_climate_foresight_geopackage,
     async_mark_run_failed,
     mark_run_complete,
     normalize_climate_foresight_input_layer,
@@ -194,45 +192,3 @@ def build_analysis_workflow(
     )
 
     return chain(*stages)
-
-
-def check_run_completion(run_id: int) -> Dict[str, Any]:
-    """
-    Check if the entire analysis pipeline is complete and update run status.
-
-    Args:
-        run_id: ID of the ClimateForesightRun
-
-    Returns:
-        dict: Summary of run completion status
-    """
-    run = ClimateForesightRun.objects.get(pk=run_id)
-
-    if run.status != ClimateForesightRunStatus.RUNNING:
-        return {"run_id": run_id, "status": run.status}
-
-    try:
-        promote = run.promote_analysis
-    except ClimateForesightPromote.DoesNotExist:
-        return {"run_id": run_id, "status": "running", "promote_not_created": True}
-
-    if promote.status == ClimateForesightPromoteStatus.COMPLETED:
-        with transaction.atomic():
-            run.status = ClimateForesightRunStatus.DONE
-            run.save()
-
-            if promote.geopackage_status in (GeoPackageStatus.PENDING, None):
-                if promote.geopackage_status is None:
-                    promote.geopackage_status = GeoPackageStatus.PENDING
-                    promote.save(update_fields=["geopackage_status"])
-
-                async_generate_climate_foresight_geopackage.delay(run_id)
-                log.info(f"Triggered geopackage generation for run {run_id}")
-
-        log.info(f"Run {run_id} marked as DONE")
-        return {"run_id": run_id, "status": "done"}
-
-    if promote.status == ClimateForesightPromoteStatus.FAILED:
-        return {"run_id": run_id, "status": "running", "promote_failed": True}
-
-    return {"run_id": run_id, "status": "running", "promote_status": promote.status}

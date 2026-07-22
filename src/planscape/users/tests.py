@@ -102,41 +102,6 @@ class DeactivateUserTest(APITestCase):
         self.assertFalse(User.objects.get(pk=self.user.pk).is_active)
 
 
-class IsVerifiedUserTest(APITestCase):
-    def setUp(self):
-        payload = json.dumps(
-            {
-                "email": "testuser@test.com",
-                "password1": "ComplexPassword123",
-                "password2": "ComplexPassword123",
-                "first_name": "FirstName",
-                "last_name": "LastName",
-            }
-        )
-        self.client.post(
-            reverse("rest_register"), payload, content_type="application/json"
-        )
-        self.user = User.objects.filter(email="testuser@test.com").get()
-
-    def test_not_logged_in(self):
-        response = self.client.get(reverse("users:is_verified_user"))
-        self.assertEqual(response.status_code, 400)
-
-    def test_not_verified(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(reverse("users:is_verified_user"))
-        self.assertEqual(response.status_code, 400)
-
-    def test_verified(self):
-        self.client.force_authenticate(self.user)
-        email = EmailAddress.objects.filter(email="testuser@test.com").get()
-        email.verified = True
-        email.save()
-
-        response = self.client.get(reverse("users:is_verified_user"))
-        self.assertEqual(response.status_code, 200)
-
-
 class PasswordResetTest(TestCase):
     def setUp(self):
         self.client.post(

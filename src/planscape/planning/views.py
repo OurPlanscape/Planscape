@@ -24,26 +24,13 @@ from planning.serializers import (
     ListPlanningAreaSerializer,
     PlanningAreaNoteListSerializer,
     PlanningAreaNoteSerializer,
-    ValidatePlanningAreaOutputSerializer,
-    ValidatePlanningAreaSerializer,
 )
 from planning.services import (
     export_to_shapefile,
-    get_acreage,
     zip_directory,
 )
 
 logger = logging.getLogger(__name__)
-
-
-@api_view(["POST"])
-def validate_planning_area(request: Request) -> Response:
-    serializer = ValidatePlanningAreaSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    geometry = serializer.validated_data.get("geometry")
-    data = {"area_acres": get_acreage(geometry)}
-    out_serializer = ValidatePlanningAreaOutputSerializer(instance=data)
-    return Response(out_serializer.data)
 
 
 # No Params expected, since we're always using the logged in user.

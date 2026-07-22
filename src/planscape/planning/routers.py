@@ -3,7 +3,6 @@ from rest_framework import routers
 from planning.views_v2 import (
     CreatorViewSet,
     PlanningAreaViewSet,
-    ProjectAreaViewSet,
     ScenarioViewSet,
     TreatmentGoalViewSet,
 )
@@ -24,5 +23,4 @@ router.register(
     ScenarioViewSet,
     basename="scenarios",
 )
-router.register("project-areas", ProjectAreaViewSet, basename="project-areas")
 router.register("treatment-goals", TreatmentGoalViewSet, basename="treatment-goals")

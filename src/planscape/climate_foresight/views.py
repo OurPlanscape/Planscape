@@ -25,7 +25,6 @@ from climate_foresight.models import (
     ClimateForesightRunStatus,
 )
 from climate_foresight.orchestration import (
-    check_run_completion,
     start_climate_foresight_analysis,
 )
 from climate_foresight.permissions import ClimateForesightViewPermission
@@ -147,25 +146,6 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
             return Response(result, status=status.HTTP_200_OK)
         except ValueError as e:
             raise ValidationError(str(e))
-
-    @action(detail=True, methods=["post"])
-    def trigger_next_steps(self, request, pk=None):
-        """
-        Check run completion status.
-
-        With the new workflow model, the entire pipeline runs as a single
-        Celery chain. This endpoint now just checks completion status.
-
-        Returns a summary of the run status.
-        """
-        run = self.get_object()
-
-        results = {
-            "run_id": run.id,
-            "completion_check": check_run_completion(run.id),
-        }
-
-        return Response(results, status=status.HTTP_200_OK)
 
     @extend_schema(
         description="Download all Climate Foresight outputs as a zipped archive of GeoTIFFs.",

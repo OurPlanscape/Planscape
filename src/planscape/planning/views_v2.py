@@ -5,7 +5,6 @@ from datasets.models import DataLayer
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Q
-from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -57,7 +56,6 @@ from planning.filters import (
 )
 from planning.models import (
     PlanningArea,
-    ProjectArea,
     Scenario,
     ScenarioResultStatus,
     ScenarioType,
@@ -68,7 +66,6 @@ from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermiss
 from planning.serializers import (
     AvailableStandsSerializer,
     CreatePlanningAreaSerializer,
-    CreateScenarioV2Serializer,
     GetAvailableStandsSerializer,
     ListCreatorSerializer,
     ListPlanningAreaSerializer,
@@ -84,7 +81,6 @@ from planning.serializers import (
     TreatmentGoalSerializer,
     UpdatePlanningAreaSerializer,
     UploadedScenarioDataSerializer,
-    UpsertConfigurationV2Serializer,
     UpsertScenarioV3Serializer,
 )
 from planning.services import (
@@ -216,19 +212,15 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         description="Update Scenario.",
         responses={200: ScenarioSerializer, 404: BaseErrorMessageSerializer},
     ),
-    create=extend_schema(
-        description=(
-            "Create a Scenario. "
-            "In the `configuration` JSON, users can include a `seed` (integer) "
-            "to make ForSys runs reproducible."
-        ),
-        responses={
-            201: ScenarioSerializer,
-            400: BaseErrorMessageSerializer,
-        },
-    ),
 )
-class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
+class ScenarioViewSet(
+    MultiSerializerMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = Scenario.objects.none()
     permission_classes = [ScenarioViewPermission]
     ordering_fields = [
@@ -243,7 +235,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     serializer_class = ScenarioSerializer
     serializer_classes = {
         "list": ListScenarioSerializer,
-        "create": CreateScenarioV2Serializer,
         "partial_update": UpsertScenarioV3Serializer,
         "create_draft": UpsertScenarioV3Serializer,
     }
@@ -274,24 +265,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             qs = qs.filter(parent__isnull=True)
         return qs
 
-    @action(methods=["get"], detail=True, url_path="child")
-    def child(self, request, pk=None):
-        parent = self.get_object()
-
-        children = (
-            self.get_queryset()
-            .filter(parent=parent)
-            .select_related("planning_area", "user", "results")
-            .prefetch_related("project_areas")
-        )
-
-        serializer = ListScenarioSerializer(
-            children,
-            many=True,
-            context={"request": request},
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
     @extend_schema(description="Retrieve a Scenario (auto-detects version).")
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -301,21 +274,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         else:
             serializer = ScenarioV2Serializer(instance, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @extend_schema(description="Create a Scenario.")
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        scenario = create_scenario(**serializer.validated_data)
-
-        out_serializer = ScenarioV2Serializer(instance=scenario)
-
-        headers = self.get_success_headers(out_serializer.data)
-        return Response(
-            out_serializer.data,
-            status=status.HTTP_201_CREATED,
-            headers=headers,
-        )
 
     @action(detail=False, methods=["post"], url_path="draft")
     def create_draft(self, request):
@@ -344,11 +302,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         out_serializer = ScenarioV3Serializer(instance=scenario)
 
-        headers = self.get_success_headers(out_serializer.data)
         return Response(
             out_serializer.data,
             status=status.HTTP_201_CREATED,
-            headers=headers,
         )
 
     def perform_destroy(self, instance):
@@ -390,29 +346,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             out_serializer.data,
             status=status.HTTP_201_CREATED,
         )
-
-    @extend_schema(description="Update Scenario's configuration.")
-    @action(
-        methods=["patch"],
-        detail=True,
-        url_path="configuration",
-        serializer_class=UpsertConfigurationV2Serializer,
-    )
-    def patch_configuration(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = UpsertConfigurationV2Serializer(
-            instance, data=request.data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        instance.refresh_from_db()
-        instance.capabilities = compute_scenario_capabilities(instance)
-        instance.save(update_fields=["capabilities"])
-        response_serializer = ScenarioV2Serializer(instance)
-        planning_area = instance.planning_area
-        planning_area.updated_at = timezone.now()
-        planning_area.save(update_fields=["updated_at"])
-        return Response(response_serializer.data)
 
     @action(methods=["patch"], detail=True, url_path="draft")
     def patch_draft(self, request, *args, **kwargs):
@@ -791,24 +724,6 @@ class CreatorViewSet(ReadOnlyModelViewSet):
         user = self.request.user
         pas = PlanningArea.objects.list_by_user(user=user).values_list("id", flat=True)
         return User.objects.filter(planning_areas__id__in=pas).distinct()
-
-
-@extend_schema_view(
-    retrieve=extend_schema(description="Project Area of a Planning Areas.")
-)
-class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-    queryset = (
-        ProjectArea.objects.all()
-        .annotate(
-            treatment_rank=RawSQL("COALESCE((data->>'treatment_rank')::int, 1)", [])
-        )
-        .order_by("treatment_rank")
-    )
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    serializer_class = ProjectAreaSerializer
-    serializer_classes = {
-        "retrieve": ProjectAreaSerializer,
-    }
 
 
 @extend_schema_view(
