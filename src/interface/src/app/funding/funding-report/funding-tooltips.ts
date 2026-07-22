@@ -44,7 +44,7 @@ export const FUNDING_TOOLTIPS: Record<string, FundingTooltip> = {
     ],
   },
   Biomass: {
-    copy: `Biomass is estimated using the Forest Vegetation Simulator (FVS) with with spatially explicit forest conditions from the USFS TreeMap 2022 dataset (30 m resolution). The stands are grown to the 2025 modeling start year to estimate available merchantable and non-merchantable biomass within the planning area, reported by hardwood and softwood forest types.`,
+    copy: `Biomass is estimated using the Forest Vegetation Simulator (FVS) with with spatially explicit forest conditions from the USFS TreeMap 2022 dataset (30 m resolution). The stands are grown to the 2025 modeling start year to estimate available merchantable and non-merchantable biomass within the sum of all project areas, reported by hardwood and softwood forest types.`,
     links: [
       {
         label: 'TreeMap 2022',
@@ -57,7 +57,7 @@ export const FUNDING_TOOLTIPS: Record<string, FundingTooltip> = {
     ],
   },
   'Flame Length': {
-    copy: `Flame length is estimated using the Forest Vegetation Simulator (FVS) with spatially explicit forest conditions from the USFS TreeMap 2022 dataset (30 m resolution). The stands are grown to the 2025 modeling start year, and pre- and post-treatment scenarios are simulated in 5-year time steps to quantify the difference in predicted fire intensity relative to a no-treatment baseline. Results show the percentage of the treatment area where modeled flame lengths are reduced according to user-specified thresholds relative to a no-treatment baseline.`,
+    copy: `Flame length is estimated using the Forest Vegetation Simulator (FVS) with spatially explicit forest conditions from the USFS TreeMap 2022 dataset (30 m resolution). The "total flame length" output from FVS is used to represent flame length under severe wildfire weather while accounting for possible crown fire activity. The stands are grown to the 2025 modeling start year, and pre- and post-treatment scenarios are simulated in 5-year time steps to quantify the difference in predicted fire intensity relative to a no-treatment baseline. Results show the percentage of the treatment area where modeled flame lengths are reduced according to user-specified thresholds relative to a no-treatment baseline.`,
     links: [
       {
         label: 'TreeMap 2022',
