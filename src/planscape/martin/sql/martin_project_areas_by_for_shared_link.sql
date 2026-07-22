@@ -1,0 +1,99 @@
+CREATE OR REPLACE FUNCTION martin_project_areas_by_for_shared_link(z integer, x integer, y integer, query_params json)
+RETURNS bytea AS $$
+DECLARE
+  p_mvt bytea;
+  p_scenario_id integer;
+  p_scenario_result_status varchar;
+  p_planning_approach varchar;
+  p_max_number_of_features integer;
+BEGIN
+
+  SELECT INTO 
+    p_scenario_id 
+    scenario.id FROM fundingreport_fundingopportunityreportsharedlink shared_link
+    INNER JOIN fundingreport_fundingopportunityreport report ON shared_link.report_id = report.id
+    INNER JOIN planning_scenario scenario ON report.scenario_id = scenario.id
+    WHERE 
+      scenario.deleted_at IS NULL AND
+      report.deleted_at IS NULL AND
+      shared_link.deleted_at IS NULL AND
+      shared_link.uuid = (query_params->>'uuid')::int;
+
+
+  IF p_scenario_id IS NULL THEN
+    RAISE EXCEPTION 'Could not find Scenario.';
+  END IF;
+
+  SELECT INTO 
+    p_scenario_result_status
+    result_status FROM planning_scenario sc
+    WHERE sc.id = p_scenario_id;
+
+  IF p_scenario_result_status != 'SUCCESS' THEN
+    RAISE EXCEPTION 'Scenario result status must be SUCCESS';
+  END IF;
+
+  SELECT INTO
+    p_planning_approach
+    planning_approach FROM planning_scenario sc
+    WHERE sc.id = p_scenario_id;
+
+  SELECT INTO
+    p_max_number_of_features
+    (query_params->>'number_of_features')::int;
+
+  IF p_max_number_of_features IS NULL THEN
+    IF p_planning_approach = 'PRIORITIZE_SUB_UNITS' THEN
+      SELECT INTO
+        p_max_number_of_features 10;
+    ELSE  
+      SELECT INTO
+        p_max_number_of_features 9999;
+    END IF;
+  END IF;
+
+  WITH base AS (
+    SELECT
+      pa.id as "id",
+      pa.scenario_id::int as "scenario_id",
+      pa.name,
+      (COALESCE(pa.data, '{}'::jsonb) ->> 'treatment_rank')::int as "rank",
+      ST_Transform(pa.geometry, 3857) as "geom"
+    FROM planning_projectarea pa
+    WHERE 
+        pa.deleted_at is NULL AND
+        pa.scenario_id = p_scenario_id::int AND
+        pa.geometry && ST_Transform(ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)), 4269)
+  ), mvtpoly AS (
+    SELECT
+      id,
+      scenario_id,
+      name,
+      rank,
+      ST_AsMVTGeom(
+        geom,
+        ST_TileEnvelope(z, x, y),
+        4096, 64, true) AS "geom"
+    FROM base
+    WHERE geom IS NOT NULL AND rank <= p_max_number_of_features
+  ), mvtpoint AS (
+    SELECT
+      id,
+      scenario_id,
+      name,
+      rank,
+      ST_AsMVTGeom(
+        ST_PointOnSurface(geom),
+        ST_TileEnvelope(z, x, y),
+        4096, 64, true) AS "geom"
+    FROM base
+    WHERE 
+      ST_PointOnSurface(base.geom) && ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)) and rank <= p_max_number_of_features
+  ) 
+  SELECT INTO p_mvt (
+    (SELECT ST_AsMVT(mvtpoly.*, 'project_areas_by_scenario') FROM mvtpoly WHERE geom IS NOT NULL) ||
+    (SELECT ST_AsMVT(mvtpoint.*, 'project_areas_by_scenario_label') FROM mvtpoint WHERE geom IS NOT NULL)
+  );
+
+  RETURN p_mvt;
+END $$ LANGUAGE plpgsql IMMUTABLE STRICT PARALLEL SAFE;
