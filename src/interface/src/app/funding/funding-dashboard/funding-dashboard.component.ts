@@ -4,6 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DashboardLayoutComponent } from '@styleguide/dashboard-layout/dashboard-layout.component';
 import { NavBarComponent } from '@standalone/nav-bar/nav-bar.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { FundingMapConfigState } from '../funding-map-config-state';
 import {
   BehaviorSubject,
   catchError,
@@ -51,6 +53,13 @@ import { MessageCardComponent } from '@styleguide/message-card/message-card.comp
     ToolInfoCardComponent,
     MessageCardComponent,
     ButtonComponent,
+  ],
+  // Preview-mode map host: provide the single FundingMapConfigState (aliased as
+  // MapConfigState) shared by the embedded funding-report and its map, mirroring
+  // full-report-view. funding-report no longer provides its own instance.
+  providers: [
+    FundingMapConfigState,
+    { provide: MapConfigState, useExisting: FundingMapConfigState },
   ],
   templateUrl: './funding-dashboard.component.html',
   styleUrl: './funding-dashboard.component.scss',

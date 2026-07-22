@@ -30,8 +30,7 @@
 
   <app-map-data-layer
     *ngIf="mapLibreMap"
-    [mapLibreMap]="mapLibreMap"
-    [topDataLayerId]="aetDataLayerId"></app-map-data-layer>
+    [mapLibreMap]="mapLibreMap"></app-map-data-layer>
 
   <app-map-base-layers
     *ngIf="mapLibreMap"
@@ -60,8 +59,8 @@
   <app-map-tooltip
     *ngIf="allowInteraction && (hoveredProjectAreaId$ | async) && mouseLngLat"
     [lngLat]="mouseLngLat"
-    >Click project area to select</app-map-tooltip
-  >
+    >Click project area to select
+  </app-map-tooltip>
 
   <mgl-control position="top-left">
     <app-map-layer-color-legend></app-map-layer-color-legend>
