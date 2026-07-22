@@ -12,6 +12,10 @@ core_router = SimpleRouter()
 
 app_name = "api"
 urlpatterns = [
+    path(
+        "funding_report/",
+        include(("funding_report.urls", "funding_report"), namespace="funding_report"),
+    ),
     path("", include((planning_router.urls, "planning"), namespace="planning")),
     path("", include((impacts_router.urls, "impacts"), namespace="impacts")),
     path("", include((core_router.urls, "core"), namespace="core")),
