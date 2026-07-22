@@ -3,6 +3,7 @@ from typing import Optional
 from rest_framework import serializers
 
 from funding_report.models import FundingOpportunityReport
+from funding_report.services import calculate_aet_improvement
 
 
 class FundingOpportunityReportSerializer(serializers.ModelSerializer):
@@ -28,6 +29,50 @@ class FundingOpportunityReportSerializer(serializers.ModelSerializer):
     def get_geopackage_url(self, instance: FundingOpportunityReport) -> Optional[str]:
         return instance.get_geopackage_url()
 
+
+class FundingOpportunityReportPublicSerializer(serializers.ModelSerializer):
+    results = serializers.SerializerMethodField()
+    shared_configuration = serializers.SerializerMethodField()
+    class Meta:
+            model = FundingOpportunityReport
+            fields = [
+                "status",
+                "results",
+                "treatment_datalayer",
+                "shared_configuration",
+            ]
+            read_only_fields = fields
+
+    def get_results(self, instance: FundingOpportunityReport):
+        results = instance.results
+        if not results:
+            return
+        context = self.context
+        selected_aet = context.get("aet")
+        if selected_aet:
+            aet_improvement = calculate_aet_improvement(report=instance, percentage=selected_aet)
+            results["summary"]["AET"] = {
+                "percentage": aet_improvement["percentage"],
+                "improved_acres": aet_improvement["improved_acres"],
+                "total_project_area_acres": aet_improvement["total_project_area_acres"],
+                "planning_area_acres": aet_improvement["planning_area_acres"],
+                "improved_area_percent": aet_improvement["improved_area_percent"],
+            }
+            results["projects"]["AET"] = aet_improvement["project_areas"]
+        
+        selected_flame_severity = context.get("total_flame_severity")
+        if selected_flame_severity:
+            results["summary"]["TOTAL_FLAME_SEVERITY"] = {
+                selected_flame_severity: results.get("summary", {}).get("TOTAL_FLAME_SEVERITY", {}).get(selected_flame_severity)
+            }
+            results["projects"]["TOTAL_FLAME_SEVERITY"] = {
+                selected_flame_severity: results.get("projects", {}).get("TOTAL_FLAME_SEVERITY", {}).get(selected_flame_severity)
+            }
+                                    
+        return results
+
+    def get_shared_configuration(self, instance):
+        return self.context
 
 class FundingReportAETImprovementRequestSerializer(serializers.Serializer):
     percentage = serializers.FloatField(min_value=0)
