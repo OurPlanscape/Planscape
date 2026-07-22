@@ -64,9 +64,9 @@ postgres:
     # parameters:
     # - uuid: string
     # - number_of_features: int
-    project_areas_by_scenario:
+    project_areas_by_scenario_by_for_shared_link:
       schema: public
-      function: martin_project_areas_by_for_shared_link(
+      function: martin_project_areas_by_for_shared_link
       minzoom: 0
       maxzoom: 20
       bounds: [-180.0, -90.0, 180.0, 90.0]
