@@ -83,6 +83,7 @@ import { DataLayersService, FileSaverService } from '@app/services';
 import { MatDialog } from '@angular/material/dialog';
 import { ScenarioState } from '@scenario/scenario.state';
 import { ShareFundingReportDialogComponent } from '../share-funding-report-dialog/share-funding-report-dialog.component';
+import { TreatmentMapComponent } from '@app/treatments/treatment-map/treatment-map.component';
 
 /** Pause after the last keystroke before recalculating water availability. */
 const WATER_DEBOUNCE_MS = 300;
@@ -167,6 +168,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
 
   /** The scrollable container holding the map + report sections. */
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLElement>;
+
+  @ViewChild(TreatmentMapComponent) mapElement: any;
 
   mapLoaded$ = this.fundingMapConfigState.mapLoaded$;
 
@@ -556,6 +559,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
       return;
     }
     this.generatingPdf$.next(true);
+
     try {
       // In the dashboard preview the map is inside the captured sections. In the
       // full view it lives in a sibling pane, so grab its canvas to draw on top.
@@ -565,6 +569,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
       await this.pdfService.exportReport(
         this.scrollContainer.nativeElement,
         `planscape-funding-report-${this.report.scenario}`,
+        this.mapElement.mapLibreMap,
         mapCanvas
       );
     } catch (error) {

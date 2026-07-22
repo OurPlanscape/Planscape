@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { Map as MapLibreMap } from 'maplibre-gl';
+import { addRequestHeaders } from '@app/maplibre-map/maplibre.helper';
+import { AuthService } from '@app/services';
 
 // A4 portrait, in millimeters.
 const PAGE_WIDTH_MM = 210;
@@ -22,12 +25,19 @@ export class FundingReportToPdfService {
    *   sections. In the dashboard preview the map is already inside `element`,
    *   so this is omitted.
    */
+
+  constructor(private authService: AuthService) {}
+
+  activeMap: MapLibreMap | null = null;
+  pdfInstance: jsPDF | null = null;
+
   async exportReport(
     element: HTMLElement,
     fileName: string,
+    map: MapLibreMap,
     mapCanvas?: HTMLCanvasElement | null
   ): Promise<void> {
-    const pdf = new jsPDF('p', 'mm', 'a4');
+    this.pdfInstance = new jsPDF('p', 'mm', 'a4');
 
     // --- CONFIGURABLE MARGINS & SCALING ---
     const MARGIN_MM = 15;
@@ -38,11 +48,11 @@ export class FundingReportToPdfService {
     // Pre-load the planscape logo so it's ready to paint on the PDF canvas
     const logoDataUrl = await this.loadLogo(LOGO_PATH);
 
-    const drawHeader = (pdfInstance: jsPDF) => {
-      if (logoDataUrl) {
+    const drawHeader = () => {
+      if (logoDataUrl && this.pdfInstance) {
         const logoWidth = 32; // in mm
         const logoHeight = 6;
-        pdfInstance.addImage(
+        this.pdfInstance.addImage(
           logoDataUrl,
           'PNG',
           MARGIN_MM,
@@ -51,20 +61,22 @@ export class FundingReportToPdfService {
           logoHeight
         );
       }
-      pdfInstance.setDrawColor('#E2E8F0');
-      pdfInstance.setLineWidth(0.5);
-      pdfInstance.line(MARGIN_MM, 16, PAGE_WIDTH_MM - MARGIN_MM, 16);
+      this.pdfInstance?.setDrawColor('#E2E8F0');
+      this.pdfInstance?.setLineWidth(0.5);
+      this.pdfInstance?.line(MARGIN_MM, 16, PAGE_WIDTH_MM - MARGIN_MM, 16);
     };
 
+    this.activeMap = map;
+
     // Initialize Page 1 Header and set initial content baseline below it
-    drawHeader(pdf);
+    drawHeader();
     let currentY = 20; // 20mm gives breathing room below the header line
 
     // Optional map on page 1 (Nested inside margins)
     if (mapCanvas && mapCanvas.width > 0) {
       const mapHeight =
         (mapCanvas.height * TARGET_CONTENT_WIDTH) / mapCanvas.width;
-      pdf.addImage(
+      this.pdfInstance.addImage(
         mapCanvas.toDataURL('image/png'),
         'PNG',
         MARGIN_MM,
@@ -97,13 +109,13 @@ export class FundingReportToPdfService {
 
       // Check if drawing this element will violate the bottom margin
       if (currentY + finalHeight > PAGE_HEIGHT_MM - MARGIN_MM) {
-        pdf.addPage();
-        drawHeader(pdf);
+        this.pdfInstance.addPage();
+        drawHeader();
         currentY = 20; // Reset content baseline to the top of the new page
       }
 
       // Draw the element
-      pdf.addImage(
+      this.pdfInstance.addImage(
         canvas.toDataURL('image/png'),
         'PNG',
         finalX,
@@ -115,7 +127,7 @@ export class FundingReportToPdfService {
     }
 
     document.body.classList.remove('is-generating-pdf');
-    pdf.save(`${fileName}.pdf`);
+    this.pdfInstance.save(`${fileName}.pdf`);
   }
 
   /**
@@ -152,5 +164,52 @@ export class FundingReportToPdfService {
 
       img.src = src;
     });
+  }
+
+  async copyActiveMap() {
+    if (!this.activeMap) {
+      return;
+    }
+
+    const printMap = new MapLibreMap({
+      container: 'printable-map',
+      style: this.activeMap.getStyle(),
+      center: this.activeMap.getBounds().getCenter(),
+      zoom: this.activeMap.getZoom(),
+      bearing: this.activeMap.getBearing(),
+      pitch: this.activeMap.getPitch(),
+      bounds: this.activeMap.getBounds(),
+      transformRequest: (url, resourceType) =>
+        addRequestHeaders(url, resourceType, this.authService.getAuthCookie()),
+    });
+
+    return printMap;
+  }
+
+  async addMap(
+    mapX: number,
+    mapY: number,
+    mapHeight: number,
+    mapWidth: number
+  ) {
+    if (!this.pdfInstance || !this.activeMap) {
+      return;
+    }
+
+    const printMap = await this.copyActiveMap();
+    const canvas = printMap?.getCanvas();
+    const imgData = canvas?.toDataURL('image/png');
+    if (imgData) {
+      this.pdfInstance.setLineWidth(1);
+      this.pdfInstance.rect(mapX, mapY, mapWidth, mapHeight);
+      this.pdfInstance.addImage(
+        imgData,
+        'PNG',
+        mapX,
+        mapY,
+        mapWidth,
+        mapHeight
+      );
+    }
   }
 }
