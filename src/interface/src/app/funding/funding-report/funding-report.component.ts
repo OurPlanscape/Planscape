@@ -83,7 +83,6 @@ import { DataLayersService, FileSaverService } from '@app/services';
 import { MatDialog } from '@angular/material/dialog';
 import { ScenarioState } from '@scenario/scenario.state';
 import { ShareFundingReportDialogComponent } from '../share-funding-report-dialog/share-funding-report-dialog.component';
-import { TreatmentMapComponent } from '@app/treatments/treatment-map/treatment-map.component';
 
 /** Pause after the last keystroke before recalculating water availability. */
 const WATER_DEBOUNCE_MS = 300;
@@ -169,7 +168,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   /** The scrollable container holding the map + report sections. */
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLElement>;
 
-  @ViewChild(TreatmentMapComponent) mapElement: any;
+  @ViewChild(FundingReportMapComponent) mapElement!: FundingReportMapComponent;
 
   mapLoaded$ = this.fundingMapConfigState.mapLoaded$;
 
@@ -560,6 +559,12 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     }
     this.generatingPdf$.next(true);
 
+    console.log('do we hve naything for mapElement?', this.mapElement);
+    console.log(
+      'do we have anything for the map?',
+      this.mapElement.mapLibreMap
+    );
+
     try {
       // In the dashboard preview the map is inside the captured sections. In the
       // full view it lives in a sibling pane, so grab its canvas to draw on top.
@@ -573,6 +578,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
         mapCanvas
       );
     } catch (error) {
+      console.log('error downloading: ', error);
       this.displayDownloadErrorSnackbar();
     } finally {
       this.generatingPdf$.next(false);
