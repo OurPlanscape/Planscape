@@ -72,6 +72,8 @@ export class SelectableListComponent<T extends Item> implements OnChanges {
    * If there's no groupBy input, then we just consider it all one group */
   groupedData: Record<string, T[]> = {};
 
+  openedGroups: string[] = [];
+
   ngOnChanges(changes: SimpleChanges) {
     if (changes['items'] || changes['groupBy']) {
       this.recalculateGroups();
@@ -158,6 +160,11 @@ export class SelectableListComponent<T extends Item> implements OnChanges {
   }
 
   /** @ignore */
+  isExpanded(key: string) {
+    return this.openedGroups.includes(key);
+  }
+
+  /** @ignore */
   getColor(item: any): string {
     if (!this.colorPath) return this.defaultColor;
 
@@ -211,5 +218,13 @@ export class SelectableListComponent<T extends Item> implements OnChanges {
     const selectedIds = new Set(this.selectedItems.map((i) => i.id));
 
     return this.items.every((i) => selectedIds.has(i.id));
+  }
+
+  handleClick(groupKey: string) {
+    if (this.isExpanded(groupKey)) {
+      this.openedGroups = this.openedGroups.filter((k) => k !== groupKey);
+    } else {
+      this.openedGroups.push(groupKey);
+    }
   }
 }

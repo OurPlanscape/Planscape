@@ -46,25 +46,17 @@ $material-checkbox-padding: 8px;
   line-height: 20px;
   font-weight: 500;
   height: 30px;
-
-  &:after {
-    display: none;
-  }
+  background-color: $color-lighter-gray;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
 }
 
 .items-container {
   position: relative;
   display: block;
-
-  &:after {
-    content: '';
-    position: absolute;
-    width: 1px;
-    height: 100%;
-    background-color: $color-soft-gray;
-    top: 0;
-    left: #{$select-width + $colum-gap};
-  }
 }
 
 .list-row,
@@ -145,4 +137,15 @@ $material-checkbox-padding: 8px;
 
 .ml-auto {
   margin-left: auto;
+}
+
+.title-header {
+  @include standard-input-label();
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  color: $color-md-gray;
+  padding-left: 8px;
 }
