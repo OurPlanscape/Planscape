@@ -35,6 +35,9 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
    */
   @Input() topDataLayerId: number | null = null;
 
+  /** Opacity the designated top layer renders at, overriding the shared default. */
+  private static readonly TOP_LAYER_OPACITY = 1;
+
   tileSize: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
   cogUrl: string | null = null;
   /** Id of the data layer currently rendered as `image-layer`. */
@@ -67,16 +70,23 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
       });
   }
 
+  /** Whether the currently viewed layer is the designated top layer. */
+  private isTopLayer(): boolean {
+    return (
+      this.topDataLayerId != null && this.currentLayerId === this.topDataLayerId
+    );
+  }
+
   /**
    * Where to insert the raster in the layer stack. Defaults to `bottom-layer`
    * (below the treatment layer). The designated `topDataLayerId` instead sits
    * above the treatment layer, just below the project-area outlines.
    */
   private beforeLayerId(): string | undefined {
-    const isTopLayer =
-      this.topDataLayerId != null &&
-      this.currentLayerId === this.topDataLayerId;
-    if (isTopLayer && this.mapLibreMap.getLayer('map-project-areas-line')) {
+    if (
+      this.isTopLayer() &&
+      this.mapLibreMap.getLayer('map-project-areas-line')
+    ) {
       return 'map-project-areas-line';
     }
     return 'bottom-layer';
@@ -113,9 +123,11 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
 
   async addRasterLayer() {
     if (this.mapLibreMap && this.cogUrl) {
-      const currentOpacity: number = await firstValueFrom(
-        this.mapConfigState.dataLayersOpacity$
-      );
+      // The top layer defaults to fully opaque rather than the shared
+      // data-layers default; other layers honor the current opacity setting.
+      const currentOpacity: number = this.isTopLayer()
+        ? MapDataLayerComponent.TOP_LAYER_OPACITY
+        : await firstValueFrom(this.mapConfigState.dataLayersOpacity$);
       const rasterSource: RasterSourceSpecification = {
         type: 'raster',
         url: this.cogUrl,
