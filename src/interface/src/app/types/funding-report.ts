@@ -160,6 +160,28 @@ export interface FundingReportInviteEmails {
 }
 
 /**
+ * The report configuration frozen into a shared link (water target + flame
+ * interval). Echoed back on the public endpoint so the shared view renders the
+ * same selection the sharer picked.
+ */
+export interface FundingReportSharedConfiguration {
+  aet: number;
+  total_flame_severity: FlameLengthInterval;
+}
+
+/**
+ * Response of the public shared-report endpoint
+ * (`v2/funding_report/{uuid}/`): a trimmed, unauthenticated view of a report,
+ * with `results` already recalculated for the shared configuration.
+ */
+export interface FundingReportPublic {
+  status: FundingReport['status'];
+  results: FundingReportResults | null;
+  treatment_datalayer: number | null;
+  shared_configuration: FundingReportSharedConfiguration;
+}
+
+/**
  * Response of the `funding-report-public-url` endpoint: the public link for the
  * current report configuration (water % + flame interval).
  */
