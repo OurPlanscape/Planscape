@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { map } from 'rxjs';
+import { filter, map, shareReplay, switchMap } from 'rxjs';
 
 import { NavBarComponent } from '@standalone/nav-bar/nav-bar.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { FundingReportService } from '@services/funding-report.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { FundingMapConfigState } from '@app/funding/funding-map-config-state';
@@ -34,9 +35,19 @@ export class ForSharedComponent implements OnInit {
   /** Shared-link UUID from the route (`for/:id`). */
   id$ = this.route.paramMap.pipe(map((params) => params.get('id')));
 
+  /** The shared report resolved from the link UUID (`null` if not found). */
+  report$ = this.id$.pipe(
+    filter((id): id is string => !!id),
+    switchMap((id) => this.fundingReportService.getPublicReport(id)),
+    shareReplay(1)
+  );
+
+  reportConfig$ = this.report$.pipe(map((r) => r?.shared_configuration));
+
   constructor(
     private route: ActivatedRoute,
     private breadcrumbService: BreadcrumbService,
+    private fundingReportService: FundingReportService,
     private fundingMapConfigState: FundingMapConfigState
   ) {}
 
