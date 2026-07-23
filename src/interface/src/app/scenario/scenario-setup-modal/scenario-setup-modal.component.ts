@@ -63,6 +63,7 @@ export class ScenarioSetupModalComponent implements OnInit {
       fromClone: boolean;
       scenario?: Scenario;
       defaultName?: string;
+      parentId?: number;
       type: SCENARIO_TYPE;
     },
     private matSnackBar: MatSnackBar,
@@ -215,10 +216,10 @@ export class ScenarioSetupModalComponent implements OnInit {
       return;
     }
 
-    const { planId, type, fromClone, scenario } = this.data;
+    const { planId, type, fromClone, scenario, parentId } = this.data;
 
     this.scenarioService
-      .createScenario(name, planId, type)
+      .createScenario(name, planId, type, parentId)
       .pipe(
         tap((newScenario) => {
           this.dialogRef.close(newScenario);

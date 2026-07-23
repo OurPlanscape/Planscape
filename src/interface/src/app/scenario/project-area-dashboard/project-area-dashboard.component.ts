@@ -16,6 +16,7 @@ import { ScenarioState } from '../scenario.state';
 import { ScenarioToolsComponent } from '@scenario/scenario-tools/scenario-tools.component';
 import { ProjectAreasEmptyListComponent } from '../project-areas-empty-list/project-areas-empty-list.component';
 import { FeaturesModule } from '@features/features.module';
+import { ProjectAreaScenariosListComponent } from '../project-area-scenarios-list/project-area-scenarios-list.component';
 
 @UntilDestroy()
 @Component({
@@ -31,6 +32,7 @@ import { FeaturesModule } from '@features/features.module';
     DetailsCardComponent,
     ProjectAreaComingSoonComponent,
     ProjectAreasEmptyListComponent,
+    ProjectAreaScenariosListComponent,
     OverlayLoaderComponent,
     ScenarioToolsComponent,
     ProjectAreasEmptyListComponent,

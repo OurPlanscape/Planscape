@@ -31,18 +31,21 @@
             project area tools."
         (toolClicked)="onToolClick($event)"></app-scenario-tools>
     </div>
-    <div right-column class="project-area-column">
+    <div
+      right-column
+      class="project-area-column"
+      *ngIf="currentScenario$ | async as scenario">
       <app-project-area-coming-soon
         *appFeatureFlag="
           'PRIORITIZE_PROJECT_AREAS';
           hide: true
         "></app-project-area-coming-soon>
-      <app-project-areas-empty-list
+      <app-project-area-scenarios-list
         [plan]="plan"
-        *appFeatureFlag="
-          'PRIORITIZE_PROJECT_AREAS';
-          hide: false
-        "></app-project-areas-empty-list>
+        [projectAreaId]="scenario.id"
+        *appFeatureFlag="'PRIORITIZE_PROJECT_AREAS'; hide: false">
+      </app-project-area-scenarios-list>
+      <!-- TODO: nest this empty list into the scenarios list -->
     </div>
   </sg-dashboard-layout>
 </ng-container>

@@ -1,0 +1,28 @@
+<p>Here is where we show the list:</p>
+
+<!-- TODO: replace this with a cards component -->
+<div *ngFor="let childScenario of activeScenarios">
+  <div>
+    <a href="/plan/2968/scenario/{{childScenario.id}}">{{ childScenario.id }}</a>
+  </div>
+  <div>{{ childScenario.name }}</div>
+  <div>{{ childScenario.status }}</div>
+  <div>{{ childScenario.creator }}</div>
+  <div>{{ childScenario.scenario_result?.status }}</div>
+  <hr />
+</div>
+
+<sg-scenario-card
+  *ngFor="let s of activeScenarios"
+  [name]="s.name"
+  [creator]="s.creator"
+  [created_at]="s.created_at"
+  [origin]="s.origin"
+  [resultStatus]="s.scenario_result?.status || 'PENDING'"
+  >
+</sg-scenario-card>
+
+<p>Here is where we show an empty list when we dont have any scenarios:</p>
+<app-project-areas-empty-list
+  [plan]="plan"
+  [projectAreaId]="projectAreaId"></app-project-areas-empty-list>

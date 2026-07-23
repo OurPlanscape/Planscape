@@ -15,6 +15,7 @@ import { MatDialog } from '@angular/material/dialog';
 })
 export class ProjectAreasEmptyListComponent {
   @Input({ required: true }) plan!: Plan;
+  @Input({ required: true }) projectAreaId!: number;
 
   constructor(private dialog: MatDialog) {}
 
@@ -23,15 +24,13 @@ export class ProjectAreasEmptyListComponent {
   }
 
   public openScenarioSetupDialog(type: SCENARIO_TYPE) {
-    // TODO: add specific backend attribute (once available) to
-    // differentiate this type of scenario from others
-
     return this.dialog.open(ScenarioSetupModalComponent, {
       maxWidth: '560px',
       data: {
         planId: this.plan.id,
         fromClone: false,
         type: type,
+        parentId: this.projectAreaId,
       },
     });
   }

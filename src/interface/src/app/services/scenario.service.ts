@@ -45,11 +45,17 @@ export class ScenarioService {
     });
   }
 
-  createScenario(name: string, planId: number, type: SCENARIO_TYPE) {
+  createScenario(
+    name: string,
+    planId: number,
+    type: SCENARIO_TYPE,
+    parent?: number
+  ) {
     const scenarioParameters = {
       name: name,
       planning_area: planId,
       type: type,
+      parent: parent,
     };
     return this.http.post<Scenario>(
       this.v2Path + 'draft/',
@@ -217,5 +223,14 @@ export class ScenarioService {
     return this.http.get<SubUnitsDetail>(base + (qs ? `?${qs}` : ''), {
       withCredentials: true,
     });
+  }
+
+  getProjectAreaChildScenarios(projectAreaId: number) {
+    return this.http.get<Scenario[]>(
+      environment.backend_endpoint + `/v2/scenarios/${projectAreaId}/children/`,
+      {
+        withCredentials: true,
+      }
+    );
   }
 }
