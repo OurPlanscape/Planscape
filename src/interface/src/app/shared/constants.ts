@@ -153,3 +153,5 @@ export const PLANNING_APPROACH_HELP_URL =
   'https://support.planscape.org/support/solutions/articles/32000036528-scenario-steps-choose-a-planning-approach';
 export const TREATMENT_EFFECTS_URL =
   'https://support.planscape.org/support/solutions/articles/32000036426-treatment-effects-overview';
+export const FUNDING_REPORT_INFO_URL =
+  'https://support.planscape.org/support/solutions/folders/32000037369';
