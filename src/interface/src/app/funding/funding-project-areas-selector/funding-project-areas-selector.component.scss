@@ -1,0 +1,29 @@
+@import 'colors';
+@import 'variables';
+@import 'mixins';
+
+.view-outcomes-row {
+  position: sticky;
+  top: 0;
+  background: $color-white;
+  z-index: 10;
+  padding: 16px;
+  padding-bottom: 0;
+}
+
+.view-outcomes-box {
+  @include small-input-label();
+  display: flex;
+  gap: 4px;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  background-color: $color-soft-white;
+  margin: 16px;
+  border: 1px $color-soft-gray solid;
+  padding: 16px;
+}
+
+.outcome-areas-dropdown {
+  flex: 1;
+}
