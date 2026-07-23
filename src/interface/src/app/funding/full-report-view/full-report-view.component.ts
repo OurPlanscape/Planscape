@@ -16,7 +16,11 @@ import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { ProjectArea } from '@app/types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FundingReportService } from '@services/funding-report.service';
-import { FilterDropdownComponent, OpacitySliderComponent } from '@styleguide';
+import { OpacitySliderComponent } from '@styleguide';
+import {
+  FilterProjectFormat,
+  FundingProjectAreasSelectorComponent,
+} from '../funding-project-areas-selector/funding-project-areas-selector.component';
 import {
   ToggleButtonsConfig,
   ToggleTabsComponent,
@@ -45,12 +49,6 @@ import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { ScenarioService } from '@app/services';
 import { isPlanningApproachSubUnits } from '@app/scenario/scenario-helper';
 
-export interface FilterProjectFormat {
-  id: number;
-  name: string;
-  shortName: string;
-}
-
 @UntilDestroy()
 @Component({
   selector: 'app-full-report-view',
@@ -59,7 +57,7 @@ export interface FilterProjectFormat {
     AsyncPipe,
     BaseLayersComponent,
     DataLayersComponent,
-    FilterDropdownComponent,
+    FundingProjectAreasSelectorComponent,
     FundingReportComponent,
     NgIf,
     MatButtonToggleModule,
@@ -68,8 +66,6 @@ export interface FilterProjectFormat {
     MatProgressSpinnerModule,
     MatSelectModule,
     MatTabsModule,
-    FilterDropdownComponent,
-    FundingReportComponent,
     FundingReportMapComponent,
     MapNavbarComponent,
     NavBarComponent,
@@ -128,14 +124,6 @@ export class FullReportViewComponent implements OnInit {
     }),
     shareReplay(1)
   );
-
-  readonly filteredProjectAreas$: Observable<FilterProjectFormat[]> =
-    combineLatest(this.filterOptions$, this.selectedProjectAreas$).pipe(
-      map(([available, selectedIds]) => {
-        if (!selectedIds?.length) return [];
-        return available.filter((area) => selectedIds.includes(area.id));
-      })
-    );
 
   /**
    * Single (non-polling) fetch of the report. This view is only reachable for a
@@ -207,11 +195,6 @@ export class FullReportViewComponent implements OnInit {
         untilDestroyed(this)
       )
       .subscribe(() => this.router.navigate(['/home']));
-  }
-
-  handleFilterSelection(selectedAreas: FilterProjectFormat[]): void {
-    const ids = selectedAreas.map((a) => a.id);
-    this.fundingMapConfigState.updateSelectedProjectAreas(ids);
   }
 
   handleToggleSelection(selection: string): void {

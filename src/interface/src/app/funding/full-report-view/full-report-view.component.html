@@ -20,25 +20,10 @@
         </div>
       </div>
       <div class="section-row outcomes-row">
-        <div class="view-outcomes-row">
-          <div class="view-outcomes-box">
-            <div>Viewing outcomes for:</div>
-            <sg-filter-dropdown
-              class="outcome-areas-dropdown"
-              size="medium"
-              (confirmedSelection)="handleFilterSelection($event)"
-              [styleType]="'white'"
-              [hasSearch]="false"
-              displayField="name"
-              shortLabel="shortName"
-              noSelectionsLabel="All Project Areas"
-              [selectedItems]="(filteredProjectAreas$ | async) ?? []"
-              [menuItems]="(filterOptions$ | async) ?? []"
-              [showCountChip]="false"
-              menuLabel="Project Areas">
-            </sg-filter-dropdown>
-          </div>
-        </div>
+        <app-funding-project-areas-selector
+          [menuItems]="
+            filterOptions$ | async
+          "></app-funding-project-areas-selector>
         <ng-container *ngIf="report$ | async as report; else loadingReport">
           <app-funding-report
             *ngIf="report.status === 'SUCCESS'; else loadingReport"
