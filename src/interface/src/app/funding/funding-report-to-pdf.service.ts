@@ -4,6 +4,7 @@ import html2canvas from 'html2canvas';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { addRequestHeaders } from '@app/maplibre-map/maplibre.helper';
 import { AuthService } from '@app/services';
+import { FundingMapConfigState } from './funding-map-config-state';
 
 // A4 portrait, in millimeters.
 const PAGE_WIDTH_MM = 210;
@@ -26,7 +27,9 @@ export class FundingReportToPdfService {
    *   so this is omitted.
    */
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService,
+    private fundingMapConfigState: FundingMapConfigState
+  ) { }
 
   activeMap: MapLibreMap | null = null;
   pdfInstance: jsPDF | null = null;
@@ -45,8 +48,25 @@ export class FundingReportToPdfService {
     const TARGET_CONTENT_WIDTH = PAGE_WIDTH_MM - COMBINED_MARGINS;
     const scaleMultiplier = 0.7; // Master scaling knob
 
-    // Pre-load the planscape logo so it's ready to paint on the PDF canvas
+    const mapX = MARGIN_MM;
+    const mapWidth = 210 - (MARGIN_MM * 2);
+    const mapHeight = mapWidth * 0.666;
+
+    // Pre-load the logo so it's ready to paint on the PDF canvas
     const logoDataUrl = await this.loadLogo(LOGO_PATH);
+
+
+    this.fundingMapConfigState.setFundingLegendVisibility(true);
+
+    // Set the map reference to the maplibre reference
+    this.activeMap = map;
+
+
+    const mapContainer = document.createElement('div');
+    this.configMapContainer(mapContainer);
+    document.body.appendChild(mapContainer);
+
+
 
     const drawHeader = () => {
       if (logoDataUrl && this.pdfInstance) {
@@ -66,31 +86,22 @@ export class FundingReportToPdfService {
       this.pdfInstance?.line(MARGIN_MM, 16, PAGE_WIDTH_MM - MARGIN_MM, 16);
     };
 
-    this.activeMap = map;
 
     // Initialize Page 1 Header and set initial content baseline below it
     drawHeader();
     let currentY = 20; // 20mm gives breathing room below the header line
 
-    // Optional map on page 1 (Nested inside margins)
-    if (mapCanvas && mapCanvas.width > 0) {
-      const mapHeight =
-        (mapCanvas.height * TARGET_CONTENT_WIDTH) / mapCanvas.width;
-      this.pdfInstance.addImage(
-        mapCanvas.toDataURL('image/png'),
-        'PNG',
-        MARGIN_MM,
-        currentY,
-        TARGET_CONTENT_WIDTH,
-        mapHeight
-      );
-      currentY += mapHeight + 10;
-    }
+    await this.addMap(mapX, currentY, mapHeight, mapWidth);
+
+    // advance the current Y drawing 'cursor' to after the map
+    currentY += 8 + mapHeight;
 
     const cards = element.querySelectorAll('.report-section');
     document.body.classList.add('is-generating-pdf');
 
-    for (let i = 0; i < cards.length; i++) {
+    // Note: we are skipping map by index here --
+    // TODO: exclude this specifically by class instead
+    for (let i = 1; i < cards.length; i++) {
       const card = cards[i] as HTMLElement;
 
       const canvas = await html2canvas(card, {
@@ -166,24 +177,30 @@ export class FundingReportToPdfService {
     });
   }
 
-  async copyActiveMap() {
-    if (!this.activeMap) {
-      return;
+  async copyActiveMap(): Promise<MapLibreMap> {
+    if (this.activeMap === null) {
+      throw new Error('No active map');
     }
 
-    const printMap = new MapLibreMap({
-      container: 'printable-map',
-      style: this.activeMap.getStyle(),
-      center: this.activeMap.getBounds().getCenter(),
-      zoom: this.activeMap.getZoom(),
-      bearing: this.activeMap.getBearing(),
-      pitch: this.activeMap.getPitch(),
-      bounds: this.activeMap.getBounds(),
-      transformRequest: (url, resourceType) =>
-        addRequestHeaders(url, resourceType, this.authService.getAuthCookie()),
-    });
+    return new Promise((resolve) => {
+      const printMap = new MapLibreMap({
+        container: 'printable-map',
+        preserveDrawingBuffer: true, // Required for toDataURL
+        style: this.activeMap?.getStyle(),
+        center: this.activeMap?.getBounds().getCenter(),
+        zoom: this.activeMap?.getZoom(),
+        bearing: this.activeMap?.getBearing(),
+        pitch: this.activeMap?.getPitch(),
+        bounds: this.activeMap?.getBounds(),
+        transformRequest: (url, resourceType) =>
+          addRequestHeaders(url, resourceType, this.authService.getAuthCookie()),
+      });
 
-    return printMap;
+      // Wait until the map has finished loading tiles and rendering
+      printMap.once('idle', () => {
+        resolve(printMap);
+      });
+    });
   }
 
   async addMap(
@@ -199,6 +216,7 @@ export class FundingReportToPdfService {
     const printMap = await this.copyActiveMap();
     const canvas = printMap?.getCanvas();
     const imgData = canvas?.toDataURL('image/png');
+
     if (imgData) {
       this.pdfInstance.setLineWidth(1);
       this.pdfInstance.rect(mapX, mapY, mapWidth, mapHeight);
@@ -211,5 +229,15 @@ export class FundingReportToPdfService {
         mapHeight
       );
     }
+  }
+
+  configMapContainer(mapContainer: HTMLDivElement) {
+    mapContainer.id = 'printable-map';
+    mapContainer.style.position = 'absolute';
+    mapContainer.style.width = '1000px';
+    mapContainer.style.height = '700px';
+    mapContainer.style.left = '-9000px';
+    mapContainer.style.top = '-100px';
+    document.body.appendChild(mapContainer);
   }
 }
