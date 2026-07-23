@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 
 from rest_framework import serializers
 
@@ -31,19 +31,35 @@ class FundingOpportunityReportSerializer(serializers.ModelSerializer):
 
 
 class FundingOpportunityReportPublicSerializer(serializers.ModelSerializer):
+    scenario_name = serializers.CharField(source="scenario.name")
+    creator = serializers.SerializerMethodField()
     results = serializers.SerializerMethodField()
+    geopackage_url = serializers.SerializerMethodField()
     shared_configuration = serializers.SerializerMethodField()
     class Meta:
-            model = FundingOpportunityReport
-            fields = [
-                "status",
-                "results",
-                "treatment_datalayer",
-                "shared_configuration",
-            ]
-            read_only_fields = fields
+        model = FundingOpportunityReport
+        fields = [
+            "scenario_name",
+            "creator",
+            "status",
+            "results",
+            "treatment_datalayer",
+            "aet_datalayer",
+            "geopackage_status",
+            "geopackage_url",
+            "shared_configuration",
+        ]
+        read_only_fields = fields
 
-    def get_results(self, instance: FundingOpportunityReport):
+    def get_creator(self, instance: FundingOpportunityReport) -> str:
+        """Return the user's full name."""
+        if not instance.created_by:
+            return ""
+        if instance.created_by.first_name and instance.created_by.last_name:
+            return f"{instance.created_by.first_name} {instance.created_by.last_name}"
+        return instance.created_by.username
+
+    def get_results(self, instance: FundingOpportunityReport) -> Optional[Dict]:
         results = instance.results
         if not results:
             return
@@ -71,7 +87,10 @@ class FundingOpportunityReportPublicSerializer(serializers.ModelSerializer):
                                     
         return results
 
-    def get_shared_configuration(self, instance):
+    def get_geopackage_url(self, instance: FundingOpportunityReport) -> Optional[str]:
+        return instance.get_geopackage_url()
+
+    def get_shared_configuration(self, instance: FundingOpportunityReport) -> Optional[Dict]:
         return self.context
 
 class FundingReportAETImprovementRequestSerializer(serializers.Serializer):

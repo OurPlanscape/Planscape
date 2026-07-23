@@ -14,6 +14,7 @@ jobs:
       - uses: astral-sh/ruff-action@v3
         with:
           src: src/planscape
+          version: "0.14.10"
 
   build:
     runs-on: ubuntu-latest
