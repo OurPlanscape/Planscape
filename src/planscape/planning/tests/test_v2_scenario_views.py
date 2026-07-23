@@ -1852,6 +1852,25 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotIn("FORSYS", response.data.get("capabilities", []))
 
+    def test_patch_draft_with_project_areas_parent(self):
+        parent = ScenarioFactory(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        payload = {
+            "parent": parent.pk,
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.scenario.refresh_from_db()
+        self.assertEqual(self.scenario.parent, parent)
+        self.assertEqual(
+            self.scenario.planning_approach,
+            ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+
 
 class ScenarioCapabilitiesViewTest(APITestCase):
     def setUp(self):
@@ -2101,6 +2120,57 @@ class CreateScenarioForDraftsTest(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_with_project_areas_parent(self):
+        parent_planning_area = PlanningAreaFactory(user=self.user)
+        parent = ScenarioFactory(
+            user=self.user,
+            planning_area=parent_planning_area,
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        payload = {
+            "name": "project areas child scenario",
+            "planning_area": self.planning_area.pk,
+            "type": ScenarioType.PRESET,
+            "parent": parent.pk,
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-create-draft"),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        child = Scenario.objects.get(pk=response.data["id"])
+        self.assertEqual(child.parent, parent)
+        self.assertEqual(child.planning_area, parent_planning_area)
+        self.assertEqual(
+            child.planning_approach,
+            ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+
+    def test_create_rejects_non_project_areas_parent(self):
+        parent = ScenarioFactory(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.PRESET,
+        )
+        payload = {
+            "name": "invalid child scenario",
+            "planning_area": self.planning_area.pk,
+            "type": ScenarioType.PRESET,
+            "parent": parent.pk,
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-create-draft"),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(
+            Scenario.objects.filter(name="invalid child scenario").exists()
+        )
 
 
 class ScenarioCapabilitiesSerializerTest(TestCase):

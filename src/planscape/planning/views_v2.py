@@ -14,8 +14,8 @@ from funding_report.models import (
     FundingOpportunityReport,
     FundingOpportunityReportInvite,
     FundingOpportunityReportRun,
-    FundingOpportunityReportStatus,
     FundingOpportunityReportSharedLink,
+    FundingOpportunityReportStatus,
 )
 from funding_report.openapi_examples import (
     FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE,
@@ -44,6 +44,7 @@ from modules.base import compute_scenario_capabilities
 from planscape.serializers import BaseErrorMessageSerializer
 from rest_framework import mixins, pagination, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -59,6 +60,7 @@ from planning.models import (
     PlanningArea,
     ProjectArea,
     Scenario,
+    ScenarioPlanningApproach,
     ScenarioResultStatus,
     ScenarioType,
     ScenarioVersion,
@@ -292,6 +294,22 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def validate_parent_scenario(self, parent):
+        if not parent:
+            return None
+
+        parent = get_object_or_404(
+            self.get_queryset().filter(parent__isnull=True),
+            pk=parent.pk,
+        )
+
+        if parent.type != ScenarioType.PROJECT_AREAS:
+            raise DRFValidationError(
+                {"parent": ["Parent scenario must be a Project Areas scenario."]}
+            )
+
+        return parent
+
     @extend_schema(description="Retrieve a Scenario (auto-detects version).")
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -321,7 +339,11 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     def create_draft(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        parent = self.validate_parent_scenario(serializer.validated_data.get("parent"))
+
         scenario_type = serializer.validated_data.get("type") or ScenarioType.PRESET
+
         configuration_data = create_config(
             targets=serializer.validated_data.get("targets") or {},
             constraints=[],
@@ -329,12 +351,24 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             excluded_areas=[],
             priorities=[],
             cobenefits=[],
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+            if parent
+            else None,
         )
+
         validated_data = {
             **serializer.validated_data,
             "configuration": configuration_data,
             "type": scenario_type,
         }
+
+        if parent:
+            validated_data["parent"] = parent
+            validated_data["planning_area"] = parent.planning_area
+            validated_data["planning_approach"] = (
+                ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+            )
+
         scenario = create_scenario(**validated_data)
 
         if hasattr(scenario, "result_status"):
@@ -421,6 +455,16 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             instance, data=request.data, partial=True
         )
         serializer.is_valid(raise_exception=True)
+        if "parent" in serializer.validated_data:
+            parent = self.validate_parent_scenario(
+                serializer.validated_data.get("parent")
+            )
+            serializer.validated_data["parent"] = parent
+
+            if parent:
+                serializer.validated_data["planning_approach"] = (
+                    ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+                )
         configuration_data = serializer.validated_data.get("configuration")
         if configuration_data:
             existing = instance.configuration or {}
