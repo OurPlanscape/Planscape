@@ -94,12 +94,16 @@ class FundingOpportunityReportPublicSerializer(serializers.ModelSerializer):
     def get_shared_configuration(self, instance: FundingOpportunityReport) -> Optional[Dict]:
         return self.context
 
+class FundingOpportunityReportPublicProjectAreaQueryParamsSerializer(serializers.Serializer):
+    number_of_features = serializers.IntegerField(min_value=1, required=False)
+
 
 class FundingOpportunityReportPublicProjectAreaSerializer(ProjectAreaSerializer):
     treatment_rank = serializers.SerializerMethodField()
 
     class Meta(ProjectAreaSerializer.Meta):
         fields = (
+            "id",
             "name",
             "data",
             "geometry",
