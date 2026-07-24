@@ -26,7 +26,12 @@ from planning.models import ScenarioPlanningApproach
 @permission_classes([AllowAny])
 def public_funding_opportunity_report(request, shared_link_uuid):
     shared_link = get_object_or_404(
-        FundingOpportunityReportSharedLink.objects.select_related("report"),
+        (
+            FundingOpportunityReportSharedLink.objects
+            .select_related("report")
+            .select_related("report__scenario")
+            .select_related("report__scenario__planning_area")
+        ),
         uuid=shared_link_uuid,
         deleted_at__isnull=True,
     )
