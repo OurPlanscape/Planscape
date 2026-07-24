@@ -1,9 +1,12 @@
 from typing import Optional
 
 import requests
-from decouple import Config, RepositoryEnv
+from decouple import Config, RepositoryEmpty, RepositoryEnv
 
-config = Config(RepositoryEnv("../../.env"))
+try:
+    config = Config(RepositoryEnv("../../.env"))
+except FileNotFoundError:
+    config = Config(RepositoryEmpty())
 
 MATTERMOST_WEBHOOK_URL: Optional[str] = config(
     "MATTERMOST_WEBHOOK_URL",

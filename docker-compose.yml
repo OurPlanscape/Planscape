@@ -10,7 +10,7 @@ services:
       - GID=${GID}
     build:
       context: .
-      dockerfile: docker/${DOCKERFILE:-Dockerfile}
+      dockerfile: ${DOCKERFILE:-Dockerfile}
   web:
     image: planscape
     extends:
@@ -30,7 +30,7 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: docker/Dockerfile.frontend
+      dockerfile: Dockerfile.frontend
     ports:
       - "4200:4200"
     env_file:

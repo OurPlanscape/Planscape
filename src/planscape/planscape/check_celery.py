@@ -5,9 +5,12 @@ from collections import defaultdict
 from typing import Dict, Tuple
 
 from core.mattermost import post_to_mattermost
-from decouple import Config, RepositoryEnv
+from decouple import Config, RepositoryEmpty, RepositoryEnv
 
-config = Config(RepositoryEnv("../../.env"))
+try:
+    config = Config(RepositoryEnv("../../.env"))
+except FileNotFoundError:
+    config = Config(RepositoryEmpty())
 ENV = config("ENV")
 
 CELERY_CMD = [

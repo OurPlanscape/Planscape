@@ -1,24 +1,18 @@
 #!/bin/bash
-set -x
+set -e
 set -o pipefail
 
-NPROC=$(nproc)
-CORN_WORKERS=4
+PORT="${PORT:-8000}"
+GUNICORN_WORKERS="${GUNICORN_WORKERS:-4}"
 
 app_name="planscape"
 
-echo "Running migrations & collectstatic"
-uv run python manage.py migrate --no-input
-uv run python manage.py collectstatic --no-input
-echo "migrated"
-
-echo "Starting gunicorn for production"
-if [[ "$ENV" == "production" ]]; then
-  echo "Starting gunicorn for production"
+if [[ "$ENV" == "production" || "$ENV" == "staging" || "$K_SERVICE" != "" ]]; then
+  echo "Starting gunicorn"
   uv run gunicorn planscape.wsgi:application \
     -n "$app_name" \
-    --bind 0.0.0.0:8000 \
-    --workers "$CORN_WORKERS" \
+    --bind "0.0.0.0:${PORT}" \
+    --workers "$GUNICORN_WORKERS" \
     --log-level INFO \
     --timeout 120
 
@@ -26,8 +20,8 @@ else
   echo "Starting gunicorn locally"
   uv run gunicorn planscape.wsgi:application \
     -n "$app_name" \
-    --bind 0.0.0.0:8000 \
-    --workers "$CORN_WORKERS" \
+    --bind "0.0.0.0:${PORT}" \
+    --workers "$GUNICORN_WORKERS" \
     --log-level INFO \
     --timeout 120 \
     --reload
