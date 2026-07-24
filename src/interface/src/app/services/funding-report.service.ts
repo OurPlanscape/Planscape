@@ -6,6 +6,7 @@ import {
   FundingReport,
   FundingReportAETSummary,
   FundingReportInviteEmails,
+  FundingReportPublic,
   FundingReportPublicUrl,
 } from '@types';
 import { catchError, Observable, of, throwError } from 'rxjs';
@@ -27,6 +28,25 @@ export class FundingReportService {
       )
       .pipe(
         // The backend returns 404 when no report exists yet.
+        catchError((error: HttpErrorResponse) =>
+          error.status === 404 ? of(null) : throwError(() => error)
+        )
+      );
+  }
+
+  /**
+   * Fetch a shared funding report by its shared-link UUID. Public / unauthed —
+   * no credentials sent. Returns `null` on 404 (link missing, deleted, or
+   * report gone).
+   */
+  getPublicReport(
+    sharedLinkUuid: string
+  ): Observable<FundingReportPublic | null> {
+    return this.http
+      .get<FundingReportPublic>(
+        environment.backend_endpoint + `/v2/funding_report/${sharedLinkUuid}/`
+      )
+      .pipe(
         catchError((error: HttpErrorResponse) =>
           error.status === 404 ? of(null) : throwError(() => error)
         )

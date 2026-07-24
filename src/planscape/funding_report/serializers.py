@@ -1,8 +1,10 @@
-from typing import Optional
+from typing import Optional, Dict
 
 from rest_framework import serializers
 
 from funding_report.models import FundingOpportunityReport
+from funding_report.services import calculate_aet_improvement
+from planning.serializers import ProjectAreaSerializer
 
 
 class FundingOpportunityReportSerializer(serializers.ModelSerializer):
@@ -27,6 +29,85 @@ class FundingOpportunityReportSerializer(serializers.ModelSerializer):
 
     def get_geopackage_url(self, instance: FundingOpportunityReport) -> Optional[str]:
         return instance.get_geopackage_url()
+
+
+class FundingOpportunityReportPublicSerializer(serializers.ModelSerializer):
+    scenario_name = serializers.CharField(source="scenario.name")
+    creator = serializers.SerializerMethodField()
+    results = serializers.SerializerMethodField()
+    geopackage_url = serializers.SerializerMethodField()
+    shared_configuration = serializers.SerializerMethodField()
+    class Meta:
+        model = FundingOpportunityReport
+        fields = [
+            "scenario_name",
+            "creator",
+            "status",
+            "results",
+            "treatment_datalayer",
+            "aet_datalayer",
+            "geopackage_status",
+            "geopackage_url",
+            "shared_configuration",
+        ]
+        read_only_fields = fields
+
+    def get_creator(self, instance: FundingOpportunityReport) -> str:
+        """Return the user's full name."""
+        if not instance.created_by:
+            return ""
+        if instance.created_by.first_name and instance.created_by.last_name:
+            return f"{instance.created_by.first_name} {instance.created_by.last_name}"
+        return instance.created_by.username
+
+    def get_results(self, instance: FundingOpportunityReport) -> Optional[Dict]:
+        results = instance.results
+        if not results:
+            return
+        context = self.context
+        selected_aet = context.get("aet")
+        if selected_aet:
+            aet_improvement = calculate_aet_improvement(report=instance, percentage=selected_aet)
+            results["summary"]["AET"] = {
+                "percentage": aet_improvement["percentage"],
+                "improved_acres": aet_improvement["improved_acres"],
+                "total_project_area_acres": aet_improvement["total_project_area_acres"],
+                "planning_area_acres": aet_improvement["planning_area_acres"],
+                "improved_area_percent": aet_improvement["improved_area_percent"],
+            }
+            results["projects"]["AET"] = aet_improvement["project_areas"]
+        
+        selected_flame_severity = context.get("total_flame_severity")
+        if selected_flame_severity:
+            results["summary"]["TOTAL_FLAME_SEVERITY"] = {
+                selected_flame_severity: results.get("summary", {}).get("TOTAL_FLAME_SEVERITY", {}).get(selected_flame_severity)
+            }
+            results["projects"]["TOTAL_FLAME_SEVERITY"] = {
+                selected_flame_severity: results.get("projects", {}).get("TOTAL_FLAME_SEVERITY", {}).get(selected_flame_severity)
+            }
+                                    
+        return results
+
+    def get_geopackage_url(self, instance: FundingOpportunityReport) -> Optional[str]:
+        return instance.get_geopackage_url()
+
+    def get_shared_configuration(self, instance: FundingOpportunityReport) -> Optional[Dict]:
+        return self.context
+
+
+class FundingOpportunityReportPublicProjectAreaSerializer(ProjectAreaSerializer):
+    treatment_rank = serializers.SerializerMethodField()
+
+    class Meta(ProjectAreaSerializer.Meta):
+        fields = (
+            "name",
+            "data",
+            "geometry",
+            "treatment_rank",
+        )
+
+    def get_treatment_rank(self, instance) -> Optional[int]:
+        return (instance.data or {}).get("treatment_rank")
 
 
 class FundingReportAETImprovementRequestSerializer(serializers.Serializer):
