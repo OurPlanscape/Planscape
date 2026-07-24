@@ -1,3 +1,4 @@
+import json
 from unittest import mock
 from uuid import uuid4
 
@@ -523,7 +524,11 @@ class PublicFundingOpportunityReportTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        self.assertEqual(data["scenario_name"], self.report.scenario.name)
+        self.assertEqual(data["scenario"]["name"], self.report.scenario.name)
+        self.assertEqual(
+            data["scenario"]["planning_area"]["geometry"],
+            json.loads(self.report.scenario.planning_area.geometry.json),
+        )
         self.assertEqual(data["creator"], f"{self.report.created_by.first_name} {self.report.created_by.last_name}")
         self.assertEqual(data["status"], self.report.status)
         self.assertEqual(data["treatment_datalayer"], self.report.treatment_datalayer)
