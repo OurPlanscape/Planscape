@@ -6,8 +6,9 @@ import { filter, map, shareReplay, switchMap } from 'rxjs';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { FundingReportService } from '@services/funding-report.service';
 import { FundingReportViewComponent } from '@app/funding/funding-report-view/funding-report-view.component';
+import { FilterProjectFormat } from '@app/funding/funding-project-areas-selector/funding-project-areas-selector.component';
 import { MAP_WEST_CONUS_BOUNDS } from '@app/map/map.constants';
-import { FundingReport, FundingReportPublic } from '@types';
+import { FundingReport, FundingReportPublic, ProjectArea } from '@types';
 
 @Component({
   selector: 'app-for-shared',
@@ -36,6 +37,21 @@ export class ForSharedComponent implements OnInit {
   config$ = this.report$.pipe(map((report) => report?.shared_configuration));
 
   /**
+   * Project areas of the shared report, from the public endpoint. Feeds the
+   * legend's per-project acreage; also the source for the selector menu below.
+   */
+  projectAreas$ = this.id$.pipe(
+    filter((id): id is string => !!id),
+    switchMap((id) => this.fundingReportService.getPublicProjectAreas(id)),
+    shareReplay(1)
+  );
+
+  /** Options for the "Viewing outcomes for" selector. */
+  filterOptions$ = this.projectAreas$.pipe(
+    map((projectAreas) => this.projectAreasToSelectionMenu(projectAreas))
+  );
+
+  /**
    * Map bounds for the public view, taken straight from the report payload
    * (the public view has no plan in state to derive them from). Falls back to a
    * default extent so the map still renders until the backend sends `bounds`.
@@ -57,6 +73,27 @@ export class ForSharedComponent implements OnInit {
       icon: 'close',
       blackText: true,
     });
+  }
+
+  /**
+   * Build the "Viewing outcomes for" menu from the project areas, keyed by the
+   * project-area `id` (which must line up with the report's per-project
+   * `project_id` for the selection to filter). Mirrors the authed container's
+   * menu; the authed-only top-10 subunit filter is omitted here since the public
+   * payload carries no planning approach.
+   */
+  private projectAreasToSelectionMenu(
+    projectAreas: ProjectArea[]
+  ): FilterProjectFormat[] {
+    return projectAreas
+      .map((projectArea) => ({
+        id: projectArea.id,
+        shortName: projectArea.data.treatment_rank.toString(),
+        name: `Project Area ${projectArea.data.treatment_rank}`,
+      }))
+      .sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { numeric: true })
+      );
   }
 
   /**

@@ -3,4 +3,6 @@
   [projectAreaOptions]="filterOptions$ | async"
   [allProjectAreas]="allAvailableProjectAreas$ | async"
   [updatingWaterAvailability]="updatingWaterAvailability"
-  (updateWaterAvailability)="updateWaterAvailability($event)"></app-funding-report-view>
+  (updateWaterAvailability)="
+    updateWaterAvailability($event)
+  "></app-funding-report-view>
