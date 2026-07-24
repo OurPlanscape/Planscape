@@ -126,7 +126,7 @@
             [contentTemplate]="tooltipContent"
             (opened)="tooltipName = 'Flame Length'"></sg-popover>
         </h5>
-        <div class="summary-card" *ngIf="!isPreview">
+        <div class="summary-card" *ngIf="!isPreview && configEditable">
           <label class="flame-length-label" for="flame-length-interval">
             Percentage of project area(s) with flame length reduced from:
           </label>
@@ -144,6 +144,12 @@
               </mat-option>
             </mat-select>
           </mat-form-field>
+        </div>
+        <div class="summary-card" *ngIf="!isPreview && configReadonly">
+          <label class="flame-length-label">
+            Percentage of project area(s) with flame length reduced from:
+          </label>
+          <p class="flame-length-static">{{ selectedFlameLengthLabel }}</p>
         </div>
         <p class="chart-subtitle" *ngIf="isPreview && flameLengthHasData">
           (%) Percentage Change After Treatment
@@ -189,7 +195,7 @@
           [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
           (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
       </div>
-      <div class="summary-card" *ngIf="!isPreview">
+      <div class="summary-card" *ngIf="!isPreview && configEditable">
         <div class="summary-water">
           Water availability increased by:
           <sg-input-field
@@ -209,6 +215,12 @@
 
         <div class="field-error" *ngIf="waterAvailabilityControl.invalid">
           Field is required
+        </div>
+      </div>
+      <div class="summary-card" *ngIf="!isPreview && configReadonly">
+        <div class="summary-water">
+          Water availability increased by:
+          <span class="water-static">{{ waterAvailabilityControl.value }}%</span>
         </div>
       </div>
       <div class="stat-cards-wrapper">
@@ -327,6 +339,7 @@
 
 <app-funding-report-footer
   [footerType]="reportType"
+  [showShare]="!configReadonly"
   [buttonDisabled]="willShowMap && (mapLoaded$ | async) === false"
   [generatingPdf]="(generatingPdf$ | async) || false"
   [downloadingGeopackage]="(downloadingGeopackage$ | async) || false"

@@ -2,6 +2,13 @@
 @import 'variables';
 @import 'mixins';
 
+// Don't generate a box for the host, so the sticky row below anchors to the
+// scroll container (.outcomes-row) rather than this component's short host box —
+// otherwise `position: sticky` has no travel room and scrolls away.
+:host {
+  display: contents;
+}
+
 .view-outcomes-row {
   position: sticky;
   top: 0;
