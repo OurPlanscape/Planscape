@@ -4,7 +4,11 @@ from uuid import uuid4
 from collaboration.models import Permissions, Role
 from collaboration.tests.factories import UserObjectRoleFactory
 from django.urls import reverse
-from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ProjectAreaFactory,
+    ScenarioFactory,
+)
 from planscape.tests.factories import UserFactory
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -585,6 +589,64 @@ class PublicFundingOpportunityReportTest(APITestCase):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class PublicFundingOpportunityReportProjectAreasTest(APITestCase):
+    def setUp(self):
+        self.report = FundingOpportunityReportFactory()
+        self.shared_link = FundingOpportunityReportSharedLinkFactory(
+            report=self.report,
+            configuration={"aet": 10, "total_flame_severity": "high"},
+        )
+        self.url = reverse(
+            "api:funding_report:public-funding-opportunity-report-project-areas",
+            args=[self.shared_link.uuid],
+        )
+
+    def test_public_get_returns_project_areas_without_authentication(self):
+        project_area = ProjectAreaFactory(
+            scenario=self.report.scenario,
+            name="Shared project area",
+            data={"treatment_rank": 1},
+        )
+        ProjectAreaFactory(scenario=self.report.scenario, data={"treatment_rank": 2})
+        ProjectAreaFactory()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        self.assertIn(project_area.name, [item["name"] for item in data])
+        serialized_project_area = next(
+            item for item in data if item["name"] == project_area.name
+        )
+        self.assertEqual(serialized_project_area["data"], project_area.data)
+        self.assertEqual(serialized_project_area["treatment_rank"], 1)
+        for item in data:
+            self.assertIn("geometry", item)
+            self.assertIn("treatment_rank", item)
+            self.assertNotIn("id", item)
+            self.assertNotIn("scenario", item)
+            self.assertNotIn("created_by", item)
+
+    def test_returns_404_for_unknown_uuid(self):
+        url = reverse(
+            "api:funding_report:public-funding-opportunity-report-project-areas",
+            args=[uuid4()],
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_returns_404_for_deleted_shared_link(self):
+        self.shared_link.delete()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
 
 class CreateFundingOpportunityReportInvitesTest(APITestCase):
     def setUp(self):

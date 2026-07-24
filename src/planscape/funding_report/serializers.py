@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from funding_report.models import FundingOpportunityReport
 from funding_report.services import calculate_aet_improvement
+from planning.serializers import ProjectAreaSerializer
 
 
 class FundingOpportunityReportSerializer(serializers.ModelSerializer):
@@ -92,6 +93,22 @@ class FundingOpportunityReportPublicSerializer(serializers.ModelSerializer):
 
     def get_shared_configuration(self, instance: FundingOpportunityReport) -> Optional[Dict]:
         return self.context
+
+
+class FundingOpportunityReportPublicProjectAreaSerializer(ProjectAreaSerializer):
+    treatment_rank = serializers.SerializerMethodField()
+
+    class Meta(ProjectAreaSerializer.Meta):
+        fields = (
+            "name",
+            "data",
+            "geometry",
+            "treatment_rank",
+        )
+
+    def get_treatment_rank(self, instance) -> Optional[int]:
+        return (instance.data or {}).get("treatment_rank")
+
 
 class FundingReportAETImprovementRequestSerializer(serializers.Serializer):
     percentage = serializers.FloatField(min_value=0)
