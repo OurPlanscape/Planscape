@@ -7,11 +7,12 @@ import {
 } from '@angular/core';
 import { KeyValuePipe, NgClass, NgForOf, NgIf, NgStyle } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { ButtonComponent } from '..';
+import { ButtonComponent, ToggleComponent } from '..';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SimpleChanges } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 interface Item {
   id: number;
@@ -42,6 +43,7 @@ interface Item {
   selector: 'sg-selectable-list',
   standalone: true,
   imports: [
+    FormsModule,
     ButtonComponent,
     KeyValuePipe,
     MatButtonModule,
@@ -52,6 +54,7 @@ interface Item {
     NgForOf,
     NgIf,
     NgStyle,
+    ToggleComponent,
   ],
   templateUrl: './selectable-list.component.html',
   styleUrl: './selectable-list.component.scss',
