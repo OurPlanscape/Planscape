@@ -1,4 +1,4 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -20,6 +20,7 @@ import {
 import { STAND_SIZE } from '@plan/plan-helpers';
 import { PlanningApproachComponent } from '@scenario-creation/planning-approach/planning-approach.component';
 import { FeatureService } from '@app/features/feature.service';
+import { NgIf } from '@angular/common';
 
 type Step1WithOverviewForm = FormGroup<{
   stand_size: FormControl<STAND_SIZE | null>;
@@ -30,6 +31,7 @@ type Step1WithOverviewForm = FormGroup<{
   selector: 'app-step1-with-overview',
   standalone: true,
   imports: [
+    NgIf,
     ReactiveFormsModule,
     ProcessOverviewComponent,
     StandSizeSelectorComponent,
@@ -41,7 +43,10 @@ type Step1WithOverviewForm = FormGroup<{
     { provide: StepDirective, useExisting: Step1WithOverviewComponent },
   ],
 })
-export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfiguration> {
+export class Step1WithOverviewComponent
+  extends StepDirective<ScenarioDraftConfiguration>
+  implements OnInit
+{
   readonly form: Step1WithOverviewForm = new FormGroup({
     stand_size: new FormControl<STAND_SIZE | null>(null, Validators.required),
     planning_approach: new FormControl<PLANNING_APPROACH | null>(
@@ -50,7 +55,14 @@ export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfi
     ),
   });
 
+  // keep the form intact, but disable planning_approach validation for child scnearios
+  ngOnInit(): void {
+    if (this.isChildScenario) {
+      this.form.controls.planning_approach.disable();
+    }
+  }
   @Input() isCustomScenario = false;
+  @Input() isChildScenario = false;
 
   private featureService: FeatureService = inject(FeatureService);
 
@@ -77,7 +89,12 @@ export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfi
   }
 
   getData() {
-    const { stand_size, planning_approach } = this.form.value;
+    console.log('did we call get data?');
+    let { stand_size, planning_approach } = this.form.value;
+    console.log('what is planning_approach?', planning_approach);
+    if (this.isChildScenario) {
+      planning_approach = 'PRIORITIZE_SUB_UNITS';
+    }
     return { stand_size, planning_approach };
   }
 }

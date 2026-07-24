@@ -64,6 +64,7 @@ export interface Scenario {
   capabilities?: Capabilities[];
   type: SCENARIO_TYPE;
   planning_approach?: PLANNING_APPROACH;
+  parent?: number;
 }
 
 /**

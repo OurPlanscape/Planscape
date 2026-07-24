@@ -196,6 +196,12 @@ export class ScenarioCreationComponent implements OnInit {
     map((scenario) => scenario.type)
   );
 
+  hasParent$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => {
+      return scenario.parent !== null;
+    })
+  );
+
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
     if (!this.newScenarioState.isDraftFinishedSnapshot()) {
@@ -255,9 +261,14 @@ export class ScenarioCreationComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe((scenario) => {
         // Setting up the breadcrumb
+        let scenarioBackUrl = getPlanPath(this.planId);
+        if (scenario.parent) {
+          scenarioBackUrl += `/scenario/${scenario.parent}/dashboard`;
+        }
+
         this.breadcrumbService.updateBreadCrumb({
           label: `New Scenario: ${scenario.name}`,
-          backUrl: getPlanPath(this.planId),
+          backUrl: scenarioBackUrl,
           blackText: true,
           icon: 'close',
         });

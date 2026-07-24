@@ -24,6 +24,7 @@ import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NgFor } from '@angular/common';
 import { ScenarioCardComponent } from '@styleguide';
+import { ScenarioRow } from '@app/plan/plan-summary/scenarios-card-list/scenarios-card-list.component';
 
 @UntilDestroy()
 @Component({
@@ -113,6 +114,26 @@ export class ProjectAreaScenariosListComponent {
 
   get canAddScenarios() {
     return this.plan && canAddScenario(this.plan);
+  }
+
+  canOpenScenario(row: ScenarioRow, userId?: number): boolean {
+    // TODO: esnure this logic applies for child scenarios
+
+    // const status = row.scenario_result?.status;
+    // if (!status) return false;
+
+    // if (this.isDraftByOtherUser(row, userId)) return false;
+
+    // return this.open_statuses.includes(status);
+    return true;
+  }
+
+  handleOpenScenario(row: ScenarioRow): void {
+    const userId = this.authService.currentUser()?.id;
+    if (!this.canOpenScenario(row, userId)) return;
+
+    // this.selectedCard = row;
+    // this.viewScenario.emit(row);
   }
 
   public openScenarioSetupDialog(type: SCENARIO_TYPE) {
