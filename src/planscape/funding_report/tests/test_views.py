@@ -3,7 +3,9 @@ from uuid import uuid4
 
 from collaboration.models import Permissions, Role
 from collaboration.tests.factories import UserObjectRoleFactory
+from django.conf import settings
 from django.urls import reverse
+from planning.models import ScenarioPlanningApproach
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -609,6 +611,7 @@ class PublicFundingOpportunityReportProjectAreasTest(APITestCase):
             name="Shared project area",
             data={"treatment_rank": 1},
         )
+        ProjectAreaFactory(scenario=self.report.scenario, data={"treatment_rank": 3})
         ProjectAreaFactory(scenario=self.report.scenario, data={"treatment_rank": 2})
         ProjectAreaFactory()
 
@@ -616,19 +619,56 @@ class PublicFundingOpportunityReportProjectAreasTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
-        self.assertEqual(len(data), 2)
+        self.assertEqual(len(data), 3)
+        self.assertEqual([item["treatment_rank"] for item in data], [1, 2, 3])
         self.assertIn(project_area.name, [item["name"] for item in data])
         serialized_project_area = next(
             item for item in data if item["name"] == project_area.name
         )
         self.assertEqual(serialized_project_area["data"], project_area.data)
         self.assertEqual(serialized_project_area["treatment_rank"], 1)
+        self.assertEqual(serialized_project_area["id"], project_area.id)
         for item in data:
             self.assertIn("geometry", item)
             self.assertIn("treatment_rank", item)
-            self.assertNotIn("id", item)
+            self.assertIn("id", item)
             self.assertNotIn("scenario", item)
             self.assertNotIn("created_by", item)
+
+    def test_public_get_limits_project_areas_by_number_of_features(self):
+        ProjectAreaFactory(scenario=self.report.scenario, data={"treatment_rank": 1})
+        ProjectAreaFactory(scenario=self.report.scenario, data={"treatment_rank": 2})
+
+        response = self.client.get(self.url, {"number_of_features": 1})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 1)
+
+    def test_public_get_validates_number_of_features(self):
+        response = self.client.get(self.url, {"number_of_features": 0})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("number_of_features", response.json()["errors"])
+
+    def test_public_get_defaults_to_feature_limit_for_prioritize_sub_units(self):
+        self.report.scenario.planning_approach = (
+            ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        )
+        self.report.scenario.save(update_fields=["planning_approach"])
+        total_project_areas = settings.DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS + 1
+        for rank in range(total_project_areas):
+            ProjectAreaFactory(
+                scenario=self.report.scenario,
+                data={"treatment_rank": rank},
+            )
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            len(response.json()),
+            settings.DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS,
+        )
 
     def test_returns_404_for_unknown_uuid(self):
         url = reverse(
