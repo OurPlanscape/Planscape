@@ -1,3 +1,5 @@
+import { Extent } from './treatment.types';
+
 export interface FundingReportDataPoint {
   year: number;
   // The backend sends null for years/metrics with no valid data.
@@ -175,10 +177,22 @@ export interface FundingReportSharedConfiguration {
  * with `results` already recalculated for the shared configuration.
  */
 export interface FundingReportPublic {
+  scenario_name: string;
+  /** Full name (or username) of the report's creator. */
+  creator: string;
   status: FundingReport['status'];
   results: FundingReportResults | null;
   treatment_datalayer: number | null;
+  aet_datalayer: number | null;
+  geopackage_status: FundingReport['geopackage_status'];
+  geopackage_url: string | null;
   shared_configuration: FundingReportSharedConfiguration;
+  /**
+   * Planning-area extent `[west, south, east, north]` for framing the map. The
+   * public view has no plan in state to derive this from, so the backend sends
+   * it on the payload. Optional until that endpoint work lands.
+   */
+  bounds?: Extent | null;
 }
 
 /**

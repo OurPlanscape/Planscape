@@ -1,2 +1,8 @@
-<app-nav-bar></app-nav-bar> Funding report with config:
-{{ reportConfig$ | async | json }}
+<app-funding-report-view
+  [report]="fundingReport$ | async"
+  interactive="readonly"
+  [projectAreaOptions]="filterOptions$ | async"
+  [allProjectAreas]="projectAreas$ | async"
+  [mapBounds]="mapBounds$ | async"
+  [flameLength]="(config$ | async)?.total_flame_severity"
+  [waterAvailability]="(config$ | async)?.aet"></app-funding-report-view>

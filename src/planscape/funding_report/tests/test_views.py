@@ -634,9 +634,9 @@ class PublicFundingOpportunityReportProjectAreasTest(APITestCase):
         self.assertEqual(serialized_project_area["treatment_rank"], 1)
         self.assertEqual(serialized_project_area["id"], project_area.id)
         for item in data:
+            self.assertIn("id", item)
             self.assertIn("geometry", item)
             self.assertIn("treatment_rank", item)
-            self.assertIn("id", item)
             self.assertNotIn("scenario", item)
             self.assertNotIn("created_by", item)
 
