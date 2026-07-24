@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from funding_report.models import FundingOpportunityReport
 from funding_report.services import calculate_aet_improvement
+from planning.models import PlanningArea, Scenario
 from planning.serializers import ProjectAreaSerializer
 
 
@@ -31,8 +32,27 @@ class FundingOpportunityReportSerializer(serializers.ModelSerializer):
         return instance.get_geopackage_url()
 
 
+class FundingOpportunityReportPlanningAreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlanningArea
+        fields = [
+            "geometry"
+        ]
+        read_only_fields = fields
+
+class FundingOpportunityReportScenarioSerializer(serializers.ModelSerializer):
+    planning_area = FundingOpportunityReportPlanningAreaSerializer()
+
+    class Meta:
+        model = Scenario
+        fields = [
+            "name",
+            "planning_area",
+        ]
+        read_only_fields = fields
+
 class FundingOpportunityReportPublicSerializer(serializers.ModelSerializer):
-    scenario_name = serializers.CharField(source="scenario.name")
+    scenario =  FundingOpportunityReportScenarioSerializer()
     creator = serializers.SerializerMethodField()
     results = serializers.SerializerMethodField()
     geopackage_url = serializers.SerializerMethodField()
@@ -40,7 +60,7 @@ class FundingOpportunityReportPublicSerializer(serializers.ModelSerializer):
     class Meta:
         model = FundingOpportunityReport
         fields = [
-            "scenario_name",
+            "scenario",
             "creator",
             "status",
             "results",
