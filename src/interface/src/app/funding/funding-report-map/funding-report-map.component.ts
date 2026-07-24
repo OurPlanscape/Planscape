@@ -17,7 +17,7 @@ import {
 import { AuthService, DataLayersService } from '@app/services';
 import { FrontendConstants } from '@app/map/map.constants';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { map, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, map, Observable, of, Subject, switchMap } from 'rxjs';
 import { EventData } from '@angular/cdk/testing';
 import { MapZoomControlComponent } from '@app/maplibre-map/map-zoom-control/map-zoom-control.component';
 import { MapBaseLayersComponent } from '@app/maplibre-map/map-base-layers/map-base-layers.component';
@@ -30,7 +30,7 @@ import { MapMultiProjectAreasComponent } from '../map-multi-project-areas/map-mu
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { MapTooltipComponent } from '@app/treatments/map-tooltip/map-tooltip.component';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
-import { DataLayer } from '@app/types';
+import { DataLayer, Extent } from '@app/types';
 import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '@styleguide';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -128,10 +128,25 @@ export class FundingReportMapComponent implements OnInit {
     map((scenario) => scenario.planning_approach ?? 'OPTIMIZE_PROJECT_AREAS')
   );
 
-  bounds$ = this.planState.planningAreaGeometry$.pipe(
-    map((geometry) => {
-      return getBoundsFromGeometry(geometry);
-    })
+  private readonly _bounds$ = new BehaviorSubject<Extent | null>(null);
+
+  /**
+   * Explicit map bounds. Supplied by callers that have no plan in state (e.g.
+   * the public shared view). When unset, the map falls back to the planning-area
+   * geometry from `PlanState`, which is the authed behaviour.
+   */
+  @Input() set bounds(value: Extent | null) {
+    this._bounds$.next(value ?? null);
+  }
+
+  bounds$ = this._bounds$.pipe(
+    switchMap((explicit) =>
+      explicit
+        ? of(explicit)
+        : this.planState.planningAreaGeometry$.pipe(
+            map((geometry) => getBoundsFromGeometry(geometry))
+          )
+    )
   );
 
   selectedLayer$ = this.dataLayersStateService.viewedDataLayer$;

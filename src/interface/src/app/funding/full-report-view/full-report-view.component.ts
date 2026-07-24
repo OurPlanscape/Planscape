@@ -1,30 +1,11 @@
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
-import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BaseLayersComponent } from '@app/base-layers/base-layers/base-layers.component';
-import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
-import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
-import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { ProjectArea } from '@app/types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FundingReportService } from '@services/funding-report.service';
-import { OpacitySliderComponent } from '@styleguide';
-import {
-  FilterProjectFormat,
-  FundingProjectAreasSelectorComponent,
-} from '../funding-project-areas-selector/funding-project-areas-selector.component';
-import {
-  ToggleButtonsConfig,
-  ToggleTabsComponent,
-} from '@styleguide/toggle-tabs/toggle-tabs.component';
 import { FundingReport, FundingReportAETSummary } from '@types';
 import {
   BehaviorSubject,
@@ -41,54 +22,26 @@ import {
   tap,
 } from 'rxjs';
 
-import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
-import { FundingReportComponent } from '../funding-report/funding-report.component';
-import { FundingMapConfigState } from '../funding-map-config-state';
-import { generateLegendFromReport } from '../funding-report/funding-report.helper';
-import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { FundingReportViewComponent } from '../funding-report-view/funding-report-view.component';
+import { FilterProjectFormat } from '../funding-project-areas-selector/funding-project-areas-selector.component';
 import { ScenarioService } from '@app/services';
 import { isPlanningApproachSubUnits } from '@app/scenario/scenario-helper';
 
+/**
+ * Authed funding-report container. Fetches the report and project areas for the
+ * current scenario, supports interactive water recalculation, and feeds it all
+ * into the shared {@link FundingReportViewComponent}.
+ */
 @UntilDestroy()
 @Component({
   selector: 'app-full-report-view',
   standalone: true,
-  imports: [
-    AsyncPipe,
-    BaseLayersComponent,
-    DataLayersComponent,
-    FundingProjectAreasSelectorComponent,
-    FundingReportComponent,
-    NgIf,
-    MatButtonToggleModule,
-    MatIconModule,
-    MatMenuModule,
-    MatProgressSpinnerModule,
-    MatSelectModule,
-    MatTabsModule,
-    FundingReportMapComponent,
-    MapNavbarComponent,
-    NavBarComponent,
-    OpacitySliderComponent,
-    ToggleTabsComponent,
-  ],
-  providers: [
-    FundingMapConfigState,
-    { provide: MapConfigState, useExisting: FundingMapConfigState },
-  ],
+  imports: [AsyncPipe, FundingReportViewComponent],
   templateUrl: './full-report-view.component.html',
   styleUrl: './full-report-view.component.scss',
 })
 export class FullReportViewComponent implements OnInit {
-  tabButtons: ToggleButtonsConfig[] = [
-    { name: 'Report', value: 'report', icon: 'analytics_outline' },
-    { name: 'Data Layers', value: 'data_layers', icon: 'layers_outline' },
-  ];
-  currentView: string = 'report';
-
   currentScenario$ = this.scenarioState.currentScenario$;
-  selectedProjectAreas$ = this.fundingMapConfigState.selectedProjectAreas$;
-  opacity$ = this.fundingMapConfigState.opacity$;
 
   allAvailableProjectAreas$: Observable<ProjectArea[]> =
     this.currentScenario$.pipe(
@@ -152,28 +105,15 @@ export class FullReportViewComponent implements OnInit {
     shareReplay(1)
   );
 
-  /** Id of the report's treatment datalayer to display on the map. */
-  treatmentDataLayerId$ = this.report$.pipe(
-    map((report) => report?.treatment_datalayer ?? null)
-  );
-
-  /** Id of the report's water-availability (AET) datalayer, shown on top. */
-  aetDataLayerId$ = this.report$.pipe(
-    map((report) => report?.aet_datalayer ?? null)
-  );
-
   updatingWaterAvailability = false;
   /** Water % entered; `switchMap` cancels any in-flight request when a new one arrives. */
   private waterRequest$ = new Subject<number>();
-
-  tabIndex = 0;
 
   constructor(
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
     private scenarioService: ScenarioService,
     private fundingReportService: FundingReportService,
-    private fundingMapConfigState: FundingMapConfigState,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -195,14 +135,6 @@ export class FullReportViewComponent implements OnInit {
         untilDestroyed(this)
       )
       .subscribe(() => this.router.navigate(['/home']));
-  }
-
-  handleToggleSelection(selection: string): void {
-    this.currentView = selection;
-  }
-
-  handleOpacityChange(opacity: number): void {
-    this.fundingMapConfigState.setOpacity(opacity);
   }
 
   initializeBreadcrumb(): void {
@@ -302,15 +234,4 @@ export class FullReportViewComponent implements OnInit {
     }
     return { ...report, results };
   }
-
-  legendData$ = combineLatest([
-    this.fetchedReport$,
-    this.selectedProjectAreas$,
-    this.allAvailableProjectAreas$,
-  ]).pipe(
-    map(([report, areas, projAreas]) =>
-      generateLegendFromReport(report?.results ?? null, areas, projAreas)
-    ),
-    shareReplay(1)
-  );
 }

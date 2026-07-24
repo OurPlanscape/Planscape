@@ -1,0 +1,77 @@
+<app-nav-bar></app-nav-bar>
+<section class="container">
+  <div class="full-report-sidebar">
+    <div class="section-row toggle-row">
+      <sg-toggle-tabs
+        [buttons]="tabButtons"
+        defaultSelection="report"
+        (emitSelection)="handleToggleSelection($event)"></sg-toggle-tabs>
+    </div>
+    <div class="report-view" #reportScroll *ngIf="currentView === 'report'">
+      <div class="section-row">
+        <div class="section-title">Introduction</div>
+        <div class="section-text">
+          Presented below are the results of our land management modeling, which
+          apply the maximum permissible treatments according to protected area
+          status and vegetation type. These values highlight the difference
+          between max allowable treatments and a "no-treatment" baseline. All
+          metrics reflect outcomes within forested land only.
+          <a>Learn More</a>
+        </div>
+      </div>
+      <div class="section-row outcomes-row">
+        <app-funding-project-areas-selector
+          [menuItems]="projectAreaOptions"></app-funding-project-areas-selector>
+        <ng-container *ngIf="report$ | async as report; else loadingReport">
+          <app-funding-report
+            *ngIf="report.status === 'SUCCESS'; else loadingReport"
+            [report]="report"
+            [projectAreas]="(selectedProjectAreas$ | async) ?? []"
+            [scrollElement]="reportScroll"
+            reportType="full"
+            [interactive]="interactive"
+            [flameLength]="flameLength"
+            [waterAvailability]="waterAvailability"
+            [updatingWaterAvailability]="updatingWaterAvailability"
+            (updateWaterAvailability)="
+              updateWaterAvailability.emit($event)
+            "></app-funding-report>
+        </ng-container>
+        <ng-template #loadingReport>
+          <mat-spinner class="report-spinner" diameter="36"></mat-spinner>
+        </ng-template>
+      </div>
+    </div>
+    <div class="data-layers-view" *ngIf="currentView === 'data_layers'">
+      <mat-tab-group
+        class="map-layers-tabs"
+        [(selectedIndex)]="tabIndex"
+        mat-stretch-tabs="false"
+        mat-align-tabs="start">
+        <mat-tab label="Data Layers">
+          <app-data-layers [useClearFooter]="false"></app-data-layers>
+        </mat-tab>
+        <mat-tab label="Base Layers">
+          <app-base-layers></app-base-layers>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+  </div>
+  <div class="right-side">
+    <app-map-nav-bar>
+      <sg-opacity-slider
+        class="navbar-slider"
+        [minValue]="0"
+        [maxValue]="1"
+        [step]="0.01"
+        [sliderValue]="(opacity$ | async) ?? 0.5"
+        (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
+    </app-map-nav-bar>
+    <app-funding-report-map
+      *ngIf="treatmentDataLayerId$ | async as treatmentDataLayerId"
+      [treatmentDataLayerId]="treatmentDataLayerId"
+      [aetDataLayerId]="aetDataLayerId$ | async"
+      [bounds]="mapBounds"
+      [legendData]="legendData$ | async"></app-funding-report-map>
+  </div>
+</section>

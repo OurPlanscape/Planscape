@@ -1,2 +1,12 @@
-<app-nav-bar></app-nav-bar> Funding report with config:
-{{ reportConfig$ | async | json }}
+<!--
+  TODO: once the public project-areas endpoint exists, pass
+  [projectAreaOptions] (selector menu) and [allProjectAreas] (legend acreage)
+  from the shared-link source. Until then they default to empty: the selector is
+  blank and the legend's per-project acreage reads zero.
+-->
+<app-funding-report-view
+  [report]="fundingReport$ | async"
+  interactive="readonly"
+  [mapBounds]="mapBounds$ | async"
+  [flameLength]="(config$ | async)?.total_flame_severity"
+  [waterAvailability]="(config$ | async)?.aet"></app-funding-report-view>

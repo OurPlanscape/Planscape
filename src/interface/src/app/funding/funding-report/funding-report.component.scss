@@ -126,6 +126,16 @@ h5 {
   }
 }
 
+// Static (read-only) value shown in place of the flame length selector when the
+// report configuration is frozen (public shared view).
+.flame-length-static {
+  margin: 0;
+  color: $color-black;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
 .chart-wrapper {
   position: relative;
 }
@@ -170,6 +180,11 @@ h5 {
 
 .water-input {
   width: 80px;
+}
+
+// Static (read-only) water value shown when the configuration is frozen.
+.water-static {
+  font-weight: 600;
 }
 
 .stat-cards-wrapper {
