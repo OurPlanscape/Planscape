@@ -31,15 +31,16 @@ from planning.models import (
     TreatmentGoalUsageType,
 )
 from planning.services import (
+    build_run_configuration,
     calculate_and_update_scenario_result,
     create_planning_area,
     create_scenario,
     export_planning_area_to_geopackage,
-    export_treatable_area_to_geopackage,
     export_scenario_inputs_to_geopackage,
     export_scenario_stand_outputs_to_geopackage,
     export_to_geopackage,
     export_to_shapefile,
+    export_treatable_area_to_geopackage,
     get_acreage,
     get_available_stand_ids,
     get_constrained_stands,
@@ -413,7 +414,7 @@ class TestExportToGeopackage(TestCase):
             name="s1",
             user=self.user,
             treatment_goal=self.treatment_goal,
-            treatable_area=self.planning.geometry
+            treatable_area=self.planning.geometry,
         )
         self.custom_scenario = ScenarioFactory.create(
             planning_area=self.planning,
@@ -422,7 +423,7 @@ class TestExportToGeopackage(TestCase):
             type=ScenarioType.CUSTOM,
             with_priorities=self.datalayers[:2],
             with_cobenefits=self.datalayers[2:],
-            treatable_area=self.planning.geometry
+            treatable_area=self.planning.geometry,
         )
         data = {
             "foo": "abc",
@@ -622,14 +623,15 @@ class TestExportToGeopackage(TestCase):
             feature = next(iter(src))
             self.assertEqual(feature["properties"]["name"], self.planning.name)
 
-
     def test_export_treatable_area_to_geopackage_preset_scenario(self):
         export_treatable_area_to_geopackage(
             self.preset_scenario, self.preset_scenario_output_path
         )
         layers = fiona.listlayers(self.preset_scenario_output_path)
         self.assertIn("treatable_area", layers)
-        with fiona.open(self.preset_scenario_output_path, layer="treatable_area") as src:
+        with fiona.open(
+            self.preset_scenario_output_path, layer="treatable_area"
+        ) as src:
             self.assertEqual(1, len(src))
             self.assertEqual(
                 to_string(src.crs), to_string(settings.CRS_GEOPACKAGE_EXPORT)
@@ -643,7 +645,9 @@ class TestExportToGeopackage(TestCase):
         )
         layers = fiona.listlayers(self.custom_scenario_output_path)
         self.assertIn("treatable_area", layers)
-        with fiona.open(self.custom_scenario_output_path, layer="treatable_area") as src:
+        with fiona.open(
+            self.custom_scenario_output_path, layer="treatable_area"
+        ) as src:
             self.assertEqual(1, len(src))
             self.assertEqual(
                 to_string(src.crs), to_string(settings.CRS_GEOPACKAGE_EXPORT)
@@ -998,8 +1002,7 @@ class TestRemoveExcludes(TestCase):
         self.planning_area = PlanningAreaFactory.create(geometry=pa_geom)
         self.planning_area.get_stands(StandSizeChoices.LARGE)
         self.scenario = ScenarioFactory.create(
-            planning_area=self.planning_area,
-            treatable_area=self.planning_area.geometry
+            planning_area=self.planning_area, treatable_area=self.planning_area.geometry
         )
         self.metrics = calculate_stand_vector_stats_with_stand_list(
             stand_ids=[stand.id for stand in self.stands],
@@ -1167,11 +1170,9 @@ class ValidateScenarioConfigurationTest(TestCase):
             "targets": {"max_area": 500, "max_project_count": 2},
             "excluded_areas_ids": [],
         }
-        
+
         errors = validate_scenario_configuration(self.scenario)
-        self.assertIn(
-            "No stands are available with the current configuration.", errors
-        )
+        self.assertIn("No stands are available with the current configuration.", errors)
         get_available_stand_ids_mock.assert_called_once()
 
     @mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2])
@@ -1182,9 +1183,8 @@ class ValidateScenarioConfigurationTest(TestCase):
         }
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn("Not enough stands are available", " ".join(errors))
-    @mock.patch(
-        "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
-    )
+
+    @mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2, 3])
     def test_valid_configuration(self, get_available_stand_ids_mock):
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
@@ -1210,15 +1210,13 @@ class ValidateScenarioConfigurationTest(TestCase):
             errors,
         )
 
-    @mock.patch(
-        "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
-    )
+    @mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2, 3])
     def test_valid_configuration_with_priorities(self, get_available_stand_ids):
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
             "targets": {"max_area": 9999, "max_project_count": 2},
-            "priorities": [{"datalayer": self.datalayer.pk, "weight": 1}]
-            }
+            "priorities": [{"datalayer": self.datalayer.pk, "weight": 1}],
+        }
         self.scenario.type = ScenarioType.CUSTOM
         self.scenario.save()
         errors = validate_scenario_configuration(self.scenario)
@@ -1278,10 +1276,10 @@ class ValidateScenarioConfigurationTest(TestCase):
             errors,
         )
 
-    @mock.patch(
-        "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
-    )
-    def test_sub_units_target_value_expected_percentage(self, get_available_stand_ids_mock):
+    @mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2, 3])
+    def test_sub_units_target_value_expected_percentage(
+        self, get_available_stand_ids_mock
+    ):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.configuration = {
             "stand_size": StandSizeChoices.LARGE,
@@ -1324,9 +1322,7 @@ class ValidateScenarioConfigurationTest(TestCase):
         "planning.services.get_sub_units_details",
         return_value={"avg": 1000, "max": 1500, "min": 500},
     )
-    @mock.patch(
-        "planning.services.get_available_stand_ids", return_value=[1, 2, 3]
-    )
+    @mock.patch("planning.services.get_available_stand_ids", return_value=[1, 2, 3])
     def test_sub_units_target_value_expected_acreage(
         self, mock_sub_units_details, get_available_stand_ids_mock
     ):
@@ -1376,6 +1372,79 @@ class ValidateScenarioConfigurationTest(TestCase):
         errors = validate_scenario_configuration(self.scenario)
         self.assertIn("`sub_units_target_value` cannot be larger than 1500.", errors)
         mock_sub_units_details.assert_called_once()
+
+
+class ProjectAreasChildForSysTest(TestCase):
+    def setUp(self):
+        self.planning_area = PlanningAreaFactory.create(with_stands=True)
+
+        self.parent = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            type=ScenarioType.PROJECT_AREAS,
+            configuration={
+                "stand_size": StandSizeChoices.LARGE,
+            },
+        )
+
+        self.project_area = ProjectAreaFactory.create(
+            scenario=self.parent,
+            geometry=self.planning_area.geometry,
+        )
+
+        self.child = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            parent=self.parent,
+            type=ScenarioType.PRESET,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+            configuration={
+                "stand_size": StandSizeChoices.LARGE,
+                "targets": {
+                    "sub_units_fixed_target": False,
+                    "sub_units_target_value": 50,
+                },
+            },
+        )
+
+    def test_available_stands_come_from_parent_project_areas(self):
+        expected_stand_ids = list(
+            self.project_area.get_stands(stand_size=StandSizeChoices.LARGE).values_list(
+                "id", flat=True
+            )
+        )
+
+        stand_ids = get_available_stand_ids(
+            self.child,
+            StandSizeChoices.LARGE,
+        )
+
+        self.assertCountEqual(stand_ids, expected_stand_ids)
+
+    def test_build_run_configuration_uses_parent_project_areas(self):
+        expected_stand_ids = list(
+            self.project_area.get_stands(stand_size=StandSizeChoices.LARGE).values_list(
+                "id", flat=True
+            )
+        )
+
+        run_configuration = build_run_configuration(self.child)
+
+        self.assertIn("projects_data", run_configuration)
+        self.assertIn(str(self.project_area.pk), run_configuration["projects_data"])
+        self.assertCountEqual(
+            run_configuration["projects_data"][str(self.project_area.pk)],
+            expected_stand_ids,
+        )
+
+    def test_project_areas_child_does_not_require_sub_units_layer(self):
+        self.assertNotIn("sub_units_layer", self.child.configuration)
+
+        errors = validate_scenario_configuration(self.child)
+
+        self.assertNotIn(
+            "Configuration field `sub_units_layer` is required for this Scenario.",
+            errors,
+        )
+        self.assertEqual(errors, [])
 
 
 class CreateScenarioGuardTest(TestCase):
@@ -1503,7 +1572,14 @@ class TriggerScenarioTest(TestCase):
 
         self.assertEqual(
             self.scenario.capabilities,
-            ["FORSYS", "IMPACTS", "MAP", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS", "FUNDING_REPORT"],
+            [
+                "FORSYS",
+                "IMPACTS",
+                "MAP",
+                "CLIMATE_FORESIGHT",
+                "PRIORITIZE_SUB_UNITS",
+                "FUNDING_REPORT",
+            ],
         )
 
     def test_compute_scenario_capability_before_run__prioritize_sub_units(self):
@@ -1515,7 +1591,13 @@ class TriggerScenarioTest(TestCase):
 
         self.assertEqual(
             self.scenario.capabilities,
-            ["FORSYS", "MAP", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS", "FUNDING_REPORT"],
+            [
+                "FORSYS",
+                "MAP",
+                "CLIMATE_FORESIGHT",
+                "PRIORITIZE_SUB_UNITS",
+                "FUNDING_REPORT",
+            ],
         )
 
 
@@ -1639,11 +1721,13 @@ class CalculateAndUpdateScenarioResult(TestCase):
         features = result.get("features")
         for feature in features:
             self.assertIsNotNone(feature.get("properties", {}).get("rx_leverage"))
-            self.assertIsNotNone(feature.get("properties", {}).get("pct_treatable_area"))
+            self.assertIsNotNone(
+                feature.get("properties", {}).get("pct_treatable_area")
+            )
 
     def test_scenario_type_custom(self):
         scenario = ScenarioFactory(
-            type=ScenarioType.CUSTOM, 
+            type=ScenarioType.CUSTOM,
             with_priorities=self.datalayers,
             forsys_input={"stand_ids": [1, 2, 3, 4]},
         )
@@ -1659,4 +1743,6 @@ class CalculateAndUpdateScenarioResult(TestCase):
         features = result.get("features")
         for feature in features:
             self.assertIsNotNone(feature.get("properties", {}).get("rx_leverage"))
-            self.assertIsNotNone(feature.get("properties", {}).get("pct_treatable_area"))
+            self.assertIsNotNone(
+                feature.get("properties", {}).get("pct_treatable_area")
+            )

@@ -44,6 +44,7 @@ import { generateLegendFromReport } from '../funding-report/funding-report.helpe
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { ScenarioService } from '@app/services';
 import { isPlanningApproachSubUnits } from '@app/scenario/scenario-helper';
+import { FUNDING_REPORT_INFO_URL } from '@shared';
 
 export interface FilterProjectFormat {
   id: number;
@@ -89,6 +90,8 @@ export class FullReportViewComponent implements OnInit {
     { name: 'Data Layers', value: 'data_layers', icon: 'layers_outline' },
   ];
   currentView: string = 'report';
+
+  protected readonly FUNDING_REPORT_INFO_URL = FUNDING_REPORT_INFO_URL;
 
   currentScenario$ = this.scenarioState.currentScenario$;
   selectedProjectAreas$ = this.fundingMapConfigState.selectedProjectAreas$;

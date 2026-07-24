@@ -20,6 +20,7 @@ import {
 } from '@resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from '@resolvers/scenario-loader.resolver';
 import { numberResolver } from './resolvers/number.resolver';
+import { createFeatureGuard } from '@app/features/feature.guard';
 import { TreatmentEffectsHomeComponent } from './treatments/treatment-effects-home/treatment-effects-home.component';
 
 const routes: Routes = [
@@ -182,6 +183,17 @@ const routes: Routes = [
         loadChildren: () =>
           import('@treatments/treatments.module').then(
             (m) => m.TreatmentsModule
+          ),
+      },
+      {
+        path: 'for/:id',
+        title: 'Funding Opportunity Report',
+        canActivate: [
+          createFeatureGuard({ featureName: 'SHARE_FUNDING_REPORTS' }),
+        ],
+        loadComponent: () =>
+          import('@app/funding/for-shared/for-shared.component').then(
+            (m) => m.ForSharedComponent
           ),
       },
       {

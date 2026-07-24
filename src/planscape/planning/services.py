@@ -278,9 +278,23 @@ def create_scenario(user: User, **kwargs) -> Scenario:
     from planning.tasks import prepare_scenarios_for_forsys_and_run
 
     planning_area = kwargs.get("planning_area")
+    parent = kwargs.get("parent")
+
+    if isinstance(parent, int):
+        parent = Scenario.objects.get(pk=parent)
+        kwargs["parent"] = parent
+
+    if parent:
+        if parent.type != ScenarioType.PROJECT_AREAS:
+            raise ValueError("Parent scenario must be a Project Areas scenario.")
+
+        planning_area = parent.planning_area
+        kwargs["planning_area"] = planning_area
+
     if isinstance(planning_area, int):
         planning_area = PlanningArea.objects.get(pk=planning_area)
         kwargs["planning_area"] = planning_area
+
     if planning_area and planning_area.map_status == PlanningAreaMapStatus.OVERSIZE:
         raise ValueError(
             f"Planning area is oversize (>{settings.OVERSIZE_PLANNING_AREA_ACRES:,} acres); scenarios are disabled."
@@ -527,8 +541,53 @@ def zip_directory(file_obj, source_dir):
                 )
 
 
+def is_project_areas_child(scenario: Scenario) -> bool:
+    return (
+        scenario.parent_id is not None
+        and scenario.parent is not None
+        and scenario.parent.type == ScenarioType.PROJECT_AREAS
+    )
+
+
+def get_project_areas_stands_lookup_table(
+    scenario: Scenario,
+) -> dict[str, List[int]]:
+    parent = scenario.parent
+    if not parent:
+        return {}
+
+    lookup_table = {}
+    stand_size = scenario.get_stand_size()
+
+    for project_area in parent.project_areas.all():
+        stand_ids = project_area.get_stands(stand_size=stand_size).values_list(
+            "id", flat=True
+        )
+
+        lookup_table[str(project_area.pk)] = list(stand_ids)
+
+    return lookup_table
+
+
+def get_project_areas_child_stand_ids(
+    scenario: Scenario,
+    stand_size: str,
+) -> List[int]:
+    parent = scenario.parent
+    if not parent:
+        return []
+
+    stand_ids = set()
+
+    for project_area in parent.project_areas.all():
+        stand_ids.update(
+            project_area.get_stands(stand_size=stand_size).values_list("id", flat=True)
+        )
+
+    return list(stand_ids)
+
+
 def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
-    # treatment goal datalayers
     tx_goal = scenario.treatment_goal
     datalayers = []
 
@@ -627,10 +686,16 @@ def build_run_configuration(scenario: "Scenario") -> Dict[str, Any]:
         )
 
     sub_units_stand_lookup_table = {}
-    if scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
+
+    if is_project_areas_child(scenario):
+        sub_units_stand_lookup_table = get_project_areas_stands_lookup_table(
+            scenario=scenario
+        )
+    elif scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
         sub_units_datalayer = DataLayer.objects.get(pk=sub_units_layer_id)
         sub_units_stand_lookup_table = get_sub_units_stands_lookup_table(
-            scenario=scenario, datalayer=sub_units_datalayer
+            scenario=scenario,
+            datalayer=sub_units_datalayer,
         )
 
     targets = cfg.get("targets", {})
@@ -688,6 +753,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 
     cfg = dict(getattr(scenario, "configuration", {}) or {})
     targets = cfg.get("targets") or {}
+    project_areas_child = is_project_areas_child(scenario)
 
     stand_size = cfg.get("stand_size")
     excluded_areas_ids = cfg.get("excluded_areas_ids", [])
@@ -717,72 +783,107 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
         if not scenario.treatment_goal:
             errors.append("Scenario has no Treatment Goal assigned.")
 
-    else:  # Scenario.type == ScenarioType.CUSTOM
+    elif scenario.type == ScenarioType.CUSTOM:
         if not cfg.get("priorities"):
             errors.append(
                 "Configuration field `priorities` is required for Custom Scenarios."
             )
 
-    # Scenario checks by its `planning_apporach`
+    elif scenario.type == ScenarioType.PROJECT_AREAS:
+        errors.append("Project Areas parent scenarios cannot be run directly.")
+
+    # Scenario checks by its `planning_approach`
     if scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
         sub_units_layer_id = cfg.get("sub_units_layer")
         sub_units_fixed_target = targets.get("sub_units_fixed_target")
         sub_units_target_value = targets.get("sub_units_target_value")
 
-        if not sub_units_layer_id:
-            errors.append(
-                "Configuration field `sub_units_layer` is required for this Scenario."
-            )
+        if project_areas_child:
+            if not scenario.parent.project_areas.exists():
+                errors.append("Parent Project Areas scenario has no project areas.")
 
-        elif (
-            not DataLayer.objects.all()
-            .by_meta_module(PrioritizeSubUnitsModule.name)
-            .filter(pk=sub_units_layer_id)
-            .exists()
-        ):
-            errors.append("Invalid `sub_units_layer`.")
-
-        elif sub_units_fixed_target is None or sub_units_target_value is None:
-            errors.append(
-                "It is necessary to set `sub_units_fixed_target` and `sub_units_target_value` fields in Targets for this Scenario."
-            )
-
-        elif sub_units_fixed_target is False and (
-            sub_units_target_value <= 0 or sub_units_target_value > 100
-        ):
-            errors.append(
-                "Field `sub_units_target_value` fields in Targets needs to be greater than zero and lower or equals to 100."
-            )
-
-        elif sub_units_fixed_target is True:
-            sub_units_layer = DataLayer.objects.get(pk=sub_units_layer_id)
-            min_area = get_min_project_area(scenario=scenario)
-            max_area = get_sub_units_details(
-                scenario=scenario,
-                stand_size=scenario.get_stand_size(),
-                datalayer=sub_units_layer,
-            ).get("max")
-            if sub_units_target_value < min_area:
+            if sub_units_fixed_target is None or sub_units_target_value is None:
                 errors.append(
-                    "`sub_units_target_value` cannot be smaller than 1 Stand."
+                    "It is necessary to set `sub_units_fixed_target` and "
+                    "`sub_units_target_value` fields in Targets for this Scenario."
                 )
-            elif sub_units_target_value > max_area:
+
+            elif sub_units_fixed_target is False and (
+                sub_units_target_value <= 0 or sub_units_target_value > 100
+            ):
                 errors.append(
-                    f"`sub_units_target_value` cannot be larger than {max_area}."
+                    "Field `sub_units_target_value` fields in Targets needs to be "
+                    "greater than zero and lower or equals to 100."
                 )
+
+            elif sub_units_fixed_target is True:
+                min_area = get_min_project_area(scenario=scenario)
+
+                if sub_units_target_value < min_area:
+                    errors.append(
+                        "`sub_units_target_value` cannot be smaller than 1 Stand."
+                    )
+        else:
+            if not sub_units_layer_id:
+                errors.append(
+                    "Configuration field `sub_units_layer` is required for this Scenario."
+                )
+
+            elif (
+                not DataLayer.objects.all()
+                .by_meta_module(PrioritizeSubUnitsModule.name)
+                .filter(pk=sub_units_layer_id)
+                .exists()
+            ):
+                errors.append("Invalid `sub_units_layer`.")
+
+            elif sub_units_fixed_target is None or sub_units_target_value is None:
+                errors.append(
+                    "It is necessary to set `sub_units_fixed_target` and "
+                    "`sub_units_target_value` fields in Targets for this Scenario."
+                )
+
+            elif sub_units_fixed_target is False and (
+                sub_units_target_value <= 0 or sub_units_target_value > 100
+            ):
+                errors.append(
+                    "Field `sub_units_target_value` fields in Targets needs to be "
+                    "greater than zero and lower or equals to 100."
+                )
+
+            elif sub_units_fixed_target is True:
+                sub_units_layer = DataLayer.objects.get(pk=sub_units_layer_id)
+                min_area = get_min_project_area(scenario=scenario)
+                max_area = get_sub_units_details(
+                    scenario=scenario,
+                    stand_size=scenario.get_stand_size(),
+                    datalayer=sub_units_layer,
+                ).get("max")
+
+                if sub_units_target_value < min_area:
+                    errors.append(
+                        "`sub_units_target_value` cannot be smaller than 1 Stand."
+                    )
+                elif sub_units_target_value > max_area:
+                    errors.append(
+                        f"`sub_units_target_value` cannot be larger than {max_area}."
+                    )
 
     else:  # scenario.planning_approach == ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS
         max_area = targets.get("max_area")
         max_project_count = targets.get("max_project_count")
+
         if max_area is None:
             errors.append(
                 "Configuration target `max_area` (number of acres) is required."
             )
+
         if max_area is not None:
             min_area_project = get_min_project_area(scenario)
             if max_area < min_area_project:
                 errors.append(
-                    f"Target `max_area` must be at least {min_area_project} acres for stand size `{stand_size}`."
+                    f"Target `max_area` must be at least {min_area_project} acres "
+                    f"for stand size `{stand_size}`."
                 )
 
         if max_project_count is None:
@@ -790,7 +891,8 @@ def validate_scenario_configuration(scenario: "Scenario") -> List[str]:
 
         elif max_project_count > available_count:
             errors.append(
-                f"Not enough stands are available: {available_count} stand(s) available for {max_project_count} requested project(s)."
+                f"Not enough stands are available: {available_count} stand(s) "
+                f"available for {max_project_count} requested project(s)."
             )
 
     return errors
@@ -1810,13 +1912,22 @@ def get_available_stand_ids(
     excludes: Optional[QuerySet[DataLayer]] = None,
 ) -> List[int]:
     planning_area = scenario.planning_area
-    if feature_enabled("ADD_INCLUDES"):
+
+    if is_project_areas_child(scenario):
+        stands = Stand.objects.filter(
+            id__in=get_project_areas_child_stand_ids(
+                scenario=scenario,
+                stand_size=stand_size,
+            )
+        )
+    elif feature_enabled("ADD_INCLUDES"):
         stands = scenario.get_treatable_area_stands(stand_size=stand_size)
     else:
         stands = planning_area.get_stands(stand_size=stand_size)
 
     if (
-        scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        not is_project_areas_child(scenario)
+        and scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         and scenario.configuration.get("sub_units_layer")
     ):
         stands_queryset = stands.all()
