@@ -109,7 +109,7 @@ export class ScenarioCardComponent {
 
   @HostBinding('class.project-area')
   get isProjectArea() {
-    return this.origin === 'USER' || this.type === 'PROJECT_AREAS';
+    return this.type === 'PROJECT_AREAS';
   }
 
   getChipStatus(): StatusChipStatus {
