@@ -101,6 +101,13 @@ export class FundingReportViewComponent {
    */
   @Input() mapBounds: Extent | null = null;
 
+  /**
+   * Shared-link UUID for the public view. When set, the map's project-area and
+   * planning-area layers pull unauthed tiles keyed by UUID; the authed container
+   * leaves this null and the map uses scenario / plan state as before.
+   */
+  @Input() sharedLinkUuid: string | null = null;
+
   /** Emitted when the user edits the water target (interactive mode only). */
   @Output() updateWaterAvailability = new EventEmitter<number>();
 

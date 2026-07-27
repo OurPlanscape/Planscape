@@ -9,6 +9,7 @@ import { FundingReportService } from '@services/funding-report.service';
 import { FundingReportViewComponent } from '@app/funding/funding-report-view/funding-report-view.component';
 import { FilterProjectFormat } from '@app/funding/funding-project-areas-selector/funding-project-areas-selector.component';
 import { MAP_WEST_CONUS_BOUNDS } from '@app/map/map.constants';
+import { getBoundsFromGeometry } from '@app/maplibre-map/maplibre.helper';
 import { FundingReport, FundingReportPublic, ProjectArea } from '@types';
 import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
 
@@ -69,12 +70,15 @@ export class ForSharedComponent implements OnInit {
   );
 
   /**
-   * Map bounds for the public view, taken straight from the report payload
-   * (the public view has no plan in state to derive them from). Falls back to a
-   * default extent so the map still renders until the backend sends `bounds`.
+   * Map bounds for the public view, derived from the planning-area geometry on
+   * the payload (the public view has no plan in state to frame the map from).
+   * Falls back to a default extent when the geometry is missing.
    */
   mapBounds$ = this.report$.pipe(
-    map((report) => report?.bounds ?? MAP_WEST_CONUS_BOUNDS)
+    map((report) => {
+      const geometry = report?.scenario?.planning_area?.geometry;
+      return geometry ? getBoundsFromGeometry(geometry) : MAP_WEST_CONUS_BOUNDS;
+    })
   );
 
   constructor(
