@@ -1514,7 +1514,7 @@ def export_treatable_area_to_geopackage(
     includes = DataLayer.objects.filter(pk__in=included_areas_ids)
 
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
-    datalayer = DataLayer.objects.get(pk=included_areas_ids.first())
+    datalayer = DataLayer.objects.get(pk=included_areas_ids[0])
     schema = datalayer.info.get(list(datalayer.info.keys())[0], {}).get("schema")
     schema["properties"]["ownership"] = "str:254"
     schema["geometry"] = "MultiPolygon"
