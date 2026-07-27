@@ -36,7 +36,7 @@ export const ProjectArea: Story = {
     resultStatus: 'SUCCESS',
     creator: 'Larry Larrington',
     created_at: '2024-01-01 12:34:00',
-    type: 'PROJECT_AREAS'
+    type: 'PROJECT_AREAS',
   },
 };
 
