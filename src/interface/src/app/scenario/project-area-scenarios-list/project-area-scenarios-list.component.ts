@@ -25,12 +25,14 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NgFor } from '@angular/common';
 import { ScenarioCardComponent } from '@styleguide';
 import { ScenarioRow } from '@app/plan/plan-summary/scenarios-card-list/scenarios-card-list.component';
+// import { Router } from '@angular/router';
+import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
 
 @UntilDestroy()
 @Component({
   selector: 'app-project-area-scenarios-list',
   standalone: true,
-  imports: [NgFor, ProjectAreasEmptyListComponent, ScenarioCardComponent],
+  imports: [NgFor, ProjectAreasEmptyListComponent, ScenarioCardComponent, SuccessDialogComponent],
   templateUrl: './project-area-scenarios-list.component.html',
   styleUrl: './project-area-scenarios-list.component.scss',
 })
@@ -55,7 +57,9 @@ export class ProjectAreaScenariosListComponent {
     private scenarioService: ScenarioService,
     private dialog: MatDialog
     // private breadcrumbService: BreadcrumbService,
-  ) {}
+  ) {
+
+  }
 
   listsDiffer(listA: Scenario[], listB: Scenario[]) {
     return JSON.stringify(listA) !== JSON.stringify(listB);
@@ -147,4 +151,5 @@ export class ProjectAreaScenariosListComponent {
       },
     });
   }
+
 }

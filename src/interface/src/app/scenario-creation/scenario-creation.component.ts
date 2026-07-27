@@ -397,9 +397,17 @@ export class ScenarioCreationComponent implements OnInit {
             this.scenarioState.setScenarioId(result.id);
             this.scenarioState.reloadScenario();
           }
-          this.router.navigate(['plan', result.planning_area], {
-            state: { showInProgressModal: true },
-          });
+          // for scenarios with a parent id, we navigate to the parent scenario dashboard, instead
+          if (result.parent) {
+            this.router.navigate(['plan', result.planning_area, 'scenario', result.parent, 'dashboard'], {
+              state: { showInProgressModal: true },
+            });
+          } else {
+
+            this.router.navigate(['plan', result.planning_area], {
+              state: { showInProgressModal: true },
+            });
+          }
         },
         error: () => {
           this.dialog.open(ScenarioErrorModalComponent);
