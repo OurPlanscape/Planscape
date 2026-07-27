@@ -16,11 +16,9 @@ from funding_report.serializers import (
 from planning.models import ScenarioPlanningApproach
 
 
-@extend_schema_view(
-    retrieve=extend_schema(
-        description="Shared Funding Opportunity Report.",
-        responses={200: FundingOpportunityReportPublicSerializer},
-    )
+@extend_schema(
+    description="Shared Funding Opportunity Report.",
+    responses={200: FundingOpportunityReportPublicSerializer},
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])
