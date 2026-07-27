@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute } from '@angular/router';
-import { filter, map, shareReplay, switchMap } from 'rxjs';
+import { filter, map, shareReplay, startWith, switchMap } from 'rxjs';
 
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { FundingReportService } from '@services/funding-report.service';
@@ -9,13 +10,19 @@ import { FundingReportViewComponent } from '@app/funding/funding-report-view/fun
 import { FilterProjectFormat } from '@app/funding/funding-project-areas-selector/funding-project-areas-selector.component';
 import { MAP_WEST_CONUS_BOUNDS } from '@app/map/map.constants';
 import { FundingReport, FundingReportPublic, ProjectArea } from '@types';
+import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
 
 @Component({
   selector: 'app-for-shared',
   templateUrl: './for-shared.component.html',
   styleUrls: ['./for-shared.component.scss'],
   standalone: true,
-  imports: [CommonModule, FundingReportViewComponent],
+  imports: [
+    CommonModule,
+    MatProgressSpinnerModule,
+    FundingReportViewComponent,
+    MessageCardComponent,
+  ],
 })
 export class ForSharedComponent implements OnInit {
   /** Shared-link UUID from the route (`for/:id`). */
@@ -31,6 +38,16 @@ export class ForSharedComponent implements OnInit {
   /** Public payload adapted to the `FundingReport` shape the view expects. */
   fundingReport$ = this.report$.pipe(
     map((report) => (report ? this.toFundingReport(report) : null))
+  );
+
+  /**
+   * View state for the public page: `loading` while the link resolves, then
+   * `found` or `not-found` (404). Lets the template hide the report shell during
+   * load instead of flashing its internal spinner.
+   */
+  reportState$ = this.report$.pipe(
+    map((report): 'found' | 'not-found' => (report ? 'found' : 'not-found')),
+    startWith('loading' as const)
   );
 
   /** Frozen configuration, to seed the static water / flame length fields. */
