@@ -1,4 +1,4 @@
-import { Extent } from './treatment.types';
+import { Geometry } from 'geojson';
 
 export interface FundingReportDataPoint {
   year: number;
@@ -177,7 +177,15 @@ export interface FundingReportSharedConfiguration {
  * with `results` already recalculated for the shared configuration.
  */
 export interface FundingReportPublic {
-  scenario_name: string;
+  /**
+   * Trimmed scenario, carrying its name and the planning-area geometry the
+   * public view uses to frame the map (it has no plan in state to derive it
+   * from).
+   */
+  scenario: {
+    name: string;
+    planning_area: { geometry: Geometry | null } | null;
+  };
   /** Full name (or username) of the report's creator. */
   creator: string;
   status: FundingReport['status'];
@@ -187,12 +195,6 @@ export interface FundingReportPublic {
   geopackage_status: FundingReport['geopackage_status'];
   geopackage_url: string | null;
   shared_configuration: FundingReportSharedConfiguration;
-  /**
-   * Planning-area extent `[west, south, east, north]` for framing the map. The
-   * public view has no plan in state to derive this from, so the backend sends
-   * it on the payload. Optional until that endpoint work lands.
-   */
-  bounds?: Extent | null;
 }
 
 /**
