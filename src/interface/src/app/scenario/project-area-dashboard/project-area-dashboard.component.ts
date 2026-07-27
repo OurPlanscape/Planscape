@@ -94,7 +94,7 @@ export class ProjectAreaDashboardComponent implements OnInit {
       data: {
         headline: 'Your Scenario Analysis is in Progress',
         message:
-          'You’ll be notified when it’s ready, the completed scenario can be viewed in Planning Area Overview page.',
+          'You’ll be notified when it’s ready. The completed scenario can be viewed in Project Area Dashboard page.',
       },
     });
   }
