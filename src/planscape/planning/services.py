@@ -1517,7 +1517,7 @@ def export_treatable_area_to_geopackage(
     datalayer = DataLayer.objects.get(pk=included_areas_ids[0])
     schema = datalayer.info.get(list(datalayer.info.keys())[0], {}).get("schema")
     schema.pop("geometry", None)
-    schema = get_schema(schema, {"ownership": "str:254"})
+    extended_schema = get_schema(schema, {"ownership": "str:254"})
     
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
@@ -1527,7 +1527,7 @@ def export_treatable_area_to_geopackage(
                 layer="treatable_area",
                 crs=crs,
                 driver="GPKG",
-                schema=schema,
+                schema=extended_schema,
                 allow_unsupported_drivers=True,
             ) as out:
                 for included in includes:
