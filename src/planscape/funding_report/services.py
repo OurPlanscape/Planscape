@@ -618,6 +618,28 @@ def calculate_aet_improvement(
     }
 
 
+def merge_aet_improvement_into_results(
+    results: Optional[Dict[str, Any]], aet_result: Dict[str, Any]
+) -> Dict[str, Any]:
+    """
+    Shapes a `calculate_aet_improvement()` result into the
+    `results["summary"]["AET"]` / `results["projects"]["AET"]` structure
+    stored on `FundingOpportunityReport.results` (used by both the full
+    report run and the on-demand aet-improvement endpoint). Returns a new
+    dict; does not mutate `results` in place.
+    """
+    merged = deepcopy(results) if results else {}
+    merged.setdefault("summary", {})["AET"] = {
+        "percentage": aet_result["percentage"],
+        "improved_acres": aet_result["improved_acres"],
+        "total_project_area_acres": aet_result["total_project_area_acres"],
+        "planning_area_acres": aet_result["planning_area_acres"],
+        "improved_area_percent": aet_result["improved_area_percent"],
+    }
+    merged.setdefault("projects", {})["AET"] = aet_result["project_areas"]
+    return merged
+
+
 def _clip_metadata(source_metadata: dict | None, role: str) -> dict:
     metadata = deepcopy(source_metadata) or {}
     try:

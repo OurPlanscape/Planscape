@@ -939,29 +939,32 @@ class AETImprovementTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
+    @mock.patch("planning.views_v2.async_generate_funding_report_geopackage")
     @mock.patch("planning.views_v2.calculate_aet_improvement")
     def test_aet_improvement_returns_results_after_successful_report(
-        self, calculate_mock
+        self, calculate_mock, geopackage_task_mock
     ):
         report = FundingOpportunityReport.objects.create(
             scenario=self.scenario,
             created_by=self.user,
             status=FundingOpportunityReportStatus.SUCCESS,
+            results={"summary": {"ABOVEGROUND_TOTAL": []}, "projects": {}},
         )
+        project_areas = [
+            {
+                "project_id": 1,
+                "improved_acres": 12.5,
+                "total_acres": 100,
+                "improved_area_percent": 12.5,
+            }
+        ]
         calculate_mock.return_value = {
             "percentage": 15,
             "improved_acres": 12.5,
             "total_project_area_acres": 100,
             "planning_area_acres": 500,
             "improved_area_percent": 2.5,
-            "project_areas": [
-                {
-                    "project_id": 1,
-                    "improved_acres": 12.5,
-                    "total_acres": 100,
-                    "improved_area_percent": 12.5,
-                }
-            ],
+            "project_areas": project_areas,
         }
         self.client.force_authenticate(self.user)
 
@@ -972,6 +975,14 @@ class AETImprovementTest(APITestCase):
         self.assertEqual(response.json()["planning_area_acres"], 500)
         self.assertEqual(len(response.json()["project_areas"]), 1)
         calculate_mock.assert_called_once_with(report=report, percentage=15.0)
+
+        report.refresh_from_db()
+        self.assertEqual(report.results["summary"]["AET"]["percentage"], 15)
+        self.assertEqual(report.results["summary"]["AET"]["improved_acres"], 12.5)
+        self.assertEqual(report.results["projects"]["AET"], project_areas)
+        # unrelated results are preserved
+        self.assertEqual(report.results["summary"]["ABOVEGROUND_TOTAL"], [])
+        geopackage_task_mock.delay.assert_called_once_with(report.pk)
 
     def test_aet_improvement_validates_percentage(self):
         FundingOpportunityReport.objects.create(
@@ -985,9 +996,12 @@ class AETImprovementTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    @mock.patch("planning.views_v2.async_generate_funding_report_geopackage")
     @mock.patch("planning.views_v2.calculate_aet_improvement")
-    def test_aet_improvement_returns_400_on_value_error(self, calculate_mock):
-        FundingOpportunityReport.objects.create(
+    def test_aet_improvement_returns_400_on_value_error(
+        self, calculate_mock, geopackage_task_mock
+    ):
+        report = FundingOpportunityReport.objects.create(
             scenario=self.scenario,
             created_by=self.user,
             status=FundingOpportunityReportStatus.SUCCESS,
@@ -1001,6 +1015,43 @@ class AETImprovementTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", response.json())
+        report.refresh_from_db()
+        self.assertIsNone(report.results)
+        geopackage_task_mock.delay.assert_not_called()
+
+    @mock.patch("planning.views_v2.async_generate_funding_report_geopackage")
+    @mock.patch("planning.views_v2.calculate_aet_improvement")
+    def test_aet_improvement_skips_persistence_when_report_no_longer_successful(
+        self, calculate_mock, geopackage_task_mock
+    ):
+        report = FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.user,
+            status=FundingOpportunityReportStatus.SUCCESS,
+        )
+
+        def _flip_status_and_return(*args, **kwargs):
+            FundingOpportunityReport.objects.filter(pk=report.pk).update(
+                status=FundingOpportunityReportStatus.RUNNING
+            )
+            return {
+                "percentage": 15,
+                "improved_acres": 12.5,
+                "total_project_area_acres": 100,
+                "planning_area_acres": 500,
+                "improved_area_percent": 2.5,
+                "project_areas": [],
+            }
+
+        calculate_mock.side_effect = _flip_status_and_return
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(self.url, {"percentage": 15}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        report.refresh_from_db()
+        self.assertIsNone(report.results)
+        geopackage_task_mock.delay.assert_not_called()
 
 
 class FlameLengthReductionTest(APITestCase):
