@@ -20,9 +20,7 @@
     <app-treatment-plans-list
       *ngIf="currentPlan$ | async as currentPlan"
       [scenarioId]="scenario.id"
-      [isProjectArea]="
-        scenario.type === 'PROJECT_AREAS' || scenario.origin === 'USER'
-      "
+      [isProjectArea]="scenario.type === 'PROJECT_AREAS'"
       [planningArea]="currentPlan">
     </app-treatment-plans-list>
   </div>

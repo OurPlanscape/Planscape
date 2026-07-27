@@ -52,7 +52,6 @@ export class MapMultiProjectAreasComponent implements OnInit {
 
   @Input() labelField: 'name' | 'rank' | '' = 'name'; // blank string shows nothing
   @Input() planningApproach: PLANNING_APPROACH = 'OPTIMIZE_PROJECT_AREAS';
-  @Input() scenarioOrigin: 'USER' | 'SYSTEM' | null = null;
 
   @Output() changeHoveredProjectAreaId = new EventEmitter<number | null>();
   @Output() changeMouseLngLat = new EventEmitter<LngLat | null>();
