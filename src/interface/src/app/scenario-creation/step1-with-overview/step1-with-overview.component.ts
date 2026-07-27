@@ -55,10 +55,11 @@ export class Step1WithOverviewComponent
     ),
   });
 
-  // keep the form intact, but disable planning_approach validation for child scnearios
   ngOnInit(): void {
+    // for child scenarios, we disable the validation for planning_approach, because this will be
+    // set to a constant of 'PRIORITIZE_SUB_UNITS'
     if (this.isChildScenario) {
-      this.form.controls.planning_approach.disable();
+      this.form.controls.planning_approach.setValue('PRIORITIZE_SUB_UNITS');
     }
   }
   @Input() isCustomScenario = false;
@@ -89,12 +90,7 @@ export class Step1WithOverviewComponent
   }
 
   getData() {
-    console.log('did we call get data?');
     let { stand_size, planning_approach } = this.form.value;
-    console.log('what is planning_approach?', planning_approach);
-    if (this.isChildScenario) {
-      planning_approach = 'PRIORITIZE_SUB_UNITS';
-    }
     return { stand_size, planning_approach };
   }
 }

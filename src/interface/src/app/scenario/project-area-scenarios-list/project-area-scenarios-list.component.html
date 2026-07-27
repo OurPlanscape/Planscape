@@ -1,5 +1,3 @@
-<p>Here is where we show the list:</p>
-
 <!-- TODO: replace this with a cards component -->
 <div *ngFor="let childScenario of activeScenarios">
   <div>
@@ -14,6 +12,7 @@
   <hr />
 </div>
 
+<!-- TODO:  use cards here
 <sg-scenario-card
   *ngFor="let s of activeScenarios"
   [name]="s.name"
@@ -22,9 +21,9 @@
   [origin]="s.origin"
   [resultStatus]="s.scenario_result?.status || 'PENDING'"
   (click)="handleOpenScenario(s)">
-</sg-scenario-card>
+</sg-scenario-card> -->
 
-<p>Here is where we show an empty list when we dont have any scenarios:</p>
+<!-- TODO : switch to this when no scenarios exist yet -->
 <app-project-areas-empty-list
   [plan]="plan"
   [projectAreaId]="projectAreaId"></app-project-areas-empty-list>

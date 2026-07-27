@@ -38,7 +38,7 @@ import { MatDialog } from '@angular/material/dialog';
     OverlayLoaderComponent,
     ScenarioToolsComponent,
     ProjectAreasEmptyListComponent,
-    SuccessDialogComponent
+    SuccessDialogComponent,
   ],
   templateUrl: './project-area-dashboard.component.html',
   styleUrl: './project-area-dashboard.component.scss',
@@ -66,8 +66,7 @@ export class ProjectAreaDashboardComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private dialog: MatDialog
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
     this.breadcrumbService.updateBreadCrumb({
@@ -89,14 +88,14 @@ export class ProjectAreaDashboardComponent implements OnInit {
       this.router.navigate([route], { relativeTo: this.route });
     }
   }
-  
-    private showInProgressModal() {
-      this.dialog.open(SuccessDialogComponent, {
-        data: {
-          headline: 'Your Scenario Analysis is in Progress',
-          message:
-            'You’ll be notified when it’s ready, the completed scenario can be viewed in Planning Area Overview page.',
-        },
-      });
-    }
+
+  private showInProgressModal() {
+    this.dialog.open(SuccessDialogComponent, {
+      data: {
+        headline: 'Your Scenario Analysis is in Progress',
+        message:
+          'You’ll be notified when it’s ready, the completed scenario can be viewed in Planning Area Overview page.',
+      },
+    });
+  }
 }

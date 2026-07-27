@@ -1,13 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { canAddScenario } from '@app/plan/permissions';
 import { Plan, Scenario, SCENARIO_TYPE } from '@app/types';
 import { ScenarioSetupModalComponent } from '../scenario-setup-modal/scenario-setup-modal.component';
 import { ProjectAreasEmptyListComponent } from '../project-areas-empty-list/project-areas-empty-list.component';
-// import { ActivatedRoute } from '@angular/router';
 import { AuthService, ScenarioService } from '@app/services';
-// import { MatSnackBar } from '@angular/material/snack-bar';
-// import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import {
   catchError,
   EMPTY,
@@ -25,18 +22,22 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NgFor } from '@angular/common';
 import { ScenarioCardComponent } from '@styleguide';
 import { ScenarioRow } from '@app/plan/plan-summary/scenarios-card-list/scenarios-card-list.component';
-// import { Router } from '@angular/router';
 import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
 
 @UntilDestroy()
 @Component({
   selector: 'app-project-area-scenarios-list',
   standalone: true,
-  imports: [NgFor, ProjectAreasEmptyListComponent, ScenarioCardComponent, SuccessDialogComponent],
+  imports: [
+    NgFor,
+    ProjectAreasEmptyListComponent,
+    ScenarioCardComponent,
+    SuccessDialogComponent,
+  ],
   templateUrl: './project-area-scenarios-list.component.html',
   styleUrl: './project-area-scenarios-list.component.scss',
 })
-export class ProjectAreaScenariosListComponent {
+export class ProjectAreaScenariosListComponent implements OnInit {
   @Input({ required: true }) plan!: Plan;
   @Input({ required: true }) projectAreaId!: number;
 
@@ -50,32 +51,22 @@ export class ProjectAreaScenariosListComponent {
   private manualFetch$ = new Subject<void>();
 
   constructor(
-    // private route: ActivatedRoute,
     private authService: AuthService,
-    // private router: Router,
-    // private snackbar: MatSnackBar,
     private scenarioService: ScenarioService,
     private dialog: MatDialog
-    // private breadcrumbService: BreadcrumbService,
-  ) {
-
-  }
+  ) {}
 
   listsDiffer(listA: Scenario[], listB: Scenario[]) {
     return JSON.stringify(listA) !== JSON.stringify(listB);
   }
 
   ngOnInit(): void {
-    // this.planId = this.route.snapshot.params['planId'];
     this.pollForChanges();
-    // this.planState.currentPlan$.pipe(untilDestroyed(this)).subscribe((plan) => {
-    //   this.plan = plan;
-    // });
   }
 
   private pollForChanges() {
-    console.log('here we are going to poll....');
-    const poll$ = timer(0, POLLING_INTERVAL * 10).pipe(
+    const DEBUG_MULTIPLIER = 10; // TODO: remove this
+    const poll$ = timer(0, POLLING_INTERVAL * DEBUG_MULTIPLIER).pipe(
       // start a fetch if not already running; ignore extra poll ticks while active
       exhaustMap(() =>
         this.fetchScenarios$().pipe(
@@ -86,7 +77,7 @@ export class ProjectAreaScenariosListComponent {
     );
 
     const manual$ = this.manualFetch$.pipe(
-      // run immediately; ignore extra manual clicks while one is running
+      // run immediately. ignore extra manual clicks while one is running
       switchMap(() => this.fetchScenarios$())
     );
 
@@ -94,14 +85,12 @@ export class ProjectAreaScenariosListComponent {
   }
 
   private fetchScenarios$() {
-    console.log('and now we fetch...');
     return this.scenarioService
       .getProjectAreaChildScenarios(this.projectAreaId)
       .pipe(
         take(1),
         tap((scenarios) => {
           this.totalScenarios = scenarios.length;
-          console.log('here we have the scenarios:', scenarios);
           if (this.listsDiffer(this.activeScenarios, scenarios)) {
             this.activeScenarios = scenarios;
           }
@@ -121,14 +110,7 @@ export class ProjectAreaScenariosListComponent {
   }
 
   canOpenScenario(row: ScenarioRow, userId?: number): boolean {
-    // TODO: esnure this logic applies for child scenarios
-
-    // const status = row.scenario_result?.status;
-    // if (!status) return false;
-
-    // if (this.isDraftByOtherUser(row, userId)) return false;
-
-    // return this.open_statuses.includes(status);
+    // TODO: update this for child scenarios
     return true;
   }
 
@@ -151,5 +133,4 @@ export class ProjectAreaScenariosListComponent {
       },
     });
   }
-
 }
