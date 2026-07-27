@@ -1516,8 +1516,8 @@ def export_treatable_area_to_geopackage(
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
     datalayer = DataLayer.objects.get(pk=included_areas_ids[0])
     schema = datalayer.info.get(list(datalayer.info.keys())[0], {}).get("schema")
-    schema["properties"]["ownership"] = "str:254"
-    schema["geometry"] = "MultiPolygon"
+    schema.pop("geometry", None)
+    schema = get_schema(schema, {"ownership": "str:254"})
     
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
