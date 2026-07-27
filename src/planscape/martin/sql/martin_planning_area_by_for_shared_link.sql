@@ -16,7 +16,7 @@ BEGIN
       pa.deleted_at IS NULL AND
       scenario.deleted_at IS NULL AND
       shared_link.deleted_at IS NULL AND
-      shared_link.uuid = (query_params->>'uuid') AND
+      shared_link.uuid = (query_params->>'uuid'::uuid) AND
       pa.geometry && ST_Transform(ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)), 4269)
   ), mvt AS (
     SELECT
