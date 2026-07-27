@@ -56,6 +56,7 @@ export class ScenarioCardComponent {
   @Input() creator?: string = '';
   @Input() created_at? = '';
   @Input() origin?: 'USER' | 'SYSTEM' = 'SYSTEM';
+  @Input() type?: 'PROJECT_AREAS' | '';
   @Input() userCanDeleteScenario = false;
   @Input() userCanEditScenario = false;
   @Input() userCanRenameScenario = false;
