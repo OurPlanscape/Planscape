@@ -16,7 +16,7 @@ BEGIN
     WHERE 
       scenario.deleted_at IS NULL AND
       shared_link.deleted_at IS NULL AND
-      shared_link.uuid = (query_params->>'uuid');
+      shared_link.uuid = (query_params->>'uuid'::uuid);
 
 
   IF p_scenario_id IS NULL THEN
