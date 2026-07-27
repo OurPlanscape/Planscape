@@ -1503,13 +1503,13 @@ def export_scenario_sub_units_outputs_to_geopackage(
 def export_treatable_area_to_geopackage(
     scenario: Scenario, geopackage_path: Path
 ) -> None:
-    if not scenario.treatable_area or not scenario.configuration.get("included_areas_id"):
+    if not scenario.treatable_area or not scenario.configuration.get("included_areas_ids"):
         logger.warning("Scenario has no treatable area (Legacy). Skipping.")
         return
 
     planning_area = scenario.planning_area
     pa_geometry = planning_area.geometry
-    included_areas_ids = scenario.configuration.get("included_areas_id")
+    included_areas_ids = scenario.configuration.get("included_areas_ids")
 
     includes = DataLayer.objects.filter(pk__in=included_areas_ids)
 
