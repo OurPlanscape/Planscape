@@ -1,2 +1,20 @@
-<app-nav-bar></app-nav-bar> Funding report with config:
-{{ reportConfig$ | async | json }}
+<ng-container [ngSwitch]="reportState$ | async">
+  <div class="loading" *ngSwitchCase="'loading'">
+    <mat-spinner diameter="48"></mat-spinner>
+  </div>
+  <div *ngSwitchCase="'not-found'" class="not-found">
+    <sg-message-card cardTitle="Report not found" [withBorders]="false">
+      We couldn't find the report you're looking for. Please check the link and
+      try again.
+    </sg-message-card>
+  </div>
+  <app-funding-report-view
+    *ngSwitchCase="'found'"
+    [report]="fundingReport$ | async"
+    interactive="readonly"
+    [projectAreaOptions]="filterOptions$ | async"
+    [allProjectAreas]="projectAreas$ | async"
+    [mapBounds]="mapBounds$ | async"
+    [flameLength]="(config$ | async)?.total_flame_severity"
+    [waterAvailability]="(config$ | async)?.aet"></app-funding-report-view>
+</ng-container>

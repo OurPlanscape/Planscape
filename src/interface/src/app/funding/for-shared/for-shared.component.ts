@@ -1,17 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute } from '@angular/router';
-import { filter, map, shareReplay, switchMap } from 'rxjs';
+import { filter, map, shareReplay, startWith, switchMap } from 'rxjs';
 
-import { NavBarComponent } from '@standalone/nav-bar/nav-bar.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { FundingReportService } from '@services/funding-report.service';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTabsModule } from '@angular/material/tabs';
-import { FundingMapConfigState } from '@app/funding/funding-map-config-state';
-import { MapConfigState } from '@maplibre-map/map-config.state';
-import { MapConfigService } from '@maplibre-map/map-config.service';
-import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { FundingReportViewComponent } from '@app/funding/funding-report-view/funding-report-view.component';
+import { FilterProjectFormat } from '@app/funding/funding-project-areas-selector/funding-project-areas-selector.component';
+import { MAP_WEST_CONUS_BOUNDS } from '@app/map/map.constants';
+import { FundingReport, FundingReportPublic, ProjectArea } from '@types';
+import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
 
 @Component({
   selector: 'app-for-shared',
@@ -20,15 +19,9 @@ import { DataLayersStateService } from '@data-layers/data-layers.state.service';
   standalone: true,
   imports: [
     CommonModule,
-    NavBarComponent,
     MatProgressSpinnerModule,
-    MatTabsModule,
-  ],
-  providers: [
-    FundingMapConfigState,
-    { provide: MapConfigState, useExisting: FundingMapConfigState },
-    MapConfigService,
-    DataLayersStateService,
+    FundingReportViewComponent,
+    MessageCardComponent,
   ],
 })
 export class ForSharedComponent implements OnInit {
@@ -42,16 +35,53 @@ export class ForSharedComponent implements OnInit {
     shareReplay(1)
   );
 
-  reportConfig$ = this.report$.pipe(map((r) => r?.shared_configuration));
+  /** Public payload adapted to the `FundingReport` shape the view expects. */
+  fundingReport$ = this.report$.pipe(
+    map((report) => (report ? this.toFundingReport(report) : null))
+  );
+
+  /**
+   * View state for the public page: `loading` while the link resolves, then
+   * `found` or `not-found` (404). Lets the template hide the report shell during
+   * load instead of flashing its internal spinner.
+   */
+  reportState$ = this.report$.pipe(
+    map((report): 'found' | 'not-found' => (report ? 'found' : 'not-found')),
+    startWith('loading' as const)
+  );
+
+  /** Frozen configuration, to seed the static water / flame length fields. */
+  config$ = this.report$.pipe(map((report) => report?.shared_configuration));
+
+  /**
+   * Project areas of the shared report, from the public endpoint. Feeds the
+   * legend's per-project acreage; also the source for the selector menu below.
+   */
+  projectAreas$ = this.id$.pipe(
+    filter((id): id is string => !!id),
+    switchMap((id) => this.fundingReportService.getPublicProjectAreas(id)),
+    shareReplay(1)
+  );
+
+  /** Options for the "Viewing outcomes for" selector. */
+  filterOptions$ = this.projectAreas$.pipe(
+    map((projectAreas) => this.projectAreasToSelectionMenu(projectAreas))
+  );
+
+  /**
+   * Map bounds for the public view, taken straight from the report payload
+   * (the public view has no plan in state to derive them from). Falls back to a
+   * default extent so the map still renders until the backend sends `bounds`.
+   */
+  mapBounds$ = this.report$.pipe(
+    map((report) => report?.bounds ?? MAP_WEST_CONUS_BOUNDS)
+  );
 
   constructor(
     private route: ActivatedRoute,
     private breadcrumbService: BreadcrumbService,
-    private fundingReportService: FundingReportService,
-    private fundingMapConfigState: FundingMapConfigState
+    private fundingReportService: FundingReportService
   ) {}
-
-  opacity$ = this.fundingMapConfigState.opacity$;
 
   ngOnInit(): void {
     this.breadcrumbService.updateBreadCrumb({
@@ -62,7 +92,46 @@ export class ForSharedComponent implements OnInit {
     });
   }
 
-  handleOpacityChange(opacity: number): void {
-    this.fundingMapConfigState.setOpacity(opacity);
+  /**
+   * Build the "Viewing outcomes for" menu from the project areas, keyed by the
+   * project-area `id` (which must line up with the report's per-project
+   * `project_id` for the selection to filter). Mirrors the authed container's
+   * menu; the authed-only top-10 subunit filter is omitted here since the public
+   * payload carries no planning approach.
+   */
+  private projectAreasToSelectionMenu(
+    projectAreas: ProjectArea[]
+  ): FilterProjectFormat[] {
+    return projectAreas
+      .map((projectArea) => ({
+        id: projectArea.id,
+        shortName: projectArea.data.treatment_rank.toString(),
+        name: `Project Area ${projectArea.data.treatment_rank}`,
+      }))
+      .sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { numeric: true })
+      );
+  }
+
+  /**
+   * Adapt the trimmed public payload to the `FundingReport` shape. The fields
+   * the read-only report actually renders (status, results, data layers) come
+   * straight from the payload; the identity fields it never reads in this mode
+   * (id, scenario, author, timestamps) are filled with placeholders.
+   */
+  private toFundingReport(report: FundingReportPublic): FundingReport {
+    return {
+      status: report.status,
+      results: report.results,
+      treatment_datalayer: report.treatment_datalayer,
+      aet_datalayer: report.aet_datalayer,
+      geopackage_status: report.geopackage_status,
+      geopackage_url: report.geopackage_url,
+      id: 0,
+      scenario: 0,
+      created_by: 0,
+      created_at: '',
+      updated_at: '',
+    };
   }
 }

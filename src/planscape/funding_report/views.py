@@ -2,7 +2,7 @@
 from django.conf import settings
 from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -16,11 +16,9 @@ from funding_report.serializers import (
 from planning.models import ScenarioPlanningApproach
 
 
-@extend_schema_view(
-    retrieve=extend_schema(
-        description="Shared Funding Opportunity Report.",
-        responses={200: FundingOpportunityReportPublicSerializer},
-    )
+@extend_schema(
+    description="Shared Funding Opportunity Report.",
+    responses={200: FundingOpportunityReportPublicSerializer},
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])
