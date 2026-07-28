@@ -186,7 +186,7 @@ const routes: Routes = [
           ),
       },
       {
-        path: 'for/:id',
+        path: 'funding-report/:id',
         title: 'Funding Opportunity Report',
         canActivate: [
           createFeatureGuard({ featureName: 'SHARE_FUNDING_REPORTS' }),

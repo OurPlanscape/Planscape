@@ -170,6 +170,9 @@ export class AuthService {
     const token = this.cookieService.get(this.authTokenRefreshKey);
     if (!token) {
       this.loggedInStatus$.next(false);
+      // No refresh token means logged out — resolve the user to null (not the
+      // initial `undefined`) so views waiting on a known auth state can render.
+      this.loggedInUser$.next(null);
       return EMPTY;
     }
     return this.http
