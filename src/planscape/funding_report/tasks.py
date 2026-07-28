@@ -67,7 +67,7 @@ def send_funding_opportunity_report_shared_link(
         "SCENARIO_NAME": scenario_name,
         "LOGO_URL": get_frontend_url("assets/svg/planscape-color-logo.svg"),
         # TODO: replace placeholder
-        "RESULTS_PREVIEW_URL": get_frontend_url("assets/png/placeholders/for-sharing-planceholder.png"),
+        "RESULTS_PREVIEW_URL": get_frontend_url("assets/png/funding-opportunity-report-sharing-email-thumb.png"),
     }
     subject = f"[Planscape] Funding opportunity report shared from {inviter_name}"
     txt = render_to_string(
