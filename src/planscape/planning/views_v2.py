@@ -35,8 +35,10 @@ from funding_report.serializers import (
 from funding_report.services import (
     calculate_aet_improvement,
     calculate_funding_report_flame_length_reduction,
+    merge_aet_improvement_into_results,
 )
 from funding_report.tasks import (
+    async_generate_funding_report_geopackage,
     run_funding_opportunity_report,
     send_funding_opportunity_report_shared_link,
 )
@@ -559,13 +561,29 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             )
 
         try:
-            results = calculate_aet_improvement(
+            aet_result = calculate_aet_improvement(
                 report=report,
                 percentage=serializer.validated_data["percentage"],
             )
         except ValueError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(results)
+
+        should_regenerate_geopackage = False
+        with transaction.atomic():
+            locked_report = FundingOpportunityReport.objects.select_for_update().get(
+                pk=report.pk
+            )
+            if locked_report.status == FundingOpportunityReportStatus.SUCCESS:
+                locked_report.results = merge_aet_improvement_into_results(
+                    locked_report.results, aet_result
+                )
+                locked_report.save(update_fields=["results", "updated_at"])
+                should_regenerate_geopackage = True
+
+        if should_regenerate_geopackage:
+            async_generate_funding_report_geopackage.delay(report.pk)
+
+        return Response(aet_result)
 
     @extend_schema(
         description=(
