@@ -67,7 +67,6 @@ export class ProjectAreaScenariosListComponent implements OnInit {
     private scenarioService: ScenarioService,
     private dialog: MatDialog,
     private router: Router,
-    // private route: ActivatedRoute,
     private breadcrumbService: BreadcrumbService
   ) { }
 
@@ -142,17 +141,7 @@ export class ProjectAreaScenariosListComponent implements OnInit {
   canOpenScenario(row: ScenarioRow, userId?: number): boolean {
     // TODO: update this for child scenarios
     return true;
-  }
-
-  handleOpenScenario(row: ScenarioRow): void {
-    const userId = this.authService.currentUser()?.id;
-    if (!this.canOpenScenario(row, userId)) return;
-
-    // this.selectedCard = row;
-    // this.viewScenario.emit(row);
-  }
-
-  
+  }  
 
   removeScenarioFromList(scenarioRow: ScenarioRow, list: 'activeScenarios') {
     this[list] = this[list].filter((s) => s.id !== scenarioRow.id);
