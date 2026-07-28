@@ -50,6 +50,7 @@ from funding_report.services import (
     get_aet_delta_datalayer,
     get_biomass_datalayer,
     get_funding_report_layers_of_interest,
+    merge_aet_improvement_into_results,
     treatment_layer_has_valid_data,
 )
 
@@ -943,6 +944,64 @@ class BuildFlameLengthReductionResultsTest(TestCase):
             [item["project_id"] for item in results["projects"]["7_4"]],
             [1, 2],
         )
+
+
+class MergeAETImprovementIntoResultsTest(TestCase):
+    def setUp(self):
+        self.aet_result = {
+            "percentage": 15,
+            "improved_acres": 12.5,
+            "total_project_area_acres": 100,
+            "planning_area_acres": 500,
+            "improved_area_percent": 2.5,
+            "project_areas": [
+                {
+                    "project_id": 1,
+                    "improved_acres": 12.5,
+                    "total_acres": 100,
+                    "improved_area_percent": 12.5,
+                }
+            ],
+        }
+
+    def test_merges_into_none_results(self):
+        merged = merge_aet_improvement_into_results(None, self.aet_result)
+
+        self.assertEqual(merged["summary"]["AET"]["percentage"], 15)
+        self.assertEqual(merged["projects"]["AET"], self.aet_result["project_areas"])
+
+    def test_preserves_unrelated_existing_keys(self):
+        existing = {
+            "summary": {"ABOVEGROUND_TOTAL": [{"year": 2026, "value": 1}]},
+            "projects": {"ABOVEGROUND_TOTAL": [{"project_id": 1, "value": 1}]},
+            "treatment_areas": {"total": {}},
+        }
+
+        merged = merge_aet_improvement_into_results(existing, self.aet_result)
+
+        self.assertEqual(
+            merged["summary"]["ABOVEGROUND_TOTAL"], existing["summary"]["ABOVEGROUND_TOTAL"]
+        )
+        self.assertEqual(merged["treatment_areas"], existing["treatment_areas"])
+        self.assertEqual(merged["summary"]["AET"]["improved_acres"], 12.5)
+
+    def test_overwrites_previous_aet_result(self):
+        existing = {
+            "summary": {"AET": {"percentage": 10, "improved_acres": 1}},
+            "projects": {"AET": []},
+        }
+
+        merged = merge_aet_improvement_into_results(existing, self.aet_result)
+
+        self.assertEqual(merged["summary"]["AET"]["percentage"], 15)
+        self.assertEqual(merged["projects"]["AET"], self.aet_result["project_areas"])
+
+    def test_does_not_mutate_input(self):
+        existing = {"summary": {}, "projects": {}}
+
+        merge_aet_improvement_into_results(existing, self.aet_result)
+
+        self.assertEqual(existing, {"summary": {}, "projects": {}})
 
 
 class FlameLengthReductionCalculationTest(TestCase):

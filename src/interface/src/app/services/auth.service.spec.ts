@@ -436,6 +436,9 @@ describe('AuthService', () => {
         error: () => fail('should not error when token is absent'),
         complete: () => {
           expect(service.loggedInStatus$.value).toBeFalse();
+          // Logged-out state must resolve the user to null (not the initial
+          // undefined) so auth-gated views can render.
+          expect(service.loggedInUser$.value).toBeNull();
           httpTestingController.expectNone(
             environment.backend_endpoint + '/dj-rest-auth/token/refresh/'
           );
