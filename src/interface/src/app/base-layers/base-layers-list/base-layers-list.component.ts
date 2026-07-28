@@ -133,6 +133,8 @@ export class BaseLayersListComponent implements OnChanges, AfterViewInit {
       .pipe(
         tap((_) => (this.loaded = true)),
         catchError((e) => {
+          // Setting loaded = true since the tap is only fired if the observable emits a next, if there is an error tap is not fired
+          this.loaded = true;
           this.matSnackBar.open(
             `Error: Could not load layers for ${this.dataSet.name}`,
             'Dismiss',

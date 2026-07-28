@@ -40,7 +40,6 @@ from planning.services import (
     export_scenario_stand_outputs_to_geopackage,
     export_to_geopackage,
     export_to_shapefile,
-    export_treatable_area_to_geopackage,
     get_acreage,
     get_available_stand_ids,
     get_constrained_stands,
@@ -622,38 +621,6 @@ class TestExportToGeopackage(TestCase):
             )
             feature = next(iter(src))
             self.assertEqual(feature["properties"]["name"], self.planning.name)
-
-    def test_export_treatable_area_to_geopackage_preset_scenario(self):
-        export_treatable_area_to_geopackage(
-            self.preset_scenario, self.preset_scenario_output_path
-        )
-        layers = fiona.listlayers(self.preset_scenario_output_path)
-        self.assertIn("treatable_area", layers)
-        with fiona.open(
-            self.preset_scenario_output_path, layer="treatable_area"
-        ) as src:
-            self.assertEqual(1, len(src))
-            self.assertEqual(
-                to_string(src.crs), to_string(settings.CRS_GEOPACKAGE_EXPORT)
-            )
-            feature = next(iter(src))
-            self.assertEqual(feature["properties"]["name"], self.preset_scenario.name)
-
-    def test_export_treatable_area_custom_scenario(self):
-        export_treatable_area_to_geopackage(
-            self.custom_scenario, self.custom_scenario_output_path
-        )
-        layers = fiona.listlayers(self.custom_scenario_output_path)
-        self.assertIn("treatable_area", layers)
-        with fiona.open(
-            self.custom_scenario_output_path, layer="treatable_area"
-        ) as src:
-            self.assertEqual(1, len(src))
-            self.assertEqual(
-                to_string(src.crs), to_string(settings.CRS_GEOPACKAGE_EXPORT)
-            )
-            feature = next(iter(src))
-            self.assertEqual(feature["properties"]["name"], self.custom_scenario.name)
 
     def test_export_stand_outputs_schema_field_names_are_sanitized_preset_scenario_preset_scenario(
         self,

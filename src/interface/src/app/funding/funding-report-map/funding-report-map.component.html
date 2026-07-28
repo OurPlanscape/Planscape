@@ -22,6 +22,7 @@
   <!-- This *ngIf="true" is a hack to fix the issue where the planning area was displayed on top of the project areas when moving back and forward. -->
   <app-planning-area-layer
     [lineColor]="BASE_COLORS.standard_blue"
+    [sharedLinkUuid]="sharedLinkUuid"
     *ngIf="true"></app-planning-area-layer>
   <app-funding-data-layer
     *ngIf="mapLibreMap && (fundingDataLayer$ | async) as fundingDataLayer"
@@ -43,9 +44,10 @@
   </mgl-layer>
 
   <app-map-multi-project-areas
-    *ngIf="projectAreaCount$ | async as projectAreasCount"
+    *ngIf="sharedLinkUuid || (projectAreaCount$ | async)"
+    [sharedLinkUuid]="sharedLinkUuid"
     [allowInteraction]="allowInteraction"
-    [projectAreasCount]="projectAreasCount"
+    [projectAreasCount]="(projectAreaCount$ | async) ?? null"
     [mapLibreMap]="mapLibreMap"
     [labelField]="'rank'"
     (changeHoveredProjectAreaId)="setHoveredProjectAreaId($event)"

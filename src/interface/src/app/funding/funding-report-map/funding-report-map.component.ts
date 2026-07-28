@@ -90,6 +90,13 @@ export class FundingReportMapComponent implements OnInit {
 
   @Input() legendData: FundingLegendData | null = null;
 
+  /**
+   * Shared-link UUID for the public funding report. When set, the project-area
+   * and planning-area layers pull unauthed tiles keyed by UUID instead of the
+   * scenario / plan state the public view has no access to.
+   */
+  @Input() sharedLinkUuid: string | null = null;
+
   /** Id of the report's treatment datalayer to display on the map. */
   @Input() treatmentDataLayerId!: number;
 

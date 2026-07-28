@@ -15,6 +15,7 @@
     [projectAreaOptions]="filterOptions$ | async"
     [allProjectAreas]="projectAreas$ | async"
     [mapBounds]="mapBounds$ | async"
+    [sharedLinkUuid]="id$ | async"
     [flameLength]="(config$ | async)?.total_flame_severity"
     [waterAvailability]="(config$ | async)?.aet"></app-funding-report-view>
 </ng-container>
