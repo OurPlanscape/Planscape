@@ -71,19 +71,11 @@ export class ProjectAreaScenariosListComponent implements OnInit {
     private breadcrumbService: BreadcrumbService
   ) { }
 
-  get canAddScenarioForProjectArea() {
-  
-    //TODO: check for privs
-    return true;
-  }
-
-  listsDiffer(listA: Scenario[], listB: Scenario[]) {
-    return JSON.stringify(listA) !== JSON.stringify(listB);
-  }
 
   ngOnInit(): void {
     this.pollForChanges();
   }
+
 
   private pollForChanges() {
     const DEBUG_MULTIPLIER = 10; // TODO: remove this
@@ -105,9 +97,25 @@ export class ProjectAreaScenariosListComponent implements OnInit {
     merge(poll$, manual$).pipe(untilDestroyed(this)).subscribe();
   }
 
+
+  listsDiffer(listA: Scenario[], listB: Scenario[]) {
+    return JSON.stringify(listA) !== JSON.stringify(listB);
+  }
+
+ handleSortChange() {
+    this.sortSelection =
+      this.sortSelection === '-created_at' ? 'created_at' : '-created_at';
+    this.loading = true;
+    this.fetchScenarios();
+  }
+
+  fetchScenarios(): void {
+    this.manualFetch$.next();
+  }
+
   private fetchScenarios$() {
     return this.scenarioService
-      .getProjectAreaChildScenarios(this.projectAreaId)
+      .getProjectAreaChildScenarios(this.projectAreaId, this.sortSelection)
       .pipe(
         take(1),
         tap((scenarios) => {
@@ -130,9 +138,6 @@ export class ProjectAreaScenariosListComponent implements OnInit {
     return this.plan && canAddScenario(this.plan);
   }
 
-handleSortChange() {
-
-}
 
   canOpenScenario(row: ScenarioRow, userId?: number): boolean {
     // TODO: update this for child scenarios
@@ -146,6 +151,21 @@ handleSortChange() {
     // this.selectedCard = row;
     // this.viewScenario.emit(row);
   }
+
+  
+
+  removeScenarioFromList(scenarioRow: ScenarioRow, list: 'activeScenarios') {
+    this[list] = this[list].filter((s) => s.id !== scenarioRow.id);
+    this.fetchScenarios();
+  }
+  
+  get canAddScenarioForProjectArea() {
+  if (!this.plan) {
+      return false;
+    }
+    return canAddScenario(this.plan);
+  }
+
 
   // Note that this adds the projectAreaId as parent Id
   public openScenarioSetupDialog(type: SCENARIO_TYPE) {
@@ -189,13 +209,6 @@ handleSortChange() {
       label: 'Project Area Dashboard',
       backUrl: `${getPlanPath(clickedScenario.planning_area)}`,
     });
-  }
-
-  fetchScenarios() { }
-
-  removeScenarioFromList(scenarioRow: ScenarioRow, what: any) {
-    console.log('removeScenarioFromList, scenarioRow:', scenarioRow, 'what:', what);
-
   }
 
 

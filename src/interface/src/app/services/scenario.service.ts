@@ -225,12 +225,16 @@ export class ScenarioService {
     });
   }
 
-  getProjectAreaChildScenarios(projectAreaId: number) {
-    return this.http.get<Scenario[]>(
-      environment.backend_endpoint + `/v2/scenarios/${projectAreaId}/children/`,
-      {
-        withCredentials: true,
-      }
-    );
+  getProjectAreaChildScenarios(projectAreaId: number, ordering?: string) {
+    const path = environment.backend_endpoint + `/v2/scenarios/${projectAreaId}/children/`;
+    const params: any = { };
+    if (ordering !== undefined) {
+      params.ordering = ordering;
+    }
+    return this.http.get<Scenario[]>(path, {
+      withCredentials: true,
+      params: params,
+    });
+    
   }
 }
