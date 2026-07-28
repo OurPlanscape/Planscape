@@ -277,11 +277,27 @@ export class NewScenarioState {
   }
 
   setExcludedAreas(value: number[]) {
-    this._excludedAreas$.next(value);
+    const currentValue = this._excludedAreas$.value;
+
+    const hasChanged =
+      currentValue.length !== value.length ||
+      currentValue.some((a, b) => a !== value[b]);
+
+    if (hasChanged) {
+      this._excludedAreas$.next(value);
+    }
   }
 
   setIncludedAreas(value: number[]) {
-    this._includedAreas$.next(value);
+    const currentValue = this._includedAreas$.value;
+
+    const hasChanged =
+      currentValue.length !== value.length ||
+      currentValue.some((a, b) => a !== value[b]);
+
+    if (hasChanged) {
+      this._includedAreas$.next(value);
+    }
   }
 
   setScenarioConfig(config: Partial<ScenarioDraftConfiguration>) {
