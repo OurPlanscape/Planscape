@@ -67,7 +67,7 @@ $material-checkbox-padding: 8px;
 }
 
 .list-row {
-  align-items: flex-start;
+  align-items: center;
 }
 
 .list-header {
@@ -128,7 +128,7 @@ $material-checkbox-padding: 8px;
   height: 16px;
   border-radius: 4px;
   visibility: hidden;
-  margin-top: 12px;
+  align-self: center;
 
   &.selected {
     visibility: visible;
@@ -143,9 +143,14 @@ $material-checkbox-padding: 8px;
   @include standard-input-label();
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   margin-top: 16px;
   margin-bottom: 16px;
   color: $color-md-gray;
   padding-left: 8px;
+}
+
+.toggle {
+  margin-right: auto;
+  flex: 1;
 }

@@ -6,7 +6,9 @@ import {
   FundingReport,
   FundingReportAETSummary,
   FundingReportInviteEmails,
+  FundingReportPublic,
   FundingReportPublicUrl,
+  ProjectArea,
 } from '@types';
 import { catchError, Observable, of, throwError } from 'rxjs';
 
@@ -29,6 +31,46 @@ export class FundingReportService {
         // The backend returns 404 when no report exists yet.
         catchError((error: HttpErrorResponse) =>
           error.status === 404 ? of(null) : throwError(() => error)
+        )
+      );
+  }
+
+  /**
+   * Fetch a shared funding report by its shared-link UUID. Public / unauthed —
+   * no credentials sent. Returns `null` on 404 (link missing, deleted, or
+   * report gone).
+   */
+  getPublicReport(
+    sharedLinkUuid: string
+  ): Observable<FundingReportPublic | null> {
+    return this.http
+      .get<FundingReportPublic>(
+        environment.backend_endpoint + `/v2/funding_report/${sharedLinkUuid}/`
+      )
+      .pipe(
+        catchError((error: HttpErrorResponse) =>
+          error.status === 404 ? of(null) : throwError(() => error)
+        )
+      );
+  }
+
+  /**
+   * Fetch the project areas of a shared funding report by its shared-link UUID.
+   * Public / unauthed — no credentials sent. Returns `[]` on 404.
+   *
+   * Note: the public serializer trims the payload (it drops `scenario` and
+   * `created_by`), but the shared report view only reads `id`, `data` and
+   * `geometry`, so `ProjectArea` still models it. Selection + legend matching
+   * relies on `id` lining up with the report's per-project `project_id`.
+   */
+  getPublicProjectAreas(sharedLinkUuid: string): Observable<ProjectArea[]> {
+    return this.http
+      .get<
+        ProjectArea[]
+      >(environment.backend_endpoint + `/v2/funding_report/${sharedLinkUuid}/project_areas/`)
+      .pipe(
+        catchError((error: HttpErrorResponse) =>
+          error.status === 404 ? of([]) : throwError(() => error)
         )
       );
   }
