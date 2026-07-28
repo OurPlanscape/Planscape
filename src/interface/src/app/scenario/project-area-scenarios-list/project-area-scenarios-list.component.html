@@ -1,29 +1,58 @@
-<!-- TODO: replace this with a cards component -->
-<div *ngFor="let childScenario of activeScenarios">
-  <div>
-    <a href="/plan/2968/scenario/{{ childScenario.id }}">{{
-      childScenario.id
-    }}</a>
+@if(activeScenarios.length > 0) {
+
+<div class="scenarios-header">
+  <h4>Scenarios</h4>
+  <button class="sort-header" sg-button (click)="handleSortChange()" variant="text">
+    <mat-icon class="material-symbols-outlined">
+      {{
+      sortSelection === '-created_at'
+      ? 'arrow_downward_alt'
+      : 'arrow_upward_alt'
+      }}
+    </mat-icon>
+    <span>Date Created</span>
+  </button>
+  <div class="button-section">
+
+
+    <button sg-button
+      *ngIf="canAddScenarioForProjectArea" data-id="new-scenario"
+      icon="add" variant="primary" [matMenuTriggerFor]="menu" #trigger="matMenuTrigger">
+      New Scenario
+
+      <mat-icon class="material-symbols-outlined new-scenario-down">{{ trigger.menuOpen ? 'arrow_drop_up' :
+        'arrow_drop_down' }}
+      </mat-icon>
+    </button>
+    <mat-menu #menu="matMenu" class="scenario-options-menu">
+      <button mat-menu-item (click)="openScenarioSetupDialog('PRESET')" class="scenario-option">
+        <mat-icon class="material-symbols-outlined">contract</mat-icon>
+        Choose Treatment Goal
+        <span>
+          Start from a template with preset objectives, co-benefits, and
+          constraints
+        </span>
+      </button>
+      <button mat-menu-item (click)="openScenarioSetupDialog('CUSTOM')" class="scenario-option">
+        <mat-icon class="material-symbols-outlined">contract_edit</mat-icon>
+        Create Custom Scenario
+        <span>
+          Build from scratch: choose all objectives, co-benefits, and
+          constraints.
+        </span>
+      </button>
+    </mat-menu>
   </div>
-  <div>{{ childScenario.name }}</div>
-  <div>{{ childScenario.status }}</div>
-  <div>{{ childScenario.creator }}</div>
-  <div>{{ childScenario.scenario_result?.status }}</div>
-  <hr />
 </div>
 
-<!-- TODO:  use cards here
-<sg-scenario-card
-  *ngFor="let s of activeScenarios"
-  [name]="s.name"
-  [creator]="s.creator"
-  [created_at]="s.created_at"
-  [origin]="s.origin"
-  [resultStatus]="s.scenario_result?.status || 'PENDING'"
-  (click)="handleOpenScenario(s)">
-</sg-scenario-card> -->
-
-<!-- TODO : switch to this when no scenarios exist yet -->
-<app-project-areas-empty-list
-  [plan]="plan"
-  [projectAreaId]="projectAreaId"></app-project-areas-empty-list>
+<div class="saved-scenarios-wrapper">
+  <div *ngIf="loading" class="list-spinner">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+  <app-scenarios-card-list *ngIf="!loading && activeScenarios.length > 0" [scenarios]="activeScenarios" [plan]="plan"
+    (viewScenario)="navigateToScenario($event)" (triggerEdit)="fetchScenarios()"
+    (triggerRefresh)="removeScenarioFromList($event, 'activeScenarios')" class="card-list"></app-scenarios-card-list>
+  </div>
+  } @else {
+  <app-project-areas-empty-list [plan]="plan" [projectAreaId]="projectAreaId"></app-project-areas-empty-list>
+  }

@@ -17,21 +17,33 @@ import {
   tap,
   timer,
 } from 'rxjs';
-import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
+import { getPlanPath, POLLING_INTERVAL } from '@app/plan/plan-helpers';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { NgFor } from '@angular/common';
-import { ScenarioCardComponent } from '@styleguide';
-import { ScenarioRow } from '@app/plan/plan-summary/scenarios-card-list/scenarios-card-list.component';
+import { NgFor, NgIf } from '@angular/common';
+import { ScenarioRow, ScenariosCardListComponent } from '@app/plan/plan-summary/scenarios-card-list/scenarios-card-list.component';
 import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
+import { MatIconModule } from '@angular/material/icon';
+import { ButtonComponent } from '@styleguide';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import {  Router } from '@angular/router';
+import { BreadcrumbService } from '@app/services/breadcrumb.service';
 
 @UntilDestroy()
 @Component({
   selector: 'app-project-area-scenarios-list',
   standalone: true,
   imports: [
+    ButtonComponent,
+    MatMenuModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
     NgFor,
+    NgIf,
+    MatIconModule,
     ProjectAreasEmptyListComponent,
-    ScenarioCardComponent,
+    ScenariosCardListComponent,
     SuccessDialogComponent,
   ],
   templateUrl: './project-area-scenarios-list.component.html',
@@ -53,8 +65,17 @@ export class ProjectAreaScenariosListComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private scenarioService: ScenarioService,
-    private dialog: MatDialog
-  ) {}
+    private dialog: MatDialog,
+    private router: Router,
+    // private route: ActivatedRoute,
+    private breadcrumbService: BreadcrumbService
+  ) { }
+
+  get canAddScenarioForProjectArea() {
+  
+    //TODO: check for privs
+    return true;
+  }
 
   listsDiffer(listA: Scenario[], listB: Scenario[]) {
     return JSON.stringify(listA) !== JSON.stringify(listB);
@@ -109,6 +130,10 @@ export class ProjectAreaScenariosListComponent implements OnInit {
     return this.plan && canAddScenario(this.plan);
   }
 
+handleSortChange() {
+
+}
+
   canOpenScenario(row: ScenarioRow, userId?: number): boolean {
     // TODO: update this for child scenarios
     return true;
@@ -122,6 +147,7 @@ export class ProjectAreaScenariosListComponent implements OnInit {
     // this.viewScenario.emit(row);
   }
 
+  // Note that this adds the projectAreaId as parent Id
   public openScenarioSetupDialog(type: SCENARIO_TYPE) {
     return this.dialog.open(ScenarioSetupModalComponent, {
       maxWidth: '560px',
@@ -133,4 +159,44 @@ export class ProjectAreaScenariosListComponent implements OnInit {
       },
     });
   }
+  
+  navigateToScenario(clickedScenario: ScenarioRow): void {
+    if (
+      // if the scenario has a result and that result is a finished state (failure, panic, success)...
+      clickedScenario.scenario_result &&
+      ['FAILURE', 'PANIC', 'SUCCESS'].includes(
+        clickedScenario.scenario_result.status
+      )
+    ) {
+      this.router.navigate([
+  '/plan', 
+  this.plan.id, 
+  'scenario', 
+  clickedScenario.id, 
+  'dashboard'
+]);
+    } else {
+      // otherwise we are still working on it, so we go to the non-dashboard route
+     this.router.navigate([
+  '/plan', 
+  this.plan.id, 
+  'scenario', 
+  clickedScenario.id, 
+]);
+    }
+    //TODO: is this relevant?
+    this.breadcrumbService.updateBreadCrumb({
+      label: 'Project Area Dashboard',
+      backUrl: `${getPlanPath(clickedScenario.planning_area)}`,
+    });
+  }
+
+  fetchScenarios() { }
+
+  removeScenarioFromList(scenarioRow: ScenarioRow, what: any) {
+    console.log('removeScenarioFromList, scenarioRow:', scenarioRow, 'what:', what);
+
+  }
+
+
 }
