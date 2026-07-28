@@ -338,11 +338,15 @@
     </sg-message-card>
   </div>
 }
-
 <app-funding-report-footer
   [footerType]="reportType"
   [showShare]="!configReadonly"
-  [buttonDisabled]="willShowMap && (mapLoaded$ | async) === false"
+  [buttonDisabled]="
+    (pollingForGeopackage$ | async) === true ||
+    (willShowMap &&
+      (mapLoaded$ | async) === false &&
+      (pollingForGeopackage$ | async) === true)
+  "
   [generatingPdf]="(generatingPdf$ | async) || false"
   [downloadingGeopackage]="(downloadingGeopackage$ | async) || false"
   (downloadPdf)="exportPdf()"
