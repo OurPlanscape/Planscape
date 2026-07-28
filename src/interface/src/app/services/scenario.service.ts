@@ -226,8 +226,9 @@ export class ScenarioService {
   }
 
   getProjectAreaChildScenarios(projectAreaId: number, ordering?: string) {
-    const path = environment.backend_endpoint + `/v2/scenarios/${projectAreaId}/children/`;
-    const params: any = { };
+    const path =
+      environment.backend_endpoint + `/v2/scenarios/${projectAreaId}/children/`;
+    const params: any = {};
     if (ordering !== undefined) {
       params.ordering = ordering;
     }
@@ -235,6 +236,5 @@ export class ScenarioService {
       withCredentials: true,
       params: params,
     });
-    
   }
 }

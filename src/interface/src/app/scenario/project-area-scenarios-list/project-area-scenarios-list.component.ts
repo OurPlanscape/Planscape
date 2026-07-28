@@ -20,14 +20,17 @@ import {
 import { getPlanPath, POLLING_INTERVAL } from '@app/plan/plan-helpers';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NgFor, NgIf } from '@angular/common';
-import { ScenarioRow, ScenariosCardListComponent } from '@app/plan/plan-summary/scenarios-card-list/scenarios-card-list.component';
+import {
+  ScenarioRow,
+  ScenariosCardListComponent,
+} from '@app/plan/plan-summary/scenarios-card-list/scenarios-card-list.component';
 import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
 import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '@styleguide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import {  Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
 
 @UntilDestroy()
@@ -68,13 +71,11 @@ export class ProjectAreaScenariosListComponent implements OnInit {
     private dialog: MatDialog,
     private router: Router,
     private breadcrumbService: BreadcrumbService
-  ) { }
-
+  ) {}
 
   ngOnInit(): void {
     this.pollForChanges();
   }
-
 
   private pollForChanges() {
     const DEBUG_MULTIPLIER = 10; // TODO: remove this
@@ -96,12 +97,11 @@ export class ProjectAreaScenariosListComponent implements OnInit {
     merge(poll$, manual$).pipe(untilDestroyed(this)).subscribe();
   }
 
-
   listsDiffer(listA: Scenario[], listB: Scenario[]) {
     return JSON.stringify(listA) !== JSON.stringify(listB);
   }
 
- handleSortChange() {
+  handleSortChange() {
     this.sortSelection =
       this.sortSelection === '-created_at' ? 'created_at' : '-created_at';
     this.loading = true;
@@ -137,24 +137,22 @@ export class ProjectAreaScenariosListComponent implements OnInit {
     return this.plan && canAddScenario(this.plan);
   }
 
-
   canOpenScenario(row: ScenarioRow, userId?: number): boolean {
     // TODO: update this for child scenarios
     return true;
-  }  
+  }
 
   removeScenarioFromList(scenarioRow: ScenarioRow, list: 'activeScenarios') {
     this[list] = this[list].filter((s) => s.id !== scenarioRow.id);
     this.fetchScenarios();
   }
-  
+
   get canAddScenarioForProjectArea() {
-  if (!this.plan) {
+    if (!this.plan) {
       return false;
     }
     return canAddScenario(this.plan);
   }
-
 
   // Note that this adds the projectAreaId as parent Id
   public openScenarioSetupDialog(type: SCENARIO_TYPE) {
@@ -168,7 +166,7 @@ export class ProjectAreaScenariosListComponent implements OnInit {
       },
     });
   }
-  
+
   navigateToScenario(clickedScenario: ScenarioRow): void {
     if (
       // if the scenario has a result and that result is a finished state (failure, panic, success)...
@@ -178,20 +176,20 @@ export class ProjectAreaScenariosListComponent implements OnInit {
       )
     ) {
       this.router.navigate([
-  '/plan', 
-  this.plan.id, 
-  'scenario', 
-  clickedScenario.id, 
-  'dashboard'
-]);
+        '/plan',
+        this.plan.id,
+        'scenario',
+        clickedScenario.id,
+        'dashboard',
+      ]);
     } else {
       // otherwise we are still working on it, so we go to the non-dashboard route
-     this.router.navigate([
-  '/plan', 
-  this.plan.id, 
-  'scenario', 
-  clickedScenario.id, 
-]);
+      this.router.navigate([
+        '/plan',
+        this.plan.id,
+        'scenario',
+        clickedScenario.id,
+      ]);
     }
     //TODO: is this relevant?
     this.breadcrumbService.updateBreadCrumb({
@@ -199,6 +197,4 @@ export class ProjectAreaScenariosListComponent implements OnInit {
       backUrl: `${getPlanPath(clickedScenario.planning_area)}`,
     });
   }
-
-
 }
