@@ -56,6 +56,7 @@ export class ScenarioCardComponent {
   @Input() creator?: string = '';
   @Input() created_at? = '';
   @Input() origin?: 'USER' | 'SYSTEM' = 'SYSTEM';
+  @Input() type?: 'PRESET' | 'CUSTOM' | 'PROJECT_AREAS';
   @Input() userCanDeleteScenario = false;
   @Input() userCanEditScenario = false;
   @Input() userCanRenameScenario = false;
@@ -108,7 +109,7 @@ export class ScenarioCardComponent {
 
   @HostBinding('class.project-area')
   get isProjectArea() {
-    return this.origin === 'USER';
+    return this.type === 'PROJECT_AREAS';
   }
 
   getChipStatus(): StatusChipStatus {

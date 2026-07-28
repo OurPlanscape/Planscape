@@ -51,14 +51,20 @@ describe('ScenarioCardComponent', () => {
     expect(component.disabledContent).toBeTrue();
   });
 
-  it('renders status chip only for system-origin results', () => {
-    component.origin = 'SYSTEM';
+  it('renders status chip only for non project areas results', () => {
+    component.type = 'PRESET';
     component.resultStatus = 'SUCCESS';
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('sg-status-chip')).toBeTruthy();
 
-    component.origin = 'USER';
+    component.type = 'CUSTOM';
+    component.resultStatus = 'SUCCESS';
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('sg-status-chip')).toBeTruthy();
+
+    component.type = 'PROJECT_AREAS';
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('sg-status-chip')).toBeFalsy();

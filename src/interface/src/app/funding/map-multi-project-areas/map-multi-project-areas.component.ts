@@ -52,7 +52,6 @@ export class MapMultiProjectAreasComponent implements OnInit {
 
   @Input() labelField: 'name' | 'rank' | '' = 'name'; // blank string shows nothing
   @Input() planningApproach: PLANNING_APPROACH = 'OPTIMIZE_PROJECT_AREAS';
-  @Input() scenarioOrigin: 'USER' | 'SYSTEM' | null = null;
 
   /**
    * Shared-link UUID for the public funding report. When set, tiles come from
