@@ -1,4 +1,5 @@
 import {
+  arrayHasChanged,
   convertOldConfigurationToV3Payload,
   getGroupedGoals,
   sanitizePayloadForScenarioType,
@@ -430,5 +431,27 @@ describe('sanitizePayloadForScenarioType', () => {
     };
     const result = sanitizePayloadForScenarioType(presetScenario, payload);
     expect(result.configuration).toEqual({ stand_size: 'MEDIUM' });
+  });
+
+  describe('arrayHasChanged', () => {
+    it('should return false when arrays are identical', () => {
+      expect(arrayHasChanged([1, 2, 3], [1, 2, 3])).toBeFalse();
+    });
+
+    it('should return true when arrays have different lengths', () => {
+      expect(arrayHasChanged([1, 2, 3], [1, 2])).toBeTrue();
+    });
+
+    it('should return true when arrays contain the same values in a different order', () => {
+      expect(arrayHasChanged([1, 2, 3], [3, 2, 1])).toBeTrue();
+    });
+
+    it('should return true when at least one value differs', () => {
+      expect(arrayHasChanged([1, 2, 3], [1, 2, 4])).toBeTrue();
+    });
+
+    it('should return false for two empty arrays', () => {
+      expect(arrayHasChanged([], [])).toBeFalse();
+    });
   });
 });
