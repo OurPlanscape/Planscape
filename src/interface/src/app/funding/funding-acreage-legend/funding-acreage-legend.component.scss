@@ -7,6 +7,36 @@
   pointer-events: all;
   /* specifying font family here, since the control defaults to helvetica */
   font-family: 'Public Sans';
+
+  &.pdf-version {
+  /* 1. Prevent clipping/overflow */
+  max-height: none !important;
+  height: auto !important;
+  overflow: visible !important;
+
+  /* 2. Set an explicit base physical width for the HTML before capture */
+  width: 250px !important; // Gives html2canvas a clear layout box
+  
+  /* 3. Ensure crisp legible fonts for print */
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  background-color: #ffffff;
+
+  /* Ensure child containers don't collapse or hide scroll items */
+  .legend-container, 
+  .legend-list {
+    max-height: none !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* Hide interactive controls that don't belong in PDF exports */
+  .collapse-btn,
+  .scroll-bar {
+    display: none !important;
+  }
+
+}
 }
 
 .treatment-acres-legend {

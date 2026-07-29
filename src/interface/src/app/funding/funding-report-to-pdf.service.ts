@@ -1,10 +1,11 @@
-import { Injectable } from '@angular/core';
+import { createComponent, EnvironmentInjector, Injectable, Injector } from '@angular/core';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { addRequestHeaders } from '@app/maplibre-map/maplibre.helper';
 import { AuthService } from '@app/services';
 import { FundingMapConfigState } from './funding-map-config-state';
+import { FundingAcreageLegendComponent } from './funding-acreage-legend/funding-acreage-legend.component';
 
 // A4 portrait, in millimeters.
 const PAGE_WIDTH_MM = 210;
@@ -28,7 +29,8 @@ export class FundingReportToPdfService {
    */
 
   constructor(private authService: AuthService,
-    private fundingMapConfigState: FundingMapConfigState
+    private fundingMapConfigState: FundingMapConfigState,
+    private injector: EnvironmentInjector
   ) { }
 
   activeMap: MapLibreMap | null = null;
@@ -95,6 +97,9 @@ export class FundingReportToPdfService {
 
     // advance the current Y drawing 'cursor' to after the map
     currentY += 8 + mapHeight;
+
+    await this.addLegend(mapX, currentY, 10);
+
 
     const cards = element.querySelectorAll('.report-section');
     document.body.classList.add('is-generating-pdf');
@@ -240,4 +245,96 @@ export class FundingReportToPdfService {
     mapContainer.style.top = '-100px';
     document.body.appendChild(mapContainer);
   }
-}
+
+  // grabs an individual component
+  //  (e.g., the legend), and converts it to a renderable image using html2canvas)
+async captureComponent<T>(
+    component: new (...args: any[]) => T,
+    inputs?: Partial<T>,
+    cssClasses: string[] = ['pdf-version']
+  ): Promise<{ imgData: string; width: number; height: number }> {
+
+
+    const elementInjector = Injector.create({
+      providers: [
+        { provide: FundingMapConfigState, useValue: this.fundingMapConfigState }
+      ],
+      parent: this.injector // Fall back to root injector for everything else
+    });
+
+    const compRef = createComponent(component, {
+      environmentInjector: this.injector,
+      elementInjector: elementInjector
+    });
+
+    if (inputs) {
+      Object.assign(compRef.instance as object, inputs);
+    }
+
+    const element = compRef.location.nativeElement as HTMLElement;
+    element.style.position = 'absolute';
+    element.style.left = '-9000px';
+    element.style.top = '-9000px';
+
+    cssClasses.forEach((cls) => element.classList.add(cls));
+
+    document.body.appendChild(element);
+    compRef.changeDetectorRef.detectChanges();
+
+    // Ensure icon fonts or web fonts render properly
+    await document.fonts.ready;
+
+    const canvas = await html2canvas(element, {
+      backgroundColor: null,
+      scale: 3,                  // High resolution output for print
+  windowWidth: 1000,         // Force a generous virtual window size so flexboxes don't wrap tightly
+  windowHeight: 2000,
+    });
+
+    const result = {
+      imgData: canvas.toDataURL('image/png'),
+      width: canvas.width,
+      height: canvas.height,
+    };
+
+    document.body.removeChild(element);
+    compRef.destroy();
+
+    return result;
+  }
+
+async addLegend(
+    legendX: number,
+    legendY: number,
+    targetWidth: number,
+    targetWidthMm: number = 50, // Specify target width on PDF (e.g., 50mm)
+
+    legendInputs?: Record<string, any>
+  ): Promise<{ width: number; height: number }> {
+    if (!this.pdfInstance) return { width: 0, height: 0 };
+
+    // 1. Snapshot the legend component
+    const { imgData, width, height } = await this.captureComponent(
+      FundingAcreageLegendComponent,
+      // TODO: this is a placeholder of data
+      { legendData: {selectedAcres: 100,  noTreatmentAcres: 100} }
+    );
+
+    // 2. Calculate proportional target height based on aspect ratio
+    const aspectRatio = height / width;
+    const targetHeightMm = targetWidthMm * aspectRatio;
+    // 3. Render to jsPDF at specified coordinates
+    this.pdfInstance.addImage(
+      imgData,
+      'PNG',
+      legendX,
+      legendY,
+      targetWidth,
+      targetHeightMm
+    );
+
+    // Return final dimensions in case you need to calculate line height or cursor jumps
+    return { width: targetWidth, height: targetHeightMm };
+  }
+  }
+

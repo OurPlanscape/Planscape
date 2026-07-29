@@ -559,11 +559,11 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     }
     this.generatingPdf$.next(true);
 
-    console.log('do we hve naything for mapElement?', this.mapElement);
-    console.log(
-      'do we have anything for the map?',
-      this.mapElement.mapLibreMap
-    );
+    // console.log('do we hve naything for mapElement?', this.mapElement);
+    // console.log(
+    //   'do we have anything for the map?',
+    //   this.mapElement.mapLibreMap
+    // );
 
     try {
       // In the dashboard preview the map is inside the captured sections. In the
