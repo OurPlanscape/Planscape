@@ -19,6 +19,10 @@ import { ScenarioState } from '../scenario.state';
 export class DashboardSwitcherComponent {
   isProjectArea = false;
   currentScenario$ = this.scenarioState.currentScenario$;
+  showInProgressModal = false;
 
-  constructor(private scenarioState: ScenarioState) {}
+  constructor(private scenarioState: ScenarioState) {
+    const navState = window.history.state;
+    this.showInProgressModal = navState?.['showInProgressModal'] ?? false;
+  }
 }

@@ -18,6 +18,7 @@ from planning.tests.factories import (
 )
 from planscape.tests.factories import UserFactory
 from rest_framework.test import APITestCase
+
 from users.models import UserProfile
 
 
@@ -46,6 +47,30 @@ class CreateUserTest(APITestCase):
             mail.outbox[0].subject, "[Planscape] Please Confirm Your Email Address"
         )
         self.assertIn("Team Planscape", mail.outbox[0].body)
+
+    @patch("users.tasks.send_welcome_email.delay")
+    def test_create_user_queues_welcome_email(self, mock_send_welcome_email):
+        payload = json.dumps(
+            {
+                "email": "welcome@test.com",
+                "password1": "ComplexPassword123",
+                "password2": "ComplexPassword123",
+                "first_name": "Welcome",
+                "last_name": "User",
+            }
+        )
+
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(
+                reverse("rest_register"),
+                payload,
+                content_type="application/json",
+            )
+
+        self.assertEqual(response.status_code, 201)
+
+        user = User.objects.get(email="welcome@test.com")
+        mock_send_welcome_email.assert_called_once_with(user.pk)
 
 
 class DeactivateUserTest(APITestCase):
@@ -877,3 +902,24 @@ class ReturningUserTrackingTest(TestCase):
         )
         user.profile.refresh_from_db()
         self.assertEqual(user.profile.last_returning_user_bucket, 3)
+
+
+class WelcomeEmailTest(TestCase):
+    def test_send_welcome_email(self):
+        from users.tasks import send_welcome_email
+
+        user = UserFactory.create(
+            email="welcome@test.com",
+            first_name="Welcome",
+            last_name="User",
+        )
+
+        send_welcome_email(user.pk)
+
+        self.assertEqual(len(mail.outbox), 1)
+
+        email = mail.outbox[0]
+        self.assertEqual(email.subject, "[Planscape] Welcome to Planscape")
+        self.assertEqual(email.to, ["welcome@test.com"])
+        self.assertIn("Hello Welcome", email.body)
+        self.assertIn("Planscape community", email.body)

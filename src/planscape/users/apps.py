@@ -3,6 +3,7 @@ import logging
 from django.apps import AppConfig
 from django.contrib.auth import get_user_model
 from django.contrib.auth.signals import user_logged_in, user_login_failed
+from django.db import transaction
 from django.db.models.signals import post_save
 
 log = logging.getLogger(__name__)
@@ -67,6 +68,12 @@ def create_user_profile(sender, instance, created, **kwargs):
         pass
 
 
+def handle_user_signed_up(sender, request, user, **kwargs):
+    from users.tasks import send_welcome_email
+
+    transaction.on_commit(lambda: send_welcome_email.delay(user.pk))
+
+
 class UsersConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "users"
@@ -82,7 +89,7 @@ class UsersConfig(AppConfig):
             registry.register(model)
 
     def ready(self):
-        from allauth.account.signals import email_confirmed
+        from allauth.account.signals import email_confirmed, user_signed_up
 
         self.register_actstream()
         user_login_failed.connect(
@@ -98,4 +105,8 @@ class UsersConfig(AppConfig):
         )
         email_confirmed.connect(
             handle_email_confirmed, dispatch_uid="users.handle_email_confirmed"
+        )
+        user_signed_up.connect(
+            handle_user_signed_up,
+            dispatch_uid="users.handle_user_signed_up",
         )

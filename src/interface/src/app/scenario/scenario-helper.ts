@@ -250,3 +250,12 @@ export function sanitizePayloadForScenarioType(
     configuration: finalConfig,
   };
 }
+
+// Function that returns if an array has changed or not
+export function arrayHasChanged(source: number[], compare: number[]): boolean {
+  const hasChanged =
+    source.length !== compare.length ||
+    source.some((item, index) => item !== compare[index]);
+
+  return hasChanged;
+}
