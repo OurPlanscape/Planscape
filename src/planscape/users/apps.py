@@ -3,6 +3,7 @@ import logging
 from django.apps import AppConfig
 from django.contrib.auth import get_user_model
 from django.contrib.auth.signals import user_logged_in, user_login_failed
+from django.db import transaction
 from django.db.models.signals import post_save
 
 log = logging.getLogger(__name__)
@@ -68,8 +69,6 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 
 def handle_user_signed_up(sender, request, user, **kwargs):
-    from django.db import transaction
-
     from users.tasks import send_welcome_email
 
     transaction.on_commit(lambda: send_welcome_email.delay(user.pk))
