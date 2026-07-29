@@ -1,4 +1,14 @@
-@if (activeScenarios.length > 0) {
+@if (activeScenarios.length === 0) {
+  @if (loading) {
+    <div *ngIf="loading" class="loading-row">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else {
+    <app-project-areas-empty-list
+      [plan]="plan"
+      [projectAreaId]="projectAreaId"></app-project-areas-empty-list>
+  }
+} @else {
   <div class="scenarios-header">
     <h4>Scenarios</h4>
     <button
@@ -70,8 +80,4 @@
       (triggerRefresh)="removeScenarioFromList($event, 'activeScenarios')"
       class="card-list"></app-scenarios-card-list>
   </div>
-} @else {
-  <app-project-areas-empty-list
-    [plan]="plan"
-    [projectAreaId]="projectAreaId"></app-project-areas-empty-list>
 }

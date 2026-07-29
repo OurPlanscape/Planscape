@@ -60,7 +60,7 @@ export class ProjectAreaScenariosListComponent implements OnInit {
 
   totalScenarios = 0;
   activeScenarios: Scenario[] = [];
-  loading: boolean = false;
+  loading: boolean = true;
   sortSelection = '-created_at';
 
   private manualFetch$ = new Subject<void>();
@@ -78,8 +78,7 @@ export class ProjectAreaScenariosListComponent implements OnInit {
   }
 
   private pollForChanges() {
-    const DEBUG_MULTIPLIER = 10; // TODO: remove this
-    const poll$ = timer(0, POLLING_INTERVAL * DEBUG_MULTIPLIER).pipe(
+    const poll$ = timer(0, POLLING_INTERVAL).pipe(
       // start a fetch if not already running; ignore extra poll ticks while active
       exhaustMap(() =>
         this.fetchScenarios$().pipe(
@@ -135,11 +134,6 @@ export class ProjectAreaScenariosListComponent implements OnInit {
 
   get canAddScenarios() {
     return this.plan && canAddScenario(this.plan);
-  }
-
-  canOpenScenario(row: ScenarioRow, userId?: number): boolean {
-    // TODO: update this for child scenarios
-    return true;
   }
 
   removeScenarioFromList(scenarioRow: ScenarioRow, list: 'activeScenarios') {
