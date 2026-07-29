@@ -98,7 +98,7 @@ export class FundingReportToPdfService {
     // advance the current Y drawing 'cursor' to after the map
     currentY += 8 + mapHeight;
 
-    await this.addLegend(mapX, currentY, 10);
+    await this.addLegend(mapX, currentY, 40);
 
 
     const cards = element.querySelectorAll('.report-section');
@@ -307,8 +307,7 @@ async addLegend(
     legendX: number,
     legendY: number,
     targetWidth: number,
-    targetWidthMm: number = 50, // Specify target width on PDF (e.g., 50mm)
-
+    targetWidthMm: number = 200,
     legendInputs?: Record<string, any>
   ): Promise<{ width: number; height: number }> {
     if (!this.pdfInstance) return { width: 0, height: 0 };
@@ -321,8 +320,9 @@ async addLegend(
     );
 
     // 2. Calculate proportional target height based on aspect ratio
-    const aspectRatio = height / width;
-    const targetHeightMm = targetWidthMm * aspectRatio;
+    // const aspectRatio = height / width;
+    console.log('what are the extracted width:', width, ' and height:', height);
+    const targetHeightMm = targetWidthMm * .5;
     // 3. Render to jsPDF at specified coordinates
     this.pdfInstance.addImage(
       imgData,
