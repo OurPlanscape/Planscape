@@ -30,6 +30,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ForsysService } from '@services/forsys.service';
 import { ScenarioStepConfig } from '@scenario/scenario.constants';
+import { arrayHasChanged } from '@app/scenario/scenario-helper';
 
 export interface PriorityWithLayer {
   layer: DataLayer;
@@ -277,11 +278,19 @@ export class NewScenarioState {
   }
 
   setExcludedAreas(value: number[]) {
-    this._excludedAreas$.next(value);
+    const currentValue = this._excludedAreas$.value;
+
+    if (arrayHasChanged(currentValue, value)) {
+      this._excludedAreas$.next(value);
+    }
   }
 
   setIncludedAreas(value: number[]) {
-    this._includedAreas$.next(value);
+    const currentValue = this._includedAreas$.value;
+
+    if (arrayHasChanged(currentValue, value)) {
+      this._includedAreas$.next(value);
+    }
   }
 
   setScenarioConfig(config: Partial<ScenarioDraftConfiguration>) {

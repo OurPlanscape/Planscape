@@ -8,6 +8,7 @@ import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.co
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { ProjectArea } from '@app/types';
 import { OpacitySliderComponent } from '@styleguide';
@@ -19,8 +20,10 @@ import { Extent, FlameLengthInterval, FundingReport } from '@types';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
 
 import { FundingMapConfigState } from '../funding-map-config-state';
-import { FundingProjectAreasSelectorComponent } from '../funding-project-areas-selector/funding-project-areas-selector.component';
-import { FilterProjectFormat } from '../funding-project-areas-selector/funding-project-areas-selector.component';
+import {
+  FilterProjectFormat,
+  FundingProjectAreasSelectorComponent,
+} from '../funding-project-areas-selector/funding-project-areas-selector.component';
 import { FundingReportMapComponent } from '../funding-report-map/funding-report-map.component';
 import {
   FundingReportComponent,
@@ -62,6 +65,7 @@ import { FUNDING_REPORT_INFO_URL } from '@shared';
     { provide: MapConfigState, useExisting: FundingMapConfigState },
     MapConfigService,
     DataLayersStateService,
+    BaseLayersStateService,
   ],
   templateUrl: './funding-report-view.component.html',
   styleUrl: './funding-report-view.component.scss',

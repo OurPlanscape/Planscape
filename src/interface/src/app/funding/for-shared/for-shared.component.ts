@@ -26,7 +26,7 @@ import { MessageCardComponent } from '@styleguide/message-card/message-card.comp
   ],
 })
 export class ForSharedComponent implements OnInit {
-  /** Shared-link UUID from the route (`for/:id`). */
+  /** Shared-link UUID from the route (`funding-report/:id`). */
   id$ = this.route.paramMap.pipe(map((params) => params.get('id')));
 
   /** The shared report resolved from the link UUID (`null` if not found). */
