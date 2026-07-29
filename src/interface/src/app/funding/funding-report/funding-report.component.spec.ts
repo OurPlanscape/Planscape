@@ -1,4 +1,10 @@
-import { ComponentFixture, fakeAsync, TestBed, tick, discardPeriodicTasks } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+  discardPeriodicTasks,
+} from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { FundingReportComponent } from './funding-report.component';
 import { ActivatedRoute } from '@angular/router';
