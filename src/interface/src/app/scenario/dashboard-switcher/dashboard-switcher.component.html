@@ -1,6 +1,7 @@
 <ng-container *ngIf="currentScenario$ | async as scenario">
   <app-project-area-dashboard
     *ngIf="scenario.type === 'PROJECT_AREAS'; else scenarioDash">
+    [shouldShowInProgressModal]="showInProgressModal">
   </app-project-area-dashboard>
 
   <ng-template #scenarioDash>

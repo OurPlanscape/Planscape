@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { SharedModule } from '@app/shared';
 import { DashboardLayoutComponent } from '@styleguide/dashboard-layout/dashboard-layout.component';
 import { UntilDestroy } from '@ngneat/until-destroy';
@@ -16,6 +16,9 @@ import { ScenarioState } from '../scenario.state';
 import { ScenarioToolsComponent } from '@scenario/scenario-tools/scenario-tools.component';
 import { ProjectAreasEmptyListComponent } from '../project-areas-empty-list/project-areas-empty-list.component';
 import { FeaturesModule } from '@features/features.module';
+import { ProjectAreaScenariosListComponent } from '../project-area-scenarios-list/project-area-scenarios-list.component';
+import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @UntilDestroy()
 @Component({
@@ -31,9 +34,11 @@ import { FeaturesModule } from '@features/features.module';
     DetailsCardComponent,
     ProjectAreaComingSoonComponent,
     ProjectAreasEmptyListComponent,
+    ProjectAreaScenariosListComponent,
     OverlayLoaderComponent,
     ScenarioToolsComponent,
     ProjectAreasEmptyListComponent,
+    SuccessDialogComponent,
   ],
   templateUrl: './project-area-dashboard.component.html',
   styleUrl: './project-area-dashboard.component.scss',
@@ -44,6 +49,7 @@ export class ProjectAreaDashboardComponent implements OnInit {
   loadingProjectArea$ = this.scenarioState.isScenarioLoading$;
   currentScenario$ = this.scenarioState.currentScenario$;
   planId = this.route.parent?.snapshot.data['planId'];
+  @Input() shouldShowInProgressModal = false;
 
   dashboardTools: {
     id: string;
@@ -58,7 +64,8 @@ export class ProjectAreaDashboardComponent implements OnInit {
     private planState: PlanState,
     private breadcrumbService: BreadcrumbService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -66,6 +73,9 @@ export class ProjectAreaDashboardComponent implements OnInit {
       label: 'Planning Area Overview',
       backUrl: getPlanPath(this.planId),
     });
+    if (this.shouldShowInProgressModal) {
+      this.showInProgressModal();
+    }
   }
 
   onToolClick(route: string): void {
@@ -77,5 +87,15 @@ export class ProjectAreaDashboardComponent implements OnInit {
       });
       this.router.navigate([route], { relativeTo: this.route });
     }
+  }
+
+  private showInProgressModal() {
+    this.dialog.open(SuccessDialogComponent, {
+      data: {
+        headline: 'Your Scenario Analysis is in Progress',
+        message:
+          'You’ll be notified when it’s ready. The completed scenario can be viewed in Project Area Dashboard page.',
+      },
+    });
   }
 }
