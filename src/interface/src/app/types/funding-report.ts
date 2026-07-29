@@ -1,3 +1,5 @@
+import { Geometry } from 'geojson';
+
 export interface FundingReportDataPoint {
   year: number;
   // The backend sends null for years/metrics with no valid data.
@@ -157,6 +159,42 @@ export interface FundingReport {
  */
 export interface FundingReportInviteEmails {
   emails: string[];
+}
+
+/**
+ * The report configuration frozen into a shared link (water target + flame
+ * interval). Echoed back on the public endpoint so the shared view renders the
+ * same selection the sharer picked.
+ */
+export interface FundingReportSharedConfiguration {
+  aet: number;
+  total_flame_severity: FlameLengthInterval;
+}
+
+/**
+ * Response of the public shared-report endpoint
+ * (`v2/funding_report/{uuid}/`): a trimmed, unauthenticated view of a report,
+ * with `results` already recalculated for the shared configuration.
+ */
+export interface FundingReportPublic {
+  /**
+   * Trimmed scenario, carrying its name and the planning-area geometry the
+   * public view uses to frame the map (it has no plan in state to derive it
+   * from).
+   */
+  scenario: {
+    name: string;
+    planning_area: { geometry: Geometry | null } | null;
+  };
+  /** Full name (or username) of the report's creator. */
+  creator: string;
+  status: FundingReport['status'];
+  results: FundingReportResults | null;
+  treatment_datalayer: number | null;
+  aet_datalayer: number | null;
+  geopackage_status: FundingReport['geopackage_status'];
+  geopackage_url: string | null;
+  shared_configuration: FundingReportSharedConfiguration;
 }
 
 /**

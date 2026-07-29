@@ -626,7 +626,7 @@ class ListScenariosForPlanningAreaTest(APITestCase):
         self.assertIn(self.scenario.pk, ids)
         self.assertNotIn(child.pk, ids)
 
-    def test_child_endpoint_returns_only_children_for_parent(self):
+    def test_children_endpoint_returns_only_children_for_parent(self):
         parent = ScenarioFactory.create(
             planning_area=self.planning_area,
             user=self.owner_user,
@@ -656,7 +656,7 @@ class ListScenariosForPlanningAreaTest(APITestCase):
 
         self.client.force_authenticate(self.owner_user)
         response = self.client.get(
-            reverse("api:planning:scenarios-child", args=[parent.pk]),
+            reverse("api:planning:scenarios-children", args=[parent.pk]),
             content_type="application/json",
         )
 
@@ -666,6 +666,48 @@ class ListScenariosForPlanningAreaTest(APITestCase):
         self.assertNotIn(other_child.pk, ids)
         self.assertNotIn(parent.pk, ids)
         self.assertNotIn(other_parent.pk, ids)
+
+    def test_children_endpoint_supports_ordering(self):
+        parent = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            type=ScenarioType.PROJECT_AREAS,
+        )
+
+        child_b = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            parent=parent,
+            name="B child",
+        )
+        child_a = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            parent=parent,
+            name="A child",
+        )
+
+        ScenarioResultFactory(scenario=parent)
+        ScenarioResultFactory(scenario=child_a)
+        ScenarioResultFactory(scenario=child_b)
+
+        self.client.force_authenticate(self.owner_user)
+
+        url = reverse(
+            "api:planning:scenarios-children",
+            args=[parent.pk],
+        )
+
+        response = self.client.get(
+            url,
+            {"ordering": "name"},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            [scenario["name"] for scenario in response.json()],
+            ["A child", "B child"],
+        )
 
 
 class ScenarioDetailTest(APITestCase):

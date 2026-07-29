@@ -1503,16 +1503,22 @@ def export_scenario_sub_units_outputs_to_geopackage(
 def export_treatable_area_to_geopackage(
     scenario: Scenario, geopackage_path: Path
 ) -> None:
-    geometry = scenario.treatable_area
-    if not geometry:
+    if not scenario.treatable_area or not scenario.configuration.get("included_areas_ids"):
         logger.warning("Scenario has no treatable area (Legacy). Skipping.")
         return
 
+    planning_area = scenario.planning_area
+    pa_geometry = planning_area.geometry
+    included_areas_ids = scenario.configuration.get("included_areas_ids")
+
+    includes = DataLayer.objects.filter(pk__in=included_areas_ids)
+
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
-    schema = {
-        "geometry": "MultiPolygon",
-        "properties": [("id", "int"), ("name", "str:128")],
-    }
+    datalayer = DataLayer.objects.get(pk=included_areas_ids[0])
+    schema = datalayer.info.get(list(datalayer.info.keys())[0], {}).get("schema")
+    schema["geometry"] = {}
+    extended_schema = get_schema(schema, {"ownership": "str:254"})
+    
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
             with fiona.open(
@@ -1521,20 +1527,34 @@ def export_treatable_area_to_geopackage(
                 layer="treatable_area",
                 crs=crs,
                 driver="GPKG",
-                schema=schema,
+                schema=extended_schema,
                 allow_unsupported_drivers=True,
             ) as out:
-                geometry_json = json.loads(
-                    geometry.transform(settings.CRS_GEOPACKAGE_EXPORT, clone=True).json
-                )
-                feature = {
-                    "geometry": to_multi(geometry_json),
-                    "properties": {
-                        "id": scenario.pk,
-                        "name": scenario.name,
-                    },
-                }
-                out.write(feature)
+                for included in includes:
+                    if included.type != DataLayerType.VECTOR:
+                        # skip RASTER layers
+                        continue
+
+                    DynamicModel = model_from_fiona(included)
+                    queryset = DynamicModel.objects.filter(
+                        geometry__bboverlaps=pa_geometry
+                    ).filter(geometry__intersects=pa_geometry)
+
+                    for feature in queryset.all():
+                        feature_geometry = pa_geometry.intersection(feature.geometry)
+                        geometry_json = json.loads(
+                            feature_geometry.transform(settings.CRS_GEOPACKAGE_EXPORT, clone=True).json
+                        )
+                        properties = { 
+                            p: getattr(feature, p.lower()) 
+                            for p in list(schema.get("properties").keys())
+                        }
+                        properties["ownership"] = included.name
+                        feature = {
+                            "geometry": to_multi(geometry_json),
+                            "properties": properties,
+                        }
+                        out.write(feature)
     except Exception as e:
         logger.exception(
             "Error exporting Scenario's Treatable Area %s to geopackage: %s",

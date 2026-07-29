@@ -1,9 +1,11 @@
-from typing import Optional
+from typing import Optional, Dict
 
 from rest_framework import serializers
 
 from funding_report.models import FundingOpportunityReport
 from funding_report.services import calculate_aet_improvement
+from planning.models import PlanningArea, Scenario
+from planning.serializers import ProjectAreaSerializer
 
 
 class FundingOpportunityReportSerializer(serializers.ModelSerializer):
@@ -30,20 +32,55 @@ class FundingOpportunityReportSerializer(serializers.ModelSerializer):
         return instance.get_geopackage_url()
 
 
+class FundingOpportunityReportPlanningAreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlanningArea
+        fields = [
+            "geometry"
+        ]
+        read_only_fields = fields
+
+class FundingOpportunityReportScenarioSerializer(serializers.ModelSerializer):
+    planning_area = FundingOpportunityReportPlanningAreaSerializer()
+
+    class Meta:
+        model = Scenario
+        fields = [
+            "name",
+            "planning_area",
+        ]
+        read_only_fields = fields
+
 class FundingOpportunityReportPublicSerializer(serializers.ModelSerializer):
+    scenario =  FundingOpportunityReportScenarioSerializer()
+    creator = serializers.SerializerMethodField()
     results = serializers.SerializerMethodField()
+    geopackage_url = serializers.SerializerMethodField()
     shared_configuration = serializers.SerializerMethodField()
     class Meta:
-            model = FundingOpportunityReport
-            fields = [
-                "status",
-                "results",
-                "treatment_datalayer",
-                "shared_configuration",
-            ]
-            read_only_fields = fields
+        model = FundingOpportunityReport
+        fields = [
+            "scenario",
+            "creator",
+            "status",
+            "results",
+            "treatment_datalayer",
+            "aet_datalayer",
+            "geopackage_status",
+            "geopackage_url",
+            "shared_configuration",
+        ]
+        read_only_fields = fields
 
-    def get_results(self, instance: FundingOpportunityReport):
+    def get_creator(self, instance: FundingOpportunityReport) -> str:
+        """Return the user's full name."""
+        if not instance.created_by:
+            return ""
+        if instance.created_by.first_name and instance.created_by.last_name:
+            return f"{instance.created_by.first_name} {instance.created_by.last_name}"
+        return instance.created_by.username
+
+    def get_results(self, instance: FundingOpportunityReport) -> Optional[Dict]:
         results = instance.results
         if not results:
             return
@@ -71,8 +108,31 @@ class FundingOpportunityReportPublicSerializer(serializers.ModelSerializer):
                                     
         return results
 
-    def get_shared_configuration(self, instance):
+    def get_geopackage_url(self, instance: FundingOpportunityReport) -> Optional[str]:
+        return instance.get_geopackage_url()
+
+    def get_shared_configuration(self, instance: FundingOpportunityReport) -> Optional[Dict]:
         return self.context
+
+class FundingOpportunityReportPublicProjectAreaQueryParamsSerializer(serializers.Serializer):
+    number_of_features = serializers.IntegerField(min_value=1, required=False)
+
+
+class FundingOpportunityReportPublicProjectAreaSerializer(ProjectAreaSerializer):
+    treatment_rank = serializers.SerializerMethodField()
+
+    class Meta(ProjectAreaSerializer.Meta):
+        fields = (
+            "id",
+            "name",
+            "data",
+            "geometry",
+            "treatment_rank",
+        )
+
+    def get_treatment_rank(self, instance) -> Optional[int]:
+        return (instance.data or {}).get("treatment_rank")
+
 
 class FundingReportAETImprovementRequestSerializer(serializers.Serializer):
     percentage = serializers.FloatField(min_value=0)

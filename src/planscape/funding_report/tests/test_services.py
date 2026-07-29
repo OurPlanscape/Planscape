@@ -31,7 +31,6 @@ from funding_report.models import (
     FundingReportMetric,
 )
 from funding_report.services import (
-    _BIOMASS_PIXEL_AREA_ACRES,
     _filter_by_project_id,
     aggregate_delta_pixels,
     build_datalayer_lookup,
@@ -50,6 +49,7 @@ from funding_report.services import (
     get_aet_delta_datalayer,
     get_biomass_datalayer,
     get_funding_report_layers_of_interest,
+    merge_aet_improvement_into_results,
     treatment_layer_has_valid_data,
 )
 
@@ -945,6 +945,64 @@ class BuildFlameLengthReductionResultsTest(TestCase):
         )
 
 
+class MergeAETImprovementIntoResultsTest(TestCase):
+    def setUp(self):
+        self.aet_result = {
+            "percentage": 15,
+            "improved_acres": 12.5,
+            "total_project_area_acres": 100,
+            "planning_area_acres": 500,
+            "improved_area_percent": 2.5,
+            "project_areas": [
+                {
+                    "project_id": 1,
+                    "improved_acres": 12.5,
+                    "total_acres": 100,
+                    "improved_area_percent": 12.5,
+                }
+            ],
+        }
+
+    def test_merges_into_none_results(self):
+        merged = merge_aet_improvement_into_results(None, self.aet_result)
+
+        self.assertEqual(merged["summary"]["AET"]["percentage"], 15)
+        self.assertEqual(merged["projects"]["AET"], self.aet_result["project_areas"])
+
+    def test_preserves_unrelated_existing_keys(self):
+        existing = {
+            "summary": {"ABOVEGROUND_TOTAL": [{"year": 2026, "value": 1}]},
+            "projects": {"ABOVEGROUND_TOTAL": [{"project_id": 1, "value": 1}]},
+            "treatment_areas": {"total": {}},
+        }
+
+        merged = merge_aet_improvement_into_results(existing, self.aet_result)
+
+        self.assertEqual(
+            merged["summary"]["ABOVEGROUND_TOTAL"], existing["summary"]["ABOVEGROUND_TOTAL"]
+        )
+        self.assertEqual(merged["treatment_areas"], existing["treatment_areas"])
+        self.assertEqual(merged["summary"]["AET"]["improved_acres"], 12.5)
+
+    def test_overwrites_previous_aet_result(self):
+        existing = {
+            "summary": {"AET": {"percentage": 10, "improved_acres": 1}},
+            "projects": {"AET": []},
+        }
+
+        merged = merge_aet_improvement_into_results(existing, self.aet_result)
+
+        self.assertEqual(merged["summary"]["AET"]["percentage"], 15)
+        self.assertEqual(merged["projects"]["AET"], self.aet_result["project_areas"])
+
+    def test_does_not_mutate_input(self):
+        existing = {"summary": {}, "projects": {}}
+
+        merge_aet_improvement_into_results(existing, self.aet_result)
+
+        self.assertEqual(existing, {"summary": {}, "projects": {}})
+
+
 class FlameLengthReductionCalculationTest(TestCase):
     def setUp(self):
         tmp_dir = tempfile.TemporaryDirectory()
@@ -1189,41 +1247,43 @@ class BiomassVolumesCalculationTest(TestCase):
         results = calculate_biomass_volumes(self.report)
 
         # Pixel values are in per-acre output units (merch bf/ac, non-merch
-        # cuft/ac); they're summed per wood type, then multiplied by the
-        # per-pixel acreage to produce totals.
+        # cuft/ac); each pixel's value is weighted by that pixel's true
+        # geodesic ground area (row-dependent, not column-dependent) to
+        # produce totals - see `geodesic_pixel_area_acres`.
         #
-        # Softwood pixels: (0,0) merch=100, nm=50; (1,1) merch=400, nm=100
-        # Hardwood pixels: (0,1) merch=200, nm=80
-        # Mixed pixels:    (1,0) merch=300, nm=80
+        # Row 0: (0,0) softwood merch=100, nm=50; (0,1) hardwood merch=200, nm=80
+        # Row 1: (1,0) mixed merch=300, nm=80;     (1,1) softwood merch=400, nm=100
+        row0_acres = geodesic_pixel_area_acres(self.merch_path, row=0)
+        row1_acres = geodesic_pixel_area_acres(self.merch_path, row=1)
         summary = results["summary"]
         self.assertAlmostEqual(
             summary["merchantable_softwood_bf"],
-            (100 + 400) * _BIOMASS_PIXEL_AREA_ACRES,
+            100 * row0_acres + 400 * row1_acres,
             places=4,
         )
         self.assertAlmostEqual(
             summary["merchantable_hardwood_bf"],
-            200 * _BIOMASS_PIXEL_AREA_ACRES,
+            200 * row0_acres,
             places=4,
         )
         self.assertAlmostEqual(
             summary["merchantable_mixed_bf"],
-            300 * _BIOMASS_PIXEL_AREA_ACRES,
+            300 * row1_acres,
             places=4,
         )
         self.assertAlmostEqual(
             summary["non_merchantable_softwood_cuft"],
-            (50 + 100) * _BIOMASS_PIXEL_AREA_ACRES,
+            50 * row0_acres + 100 * row1_acres,
             places=4,
         )
         self.assertAlmostEqual(
             summary["non_merchantable_hardwood_cuft"],
-            80 * _BIOMASS_PIXEL_AREA_ACRES,
+            80 * row0_acres,
             places=4,
         )
         self.assertAlmostEqual(
             summary["non_merchantable_mixed_cuft"],
-            80 * _BIOMASS_PIXEL_AREA_ACRES,
+            80 * row1_acres,
             places=4,
         )
 
