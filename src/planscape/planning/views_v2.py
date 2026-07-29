@@ -43,6 +43,7 @@ from funding_report.tasks import (
     send_funding_opportunity_report_shared_link,
 )
 from modules.base import compute_scenario_capabilities
+from planscape.openpanel import track_openpanel
 from planscape.serializers import BaseErrorMessageSerializer
 from rest_framework import mixins, pagination, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -808,6 +809,25 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 inviter_name,
                 scenario.name,
             )
+
+        track_openpanel(
+            name="funding_report.shared_link.sent",
+            properties={
+                "scenario_id": scenario.pk,
+                "report_id": report.pk,
+                "shared_link_uuid": str(shared_link.uuid),
+                # `emails` are the addresses submitted now; `recipient_emails`
+                # also includes previous invitees when resending to all.
+                "new_invites": len(emails),
+                "recipients": len(recipient_emails),
+                "resent_to_all": validated_data["resent_to_all_invitees"],
+                "aet": configuration["aet"],
+                "total_flame_severity": configuration["total_flame_severity"],
+                # Recipient addresses are deliberately left out - only counts.
+                "email": request.user.email,
+            },
+            user_id=request.user.pk,
+        )
 
         return Response({"emails": emails}, status=status.HTTP_201_CREATED)
 
