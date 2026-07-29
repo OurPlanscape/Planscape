@@ -612,6 +612,10 @@ OPENPANEL_CLIENT_SECRET = config(
     "OPENPANEL_CLIENT_SECRET", "fake-openpanel-client-secret"
 )
 
+# MIXPANEL config
+MIXPANEL_INTEGRATION = config("MIXPANEL_INTEGRATION", default=False, cast=bool)
+MIXPANEL_PROJECT_TOKEN = config("MIXPANEL_PROJECT_TOKEN", "fake-mixpanel-project-token")
+
 # MARTOR (ADMIN MARKDOWN EDITOR)
 MARTOR_TOOLBAR_BUTTONS = [
     "bold",
