@@ -9,7 +9,7 @@ app_name="planscape"
 
 if [[ "$ENV" == "production" || "$ENV" == "staging" || "$K_SERVICE" != "" ]]; then
   echo "Starting gunicorn"
-  uv run gunicorn planscape.wsgi:application \
+  exec uv run gunicorn planscape.wsgi:application \
     -n "$app_name" \
     --bind "0.0.0.0:${PORT}" \
     --workers "$GUNICORN_WORKERS" \
@@ -18,7 +18,7 @@ if [[ "$ENV" == "production" || "$ENV" == "staging" || "$K_SERVICE" != "" ]]; th
 
 else
   echo "Starting gunicorn locally"
-  uv run gunicorn planscape.wsgi:application \
+  exec uv run gunicorn planscape.wsgi:application \
     -n "$app_name" \
     --bind "0.0.0.0:${PORT}" \
     --workers "$GUNICORN_WORKERS" \

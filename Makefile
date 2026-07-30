@@ -176,7 +176,6 @@ docker-makemigrations:
 
 docker-migrate:
 	./src/planscape/bin/run.sh uv run python manage.py migrate
-	./src/planscape/bin/run.sh uv run python manage.py install_functions
 
 
 # Cloud Run commands
