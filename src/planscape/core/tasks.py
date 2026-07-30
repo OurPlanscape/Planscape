@@ -6,6 +6,7 @@ import requests
 from django.conf import settings
 from django.core.management import call_command
 from django.core.serializers.json import DjangoJSONEncoder
+from mixpanel import Mixpanel, MixpanelException
 
 from core.backup_state import (
     BACKUP_STATE_FAILED,
@@ -41,6 +42,28 @@ def track(payload: Dict[str, Any]) -> None:
         return
 
     log.info("Event tracked")
+
+
+@app.task()
+def track_mixpanel(payload: Dict[str, Any]) -> None:
+    if not settings.MIXPANEL_INTEGRATION:
+        return
+
+    mp = Mixpanel(settings.MIXPANEL_PROJECT_TOKEN)
+    kind = payload["type"]
+    data = payload["payload"]
+    try:
+        if kind == "track":
+            mp.track(
+                data["distinct_id"], data["event_name"], data.get("properties") or {}
+            )
+        elif kind == "identify":
+            mp.people_set(data["distinct_id"], data.get("properties") or {})
+    except MixpanelException:
+        log.exception("Something went wrong while posting data to Mixpanel")
+        return
+
+    log.info("Event tracked in Mixpanel")
 
 
 @app.task()
