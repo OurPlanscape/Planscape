@@ -130,9 +130,16 @@ export class ViewScenarioComponent {
         untilDestroyed(this),
         switchMap((s) => {
           // On specific scenario
+          let scenarioBackUrl = getPlanPath(this.planId);
+          if (s.parent) {
+            scenarioBackUrl += `/scenario/${s.parent}/dashboard`;
+          } else {
+            scenarioBackUrl += `/scenario/${s.id}/dashboard`;
+          }
+
           this.breadcrumbService.updateBreadCrumb({
             label: s.name,
-            backUrl: `${getPlanPath(this.planId)}/scenario/${this.scenarioId}/dashboard`,
+            backUrl: scenarioBackUrl,
             icon: 'close',
             blackText: true,
           });

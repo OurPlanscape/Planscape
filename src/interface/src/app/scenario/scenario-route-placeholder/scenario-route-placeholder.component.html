@@ -33,7 +33,10 @@
       <app-scenario>
         <app-uploaded-scenario-view
           [scenario]="scenarioResource.data"
-          *ngIf="scenarioResource.data?.origin === 'USER'; else createScenario">
+          *ngIf="
+            scenarioResource.data?.type === 'PROJECT_AREAS';
+            else createScenario
+          ">
         </app-uploaded-scenario-view>
 
         <ng-template #createScenario>

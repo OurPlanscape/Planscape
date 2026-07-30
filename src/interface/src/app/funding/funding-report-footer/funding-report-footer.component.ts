@@ -28,6 +28,12 @@ export class FundingReportFooterComponent {
   // allow for arbitrary disabling, such as when the map is still loading
   @Input() buttonDisabled = false;
   @Input() footerType: 'preview' | 'full' = 'preview';
+  /**
+   * Whether the Share button may appear. Still gated by the
+   * `SHARE_FUNDING_REPORTS` feature flag; the public read-only view sets this
+   * false to drop sharing entirely.
+   */
+  @Input() showShare = true;
   @Input() generatingPdf = false;
   @Input() downloadingGeopackage = false;
 

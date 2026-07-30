@@ -45,7 +45,6 @@ PLANSCAPE_APPS = [
     "datastore",
     "funding_report",
     "impacts",
-    "martin",
     "modules",
     "organizations",
     "planning",

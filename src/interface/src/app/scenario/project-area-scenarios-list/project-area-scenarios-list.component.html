@@ -1,0 +1,29 @@
+<!-- TODO: replace this with a cards component -->
+<div *ngFor="let childScenario of activeScenarios">
+  <div>
+    <a href="/plan/2968/scenario/{{ childScenario.id }}">{{
+      childScenario.id
+    }}</a>
+  </div>
+  <div>{{ childScenario.name }}</div>
+  <div>{{ childScenario.status }}</div>
+  <div>{{ childScenario.creator }}</div>
+  <div>{{ childScenario.scenario_result?.status }}</div>
+  <hr />
+</div>
+
+<!-- TODO:  use cards here
+<sg-scenario-card
+  *ngFor="let s of activeScenarios"
+  [name]="s.name"
+  [creator]="s.creator"
+  [created_at]="s.created_at"
+  [origin]="s.origin"
+  [resultStatus]="s.scenario_result?.status || 'PENDING'"
+  (click)="handleOpenScenario(s)">
+</sg-scenario-card> -->
+
+<!-- TODO : switch to this when no scenarios exist yet -->
+<app-project-areas-empty-list
+  [plan]="plan"
+  [projectAreaId]="projectAreaId"></app-project-areas-empty-list>

@@ -3,7 +3,7 @@ import { Geometry } from 'geojson';
 
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
 export type ORIGIN_TYPE = 'USER' | 'SYSTEM';
-export type SCENARIO_TYPE = 'PRESET' | 'CUSTOM';
+export type SCENARIO_TYPE = 'PRESET' | 'CUSTOM' | 'PROJECT_AREAS';
 
 export type ScenarioResultStatus =
   | 'LOADING' // when loading results
@@ -64,6 +64,7 @@ export interface Scenario {
   capabilities?: Capabilities[];
   type: SCENARIO_TYPE;
   planning_approach?: PLANNING_APPROACH;
+  parent?: number;
 }
 
 /**

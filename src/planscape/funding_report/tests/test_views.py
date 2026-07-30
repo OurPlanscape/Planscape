@@ -1,9 +1,17 @@
+import json
 from unittest import mock
+from uuid import uuid4
 
 from collaboration.models import Permissions, Role
 from collaboration.tests.factories import UserObjectRoleFactory
+from django.conf import settings
 from django.urls import reverse
-from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
+from planning.models import ScenarioPlanningApproach
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ProjectAreaFactory,
+    ScenarioFactory,
+)
 from planscape.tests.factories import UserFactory
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -420,6 +428,271 @@ class FundingOpportunityReportPublicUrlTest(APITestCase):
         self.assertEqual(list(response.json().keys()), ["public_url"])
 
 
+class PublicFundingOpportunityReportTest(APITestCase):
+    def setUp(self):
+        self.report = FundingOpportunityReportFactory(
+            results={
+                "summary": {
+                    "AET": {
+                        "percentage": 10,
+                        "improved_acres": 12.5,
+                        "total_project_area_acres": 100,
+                        "planning_area_acres": 500,
+                        "improved_area_percent": 2.5,
+                    },
+                    "ABOVEGROUND_TOTAL": [
+                        {"year": 2026, "value": 20, "baseline": 10, "delta": 100}
+                    ],
+                    "TOTAL_FLAME_SEVERITY": {
+                        "high": [
+                            {"year": 2026, "value": 30, "baseline": 100, "delta": 30}
+                        ],
+                        "medium": [
+                            {"year": 2026, "value": 50, "baseline": 100, "delta": 50}
+                        ],
+                    },
+                },
+                "projects": {
+                    "AET": [
+                        {
+                            "project_id": 1,
+                            "improved_acres": 12.5,
+                            "total_acres": 100,
+                            "improved_area_percent": 12.5,
+                        }
+                    ],
+                    "ABOVEGROUND_TOTAL": [
+                        {
+                            "project_id": 1,
+                            "year": 2026,
+                            "value": 20,
+                            "baseline": 10,
+                            "delta": 100,
+                        }
+                    ],
+                    "TOTAL_FLAME_SEVERITY": {
+                        "high": [
+                            {
+                                "project_id": 1,
+                                "year": 2026,
+                                "value": 30,
+                                "baseline": 100,
+                                "delta": 30,
+                            }
+                        ],
+                        "medium": [
+                            {
+                                "project_id": 1,
+                                "year": 2026,
+                                "value": 50,
+                                "baseline": 100,
+                                "delta": 50,
+                            }
+                        ],
+                    },
+                },
+                "treatment_areas": {"total": {"No Treatment": 10}},
+            }
+        )
+        self.shared_link = FundingOpportunityReportSharedLinkFactory(
+            report=self.report,
+            configuration={"aet": 10, "total_flame_severity": "high"},
+        )
+        self.url = reverse(
+            "api:funding_report:public-funding-opportunity-report",
+            args=[self.shared_link.uuid],
+        )
+
+    @mock.patch("funding_report.serializers.calculate_aet_improvement", return_value={
+        "percentage": 24.0,
+        "improved_acres": 1378.1362965456294,
+        "total_project_area_acres": 6721.266454490802,
+        "planning_area_acres": 230987.77520892292,
+        "improved_area_percent": 0.5966273735911514,
+        "project_areas": [
+            {
+                "project_id": 1,
+                "improved_acres": 1373.7014001862415,
+                "total_acres": 2668.738151049111,
+                "improved_area_percent": 51.473817303740496
+            },
+            
+        ]
+    })
+    def test_public_get_returns_report_without_authentication(self, calculate_aet_improvement_mock):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["scenario"]["name"], self.report.scenario.name)
+        self.assertEqual(
+            data["scenario"]["planning_area"]["geometry"],
+            json.loads(self.report.scenario.planning_area.geometry.json),
+        )
+        self.assertEqual(data["creator"], f"{self.report.created_by.first_name} {self.report.created_by.last_name}")
+        self.assertEqual(data["status"], self.report.status)
+        self.assertEqual(data["treatment_datalayer"], self.report.treatment_datalayer)
+        self.assertEqual(data["aet_datalayer"], self.report.aet_datalayer)
+        self.assertEqual(data["shared_configuration"], self.shared_link.configuration)
+        self.assertEqual(data["geopackage_status"], self.report.geopackage_status)
+        self.assertEqual(data["geopackage_url"], self.report.get_geopackage_url())
+        self.assertEqual(
+            data["results"]["summary"]["AET"],
+            {
+                "percentage": 24.0,
+                "improved_acres": 1378.1362965456294,
+                "total_project_area_acres": 6721.266454490802,
+                "planning_area_acres": 230987.77520892292,
+                "improved_area_percent": 0.5966273735911514,
+            }
+        )
+        self.assertEqual(
+            data["results"]["summary"]["TOTAL_FLAME_SEVERITY"], 
+            {
+                "high": 
+                [
+                    {"year": 2026, "value": 30, "baseline": 100, "delta": 30}
+                ]
+            }
+        )
+        self.assertEqual(
+            data["results"]["projects"]["AET"],
+            [{
+                "project_id": 1,
+                "improved_acres": 1373.7014001862415,
+                "total_acres": 2668.738151049111,
+                "improved_area_percent": 51.473817303740496
+            }]
+        )
+        self.assertEqual(
+            data["results"]["projects"]["TOTAL_FLAME_SEVERITY"], 
+            {
+                "high": 
+                [
+                    {
+                        "project_id": 1,
+                        "year": 2026,
+                        "value": 30,
+                        "baseline": 100,
+                        "delta": 30,
+                    }
+                ]
+            }
+        )
+        calculate_aet_improvement_mock.assert_called_once()
+
+    def test_returns_404_for_unknown_uuid(self):
+        url = reverse(
+            "api:funding_report:public-funding-opportunity-report", args=[uuid4()]
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_returns_404_for_deleted_shared_link(self):
+        self.shared_link.delete()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class PublicFundingOpportunityReportProjectAreasTest(APITestCase):
+    def setUp(self):
+        self.report = FundingOpportunityReportFactory()
+        self.shared_link = FundingOpportunityReportSharedLinkFactory(
+            report=self.report,
+            configuration={"aet": 10, "total_flame_severity": "high"},
+        )
+        self.url = reverse(
+            "api:funding_report:public-funding-opportunity-report-project-areas",
+            args=[self.shared_link.uuid],
+        )
+
+    def test_public_get_returns_project_areas_without_authentication(self):
+        project_area = ProjectAreaFactory(
+            scenario=self.report.scenario,
+            name="Shared project area",
+            data={"treatment_rank": 1},
+        )
+        ProjectAreaFactory(scenario=self.report.scenario, data={"treatment_rank": 3})
+        ProjectAreaFactory(scenario=self.report.scenario, data={"treatment_rank": 2})
+        ProjectAreaFactory()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(len(data), 3)
+        self.assertEqual([item["treatment_rank"] for item in data], [1, 2, 3])
+        self.assertIn(project_area.name, [item["name"] for item in data])
+        serialized_project_area = next(
+            item for item in data if item["name"] == project_area.name
+        )
+        self.assertEqual(serialized_project_area["data"], project_area.data)
+        self.assertEqual(serialized_project_area["treatment_rank"], 1)
+        self.assertEqual(serialized_project_area["id"], project_area.id)
+        for item in data:
+            self.assertIn("id", item)
+            self.assertIn("geometry", item)
+            self.assertIn("treatment_rank", item)
+            self.assertNotIn("scenario", item)
+            self.assertNotIn("created_by", item)
+
+    def test_public_get_limits_project_areas_by_number_of_features(self):
+        ProjectAreaFactory(scenario=self.report.scenario, data={"treatment_rank": 1})
+        ProjectAreaFactory(scenario=self.report.scenario, data={"treatment_rank": 2})
+
+        response = self.client.get(self.url, {"number_of_features": 1})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.json()), 1)
+
+    def test_public_get_validates_number_of_features(self):
+        response = self.client.get(self.url, {"number_of_features": 0})
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("number_of_features", response.json()["errors"])
+
+    def test_public_get_defaults_to_feature_limit_for_prioritize_sub_units(self):
+        self.report.scenario.planning_approach = (
+            ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        )
+        self.report.scenario.save(update_fields=["planning_approach"])
+        total_project_areas = settings.DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS + 1
+        for rank in range(total_project_areas):
+            ProjectAreaFactory(
+                scenario=self.report.scenario,
+                data={"treatment_rank": rank},
+            )
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            len(response.json()),
+            settings.DEFAULT_NUMBER_OF_FEATURES_PRIORITIZE_SUB_UNITS,
+        )
+
+    def test_returns_404_for_unknown_uuid(self):
+        url = reverse(
+            "api:funding_report:public-funding-opportunity-report-project-areas",
+            args=[uuid4()],
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_returns_404_for_deleted_shared_link(self):
+        self.shared_link.delete()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
 class CreateFundingOpportunityReportInvitesTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create()
@@ -666,29 +939,32 @@ class AETImprovementTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
+    @mock.patch("planning.views_v2.async_generate_funding_report_geopackage")
     @mock.patch("planning.views_v2.calculate_aet_improvement")
     def test_aet_improvement_returns_results_after_successful_report(
-        self, calculate_mock
+        self, calculate_mock, geopackage_task_mock
     ):
         report = FundingOpportunityReport.objects.create(
             scenario=self.scenario,
             created_by=self.user,
             status=FundingOpportunityReportStatus.SUCCESS,
+            results={"summary": {"ABOVEGROUND_TOTAL": []}, "projects": {}},
         )
+        project_areas = [
+            {
+                "project_id": 1,
+                "improved_acres": 12.5,
+                "total_acres": 100,
+                "improved_area_percent": 12.5,
+            }
+        ]
         calculate_mock.return_value = {
             "percentage": 15,
             "improved_acres": 12.5,
             "total_project_area_acres": 100,
             "planning_area_acres": 500,
             "improved_area_percent": 2.5,
-            "project_areas": [
-                {
-                    "project_id": 1,
-                    "improved_acres": 12.5,
-                    "total_acres": 100,
-                    "improved_area_percent": 12.5,
-                }
-            ],
+            "project_areas": project_areas,
         }
         self.client.force_authenticate(self.user)
 
@@ -699,6 +975,14 @@ class AETImprovementTest(APITestCase):
         self.assertEqual(response.json()["planning_area_acres"], 500)
         self.assertEqual(len(response.json()["project_areas"]), 1)
         calculate_mock.assert_called_once_with(report=report, percentage=15.0)
+
+        report.refresh_from_db()
+        self.assertEqual(report.results["summary"]["AET"]["percentage"], 15)
+        self.assertEqual(report.results["summary"]["AET"]["improved_acres"], 12.5)
+        self.assertEqual(report.results["projects"]["AET"], project_areas)
+        # unrelated results are preserved
+        self.assertEqual(report.results["summary"]["ABOVEGROUND_TOTAL"], [])
+        geopackage_task_mock.delay.assert_called_once_with(report.pk)
 
     def test_aet_improvement_validates_percentage(self):
         FundingOpportunityReport.objects.create(
@@ -712,9 +996,12 @@ class AETImprovementTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    @mock.patch("planning.views_v2.async_generate_funding_report_geopackage")
     @mock.patch("planning.views_v2.calculate_aet_improvement")
-    def test_aet_improvement_returns_400_on_value_error(self, calculate_mock):
-        FundingOpportunityReport.objects.create(
+    def test_aet_improvement_returns_400_on_value_error(
+        self, calculate_mock, geopackage_task_mock
+    ):
+        report = FundingOpportunityReport.objects.create(
             scenario=self.scenario,
             created_by=self.user,
             status=FundingOpportunityReportStatus.SUCCESS,
@@ -728,6 +1015,43 @@ class AETImprovementTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", response.json())
+        report.refresh_from_db()
+        self.assertIsNone(report.results)
+        geopackage_task_mock.delay.assert_not_called()
+
+    @mock.patch("planning.views_v2.async_generate_funding_report_geopackage")
+    @mock.patch("planning.views_v2.calculate_aet_improvement")
+    def test_aet_improvement_skips_persistence_when_report_no_longer_successful(
+        self, calculate_mock, geopackage_task_mock
+    ):
+        report = FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.user,
+            status=FundingOpportunityReportStatus.SUCCESS,
+        )
+
+        def _flip_status_and_return(*args, **kwargs):
+            FundingOpportunityReport.objects.filter(pk=report.pk).update(
+                status=FundingOpportunityReportStatus.RUNNING
+            )
+            return {
+                "percentage": 15,
+                "improved_acres": 12.5,
+                "total_project_area_acres": 100,
+                "planning_area_acres": 500,
+                "improved_area_percent": 2.5,
+                "project_areas": [],
+            }
+
+        calculate_mock.side_effect = _flip_status_and_return
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(self.url, {"percentage": 15}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        report.refresh_from_db()
+        self.assertIsNone(report.results)
+        geopackage_task_mock.delay.assert_not_called()
 
 
 class FlameLengthReductionTest(APITestCase):

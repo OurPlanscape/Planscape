@@ -305,7 +305,6 @@ class FundingOpportunityReportSharedLink(CreatedAtMixin, DeletedAtMixin):
     configuration = models.JSONField()
     
     def get_public_url(self):
-        #TODO: Update the public URL once the path is defined
         base_url = get_base_url(settings.ENV)
-        return f"{base_url}/for/{self.uuid}"
+        return f"{base_url}/funding-report/{self.uuid}"
 

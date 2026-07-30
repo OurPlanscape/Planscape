@@ -15,7 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { MARTIN_SOURCES } from '@treatments/map.sources';
 import { BASE_COLORS, LABEL_PAINT } from '@treatments/map.styles';
-import { filter, map, Subject } from 'rxjs';
+import { filter, map, Observable, of, Subject } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ScenarioState } from '@scenario/scenario.state';
 import { isPlanningApproachSubUnits } from '@scenario/scenario-helper';
@@ -52,12 +52,23 @@ export class MapMultiProjectAreasComponent implements OnInit {
 
   @Input() labelField: 'name' | 'rank' | '' = 'name'; // blank string shows nothing
   @Input() planningApproach: PLANNING_APPROACH = 'OPTIMIZE_PROJECT_AREAS';
-  @Input() scenarioOrigin: 'USER' | 'SYSTEM' | null = null;
+
+  /**
+   * Shared-link UUID for the public funding report. When set, tiles come from
+   * the unauthed shared-link martin function keyed by UUID instead of the
+   * scenario id in `ScenarioState` (which the public view has no access to).
+   * That function applies the planning-approach feature cap itself, so the
+   * sub-units vs project-areas source switch below is skipped.
+   */
+  @Input() sharedLinkUuid: string | null = null;
 
   @Output() changeHoveredProjectAreaId = new EventEmitter<number | null>();
   @Output() changeMouseLngLat = new EventEmitter<LngLat | null>();
 
   private get martinSource() {
+    if (this.sharedLinkUuid) {
+      return MARTIN_SOURCES.projectAreasByForSharedLink;
+    }
     return isPlanningApproachSubUnits(this.planningApproach)
       ? MARTIN_SOURCES.subUnitsByScenario
       : MARTIN_SOURCES.projectAreasByScenario;
@@ -112,11 +123,7 @@ export class MapMultiProjectAreasComponent implements OnInit {
     map((scenario) => scenario as number)
   );
 
-  vectorLayerUrl$ = this.scenarioId$.pipe(
-    map((scenarioId) => {
-      return this.martinSource.tilesUrl + `?scenario_id=${scenarioId}`;
-    })
-  );
+  vectorLayerUrl$!: Observable<string>;
 
   constructor(
     private fundingMapConfigState: FundingMapConfigState,
@@ -124,6 +131,15 @@ export class MapMultiProjectAreasComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.vectorLayerUrl$ = this.sharedLinkUuid
+      ? of(this.martinSource.tilesUrl + `?uuid=${this.sharedLinkUuid}`)
+      : this.scenarioId$.pipe(
+          map(
+            (scenarioId) =>
+              this.martinSource.tilesUrl + `?scenario_id=${scenarioId}`
+          )
+        );
+
     this.fundingMapConfigState.opacity$
       .pipe(untilDestroyed(this))
       .subscribe((opacity) => {

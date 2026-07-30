@@ -14,8 +14,8 @@ from funding_report.models import (
     FundingOpportunityReport,
     FundingOpportunityReportInvite,
     FundingOpportunityReportRun,
-    FundingOpportunityReportStatus,
     FundingOpportunityReportSharedLink,
+    FundingOpportunityReportStatus,
 )
 from funding_report.openapi_examples import (
     FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE,
@@ -35,8 +35,10 @@ from funding_report.serializers import (
 from funding_report.services import (
     calculate_aet_improvement,
     calculate_funding_report_flame_length_reduction,
+    merge_aet_improvement_into_results,
 )
 from funding_report.tasks import (
+    async_generate_funding_report_geopackage,
     run_funding_opportunity_report,
     send_funding_opportunity_report_shared_link,
 )
@@ -44,6 +46,7 @@ from modules.base import compute_scenario_capabilities
 from planscape.serializers import BaseErrorMessageSerializer
 from rest_framework import mixins, pagination, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -59,6 +62,7 @@ from planning.models import (
     PlanningArea,
     ProjectArea,
     Scenario,
+    ScenarioPlanningApproach,
     ScenarioResultStatus,
     ScenarioType,
     ScenarioVersion,
@@ -274,16 +278,11 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             qs = qs.filter(parent__isnull=True)
         return qs
 
-    @action(methods=["get"], detail=True, url_path="child")
-    def child(self, request, pk=None):
+    @action(methods=["get"], detail=True, url_path="children")
+    def children(self, request, pk=None):
         parent = self.get_object()
 
-        children = (
-            self.get_queryset()
-            .filter(parent=parent)
-            .select_related("planning_area", "user", "results")
-            .prefetch_related("project_areas")
-        )
+        children = self.filter_queryset(self.get_queryset().filter(parent=parent))
 
         serializer = ListScenarioSerializer(
             children,
@@ -291,6 +290,22 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             context={"request": request},
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def validate_parent_scenario(self, parent):
+        if not parent:
+            return None
+
+        parent = get_object_or_404(
+            self.get_queryset().filter(parent__isnull=True),
+            pk=parent.pk,
+        )
+
+        if parent.type != ScenarioType.PROJECT_AREAS:
+            raise DRFValidationError(
+                {"parent": ["Parent scenario must be a Project Areas scenario."]}
+            )
+
+        return parent
 
     @extend_schema(description="Retrieve a Scenario (auto-detects version).")
     def retrieve(self, request, *args, **kwargs):
@@ -321,7 +336,11 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     def create_draft(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        parent = self.validate_parent_scenario(serializer.validated_data.get("parent"))
+
         scenario_type = serializer.validated_data.get("type") or ScenarioType.PRESET
+
         configuration_data = create_config(
             targets=serializer.validated_data.get("targets") or {},
             constraints=[],
@@ -329,12 +348,24 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             excluded_areas=[],
             priorities=[],
             cobenefits=[],
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+            if parent
+            else None,
         )
+
         validated_data = {
             **serializer.validated_data,
             "configuration": configuration_data,
             "type": scenario_type,
         }
+
+        if parent:
+            validated_data["parent"] = parent
+            validated_data["planning_area"] = parent.planning_area
+            validated_data["planning_approach"] = (
+                ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+            )
+
         scenario = create_scenario(**validated_data)
 
         if hasattr(scenario, "result_status"):
@@ -421,6 +452,16 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             instance, data=request.data, partial=True
         )
         serializer.is_valid(raise_exception=True)
+        if "parent" in serializer.validated_data:
+            parent = self.validate_parent_scenario(
+                serializer.validated_data.get("parent")
+            )
+            serializer.validated_data["parent"] = parent
+
+            if parent:
+                serializer.validated_data["planning_approach"] = (
+                    ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+                )
         configuration_data = serializer.validated_data.get("configuration")
         if configuration_data:
             existing = instance.configuration or {}
@@ -520,13 +561,29 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             )
 
         try:
-            results = calculate_aet_improvement(
+            aet_result = calculate_aet_improvement(
                 report=report,
                 percentage=serializer.validated_data["percentage"],
             )
         except ValueError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(results)
+
+        should_regenerate_geopackage = False
+        with transaction.atomic():
+            locked_report = FundingOpportunityReport.objects.select_for_update().get(
+                pk=report.pk
+            )
+            if locked_report.status == FundingOpportunityReportStatus.SUCCESS:
+                locked_report.results = merge_aet_improvement_into_results(
+                    locked_report.results, aet_result
+                )
+                locked_report.save(update_fields=["results", "updated_at"])
+                should_regenerate_geopackage = True
+
+        if should_regenerate_geopackage:
+            async_generate_funding_report_geopackage.delay(report.pk)
+
+        return Response(aet_result)
 
     @extend_schema(
         description=(

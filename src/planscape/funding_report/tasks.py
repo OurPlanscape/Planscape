@@ -38,6 +38,7 @@ from funding_report.services import (
     generate_treatment_clip_datalayer,
     get_aet_percentual_datalayer,
     get_treatment_datalayer,
+    merge_aet_improvement_into_results,
     treatment_layer_has_valid_data,
 )
 
@@ -66,7 +67,7 @@ def send_funding_opportunity_report_shared_link(
         "SCENARIO_NAME": scenario_name,
         "LOGO_URL": get_frontend_url("assets/svg/planscape-color-logo.svg"),
         # TODO: replace placeholder
-        "RESULTS_PREVIEW_URL": get_frontend_url("assets/png/placeholders/for-sharing-planceholder.png"),
+        "RESULTS_PREVIEW_URL": get_frontend_url("assets/png/funding-opportunity-report-sharing-email-thumb.png"),
     }
     subject = f"[Planscape] Funding opportunity report shared from {inviter_name}"
     txt = render_to_string(
@@ -392,14 +393,7 @@ def async_finalize_funding_report_results(
         results["summary"]["TOTAL_FLAME_SEVERITY"] = flame_results["summary"]
         results["projects"]["TOTAL_FLAME_SEVERITY"] = flame_results["projects"]
     if aet_improvement is not None:
-        results["summary"]["AET"] = {
-            "percentage": aet_improvement["percentage"],
-            "improved_acres": aet_improvement["improved_acres"],
-            "total_project_area_acres": aet_improvement["total_project_area_acres"],
-            "planning_area_acres": aet_improvement["planning_area_acres"],
-            "improved_area_percent": aet_improvement["improved_area_percent"],
-        }
-        results["projects"]["AET"] = aet_improvement["project_areas"]
+        results = merge_aet_improvement_into_results(results, aet_improvement)
     if biomass_volumes is not None:
         results["summary"]["BIOMASS_VOLUMES"] = biomass_volumes["summary"]
         results["projects"]["BIOMASS_VOLUMES"] = biomass_volumes["project_areas"]

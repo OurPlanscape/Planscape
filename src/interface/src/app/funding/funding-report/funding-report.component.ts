@@ -101,6 +101,12 @@ interface ReportSection {
   label: string;
 }
 
+/**
+ * Behaviour of the report's Water / Flame Length configuration sections:
+ * `true` = editable form, `'readonly'` = static frozen value, `false` = hidden.
+ */
+export type ReportInteractivity = boolean | 'readonly';
+
 @UntilDestroy()
 @Component({
   selector: 'app-funding-report',
@@ -127,7 +133,7 @@ interface ReportSection {
     MessageCardComponent,
     ScrollSpyDirective,
   ],
-  providers: [FundingMapConfigState, FundingReportToPdfService],
+  providers: [FundingReportToPdfService],
   templateUrl: './funding-report.component.html',
   styleUrl: './funding-report.component.scss',
 })
@@ -258,6 +264,47 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     25,
     Validators.required
   );
+
+  /**
+   * How the Water and Flame Length configuration sections behave:
+   * - `true`      → editable form (authed full report; drives recalculation).
+   * - `'readonly'`→ frozen value shown as static text (public shared view).
+   * - `false`     → configuration UI hidden entirely.
+   */
+  @Input() interactive: ReportInteractivity = true;
+
+  /** Config sections are editable (form shown). */
+  get configEditable(): boolean {
+    return this.interactive === true;
+  }
+
+  /** Config sections show the frozen value as static text. */
+  get configReadonly(): boolean {
+    return this.interactive === 'readonly';
+  }
+
+  /** Seed the flame length interval (e.g. from a shared link's frozen config). */
+  @Input() set flameLength(interval: FlameLengthInterval | undefined) {
+    if (interval) {
+      this.flameLengthInterval.setValue(interval);
+    }
+  }
+
+  /** Seed the water availability target (e.g. from a shared link's frozen config). */
+  @Input() set waterAvailability(percent: number | undefined) {
+    if (percent != null) {
+      this.waterAvailabilityControl.setValue(percent);
+    }
+  }
+
+  /** Label of the currently-selected flame length interval, for static display. */
+  get selectedFlameLengthLabel(): string {
+    return (
+      this.flameLengthOptions.find(
+        (option) => option.value === this.flameLengthInterval.value
+      )?.label ?? ''
+    );
+  }
 
   @Input() showMap = true;
   @Input() showFooter = true;
@@ -501,6 +548,9 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     if (dataLayer) {
       this.dataLayersStateService.selectDataLayer(dataLayer);
     } else {
+      // change opacity JUST for the water layer
+      this.fundingMapConfigState.setOpacity(0.2);
+
       // The water (AET) layer comes from the report as a bare id, not the
       // module, so it isn't preloaded in `layersById` — fetch the full data
       // layer before handing it to the shared state to render.

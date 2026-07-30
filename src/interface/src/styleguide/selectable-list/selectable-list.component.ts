@@ -7,11 +7,12 @@ import {
 } from '@angular/core';
 import { KeyValuePipe, NgClass, NgForOf, NgIf, NgStyle } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { ButtonComponent } from '..';
+import { ButtonComponent, ToggleComponent } from '..';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SimpleChanges } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 interface Item {
   id: number;
@@ -42,6 +43,7 @@ interface Item {
   selector: 'sg-selectable-list',
   standalone: true,
   imports: [
+    FormsModule,
     ButtonComponent,
     KeyValuePipe,
     MatButtonModule,
@@ -52,6 +54,7 @@ interface Item {
     NgForOf,
     NgIf,
     NgStyle,
+    ToggleComponent,
   ],
   templateUrl: './selectable-list.component.html',
   styleUrl: './selectable-list.component.scss',
@@ -71,6 +74,8 @@ export class SelectableListComponent<T extends Item> implements OnChanges {
   /** the set of data to iterate through in the template.
    * If there's no groupBy input, then we just consider it all one group */
   groupedData: Record<string, T[]> = {};
+
+  openedGroups: string[] = [];
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['items'] || changes['groupBy']) {
@@ -158,6 +163,11 @@ export class SelectableListComponent<T extends Item> implements OnChanges {
   }
 
   /** @ignore */
+  isExpanded(key: string) {
+    return this.openedGroups.includes(key);
+  }
+
+  /** @ignore */
   getColor(item: any): string {
     if (!this.colorPath) return this.defaultColor;
 
@@ -211,5 +221,13 @@ export class SelectableListComponent<T extends Item> implements OnChanges {
     const selectedIds = new Set(this.selectedItems.map((i) => i.id));
 
     return this.items.every((i) => selectedIds.has(i.id));
+  }
+
+  handleClick(groupKey: string) {
+    if (this.isExpanded(groupKey)) {
+      this.openedGroups = this.openedGroups.filter((k) => k !== groupKey);
+    } else {
+      this.openedGroups.push(groupKey);
+    }
   }
 }
