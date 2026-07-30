@@ -192,6 +192,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   /** retriggers a polling for new geopackage, disables button until it has succeeded again */
   pollingForGeopackage$ = new BehaviorSubject<boolean>(false);
 
+  INITIAL_AET_PERCENTAGE = 25;
+
   pollForNewGeoPackage() {
     this.pollingForGeopackage$.next(true);
     this.pollForNewGeopackage()
@@ -293,7 +295,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   );
 
   waterAvailabilityControl = new FormControl<number | null>(
-    25,
+    this.INITIAL_AET_PERCENTAGE,
     Validators.required
   );
 
@@ -363,6 +365,11 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     this.assignSections();
     this.loadSectionLayers();
 
+    if (this.report.results?.summary.AET?.percentage) {
+      this.waterAvailabilityControl.setValue(
+        this.report.results?.summary.AET?.percentage
+      );
+    }
     // Recalculate water availability as the user types, after a short pause.
     this.waterAvailabilityControl.valueChanges
       .pipe(
