@@ -1,4 +1,9 @@
-import { createComponent, EnvironmentInjector, Injectable, Injector } from '@angular/core';
+import {
+  createComponent,
+  EnvironmentInjector,
+  Injectable,
+  Injector,
+} from '@angular/core';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Map as MapLibreMap } from 'maplibre-gl';
@@ -28,10 +33,11 @@ export class FundingReportToPdfService {
    *   so this is omitted.
    */
 
-  constructor(private authService: AuthService,
+  constructor(
+    private authService: AuthService,
     private fundingMapConfigState: FundingMapConfigState,
     private injector: EnvironmentInjector
-  ) { }
+  ) {}
 
   activeMap: MapLibreMap | null = null;
   pdfInstance: jsPDF | null = null;
@@ -51,24 +57,20 @@ export class FundingReportToPdfService {
     const scaleMultiplier = 0.7; // Master scaling knob
 
     const mapX = MARGIN_MM;
-    const mapWidth = 210 - (MARGIN_MM * 2);
+    const mapWidth = 210 - MARGIN_MM * 2;
     const mapHeight = mapWidth * 0.666;
 
     // Pre-load the logo so it's ready to paint on the PDF canvas
     const logoDataUrl = await this.loadLogo(LOGO_PATH);
-
 
     this.fundingMapConfigState.setFundingLegendVisibility(true);
 
     // Set the map reference to the maplibre reference
     this.activeMap = map;
 
-
     const mapContainer = document.createElement('div');
     this.configMapContainer(mapContainer);
     document.body.appendChild(mapContainer);
-
-
 
     const drawHeader = () => {
       if (logoDataUrl && this.pdfInstance) {
@@ -88,7 +90,6 @@ export class FundingReportToPdfService {
       this.pdfInstance?.line(MARGIN_MM, 16, PAGE_WIDTH_MM - MARGIN_MM, 16);
     };
 
-
     // Initialize Page 1 Header and set initial content baseline below it
     drawHeader();
     let currentY = 20; // 20mm gives breathing room below the header line
@@ -99,7 +100,6 @@ export class FundingReportToPdfService {
     currentY += 8 + mapHeight;
 
     await this.addLegend(mapX, currentY, 40);
-
 
     const cards = element.querySelectorAll('.report-section');
     document.body.classList.add('is-generating-pdf');
@@ -198,7 +198,11 @@ export class FundingReportToPdfService {
         pitch: this.activeMap?.getPitch(),
         bounds: this.activeMap?.getBounds(),
         transformRequest: (url, resourceType) =>
-          addRequestHeaders(url, resourceType, this.authService.getAuthCookie()),
+          addRequestHeaders(
+            url,
+            resourceType,
+            this.authService.getAuthCookie()
+          ),
       });
 
       // Wait until the map has finished loading tiles and rendering
@@ -248,23 +252,24 @@ export class FundingReportToPdfService {
 
   // grabs an individual component
   //  (e.g., the legend), and converts it to a renderable image using html2canvas)
-async captureComponent<T>(
+  async captureComponent<T>(
     component: new (...args: any[]) => T,
     inputs?: Partial<T>,
     cssClasses: string[] = ['pdf-version']
   ): Promise<{ imgData: string; width: number; height: number }> {
-
-
     const elementInjector = Injector.create({
       providers: [
-        { provide: FundingMapConfigState, useValue: this.fundingMapConfigState }
+        {
+          provide: FundingMapConfigState,
+          useValue: this.fundingMapConfigState,
+        },
       ],
-      parent: this.injector // Fall back to root injector for everything else
+      parent: this.injector, // Fall back to root injector for everything else
     });
 
     const compRef = createComponent(component, {
       environmentInjector: this.injector,
-      elementInjector: elementInjector
+      elementInjector: elementInjector,
     });
 
     if (inputs) {
@@ -286,9 +291,9 @@ async captureComponent<T>(
 
     const canvas = await html2canvas(element, {
       backgroundColor: null,
-      scale: 3,                  // High resolution output for print
-  windowWidth: 1000,         // Force a generous virtual window size so flexboxes don't wrap tightly
-  windowHeight: 2000,
+      scale: 3, // High resolution output for print
+      windowWidth: 1000, // Force a generous virtual window size so flexboxes don't wrap tightly
+      windowHeight: 2000,
     });
 
     const result = {
@@ -303,7 +308,7 @@ async captureComponent<T>(
     return result;
   }
 
-async addLegend(
+  async addLegend(
     legendX: number,
     legendY: number,
     targetWidth: number,
@@ -316,13 +321,13 @@ async addLegend(
     const { imgData, width, height } = await this.captureComponent(
       FundingAcreageLegendComponent,
       // TODO: this is a placeholder of data
-      { legendData: {selectedAcres: 100,  noTreatmentAcres: 100} }
+      { legendData: { selectedAcres: 100, noTreatmentAcres: 100 } }
     );
 
     // 2. Calculate proportional target height based on aspect ratio
     // const aspectRatio = height / width;
     console.log('what are the extracted width:', width, ' and height:', height);
-    const targetHeightMm = targetWidthMm * .5;
+    const targetHeightMm = targetWidthMm * 0.5;
     // 3. Render to jsPDF at specified coordinates
     this.pdfInstance.addImage(
       imgData,
@@ -336,5 +341,4 @@ async addLegend(
     // Return final dimensions in case you need to calculate line height or cursor jumps
     return { width: targetWidth, height: targetHeightMm };
   }
-  }
-
+}
