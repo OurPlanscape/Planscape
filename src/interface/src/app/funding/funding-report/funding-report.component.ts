@@ -615,6 +615,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     //   this.mapElement.mapLibreMap
     // );
 
+    const mapRef = this.fundingMapConfigState.getMapRef();
+
     try {
       // In the dashboard preview the map is inside the captured sections. In the
       // full view it lives in a sibling pane, so grab its canvas to draw on top.
@@ -624,7 +626,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
       await this.pdfService.exportReport(
         this.scrollContainer.nativeElement,
         `planscape-funding-report-${this.report.scenario}`,
-        this.mapElement.mapLibreMap,
+        mapRef ?? this.mapElement.mapLibreMap,
         mapCanvas
       );
     } catch (error) {

@@ -173,6 +173,8 @@ export class FundingReportMapComponent implements OnInit {
     this.mapLibreMap = loadedMap;
     console.log('did we load the map?', this.mapLibreMap);
     this.fundingMapConfigState.setMapLoaded(true);
+
+    this.fundingMapConfigState.setMapRef(this.mapLibreMap);
   }
 
   handleOpacityChange(opacity: number) {
