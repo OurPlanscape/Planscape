@@ -87,8 +87,6 @@ mypy:
 migrate:
 	uv run --directory=src/planscape manage.py migrate --no-input
 	uv run --directory=src/planscape manage.py collectstatic --no-input
-	uv run --directory=src/planscape manage.py install_functions
-	uv run --directory=src/planscape manage.py install_functions --folder stands/sql
 
 install-dependencies-backend:
 	uv sync --locked --no-install-project --dev
