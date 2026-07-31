@@ -22,6 +22,7 @@ describe('MixpanelService', () => {
     spyOn(mixpanel, 'init');
     spyOn(mixpanel, 'identify');
     spyOn(mixpanel, 'reset');
+    spyOn(mixpanel, 'track');
     // `mixpanel.people` only exists once the real `init` has run, and we stub
     // that out here, so we provide the bits the service reaches for.
     peopleSet = jasmine.createSpy('people.set');
@@ -99,6 +100,74 @@ describe('MixpanelService', () => {
       loggedInUser$.next(null);
 
       expect(mixpanel.reset).toHaveBeenCalled();
+    });
+
+    it('only initializes once, so a second call does not double up', () => {
+      (mixpanel.init as jasmine.Spy).calls.reset();
+
+      service.init();
+
+      expect(mixpanel.init).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('data-track clicks', () => {
+    let host: HTMLElement;
+
+    beforeEach(() => {
+      environment.mixpanel_enabled = true;
+      environment.mixpanel_token = 'some-token';
+      service.init();
+      host = document.createElement('div');
+      document.body.appendChild(host);
+    });
+
+    afterEach(() => {
+      host.remove();
+    });
+
+    it('emits the data-track name with data-* attributes as properties', () => {
+      host.innerHTML = `
+        <a data-track="partner-link" data-name="Partner" data-report-id="9">
+          <img alt="logo" />
+        </a>`;
+      host.querySelector('img')!.click();
+
+      expect(mixpanel.track).toHaveBeenCalledWith('partner-link', {
+        name: 'Partner',
+        reportId: '9',
+      });
+    });
+
+    it('tracks a button with no extra attributes', () => {
+      host.innerHTML = `<button data-track="generate-funding-report"></button>`;
+      host.querySelector('button')!.click();
+
+      expect(mixpanel.track).toHaveBeenCalledWith(
+        'generate-funding-report',
+        {}
+      );
+    });
+
+    it('ignores clicks on elements without data-track', () => {
+      host.innerHTML = `<button></button>`;
+      host.querySelector('button')!.click();
+
+      expect(mixpanel.track).not.toHaveBeenCalled();
+    });
+
+    it('prefers the nearest button over the nearest anchor, like OpenPanel', () => {
+      host.innerHTML = `
+        <a data-track="outer-anchor">
+          <button data-track="inner-button"></button>
+        </a>`;
+      host.querySelector('button')!.click();
+
+      expect(mixpanel.track).toHaveBeenCalledWith('inner-button', {});
+      expect(mixpanel.track).not.toHaveBeenCalledWith(
+        'outer-anchor',
+        jasmine.anything()
+      );
     });
   });
 });
