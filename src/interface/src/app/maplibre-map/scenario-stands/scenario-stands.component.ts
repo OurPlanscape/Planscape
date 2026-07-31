@@ -31,7 +31,6 @@ import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { MapConfigState } from '../map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FrontendConstants } from '@map/map.constants';
-import { FeatureService } from '@app/features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -62,9 +61,7 @@ export class ScenarioStandsComponent
     untilDestroyed(this),
     map(([config, includes, step]) => {
       const includesParam =
-        step?.withIncludes &&
-        this.featureService.isFeatureEnabled('ADD_INCLUDES') &&
-        includes?.length
+        step?.withIncludes && includes?.length
           ? `&includes=${includes.join(',')}`
           : '';
 
@@ -93,8 +90,7 @@ export class ScenarioStandsComponent
     private route: ActivatedRoute,
     private newScenarioState: NewScenarioState,
     private zone: NgZone,
-    private mapConfigState: MapConfigState,
-    private featureService: FeatureService
+    private mapConfigState: MapConfigState
   ) {}
 
   filteredStands$: Observable<FilterSpecification | undefined> = combineLatest([
