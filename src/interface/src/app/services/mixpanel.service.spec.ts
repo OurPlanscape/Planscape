@@ -100,5 +100,13 @@ describe('MixpanelService', () => {
 
       expect(mixpanel.reset).toHaveBeenCalled();
     });
+
+    it('only initializes once, so a second call does not double up', () => {
+      (mixpanel.init as jasmine.Spy).calls.reset();
+
+      service.init();
+
+      expect(mixpanel.init).not.toHaveBeenCalled();
+    });
   });
 });

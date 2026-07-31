@@ -15,10 +15,14 @@ export class MixpanelService {
 
   /**
    * Initializes Mixpanel and keeps the profile in sync with the logged in user.
-   * Called once, on app startup.
+   * Safe to call more than once - only the first call runs.
    */
   init(): void {
-    if (!environment.mixpanel_enabled || !environment.mixpanel_token) {
+    if (
+      this.enabled ||
+      !environment.mixpanel_enabled ||
+      !environment.mixpanel_token
+    ) {
       return;
     }
 
