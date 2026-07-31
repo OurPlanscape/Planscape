@@ -250,6 +250,7 @@ export class ScenariosCardListComponent {
         defaultName: null, // initially blank, which disables the form when fromClone
         scenario: scenario,
         type: scenario.type,
+        ...(scenario.parent && { parentId: scenario.parent }),
       },
     });
     // update with a suggested name once it's available

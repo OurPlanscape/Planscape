@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, ScenarioService } from '@services';
 import {
@@ -32,6 +32,18 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { ScenarioSetupModalComponent } from '@scenario/scenario-setup-modal/scenario-setup-modal.component';
 import { PlanState } from '@plan/plan.state';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { BannerComponent, ButtonComponent } from '@styleguide';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { NgFor, NgIf } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { ProjectAreasEmptyListComponent } from '@app/scenario/project-areas-empty-list/project-areas-empty-list.component';
+import { ScenariosCardListComponent } from '../scenarios-card-list/scenarios-card-list.component';
+import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
+import { ScenariosEmptyListComponent } from '../scenarios-empty-list/scenarios-empty-list.component';
+
+export type ScenarioListMode = 'plan' | 'project-area';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -40,21 +52,40 @@ export interface ScenarioRow extends Scenario {
 
 @UntilDestroy()
 @Component({
-  selector: 'app-plan-scenarios-list',
-  templateUrl: './plan-scenarios-list.component.html',
-  styleUrls: ['./plan-scenarios-list.component.scss'],
+  selector: 'app-scenarios-list',
+  standalone: true,
+  imports: [
+    BannerComponent,
+    ButtonComponent,
+    MatMenuModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
+    NgFor,
+    NgIf,
+    MatIconModule,
+    ProjectAreasEmptyListComponent,
+    ScenariosCardListComponent,
+    ScenariosEmptyListComponent,
+    SuccessDialogComponent,
+  ],
+  templateUrl: './scenarios-list.component.html',
+  styleUrl: './scenarios-list.component.scss',
 })
-export class PlanScenariosListComponent implements OnInit {
+export class ScenariosListComponent implements OnInit {
   planId: number | null = null;
   plan: Plan | null = null;
   user$ = this.authService.loggedInUser$;
-
   highlightedScenarioRow: ScenarioRow | null = null;
   loading = true;
   activeScenarios: ScenarioRow[] = [];
   selectedTabIndex = 0;
   totalScenarios = 0;
   sortSelection = '-created_at';
+
+  @Input() mode: 'plan' | 'project-area' = 'plan';
+
+  // Only required when mode === 'project-area'.
+  @Input() projectAreaId?: number;
 
   private manualFetch$ = new Subject<void>();
 
@@ -71,11 +102,19 @@ export class PlanScenariosListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    if (this.mode === 'project-area' && this.projectAreaId == null) {
+      throw new Error(
+        'ScenariosListComponent: projectAreaId is required when mode is "project-area"'
+      );
+    }
+
     this.planId = this.route.snapshot.params['planId'];
+
+    this.planState.currentPlan$
+      .pipe(untilDestroyed(this))
+      .subscribe((plan) => (this.plan = plan));
+
     this.pollForChanges();
-    this.planState.currentPlan$.pipe(untilDestroyed(this)).subscribe((plan) => {
-      this.plan = plan;
-    });
   }
 
   private pollForChanges() {
@@ -113,24 +152,33 @@ export class PlanScenariosListComponent implements OnInit {
   }
 
   private fetchScenarios$() {
-    return this.scenarioService
-      .getScenariosForPlan(this.planId!, this.sortSelection)
-      .pipe(
-        take(1),
-        tap((scenarios) => {
-          this.totalScenarios = scenarios.length;
-          if (this.listsDiffer(this.activeScenarios, scenarios)) {
-            this.activeScenarios = scenarios;
-          }
-          this.loading = false;
-        }),
+    const request$ =
+      this.mode === 'project-area'
+        ? this.scenarioService.getProjectAreaChildScenarios(
+            this.projectAreaId!,
+            this.sortSelection
+          )
+        : this.scenarioService.getScenariosForPlan(
+            this.planId!,
+            this.sortSelection
+          );
 
-        // keep the poller alive on errors
-        catchError(() => {
-          this.loading = false;
-          return EMPTY;
-        })
-      );
+    return request$.pipe(
+      take(1),
+      tap((scenarios) => {
+        this.totalScenarios = scenarios.length;
+        if (this.listsDiffer(this.activeScenarios, scenarios)) {
+          this.activeScenarios = scenarios;
+        }
+        this.loading = false;
+      }),
+
+      // keep the poller alive on errors
+      catchError(() => {
+        this.loading = false;
+        return EMPTY;
+      })
+    );
   }
 
   removeScenarioFromList(scenario: Scenario, list: 'activeScenarios') {
@@ -139,10 +187,7 @@ export class PlanScenariosListComponent implements OnInit {
   }
 
   get canAddScenarioForPlan(): boolean {
-    if (!this.plan) {
-      return false;
-    }
-    return canAddScenario(this.plan);
+    return !!this.plan && canAddScenario(this.plan);
   }
 
   // Check PA for acreage, and if it doesn't have active scenarios
@@ -174,33 +219,38 @@ export class PlanScenariosListComponent implements OnInit {
       data: {
         planId: this.plan?.id,
         fromClone: false,
-        type: type,
+        type,
+        ...(this.mode === 'project-area'
+          ? { parentId: this.projectAreaId }
+          : {}),
       },
     });
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
-    if (
-      // if the scenario has a result and that result is a finished state (failure, panic, success)...
+    const isFinished =
       clickedScenario.scenario_result &&
       ['FAILURE', 'PANIC', 'SUCCESS'].includes(
         clickedScenario.scenario_result.status
-      )
-    ) {
-      // then we go to the dashboard
-      this.router.navigate(['scenario', clickedScenario.id, 'dashboard'], {
-        relativeTo: this.route,
+      );
+
+    if (this.mode === 'project-area') {
+      const base = ['/plan', this.plan!.id, 'scenario', clickedScenario.id];
+      this.router.navigate(isFinished ? [...base, 'dashboard'] : base);
+      this.breadcrumbService.updateBreadCrumb({
+        label: 'Project Area Dashboard',
+        backUrl: getPlanPath(clickedScenario.planning_area),
       });
     } else {
-      // otherwise we are still working on it, so we go to the non-dashboard route
-      this.router.navigate(['scenario', clickedScenario.id], {
+      const base = ['scenario', clickedScenario.id];
+      this.router.navigate(isFinished ? [...base, 'dashboard'] : base, {
         relativeTo: this.route,
       });
+      this.breadcrumbService.updateBreadCrumb({
+        label: 'Planning Area Overview',
+        backUrl: getPlanPath(clickedScenario.planning_area),
+      });
     }
-    this.breadcrumbService.updateBreadCrumb({
-      label: 'Planning Area Overview',
-      backUrl: getPlanPath(clickedScenario.planning_area),
-    });
   }
 
   get isValidPlanningArea() {

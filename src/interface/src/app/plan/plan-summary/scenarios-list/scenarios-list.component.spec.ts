@@ -8,14 +8,14 @@ import {
   tick,
 } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, of, Subject } from 'rxjs';
 import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { POLLING_INTERVAL } from '@plan/plan-helpers';
 import { By } from '@angular/platform-browser';
 import { SectionLoaderComponent, TypeSafeMatCellDef } from '@shared';
 import { CurrencyPipe } from '@angular/common';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { AuthService, ScenarioService } from '@services';
 import { MockComponent, MockProvider } from 'ng-mocks';
@@ -26,7 +26,10 @@ import { ScenariosCardListComponent } from '@plan/plan-summary/scenarios-card-li
 import { RouterTestingModule } from '@angular/router/testing';
 import { PlanState } from '@plan/plan.state';
 import { MatCardModule } from '@angular/material/card';
-import { PlanScenariosListComponent } from './plan-scenarios-list.component';
+import {
+  ScenarioRow,
+  ScenariosListComponent,
+} from './scenarios-list.component';
 
 // Helper to build a minimal ScenarioRow
 function makeScenario(id: number) {
@@ -41,11 +44,9 @@ function makeScenario(id: number) {
     geopackage_url: null,
   } as any;
 }
-
-//Flaky test- disabling
-describe('PlanScenariosListComponent (updated polling/manual preemption)', () => {
-  let component: PlanScenariosListComponent;
-  let fixture: ComponentFixture<PlanScenariosListComponent>;
+describe('ScenariosListComponent (updated polling/manual preemption)', () => {
+  let component: ScenariosListComponent;
+  let fixture: ComponentFixture<ScenariosListComponent>;
   let scenarioSvcSpy: jasmine.SpyObj<ScenarioService>;
   const mockPlan$ = new BehaviorSubject({
     ...MOCK_PLAN,
@@ -83,7 +84,7 @@ describe('PlanScenariosListComponent (updated polling/manual preemption)', () =>
         RouterTestingModule,
       ],
       declarations: [
-        PlanScenariosListComponent,
+        ScenariosListComponent,
         TypeSafeMatCellDef,
         MockComponent(SectionLoaderComponent),
         MockComponent(ScenariosCardListComponent),
@@ -99,7 +100,7 @@ describe('PlanScenariosListComponent (updated polling/manual preemption)', () =>
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PlanScenariosListComponent);
+    fixture = TestBed.createComponent(ScenariosListComponent);
     component = fixture.componentInstance;
   });
 
@@ -253,5 +254,173 @@ describe('PlanScenariosListComponent (updated polling/manual preemption)', () =>
     fixture.detectChanges();
     const btn = fixture.debugElement.query(By.css('[data-id="new-scenario"]'));
     expect(btn).toBeNull();
+  });
+});
+
+describe('ScenariosListComponent should support various modes', () => {
+  let component: ScenariosListComponent;
+  let fixture: ComponentFixture<ScenariosListComponent>;
+  let scenarioSvcSpy: jasmine.SpyObj<ScenarioService>;
+  let routerSpy: jasmine.SpyObj<Router>;
+  let dialogSpy: jasmine.SpyObj<MatDialog>;
+  const mockPlan$ = new BehaviorSubject({
+    ...MOCK_PLAN,
+    id: 24,
+    permissions: ['add_scenario'],
+    user: 1,
+  });
+
+  function configureTestBed() {
+    const fakeRoute = jasmine.createSpyObj(
+      'ActivatedRoute',
+      {},
+      {
+        snapshot: {
+          params: {
+            planId: '24',
+          },
+        },
+      }
+    );
+
+    scenarioSvcSpy = jasmine.createSpyObj<ScenarioService>('ScenarioService', {
+      getScenariosForPlan: of([makeScenario(1)]),
+      getProjectAreaChildScenarios: of([makeScenario(1)]),
+    });
+
+    routerSpy = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    dialogSpy = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+
+    return TestBed.configureTestingModule({
+      imports: [
+        FormsModule,
+        HttpClientTestingModule,
+        LegacyMaterialModule,
+        MatDialogModule,
+        NoopAnimationsModule,
+        FeaturesModule,
+        ButtonComponent,
+        MatCardModule,
+        RouterTestingModule,
+      ],
+      declarations: [
+        ScenariosListComponent,
+        TypeSafeMatCellDef,
+        MockComponent(SectionLoaderComponent),
+        MockComponent(ScenariosCardListComponent),
+      ],
+      providers: [
+        CurrencyPipe,
+        MockProvider(AuthService),
+        { provide: ActivatedRoute, useValue: fakeRoute },
+        { provide: ScenarioService, useValue: scenarioSvcSpy },
+        { provide: Router, useValue: routerSpy },
+        { provide: MatDialog, useValue: dialogSpy },
+        MockProvider(PlanState, {
+          currentPlan$: mockPlan$,
+        }),
+      ],
+    }).compileComponents();
+  }
+
+  describe('default (plan) mode', () => {
+    beforeEach(async () => {
+      await configureTestBed();
+      fixture = TestBed.createComponent(ScenariosListComponent);
+      component = fixture.componentInstance;
+    });
+
+    it('defaults mode to "plan" when not set', () => {
+      fixture.detectChanges();
+      expect(component.mode).toBe('plan');
+    });
+
+    it('fetches via getScenariosForPlan using the route planId', () => {
+      fixture.detectChanges();
+      component.fetchScenarios();
+
+      expect(scenarioSvcSpy.getScenariosForPlan).toHaveBeenCalledWith(
+        '24' as any,
+        '-created_at'
+      );
+      expect(
+        scenarioSvcSpy.getProjectAreaChildScenarios
+      ).not.toHaveBeenCalled();
+    });
+
+    it('routes finished scenarios to the dashboard with a relative path', () => {
+      fixture.detectChanges();
+      const scenario = {
+        ...makeScenario(1),
+        scenario_result: { status: 'SUCCESS' },
+      } as unknown as ScenarioRow;
+
+      component.navigateToScenario(scenario);
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith(
+        ['scenario', scenario.id, 'dashboard'],
+        { relativeTo: (component as any).route }
+      );
+    });
+  });
+
+  describe('project-area mode', () => {
+    beforeEach(async () => {
+      await configureTestBed();
+      fixture = TestBed.createComponent(ScenariosListComponent);
+      component = fixture.componentInstance;
+      component.mode = 'project-area';
+      component.projectAreaId = 42;
+    });
+
+    it('throws on init if projectAreaId is missing', () => {
+      component.projectAreaId = undefined;
+      expect(() => fixture.detectChanges()).toThrowError(
+        'ScenariosListComponent: projectAreaId is required when mode is "project-area"'
+      );
+    });
+
+    it('fetches via getProjectAreaChildScenarios using projectAreaId, not the plan fetch', () => {
+      fixture.detectChanges();
+      component.fetchScenarios();
+
+      expect(scenarioSvcSpy.getProjectAreaChildScenarios).toHaveBeenCalledWith(
+        42,
+        '-created_at'
+      );
+      expect(scenarioSvcSpy.getScenariosForPlan).not.toHaveBeenCalled();
+    });
+
+    it('navigates with an absolute /plan/:id prefix', () => {
+      fixture.detectChanges();
+      const scenario = { ...makeScenario(1), planning_area: 1 } as ScenarioRow;
+
+      component.navigateToScenario(scenario);
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith([
+        '/plan',
+        mockPlan$.value.id,
+        'scenario',
+        scenario.id,
+      ]);
+    });
+
+    it('routes finished scenarios to the dashboard under the /plan prefix', () => {
+      fixture.detectChanges();
+      const scenario = {
+        ...makeScenario(1),
+        scenario_result: { status: 'FAILURE' },
+      } as unknown as ScenarioRow;
+
+      component.navigateToScenario(scenario);
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith([
+        '/plan',
+        mockPlan$.value.id,
+        'scenario',
+        scenario.id,
+        'dashboard',
+      ]);
+    });
   });
 });

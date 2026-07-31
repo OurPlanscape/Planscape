@@ -40,11 +40,10 @@
           'PRIORITIZE_PROJECT_AREAS';
           hide: true
         "></app-project-area-coming-soon>
-      <app-project-area-scenarios-list
-        [plan]="plan"
-        [projectAreaId]="scenario.id"
-        *appFeatureFlag="'PRIORITIZE_PROJECT_AREAS'; hide: false">
-      </app-project-area-scenarios-list>
+      <app-scenarios-list
+        *appFeatureFlag="'PRIORITIZE_PROJECT_AREAS'; hide: false"
+        mode="project-area"
+        [projectAreaId]="scenario.id"></app-scenarios-list>
     </div>
   </sg-dashboard-layout>
 </ng-container>
