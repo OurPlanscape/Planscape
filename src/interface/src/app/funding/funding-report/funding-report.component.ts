@@ -72,9 +72,13 @@ import {
   combineLatest,
   debounceTime,
   distinctUntilChanged,
+  exhaustMap,
   filter,
+  finalize,
   map,
   take,
+  takeWhile,
+  timer,
 } from 'rxjs';
 
 import { SNACK_ERROR_CONFIG, SUPPORT_URL } from '@app/shared';
@@ -83,6 +87,8 @@ import { DataLayersService, FileSaverService } from '@app/services';
 import { MatDialog } from '@angular/material/dialog';
 import { ScenarioState } from '@scenario/scenario.state';
 import { ShareFundingReportDialogComponent } from '../share-funding-report-dialog/share-funding-report-dialog.component';
+import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
+import { FundingReportService } from '@app/services/funding-report.service';
 
 /** Pause after the last keystroke before recalculating water availability. */
 const WATER_DEBOUNCE_MS = 300;
@@ -142,6 +148,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     private pdfService: FundingReportToPdfService,
     private fundingMapConfigState: FundingMapConfigState,
     private fundingModuleService: FundingModuleService,
+    private fundingReportService: FundingReportService,
     private dataLayersStateService: DataLayersStateService,
     private baseLayersStateService: BaseLayersStateService,
     private snackbar: MatSnackBar,
@@ -183,6 +190,35 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
 
   /** True while a Geopackage is being downloadeed, to disable the download control. */
   downloadingGeopackage$ = new BehaviorSubject<boolean>(false);
+
+  /** retriggers a polling for new geopackage, disables button until it has succeeded again */
+  pollingForGeopackage$ = new BehaviorSubject<boolean>(false);
+
+  INITIAL_AET_PERCENTAGE = 25;
+
+  pollForNewGeoPackage() {
+    this.pollingForGeopackage$.next(true);
+    this.pollForNewGeopackage()
+      .pipe(
+        finalize(() => this.pollingForGeopackage$.next(false)),
+        untilDestroyed(this)
+      )
+      .subscribe();
+  }
+
+  private pollForNewGeopackage() {
+    return timer(POLLING_INTERVAL, POLLING_INTERVAL).pipe(
+      exhaustMap(() =>
+        this.fundingReportService.getReport(this.report.scenario)
+      ),
+      takeWhile(
+        (report) =>
+          report?.geopackage_status !== 'FAILED' &&
+          report?.geopackage_status !== 'SUCCEEDED',
+        true
+      )
+    );
+  }
 
   sections: ReportSection[] = [];
   /** Section ids in document order, handed to the scrollspy directive. */
@@ -261,7 +297,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   );
 
   waterAvailabilityControl = new FormControl<number | null>(
-    25,
+    this.INITIAL_AET_PERCENTAGE,
     Validators.required
   );
 
@@ -331,6 +367,11 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     this.assignSections();
     this.loadSectionLayers();
 
+    if (this.report.results?.summary.AET?.percentage) {
+      this.waterAvailabilityControl.setValue(
+        this.report.results?.summary.AET?.percentage
+      );
+    }
     // Recalculate water availability as the user types, after a short pause.
     this.waterAvailabilityControl.valueChanges
       .pipe(
@@ -339,7 +380,9 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
         filter((value): value is number => value !== null),
         untilDestroyed(this)
       )
-      .subscribe((value) => this.updateWaterAvailability.emit(value));
+      .subscribe((value) => {
+        this.updateWaterAvailability.emit(value);
+      });
 
     // Redraw the flame length chart from the already-loaded report whenever the
     // user picks a different interval — no recalculation request needed.
@@ -586,6 +629,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     this.waterAvailabilityControl.setValue(
       sanitized === '' ? null : Number(sanitized)
     );
+    this.pollForNewGeoPackage();
   }
 
   get isPreview() {

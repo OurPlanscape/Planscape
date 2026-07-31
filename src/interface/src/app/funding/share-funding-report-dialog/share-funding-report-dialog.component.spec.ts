@@ -7,6 +7,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { FundingReportService } from '@services/funding-report.service';
+import { ProductAnalyticsService } from '@services/product-analytics.service';
 import { ShareDialogComponent } from '@styleguide/share-dialog/share-dialog.component';
 import { ShareFundingReportDialogComponent } from './share-funding-report-dialog.component';
 
@@ -39,6 +40,7 @@ describe('ShareFundingReportDialogComponent', () => {
           shareReport: () => of(inviteEmails),
         }),
         MockProvider(Clipboard, { copy: () => true }),
+        MockProvider(ProductAnalyticsService),
         { provide: MAT_DIALOG_DATA, useValue: data },
       ],
     }).compileComponents();
@@ -124,16 +126,31 @@ describe('ShareFundingReportDialogComponent', () => {
     expect(snackbar).toHaveBeenCalledWith('Link copied');
   });
 
+  it('tracks the copy so links shared outside email are counted', () => {
+    const analytics = TestBed.inject(ProductAnalyticsService);
+    spyOn(analytics, 'trackEvent');
+
+    component.copyLink();
+
+    expect(analytics.trackEvent).toHaveBeenCalledWith(
+      'funding_report.shared_link.copied',
+      { scenario_id: 7 }
+    );
+  });
+
   it('does not copy when the link is not ready yet', () => {
     const service = TestBed.inject(FundingReportService);
     spyOn(service, 'getPublicUrl').and.returnValue(of({ public_url: '' }));
     const clipboard = TestBed.inject(Clipboard);
     const copySpy = spyOn(clipboard, 'copy');
+    const analytics = TestBed.inject(ProductAnalyticsService);
+    spyOn(analytics, 'trackEvent');
     const snackbar = spyOn<any>(component, 'showSnackbar');
 
     component.copyLink();
 
     expect(copySpy).not.toHaveBeenCalled();
+    expect(analytics.trackEvent).not.toHaveBeenCalled();
     expect(snackbar).toHaveBeenCalledWith(
       'The link is not available yet. Please try again.'
     );
