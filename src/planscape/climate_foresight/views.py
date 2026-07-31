@@ -36,6 +36,7 @@ from climate_foresight.serializers import (
     CopyClimateForesightRunSerializer,
 )
 from climate_foresight.tasks import async_generate_climate_foresight_geopackage
+from planscape.openpanel import track_openpanel
 
 log = logging.getLogger(__name__)
 
@@ -89,7 +90,27 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Set the user when creating a new run."""
-        serializer.save(created_by=self.request.user)
+        run = serializer.save(created_by=self.request.user)
+        track_openpanel(
+            name="climate_foresight.run.created",
+            properties={
+                "run_id": run.pk,
+                "email": self.request.user.email if self.request.user else None,
+            },
+            user_id=self.request.user.pk,
+        )
+
+    def perform_destroy(self, instance):
+        """Track deletion before removing the run."""
+        track_openpanel(
+            name="climate_foresight.run.deleted",
+            properties={
+                "run_id": instance.pk,
+                "email": self.request.user.email if self.request.user else None,
+            },
+            user_id=self.request.user.pk,
+        )
+        super().perform_destroy(instance)
 
     @action(
         detail=False,
@@ -144,6 +165,14 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
 
         try:
             result = start_climate_foresight_analysis(run.id)
+            track_openpanel(
+                name="climate_foresight.run.triggered",
+                properties={
+                    "run_id": run.pk,
+                    "email": request.user.email if request.user else None,
+                },
+                user_id=request.user.pk,
+            )
             return Response(result, status=status.HTTP_200_OK)
         except ValueError as e:
             raise ValidationError(str(e))
@@ -211,6 +240,14 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
         if promote.geopackage_status == GeoPackageStatus.SUCCEEDED:
             download_url = promote.get_geopackage_url()
             if download_url:
+                track_openpanel(
+                    name="climate_foresight.run.downloaded",
+                    properties={
+                        "run_id": run.pk,
+                        "email": request.user.email if request.user else None,
+                    },
+                    user_id=request.user.pk,
+                )
                 return Response(
                     {
                         "status": "ready",
@@ -273,6 +310,16 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
                 run=new_run,
                 datalayer=input_layer.datalayer,
             )
+
+        track_openpanel(
+            name="climate_foresight.run.copied",
+            properties={
+                "run_id": new_run.pk,
+                "source_run_id": source_run.pk,
+                "email": request.user.email if request.user else None,
+            },
+            user_id=request.user.pk,
+        )
 
         return Response(
             ClimateForesightRunSerializer(new_run).data,
