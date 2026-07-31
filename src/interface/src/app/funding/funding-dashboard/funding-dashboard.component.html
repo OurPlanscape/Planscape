@@ -20,7 +20,8 @@
       biomass, wildfire risk, and water, making it easier to assess potential impacts
       and share them with conservation finance partners and funders. These insights can
       support project alignment, portfolio development, and informed investment decisions."
-      [partners]="partners"></sg-tool-info-card>
+      [partners]="partners"
+      (clickPartner)="trackPartnerClick($event)"></sg-tool-info-card>
   </div>
   <div right-column class="right-column">
     <mat-spinner
@@ -31,7 +32,7 @@
     <ng-template #loadedView>
       <app-funding-empty-state
         *ngIf="showEmptyState$ | async"
-        (generateReport)="generateReport()">
+        (generateReport)="generateReport('empty_state')">
       </app-funding-empty-state>
       <!-- Generating report-->
       <div class="generating-report" *ngIf="isGenerating$ | async">
@@ -61,7 +62,7 @@
             sg-button
             icon="assignment"
             variant="primary"
-            (click)="generateReport()">
+            (click)="generateReport('retry')">
             Retry Report Generation
           </button>
         </div>

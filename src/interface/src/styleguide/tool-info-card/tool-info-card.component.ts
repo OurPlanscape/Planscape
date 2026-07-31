@@ -3,6 +3,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
+export interface ToolInfoCardPartner {
+  name: string;
+  url: string;
+  logo: string;
+}
+
 @Component({
   selector: 'sg-tool-info-card',
   standalone: true,
@@ -30,10 +36,17 @@ export class ToolInfoCardComponent {
   /** Whether to show the tooltip (help) button */
   @Input() showTooltipButton = true;
   /** Additional partners */
-  @Input() partners: { name: string; url: string; logo: string }[] = [];
+  @Input() partners: ToolInfoCardPartner[] = [];
 
   /** Action when clicking on tooltip. */
   @Output() clickTooltip = new EventEmitter<void>();
+
+  /**
+   * Fires when a partner logo is clicked. Exposed as an output so the consumer
+   * can decide whether it is worth tracking - the styleguide stays free of
+   * analytics dependencies.
+   */
+  @Output() clickPartner = new EventEmitter<ToolInfoCardPartner>();
 
   /**
    * @ignore

@@ -1,32 +1,17 @@
-import { Injectable, NgZone, OnDestroy } from '@angular/core';
+import { Injectable } from '@angular/core';
 import mixpanel from 'mixpanel-browser';
 
 import { environment } from '@env/environment';
 import { User } from '@types';
 import { AuthService } from '@services/auth.service';
 
-/** `data-report-id` -> `reportId`, matching OpenPanel's attribute naming. */
-function camelCase(name: string): string {
-  return name.replace(/([-_][a-z])/gi, (match) =>
-    match.toUpperCase().replace('-', '').replace('_', '')
-  );
-}
-
 @Injectable({
   providedIn: 'root',
 })
-export class MixpanelService implements OnDestroy {
+export class MixpanelService {
   private enabled = false;
-  private readonly abortController = new AbortController();
 
-  constructor(
-    private authService: AuthService,
-    private zone: NgZone
-  ) {}
-
-  ngOnDestroy(): void {
-    this.abortController.abort();
-  }
+  constructor(private authService: AuthService) {}
 
   /**
    * Initializes Mixpanel and keeps the profile in sync with the logged in user.
@@ -61,58 +46,6 @@ export class MixpanelService implements OnDestroy {
       } else {
         this.reset();
       }
-    });
-
-    this.trackAttributeClicks();
-  }
-
-  /**
-   * Mirrors OpenPanel's `trackAttributes`, so a `data-track` element emits the
-   * same named event to both SDKs while we run them side by side. Element
-   * lookup and property naming follow the OpenPanel implementation on purpose -
-   * if the two disagree, the event counts won't be comparable.
-   *
-   * Note this is on top of what autocapture already sends: the same click also
-   * shows up as `$mp_click`. Different event name, so no double counting.
-   */
-  private trackAttributeClicks(): void {
-    // Outside the zone - a document-wide click listener would otherwise kick
-    // off change detection on every click in the app.
-    this.zone.runOutsideAngular(() => {
-      document.addEventListener(
-        'click',
-        (event) => {
-          const target = event.target as Element | null;
-          if (!target || typeof target.closest !== 'function') {
-            return;
-          }
-          // OpenPanel prefers the nearest button over the nearest anchor.
-          const button = target.closest('button');
-          const anchor = target.closest('a');
-          const element = button?.getAttribute('data-track')
-            ? button
-            : anchor?.getAttribute('data-track')
-              ? anchor
-              : null;
-          const name = element?.getAttribute('data-track');
-          if (!element || !name) {
-            return;
-          }
-
-          const properties: Record<string, string> = {};
-          for (const attribute of Array.from(element.attributes)) {
-            if (
-              attribute.name.startsWith('data-') &&
-              attribute.name !== 'data-track'
-            ) {
-              properties[camelCase(attribute.name.replace(/^data-/, ''))] =
-                attribute.value;
-            }
-          }
-          this.track(name, properties);
-        },
-        { signal: this.abortController.signal }
-      );
     });
   }
 
