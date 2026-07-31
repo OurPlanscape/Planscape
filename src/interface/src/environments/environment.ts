@@ -13,6 +13,8 @@ export const environment = {
   mapbox_key: '',
   open_panel_key: '',
   open_panel_enabled: false,
+  mixpanel_token: '',
+  mixpanel_enabled: false,
   debug_layers: false,
   sentry: {
     dsn_url: '',
