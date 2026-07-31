@@ -24,6 +24,9 @@ export class MixpanelService {
 
     mixpanel.init(environment.mixpanel_token, {
       autocapture: true,
+      // Pageviews fire on any URL change, query-string-only ones included, so
+      // the planning areas list emits several per search. To count only real
+      // route changes: autocapture: { pageview: 'url-with-path' }
       record_sessions_percent: 100,
     });
     this.enabled = true;
