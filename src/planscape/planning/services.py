@@ -347,6 +347,15 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         transaction.on_commit(
             lambda: prepare_scenarios_for_forsys_and_run.delay(scenario_id=scenario.pk)
         )
+    else:
+        track_openpanel(
+            name="planning.scenario.draft_created",
+            properties={
+                "origin": scenario.origin,
+                "email": user.email if user else None,
+            },
+            user_id=user.pk,
+        )
     return scenario
 
 
@@ -1710,6 +1719,14 @@ def toggle_scenario_status(scenario: Scenario, user: User) -> Scenario:
     scenario.save(update_fields=["status"])
 
     action.send(user, verb=verb, action_object=scenario)
+    track_openpanel(
+        name="planning.scenario.status_toggled",
+        properties={
+            "new_status": new_status,
+            "email": user.email if user else None,
+        },
+        user_id=user.pk,
+    )
     return scenario
 
 
