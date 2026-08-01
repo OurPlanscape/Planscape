@@ -336,7 +336,6 @@ export class FundingReportToPdfService {
     legendY: number,
     targetWidth: number,
     targetWidthMm: number = 120,
-    legendInputs?: Record<string, any>
   ): Promise<{ width: number; height: number }> {
     if (!this.pdfInstance) return { width: 0, height: 0 };
 
@@ -344,7 +343,8 @@ export class FundingReportToPdfService {
     const { imgData, width, height } = await this.captureComponent(
       FundingAcreageLegendComponent,
       // TODO: this is a placeholder of data
-      { legendData: this.fundingMapConfigState.getLegendData() }
+      { legendData: this.fundingMapConfigState.getLegendData() },
+      ['pdf-version']
     );
 
     // 2. Calculate proportional target height based on aspect ratio
