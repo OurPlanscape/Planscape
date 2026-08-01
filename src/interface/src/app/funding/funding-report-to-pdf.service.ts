@@ -37,7 +37,7 @@ export class FundingReportToPdfService {
     private authService: AuthService,
     private fundingMapConfigState: FundingMapConfigState,
     private injector: EnvironmentInjector
-  ) {}
+  ) { }
 
   activeMap: MapLibreMap | null = null;
   pdfInstance: jsPDF | null = null;
@@ -57,11 +57,13 @@ export class FundingReportToPdfService {
     const scaleMultiplier = 0.7; // Master scaling knob
 
     const mapX = MARGIN_MM;
-    const mapWidth = 210 - MARGIN_MM * 2;
+    const mapWidth = 180 - MARGIN_MM * 2;
     const mapHeight = mapWidth * 0.666;
 
     // Pre-load the logo so it's ready to paint on the PDF canvas
     const logoDataUrl = await this.loadLogo(LOGO_PATH);
+
+    const selectedProjectAreas = this.getSelectedProjectAreas().join(', ') || 'All';
 
     this.fundingMapConfigState.setFundingLegendVisibility(true);
 
@@ -85,6 +87,13 @@ export class FundingReportToPdfService {
           logoHeight
         );
       }
+
+      // draw title info...
+      
+    this.pdfInstance?.setFont('Helvetica', 'normal');
+    this.pdfInstance?.setFontSize(8);
+      this.pdfInstance?.text(`Selected Project Areas: ${selectedProjectAreas}`, 100, 10);
+
       this.pdfInstance?.setDrawColor('#E2E8F0');
       this.pdfInstance?.setLineWidth(0.5);
       this.pdfInstance?.line(MARGIN_MM, 16, PAGE_WIDTH_MM - MARGIN_MM, 16);
@@ -95,11 +104,11 @@ export class FundingReportToPdfService {
     let currentY = 20; // 20mm gives breathing room below the header line
 
     await this.addMap(mapX, currentY, mapHeight, mapWidth);
+    await this.addLegend(mapX + mapWidth + 4, currentY, 30);
 
     // advance the current Y drawing 'cursor' to after the map
     currentY += 8 + mapHeight;
 
-    await this.addLegend(mapX, currentY, 40);
 
     const cards = element.querySelectorAll('.report-section');
     document.body.classList.add('is-generating-pdf');
@@ -144,6 +153,20 @@ export class FundingReportToPdfService {
 
     document.body.classList.remove('is-generating-pdf');
     this.pdfInstance.save(`${fileName}.pdf`);
+  }
+
+
+  private getSelectedProjectAreas() {
+    // TODO:probably just pipe this
+    const selectedProjectAreas = this.fundingMapConfigState.getCurrentSelectedAreas()
+    console.log('do we even call showSelectedProjectAreas');
+
+      console.log('do we have some areas', selectedProjectAreas);
+
+      //TODO: convert these ids to rank ids
+
+      return selectedProjectAreas;
+    
   }
 
   /**
@@ -312,7 +335,7 @@ export class FundingReportToPdfService {
     legendX: number,
     legendY: number,
     targetWidth: number,
-    targetWidthMm: number = 200,
+    targetWidthMm: number = 120,
     legendInputs?: Record<string, any>
   ): Promise<{ width: number; height: number }> {
     if (!this.pdfInstance) return { width: 0, height: 0 };
@@ -321,13 +344,13 @@ export class FundingReportToPdfService {
     const { imgData, width, height } = await this.captureComponent(
       FundingAcreageLegendComponent,
       // TODO: this is a placeholder of data
-      { legendData: { selectedAcres: 100, noTreatmentAcres: 100 } }
+      { legendData: this.fundingMapConfigState.getLegendData() }
     );
 
     // 2. Calculate proportional target height based on aspect ratio
     // const aspectRatio = height / width;
     console.log('what are the extracted width:', width, ' and height:', height);
-    const targetHeightMm = targetWidthMm * 0.5;
+    const targetHeightMm = targetWidthMm * 0.45;
     // 3. Render to jsPDF at specified coordinates
     this.pdfInstance.addImage(
       imgData,

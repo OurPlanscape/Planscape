@@ -133,8 +133,13 @@ export class FundingReportViewComponent {
     this._allProjectAreas$,
   ]).pipe(
     map(([report, areas, projAreas]) =>
-      generateLegendFromReport(report?.results ?? null, areas, projAreas)
-    )
+      {
+        const legendData = generateLegendFromReport(report?.results ?? null, areas, projAreas);
+        // TODO: detroy this silly PoC
+        this.fundingMapConfigState.setLegendData(legendData);
+        return legendData;
+
+      }  )
   );
 
   protected readonly FUNDING_REPORT_INFO_URL = FUNDING_REPORT_INFO_URL;
