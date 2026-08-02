@@ -8,14 +8,17 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { addRequestHeaders } from '@app/maplibre-map/maplibre.helper';
-import { AuthService } from '@app/services';
+import { AuthService, ScenarioService } from '@app/services';
 import { FundingMapConfigState } from './funding-map-config-state';
 import { FundingAcreageLegendComponent } from './funding-acreage-legend/funding-acreage-legend.component';
+import { firstValueFrom } from 'rxjs';
 
 // A4 portrait, in millimeters.
 const PAGE_WIDTH_MM = 210;
 const PAGE_HEIGHT_MM = 297;
 const LOGO_PATH = 'assets/svg/planscape-color-logo.svg';
+
+
 
 /**
  * Exports the funding report as a PDF by rasterizing the live report DOM
@@ -25,30 +28,32 @@ const LOGO_PATH = 'assets/svg/planscape-color-logo.svg';
 @Injectable()
 export class FundingReportToPdfService {
   /**
-   * @param element The report sections container to capture.
-   * @param fileName Name of the downloaded file, without extension.
-   * @param mapCanvas Optional map canvas to draw at the top of the first page.
-   *   Used by the full report view, where the map lives outside the report
-   *   sections. In the dashboard preview the map is already inside `element`,
-   *   so this is omitted.
-   */
+   * @param element The report sections container to capture
+   * */
 
   constructor(
     private authService: AuthService,
     private fundingMapConfigState: FundingMapConfigState,
-    private injector: EnvironmentInjector
+    private injector: EnvironmentInjector,
+    private scenarioService: ScenarioService
   ) { }
 
+  scenarioId: number | null = null;
   activeMap: MapLibreMap | null = null;
   pdfInstance: jsPDF | null = null;
 
-  async exportReport(
+  async exportPDFReport(
     element: HTMLElement,
-    fileName: string,
+    scenarioId: number,
     map: MapLibreMap,
-    mapCanvas?: HTMLCanvasElement | null
+    selectedProjects: number[]
   ): Promise<void> {
     this.pdfInstance = new jsPDF('p', 'mm', 'a4');
+
+    this.scenarioId = scenarioId;
+
+    const filename = `planscape-funding-report-${scenarioId}`;
+
 
     // --- CONFIGURABLE MARGINS & SCALING ---
     const MARGIN_MM = 15;
@@ -63,9 +68,11 @@ export class FundingReportToPdfService {
     // Pre-load the logo so it's ready to paint on the PDF canvas
     const logoDataUrl = await this.loadLogo(LOGO_PATH);
 
-    const selectedProjectAreas = this.getSelectedProjectAreas().join(', ') || 'All';
+    const selectedProjectAreas = await this.getSelectedProjectAreas(selectedProjects);
 
     this.fundingMapConfigState.setFundingLegendVisibility(true);
+
+    console.log('okay, what is this?', selectedProjects);
 
     // Set the map reference to the maplibre reference
     this.activeMap = map;
@@ -89,9 +96,9 @@ export class FundingReportToPdfService {
       }
 
       // draw title info...
-      
-    this.pdfInstance?.setFont('Helvetica', 'normal');
-    this.pdfInstance?.setFontSize(8);
+
+      this.pdfInstance?.setFont('Helvetica', 'normal');
+      this.pdfInstance?.setFontSize(8);
       this.pdfInstance?.text(`Selected Project Areas: ${selectedProjectAreas}`, 100, 10);
 
       this.pdfInstance?.setDrawColor('#E2E8F0');
@@ -152,21 +159,26 @@ export class FundingReportToPdfService {
     }
 
     document.body.classList.remove('is-generating-pdf');
-    this.pdfInstance.save(`${fileName}.pdf`);
+    this.pdfInstance.save(`${filename}.pdf`);
   }
 
 
-  private getSelectedProjectAreas() {
-    // TODO:probably just pipe this
-    const selectedProjectAreas = this.fundingMapConfigState.getCurrentSelectedAreas()
-    console.log('do we even call showSelectedProjectAreas');
+  private async getSelectedProjectAreas(selectedIds: number[]) {
 
-      console.log('do we have some areas', selectedProjectAreas);
+    if (!this.scenarioId) {
+      return [];
+    }
+    console.log('selected Id is what?', selectedIds);
 
-      //TODO: convert these ids to rank ids
+    // const selectedIds: number[] = this.
+    const projectAreas = await firstValueFrom(
+      this.scenarioService.getProjectAreas(this.scenarioId)
+    );
+    console.log('getProjectAreas returned what:', projectAreas);
 
-      return selectedProjectAreas;
-    
+    const selectedProjectAreas = projectAreas.filter(pa => selectedIds.includes(pa.id)).map(pa => pa.data.treatment_rank);
+    console.log('selectedProjectAreas is what: ', selectedProjectAreas);
+    return selectedProjectAreas;
   }
 
   /**
