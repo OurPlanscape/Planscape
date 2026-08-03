@@ -1,15 +1,11 @@
-FROM node:18.20-bullseye-slim
+FROM node:22.15.0-bullseye-slim
 
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
+WORKDIR /app/src/interface
 
-RUN npm install -g @angular/cli
+COPY src/interface/package.json src/interface/package-lock.json ./
 
-COPY src/interface/package.json src/interface/package-lock.json /usr/src/app/
+RUN npm ci
 
-RUN npm install
+COPY src/interface/ ./
 
-COPY .env Makefile /usr/src/app/
-COPY src/interface/* /usr/src/app
-
-CMD ["ng", "serve", "--host", "0.0.0.0"]
+CMD ["./node_modules/.bin/ng", "serve", "--host", "0.0.0.0", "--configuration", "docker"]
