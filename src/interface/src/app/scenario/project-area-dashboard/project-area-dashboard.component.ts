@@ -16,9 +16,9 @@ import { ScenarioState } from '../scenario.state';
 import { ScenarioToolsComponent } from '@scenario/scenario-tools/scenario-tools.component';
 import { ProjectAreasEmptyListComponent } from '../project-areas-empty-list/project-areas-empty-list.component';
 import { FeaturesModule } from '@features/features.module';
-import { ProjectAreaScenariosListComponent } from '../project-area-scenarios-list/project-area-scenarios-list.component';
 import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { ScenariosListComponent } from '@app/plan/plan-summary/scenarios-list/scenarios-list.component';
 
 @UntilDestroy()
 @Component({
@@ -34,7 +34,7 @@ import { MatDialog } from '@angular/material/dialog';
     DetailsCardComponent,
     ProjectAreaComingSoonComponent,
     ProjectAreasEmptyListComponent,
-    ProjectAreaScenariosListComponent,
+    ScenariosListComponent,
     OverlayLoaderComponent,
     ScenarioToolsComponent,
     ProjectAreasEmptyListComponent,
