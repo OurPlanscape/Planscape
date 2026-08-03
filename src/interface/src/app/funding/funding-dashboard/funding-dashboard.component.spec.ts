@@ -13,6 +13,9 @@ import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { BehaviorSubject, NEVER, of } from 'rxjs';
 import { FundingDashboardComponent } from '@app/funding/funding-dashboard/funding-dashboard.component';
 import { MockProvider } from 'ng-mocks';
+import { By } from '@angular/platform-browser';
+import { ToolInfoCardComponent } from '@styleguide/tool-info-card/tool-info-card.component';
+import { ProductAnalyticsService } from '@services/product-analytics.service';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { ScenarioState } from '@scenario/scenario.state';
 import { PlanState } from '@plan/plan.state';
@@ -106,6 +109,7 @@ describe('FundingDashboardComponent', () => {
         },
         { provide: PlanState, useValue: { currentPlan$ } },
         { provide: AuthService, useValue: { loggedInUser$ } },
+        MockProvider(ProductAnalyticsService),
       ],
     }).compileComponents();
 
@@ -248,7 +252,7 @@ describe('FundingDashboardComponent', () => {
     const snackSpy = spyOn(snackbar, 'open');
     mockRouter.navigate.calls.reset();
 
-    component.generateReport();
+    component.generateReport('empty_state');
 
     httpMock
       .expectOne((req) => req.url.endsWith('v2/scenarios/123/run-report/'))
@@ -380,7 +384,83 @@ describe('FundingDashboardComponent', () => {
     component.isGenerating$.subscribe((v) => (isGenerating = v));
     expect(isGenerating).toBe(false);
 
-    component.generateReport();
+    component.generateReport('empty_state');
     expect(isGenerating).toBe(true);
   }));
+
+  it('tracks which entry point asked for the report', async () => {
+    await setup(makeScenario(123, ['FUNDING_REPORT']));
+    const analytics = TestBed.inject(ProductAnalyticsService);
+    spyOn(analytics, 'trackEvent');
+
+    component.generateReport('retry');
+
+    expect(analytics.trackEvent).toHaveBeenCalledWith(
+      'funding_report.generation.requested',
+      { source: 'retry' }
+    );
+  });
+
+  it('tracks partner logo clicks', async () => {
+    await setup(makeScenario(123, ['FUNDING_REPORT']));
+    const analytics = TestBed.inject(ProductAnalyticsService);
+    spyOn(analytics, 'trackEvent');
+
+    component.trackPartnerClick({
+      name: 'Partner',
+      url: 'https://partner.example',
+      logo: 'logo.png',
+    });
+
+    expect(analytics.trackEvent).toHaveBeenCalledWith(
+      'funding_report.partner_link.clicked',
+      { name: 'Partner', url: 'https://partner.example' }
+    );
+  });
+
+  it('tracks from the empty state button, wiring included', async () => {
+    await setup(makeScenario(123, ['FUNDING_REPORT']), '123', makePlan(7), {
+      id: 7,
+    } as User);
+    await resolveNoReport();
+    const analytics = TestBed.inject(ProductAnalyticsService);
+    spyOn(analytics, 'trackEvent');
+
+    // Click the real button rather than calling the handler, so a broken
+    // template binding fails here instead of going silently untracked.
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector(
+      'app-funding-empty-state button'
+    );
+    button.click();
+
+    expect(analytics.trackEvent).toHaveBeenCalledWith(
+      'funding_report.generation.requested',
+      { source: 'empty_state' }
+    );
+
+    const httpMock = TestBed.inject(HttpTestingController);
+    httpMock
+      .expectOne((req) => req.url.endsWith('v2/scenarios/123/run-report/'))
+      .flush(null);
+  });
+
+  it('tracks partner clicks emitted by the info card, wiring included', async () => {
+    await setup(makeScenario(123, ['FUNDING_REPORT']), '123', makePlan(7), {
+      id: 7,
+    } as User);
+    await resolveNoReport();
+    const analytics = TestBed.inject(ProductAnalyticsService);
+    spyOn(analytics, 'trackEvent');
+
+    const card = fixture.debugElement.query(
+      By.directive(ToolInfoCardComponent)
+    );
+    const partner = component.partners[0];
+    card.componentInstance.clickPartner.emit(partner);
+
+    expect(analytics.trackEvent).toHaveBeenCalledWith(
+      'funding_report.partner_link.clicked',
+      { name: partner.name, url: partner.url }
+    );
+  });
 });

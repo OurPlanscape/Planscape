@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -15,11 +15,9 @@ import { PLANNING_APPROACH, ScenarioDraftConfiguration } from '@types';
 import {
   CUSTOM_SCENARIO_OVERVIEW_STEPS,
   SCENARIO_OVERVIEW_STEPS,
-  ScenarioStepConfig,
 } from '@scenario/scenario.constants';
 import { STAND_SIZE } from '@plan/plan-helpers';
 import { PlanningApproachComponent } from '@scenario-creation/planning-approach/planning-approach.component';
-import { FeatureService } from '@app/features/feature.service';
 import { NgIf } from '@angular/common';
 
 type Step1WithOverviewForm = FormGroup<{
@@ -65,24 +63,10 @@ export class Step1WithOverviewComponent
   @Input() isCustomScenario = false;
   @Input() isChildScenario = false;
 
-  private featureService: FeatureService = inject(FeatureService);
-
   get steps(): OverviewStep[] {
-    return this.removeNonIncludeStepsIfFeatureIsOff(
-      this.isCustomScenario
-        ? CUSTOM_SCENARIO_OVERVIEW_STEPS
-        : SCENARIO_OVERVIEW_STEPS
-    );
-  }
-
-  // ADD_INCLUDES steps return all when the feature be released
-  removeNonIncludeStepsIfFeatureIsOff(steps: ScenarioStepConfig[]) {
-    if (!this.featureService.isFeatureEnabled('ADD_INCLUDES')) {
-      return steps.filter(
-        (s: ScenarioStepConfig) => s.label !== 'Include Areas'
-      );
-    }
-    return steps;
+    return this.isCustomScenario
+      ? CUSTOM_SCENARIO_OVERVIEW_STEPS
+      : SCENARIO_OVERVIEW_STEPS;
   }
 
   constructor() {
