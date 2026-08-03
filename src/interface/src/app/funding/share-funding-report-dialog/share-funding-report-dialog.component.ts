@@ -18,6 +18,7 @@ import {
 import { FlameLengthInterval } from '@types';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 import { FundingReportService } from '@services/funding-report.service';
+import { ProductAnalyticsService } from '@services/product-analytics.service';
 import {
   ShareDialogComponent,
   SharePrimaryEvent,
@@ -45,6 +46,7 @@ export class ShareFundingReportDialogComponent {
     private dialogRef: MatDialogRef<ShareFundingReportDialogComponent>,
     private fundingReportService: FundingReportService,
     private clipboard: Clipboard,
+    private productAnalyticsService: ProductAnalyticsService,
     @Inject(MAT_DIALOG_DATA)
     public data: ShareFundingReportDialogData
   ) {}
@@ -118,6 +120,14 @@ export class ShareFundingReportDialogComponent {
         return;
       }
       this.clipboard.copy(url);
+      // Links also travel by copy/paste, so counting only the emailed ones
+      // would understate how widely a report was shared.
+      this.productAnalyticsService.trackEvent(
+        'funding_report.shared_link.copied',
+        {
+          scenario_id: this.data.scenarioId,
+        }
+      );
       this.showSnackbar('Link copied');
     });
   }

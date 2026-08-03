@@ -1471,14 +1471,20 @@ def export_scenario_sub_units_outputs_to_geopackage(
 
     crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
 
-    configuration = scenario.configuration
-    sub_units_layer_id = configuration.get("sub_units_layer")
-    datalayer = DataLayer.objects.get(pk=sub_units_layer_id)
-    DynamicModel = model_from_fiona(datalayer=datalayer)
     planning_area = scenario.planning_area
-    queryset = DynamicModel.objects.filter(
-        geometry__bboverlaps=planning_area.geometry
-    ).filter(geometry__intersects=planning_area.geometry)
+
+    project_areas = None
+    sub_units = None
+
+    if is_project_areas_child(scenario):
+        project_areas = scenario.parent.project_areas.all()
+    else:
+        sub_units_layer_id = scenario.configuration.get("sub_units_layer")
+        datalayer = DataLayer.objects.get(pk=sub_units_layer_id)
+        DynamicModel = model_from_fiona(datalayer=datalayer)
+        sub_units = DynamicModel.objects.filter(
+            geometry__bboverlaps=planning_area.geometry
+        ).filter(geometry__intersects=planning_area.geometry)
 
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
@@ -1496,8 +1502,11 @@ def export_scenario_sub_units_outputs_to_geopackage(
                     proj_id = feature["properties"].pop("proj_id")
                     feature["properties"]["subunit_id"] = proj_id
                     feature["properties"] = {**feature["properties"], **weighting_data}
-                    sub_unit = queryset.get(id=proj_id)
-                    geometry = sub_unit.geometry.intersection(planning_area.geometry)
+                    if project_areas is not None:
+                        source_area = project_areas.get(pk=proj_id)
+                    else:
+                        source_area = sub_units.get(pk=proj_id)
+                    geometry = source_area.geometry.intersection(planning_area.geometry)
                     geom_geojson = json.loads(geometry.geojson)
                     geometry = to_multi(geom_geojson)
                     feature = {**feature, "geometry": geometry}
@@ -1512,7 +1521,9 @@ def export_scenario_sub_units_outputs_to_geopackage(
 def export_treatable_area_to_geopackage(
     scenario: Scenario, geopackage_path: Path
 ) -> None:
-    if not scenario.treatable_area or not scenario.configuration.get("included_areas_ids"):
+    if not scenario.treatable_area or not scenario.configuration.get(
+        "included_areas_ids"
+    ):
         logger.warning("Scenario has no treatable area (Legacy). Skipping.")
         return
 
@@ -1527,7 +1538,7 @@ def export_treatable_area_to_geopackage(
     schema = datalayer.info.get(list(datalayer.info.keys())[0], {}).get("schema")
     schema["geometry"] = {}
     extended_schema = get_schema(schema, {"ownership": "str:254"})
-    
+
     try:
         with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
             with fiona.open(
@@ -1552,10 +1563,12 @@ def export_treatable_area_to_geopackage(
                     for feature in queryset.all():
                         feature_geometry = pa_geometry.intersection(feature.geometry)
                         geometry_json = json.loads(
-                            feature_geometry.transform(settings.CRS_GEOPACKAGE_EXPORT, clone=True).json
+                            feature_geometry.transform(
+                                settings.CRS_GEOPACKAGE_EXPORT, clone=True
+                            ).json
                         )
-                        properties = { 
-                            p: getattr(feature, p.lower()) 
+                        properties = {
+                            p: getattr(feature, p.lower())
                             for p in list(schema.get("properties").keys())
                         }
                         properties["ownership"] = included.name

@@ -1,59 +1,71 @@
 @if (activeScenarios.length === 0) {
   @if (loading) {
-    <div *ngIf="loading" class="loading-row">
+    <div class="loading-row">
       <mat-spinner diameter="40"></mat-spinner>
     </div>
   } @else {
-    <app-scenarios-empty-list
-      *ngIf="planningAreaIsReady && !planningAreaIsLarge && !planningAreaFailed"
-      [plan]="plan"></app-scenarios-empty-list>
+    @if (mode === 'project-area') {
+      <app-project-areas-empty-list
+        *ngIf="plan"
+        [plan]="plan"
+        [projectAreaId]="projectAreaId!"></app-project-areas-empty-list>
+    } @else {
+      <app-scenarios-empty-list
+        *ngIf="
+          planningAreaIsReady && !planningAreaIsLarge && !planningAreaFailed
+        "></app-scenarios-empty-list>
 
-    <div *ngIf="planningAreaIsLarge" class="large-message">
-      <p>
-        Your Planning Area is greater than 3 million acres. The Planscape team
-        would like to work with you to ensure we're meeting your scenario
-        planning needs.<br />Please contact
-        <a href="mailto:support@planscape.org">support&#64;planscape.org</a> to
-        move forward with scenario planning.
-      </p>
-    </div>
-
-    <div
-      *ngIf="
-        !planningAreaIsLarge && !planningAreaIsReady && !planningAreaFailed
-      "
-      class="pending-message">
-      <mat-spinner diameter="32" class="spinner"></mat-spinner>
-      <h4>Your Planning Area is being prepared for Scenario Planning</h4>
-      <p>
-        For larger areas (over 1 million acres), this process may take up to 20
-        minutes.
-      </p>
-    </div>
-
-    <sg-banner
-      [dismissible]="false"
-      type="error"
-      *ngIf="!planningAreaIsReady && planningAreaFailed"
-      class="banner">
-      <div>
-        <div>
-          There was an error preparing your Planning Area for Scenario Planning.
-        </div>
-        <div>
-          Please
-          <a
-            href="https://40an0d.share-na2.hsforms.com/2KUarbZ6aSPS_1E-lzmANIw"
-            target="_blank"
-            >contact support</a
-          >
-          or try creating a new Planning Area.
-        </div>
+      <div *ngIf="planningAreaIsLarge" class="large-message">
+        <p>
+          Your Planning Area is greater than 3 million acres. The Planscape team
+          would like to work with you to ensure we're meeting your scenario
+          planning needs.<br />Please contact
+          <a href="mailto:support@planscape.org">support&#64;planscape.org</a>
+          to move forward with scenario planning.
+        </p>
       </div>
-    </sg-banner>
+
+      <div
+        *ngIf="
+          !planningAreaIsLarge && !planningAreaIsReady && !planningAreaFailed
+        "
+        class="pending-message">
+        <mat-spinner diameter="32" class="spinner"></mat-spinner>
+        <h4>Your Planning Area is being prepared for Scenario Planning</h4>
+        <p>
+          For larger areas (over 1 million acres), this process may take up to
+          20 minutes.
+        </p>
+      </div>
+
+      <sg-banner
+        [dismissible]="false"
+        type="error"
+        *ngIf="!planningAreaIsReady && planningAreaFailed"
+        class="banner">
+        <div>
+          <div>
+            There was an error preparing your Planning Area for Scenario
+            Planning.
+          </div>
+          <div>
+            Please
+
+            <a
+              href="https://40an0d.share-na2.hsforms.com/2KUarbZ6aSPS_1E-lzmANIw"
+              target="_blank"
+              >contact support</a
+            >
+            or try creating a new Planning Area.
+          </div>
+        </div>
+      </sg-banner>
+    }
   }
 } @else {
   <div class="scenarios-header">
+    <h4 *ngIf="mode === 'project-area'">Scenarios</h4>
+
     <button
       class="sort-header"
       sg-button
@@ -68,21 +80,23 @@
       </mat-icon>
       <span>Date Created</span>
     </button>
+
     <div class="button-section">
       <button
         sg-button
         icon="drive_folder_upload"
         [outlined]="true"
-        *ngIf="canAddScenarioForPlan"
+        *ngIf="mode === 'plan' && canAddScenarioForPlan"
         (click)="openUploadDialog()">
         Upload Project Areas
       </button>
 
+      <!-- plan mode: tooltip + disabled state tied to planning-area validity -->
       <button
         sg-button
         [matTooltip]="scenarioDisabledTooltipReason"
         [matTooltipDisabled]="isValidPlanningArea"
-        *ngIf="canAddScenarioForPlan"
+        *ngIf="mode === 'plan' && canAddScenarioForPlan"
         [disabled]="!isValidPlanningArea || planningAreaIsLarge"
         data-id="new-scenario"
         icon="add"
@@ -90,11 +104,26 @@
         [matMenuTriggerFor]="menu"
         #trigger="matMenuTrigger">
         New Scenario
-
         <mat-icon class="material-symbols-outlined new-scenario-down"
           >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
         </mat-icon>
       </button>
+
+      <!-- project-area mode: no tooltip/disabled logic -->
+      <button
+        sg-button
+        *ngIf="mode === 'project-area' && canAddScenarioForPlan"
+        data-id="new-scenario"
+        icon="add"
+        variant="primary"
+        [matMenuTriggerFor]="menu"
+        #trigger="matMenuTrigger">
+        New Scenario
+        <mat-icon class="material-symbols-outlined new-scenario-down"
+          >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
+        </mat-icon>
+      </button>
+
       <mat-menu #menu="matMenu" class="scenario-options-menu">
         <button
           mat-menu-item

@@ -4,9 +4,9 @@ import { AuthService } from '@services';
 import { OverlayLoaderService } from '@services/overlay-loader.service';
 
 import { environment } from '@env/environment';
-import { OpenPanel } from '@openpanel/web';
 import { ForsysService } from '@services/forsys.service';
 import { MapModuleService } from '@services/map-module.service';
+import { ProductAnalyticsService } from '@services/product-analytics.service';
 
 @Component({
   selector: 'app-root',
@@ -24,7 +24,8 @@ export class AppComponent implements OnInit {
     private authService: AuthService,
     private overlayLoaderService: OverlayLoaderService,
     private forsysService: ForsysService,
-    private mapModuleService: MapModuleService
+    private mapModuleService: MapModuleService,
+    private productAnalyticsService: ProductAnalyticsService
   ) {}
 
   isLoading$ = this.overlayLoaderService.isLoading$;
@@ -40,14 +41,8 @@ export class AppComponent implements OnInit {
     this.mapModuleService.loadMapModule().subscribe();
     // Refresh the user's logged in status when the app initializes.
     this.authService.refreshLoggedInUser().pipe(take(1)).subscribe();
-    if (environment.open_panel_enabled) {
-      new OpenPanel({
-        apiUrl: 'https://op.sig-gis.com/api',
-        clientId: environment.open_panel_key,
-        trackScreenViews: true,
-        trackOutgoingLinks: true,
-        trackAttributes: true,
-      });
-    }
+    // We're migrating from OpenPanel to Mixpanel, so both run side by side
+    // while the historical data is backfilled. See scripts/openpanel_to_mixpanel.
+    this.productAnalyticsService.init();
   }
 }
