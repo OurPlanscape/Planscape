@@ -31,6 +31,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+    init: true
+    stop_signal: SIGINT
+    stop_grace_period: 30s
     ports:
       - "4200:4200"
     env_file:
@@ -40,6 +43,8 @@ services:
     working_dir: /app/src/interface
     volumes:
       - .:/app
+      - frontend_node_modules:/app/src/interface/node_modules
+      - frontend_angular_cache:/app/src/interface/.angular
   redis:
     image: redis:6.2-alpine
     restart: always
@@ -109,4 +114,8 @@ services:
 volumes:
   postgres: null
   cache:
+    driver: local
+  frontend_node_modules:
+    driver: local
+  frontend_angular_cache:
     driver: local
