@@ -171,9 +171,7 @@ export class FundingReportMapComponent implements OnInit {
 
   mapLoaded(loadedMap: MapLibreMap) {
     this.mapLibreMap = loadedMap;
-    console.log('did we load the map?', this.mapLibreMap);
     this.fundingMapConfigState.setMapLoaded(true);
-
     this.fundingMapConfigState.setMapRef(this.mapLibreMap);
   }
 

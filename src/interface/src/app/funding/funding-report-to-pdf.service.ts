@@ -13,23 +13,29 @@ import { FundingMapConfigState } from './funding-map-config-state';
 import { FundingAcreageLegendComponent } from './funding-acreage-legend/funding-acreage-legend.component';
 import { firstValueFrom } from 'rxjs';
 
-// A4 portrait, in millimeters.
-const PAGE_WIDTH_MM = 210;
-const PAGE_HEIGHT_MM = 297;
-const LOGO_PATH = 'assets/svg/planscape-color-logo.svg';
-
-
-
 /**
  * Exports the funding report as a PDF by rasterizing the live report DOM
  * (map + sections, as shown in the dashboard preview) and paginating the
  * resulting image across A4 pages.
  */
+
 @Injectable()
 export class FundingReportToPdfService {
-  /**
-   * @param element The report sections container to capture
-   * */
+  // ---- PDF page geometry (A4 portrait, mm) ----
+  private static readonly PAGE_WIDTH_MM = 210;
+  private static readonly PAGE_HEIGHT_MM = 297;
+  private static readonly MARGIN_MM = 15;
+
+  // Shrinks captured report-card screenshots so they don't dominate the page.
+  private static readonly CARD_SCALE_MULTIPLIER = 0.7;
+
+  private static readonly LOGO_PATH = 'assets/svg/planscape-color-logo.svg';
+
+  // ---- Per-export state ----
+  // Reset at the start of every exportPDFReport() call.
+  private scenarioId: number | null = null;
+  private activeMap: MapLibreMap | null = null;
+  private pdfInstance: jsPDF | null = null;
 
   constructor(
     private authService: AuthService,
@@ -38,89 +44,77 @@ export class FundingReportToPdfService {
     private scenarioService: ScenarioService
   ) { }
 
-  scenarioId: number | null = null;
-  activeMap: MapLibreMap | null = null;
-  pdfInstance: jsPDF | null = null;
-
+  /**
+   * Exports the funding report as a PDF by rasterizing the live report DOM
+   * (map + sections, as shown in the dashboard preview) and paginating the
+   * resulting image across A4 pages.
+   *
+   * @param element The report sections container to capture
+   */
   async exportPDFReport(
     element: HTMLElement,
     scenarioId: number,
     map: MapLibreMap,
-    selectedProjects: number[]
+    selectedProjects?: number[]
   ): Promise<void> {
     this.pdfInstance = new jsPDF('p', 'mm', 'a4');
-
     this.scenarioId = scenarioId;
+    this.activeMap = map;
 
     const filename = `planscape-funding-report-${scenarioId}`;
 
-
-    // --- CONFIGURABLE MARGINS & SCALING ---
-    const MARGIN_MM = 15;
-    const COMBINED_MARGINS = MARGIN_MM * 2;
-    const TARGET_CONTENT_WIDTH = PAGE_WIDTH_MM - COMBINED_MARGINS;
-    const scaleMultiplier = 0.7; // Master scaling knob
+    const { MARGIN_MM, PAGE_WIDTH_MM, PAGE_HEIGHT_MM, CARD_SCALE_MULTIPLIER } =
+      FundingReportToPdfService;
+    const targetContentWidth = PAGE_WIDTH_MM - MARGIN_MM * 2;
 
     const mapX = MARGIN_MM;
     const mapWidth = 180 - MARGIN_MM * 2;
     const mapHeight = mapWidth * 0.666;
 
-    // Pre-load the logo so it's ready to paint on the PDF canvas
-    const logoDataUrl = await this.loadLogo(LOGO_PATH);
-
-    const selectedProjectAreas = await this.getSelectedProjectAreas(selectedProjects);
+    // Pre-load the logo so it's ready to paint on the PDF canvas.
+    const logoDataUrl = await this.loadLogo(
+      FundingReportToPdfService.LOGO_PATH
+    );
+    const selectedProjectAreas =selectedProjects ?
+      await this.getSelectedProjectAreas(selectedProjects) : [];
 
     this.fundingMapConfigState.setFundingLegendVisibility(true);
 
-    console.log('okay, what is this?', selectedProjects);
-
-    // Set the map reference to the maplibre reference
-    this.activeMap = map;
-
     const mapContainer = document.createElement('div');
     this.configMapContainer(mapContainer);
-    document.body.appendChild(mapContainer);
 
     const drawHeader = () => {
       if (logoDataUrl && this.pdfInstance) {
-        const logoWidth = 32; // in mm
-        const logoHeight = 6;
-        this.pdfInstance.addImage(
-          logoDataUrl,
-          'PNG',
-          MARGIN_MM,
-          7,
-          logoWidth,
-          logoHeight
-        );
+        this.pdfInstance.addImage(logoDataUrl, 'PNG', MARGIN_MM, 7, 32, 6);
       }
 
       // draw title info...
 
       this.pdfInstance?.setFont('Helvetica', 'normal');
       this.pdfInstance?.setFontSize(8);
-      this.pdfInstance?.text(`Selected Project Areas: ${selectedProjectAreas}`, 100, 10);
+      const selectedList = selectedProjectAreas.length > 0
+        ? selectedProjectAreas.join(', ')
+        : 'All';
+      this.pdfInstance?.text(`Selected Project Areas: ${selectedList}`, 140, 12);
 
       this.pdfInstance?.setDrawColor('#E2E8F0');
       this.pdfInstance?.setLineWidth(0.5);
       this.pdfInstance?.line(MARGIN_MM, 16, PAGE_WIDTH_MM - MARGIN_MM, 16);
     };
 
-    // Initialize Page 1 Header and set initial content baseline below it
+    // Initialize Page 1 header and set the content baseline below it.
     drawHeader();
-    let currentY = 20; // 20mm gives breathing room below the header line
+    let currentY = 20; // gives breathing room below the header line
 
     await this.addMap(mapX, currentY, mapHeight, mapWidth);
     await this.addLegend(mapX + mapWidth + 4, currentY, 30);
 
-    // advance the current Y drawing 'cursor' to after the map
     currentY += 8 + mapHeight;
-
 
     const cards = element.querySelectorAll('.report-section');
     document.body.classList.add('is-generating-pdf');
 
-    // Note: we are skipping map by index here --
+    // Note: we are skipping the map by index here.
     // TODO: exclude this specifically by class instead
     for (let i = 1; i < cards.length; i++) {
       const card = cards[i] as HTMLElement;
@@ -131,59 +125,73 @@ export class FundingReportToPdfService {
         backgroundColor: '#ffffff',
       });
 
-      const imgWidth = TARGET_CONTENT_WIDTH;
-      let imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const layout = this.scaleCardImage(
+        canvas,
+        targetContentWidth,
+        CARD_SCALE_MULTIPLIER,
+        MARGIN_MM
+      );
 
-      const finalWidth = imgWidth * scaleMultiplier;
-      const finalHeight = imgHeight * scaleMultiplier;
-      const centeringOffset = (TARGET_CONTENT_WIDTH - finalWidth) / 2;
-      const finalX = MARGIN_MM + centeringOffset;
-
-      // Check if drawing this element will violate the bottom margin
-      if (currentY + finalHeight > PAGE_HEIGHT_MM - MARGIN_MM) {
+      // Start a new page if this card would overflow the bottom margin.
+      if (currentY + layout.height > PAGE_HEIGHT_MM - MARGIN_MM) {
         this.pdfInstance.addPage();
         drawHeader();
-        currentY = 20; // Reset content baseline to the top of the new page
+        currentY = 20;
       }
 
-      // Draw the element
       this.pdfInstance.addImage(
         canvas.toDataURL('image/png'),
         'PNG',
-        finalX,
+        layout.x,
         currentY,
-        finalWidth,
-        finalHeight
+        layout.width,
+        layout.height
       );
-      currentY += finalHeight + 10;
+      currentY += layout.height + 10;
     }
 
     document.body.classList.remove('is-generating-pdf');
     this.pdfInstance.save(`${filename}.pdf`);
   }
 
+  /**
+   * Scales a captured card canvas to fit the page content width, applying
+   * the master scale multiplier and centering it horizontally.
+   */
+  private scaleCardImage(
+    canvas: HTMLCanvasElement,
+    targetContentWidth: number,
+    scaleMultiplier: number,
+    marginMm: number
+  ): { x: number; width: number; height: number } {
+    const imgWidth = targetContentWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-  private async getSelectedProjectAreas(selectedIds: number[]) {
+    const width = imgWidth * scaleMultiplier;
+    const height = imgHeight * scaleMultiplier;
+    const centeringOffset = (targetContentWidth - width) / 2;
 
+    return { x: marginMm + centeringOffset, width, height };
+  }
+
+  private async getSelectedProjectAreas(
+    selectedIds: number[]
+  ): Promise<number[]> {
     if (!this.scenarioId) {
       return [];
     }
-    console.log('selected Id is what?', selectedIds);
 
-    // const selectedIds: number[] = this.
     const projectAreas = await firstValueFrom(
       this.scenarioService.getProjectAreas(this.scenarioId)
     );
-    console.log('getProjectAreas returned what:', projectAreas);
 
-    const selectedProjectAreas = projectAreas.filter(pa => selectedIds.includes(pa.id)).map(pa => pa.data.treatment_rank);
-    console.log('selectedProjectAreas is what: ', selectedProjectAreas);
-    return selectedProjectAreas;
+    return projectAreas
+      .filter((pa) => selectedIds.includes(pa.id))
+      .map((pa) => pa.data.treatment_rank);
   }
 
   /**
-   * Helper to convert an image path/SVG into an HTMLImageElement
-   * so jsPDF can parse it natively.
+   * Converts an image path/SVG into a data URL so jsPDF can render it.
    */
   private loadLogo(src: string): Promise<string | null> {
     return new Promise((resolve) => {
@@ -191,17 +199,14 @@ export class FundingReportToPdfService {
       img.crossOrigin = 'anonymous';
 
       img.onload = () => {
-        // Create a temporary canvas to rasterize the SVG into a PNG
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
 
-        // Use the SVG's natural size or fallback to standard dimensions
         canvas.width = img.naturalWidth || 200;
         canvas.height = img.naturalHeight || 50;
 
         if (ctx) {
           ctx.drawImage(img, 0, 0);
-          // Convert the canvas to a clean, uncorrupted base64 PNG data URL
           resolve(canvas.toDataURL('image/png'));
         } else {
           resolve(null);
@@ -225,7 +230,7 @@ export class FundingReportToPdfService {
     return new Promise((resolve) => {
       const printMap = new MapLibreMap({
         container: 'printable-map',
-        preserveDrawingBuffer: true, // Required for toDataURL
+        preserveDrawingBuffer: true, // required for toDataURL
         style: this.activeMap?.getStyle(),
         center: this.activeMap?.getBounds().getCenter(),
         zoom: this.activeMap?.getZoom(),
@@ -240,10 +245,8 @@ export class FundingReportToPdfService {
           ),
       });
 
-      // Wait until the map has finished loading tiles and rendering
-      printMap.once('idle', () => {
-        resolve(printMap);
-      });
+      // Wait until the map has finished loading tiles and rendering.
+      printMap.once('idle', () => resolve(printMap));
     });
   }
 
@@ -252,14 +255,13 @@ export class FundingReportToPdfService {
     mapY: number,
     mapHeight: number,
     mapWidth: number
-  ) {
+  ): Promise<void> {
     if (!this.pdfInstance || !this.activeMap) {
       return;
     }
 
     const printMap = await this.copyActiveMap();
-    const canvas = printMap?.getCanvas();
-    const imgData = canvas?.toDataURL('image/png');
+    const imgData = printMap?.getCanvas()?.toDataURL('image/png');
 
     if (imgData) {
       this.pdfInstance.setLineWidth(1);
@@ -275,7 +277,7 @@ export class FundingReportToPdfService {
     }
   }
 
-  configMapContainer(mapContainer: HTMLDivElement) {
+  configMapContainer(mapContainer: HTMLDivElement): void {
     mapContainer.id = 'printable-map';
     mapContainer.style.position = 'absolute';
     mapContainer.style.width = '1000px';
@@ -285,8 +287,10 @@ export class FundingReportToPdfService {
     document.body.appendChild(mapContainer);
   }
 
-  // grabs an individual component
-  //  (e.g., the legend), and converts it to a renderable image using html2canvas)
+  /**
+   * Renders an arbitrary component off-screen and captures it as an image,
+   * e.g. for the legend.
+   */
   async captureComponent<T>(
     component: new (...args: any[]) => T,
     inputs?: Partial<T>,
@@ -299,12 +303,12 @@ export class FundingReportToPdfService {
           useValue: this.fundingMapConfigState,
         },
       ],
-      parent: this.injector, // Fall back to root injector for everything else
+      parent: this.injector, // fall back to root injector for everything else
     });
 
     const compRef = createComponent(component, {
       environmentInjector: this.injector,
-      elementInjector: elementInjector,
+      elementInjector,
     });
 
     if (inputs) {
@@ -315,19 +319,18 @@ export class FundingReportToPdfService {
     element.style.position = 'absolute';
     element.style.left = '-9000px';
     element.style.top = '-9000px';
-
     cssClasses.forEach((cls) => element.classList.add(cls));
 
     document.body.appendChild(element);
     compRef.changeDetectorRef.detectChanges();
 
-    // Ensure icon fonts or web fonts render properly
+    // Ensure icon fonts or web fonts render properly.
     await document.fonts.ready;
 
     const canvas = await html2canvas(element, {
       backgroundColor: null,
-      scale: 3, // High resolution output for print
-      windowWidth: 1000, // Force a generous virtual window size so flexboxes don't wrap tightly
+      scale: 3,
+      windowWidth: 1000,
       windowHeight: 2000,
     });
 
@@ -347,23 +350,19 @@ export class FundingReportToPdfService {
     legendX: number,
     legendY: number,
     targetWidth: number,
-    targetWidthMm: number = 120,
+    targetWidthMm: number = 120
   ): Promise<{ width: number; height: number }> {
     if (!this.pdfInstance) return { width: 0, height: 0 };
 
-    // 1. Snapshot the legend component
-    const { imgData, width, height } = await this.captureComponent(
+    const { imgData } = await this.captureComponent(
       FundingAcreageLegendComponent,
       // TODO: this is a placeholder of data
-      { legendData: this.fundingMapConfigState.getLegendData() },
+      { legendData: this.fundingMapConfigState.getLegendData() ?? {} },
       ['pdf-version']
     );
 
-    // 2. Calculate proportional target height based on aspect ratio
-    // const aspectRatio = height / width;
-    console.log('what are the extracted width:', width, ' and height:', height);
     const targetHeightMm = targetWidthMm * 0.45;
-    // 3. Render to jsPDF at specified coordinates
+
     this.pdfInstance.addImage(
       imgData,
       'PNG',
@@ -373,7 +372,6 @@ export class FundingReportToPdfService {
       targetHeightMm
     );
 
-    // Return final dimensions in case you need to calculate line height or cursor jumps
     return { width: targetWidth, height: targetHeightMm };
   }
 }

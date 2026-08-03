@@ -14,8 +14,7 @@ export class FundingMapConfigState extends MapConfigState {
   public showFundingLegend$ = this._showFundingLegend$.asObservable();
 
   // TODO: just a proof-of-concept here....
-  private legendData : any = null;
-
+  private legendData: any = null;
 
   //TODO: just a PoC, dont do it like this
   private _mapRef$ = new BehaviorSubject<MapLibreMap | null>(null);
@@ -41,7 +40,7 @@ export class FundingMapConfigState extends MapConfigState {
     this._selectedProjectAreas$.next(ids);
   }
 
-  setLegendData(legendData : any) {
+  setLegendData(legendData: any) {
     this.legendData = legendData;
   }
 

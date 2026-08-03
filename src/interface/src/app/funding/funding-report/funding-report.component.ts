@@ -653,12 +653,6 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     }
     this.generatingPdf$.next(true);
 
-    // console.log('do we hve naything for mapElement?', this.mapElement);
-    // console.log(
-    //   'do we have anything for the map?',
-    //   this.mapElement.mapLibreMap
-    // );
-
     const mapRef = this.fundingMapConfigState.getMapRef();
 
     try {
@@ -669,13 +663,12 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
       //   : document.querySelector<HTMLCanvasElement>('.maplibregl-canvas');
       await this.pdfService.exportPDFReport(
         this.scrollContainer.nativeElement,
-       this.report.scenario, // scenario Id
+        this.report.scenario, // scenario Id
         mapRef ?? this.mapElement.mapLibreMap,
-        this.projectAreas,
-        
+        this.projectAreas
       );
     } catch (error) {
-      console.log('error downloading: ', error);
+      console.log('what is the error?', error);
       this.displayDownloadErrorSnackbar();
     } finally {
       this.generatingPdf$.next(false);

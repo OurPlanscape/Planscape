@@ -72,9 +72,7 @@ export class FullReportViewComponent implements OnInit {
           (pa) => pa.data.treatment_rank <= 10
         );
       }
-      const selectionMenu = this.projectAreasToSelectionMenu(projectAreas);
-      console.log('what is the reult of this?', selectionMenu);
-      return selectionMenu;
+      return this.projectAreasToSelectionMenu(projectAreas);
     }),
     shareReplay(1)
   );
