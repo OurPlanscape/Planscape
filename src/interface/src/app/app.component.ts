@@ -41,8 +41,6 @@ export class AppComponent implements OnInit {
     this.mapModuleService.loadMapModule().subscribe();
     // Refresh the user's logged in status when the app initializes.
     this.authService.refreshLoggedInUser().pipe(take(1)).subscribe();
-    // We're migrating from OpenPanel to Mixpanel, so both run side by side
-    // while the historical data is backfilled. See scripts/openpanel_to_mixpanel.
     this.productAnalyticsService.init();
   }
 }
