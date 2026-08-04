@@ -1,0 +1,10 @@
+FROM nginx:1.27-alpine
+
+COPY docker/gateway/nginx.conf /etc/nginx/templates/default.conf.template
+COPY docker/gateway/entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 8080
+
+ENTRYPOINT ["/entrypoint.sh"]

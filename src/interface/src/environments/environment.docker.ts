@@ -1,5 +1,7 @@
+import { applyRuntimeConfig } from './runtime-config';
+
 // Docker development defaults. Local non-Docker development still uses environment.dev.ts.
-export const environment = {
+export const environment = applyRuntimeConfig({
   environment: 'docker',
   production: false,
   isCatalogEnvironment: false,
@@ -26,4 +28,4 @@ export const environment = {
     enable_context_lines: false,
     enable_deprecations_reporting: false,
   },
-};
+});
