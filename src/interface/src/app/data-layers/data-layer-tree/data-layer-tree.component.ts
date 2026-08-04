@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
-import { ButtonComponent } from '@styleguide';
+import { ButtonComponent, ToggleComponent } from '@styleguide';
 import { MatTreeModule } from '@angular/material/tree';
 import { map, shareReplay, switchMap } from 'rxjs';
 import { DataLayersStateService } from '../data-layers.state.service';
@@ -16,6 +16,7 @@ import { DataLayerTooltipComponent } from '@data-layers/data-layer-tooltip/data-
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { unselectableReason } from '@app/shared';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @UntilDestroy()
 @Component({
@@ -34,6 +35,8 @@ import { unselectableReason } from '@app/shared';
     MatMenuModule,
     DataLayerTooltipComponent,
     MatIconModule,
+    MatCheckboxModule,
+    ToggleComponent,
   ],
   templateUrl: './data-layer-tree.component.html',
   styleUrl: './data-layer-tree.component.scss',
@@ -76,8 +79,14 @@ export class DataLayerTreeComponent {
   treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
   @ViewChild('treeContainer', { static: false }) treeContainer!: ElementRef;
 
-  selectDataLayer(dataLayer: DataLayer) {
-    this.dataLayersStateService.selectDataLayer(dataLayer);
+  selectDataLayer(dataLayer: DataLayer, event: Event) {
+    const target = event.target as HTMLInputElement;
+
+    if (target.checked) {
+      this.dataLayersStateService.selectDataLayer(dataLayer);
+    } else {
+      this.dataLayersStateService.selectDataLayer(null);
+    }
   }
 
   private scrollToSelectedNode() {
