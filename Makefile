@@ -182,6 +182,7 @@ docker-migrate:
 
 PROJECT=planscape-23d66
 APP_NAME=planscape-backend
+DOCKERFILE=Dockerfile
 ENV=dev
 APP=$(APP_NAME)-$(ENV)
 DOCKER_REPO=planscape-$(APP_NAME)
@@ -192,19 +193,19 @@ cloud-run-build:
 	@BUILDS=$$(gcloud builds list --filter="images:$(DOCKER_TAG)" --format=json); \
 	if [ "$$BUILDS" = "[]" ]; then \
 		echo "Building image with tag $(DOCKER_TAG).";\
-		docker build -t $(DOCKER_TAG) .;\
+		docker build -f $(DOCKERFILE) -t $(DOCKER_TAG) .;\
 	else \
 		echo "Docker image already pushed to artifact repo (tag: $(DOCKER_TAG))";\
 	fi;
 
 cloud-run-build-force:
-	docker build -f Dockerfile -t $(DOCKER_TAG) .
+	docker build -f $(DOCKERFILE) -t $(DOCKER_TAG) .
 
 cloud-run-push:
 	@BUILDS=$$(gcloud builds list --filter="images:$(DOCKER_TAG)" --format=json); \
 	if [ "$$BUILDS" = "[]" ]; then \
 		echo "Pushing image $(DOCKER_TAG) ."; \
-		gcloud builds submit --tag $(DOCKER_TAG);\
+		gcloud builds submit --config cloudbuild.dockerfile.yaml --substitutions _DOCKERFILE=$(DOCKERFILE),_IMAGE=$(DOCKER_TAG) .;\
 	else \
 		echo "Image $(DOCKER_TAG) already submitted"; \
 	fi;
@@ -216,6 +217,24 @@ cloud-run-build-deploy: cloud-run-build cloud-run-push cloud-run-deploy
 
 cloud-run-docker-tag:
 	echo "$(DOCKER_TAG)"
+
+cloud-run-build-frontend:
+	$(MAKE) cloud-run-build APP_NAME=planscape-frontend DOCKERFILE=Dockerfile.frontend DOCKER_REPO=planscape-planscape-frontend-$(ENV)
+
+cloud-run-build-gateway:
+	$(MAKE) cloud-run-build APP_NAME=planscape-gateway DOCKERFILE=Dockerfile.gateway DOCKER_REPO=planscape-planscape-gateway-$(ENV)
+
+cloud-run-push-frontend:
+	$(MAKE) cloud-run-push APP_NAME=planscape-frontend DOCKERFILE=Dockerfile.frontend DOCKER_REPO=planscape-planscape-frontend-$(ENV)
+
+cloud-run-push-gateway:
+	$(MAKE) cloud-run-push APP_NAME=planscape-gateway DOCKERFILE=Dockerfile.gateway DOCKER_REPO=planscape-planscape-gateway-$(ENV)
+
+cloud-run-docker-tag-frontend:
+	$(MAKE) cloud-run-docker-tag APP_NAME=planscape-frontend DOCKER_REPO=planscape-planscape-frontend-$(ENV)
+
+cloud-run-docker-tag-gateway:
+	$(MAKE) cloud-run-docker-tag APP_NAME=planscape-gateway DOCKER_REPO=planscape-planscape-gateway-$(ENV)
 
 # Reset relevant tables and load development fixture data
 load-dev-data:
