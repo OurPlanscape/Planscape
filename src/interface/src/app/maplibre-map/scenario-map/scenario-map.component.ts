@@ -37,7 +37,6 @@ import { SubUnitToggleComponent } from '@maplibre-map/sub-unit-toggle/sub-unit-t
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.component';
 import { PlanningAreaStandsComponent } from '../planning-area-stands/planning-area-stands.component';
-import { FeatureService } from '@app/features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -83,8 +82,7 @@ export class ScenarioMapComponent implements OnDestroy {
     private mapConfigService: MapConfigService,
     private newScenarioState: NewScenarioState,
     private moduleService: ModuleService,
-    private baseLayersStateService: BaseLayersStateService,
-    private featureService: FeatureService
+    private baseLayersStateService: BaseLayersStateService
   ) {
     this.mapConfigService.initialize();
   }
@@ -118,9 +116,7 @@ export class ScenarioMapComponent implements OnDestroy {
 
   showStandsWithIncludes$ = this.newScenarioState.currentStep$.pipe(
     map((step) => {
-      return this.featureService.isFeatureEnabled('ADD_INCLUDES')
-        ? step?.withIncludes
-        : false;
+      return step?.withIncludes;
     })
   );
 
