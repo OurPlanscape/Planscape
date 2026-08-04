@@ -25,6 +25,7 @@ export class FundingReportToPdfService {
   private static readonly PAGE_WIDTH_MM = 210;
   private static readonly PAGE_HEIGHT_MM = 297;
   private static readonly MARGIN_MM = 12;
+  private static readonly VERTICAL_GAP = 8;
 
   // Shrinks captured report-card screenshots so they don't dominate the page.
   private static readonly CARD_SCALE_MULTIPLIER = 0.7;
@@ -42,7 +43,7 @@ export class FundingReportToPdfService {
     private fundingMapConfigState: FundingMapConfigState,
     private injector: EnvironmentInjector,
     private scenarioService: ScenarioService
-  ) {}
+  ) { }
 
   /**
    * Exports the funding report as a PDF by rasterizing the live report DOM
@@ -63,9 +64,9 @@ export class FundingReportToPdfService {
 
     const filename = `planscape-funding-report-${scenarioId}`;
 
-    const { MARGIN_MM, PAGE_WIDTH_MM, PAGE_HEIGHT_MM, CARD_SCALE_MULTIPLIER } =
+    const { MARGIN_MM, PAGE_WIDTH_MM, PAGE_HEIGHT_MM, CARD_SCALE_MULTIPLIER, VERTICAL_GAP } =
       FundingReportToPdfService;
-    const targetContentWidth = PAGE_WIDTH_MM - MARGIN_MM * 2;
+    // const targetContentWidth = (PAGE_WIDTH_MM - MARGIN_MM * 2) / 2;
 
     const mapX = MARGIN_MM;
     const fullPageWidth = PAGE_WIDTH_MM - (MARGIN_MM * 2);
@@ -117,14 +118,33 @@ export class FundingReportToPdfService {
 
     await this.addMap(mapX, currentY, mapHeight, fullPageWidth);
 
-    currentY += 8 + mapHeight;
-    await this.addLegend(MARGIN_MM + ((fullPageWidth / 3) * 2), currentY, fullPageWidth / 3);
+    currentY += mapHeight + VERTICAL_GAP;
+    const legendDimensions = await this.addLegend(MARGIN_MM + ((fullPageWidth / 3) * 2), currentY, fullPageWidth / 3);
+
+    currentY += legendDimensions.height + VERTICAL_GAP;
 
     const cards = element.querySelectorAll('.report-section');
     document.body.classList.add('is-generating-pdf');
 
-    // Note: we are skipping the map by index here.
-    // TODO: exclude this specifically by class instead
+    
+    const HEADER_OFFSET_Y = 20;
+
+    // Calculate column dimensions
+    // Column width: 10mm less than half the page width (105 - 10 = 95mm)
+     const colWidth = (PAGE_WIDTH_MM - MARGIN_MM) / 2;
+
+    // Calculate gap so the two 95mm columns center within the 210mm page with 10mm outer margins
+    // Outer Margins (20mm total) + 2 * ColWidth (190mm) = 210mm.
+    // To keep 10mm outer margins, Column 1 starts at MARGIN_MM and Column 2 starts at PAGE_WIDTH_MM - MARGIN_MM - colWidth
+    const colXPositions = [
+      MARGIN_MM * 2,  // Column 0 (Left)
+      PAGE_WIDTH_MM - colWidth  // Column 1 (Right)
+    ];
+
+    let currentColumn = 0;
+    let pageStartY = currentY;
+
+
     for (let i = 1; i < cards.length; i++) {
       const card = cards[i] as HTMLElement;
 
@@ -136,33 +156,46 @@ export class FundingReportToPdfService {
 
       const layout = this.scaleCardImage(
         canvas,
-        targetContentWidth,
+        colWidth, // Target width in mm
         CARD_SCALE_MULTIPLIER,
         MARGIN_MM
       );
 
-      // Start a new page if this card would overflow the bottom margin.
+      // Check overflow
       if (currentY + layout.height > PAGE_HEIGHT_MM - MARGIN_MM) {
-        this.pdfInstance.addPage();
-        drawHeader();
-        currentY = 20;
+        const isFirstItemOnPage = (currentY === pageStartY);
+
+        if (currentColumn === 0 && !isFirstItemOnPage) {
+          // Move to Column 2 on the SAME page
+          currentColumn = 1;
+          currentY = pageStartY;
+        } else {
+          // Create NEW page and reset to Column 1
+          this.pdfInstance.addPage();
+          drawHeader();
+
+          currentColumn = 0;
+          pageStartY = HEADER_OFFSET_Y;
+          currentY = pageStartY;
+        }
       }
 
+      // Draw card
       this.pdfInstance.addImage(
         canvas.toDataURL('image/png'),
         'PNG',
-        layout.x,
+        colXPositions[currentColumn],
         currentY,
         layout.width,
         layout.height
       );
+
+      // Advance Y
       currentY += layout.height + 10;
     }
-
     document.body.classList.remove('is-generating-pdf');
     this.pdfInstance.save(`${filename}.pdf`);
   }
-
   /**
    * Scales a captured card canvas to fit the page content width, applying
    * the master scale multiplier and centering it horizontally.
@@ -366,14 +399,14 @@ export class FundingReportToPdfService {
   ): Promise<{ width: number; height: number }> {
     if (!this.pdfInstance) return { width: 0, height: 0 };
 
-    const { imgData } = await this.captureComponent(
+    const { imgData, width: canvasWidth, height: canvasHeight } = await this.captureComponent(
       FundingAcreageLegendComponent,
-      // TODO: this is a placeholder of data
       { legendData: this.fundingMapConfigState.getLegendData() ?? {} },
       ['pdf-version']
     );
 
-    const targetHeight = targetWidth * 0.90;
+    // Automatically calculate height to preserve aspect ratio:
+    const targetHeight = (canvasHeight / canvasWidth) * targetWidth;
 
     this.pdfInstance.addImage(
       imgData,
