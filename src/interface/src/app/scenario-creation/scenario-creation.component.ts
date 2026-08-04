@@ -73,7 +73,6 @@ import { TreatmentGoalStepComponent } from '@scenario-creation/treatment-goal-st
 import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
 import { SubUnitsTreatmentTargetComponent } from './sub-units-treatment-target/sub-units-treatment-target.component';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
-import { FeatureService } from '@app/features/feature.service';
 import { IncludeAreasSelectorComponent } from './include-areas-selector/include-areas-selector.component';
 import { CreateScenarioError } from '@app/services/errors';
 
@@ -224,21 +223,10 @@ export class ScenarioCreationComponent implements OnInit {
     private mapModuleService: MapModuleService,
     private planState: PlanState,
     private dataLayersStateService: DataLayersStateService,
-    private cdr: ChangeDetectorRef,
-    private featureService: FeatureService
+    private cdr: ChangeDetectorRef
   ) {
     // Pre load goals
     this.treatmentGoals$.pipe(take(1)).subscribe();
-
-    // Remove this block once ADD_INCLUDES be released to show always 'Include Areas' step
-    if (!this.featureService.isFeatureEnabled('ADD_INCLUDES')) {
-      this.scenarioSteps = this.scenarioSteps.filter(
-        (obj) => obj.label !== 'Include Areas'
-      );
-      this.customSteps = this.customSteps.filter(
-        (obj) => obj.label !== 'Include Areas'
-      );
-    }
   }
 
   ngOnInit(): void {
