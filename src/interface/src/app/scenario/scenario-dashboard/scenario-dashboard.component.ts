@@ -81,7 +81,7 @@ export class ScenarioDashboardComponent implements OnInit {
     private router: Router,
     private scenarioService: ScenarioService,
     private dialog: MatDialog
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     let scenarioBackUrl = getPlanPath(this.planId);
