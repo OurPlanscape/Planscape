@@ -163,24 +163,32 @@
      ====================================================== */
   &.pdf-version {
     display: block !important;
-    width: 260px !important;     /* Hard physical layout width for html2canvas */
+    width: 1000 !important;     /* Hard physical layout width for html2canvas */
     min-width: 260px !important;
     box-sizing: border-box !important;
-
     * {
       box-sizing: border-box !important;
     }
 
     .treatment-acres-legend {
-      width: 260px !important;
-      min-width: 260px !important;
+      width: 500px !important;
+      min-width: 500px !important;
       height: auto !important;
       max-height: none !important; /* Disables calc(100% - navBar) height cap */
       overflow: visible !important;/* Un-clips the bottom content */
-      background: #2a2a2a !important; /* Solid dark color (html2canvas hates backdrop blur) */
+      background: white; /* Solid dark color (html2canvas hates backdrop blur) */
       backdrop-filter: none !important;
       box-shadow: none !important;
       transition: none !important;
+      color: black;
+    }
+
+    .title, .no-treatment-title, .swatch-label {
+      color: black;
+    }
+
+    .acres-section {
+      flex-direction: row;
     }
 
     /* Uncap all nested section heights so rows flow naturally */
@@ -198,6 +206,7 @@
     /* Keep labels and swatches aligned horizontally */
     .legend-line,
     .acres-line {
+      color: black;
       display: flex !important;
       flex-direction: row !important;
       align-items: center !important;

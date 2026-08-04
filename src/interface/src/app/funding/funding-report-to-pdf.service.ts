@@ -68,8 +68,8 @@ export class FundingReportToPdfService {
     const targetContentWidth = PAGE_WIDTH_MM - MARGIN_MM * 2;
 
     const mapX = MARGIN_MM;
-    const mapWidth = 180 - MARGIN_MM * 2;
-    const mapHeight = mapWidth * 0.666;
+    const fullPageWidth = PAGE_WIDTH_MM - (MARGIN_MM * 2);
+    const mapHeight = fullPageWidth * 0.666;
 
     // Pre-load the logo so it's ready to paint on the PDF canvas.
     const logoDataUrl = await this.loadLogo(
@@ -115,10 +115,10 @@ export class FundingReportToPdfService {
     drawHeader();
     let currentY = 20; // gives breathing room below the header line
 
-    await this.addMap(mapX, currentY, mapHeight, mapWidth);
-    await this.addLegend(mapX + mapWidth + 4, currentY, 30);
+    await this.addMap(mapX, currentY, mapHeight, fullPageWidth);
 
     currentY += 8 + mapHeight;
+    await this.addLegend(MARGIN_MM, currentY, fullPageWidth);
 
     const cards = element.querySelectorAll('.report-section');
     document.body.classList.add('is-generating-pdf');
