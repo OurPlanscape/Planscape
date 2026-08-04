@@ -118,7 +118,7 @@ export class FundingReportToPdfService {
     await this.addMap(mapX, currentY, mapHeight, fullPageWidth);
 
     currentY += 8 + mapHeight;
-    await this.addLegend(MARGIN_MM, currentY, fullPageWidth);
+    await this.addLegend(MARGIN_MM + ((fullPageWidth / 3) * 2), currentY, fullPageWidth / 3);
 
     const cards = element.querySelectorAll('.report-section');
     document.body.classList.add('is-generating-pdf');
@@ -363,7 +363,6 @@ export class FundingReportToPdfService {
     legendX: number,
     legendY: number,
     targetWidth: number,
-    targetWidthMm: number = 120
   ): Promise<{ width: number; height: number }> {
     if (!this.pdfInstance) return { width: 0, height: 0 };
 
@@ -374,7 +373,7 @@ export class FundingReportToPdfService {
       ['pdf-version']
     );
 
-    const targetHeightMm = targetWidthMm * 0.45;
+    const targetHeight = targetWidth * 0.90;
 
     this.pdfInstance.addImage(
       imgData,
@@ -382,9 +381,9 @@ export class FundingReportToPdfService {
       legendX,
       legendY,
       targetWidth,
-      targetHeightMm
+      targetHeight
     );
 
-    return { width: targetWidth, height: targetHeightMm };
+    return { width: targetWidth, height: targetHeight };
   }
 }

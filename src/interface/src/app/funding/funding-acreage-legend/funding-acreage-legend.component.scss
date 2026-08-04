@@ -163,32 +163,72 @@
      ====================================================== */
   &.pdf-version {
     display: block !important;
-    width: 1000 !important;     /* Hard physical layout width for html2canvas */
-    min-width: 260px !important;
+    width: 1000 !important;
+    /* Hard physical layout width for html2canvas */
+    min-width: 360px !important;
     box-sizing: border-box !important;
+
     * {
       box-sizing: border-box !important;
     }
 
     .treatment-acres-legend {
-      width: 500px !important;
-      min-width: 500px !important;
+      width: 360px !important;
+      min-width: 360px !important;
       height: auto !important;
-      max-height: none !important; /* Disables calc(100% - navBar) height cap */
-      overflow: visible !important;/* Un-clips the bottom content */
-      background: white; /* Solid dark color (html2canvas hates backdrop blur) */
+      max-height: none !important;
+      /* Disables calc(100% - navBar) height cap */
+      overflow: visible !important;
+      /* Un-clips the bottom content */
+      background: white;
+      /* Solid dark color (html2canvas hates backdrop blur) */
       backdrop-filter: none !important;
       box-shadow: none !important;
       transition: none !important;
       color: black;
+      gap: 0;
     }
 
-    .title, .no-treatment-title, .swatch-label {
+    .title,
+    .no-treatment-title,
+    .swatch-label {
       color: black;
     }
 
     .acres-section {
+      flex-direction: column;
+      gap: 0;
+      padding: 0px 16px;
+    }
+
+    .static-row,
+    .dynamic-acres-row {
       flex-direction: row;
+      width: unset;
+    }
+
+    .no-treatment {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .no-treatment-acres {
+      padding: 16px;
+      line-height: 24px;
+      line-height: 24px;
+      font-weight: 500;
+      letter-spacing: normal;
+      font-size: 14px;
+      color: #fff;
+      text-overflow: ellipsis;
+      overflow-x: hidden;
+      white-space: nowrap;
+      text-transform: capitalize;
+      padding: 16px 0 8px;
+      border-top: 1px rgba(255, 255, 255, 0.0980392157) solid;
+
     }
 
     /* Uncap all nested section heights so rows flow naturally */
@@ -197,10 +237,12 @@
     .dynamic-acres-row,
     .static-section,
     .dynamic-section {
+
       height: auto !important;
       max-height: none !important;
       overflow: visible !important;
-      flex: none !important; /* Stops flex items from vertical squishing */
+      flex: none !important;
+      /* Stops flex items from vertical squishing */
     }
 
     /* Keep labels and swatches aligned horizontally */
