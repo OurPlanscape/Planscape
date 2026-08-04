@@ -24,7 +24,7 @@ export class FundingReportToPdfService {
   // ---- PDF page geometry (A4 portrait, mm) ----
   private static readonly PAGE_WIDTH_MM = 210;
   private static readonly PAGE_HEIGHT_MM = 297;
-  private static readonly MARGIN_MM = 15;
+  private static readonly MARGIN_MM = 12;
 
   // Shrinks captured report-card screenshots so they don't dominate the page.
   private static readonly CARD_SCALE_MULTIPLIER = 0.7;
@@ -42,7 +42,7 @@ export class FundingReportToPdfService {
     private fundingMapConfigState: FundingMapConfigState,
     private injector: EnvironmentInjector,
     private scenarioService: ScenarioService
-  ) { }
+  ) {}
 
   /**
    * Exports the funding report as a PDF by rasterizing the live report DOM
@@ -75,8 +75,9 @@ export class FundingReportToPdfService {
     const logoDataUrl = await this.loadLogo(
       FundingReportToPdfService.LOGO_PATH
     );
-    const selectedProjectAreas =selectedProjects ?
-      await this.getSelectedProjectAreas(selectedProjects) : [];
+    const selectedProjectAreas = selectedProjects
+      ? await this.getSelectedProjectAreas(selectedProjects)
+      : [];
 
     this.fundingMapConfigState.setFundingLegendVisibility(true);
 
@@ -92,11 +93,19 @@ export class FundingReportToPdfService {
 
       this.pdfInstance?.setFont('Helvetica', 'normal');
       this.pdfInstance?.setFontSize(8);
-      const selectedList = selectedProjectAreas.length > 0
-        ? selectedProjectAreas.join(', ')
-        : 'All';
-      this.pdfInstance?.text(`Selected Project Areas: ${selectedList}`, 140, 12);
+      const selectedList =
+        selectedProjectAreas.length > 0
+          ? selectedProjectAreas.join(', ')
+          : 'All';
 
+      const selectedAreasInfo = `Selected Project Areas: ${selectedList}`;
+      const saTextWidth =
+        this.pdfInstance?.getTextWidth(selectedAreasInfo) ?? 0;
+      this.pdfInstance?.text(
+        selectedAreasInfo,
+        PAGE_WIDTH_MM - MARGIN_MM - saTextWidth,
+        12
+      );
       this.pdfInstance?.setDrawColor('#E2E8F0');
       this.pdfInstance?.setLineWidth(0.5);
       this.pdfInstance?.line(MARGIN_MM, 16, PAGE_WIDTH_MM - MARGIN_MM, 16);
@@ -226,25 +235,29 @@ export class FundingReportToPdfService {
     if (this.activeMap === null) {
       throw new Error('No active map');
     }
+    const curZoom = this.activeMap?.getZoom();
+    const curBounds = this.activeMap?.getBounds();
+    console.log('the current zoom is:', curZoom);
+    console.log('the current bounds is:', curBounds);
+
+    const printMap = new MapLibreMap({
+      container: 'printable-map',
+      preserveDrawingBuffer: true, // required for toDataURL
+      style: this.activeMap?.getStyle(),
+      center: this.activeMap?.getBounds().getCenter(),
+      zoom: 9,
+      fitBoundsOptions: {
+        padding: { top: 70, bottom: 40, left: 20, right: 20 },
+      },
+      bearing: this.activeMap?.getBearing(),
+      pitch: this.activeMap?.getPitch(),
+      bounds: this.activeMap?.getBounds(),
+      transformRequest: (url, resourceType) =>
+        addRequestHeaders(url, resourceType, this.authService.getAuthCookie()),
+    });
+    console.log('what is the printmap object?', printMap);
 
     return new Promise((resolve) => {
-      const printMap = new MapLibreMap({
-        container: 'printable-map',
-        preserveDrawingBuffer: true, // required for toDataURL
-        style: this.activeMap?.getStyle(),
-        center: this.activeMap?.getBounds().getCenter(),
-        zoom: this.activeMap?.getZoom(),
-        bearing: this.activeMap?.getBearing(),
-        pitch: this.activeMap?.getPitch(),
-        bounds: this.activeMap?.getBounds(),
-        transformRequest: (url, resourceType) =>
-          addRequestHeaders(
-            url,
-            resourceType,
-            this.authService.getAuthCookie()
-          ),
-      });
-
       // Wait until the map has finished loading tiles and rendering.
       printMap.once('idle', () => resolve(printMap));
     });
