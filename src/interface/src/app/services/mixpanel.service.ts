@@ -60,7 +60,7 @@ export class MixpanelService {
 
   /**
    * Ties the current browser session to a user profile. The distinct id must
-   * match the backend's (`str(user.pk)` on `planscape/analytics.py`) so events
+   * match the backend's (`str(user.pk)` on `planscape/openpanel.py`) so events
    * tracked on both sides land on the same profile.
    */
   identify(user: User): void {
