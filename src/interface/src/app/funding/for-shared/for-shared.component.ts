@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute } from '@angular/router';
-import { filter, map, shareReplay, startWith, switchMap } from 'rxjs';
+import { filter, map, shareReplay, startWith, switchMap, take } from 'rxjs';
 
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { FundingReportService } from '@services/funding-report.service';
