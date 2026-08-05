@@ -72,6 +72,7 @@ export class FullReportViewComponent implements OnInit {
           (pa) => pa.data.treatment_rank <= 10
         );
       }
+
       return this.projectAreasToSelectionMenu(projectAreas);
     }),
     shareReplay(1)

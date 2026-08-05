@@ -48,7 +48,7 @@
   </mgl-layer>
 
   <ng-container *ngIf="showProjectAreas$ | async">
-    <!-- <app-map-project-areas
+    <app-map-project-areas
       *ngIf="projectAreaCount$ | async as projectAreasCount"
       [projectAreasCount]="projectAreasCount"
       [showHoveredProjectAreas]="false"
@@ -57,7 +57,7 @@
       [planningApproach]="
         (planningApproach$ | async) || 'OPTIMIZE_PROJECT_AREAS'
       ">
-    </app-map-project-areas> -->
+    </app-map-project-areas>
   </ng-container>
   <mgl-control position="bottom-left">
     <app-data-layer-name [showClearButton]="true"></app-data-layer-name>

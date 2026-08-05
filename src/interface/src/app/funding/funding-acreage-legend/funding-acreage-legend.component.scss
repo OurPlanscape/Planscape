@@ -165,8 +165,6 @@
      ====================================================== */
   &.pdf-version {
     display: block !important;
-    width: 1000 !important;
-    /* Hard physical layout width for html2canvas */
     min-width: 360px !important;
     box-sizing: border-box !important;
 
@@ -242,7 +240,6 @@
       max-height: none !important;
       overflow: visible !important;
       flex: none !important;
-      /* Stops flex items from vertical squishing */
     }
 
     /* Keep labels and swatches aligned horizontally */

@@ -138,7 +138,7 @@ export class FundingReportViewComponent {
         areas,
         projAreas
       );
-      // TODO: detroy this silly PoC
+      // TODO: still a PoC for how to handle / pass around legendData
       this.fundingMapConfigState.setLegendData(legendData);
       return legendData;
     })

@@ -181,8 +181,6 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   /** The scrollable container holding the map + report sections. */
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLElement>;
 
-  @ViewChild(FundingReportMapComponent) mapElement!: FundingReportMapComponent;
-
   mapLoaded$ = this.fundingMapConfigState.mapLoaded$;
 
   /** True while a PDF is being generated, to disable the download control. */
@@ -653,22 +651,14 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     }
     this.generatingPdf$.next(true);
 
-    const mapRef = this.fundingMapConfigState.getMapRef();
-
     try {
-      // In the dashboard preview the map is inside the captured sections. In the
-      // full view it lives in a sibling pane, so grab its canvas to draw on top.
-      // const mapCanvas = this.isPreview
-      //   ? null
-      //   : document.querySelector<HTMLCanvasElement>('.maplibregl-canvas');
+      // note: we render the map directly using a maplibremap reference
       await this.pdfService.exportPDFReport(
         this.scrollContainer.nativeElement,
         this.report.scenario, // scenario Id
-        mapRef ?? this.mapElement.mapLibreMap,
         this.projectAreas
       );
     } catch (error) {
-      console.log('what is the error?', error);
       this.displayDownloadErrorSnackbar();
     } finally {
       this.generatingPdf$.next(false);

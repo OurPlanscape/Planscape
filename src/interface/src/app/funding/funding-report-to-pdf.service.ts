@@ -41,12 +41,12 @@ export class FundingReportToPdfService {
   async exportPDFReport(
     element: HTMLElement,
     scenarioId: number,
-    map: MapLibreMap,
     selectedProjects?: number[]
   ): Promise<void> {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const { MARGIN_MM, PAGE_WIDTH_MM, VERTICAL_GAP } =
       FundingReportToPdfService;
+    const map = this.fundingMapConfigState.getMapRef();
 
     const mapWidth = PAGE_WIDTH_MM - MARGIN_MM * 2;
     const mapHeight = mapWidth * 0.666;
@@ -55,7 +55,7 @@ export class FundingReportToPdfService {
     // when adding elements from top to bottom in the X,Y plane
     let currentY = 0;
 
-    // Fetch async prerequisites concurrently
+    // Fetch async prerequisites
     const [logoDataUrl, selectedProjectAreas] = await Promise.all([
       this.loadLogo(FundingReportToPdfService.LOGO_PATH),
       selectedProjects
@@ -73,8 +73,16 @@ export class FundingReportToPdfService {
     currentY = 20;
 
     // Map Section
-    await this.addMapToPdf(pdf, map, MARGIN_MM, currentY, mapWidth, mapHeight);
-
+    if (map) {
+      await this.addMapToPdf(
+        pdf,
+        map,
+        MARGIN_MM,
+        currentY,
+        mapWidth,
+        mapHeight
+      );
+    }
     // Legend Section
     currentY += mapHeight + VERTICAL_GAP;
     const legendWidth = mapWidth / 3;

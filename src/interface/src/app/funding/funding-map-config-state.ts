@@ -48,10 +48,6 @@ export class FundingMapConfigState extends MapConfigState {
     return this.legendData;
   }
 
-  getCurrentSelectedAreas() {
-    return this._selectedProjectAreas$.value;
-  }
-
   toggleSelectedProjectArea(id: any) {
     const currentSelection = this._selectedProjectAreas$.getValue();
     // if the id is already selected, we remove it.
