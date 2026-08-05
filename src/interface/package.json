@@ -39,7 +39,6 @@
     "@geomatico/maplibre-cog-protocol": "^0.5.0",
     "@maplibre/ngx-maplibre-gl": "^17.4.3",
     "@ngneat/until-destroy": "^10.0.0",
-    "@openpanel/web": "^1.0.5",
     "@sentry/angular": "^9.13.0",
     "@turf/area": "^6.5.0",
     "@turf/boolean-intersects": "^6.5.0",
