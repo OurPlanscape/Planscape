@@ -950,7 +950,7 @@ class CreateFundingOpportunityReportInvitesTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         shared_link = FundingOpportunityReportSharedLink.objects.get()
         track_mock.assert_called_once_with(
-            name="funding_report.shared_link.sent",
+            name="planning.funding_report.shared",
             properties={
                 "scenario_id": self.scenario.pk,
                 "report_id": self.report.pk,
