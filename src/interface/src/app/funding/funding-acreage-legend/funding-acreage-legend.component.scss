@@ -24,7 +24,9 @@
     max-height: calc(100% - #{$map-nav-bar-height});
     text-overflow: ellipsis;
     overflow: hidden;
-    transition: width 0.8s ease, height 0.8s ease;
+    transition:
+      width 0.8s ease,
+      height 0.8s ease;
     white-space: nowrap;
     padding: 0;
     width: 240px;
@@ -177,11 +179,11 @@
       min-width: 360px !important;
       height: auto !important;
       max-height: none !important;
-      /* Disables calc(100% - navBar) height cap */
       overflow: visible !important;
-      /* Un-clips the bottom content */
       background: white;
-      /* Solid dark color (html2canvas hates backdrop blur) */
+      border-radius: 8px;
+      background-color: $color-white;
+      border: 1px solid $color-light-purple;
       backdrop-filter: none !important;
       box-shadow: none !important;
       transition: none !important;
@@ -228,7 +230,6 @@
       text-transform: capitalize;
       padding: 16px 0 8px;
       border-top: 1px rgba(255, 255, 255, 0.0980392157) solid;
-
     }
 
     /* Uncap all nested section heights so rows flow naturally */
@@ -237,7 +238,6 @@
     .dynamic-acres-row,
     .static-section,
     .dynamic-section {
-
       height: auto !important;
       max-height: none !important;
       overflow: visible !important;

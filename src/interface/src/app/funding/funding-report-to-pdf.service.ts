@@ -43,7 +43,7 @@ export class FundingReportToPdfService {
     private fundingMapConfigState: FundingMapConfigState,
     private injector: EnvironmentInjector,
     private scenarioService: ScenarioService
-  ) { }
+  ) {}
 
   /**
    * Exports the funding report as a PDF by rasterizing the live report DOM
@@ -64,12 +64,16 @@ export class FundingReportToPdfService {
 
     const filename = `planscape-funding-report-${scenarioId}`;
 
-    const { MARGIN_MM, PAGE_WIDTH_MM, PAGE_HEIGHT_MM, CARD_SCALE_MULTIPLIER, VERTICAL_GAP } =
-      FundingReportToPdfService;
-    // const targetContentWidth = (PAGE_WIDTH_MM - MARGIN_MM * 2) / 2;
+    const {
+      MARGIN_MM,
+      PAGE_WIDTH_MM,
+      PAGE_HEIGHT_MM,
+      CARD_SCALE_MULTIPLIER,
+      VERTICAL_GAP,
+    } = FundingReportToPdfService;
 
     const mapX = MARGIN_MM;
-    const fullPageWidth = PAGE_WIDTH_MM - (MARGIN_MM * 2);
+    const fullPageWidth = PAGE_WIDTH_MM - MARGIN_MM * 2;
     const mapHeight = fullPageWidth * 0.666;
 
     // Pre-load the logo so it's ready to paint on the PDF canvas.
@@ -119,31 +123,32 @@ export class FundingReportToPdfService {
     await this.addMap(mapX, currentY, mapHeight, fullPageWidth);
 
     currentY += mapHeight + VERTICAL_GAP;
-    const legendDimensions = await this.addLegend(MARGIN_MM + ((fullPageWidth / 3) * 2), currentY, fullPageWidth / 3);
+    const legendDimensions = await this.addLegend(
+      MARGIN_MM + (fullPageWidth / 3) * 2,
+      currentY,
+      fullPageWidth / 3
+    );
 
     currentY += legendDimensions.height + VERTICAL_GAP;
 
     const cards = element.querySelectorAll('.report-section');
     document.body.classList.add('is-generating-pdf');
-
-    
     const HEADER_OFFSET_Y = 20;
 
     // Calculate column dimensions
     // Column width: 10mm less than half the page width (105 - 10 = 95mm)
-     const colWidth = (PAGE_WIDTH_MM - MARGIN_MM) / 2;
+    const colWidth = (PAGE_WIDTH_MM - MARGIN_MM) / 2;
 
     // Calculate gap so the two 95mm columns center within the 210mm page with 10mm outer margins
     // Outer Margins (20mm total) + 2 * ColWidth (190mm) = 210mm.
     // To keep 10mm outer margins, Column 1 starts at MARGIN_MM and Column 2 starts at PAGE_WIDTH_MM - MARGIN_MM - colWidth
     const colXPositions = [
-      MARGIN_MM * 2,  // Column 0 (Left)
-      PAGE_WIDTH_MM - colWidth  // Column 1 (Right)
+      MARGIN_MM * 2, // Column 0 (Left)
+      PAGE_WIDTH_MM - colWidth, // Column 1 (Right)
     ];
 
     let currentColumn = 0;
     let pageStartY = currentY;
-
 
     for (let i = 1; i < cards.length; i++) {
       const card = cards[i] as HTMLElement;
@@ -163,7 +168,7 @@ export class FundingReportToPdfService {
 
       // Check overflow
       if (currentY + layout.height > PAGE_HEIGHT_MM - MARGIN_MM) {
-        const isFirstItemOnPage = (currentY === pageStartY);
+        const isFirstItemOnPage = currentY === pageStartY;
 
         if (currentColumn === 0 && !isFirstItemOnPage) {
           // Move to Column 2 on the SAME page
@@ -268,17 +273,12 @@ export class FundingReportToPdfService {
     if (this.activeMap === null) {
       throw new Error('No active map');
     }
-    const curZoom = this.activeMap?.getZoom();
-    const curBounds = this.activeMap?.getBounds();
-    console.log('the current zoom is:', curZoom);
-    console.log('the current bounds is:', curBounds);
-
     const printMap = new MapLibreMap({
       container: 'printable-map',
       preserveDrawingBuffer: true, // required for toDataURL
       style: this.activeMap?.getStyle(),
       center: this.activeMap?.getBounds().getCenter(),
-      zoom: 9,
+      zoom: this.activeMap?.getZoom(),
       fitBoundsOptions: {
         padding: { top: 70, bottom: 40, left: 20, right: 20 },
       },
@@ -288,7 +288,6 @@ export class FundingReportToPdfService {
       transformRequest: (url, resourceType) =>
         addRequestHeaders(url, resourceType, this.authService.getAuthCookie()),
     });
-    console.log('what is the printmap object?', printMap);
 
     return new Promise((resolve) => {
       // Wait until the map has finished loading tiles and rendering.
@@ -310,8 +309,6 @@ export class FundingReportToPdfService {
     const imgData = printMap?.getCanvas()?.toDataURL('image/png');
 
     if (imgData) {
-      this.pdfInstance.setLineWidth(1);
-      this.pdfInstance.rect(mapX, mapY, mapWidth, mapHeight);
       this.pdfInstance.addImage(
         imgData,
         'PNG',
@@ -321,6 +318,11 @@ export class FundingReportToPdfService {
         mapHeight
       );
     }
+
+    //add a border
+    this.pdfInstance.setDrawColor(167, 170, 224); // Dark gray border (#212529)
+    this.pdfInstance.setLineWidth(0.2); // Border width in PDF units
+    this.pdfInstance.rect(mapX, mapY, mapWidth, mapHeight);
   }
 
   configMapContainer(mapContainer: HTMLDivElement): void {
@@ -395,11 +397,15 @@ export class FundingReportToPdfService {
   async addLegend(
     legendX: number,
     legendY: number,
-    targetWidth: number,
+    targetWidth: number
   ): Promise<{ width: number; height: number }> {
     if (!this.pdfInstance) return { width: 0, height: 0 };
 
-    const { imgData, width: canvasWidth, height: canvasHeight } = await this.captureComponent(
+    const {
+      imgData,
+      width: canvasWidth,
+      height: canvasHeight,
+    } = await this.captureComponent(
       FundingAcreageLegendComponent,
       { legendData: this.fundingMapConfigState.getLegendData() ?? {} },
       ['pdf-version']
