@@ -10,7 +10,7 @@ from collaboration.models import Permissions, Role, UserObjectRole
 from collaboration.permissions import CollaboratorPermission
 from collaboration.tasks import send_invitation
 from planscape.exceptions import InvalidOwnership
-from planscape.openpanel import track_openpanel
+from planscape.analytics import track_event
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -93,7 +93,7 @@ def create_invite(
 
     send_invitation.delay(object_role.pk, collaborator_exists, message)
 
-    track_openpanel(
+    track_event(
         name="collaboration.invite.created",
         properties={
             "target_entity": target_entity,
