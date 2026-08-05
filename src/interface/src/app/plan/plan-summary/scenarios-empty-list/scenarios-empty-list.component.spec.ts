@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ScenariosEmptyListComponent } from './scenarios-empty-list.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-// import { UploadProjectAreasModalComponent } from '@app/plan/upload-project-areas-modal/upload-project-areas-modal.component';
 import { ScenarioSetupModalComponent } from '@app/scenario/scenario-setup-modal/scenario-setup-modal.component';
 import { Plan } from '@app/types';
 import { MOCK_GEOJSON, MOCK_PLAN } from '@app/services/mocks';

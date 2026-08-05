@@ -12,7 +12,10 @@
     } @else {
       <app-scenarios-empty-list
         *ngIf="
-          planningAreaIsReady && !planningAreaIsLarge && !planningAreaFailed
+          plan &&
+          planningAreaIsReady &&
+          !planningAreaIsLarge &&
+          !planningAreaFailed
         "
         [plan]="plan"></app-scenarios-empty-list>
 
