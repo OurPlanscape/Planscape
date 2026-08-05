@@ -84,19 +84,18 @@ export class ScenarioDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    let scenarioBackUrl = getPlanPath(this.planId);
-    let breadcrumbLabel = 'Planning Area Overview';
-
+    const planPath = getPlanPath(this.planId);
     this.currentScenario$.pipe(take(1)).subscribe((scenario) => {
-      if (scenario.parent) {
-        scenarioBackUrl += `/scenario/${scenario.parent}/dashboard`;
-        breadcrumbLabel = 'Project Area Dashboard';
-      }
-
-      this.breadcrumbService.updateBreadCrumb({
-        label: breadcrumbLabel,
-        backUrl: scenarioBackUrl,
-      });
+      const breadcrumb = scenario?.parent
+        ? {
+            label: 'Project Area Dashboard',
+            backUrl: `${planPath}/scenario/${scenario.parent}/dashboard`,
+          }
+        : {
+            label: 'Planning Area Overview',
+            backUrl: planPath,
+          };
+      this.breadcrumbService.updateBreadCrumb(breadcrumb);
     });
   }
 
