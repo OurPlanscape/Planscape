@@ -604,6 +604,14 @@ ZIP_TIMEOUT = config("ZIP_TIMEOUT", 600)  # 10m
 ADMIN_URL_PREFIX = config("ADMIN_URL_PREFIX", "admin")
 FEATURE_FLAG_S3_PROXY = config("FEATURE_FLAG_S3_PROXY", False, cast=bool)
 
+# OPENPANEL config
+OPENPANEL_INTEGRATION = config("OPENPANEL_INTEGRATION", default=True, cast=bool)
+OPENPANEL_URL = config("OPENPANEL_URL", "https://op.sig-gis.com/api")
+OPENPANEL_CLIENT_ID = config("OPENPANEL_CLIENT_ID", "fake-openpanel-client-id")
+OPENPANEL_CLIENT_SECRET = config(
+    "OPENPANEL_CLIENT_SECRET", "fake-openpanel-client-secret"
+)
+
 # MIXPANEL config
 MIXPANEL_INTEGRATION = config("MIXPANEL_INTEGRATION", default=False, cast=bool)
 MIXPANEL_PROJECT_TOKEN = config("MIXPANEL_PROJECT_TOKEN", "fake-mixpanel-project-token")

@@ -49,7 +49,7 @@ from stands.services import (
 )
 from stands.calculator import calculate_delta
 
-from planscape.analytics import track_event
+from planscape.openpanel import track_openpanel
 
 log = logging.getLogger(__name__)
 
@@ -72,7 +72,7 @@ def create_treatment_plan(
         name=name,
         stand_size=stand_size or scenario.get_stand_size(),
     )
-    track_event(
+    track_openpanel(
         name="impacts.treatment_plan.create",
         user_id=created_by.pk,
         properties={
@@ -165,7 +165,7 @@ def clone_treatment_plan(
             treatment_plan.tx_prescriptions.all(),
         )
     )
-    track_event(
+    track_openpanel(
         name="impacts.treatment_plan.clone",
         user_id=user.pk,
         properties={

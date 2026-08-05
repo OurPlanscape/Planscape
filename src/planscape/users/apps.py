@@ -10,14 +10,14 @@ log = logging.getLogger(__name__)
 
 
 def log_login_failure(sender, credentials, request, **kwargs):
-    from planscape.analytics import track_event
+    from planscape.openpanel import track_openpanel
 
     login_user_identifier = (
         credentials.get("email")
         or credentials.get("username")
         or "no identifier provided"
     )
-    track_event(
+    track_openpanel(
         "users.login_failed", properties={"email": credentials.get("email") or ""}
     )
     log.warning(
@@ -28,9 +28,9 @@ def log_login_failure(sender, credentials, request, **kwargs):
 
 
 def handle_email_confirmed(sender, request, email_address, **kwargs):
-    from planscape.analytics import track_event
+    from planscape.openpanel import track_openpanel
 
-    track_event(
+    track_openpanel(
         "users.email_confirmed",
         properties={"email": email_address.email},
         user_id=email_address.user_id,
@@ -38,10 +38,10 @@ def handle_email_confirmed(sender, request, email_address, **kwargs):
 
 
 def handle_user_logged_in(sender, request, user, **kwargs):
-    from planscape.analytics import identify_user, track_event
+    from planscape.openpanel import identify_openpanel, track_openpanel
 
-    identify_user(user)
-    track_event(
+    identify_openpanel(user)
+    track_openpanel(
         "users.logged_in",
         properties={
             "email": user.email if user else None,

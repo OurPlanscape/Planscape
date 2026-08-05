@@ -6,7 +6,7 @@ import { OverlayLoaderService } from '@services/overlay-loader.service';
 import { environment } from '@env/environment';
 import { ForsysService } from '@services/forsys.service';
 import { MapModuleService } from '@services/map-module.service';
-import { MixpanelService } from '@services/mixpanel.service';
+import { ProductAnalyticsService } from '@services/product-analytics.service';
 
 @Component({
   selector: 'app-root',
@@ -25,7 +25,7 @@ export class AppComponent implements OnInit {
     private overlayLoaderService: OverlayLoaderService,
     private forsysService: ForsysService,
     private mapModuleService: MapModuleService,
-    private mixpanelService: MixpanelService
+    private productAnalyticsService: ProductAnalyticsService
   ) {}
 
   isLoading$ = this.overlayLoaderService.isLoading$;
@@ -41,6 +41,8 @@ export class AppComponent implements OnInit {
     this.mapModuleService.loadMapModule().subscribe();
     // Refresh the user's logged in status when the app initializes.
     this.authService.refreshLoggedInUser().pipe(take(1)).subscribe();
-    this.mixpanelService.init();
+    // We're migrating from OpenPanel to Mixpanel, so both run side by side
+    // while the historical data is backfilled. See scripts/openpanel_to_mixpanel.
+    this.productAnalyticsService.init();
   }
 }

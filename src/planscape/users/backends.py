@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def track_returning_user(user) -> None:
-    from planscape.analytics import track_event
+    from planscape.openpanel import track_openpanel
 
     logger.info(f"user {user} logging in - last login {user.last_login}")
     now = timezone.now()
@@ -20,7 +20,7 @@ def track_returning_user(user) -> None:
     profile = user.profile
     if current_bucket > profile.last_returning_user_bucket:
         period_days = current_bucket * number_of_days
-        track_event(
+        track_openpanel(
             f"users.returned_after_{period_days}d",
             properties={"email": user.email, "count": current_bucket},
             user_id=user.pk,

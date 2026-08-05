@@ -729,8 +729,8 @@ class LastLoginTest(TestCase):
         self.user.refresh_from_db()
         self.assertGreaterEqual(self.user.last_login, first_login_time)
 
-    @patch("planscape.analytics.track_event")
-    @patch("planscape.analytics.identify_user")
+    @patch("planscape.openpanel.track_openpanel")
+    @patch("planscape.openpanel.identify_openpanel")
     def test_returning_user_event_is_tracked_on_login(self, mock_identify, mock_track):
         self.user.date_joined = timezone.now() - timedelta(days=31)
         self.user.last_login = None
@@ -759,9 +759,9 @@ class LastLoginTest(TestCase):
         self.assertIsNotNone(self.user.profile.last_returning_user_event_at)
 
 
-class UserAnalyticsEventsTest(TestCase):
-    @patch("users.allauth_adapter.track_event")
-    @patch("users.allauth_adapter.identify_user")
+class OpenPanelEventsTest(TestCase):
+    @patch("users.allauth_adapter.track_openpanel")
+    @patch("users.allauth_adapter.identify_openpanel")
     def test_user_registered_event_is_tracked(self, mock_identify, mock_track):
         from unittest.mock import MagicMock
 
@@ -781,7 +781,7 @@ class UserAnalyticsEventsTest(TestCase):
             user_id=user.pk,
         )
 
-    @patch("planscape.analytics.track_event")
+    @patch("planscape.openpanel.track_openpanel")
     def test_user_email_confirmed_event_is_tracked(self, mock_track):
         from allauth.account.signals import email_confirmed
 
@@ -818,7 +818,7 @@ class ReturningUserTrackingTest(TestCase):
         self.assertEqual(user.profile.last_returning_user_bucket, 0)
         self.assertIsNone(user.profile.last_returning_user_event_at)
 
-    @patch("planscape.analytics.track_event")
+    @patch("planscape.openpanel.track_openpanel")
     def test_fires_on_first_login_after_30_days(self, mock_track):
         user = self._make_user(date_joined_days_ago=31, last_login_days_ago=None)
         from users.backends import track_returning_user
@@ -833,7 +833,7 @@ class ReturningUserTrackingTest(TestCase):
         self.assertEqual(user.profile.last_returning_user_bucket, 1)
         self.assertIsNotNone(user.profile.last_returning_user_event_at)
 
-    @patch("planscape.analytics.track_event")
+    @patch("planscape.openpanel.track_openpanel")
     def test_does_not_fire_again_within_same_bucket(self, mock_track):
         user = self._make_user(date_joined_days_ago=40, last_login_days_ago=5)
         user.profile.last_returning_user_bucket = 1
@@ -849,7 +849,7 @@ class ReturningUserTrackingTest(TestCase):
         track_returning_user(user)
         mock_track.assert_not_called()
 
-    @patch("planscape.analytics.track_event")
+    @patch("planscape.openpanel.track_openpanel")
     def test_does_not_fire_within_30_days(self, mock_track):
         user = self._make_user(date_joined_days_ago=20, last_login_days_ago=None)
         from users.backends import track_returning_user
@@ -857,7 +857,7 @@ class ReturningUserTrackingTest(TestCase):
         track_returning_user(user)
         mock_track.assert_not_called()
 
-    @patch("planscape.analytics.track_event")
+    @patch("planscape.openpanel.track_openpanel")
     def test_fires_for_next_bucket(self, mock_track):
         user = self._make_user(date_joined_days_ago=61, last_login_days_ago=5)
         user.profile.last_returning_user_bucket = 1
@@ -880,7 +880,7 @@ class ReturningUserTrackingTest(TestCase):
         self.assertEqual(user.profile.last_returning_user_bucket, 2)
         self.assertIsNotNone(user.profile.last_returning_user_event_at)
 
-    @patch("planscape.analytics.track_event")
+    @patch("planscape.openpanel.track_openpanel")
     def test_skipped_buckets_fire_only_for_current_bucket(self, mock_track):
         user = self._make_user(date_joined_days_ago=95, last_login_days_ago=40)
         user.profile.last_returning_user_bucket = 1
