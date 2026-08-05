@@ -78,3 +78,27 @@ export const MOCK_GEOMETRY: Geometry = {
     ],
   ],
 };
+
+export const MOCK_GEOJSON: GeoJSON.GeoJSON = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: [
+          [
+            [
+              [10, 20],
+              [10, 30],
+              [15, 15],
+            ],
+          ],
+        ],
+      },
+      properties: {
+        shape_name: 'Test',
+      },
+    },
+  ],
+};
