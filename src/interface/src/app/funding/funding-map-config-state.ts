@@ -13,10 +13,7 @@ export class FundingMapConfigState extends MapConfigState {
   private _showFundingLegend$ = new BehaviorSubject(true);
   public showFundingLegend$ = this._showFundingLegend$.asObservable();
 
-  // TODO: just a proof-of-concept here....
-  private legendData: any = null;
-
-  //TODO: just a PoC, dont do it like this
+  //TODO: just a PoC
   private _mapRef$ = new BehaviorSubject<MapLibreMap | null>(null);
   public mapRef$ = this._mapRef$.asObservable();
 
@@ -38,14 +35,6 @@ export class FundingMapConfigState extends MapConfigState {
 
   updateSelectedProjectAreas(ids: number[]) {
     this._selectedProjectAreas$.next(ids);
-  }
-
-  setLegendData(legendData: any) {
-    this.legendData = legendData;
-  }
-
-  getLegendData() {
-    return this.legendData;
   }
 
   toggleSelectedProjectArea(id: any) {

@@ -10,8 +10,13 @@ import { Map as MapLibreMap } from 'maplibre-gl';
 import { addRequestHeaders } from '@app/maplibre-map/maplibre.helper';
 import { AuthService, ScenarioService } from '@app/services';
 import { FundingMapConfigState } from './funding-map-config-state';
-import { FundingAcreageLegendComponent } from './funding-acreage-legend/funding-acreage-legend.component';
+import {
+  FundingAcreageLegendComponent,
+  FundingLegendData,
+} from './funding-acreage-legend/funding-acreage-legend.component';
 import { firstValueFrom } from 'rxjs';
+import { generateLegendFromReport } from './funding-report/funding-report.helper';
+import { FundingReport, ProjectArea } from '@app/types';
 
 /**
  * Exports the funding report as a PDF by rasterizing the live report DOM
@@ -40,29 +45,34 @@ export class FundingReportToPdfService {
    */
   async exportPDFReport(
     element: HTMLElement,
-    scenarioId: number,
+    fundingReport: FundingReport,
     selectedProjects?: number[]
   ): Promise<void> {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const { MARGIN_MM, PAGE_WIDTH_MM, VERTICAL_GAP } =
       FundingReportToPdfService;
     const map = this.fundingMapConfigState.getMapRef();
-
+    const scenarioId = fundingReport.scenario;
     const mapWidth = PAGE_WIDTH_MM - MARGIN_MM * 2;
     const mapHeight = mapWidth * 0.666;
+
+    // TODO: async service call...can we get this somewhere else?
+    const allAvailableProjectAreas = await firstValueFrom(
+      this.scenarioService.getProjectAreas(scenarioId)
+    );
 
     // This currentY is essentially a "cursor" for where we have advanced
     // when adding elements from top to bottom in the X,Y plane
     let currentY = 0;
 
     // Fetch async prerequisites
-    const [logoDataUrl, selectedProjectAreas] = await Promise.all([
+    const [logoDataUrl] = await Promise.all([
       this.loadLogo(FundingReportToPdfService.LOGO_PATH),
-      selectedProjects
-        ? this.getSelectedProjectAreas(scenarioId, selectedProjects)
-        : Promise.resolve([]),
     ]);
 
+    const selectedProjectAreas = selectedProjects
+      ? this.getSelectedProjectAreas(selectedProjects, allAvailableProjectAreas)
+      : [];
     this.fundingMapConfigState.setFundingLegendVisibility(true);
 
     // Reusable page header renderer
@@ -86,8 +96,17 @@ export class FundingReportToPdfService {
     // Legend Section
     currentY += mapHeight + VERTICAL_GAP;
     const legendWidth = mapWidth / 3;
+
+    //recalcuate this in this context, because we never do it in the preview
+    const legendData = generateLegendFromReport(
+      fundingReport.results,
+      selectedProjects ?? [],
+      allAvailableProjectAreas
+    );
+
     const legendDimensions = await this.addLegendToPdf(
       pdf,
+      legendData,
       MARGIN_MM + legendWidth * 2,
       currentY,
       legendWidth
@@ -151,6 +170,7 @@ export class FundingReportToPdfService {
 
   private async addLegendToPdf(
     pdf: jsPDF,
+    legendData: FundingLegendData,
     x: number,
     y: number,
     targetWidth: number
@@ -161,7 +181,7 @@ export class FundingReportToPdfService {
       height: canvasHeight,
     } = await this.captureComponent(
       FundingAcreageLegendComponent,
-      { legendData: this.fundingMapConfigState.getLegendData() ?? {} },
+      { legendData: legendData },
       ['pdf-version']
     );
 
@@ -347,13 +367,11 @@ export class FundingReportToPdfService {
     return { x: marginMm + centeringOffset, width, height };
   }
 
-  private async getSelectedProjectAreas(
-    scenarioId: number,
-    selectedIds: number[]
-  ): Promise<number[]> {
-    const projectAreas = await firstValueFrom(
-      this.scenarioService.getProjectAreas(scenarioId)
-    );
+  private getSelectedProjectAreas(
+    selectedIds: number[],
+    allAvailableProjectAreas: ProjectArea[]
+  ): number[] {
+    const projectAreas = allAvailableProjectAreas;
 
     return projectAreas
       .filter((pa) => selectedIds.includes(pa.id))
