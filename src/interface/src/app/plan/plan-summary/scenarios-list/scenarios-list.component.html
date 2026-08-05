@@ -13,7 +13,8 @@
       <app-scenarios-empty-list
         *ngIf="
           planningAreaIsReady && !planningAreaIsLarge && !planningAreaFailed
-        "></app-scenarios-empty-list>
+        "
+        [plan]="plan"></app-scenarios-empty-list>
 
       <div *ngIf="planningAreaIsLarge" class="large-message">
         <p>
