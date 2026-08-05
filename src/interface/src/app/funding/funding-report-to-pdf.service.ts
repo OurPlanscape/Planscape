@@ -18,7 +18,6 @@ import { firstValueFrom } from 'rxjs';
  * (map + sections, as shown in the dashboard preview) and paginating the
  * resulting image across A4 pages.
  */
-
 @Injectable()
 export class FundingReportToPdfService {
   // ---- PDF page geometry (A4 portrait, mm) ----
@@ -26,17 +25,8 @@ export class FundingReportToPdfService {
   private static readonly PAGE_HEIGHT_MM = 297;
   private static readonly MARGIN_MM = 12;
   private static readonly VERTICAL_GAP = 8;
-
-  // Shrinks captured report-card screenshots so they don't dominate the page.
   private static readonly CARD_SCALE_MULTIPLIER = 0.7;
-
   private static readonly LOGO_PATH = 'assets/svg/planscape-color-logo.svg';
-
-  // ---- Per-export state ----
-  // Reset at the start of every exportPDFReport() call.
-  private scenarioId: number | null = null;
-  private activeMap: MapLibreMap | null = null;
-  private pdfInstance: jsPDF | null = null;
 
   constructor(
     private authService: AuthService,
@@ -46,11 +36,7 @@ export class FundingReportToPdfService {
   ) {}
 
   /**
-   * Exports the funding report as a PDF by rasterizing the live report DOM
-   * (map + sections, as shown in the dashboard preview) and paginating the
-   * resulting image across A4 pages.
-   *
-   * @param element The report sections container to capture
+   * Generate and download the PDF report.
    */
   async exportPDFReport(
     element: HTMLElement,
@@ -58,97 +44,144 @@ export class FundingReportToPdfService {
     map: MapLibreMap,
     selectedProjects?: number[]
   ): Promise<void> {
-    this.pdfInstance = new jsPDF('p', 'mm', 'a4');
-    this.scenarioId = scenarioId;
-    this.activeMap = map;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const { MARGIN_MM, PAGE_WIDTH_MM, VERTICAL_GAP } =
+      FundingReportToPdfService;
 
-    const filename = `planscape-funding-report-${scenarioId}`;
+    const mapWidth = PAGE_WIDTH_MM - MARGIN_MM * 2;
+    const mapHeight = mapWidth * 0.666;
 
-    const {
-      MARGIN_MM,
-      PAGE_WIDTH_MM,
-      PAGE_HEIGHT_MM,
-      CARD_SCALE_MULTIPLIER,
-      VERTICAL_GAP,
-    } = FundingReportToPdfService;
+    // This currentY is essentially a "cursor" for where we have advanced
+    // when adding elements from top to bottom in the X,Y plane
+    let currentY = 0;
 
-    const mapX = MARGIN_MM;
-    const fullPageWidth = PAGE_WIDTH_MM - MARGIN_MM * 2;
-    const mapHeight = fullPageWidth * 0.666;
-
-    // Pre-load the logo so it's ready to paint on the PDF canvas.
-    const logoDataUrl = await this.loadLogo(
-      FundingReportToPdfService.LOGO_PATH
-    );
-    const selectedProjectAreas = selectedProjects
-      ? await this.getSelectedProjectAreas(selectedProjects)
-      : [];
+    // Fetch async prerequisites concurrently
+    const [logoDataUrl, selectedProjectAreas] = await Promise.all([
+      this.loadLogo(FundingReportToPdfService.LOGO_PATH),
+      selectedProjects
+        ? this.getSelectedProjectAreas(scenarioId, selectedProjects)
+        : Promise.resolve([]),
+    ]);
 
     this.fundingMapConfigState.setFundingLegendVisibility(true);
 
-    const mapContainer = document.createElement('div');
-    this.configMapContainer(mapContainer);
+    // Reusable page header renderer
+    const renderHeader = () =>
+      this.drawHeader(pdf, logoDataUrl, selectedProjectAreas);
+    renderHeader();
 
-    const drawHeader = () => {
-      if (logoDataUrl && this.pdfInstance) {
-        this.pdfInstance.addImage(logoDataUrl, 'PNG', MARGIN_MM, 7, 32, 6);
-      }
+    currentY = 20;
 
-      // draw title info...
+    // Map Section
+    await this.addMapToPdf(pdf, map, MARGIN_MM, currentY, mapWidth, mapHeight);
 
-      this.pdfInstance?.setFont('Helvetica', 'normal');
-      this.pdfInstance?.setFontSize(8);
-      const selectedList =
-        selectedProjectAreas.length > 0
-          ? selectedProjectAreas.join(', ')
-          : 'All';
-
-      const selectedAreasInfo = `Selected Project Areas: ${selectedList}`;
-      const saTextWidth =
-        this.pdfInstance?.getTextWidth(selectedAreasInfo) ?? 0;
-      this.pdfInstance?.text(
-        selectedAreasInfo,
-        PAGE_WIDTH_MM - MARGIN_MM - saTextWidth,
-        12
-      );
-      this.pdfInstance?.setDrawColor('#E2E8F0');
-      this.pdfInstance?.setLineWidth(0.5);
-      this.pdfInstance?.line(MARGIN_MM, 16, PAGE_WIDTH_MM - MARGIN_MM, 16);
-    };
-
-    // Initialize Page 1 header and set the content baseline below it.
-    drawHeader();
-    let currentY = 20; // gives breathing room below the header line
-
-    await this.addMap(mapX, currentY, mapHeight, fullPageWidth);
-
+    // Legend Section
     currentY += mapHeight + VERTICAL_GAP;
-    const legendDimensions = await this.addLegend(
-      MARGIN_MM + (fullPageWidth / 3) * 2,
+    const legendWidth = mapWidth / 3;
+    const legendDimensions = await this.addLegendToPdf(
+      pdf,
+      MARGIN_MM + legendWidth * 2,
       currentY,
-      fullPageWidth / 3
+      legendWidth
     );
 
+    // Report Cards Section
     currentY += legendDimensions.height + VERTICAL_GAP;
+    await this.renderReportCards(pdf, element, currentY, renderHeader);
 
+    pdf.save(`planscape-funding-report-${scenarioId}.pdf`);
+  }
+
+  private drawHeader(
+    pdf: jsPDF,
+    logoDataUrl: string | null,
+    selectedProjectAreas: number[]
+  ): void {
+    const { MARGIN_MM, PAGE_WIDTH_MM } = FundingReportToPdfService;
+
+    if (logoDataUrl) {
+      pdf.addImage(logoDataUrl, 'PNG', MARGIN_MM, 7, 32, 6);
+    }
+
+    pdf.setFont('Helvetica', 'normal');
+    pdf.setFontSize(8);
+
+    const selectedList =
+      selectedProjectAreas.length > 0 ? selectedProjectAreas.join(', ') : 'All';
+    const selectedAreasInfo = `Selected Project Areas: ${selectedList}`;
+    const saTextWidth = pdf.getTextWidth(selectedAreasInfo);
+
+    pdf.text(selectedAreasInfo, PAGE_WIDTH_MM - MARGIN_MM - saTextWidth, 12);
+    pdf.setDrawColor('#E2E8F0');
+    pdf.setLineWidth(0.5);
+    pdf.line(MARGIN_MM, 16, PAGE_WIDTH_MM - MARGIN_MM, 16);
+  }
+
+  private async addMapToPdf(
+    pdf: jsPDF,
+    activeMap: MapLibreMap,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ): Promise<void> {
+    const printMap = await this.copyActiveMap(activeMap);
+    const imgData = printMap.getCanvas()?.toDataURL('image/png');
+
+    if (imgData) {
+      pdf.addImage(imgData, 'PNG', x, y, width, height);
+    }
+
+    // Border
+    pdf.setDrawColor(167, 170, 224);
+    pdf.setLineWidth(0.2);
+    pdf.rect(x, y, width, height);
+
+    // Clean up temporary map DOM container
+    printMap.getContainer().remove();
+  }
+
+  private async addLegendToPdf(
+    pdf: jsPDF,
+    x: number,
+    y: number,
+    targetWidth: number
+  ): Promise<{ width: number; height: number }> {
+    const {
+      imgData,
+      width: canvasWidth,
+      height: canvasHeight,
+    } = await this.captureComponent(
+      FundingAcreageLegendComponent,
+      { legendData: this.fundingMapConfigState.getLegendData() ?? {} },
+      ['pdf-version']
+    );
+
+    const targetHeight = (canvasHeight / canvasWidth) * targetWidth;
+    pdf.addImage(imgData, 'PNG', x, y, targetWidth, targetHeight);
+
+    return { width: targetWidth, height: targetHeight };
+  }
+
+  private async renderReportCards(
+    pdf: jsPDF,
+    element: HTMLElement,
+    startY: number,
+    drawHeader: () => void
+  ): Promise<void> {
+    const { MARGIN_MM, PAGE_WIDTH_MM, PAGE_HEIGHT_MM, CARD_SCALE_MULTIPLIER } =
+      FundingReportToPdfService;
     const cards = element.querySelectorAll('.report-section');
+
     document.body.classList.add('is-generating-pdf');
+
     const HEADER_OFFSET_Y = 20;
-
-    // Calculate column dimensions
-    // Column width: 10mm less than half the page width (105 - 10 = 95mm)
     const colWidth = (PAGE_WIDTH_MM - MARGIN_MM) / 2;
+    const colXPositions = [MARGIN_MM * 2, PAGE_WIDTH_MM - colWidth];
 
-    // Calculate gap so the two 95mm columns center within the 210mm page with 10mm outer margins
-    // Outer Margins (20mm total) + 2 * ColWidth (190mm) = 210mm.
-    // To keep 10mm outer margins, Column 1 starts at MARGIN_MM and Column 2 starts at PAGE_WIDTH_MM - MARGIN_MM - colWidth
-    const colXPositions = [
-      MARGIN_MM * 2, // Column 0 (Left)
-      PAGE_WIDTH_MM - colWidth, // Column 1 (Right)
-    ];
-
+    let currentY = startY;
+    let pageStartY = startY;
     let currentColumn = 0;
-    let pageStartY = currentY;
 
     for (let i = 1; i < cards.length; i++) {
       const card = cards[i] as HTMLElement;
@@ -161,7 +194,7 @@ export class FundingReportToPdfService {
 
       const layout = this.scaleCardImage(
         canvas,
-        colWidth, // Target width in mm
+        colWidth,
         CARD_SCALE_MULTIPLIER,
         MARGIN_MM
       );
@@ -176,7 +209,7 @@ export class FundingReportToPdfService {
           currentY = pageStartY;
         } else {
           // Create NEW page and reset to Column 1
-          this.pdfInstance.addPage();
+          pdf.addPage();
           drawHeader();
 
           currentColumn = 0;
@@ -186,7 +219,7 @@ export class FundingReportToPdfService {
       }
 
       // Draw card
-      this.pdfInstance.addImage(
+      pdf.addImage(
         canvas.toDataURL('image/png'),
         'PNG',
         colXPositions[currentColumn],
@@ -195,16 +228,101 @@ export class FundingReportToPdfService {
         layout.height
       );
 
-      // Advance Y
       currentY += layout.height + 10;
     }
+
     document.body.classList.remove('is-generating-pdf');
-    this.pdfInstance.save(`${filename}.pdf`);
   }
-  /**
-   * Scales a captured card canvas to fit the page content width, applying
-   * the master scale multiplier and centering it horizontally.
-   */
+
+  private async copyActiveMap(activeMap: MapLibreMap): Promise<MapLibreMap> {
+    const mapContainer = document.createElement('div');
+    mapContainer.id = 'printable-map';
+    Object.assign(mapContainer.style, {
+      position: 'absolute',
+      width: '1000px',
+      height: '700px',
+      left: '-9000px',
+      top: '-100px',
+    });
+    document.body.appendChild(mapContainer);
+
+    const printMap = new MapLibreMap({
+      container: mapContainer,
+      preserveDrawingBuffer: true,
+      style: activeMap.getStyle(),
+      center: activeMap.getBounds().getCenter(),
+      zoom: activeMap.getZoom(),
+      fitBoundsOptions: {
+        padding: { top: 70, bottom: 40, left: 20, right: 20 },
+      },
+      bearing: activeMap.getBearing(),
+      pitch: activeMap.getPitch(),
+      bounds: activeMap.getBounds(),
+      transformRequest: (url, resourceType) =>
+        addRequestHeaders(url, resourceType, this.authService.getAuthCookie()),
+    });
+
+    return new Promise((resolve) => {
+      printMap.once('idle', () => resolve(printMap));
+    });
+  }
+
+  private async captureComponent<T>(
+    component: new (...args: any[]) => T,
+    inputs?: Partial<T>,
+    cssClasses: string[] = ['pdf-version']
+  ): Promise<{ imgData: string; width: number; height: number }> {
+    const elementInjector = Injector.create({
+      providers: [
+        {
+          provide: FundingMapConfigState,
+          useValue: this.fundingMapConfigState,
+        },
+      ],
+      parent: this.injector,
+    });
+
+    const compRef = createComponent(component, {
+      environmentInjector: this.injector,
+      elementInjector,
+    });
+
+    if (inputs) {
+      Object.assign(compRef.instance as object, inputs);
+    }
+
+    const element = compRef.location.nativeElement as HTMLElement;
+    Object.assign(element.style, {
+      position: 'absolute',
+      left: '-9000px',
+      top: '-9000px',
+    });
+    cssClasses.forEach((cls) => element.classList.add(cls));
+
+    document.body.appendChild(element);
+    compRef.changeDetectorRef.detectChanges();
+
+    await document.fonts.ready;
+
+    const canvas = await html2canvas(element, {
+      backgroundColor: null,
+      scale: 3,
+      windowWidth: 1000,
+      windowHeight: 2000,
+    });
+
+    const result = {
+      imgData: canvas.toDataURL('image/png'),
+      width: canvas.width,
+      height: canvas.height,
+    };
+
+    document.body.removeChild(element);
+    compRef.destroy();
+
+    return result;
+  }
+
   private scaleCardImage(
     canvas: HTMLCanvasElement,
     targetContentWidth: number,
@@ -222,14 +340,11 @@ export class FundingReportToPdfService {
   }
 
   private async getSelectedProjectAreas(
+    scenarioId: number,
     selectedIds: number[]
   ): Promise<number[]> {
-    if (!this.scenarioId) {
-      return [];
-    }
-
     const projectAreas = await firstValueFrom(
-      this.scenarioService.getProjectAreas(this.scenarioId)
+      this.scenarioService.getProjectAreas(scenarioId)
     );
 
     return projectAreas
@@ -237,9 +352,6 @@ export class FundingReportToPdfService {
       .map((pa) => pa.data.treatment_rank);
   }
 
-  /**
-   * Converts an image path/SVG into a data URL so jsPDF can render it.
-   */
   private loadLogo(src: string): Promise<string | null> {
     return new Promise((resolve) => {
       const img = new Image();
@@ -267,162 +379,5 @@ export class FundingReportToPdfService {
 
       img.src = src;
     });
-  }
-
-  async copyActiveMap(): Promise<MapLibreMap> {
-    if (this.activeMap === null) {
-      throw new Error('No active map');
-    }
-    const printMap = new MapLibreMap({
-      container: 'printable-map',
-      preserveDrawingBuffer: true, // required for toDataURL
-      style: this.activeMap?.getStyle(),
-      center: this.activeMap?.getBounds().getCenter(),
-      zoom: this.activeMap?.getZoom(),
-      fitBoundsOptions: {
-        padding: { top: 70, bottom: 40, left: 20, right: 20 },
-      },
-      bearing: this.activeMap?.getBearing(),
-      pitch: this.activeMap?.getPitch(),
-      bounds: this.activeMap?.getBounds(),
-      transformRequest: (url, resourceType) =>
-        addRequestHeaders(url, resourceType, this.authService.getAuthCookie()),
-    });
-
-    return new Promise((resolve) => {
-      // Wait until the map has finished loading tiles and rendering.
-      printMap.once('idle', () => resolve(printMap));
-    });
-  }
-
-  async addMap(
-    mapX: number,
-    mapY: number,
-    mapHeight: number,
-    mapWidth: number
-  ): Promise<void> {
-    if (!this.pdfInstance || !this.activeMap) {
-      return;
-    }
-
-    const printMap = await this.copyActiveMap();
-    const imgData = printMap?.getCanvas()?.toDataURL('image/png');
-
-    if (imgData) {
-      this.pdfInstance.addImage(
-        imgData,
-        'PNG',
-        mapX,
-        mapY,
-        mapWidth,
-        mapHeight
-      );
-    }
-
-    //add a border
-    this.pdfInstance.setDrawColor(167, 170, 224); // Dark gray border (#212529)
-    this.pdfInstance.setLineWidth(0.2); // Border width in PDF units
-    this.pdfInstance.rect(mapX, mapY, mapWidth, mapHeight);
-  }
-
-  configMapContainer(mapContainer: HTMLDivElement): void {
-    mapContainer.id = 'printable-map';
-    mapContainer.style.position = 'absolute';
-    mapContainer.style.width = '1000px';
-    mapContainer.style.height = '700px';
-    mapContainer.style.left = '-9000px';
-    mapContainer.style.top = '-100px';
-    document.body.appendChild(mapContainer);
-  }
-
-  /**
-   * Renders an arbitrary component off-screen and captures it as an image,
-   * e.g. for the legend.
-   */
-  async captureComponent<T>(
-    component: new (...args: any[]) => T,
-    inputs?: Partial<T>,
-    cssClasses: string[] = ['pdf-version']
-  ): Promise<{ imgData: string; width: number; height: number }> {
-    const elementInjector = Injector.create({
-      providers: [
-        {
-          provide: FundingMapConfigState,
-          useValue: this.fundingMapConfigState,
-        },
-      ],
-      parent: this.injector, // fall back to root injector for everything else
-    });
-
-    const compRef = createComponent(component, {
-      environmentInjector: this.injector,
-      elementInjector,
-    });
-
-    if (inputs) {
-      Object.assign(compRef.instance as object, inputs);
-    }
-
-    const element = compRef.location.nativeElement as HTMLElement;
-    element.style.position = 'absolute';
-    element.style.left = '-9000px';
-    element.style.top = '-9000px';
-    cssClasses.forEach((cls) => element.classList.add(cls));
-
-    document.body.appendChild(element);
-    compRef.changeDetectorRef.detectChanges();
-
-    // Ensure icon fonts or web fonts render properly.
-    await document.fonts.ready;
-
-    const canvas = await html2canvas(element, {
-      backgroundColor: null,
-      scale: 3,
-      windowWidth: 1000,
-      windowHeight: 2000,
-    });
-
-    const result = {
-      imgData: canvas.toDataURL('image/png'),
-      width: canvas.width,
-      height: canvas.height,
-    };
-
-    document.body.removeChild(element);
-    compRef.destroy();
-
-    return result;
-  }
-
-  async addLegend(
-    legendX: number,
-    legendY: number,
-    targetWidth: number
-  ): Promise<{ width: number; height: number }> {
-    if (!this.pdfInstance) return { width: 0, height: 0 };
-
-    const {
-      imgData,
-      width: canvasWidth,
-      height: canvasHeight,
-    } = await this.captureComponent(
-      FundingAcreageLegendComponent,
-      { legendData: this.fundingMapConfigState.getLegendData() ?? {} },
-      ['pdf-version']
-    );
-
-    // Automatically calculate height to preserve aspect ratio:
-    const targetHeight = (canvasHeight / canvasWidth) * targetWidth;
-
-    this.pdfInstance.addImage(
-      imgData,
-      'PNG',
-      legendX,
-      legendY,
-      targetWidth,
-      targetHeight
-    );
-
-    return { width: targetWidth, height: targetHeight };
   }
 }
