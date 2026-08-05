@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute } from '@angular/router';
-import { filter, map, shareReplay, startWith, switchMap } from 'rxjs';
+import { filter, map, shareReplay, startWith, switchMap, take } from 'rxjs';
 
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { FundingReportService } from '@services/funding-report.service';
@@ -88,8 +88,24 @@ export class ForSharedComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.setBreadcrumb('Funding Opportunity Report');
+
+    // Once the shared report resolves, append its scenario name.
+    this.report$
+      .pipe(
+        filter((report): report is FundingReportPublic => !!report),
+        take(1)
+      )
+      .subscribe((report) =>
+        this.setBreadcrumb(
+          `Funding Opportunity Report: ${report.scenario.name}`
+        )
+      );
+  }
+
+  private setBreadcrumb(label: string): void {
     this.breadcrumbService.updateBreadCrumb({
-      label: 'Funding Opportunity Report',
+      label,
       backUrl: '/',
       icon: 'close',
       blackText: true,
