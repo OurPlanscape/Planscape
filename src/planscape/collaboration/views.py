@@ -14,6 +14,7 @@ from collaboration.serializers import (
 )
 
 from collaboration.services import create_invite
+from planscape.analytics import track_event
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +118,14 @@ class InvitationsForObject(APIView):
             serializer.update(
                 instance=user_object_role_obj, validated_data=serializer.validated_data
             )
+            track_event(
+                name="collaboration.invite.role_changed",
+                properties={
+                    "new_role": serializer.validated_data.get("role"),
+                    "email": user.email if user else None,
+                },
+                user_id=user.pk,
+            )
             return Response(serializer.data)
 
         except UserObjectRole.DoesNotExist as dne:
@@ -159,7 +168,16 @@ class InvitationsForObject(APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
+            revoked_email = user_object_role_obj.email
             user_object_role_obj.delete()
+            track_event(
+                name="collaboration.invite.revoked",
+                properties={
+                    "invitee_email": revoked_email,
+                    "email": user.email if user else None,
+                },
+                user_id=user.pk,
+            )
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         except UserObjectRole.DoesNotExist as dne:

@@ -40,7 +40,7 @@ from modules.base import (
     compute_scenario_capabilities,
 )
 from planscape.exceptions import InvalidGeometry
-from planscape.openpanel import track_openpanel
+from planscape.analytics import track_event
 from pyproj import Geod
 from shapely import wkt
 from stands.models import Stand, StandMetric, StandSizeChoices, area_from_size
@@ -139,7 +139,7 @@ def create_planning_area(
         planning_area.map_status = PlanningAreaMapStatus.OVERSIZE
         planning_area.save(update_fields=["map_status"])
         action.send(user, verb="created", action_object=planning_area)
-        track_openpanel(
+        track_event(
             name="planning.planning_area.created",
             properties={"region": region_name, "email": user.email if user else None},
             user_id=user.pk,
@@ -171,7 +171,7 @@ def create_planning_area(
         ),
     ).on_error(set_map_status_stands_failed)
 
-    track_openpanel(
+    track_event(
         name="planning.planning_area.created",
         properties={
             "region": region_name,
@@ -208,7 +208,7 @@ def delete_planning_area(
     ProjectArea.objects.filter(scenario__planning_area__pk=planning_area.pk).update(
         deleted_at=right_now
     )
-    track_openpanel(
+    track_event(
         name="planning.planning_area.deleted",
         properties={
             "soft": True,
@@ -331,7 +331,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
     if (
         scenario.treatment_goal is not None
     ):  # scenarios in 'draft' wont have a treatment_goal
-        track_openpanel(
+        track_event(
             name="planning.scenario.created",
             properties={
                 "origin": scenario.origin,
@@ -346,6 +346,15 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         )
         transaction.on_commit(
             lambda: prepare_scenarios_for_forsys_and_run.delay(scenario_id=scenario.pk)
+        )
+    else:
+        track_event(
+            name="planning.scenario.draft_created",
+            properties={
+                "origin": scenario.origin,
+                "email": user.email if user else None,
+            },
+            user_id=user.pk,
         )
     return scenario
 
@@ -476,7 +485,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
         result=result,
         status="SUCCESS",
     )
-    track_openpanel(
+    track_event(
         name="planning.scenario.created",
         properties={
             "origin": ScenarioOrigin.USER,
@@ -518,7 +527,7 @@ def delete_scenario(
 
     ScenarioResult.objects.filter(scenario__pk=scenario.pk).update(deleted_at=right_now)
     ProjectArea.objects.filter(scenario__pk=scenario.pk).update(deleted_at=right_now)
-    track_openpanel(
+    track_event(
         name="planning.scenario.deleted",
         properties={
             "soft": True,
@@ -917,7 +926,7 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
 
     # schedule: metrics → pre-forsys → forsys
     tx_goal = scenario.treatment_goal
-    track_openpanel(
+    track_event(
         name="planning.scenario.triggered",
         properties={
             "origin": scenario.origin,
@@ -1723,6 +1732,14 @@ def toggle_scenario_status(scenario: Scenario, user: User) -> Scenario:
     scenario.save(update_fields=["status"])
 
     action.send(user, verb=verb, action_object=scenario)
+    track_event(
+        name="planning.scenario.status_toggled",
+        properties={
+            "new_status": new_status,
+            "email": user.email if user else None,
+        },
+        user_id=user.pk,
+    )
     return scenario
 
 

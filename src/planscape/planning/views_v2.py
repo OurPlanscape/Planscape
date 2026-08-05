@@ -43,7 +43,7 @@ from funding_report.tasks import (
     send_funding_opportunity_report_shared_link,
 )
 from modules.base import compute_scenario_capabilities
-from planscape.openpanel import track_openpanel
+from planscape.analytics import track_event
 from planscape.serializers import BaseErrorMessageSerializer
 from rest_framework import mixins, pagination, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -516,6 +516,14 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         )
 
         run_funding_opportunity_report.delay(report.pk)
+        track_event(
+            name="planning.funding_report.run",
+            properties={
+                "scenario_id": scenario.pk,
+                "email": request.user.email if request.user else None,
+            },
+            user_id=request.user.pk,
+        )
         serializer = FundingOpportunityReportSerializer(instance=report)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
@@ -583,6 +591,15 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         if should_regenerate_geopackage:
             async_generate_funding_report_geopackage.delay(report.pk)
+            track_event(
+                name="planning.funding_report.aet_improvement_recomputed",
+                properties={
+                    "scenario_id": scenario.pk,
+                    "percentage": serializer.validated_data["percentage"],
+                    "email": request.user.email if request.user else None,
+                },
+                user_id=request.user.pk,
+            )
 
         return Response(aet_result)
 
@@ -627,6 +644,16 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             )
         except ValueError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        track_event(
+            name="planning.funding_report.flame_length_recomputed",
+            properties={
+                "scenario_id": scenario.pk,
+                "from_ft": serializer.validated_data["from_ft"],
+                "to_ft": serializer.validated_data["to_ft"],
+                "email": request.user.email if request.user else None,
+            },
+            user_id=request.user.pk,
+        )
         return Response(results)
 
     @extend_schema(description="Trigger a ForSys run for this Scenario (V3 rules).")
@@ -810,8 +837,8 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 scenario.name,
             )
 
-        track_openpanel(
-            name="funding_report.shared_link.sent",
+        track_event(
+            name="planning.funding_report.shared",
             properties={
                 "scenario_id": scenario.pk,
                 "report_id": report.pk,
@@ -846,10 +873,19 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         report = get_object_or_404(FundingOpportunityReport, scenario=scenario)
 
-        shared_link, _ = FundingOpportunityReportSharedLink.objects.get_or_create(
+        shared_link, created = FundingOpportunityReportSharedLink.objects.get_or_create(
             report=report,
             configuration=query_serializer.validated_data,
         )
+        if created:
+            track_event(
+                name="planning.funding_report.public_link_created",
+                properties={
+                    "scenario_id": scenario.pk,
+                    "email": request.user.email if request.user else None,
+                },
+                user_id=request.user.pk,
+            )
         return Response({"public_url": shared_link.get_public_url()})
 
 
