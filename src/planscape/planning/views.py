@@ -32,6 +32,7 @@ from planning.services import (
     get_acreage,
     zip_directory,
 )
+from planscape.openpanel import track_openpanel
 
 logger = logging.getLogger(__name__)
 
@@ -125,6 +126,14 @@ def download_csv(request: Request) -> HttpResponse:
         zip_directory(response, scenario.get_forsys_folder())
 
         response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
+        track_openpanel(
+            name="planning.scenario.downloaded",
+            properties={
+                "scenario_id": scenario.pk,
+                "email": user.email if user else None,
+            },
+            user_id=user.pk,
+        )
         return response
 
     except Scenario.DoesNotExist:
@@ -184,6 +193,14 @@ def download_shapefile(request: Request) -> Response:
         zip_directory(response, scenario.get_shapefile_folder())
 
         response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
+        track_openpanel(
+            name="planning.scenario.shapefile_downloaded",
+            properties={
+                "scenario_id": scenario.pk,
+                "email": user.email if user else None,
+            },
+            user_id=user.pk,
+        )
         return response
     except Scenario.DoesNotExist:
         return Response(
@@ -225,6 +242,14 @@ class PlanningAreaNotes(APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
             new_note = serializer.save()
+            track_openpanel(
+                name="planning.planning_area.note_added",
+                properties={
+                    "planning_area_id": planningarea_pk,
+                    "email": user.email if user else None,
+                },
+                user_id=user.pk,
+            )
             out_serializer = PlanningAreaNoteSerializer(new_note)
             return Response(
                 out_serializer.data,
@@ -310,6 +335,14 @@ class PlanningAreaNotes(APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
             if note.delete():
+                track_openpanel(
+                    name="planning.planning_area.note_deleted",
+                    properties={
+                        "planning_area_id": planningarea_pk,
+                        "email": user.email if user else None,
+                    },
+                    user_id=user.pk,
+                )
                 return Response(status=status.HTTP_204_NO_CONTENT)
 
         except Exception as e:
