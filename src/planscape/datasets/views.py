@@ -6,7 +6,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.db.models import Q
 from drf_spectacular.utils import extend_schema
-from planscape.analytics import track_event
+from planscape.openpanel import track_openpanel
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
@@ -65,7 +65,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         )
         serializer = BrowseDataLayerSerializer(results, many=True)
         is_authenticated = request.user and request.user.is_authenticated
-        track_event(
+        track_openpanel(
             name="datasets.dataset.browse",
             properties={
                 "dataset_id": dataset.pk,

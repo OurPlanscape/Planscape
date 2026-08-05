@@ -26,7 +26,7 @@ from impacts.services import (
     get_calculation_matrix_wo_action,
 )
 from planscape.celery import app
-from planscape.analytics import track_event
+from planscape.openpanel import track_openpanel
 
 User = get_user_model()
 log = logging.getLogger(__name__)
@@ -151,7 +151,7 @@ def async_set_status(
             setattr(treatment_plan, attr, timezone.now())
             treatment_plan.save()
             log.info(f"Treatment plan {treatment_plan_pk} changed status to {status}.")
-            track_event(
+            track_openpanel(
                 name="impacts.treatment_plan.status_changed",
                 properties={
                     "treatment_plan": treatment_plan_pk,
@@ -227,7 +227,7 @@ def async_calculate_persist_impacts_treatment_plan(
     ]
     log.info(f"Firing {len(tasks)} tasks to calculate impacts!")
     chord(tasks)(callback)
-    track_event(
+    track_openpanel(
         name="impacts.treatment_plan.run",
         properties={
             "treatment_plan": treatment_plan_pk,
