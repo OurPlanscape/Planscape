@@ -43,7 +43,7 @@ from funding_report.tasks import (
     send_funding_opportunity_report_shared_link,
 )
 from modules.base import compute_scenario_capabilities
-from planscape.openpanel import track_openpanel
+from planscape.analytics import track_event
 from planscape.serializers import BaseErrorMessageSerializer
 from rest_framework import mixins, pagination, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -516,7 +516,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         )
 
         run_funding_opportunity_report.delay(report.pk)
-        track_openpanel(
+        track_event(
             name="planning.funding_report.run",
             properties={
                 "scenario_id": scenario.pk,
@@ -591,7 +591,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         if should_regenerate_geopackage:
             async_generate_funding_report_geopackage.delay(report.pk)
-            track_openpanel(
+            track_event(
                 name="planning.funding_report.aet_improvement_recomputed",
                 properties={
                     "scenario_id": scenario.pk,
@@ -644,7 +644,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             )
         except ValueError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        track_openpanel(
+        track_event(
             name="planning.funding_report.flame_length_recomputed",
             properties={
                 "scenario_id": scenario.pk,
@@ -837,7 +837,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 scenario.name,
             )
 
-        track_openpanel(
+        track_event(
             name="planning.funding_report.shared",
             properties={
                 "scenario_id": scenario.pk,
@@ -869,7 +869,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             configuration=query_serializer.validated_data,
         )
         if created:
-            track_openpanel(
+            track_event(
                 name="planning.funding_report.public_link_created",
                 properties={
                     "scenario_id": scenario.pk,

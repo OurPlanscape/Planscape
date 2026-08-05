@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DashboardLayoutComponent } from '@styleguide/dashboard-layout/dashboard-layout.component';
 import { NavBarComponent } from '@standalone/nav-bar/nav-bar.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { ProductAnalyticsService } from '@services/product-analytics.service';
+import { MixpanelService } from '@services/mixpanel.service';
 import { ToolInfoCardPartner } from '@styleguide/tool-info-card/tool-info-card.component';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { FundingMapConfigState } from '../funding-map-config-state';
@@ -76,7 +76,7 @@ export class FundingDashboardComponent implements OnInit {
     private route: ActivatedRoute,
     private fundingReportService: FundingReportService,
     private snackbar: MatSnackBar,
-    private productAnalyticsService: ProductAnalyticsService
+    private mixpanelService: MixpanelService
   ) {}
 
   protected readonly SUPPORT_URL = SUPPORT_URL;
@@ -226,20 +226,16 @@ export class FundingDashboardComponent implements OnInit {
   }
 
   trackPartnerClick(partner: ToolInfoCardPartner) {
-    this.productAnalyticsService.trackEvent(
-      'funding_report.partner_link.clicked',
-      {
-        name: partner.name,
-        url: partner.url,
-      }
-    );
+    this.mixpanelService.track('funding_report.partner_link.clicked', {
+      name: partner.name,
+      url: partner.url,
+    });
   }
 
   generateReport(source: 'empty_state' | 'retry') {
-    this.productAnalyticsService.trackEvent(
-      'funding_report.generation.requested',
-      { source }
-    );
+    this.mixpanelService.track('funding_report.generation.requested', {
+      source,
+    });
     // Switch to the generating state immediately, before the server responds.
     this.generationRequested$.next(true);
     this.scenarioState.currentScenario$
