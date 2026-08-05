@@ -88,8 +88,24 @@ export class ForSharedComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.setBreadcrumb('Funding Opportunity Report');
+
+    // Once the shared report resolves, append its scenario name.
+    this.report$
+      .pipe(
+        filter((report): report is FundingReportPublic => !!report),
+        take(1)
+      )
+      .subscribe((report) =>
+        this.setBreadcrumb(
+          `Funding Opportunity Report: ${report.scenario.name}`
+        )
+      );
+  }
+
+  private setBreadcrumb(label: string): void {
     this.breadcrumbService.updateBreadCrumb({
-      label: 'Funding Opportunity Report',
+      label,
       backUrl: '/',
       icon: 'close',
       blackText: true,
