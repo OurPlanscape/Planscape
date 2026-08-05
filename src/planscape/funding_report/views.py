@@ -14,7 +14,7 @@ from funding_report.serializers import (
     FundingOpportunityReportPublicSerializer,
 )
 from planning.models import ScenarioPlanningApproach
-from planscape.openpanel import track_openpanel
+from planscape.analytics import track_event
 
 
 @extend_schema(
@@ -42,7 +42,7 @@ def public_funding_opportunity_report(request, shared_link_uuid):
     # recipients blocking the web SDK. The project areas endpoint is loaded by
     # the same page, so it deliberately does not track - it would double count.
     is_authenticated = request.user.is_authenticated
-    track_openpanel(
+    track_event(
         name="funding_report.shared_link.opened",
         properties={
             "shared_link_uuid": str(shared_link.uuid),

@@ -15,7 +15,7 @@ import { FundingDashboardComponent } from '@app/funding/funding-dashboard/fundin
 import { MockProvider } from 'ng-mocks';
 import { By } from '@angular/platform-browser';
 import { ToolInfoCardComponent } from '@styleguide/tool-info-card/tool-info-card.component';
-import { ProductAnalyticsService } from '@services/product-analytics.service';
+import { MixpanelService } from '@services/mixpanel.service';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { ScenarioState } from '@scenario/scenario.state';
 import { PlanState } from '@plan/plan.state';
@@ -109,7 +109,7 @@ describe('FundingDashboardComponent', () => {
         },
         { provide: PlanState, useValue: { currentPlan$ } },
         { provide: AuthService, useValue: { loggedInUser$ } },
-        MockProvider(ProductAnalyticsService),
+        MockProvider(MixpanelService),
       ],
     }).compileComponents();
 
@@ -390,12 +390,12 @@ describe('FundingDashboardComponent', () => {
 
   it('tracks which entry point asked for the report', async () => {
     await setup(makeScenario(123, ['FUNDING_REPORT']));
-    const analytics = TestBed.inject(ProductAnalyticsService);
-    spyOn(analytics, 'trackEvent');
+    const analytics = TestBed.inject(MixpanelService);
+    spyOn(analytics, 'track');
 
     component.generateReport('retry');
 
-    expect(analytics.trackEvent).toHaveBeenCalledWith(
+    expect(analytics.track).toHaveBeenCalledWith(
       'funding_report.generation.requested',
       { source: 'retry' }
     );
@@ -403,8 +403,8 @@ describe('FundingDashboardComponent', () => {
 
   it('tracks partner logo clicks', async () => {
     await setup(makeScenario(123, ['FUNDING_REPORT']));
-    const analytics = TestBed.inject(ProductAnalyticsService);
-    spyOn(analytics, 'trackEvent');
+    const analytics = TestBed.inject(MixpanelService);
+    spyOn(analytics, 'track');
 
     component.trackPartnerClick({
       name: 'Partner',
@@ -412,7 +412,7 @@ describe('FundingDashboardComponent', () => {
       logo: 'logo.png',
     });
 
-    expect(analytics.trackEvent).toHaveBeenCalledWith(
+    expect(analytics.track).toHaveBeenCalledWith(
       'funding_report.partner_link.clicked',
       { name: 'Partner', url: 'https://partner.example' }
     );
@@ -423,8 +423,8 @@ describe('FundingDashboardComponent', () => {
       id: 7,
     } as User);
     await resolveNoReport();
-    const analytics = TestBed.inject(ProductAnalyticsService);
-    spyOn(analytics, 'trackEvent');
+    const analytics = TestBed.inject(MixpanelService);
+    spyOn(analytics, 'track');
 
     // Click the real button rather than calling the handler, so a broken
     // template binding fails here instead of going silently untracked.
@@ -433,7 +433,7 @@ describe('FundingDashboardComponent', () => {
     );
     button.click();
 
-    expect(analytics.trackEvent).toHaveBeenCalledWith(
+    expect(analytics.track).toHaveBeenCalledWith(
       'funding_report.generation.requested',
       { source: 'empty_state' }
     );
@@ -449,8 +449,8 @@ describe('FundingDashboardComponent', () => {
       id: 7,
     } as User);
     await resolveNoReport();
-    const analytics = TestBed.inject(ProductAnalyticsService);
-    spyOn(analytics, 'trackEvent');
+    const analytics = TestBed.inject(MixpanelService);
+    spyOn(analytics, 'track');
 
     const card = fixture.debugElement.query(
       By.directive(ToolInfoCardComponent)
@@ -458,7 +458,7 @@ describe('FundingDashboardComponent', () => {
     const partner = component.partners[0];
     card.componentInstance.clickPartner.emit(partner);
 
-    expect(analytics.trackEvent).toHaveBeenCalledWith(
+    expect(analytics.track).toHaveBeenCalledWith(
       'funding_report.partner_link.clicked',
       { name: partner.name, url: partner.url }
     );

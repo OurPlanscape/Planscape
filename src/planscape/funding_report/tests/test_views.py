@@ -597,7 +597,7 @@ class PublicFundingOpportunityReportTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    @mock.patch("funding_report.views.track_openpanel")
+    @mock.patch("funding_report.views.track_event")
     @mock.patch(
         "funding_report.serializers.calculate_aet_improvement",
         return_value={
@@ -626,7 +626,7 @@ class PublicFundingOpportunityReportTest(APITestCase):
             user_id=None,
         )
 
-    @mock.patch("funding_report.views.track_openpanel")
+    @mock.patch("funding_report.views.track_event")
     def test_does_not_track_open_for_unknown_uuid(self, track_mock):
         url = reverse(
             "api:funding_report:public-funding-opportunity-report", args=[uuid4()]
@@ -680,7 +680,7 @@ class PublicFundingOpportunityReportProjectAreasTest(APITestCase):
             self.assertNotIn("scenario", item)
             self.assertNotIn("created_by", item)
 
-    @mock.patch("funding_report.views.track_openpanel")
+    @mock.patch("funding_report.views.track_event")
     def test_does_not_track_an_open(self, track_mock):
         # The shared report page loads this alongside the report itself, so
         # tracking here as well would double count every open.
@@ -940,7 +940,7 @@ class CreateFundingOpportunityReportInvitesTest(APITestCase):
             ["first@example.com", "second@example.com", "existing@example.com"],
         )
 
-    @mock.patch("planning.views_v2.track_openpanel")
+    @mock.patch("planning.views_v2.track_event")
     @mock.patch("planning.views_v2.send_funding_opportunity_report_shared_link")
     def test_tracks_shared_link_sent(self, task_mock, track_mock):
         self.client.force_authenticate(self.user)
@@ -965,7 +965,7 @@ class CreateFundingOpportunityReportInvitesTest(APITestCase):
             user_id=self.user.pk,
         )
 
-    @mock.patch("planning.views_v2.track_openpanel")
+    @mock.patch("planning.views_v2.track_event")
     @mock.patch("planning.views_v2.send_funding_opportunity_report_shared_link")
     def test_tracked_recipient_count_includes_previous_invitees_on_resend(
         self, task_mock, track_mock
@@ -986,7 +986,7 @@ class CreateFundingOpportunityReportInvitesTest(APITestCase):
         self.assertEqual(properties["recipients"], 3)
         self.assertTrue(properties["resent_to_all"])
 
-    @mock.patch("planning.views_v2.track_openpanel")
+    @mock.patch("planning.views_v2.track_event")
     def test_does_not_track_when_the_report_does_not_exist(self, track_mock):
         scenario_wo_report = ScenarioFactory.create(user=self.user)
         url = reverse(
