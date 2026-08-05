@@ -15,19 +15,19 @@ import { canAddScenario } from '@app/plan/permissions';
   styleUrl: './scenarios-empty-list.component.scss',
 })
 export class ScenariosEmptyListComponent {
-  @Input() plan!: Plan | null;
+  @Input({ required: true }) plan!: Plan;
 
   constructor(private dialog: MatDialog) {}
 
-  get canAddScenarios() {
-    return this.plan && canAddScenario(this.plan);
+  get canAddScenarios(): boolean {
+    return canAddScenario(this.plan);
   }
 
   public openProjectAreasUploadDialog() {
     return this.dialog.open(UploadProjectAreasModalComponent, {
       data: {
-        planId: this.plan?.id,
-        planning_area_name: this.plan?.name,
+        planId: this.plan.id,
+        planning_area_name: this.plan.name,
       },
     });
   }
@@ -36,7 +36,7 @@ export class ScenariosEmptyListComponent {
     return this.dialog.open(ScenarioSetupModalComponent, {
       maxWidth: '560px',
       data: {
-        planId: this.plan?.id,
+        planId: this.plan.id,
         fromClone: false,
         type: type,
       },
