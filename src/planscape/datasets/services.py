@@ -41,7 +41,7 @@ from organizations.models import Organization
 from planning.models import TreatmentGoalUsageType
 from workspaces.models import Workspace
 
-from planscape.openpanel import track_openpanel
+from planscape.analytics import track_event
 
 log = logging.getLogger(__name__)
 
@@ -162,7 +162,7 @@ def create_dataset(
         preferred_display_type=preferred_display_type,
     )
     invalidate_model(Dataset)
-    track_openpanel(
+    track_event(
         name="datasets.dataset.created",
         properties={
             "organization_id": organization.pk,
@@ -199,7 +199,7 @@ def create_style(
         data_hash=data_hash,
     )
     action.send(created_by, verb="created", action_object=style)
-    track_openpanel(
+    track_event(
         name="datasets.style.created",
         properties={
             "organization_id": organization.pk,
@@ -246,7 +246,7 @@ def assign_style(
         target=style,
     )
     invalidate_model(DataLayer)
-    track_openpanel(
+    track_event(
         name="datasets.style.assigned",
         properties={
             "organization_id": style.organization.id,
@@ -291,7 +291,7 @@ def change_datalayer_status(
 
     action.send(user, verb="changed status", action_object=datalayer)
     invalidate_model(DataLayer)
-    track_openpanel(
+    track_event(
         name="datasets.datalayer.changed_status",
         properties={
             "organization_id": organization.pk,
@@ -402,7 +402,7 @@ def create_datalayer(
 
     action.send(created_by, verb="created", action_object=datalayer)
     invalidate_model(DataLayer)
-    track_openpanel(
+    track_event(
         name="datasets.datalayer.created",
         properties={
             "organization_id": organization.pk,
