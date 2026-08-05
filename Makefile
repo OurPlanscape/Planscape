@@ -236,7 +236,7 @@ cloud-run-deploy-frontend:
 	$(MAKE) cloud-run-deploy APP_NAME=planscape-frontend DOCKERFILE=Dockerfile.frontend DOCKER_REPO=planscape-planscape-frontend
 
 cloud-run-deploy-gateway:
-	$(MAKE) cloud-run-deploy APP_NAME=planscape-gateway DOCKERFILE=Dockerfile.frontend DOCKER_REPO=planscape-planscape-frontend
+	$(MAKE) cloud-run-deploy APP_NAME=planscape-gateway DOCKERFILE=Dockerfile.gateway DOCKER_REPO=planscape-planscape-gateway
 
 cloud-run-docker-tag-frontend:
 	$(MAKE) cloud-run-docker-tag APP_NAME=planscape-frontend DOCKER_REPO=planscape-planscape-frontend
