@@ -32,7 +32,7 @@ from planning.services import (
     get_acreage,
     zip_directory,
 )
-from planscape.openpanel import track_openpanel
+from planscape.analytics import track_event
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +126,7 @@ def download_csv(request: Request) -> HttpResponse:
         zip_directory(response, scenario.get_forsys_folder())
 
         response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
-        track_openpanel(
+        track_event(
             name="planning.scenario.downloaded",
             properties={
                 "scenario_id": scenario.pk,
@@ -193,7 +193,7 @@ def download_shapefile(request: Request) -> Response:
         zip_directory(response, scenario.get_shapefile_folder())
 
         response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
-        track_openpanel(
+        track_event(
             name="planning.scenario.shapefile_downloaded",
             properties={
                 "scenario_id": scenario.pk,
@@ -242,7 +242,7 @@ class PlanningAreaNotes(APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
             new_note = serializer.save()
-            track_openpanel(
+            track_event(
                 name="planning.planning_area.note_added",
                 properties={
                     "planning_area_id": planningarea_pk,
@@ -335,7 +335,7 @@ class PlanningAreaNotes(APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
             if note.delete():
-                track_openpanel(
+                track_event(
                     name="planning.planning_area.note_deleted",
                     properties={
                         "planning_area_id": planningarea_pk,
