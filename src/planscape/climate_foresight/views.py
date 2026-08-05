@@ -36,7 +36,7 @@ from climate_foresight.serializers import (
     CopyClimateForesightRunSerializer,
 )
 from climate_foresight.tasks import async_generate_climate_foresight_geopackage
-from planscape.analytics import track_event
+from planscape.openpanel import track_openpanel
 
 log = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Set the user when creating a new run."""
         run = serializer.save(created_by=self.request.user)
-        track_event(
+        track_openpanel(
             name="climate_foresight.run.created",
             properties={
                 "run_id": run.pk,
@@ -102,7 +102,7 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         """Track deletion before removing the run."""
-        track_event(
+        track_openpanel(
             name="climate_foresight.run.deleted",
             properties={
                 "run_id": instance.pk,
@@ -165,7 +165,7 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
 
         try:
             result = start_climate_foresight_analysis(run.id)
-            track_event(
+            track_openpanel(
                 name="climate_foresight.run.triggered",
                 properties={
                     "run_id": run.pk,
@@ -240,7 +240,7 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
         if promote.geopackage_status == GeoPackageStatus.SUCCEEDED:
             download_url = promote.get_geopackage_url()
             if download_url:
-                track_event(
+                track_openpanel(
                     name="climate_foresight.run.downloaded",
                     properties={
                         "run_id": run.pk,
@@ -311,7 +311,7 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
                 datalayer=input_layer.datalayer,
             )
 
-        track_event(
+        track_openpanel(
             name="climate_foresight.run.copied",
             properties={
                 "run_id": new_run.pk,

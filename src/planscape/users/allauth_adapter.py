@@ -1,7 +1,7 @@
 from urllib.parse import urljoin
 
 from allauth.account.adapter import DefaultAccountAdapter
-from planscape.analytics import identify_user, track_event
+from planscape.openpanel import identify_openpanel, track_openpanel
 
 
 class CustomAllauthAdapter(DefaultAccountAdapter):
@@ -18,8 +18,8 @@ class CustomAllauthAdapter(DefaultAccountAdapter):
 
     def save_user(self, request, user, form, commit=True):
         user = super().save_user(request, user, form, commit=commit)
-        identify_user(user)
-        track_event(
+        identify_openpanel(user)
+        track_openpanel(
             "users.registered",
             properties={"email": user.email},
             user_id=user.pk,
