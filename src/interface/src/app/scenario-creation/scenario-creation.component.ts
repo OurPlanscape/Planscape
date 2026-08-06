@@ -195,8 +195,14 @@ export class ScenarioCreationComponent implements OnInit {
     map((scenario) => scenario.type)
   );
 
+  hasParent = false;
+
   hasParent$ = this.scenarioState.currentScenario$.pipe(
     map((scenario) => {
+      if (scenario.parent) {
+        //TODO: just a PoC
+        this.hasParent = true;
+      }
       return scenario.parent !== null;
     })
   );
@@ -443,9 +449,10 @@ export class ScenarioCreationComponent implements OnInit {
     const baseSteps = isCustomScenario(this.config.type!)
       ? this.customSteps
       : this.scenarioSteps;
-    this.steps = this.subUnitsPrioritized
-      ? [SUB_UNITS_STEP, ...baseSteps]
-      : baseSteps;
+    this.steps =
+      this.subUnitsPrioritized && this.hasParent === false
+        ? [SUB_UNITS_STEP, ...baseSteps]
+        : baseSteps;
   }
 
   get subUnitsPrioritized() {

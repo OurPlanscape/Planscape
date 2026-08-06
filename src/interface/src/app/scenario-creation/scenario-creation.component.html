@@ -47,7 +47,7 @@
               (hasParent$ | async) ?? false
             "></app-step1-with-overview>
         </sg-step>
-        <sg-step *ngIf="subUnitsPrioritized">
+        <sg-step *ngIf="subUnitsPrioritized && (hasParent$ | async) === false">
           <app-sub-unit-selector></app-sub-unit-selector>
         </sg-step>
         <sg-step>
