@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { BehaviorSubject } from 'rxjs';
-
+import { Map as MapLibreMap } from 'maplibre-gl';
 @Injectable()
 export class FundingMapConfigState extends MapConfigState {
   private _selectedProjectAreas$ = new BehaviorSubject<number[]>([]);
@@ -12,6 +12,18 @@ export class FundingMapConfigState extends MapConfigState {
 
   private _showFundingLegend$ = new BehaviorSubject(true);
   public showFundingLegend$ = this._showFundingLegend$.asObservable();
+
+  //TODO: just a PoC
+  private _mapRef$ = new BehaviorSubject<MapLibreMap | null>(null);
+  public mapRef$ = this._mapRef$.asObservable();
+
+  setMapRef(mapRef: MapLibreMap) {
+    this._mapRef$.next(mapRef);
+  }
+
+  getMapRef() {
+    return this._mapRef$.value;
+  }
 
   setMapLoaded(loaded: boolean) {
     this._mapLoaded$.next(loaded);
