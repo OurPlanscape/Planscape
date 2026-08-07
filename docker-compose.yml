@@ -58,6 +58,7 @@ services:
       PLANSCAPE_FRONTEND_URL: "http://frontend:8080"
       PLANSCAPE_BACKEND_URL: "http://web:8000"
       PLANSCAPE_MARTIN_URL: "https://dev.planscape.org/tiles"
+      FRONTEND_ON_BUCKET: false
     depends_on:
       - frontend
       - web

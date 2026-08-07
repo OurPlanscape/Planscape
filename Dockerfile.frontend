@@ -12,7 +12,6 @@ FROM nginx:1.27-alpine
 
 COPY docker/frontend/nginx.conf /etc/nginx/templates/default.conf.template
 COPY docker/frontend/entrypoint.sh /entrypoint.sh
-COPY src/interface/runtime-config.template.js /usr/share/nginx/html/assets/config.template.js
 COPY --from=build /app/src/interface/dist/out/ /usr/share/nginx/html/
 
 RUN chmod +x /entrypoint.sh

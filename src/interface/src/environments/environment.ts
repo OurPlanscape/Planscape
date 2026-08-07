@@ -1,10 +1,8 @@
-import { applyRuntimeConfig } from './runtime-config';
-
 // This file can be replaced during build by using the `fileReplacements` array.
 // `ng build` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 
-export const environment = applyRuntimeConfig({
+export const environment = {
   environment: '',
   production: false,
   isCatalogEnvironment: false,
@@ -32,7 +30,7 @@ export const environment = applyRuntimeConfig({
     enable_context_lines: false,
     enable_deprecations_reporting: false,
   },
-});
+};
 
 /*
  * For easier debugging in development mode, you can import the following file
