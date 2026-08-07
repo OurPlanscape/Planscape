@@ -467,7 +467,13 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         configuration_data = serializer.validated_data.get("configuration")
         should_calculate_child_project_areas = (
             "parent" in serializer.validated_data
-            or (configuration_data is not None and "stand_size" in configuration_data)
+            or (
+                configuration_data is not None
+                and (
+                    "stand_size" in configuration_data
+                    or "included_areas_ids" in configuration_data
+                )
+            )
         )
         if configuration_data:
             existing = instance.configuration or {}
