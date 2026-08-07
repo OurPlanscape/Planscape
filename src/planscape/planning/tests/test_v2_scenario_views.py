@@ -4,6 +4,7 @@ from unittest import mock
 
 from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
+from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.test import TestCase
 from django.urls import reverse
@@ -451,7 +452,7 @@ class ListScenariosForPlanningAreaTest(APITestCase):
         response_data = response.json()
         expected_acres_order = [40000, 40000, 40000, 104, 103, 102, 101, 100]
         budget_results = [s["max_treatment_area"] for s in response_data]
-        self.assertEquals(budget_results, expected_acres_order)
+        self.assertEqual(budget_results, expected_acres_order)
 
     def test_sort_scenario_by_reverse_acres_v3(self):
         for acres in range(100, 105):
@@ -527,7 +528,7 @@ class ListScenariosForPlanningAreaTest(APITestCase):
             "test scenario",
         ]
         name_results = [s["name"] for s in response_data]
-        self.assertEquals(expected_names, name_results)
+        self.assertEqual(expected_names, name_results)
 
     def test_filter_by_planning_area_returns_filtered_records(self):
         planning_area = PlanningAreaFactory.create()
@@ -1913,6 +1914,64 @@ class PatchScenarioConfigurationTest(APITestCase):
             ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
         )
 
+    def test_patch_draft_calculates_project_areas_from_parent_stands(self):
+        parent = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        parent_project_area = ProjectAreaFactory.create(
+            scenario=parent,
+            name="Project Area 1",
+            geometry=self.planning_area.geometry,
+            data={"treatment_rank": 1},
+        )
+        child = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            parent=parent,
+            configuration={},
+            treatment_goal=None,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+
+        self.assertEqual(child.project_areas.count(), 0)
+
+        url = reverse(
+            "api:planning:scenarios-patch-draft",
+            args=[child.pk],
+        )
+        payload = {
+            "configuration": {
+                "stand_size": "LARGE",
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        child.refresh_from_db()
+
+        self.assertEqual(child.project_areas.count(), 1)
+
+        child_project_area = child.project_areas.get()
+        expected_stands = parent_project_area.get_stands(stand_size="LARGE")
+        expected_geometry = expected_stands.aggregate(geometry=UnionOp("geometry"))[
+            "geometry"
+        ]
+
+        self.assertTrue(child_project_area.geometry.equals(expected_geometry))
+        self.assertEqual(
+            child_project_area.data["proj_id"],
+            parent_project_area.pk,
+        )
+        self.assertEqual(
+            child_project_area.data["stand_count"],
+            expected_stands.count(),
+        )
+
 
 class ScenarioCapabilitiesViewTest(APITestCase):
     def setUp(self):
@@ -2254,7 +2313,7 @@ class RunScenarioEndpointTest(APITestCase):
             mock.patch(
                 "planning.views_v2.validate_scenario_configuration", return_value=[]
             ) as validate_mock,  # noqa: F841
-            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,  # noqa
+            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,
         ):
             response = self.client.post(self.url, format="json")
 
@@ -2274,7 +2333,7 @@ class RunScenarioEndpointTest(APITestCase):
                 "planning.views_v2.validate_scenario_configuration",
                 return_value=["Provide either `max_budget` or `max_area`."],
             ) as validate_mock,  # noqa: F841
-            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,  # noqa
+            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,
         ):
             response = self.client.post(self.url, format="json")
 
