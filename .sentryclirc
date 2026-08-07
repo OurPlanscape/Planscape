@@ -1,3 +1,4 @@
 [defaults]
+url = https://sentry.io
 org = spatial-informatics-group
 project = planscape-frontend
