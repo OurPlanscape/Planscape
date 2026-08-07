@@ -1,7 +1,0 @@
-[auth]
-token=ADD_TOKEN_HERE
-
-[defaults]
-url=sentryinstanceurl
-org=sentryorg
-project=sentryproject
