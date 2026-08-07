@@ -1,6 +1,7 @@
 import json
 import os
 import tempfile
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from django.conf import settings
@@ -22,6 +23,18 @@ from datasets.models import (
 from datasets.tasks import process_datalayer
 from organizations.models import Organization
 from planning.models import TreatmentGoal, TreatmentGoalUsesDataLayer
+
+
+FIXTURE_RELATION_REFERENCES = {
+    "datasets.datalayerhasstyle": {
+        "datalayer": "datasets.datalayer",
+        "style": "datasets.style",
+    },
+    "planning.treatmentgoalusesdatalayer": {
+        "datalayer": "datasets.datalayer",
+        "treatment_goal": "planning.treatmentgoal",
+    },
+}
 
 
 class Command(BaseCommand):
@@ -65,9 +78,18 @@ class Command(BaseCommand):
                 "Backup fixture format is invalid: expected a list of objects."
             )
 
+        fixture_pks = defaultdict(set)
+        for item in data:
+            model = item.get("model")
+            pk = self.normalize_fixture_pk(item.get("pk"))
+            if model and pk is not None:
+                fixture_pks[model].add(pk)
+
+        sanitized_data = []
         for item in data:
             fields = item.get("fields")
             if not isinstance(fields, dict):
+                sanitized_data.append(item)
                 continue
 
             # Make catalog fixtures loadable against an arbitrary local dev DB.
@@ -77,8 +99,37 @@ class Command(BaseCommand):
             if item.get("model") == "datasets.datalayer" and "table" in fields:
                 fields.pop("table")
 
+            if self.is_orphaned_fixture_relation(item, fixture_pks):
+                continue
+
+            sanitized_data.append(item)
+
         with open(file_path, "w", encoding="utf-8") as fh:
-            json.dump(data, fh, indent=2)
+            json.dump(sanitized_data, fh, indent=2)
+
+    @staticmethod
+    def normalize_fixture_pk(value) -> str | None:
+        if isinstance(value, (int, str)):
+            return str(value)
+        return None
+
+    def is_orphaned_fixture_relation(self, item, fixture_pks) -> bool:
+        references = FIXTURE_RELATION_REFERENCES.get(item.get("model"))
+        if not references:
+            return False
+
+        fields = item.get("fields")
+        if not isinstance(fields, dict):
+            return False
+
+        for field_name, referenced_model in references.items():
+            referenced_pk = self.normalize_fixture_pk(fields.get(field_name))
+            if referenced_pk is None:
+                continue
+            if referenced_pk not in fixture_pks[referenced_model]:
+                return True
+
+        return False
 
     def handle(self, *args, **kwargs):
         if settings.ENV != "local":
