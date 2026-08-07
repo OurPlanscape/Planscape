@@ -65,6 +65,10 @@ export class NewScenarioState {
   // flag to track if the base stands are loaded
   private baseStandsReady$ = new BehaviorSubject(false);
 
+  // Flag to check whenever we need to display treated stands
+  private _displayTreatedStands$ = new BehaviorSubject(false);
+  public displayTreatedStands$ = this._displayTreatedStands$.asObservable();
+
   public priorityObjectivesDetails$ = this.scenarioConfig$.pipe(
     map((config) => {
       const draft = config as Partial<ScenarioDraftConfiguration>;
@@ -329,6 +333,10 @@ export class NewScenarioState {
 
   getDistanceToRoadsId() {
     return this.distanceToRoadsId;
+  }
+
+  setDisplayTreatedStands(show: boolean): void {
+    this._displayTreatedStands$.next(show);
   }
 
   showMapError() {
