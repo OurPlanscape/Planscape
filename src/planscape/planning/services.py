@@ -9,7 +9,7 @@ from collections.abc import Collection
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
-from typing import Any
+from typing import Any, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
