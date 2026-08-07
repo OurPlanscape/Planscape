@@ -1934,9 +1934,7 @@ class PatchScenarioConfigurationTest(APITestCase):
             treatment_goal=None,
             planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
         )
-
         self.assertEqual(child.project_areas.count(), 0)
-
         url = reverse(
             "api:planning:scenarios-patch-draft",
             args=[child.pk],
@@ -1946,22 +1944,16 @@ class PatchScenarioConfigurationTest(APITestCase):
                 "stand_size": "LARGE",
             }
         }
-
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
         child.refresh_from_db()
-
         self.assertEqual(child.project_areas.count(), 1)
-
         child_project_area = child.project_areas.get()
         expected_stands = parent_project_area.get_stands(stand_size="LARGE")
         expected_geometry = expected_stands.aggregate(geometry=UnionOp("geometry"))[
             "geometry"
         ]
-
         self.assertTrue(child_project_area.geometry.equals(expected_geometry))
         self.assertEqual(
             child_project_area.data["proj_id"],
@@ -1970,6 +1962,76 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(
             child_project_area.data["stand_count"],
             expected_stands.count(),
+        )
+
+    @mock.patch("planning.serializers.calculate_scenario_treatable_area")
+    def test_patch_draft_with_includes_recalculates_child_project_areas(
+        self, calculate_scenario_treatable_area_mock
+    ):
+        parent = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        parent_project_area = ProjectAreaFactory.create(
+            scenario=parent,
+            name="Project Area 1",
+            geometry=self.planning_area.geometry,
+            data={"treatment_rank": 1},
+        )
+        child = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            parent=parent,
+            configuration={},
+            treatment_goal=None,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+        url = reverse(
+            "api:planning:scenarios-patch-draft",
+            args=[child.pk],
+        )
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(
+            url,
+            {"configuration": {"stand_size": "LARGE"}},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        child.refresh_from_db()
+        child_project_area = child.project_areas.get()
+        original_stand_count = child_project_area.data["stand_count"]
+        included_stand = parent_project_area.get_stands(stand_size="LARGE").first()
+        self.assertIsNotNone(included_stand)
+        included_geometry = included_stand.geometry
+        if included_geometry.geom_type == "Polygon":
+            included_geometry = MultiPolygon(
+                included_geometry,
+                srid=included_geometry.srid,
+            )
+        calculate_scenario_treatable_area_mock.return_value = included_geometry
+        included_layer = DataLayerFactory.create(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        response = self.client.patch(
+            url,
+            {
+                "configuration": {
+                    "included_areas": [included_layer.pk],
+                }
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        child.refresh_from_db()
+        child_project_area.refresh_from_db()
+        self.assertTrue(child.treatable_area.equals(included_geometry))
+        self.assertTrue(child_project_area.geometry.equals(included_geometry))
+        self.assertEqual(child_project_area.data["stand_count"], 1)
+        self.assertLess(
+            child_project_area.data["stand_count"],
+            original_stand_count,
         )
 
 
