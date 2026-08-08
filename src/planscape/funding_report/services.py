@@ -1,12 +1,14 @@
 import json
 import logging
+import re
 import tempfile
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 from uuid import uuid4
 
+import fiona
 import numpy as np
 import rasterio
 from datasets.models import (
@@ -21,25 +23,38 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry
+from fiona.crs import from_epsg
 from gis.core import fetch_geometry_type, get_layer_info, with_vsi_prefix
 from gis.geometry import maybe_transform
+from gis.info import get_gdal_env
 from gis.io import detect_mimetype
 from gis.rasters import to_cog_streaming
-from planning.models import ProjectArea, Scenario
-from planning.services import get_acreage
-from pyproj import Geod
+from planning.models import GeoPackageStatus, ProjectArea, Scenario
+from planning.services import get_acreage, map_property_for_numeric_export
+from pyproj import Geod, Transformer
 from rasterio.features import geometry_mask
 from rasterio.mask import mask
+from shapely.geometry import Polygon, shape
+from utils.geometry import to_multi
 
 from funding_report.models import (
+    BIOMASS_VARIABLE,
     FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
     FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
+    FUNDING_REPORT_LAYER_CATEGORIES,
     FUNDING_REPORT_YEARS,
     TREATMENT_NO_TREATMENT_LABEL,
     TREATMENT_PIXEL_VALUE_LABELS,
+    TREATMENT_CLIP_ROLE,
     TREATMENT_ROLE,
+    WOOD_TYPE_HARDWOOD,
+    WOOD_TYPE_MIXED,
+    WOOD_TYPE_SOFTWOOD,
+    BiomassRole,
     TREATMENT_VARIABLE,
     FundingOpportunityReport,
+    FundingReportLayerCategory,
+    FundingReportLayerKey,
     FundingReportMetric,
 )
 
@@ -47,6 +62,10 @@ log = logging.getLogger(__name__)
 
 AET_VARIABLE = "AET"
 AET_DELTA_ROLE = "delta"
+AET_BASELINE_ROLE = "baseline"
+AET_TARGET_ROLE = "target"
+AET_PERCENTUAL_ROLE = "percentual"
+AET_PERCENTUAL_CLIP_ROLE = "percentual_clip"
 
 
 def build_datalayer_lookup() -> Dict[Tuple[str, int, bool], DataLayer]:
@@ -93,6 +112,78 @@ def get_aet_delta_datalayer() -> DataLayer:
     return datalayers[0]
 
 
+def _get_aet_role_datalayer(role: str) -> DataLayer | None:
+    datalayers = list(
+        DataLayer.objects.filter(
+            type=DataLayerType.RASTER,
+            metadata__contains={
+                "modules": {
+                    "funding_report": {
+                        "variable": AET_VARIABLE,
+                        "role": role,
+                    }
+                }
+            },
+        )[:2]
+    )
+    if not datalayers:
+        log.warning("Missing funding report AET %s datalayer.", role)
+        return None
+    if len(datalayers) > 1:
+        log.warning("Multiple funding report AET %s datalayers found.", role)
+        return None
+    return datalayers[0]
+
+
+def get_aet_baseline_datalayer() -> DataLayer | None:
+    return _get_aet_role_datalayer(AET_BASELINE_ROLE)
+
+
+def get_aet_target_datalayer() -> DataLayer | None:
+    return _get_aet_role_datalayer(AET_TARGET_ROLE)
+
+
+def get_aet_percentual_datalayer() -> DataLayer | None:
+    return _get_aet_role_datalayer(AET_PERCENTUAL_ROLE)
+
+
+def get_mills_datalayers() -> List[DataLayer]:
+    return list(
+        DataLayer.objects.filter(dataset__name=settings.FORISK_MILLS_DATASET_NAME)
+    )
+
+
+def get_funding_report_layers_of_interest() -> Dict[str, List[DataLayer]]:
+    lookup = build_datalayer_lookup()
+
+    def _as_list(datalayer: DataLayer | None) -> List[DataLayer]:
+        return [datalayer] if datalayer else []
+
+    layers_by_key = {
+        FundingReportLayerKey.BASELINE_ABOVEGROUND_CARBON_2026: _as_list(
+            lookup.get((FundingReportMetric.ABOVEGROUND_TOTAL.value, 2026, True))
+        ),
+        FundingReportLayerKey.BASELINE_SMOKE_PRODUCTION_2026: _as_list(
+            lookup.get((FundingReportMetric.POTENTIAL_SMOKE.value, 2026, True))
+        ),
+        FundingReportLayerKey.BASELINE_FLAME_LENGTH_2026: _as_list(
+            lookup.get((FundingReportMetric.TOTAL_FLAME_SEVERITY.value, 2026, True))
+        ),
+        FundingReportLayerKey.AET_PERCENTUAL_CHANGE: _as_list(
+            get_aet_percentual_datalayer()
+        ),
+        FundingReportLayerKey.MILLS_AND_OTHER_BIOMASS_FACILITIES: get_mills_datalayers(),
+    }
+
+    grouped: Dict[str, List[DataLayer]] = {
+        category.value: [] for category in FundingReportLayerCategory
+    }
+    for layer_key, datalayers in layers_by_key.items():
+        category = FUNDING_REPORT_LAYER_CATEGORIES[layer_key]
+        grouped[category.value].extend(datalayers)
+    return grouped
+
+
 def get_treatment_datalayer() -> DataLayer | None:
     datalayers = list(
         DataLayer.objects.filter(
@@ -128,6 +219,34 @@ def get_project_areas_union(scenario: Scenario) -> GEOSGeometry:
     return geometry
 
 
+def treatment_layer_has_valid_data(scenario: Scenario) -> bool:
+    """
+    True if the treatment layer has any valid (non-nodata) pixel within the
+    union of `scenario`'s project areas. Returns True (i.e. "don't block")
+    when no treatment datalayer is configured at all - that's an existing,
+    separate soft-skip case (see async_generate_treatment_datalayer), not a
+    "no data for this scenario" case.
+    """
+    source = get_treatment_datalayer()
+    if source is None:
+        return True
+
+    geometry = get_project_areas_union(scenario)
+
+    with rasterio.open(_datalayer_path(source)) as src:
+        raster_srid = src.crs.to_epsg() if src.crs else None
+        if raster_srid is None:
+            raise ValueError(f"Raster CRS {src.crs} does not resolve to an EPSG SRID.")
+        clip_geometry = json.loads(maybe_transform(geometry, raster_srid).geojson)
+        try:
+            data, _ = mask(src, [clip_geometry], crop=True, filled=False)
+        except ValueError:
+            # Union geometry doesn't overlap the raster extent at all.
+            return False
+
+    return bool((~np.ma.getmaskarray(data[0])).any())
+
+
 def _get_datalayer(
     datalayer_lookup: Dict[Tuple[str, int, bool], DataLayer],
     metric: str,
@@ -149,27 +268,31 @@ def _datalayer_path(datalayer: DataLayer) -> str:
     return with_vsi_prefix(datalayer.url)
 
 
-def _projected_pixel_area_acres(src: rasterio.DatasetReader) -> float:
-    transform = src.transform
-    unit_factor = 1.0
-    if src.crs and src.crs.is_projected:
-        linear_units_factor = src.crs.linear_units_factor
-        if isinstance(linear_units_factor, tuple):
-            unit_factor = float(linear_units_factor[-1])
-    pixel_area = abs(transform.a * transform.e) * unit_factor * unit_factor
-    return pixel_area / settings.CONVERSION_SQM_ACRES
-
-
-def _geographic_pixel_area_acres(transform, row: int) -> float:
-    geod = Geod(ellps="WGS84")
+def _pixel_area_acres(
+    transform,
+    row: int,
+    to_lonlat: Transformer | None,
+) -> float:
+    """
+    Geodesic ground area (in acres) of one raster pixel in row `row`. Pixel
+    corners are read straight from the raster's own transform - whatever its
+    native resolution actually is - then converted to lon/lat (if not already
+    geographic) so the area reflects true ground distance. This matters for
+    CRSs like EPSG:3857 (Web Mercator), which is conformal but not
+    equal-area: its scale factor grows with latitude, so treating its
+    "meters" as ground meters silently inflates area away from the equator.
+    """
     corners = [
         transform * (0, row),
         transform * (1, row),
         transform * (1, row + 1),
         transform * (0, row + 1),
     ]
+    if to_lonlat is not None:
+        corners = [to_lonlat.transform(x, y) for x, y in corners]
     lons = [corner[0] for corner in corners]
     lats = [corner[1] for corner in corners]
+    geod = Geod(ellps="WGS84")
     area_sq_meters, _perimeter = geod.polygon_area_perimeter(lons, lats)
     return abs(area_sq_meters) / settings.CONVERSION_SQM_ACRES
 
@@ -181,15 +304,102 @@ def _selected_pixel_area_acres(
 ) -> float:
     if not selected_pixels.any():
         return 0.0
-    if src.crs and src.crs.is_projected:
-        return float(selected_pixels.sum()) * _projected_pixel_area_acres(src)
-    if src.crs and src.crs.is_geographic:
-        rows, counts = np.unique(np.where(selected_pixels)[0], return_counts=True)
-        return sum(
-            int(count) * _geographic_pixel_area_acres(transform, int(row))
-            for row, count in zip(rows, counts)
+    to_lonlat = (
+        None
+        if src.crs and src.crs.is_geographic
+        else Transformer.from_crs(src.crs, "EPSG:4326", always_xy=True)
+    )
+    rows, counts = np.unique(np.where(selected_pixels)[0], return_counts=True)
+    return sum(
+        int(count) * _pixel_area_acres(transform, int(row), to_lonlat)
+        for row, count in zip(rows, counts)
+    )
+
+
+def _row_weighted_biomass_total(
+    selected: np.ndarray,
+    values: np.ndarray,
+    src: rasterio.DatasetReader,
+    transform,
+) -> float:
+    """
+    Sums `values` over `selected` pixels, weighting each row's contribution
+    by that row's true geodesic pixel area (see `_pixel_area_acres`) instead
+    of a nominal per-pixel acreage constant - the same approach used for
+    treatment pixel areas via `_selected_pixel_area_acres`, but weighting by
+    each row's summed value rather than its pixel count.
+    """
+    if not selected.any():
+        return 0.0
+    to_lonlat = (
+        None
+        if src.crs and src.crs.is_geographic
+        else Transformer.from_crs(src.crs, "EPSG:4326", always_xy=True)
+    )
+    total = 0.0
+    for row in np.unique(np.where(selected)[0]):
+        row = int(row)
+        row_sum = float(values[row][selected[row]].sum())
+        total += row_sum * _pixel_area_acres(transform, row, to_lonlat)
+    return total
+
+
+def _fractional_pixel_contributions(
+    pixels: np.ma.MaskedArray,
+    touched_by_geometry: np.ndarray,
+    src: rasterio.DatasetReader,
+    transform,
+    project_geometry: Polygon,
+) -> Dict[Optional[int], float]:
+    """
+    Area-weighted acres per raster value for every pixel touched by
+    `project_geometry`, keyed by the pixel's integer value (or None for a
+    touched pixel with no raster data - i.e. "no treatment").
+
+    Whole-pixel inclusion (count each touched pixel's full area) only
+    approximates true polygon area when pixels are small relative to the
+    polygon. When the treatment raster's native pixel size approaches or
+    exceeds the size of a project area, a single pixel that only clips a
+    small corner of the polygon would otherwise still contribute its full
+    area - this instead weights each pixel's contribution by the actual
+    fraction of it that overlaps the polygon.
+    """
+    contributions: Dict[Optional[int], float] = defaultdict(float)
+    if not touched_by_geometry.any():
+        return contributions
+
+    to_lonlat = (
+        None
+        if src.crs and src.crs.is_geographic
+        else Transformer.from_crs(src.crs, "EPSG:4326", always_xy=True)
+    )
+    data_mask = np.ma.getmaskarray(pixels)
+    raw_values = pixels.filled(0)
+    pixel_area_cache: Dict[int, float] = {}
+
+    for row, col in zip(*np.where(touched_by_geometry)):
+        row, col = int(row), int(col)
+        pixel_polygon = Polygon(
+            [
+                transform * (col, row),
+                transform * (col + 1, row),
+                transform * (col + 1, row + 1),
+                transform * (col, row + 1),
+            ]
         )
-    raise ValueError("AET delta raster must use a projected or geographic CRS.")
+        if pixel_polygon.area <= 0:
+            continue
+        fraction = pixel_polygon.intersection(project_geometry).area / pixel_polygon.area
+        if fraction <= 0:
+            continue
+
+        if row not in pixel_area_cache:
+            pixel_area_cache[row] = _pixel_area_acres(transform, row, to_lonlat)
+
+        key = None if data_mask[row, col] else int(raw_values[row, col])
+        contributions[key] += pixel_area_cache[row] * fraction
+
+    return contributions
 
 
 def _valid_pixel_mask(
@@ -268,7 +478,7 @@ def aggregate_flame_length_reduction(
     valid_mask = _valid_pixel_mask(baseline_pixels, value_pixels)
     baseline_values = baseline_pixels.filled(np.nan)
     value_values = value_pixels.filled(np.nan)
-    reduced_mask = valid_mask & (baseline_values > from_ft) & (value_values <= to_ft)
+    reduced_mask = valid_mask & (baseline_values >= from_ft) & (value_values <= to_ft)
 
     reduced_area_acres = _selected_pixel_area_acres(reduced_mask, src, transform)
     project_area_acres = get_acreage(project_area.geometry)
@@ -381,13 +591,16 @@ def calculate_project_area_aet_improvement(
 def calculate_aet_improvement(
     report: FundingOpportunityReport, percentage: float
 ) -> Dict[str, Any]:
-    report = FundingOpportunityReport.objects.select_related("scenario").get(
-        pk=report.pk
-    )
+    report = FundingOpportunityReport.objects.select_related(
+        "scenario", "scenario__planning_area"
+    ).get(pk=report.pk)
     project_areas = list(report.scenario.project_areas.all())
-    delta_layer = get_aet_delta_datalayer()
+    planning_area_acres = get_acreage(report.scenario.planning_area.geometry)
+    percentual_layer = get_aet_percentual_datalayer()
+    if percentual_layer is None:
+        raise ValueError("Missing funding report AET percentual datalayer.")
 
-    with rasterio.open(_datalayer_path(delta_layer)) as delta_src:
+    with rasterio.open(_datalayer_path(percentual_layer)) as delta_src:
         raster_srid = delta_src.crs.to_epsg() if delta_src.crs else None
         if raster_srid is None:
             raise ValueError(
@@ -420,18 +633,48 @@ def calculate_aet_improvement(
     )
     improved_acres = sum(result["improved_acres"] for result in project_area_results)
     improved_area_percent = (
-        improved_acres / total_project_area_acres * 100
-        if total_project_area_acres
-        else 0.0
+        improved_acres / planning_area_acres * 100 if planning_area_acres else 0.0
     )
 
     return {
         "percentage": percentage,
         "improved_acres": improved_acres,
         "total_project_area_acres": total_project_area_acres,
+        "planning_area_acres": planning_area_acres,
         "improved_area_percent": improved_area_percent,
         "project_areas": project_area_results,
     }
+
+
+def merge_aet_improvement_into_results(
+    results: Optional[Dict[str, Any]], aet_result: Dict[str, Any]
+) -> Dict[str, Any]:
+    """
+    Shapes a `calculate_aet_improvement()` result into the
+    `results["summary"]["AET"]` / `results["projects"]["AET"]` structure
+    stored on `FundingOpportunityReport.results` (used by both the full
+    report run and the on-demand aet-improvement endpoint). Returns a new
+    dict; does not mutate `results` in place.
+    """
+    merged = deepcopy(results) if results else {}
+    merged.setdefault("summary", {})["AET"] = {
+        "percentage": aet_result["percentage"],
+        "improved_acres": aet_result["improved_acres"],
+        "total_project_area_acres": aet_result["total_project_area_acres"],
+        "planning_area_acres": aet_result["planning_area_acres"],
+        "improved_area_percent": aet_result["improved_area_percent"],
+    }
+    merged.setdefault("projects", {})["AET"] = aet_result["project_areas"]
+    return merged
+
+
+def _clip_metadata(source_metadata: dict | None, role: str) -> dict:
+    metadata = deepcopy(source_metadata) or {}
+    try:
+        metadata["modules"]["funding_report"]["role"] = role
+    except KeyError:
+        pass
+    return metadata
 
 
 def generate_treatment_clip_datalayer(report: FundingOpportunityReport) -> DataLayer:
@@ -514,7 +757,106 @@ def generate_treatment_clip_datalayer(report: FundingOpportunityReport) -> DataL
         geometry=geometry_from_info(layer_info, datalayer_type=layer_type),
         info=layer_info,
         mimetype=mimetype,
-        metadata=deepcopy(source.metadata) or {},
+        metadata=_clip_metadata(source.metadata, TREATMENT_CLIP_ROLE),
+        map_service_type=source.map_service_type,
+        status=DataLayerStatus.PENDING,
+    )
+    DataLayerHasStyle.objects.bulk_create(
+        [
+            DataLayerHasStyle(
+                datalayer=datalayer,
+                style_id=style_id,
+                default=default,
+            )
+            for style_id, default in style_associations
+        ]
+    )
+
+    datalayer_uploaded.delay(datalayer.pk, status=DataLayerStatus.READY)
+    return datalayer
+
+
+def generate_aet_clip_datalayer(report: FundingOpportunityReport) -> DataLayer:
+    from datasets.tasks import datalayer_uploaded
+
+    source = get_aet_percentual_datalayer()
+    if source is None:
+        raise ValueError("Missing funding report AET percentual datalayer.")
+
+    report = FundingOpportunityReport.objects.select_related("scenario").get(
+        pk=report.pk
+    )
+    scenario = report.scenario
+    geometry = get_project_areas_union(scenario)
+
+    with rasterio.open(_datalayer_path(source)) as src:
+        raster_srid = src.crs.to_epsg() if src.crs else None
+        if raster_srid is None:
+            raise ValueError(f"Raster CRS {src.crs} does not resolve to an EPSG SRID.")
+        clip_geometry = json.loads(maybe_transform(geometry, raster_srid).geojson)
+        data, transform = mask(src, [clip_geometry], crop=True)
+
+        profile = src.profile.copy()
+        profile.update(
+            {
+                "height": data.shape[1],
+                "width": data.shape[2],
+                "transform": transform,
+            }
+        )
+
+        with tempfile.NamedTemporaryFile(suffix=".tif", delete=False) as tmp:
+            clipped_path = tmp.name
+        with rasterio.open(clipped_path, "w", **profile) as dst:
+            dst.write(data)
+
+    try:
+        organization = source.organization
+        uuid_value = str(uuid4())
+        original_name = f"funding_report_aet_percentual_scenario_{scenario.pk}.tif"
+        storage_url = get_storage_url(
+            organization_id=organization.pk,
+            uuid=uuid_value,
+            original_name=original_name,
+            mimetype="image/tiff",
+        )
+        to_cog_streaming(input_file=clipped_path, output_file=storage_url)
+    finally:
+        Path(clipped_path).unlink(missing_ok=True)
+
+    vsi_output = with_vsi_prefix(storage_url)
+    layer_type, layer_info = get_layer_info(input_file=vsi_output)
+    mimetype = detect_mimetype(input_file=vsi_output) or "image/tiff"
+    geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
+
+    style_associations = [
+        (association.style_id, association.default)
+        for association in source.rel_styles.all()
+    ]
+
+    user_model = get_user_model()
+    created_by = user_model.objects.get(email=settings.DEFAULT_ADMIN_EMAIL)
+
+    name = f"Funding Report AET Percentual - Scenario {scenario.pk}"
+    DataLayer.dead_or_alive.filter(dataset=source.dataset, name=name).delete()
+
+    datalayer = DataLayer.objects.create(
+        name=name,
+        uuid=uuid_value,
+        dataset=source.dataset,
+        category=source.category,
+        organization=organization,
+        workspace=source.workspace,
+        created_by=created_by,
+        original_name=original_name,
+        url=storage_url,
+        type=layer_type,
+        storage_type=StorageTypeChoices.DATABASE,
+        geometry_type=geometry_type,
+        geometry=geometry_from_info(layer_info, datalayer_type=layer_type),
+        info=layer_info,
+        mimetype=mimetype,
+        metadata=_clip_metadata(source.metadata, AET_PERCENTUAL_CLIP_ROLE),
         map_service_type=source.map_service_type,
         status=DataLayerStatus.PENDING,
     )
@@ -556,44 +898,39 @@ def calculate_treatment_pixel_areas(report: FundingOpportunityReport) -> Dict[st
                 maybe_transform(project_area.geometry, raster_srid).geojson
             )
             try:
-                data, transform = mask(src, [geometry], crop=True, filled=False)
+                data, transform = mask(
+                    src, [geometry], crop=True, filled=False, all_touched=True
+                )
             except ValueError:
                 projects[project_area.pk] = {}
                 continue
 
             pixels = data[0]
-            data_mask = np.ma.getmaskarray(pixels)
-            valid_mask = ~data_mask
-            values = np.ma.array(pixels, mask=~valid_mask).compressed()
-
-            inside_geometry = ~geometry_mask(
+            touched_by_geometry = ~geometry_mask(
                 [geometry],
                 out_shape=pixels.shape,
                 transform=transform,
                 invert=False,
+                all_touched=True,
+            )
+
+            contributions = _fractional_pixel_contributions(
+                pixels=pixels,
+                touched_by_geometry=touched_by_geometry,
+                src=src,
+                transform=transform,
+                project_geometry=shape(geometry),
             )
 
             project_result: Dict[str, float] = {}
-            for value in np.unique(values):
-                selected_pixels = valid_mask & (pixels.filled(np.nan) == value)
-                acres = _selected_pixel_area_acres(
-                    selected_pixels=selected_pixels,
-                    src=src,
-                    transform=transform,
+            for value, acres in contributions.items():
+                label = (
+                    TREATMENT_NO_TREATMENT_LABEL
+                    if value is None
+                    else TREATMENT_PIXEL_VALUE_LABELS.get(value, str(value))
                 )
-                label = TREATMENT_PIXEL_VALUE_LABELS.get(int(value), str(int(value)))
-                project_result[label] = acres
+                project_result[label] = project_result.get(label, 0.0) + acres
                 total[label] += acres
-
-            no_treatment_pixels = inside_geometry & data_mask
-            if no_treatment_pixels.any():
-                acres = _selected_pixel_area_acres(
-                    selected_pixels=no_treatment_pixels,
-                    src=src,
-                    transform=transform,
-                )
-                project_result[TREATMENT_NO_TREATMENT_LABEL] = acres
-                total[TREATMENT_NO_TREATMENT_LABEL] += acres
 
             projects[project_area.pk] = project_result
 
@@ -664,6 +1001,81 @@ def build_funding_report_results(
     }
 
 
+def build_flame_length_reduction_results(
+    project_results: Iterable[Dict[str, Any]],
+) -> Dict[str, Dict[str, List[Dict[str, Any]]]]:
+    """
+    Like build_funding_report_results, but buckets entries by their flame
+    length "interval" (e.g. "7_4") instead of by metric, since a single
+    funding report run now calculates flame length reduction for multiple
+    intervals. Each result must carry an "interval": {"from": ..., "to": ...}
+    key, as produced by aggregate_flame_length_reduction.
+    """
+    projects: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    summary_values: Dict[Tuple[str, int], Dict[str, Any]] = {}
+
+    for result in project_results:
+        interval = result["interval"]
+        interval_key = f"{int(interval['from'])}_{int(interval['to'])}"
+        year = result["year"]
+        project_result = {
+            "project_id": result["project_id"],
+            "proj_id": result.get("proj_id"),
+            "year": year,
+            "value": result["value"],
+            "baseline": result["baseline"],
+            "delta": result["delta"],
+            "raw_value": result["value"],
+            "total_area": result["baseline"],
+        }
+        projects[interval_key].append(project_result)
+
+        summary = summary_values.setdefault(
+            (interval_key, year),
+            {
+                "year": year,
+                "value": None,
+                "baseline": None,
+                "delta": None,
+                "raw_value": None,
+                "total_area": None,
+            },
+        )
+        for field in ("value", "baseline"):
+            if result[field] is None:
+                continue
+            summary[field] = (summary[field] or 0) + result[field]
+
+    for (_interval_key, _year), summary in summary_values.items():
+        if summary["value"] is None or summary["baseline"] is None:
+            continue
+        summary["delta"] = (
+            summary["value"] / summary["baseline"] * 100
+            if summary["baseline"]
+            else 0.0
+        )
+        summary["raw_value"] = summary["value"]
+        summary["total_area"] = summary["baseline"]
+
+    summary_by_interval: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for (interval_key, _year), summary in summary_values.items():
+        summary_by_interval[interval_key].append(summary)
+
+    return {
+        "summary": {
+            interval_key: sorted(values, key=lambda item: item["year"])
+            for interval_key, values in summary_by_interval.items()
+        },
+        "projects": {
+            interval_key: sorted(
+                values,
+                key=lambda item: (item["year"], item["project_id"]),
+            )
+            for interval_key, values in projects.items()
+        },
+    }
+
+
 def calculate_funding_report_flame_length_reduction(
     report: FundingOpportunityReport,
     from_ft: float,
@@ -698,3 +1110,443 @@ def calculate_funding_report_flame_length_reduction(
             FundingReportMetric.TOTAL_FLAME_SEVERITY.value, []
         ),
     }
+
+
+_BIOMASS_WOOD_TYPES: Dict[int, str] = {
+    WOOD_TYPE_SOFTWOOD: "softwood",
+    WOOD_TYPE_HARDWOOD: "hardwood",
+    WOOD_TYPE_MIXED: "mixed",
+}
+
+
+def get_biomass_datalayer(role: str) -> DataLayer:
+    datalayers = list(
+        DataLayer.objects.filter(
+            type=DataLayerType.RASTER,
+            metadata__contains={
+                "modules": {
+                    "funding_report": {
+                        "variable": BIOMASS_VARIABLE,
+                        "role": role,
+                    }
+                }
+            },
+        )[:2]
+    )
+    if not datalayers:
+        raise ValueError(
+            f"Missing funding report biomass datalayer with role={role!r}."
+        )
+    if len(datalayers) > 1:
+        raise ValueError(
+            f"Multiple funding report biomass datalayers found with role={role!r}."
+        )
+    return datalayers[0]
+
+
+def _extract_biomass_volumes(
+    geometry: Dict[str, Any],
+    merch_src: rasterio.DatasetReader,
+    non_merch_src: rasterio.DatasetReader,
+    wood_type_src: rasterio.DatasetReader,
+) -> Dict[str, float]:
+    """
+    Computes merch/non-merch wood volume totals per wood type for one
+    project area geometry. Keys: merchantable_{softwood,hardwood,mixed}_bf
+    and non_merchantable_{softwood,hardwood,mixed}_cuft.
+
+    Raster pixels store per-acre rates (merch in bf/ac, non-merch in
+    cuft/ac), so each pixel's value is weighted by that pixel's true
+    geodesic ground area (see `_row_weighted_biomass_total`) to produce a
+    total - the same geodesic-area approach used for treatment pixel areas,
+    rather than a nominal per-pixel acreage constant.
+    """
+    empty: Dict[str, float] = {}
+    for name in _BIOMASS_WOOD_TYPES.values():
+        empty[f"merchantable_{name}_bf"] = 0.0
+        empty[f"non_merchantable_{name}_cuft"] = 0.0
+
+    try:
+        merch_data, transform = mask(merch_src, [geometry], crop=True, filled=False)
+        non_merch_data, _ = mask(non_merch_src, [geometry], crop=True, filled=False)
+        wt_data, _ = mask(wood_type_src, [geometry], crop=True, filled=False)
+    except ValueError:
+        return empty
+
+    merch_arr = np.ma.array(merch_data[0], dtype=float)
+    non_merch_arr = np.ma.array(non_merch_data[0], dtype=float)
+    wt_arr = np.ma.array(wt_data[0])
+
+    wt_nodata = np.ma.getmaskarray(wt_arr)
+    wt_raw = wt_arr.filled(0)
+    merch_ok = ~np.ma.getmaskarray(merch_arr) & np.isfinite(merch_arr.filled(np.nan))
+    nm_ok = ~np.ma.getmaskarray(non_merch_arr) & np.isfinite(
+        non_merch_arr.filled(np.nan)
+    )
+    merch_vals = merch_arr.filled(0.0)
+    nm_vals = non_merch_arr.filled(0.0)
+
+    result: Dict[str, float] = {}
+    for wt_value, wt_name in _BIOMASS_WOOD_TYPES.items():
+        wt_match = ~wt_nodata & (wt_raw == wt_value)
+        result[f"merchantable_{wt_name}_bf"] = _row_weighted_biomass_total(
+            wt_match & merch_ok, merch_vals, merch_src, transform
+        )
+        result[f"non_merchantable_{wt_name}_cuft"] = _row_weighted_biomass_total(
+            wt_match & nm_ok, nm_vals, merch_src, transform
+        )
+
+    return result
+
+
+def calculate_biomass_volumes(report: FundingOpportunityReport) -> Dict[str, Any]:
+    report = FundingOpportunityReport.objects.select_related("scenario").get(
+        pk=report.pk
+    )
+    project_areas = list(report.scenario.project_areas.all())
+
+    merch_layer = get_biomass_datalayer(BiomassRole.MERCHANTABLE)
+    non_merch_layer = get_biomass_datalayer(BiomassRole.NON_MERCHANTABLE)
+    wt_layer = get_biomass_datalayer(BiomassRole.WOOD_TYPE)
+
+    with (
+        rasterio.open(_datalayer_path(merch_layer)) as merch_src,
+        rasterio.open(_datalayer_path(non_merch_layer)) as non_merch_src,
+        rasterio.open(_datalayer_path(wt_layer)) as wt_src,
+    ):
+        raster_srid = merch_src.crs.to_epsg() if merch_src.crs else None
+        if raster_srid is None:
+            raise ValueError(
+                f"Biomass raster CRS {merch_src.crs} does not resolve to an EPSG SRID."
+            )
+
+        accumulated: Dict[str, float] = {
+            f"merchantable_{wt_name}_bf": 0.0
+            for wt_name in _BIOMASS_WOOD_TYPES.values()
+        } | {
+            f"non_merchantable_{wt_name}_cuft": 0.0
+            for wt_name in _BIOMASS_WOOD_TYPES.values()
+        }
+
+        project_area_results = []
+        for project_area in project_areas:
+            geometry = json.loads(
+                maybe_transform(project_area.geometry, raster_srid).geojson
+            )
+            volumes = _extract_biomass_volumes(
+                geometry, merch_src, non_merch_src, wt_src
+            )
+
+            project_area_results.append(
+                {
+                    "project_id": project_area.pk,
+                    "proj_id": (project_area.data or {}).get("proj_id"),
+                    **volumes,
+                }
+            )
+
+            for key in accumulated:
+                accumulated[key] += volumes.get(key, 0.0)
+
+    return {
+        "summary": accumulated,
+        "project_areas": project_area_results,
+    }
+
+
+_INVALID_COLUMN_CHARS = re.compile(r"[^0-9a-zA-Z_]+")
+
+
+def _sanitize_column_name(name: str) -> str:
+    """
+    Replaces characters that aren't safe in a GeoPackage/SQL column name
+    with underscores, preserving case. Unlike `sanitize_shp_field_name`
+    (Django's `slugify`), this does not lowercase or use hyphens - hyphens
+    aren't valid in an unquoted SQL identifier, and lowercasing would
+    obscure the metric names (e.g. "ABOVEGROUND_TOTAL_2026_value").
+    """
+    return _INVALID_COLUMN_CHARS.sub("_", str(name)).strip("_")
+
+
+def flatten_report_metrics(prefix: str, value: Any, out: Dict[str, Any]) -> None:
+    """
+    Flattens the nested `results["summary"]`/`results["projects"]` structure
+    into a flat dict of columns suitable for a GeoPackage attribute table.
+
+    - dicts recurse, appending the key to the prefix (e.g. "AET" + "percentage"
+      -> "AET_percentage").
+    - lists of dicts (one row per year, or per project per year) recurse per
+      item, appending the item's "year" to the prefix when present (e.g.
+      "ABOVEGROUND_TOTAL" + year 2026 -> "ABOVEGROUND_TOTAL_2026"). The
+      "project_id"/"proj_id"/"year" keys are dropped from the item itself
+      since they're identifying metadata, not a result column.
+    - anything else is a leaf value, written under the sanitized prefix.
+    """
+    if isinstance(value, dict):
+        for key, sub_value in value.items():
+            sub_prefix = f"{prefix}_{key}" if prefix else str(key)
+            flatten_report_metrics(sub_prefix, sub_value, out)
+    elif isinstance(value, list):
+        for item in value:
+            if not isinstance(item, dict):
+                continue
+            year = item.get("year")
+            sub_prefix = f"{prefix}_{int(year)}" if year is not None else prefix
+            filtered_item = {
+                k: v for k, v in item.items() if k not in ("project_id", "proj_id", "year")
+            }
+            flatten_report_metrics(sub_prefix, filtered_item, out)
+    elif prefix:
+        out[_sanitize_column_name(prefix)] = value
+
+
+def _filter_by_project_id(value: Any, project_id: int) -> Any:
+    """
+    Walks the `results["projects"]` structure, keeping only list items whose
+    "project_id" matches. Handles both flat per-metric lists (e.g.
+    ABOVEGROUND_TOTAL, AET, BIOMASS_VOLUMES) and the nested
+    {interval_key: [...]} shape used by TOTAL_FLAME_SEVERITY.
+    """
+    if isinstance(value, list):
+        return [
+            item
+            for item in value
+            if isinstance(item, dict) and item.get("project_id") == project_id
+        ]
+    if isinstance(value, dict):
+        return {key: _filter_by_project_id(sub, project_id) for key, sub in value.items()}
+    return value
+
+
+def build_planning_area_feature(report: FundingOpportunityReport) -> Dict[str, Any]:
+    scenario = report.scenario
+    planning_area = scenario.planning_area
+    results = report.results or {}
+
+    properties: Dict[str, Any] = {
+        "id": planning_area.pk,
+        "name": planning_area.name,
+        "region_name": planning_area.region_name or "",
+        "scenario_id": scenario.pk,
+    }
+    flatten_report_metrics("", results.get("summary", {}), properties)
+    flatten_report_metrics(
+        "TREATMENT_AREA", results.get("treatment_areas", {}).get("total", {}), properties
+    )
+
+    geometry_json = json.loads(
+        planning_area.geometry.transform(settings.CRS_GEOPACKAGE_EXPORT, clone=True).json
+    )
+    return {
+        "geometry": to_multi(geometry_json),
+        "properties": properties,
+    }
+
+
+def build_project_area_features(report: FundingOpportunityReport) -> List[Dict[str, Any]]:
+    scenario = report.scenario
+    results = report.results or {}
+    projects_results = results.get("projects", {})
+    treatment_area_projects = results.get("treatment_areas", {}).get("projects", {})
+
+    features = []
+    for project_area in scenario.project_areas.all():
+        properties: Dict[str, Any] = {
+            "id": project_area.pk,
+            "proj_id": (project_area.data or {}).get("proj_id"),
+            "name": project_area.name,
+        }
+        filtered = _filter_by_project_id(projects_results, project_area.pk)
+        flatten_report_metrics("", filtered, properties)
+        flatten_report_metrics(
+            "TREATMENT_AREA",
+            treatment_area_projects.get(str(project_area.pk), {}),
+            properties,
+        )
+
+        geometry_json = json.loads(
+            project_area.geometry.transform(settings.CRS_GEOPACKAGE_EXPORT, clone=True).json
+        )
+        features.append(
+            {
+                "geometry": to_multi(geometry_json),
+                "properties": properties,
+            }
+        )
+    return features
+
+
+def export_planning_area_results_to_geopackage(
+    report: FundingOpportunityReport, geopackage_path: Path
+) -> None:
+    feature = build_planning_area_feature(report)
+    field_type_pairs = list(
+        map(map_property_for_numeric_export, feature["properties"].items())
+    )
+    schema = {"geometry": "MultiPolygon", "properties": field_type_pairs}
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+            with fiona.open(
+                str(geopackage_path),
+                "w",
+                layer="planning_area",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                out.write(feature)
+    except Exception as e:
+        log.exception(
+            "Error exporting planning area results for funding report %s to geopackage: %s",
+            report.pk,
+            e,
+        )
+        raise e
+
+
+def export_project_areas_results_to_geopackage(
+    report: FundingOpportunityReport, geopackage_path: Path
+) -> None:
+    features = build_project_area_features(report)
+    if not features:
+        log.warning(
+            "Funding report %s has no project areas. Skipping project_areas "
+            "geopackage layer.",
+            report.pk,
+        )
+        return
+
+    # Different project areas can have different sets of metric keys (e.g. a
+    # metric/year missing from one project's filtered results), so the schema
+    # must be built from the union of all features' fields, and every feature
+    # padded with None for keys it doesn't have.
+    all_fields: Dict[str, Any] = {}
+    for feature in features:
+        for key, value in feature["properties"].items():
+            if key not in all_fields or all_fields[key] is None:
+                all_fields[key] = value
+
+    field_type_pairs = list(map(map_property_for_numeric_export, all_fields.items()))
+    schema = {"geometry": "MultiPolygon", "properties": field_type_pairs}
+    crs = from_epsg(settings.CRS_GEOPACKAGE_EXPORT)
+    try:
+        with fiona.Env(**get_gdal_env(allowed_extensions=".gpkg,.gpkg-journal")):
+            with fiona.open(
+                str(geopackage_path),
+                "w",
+                layer="project_areas",
+                crs=crs,
+                driver="GPKG",
+                schema=schema,
+                allow_unsupported_drivers=True,
+            ) as out:
+                for feature in features:
+                    properties = {
+                        key: feature["properties"].get(key) for key in all_fields
+                    }
+                    out.write({"geometry": feature["geometry"], "properties": properties})
+    except Exception as e:
+        log.exception(
+            "Error exporting project area results for funding report %s to geopackage: %s",
+            report.pk,
+            e,
+        )
+        raise e
+
+
+def export_treatment_raster_to_geopackage(
+    report: FundingOpportunityReport, geopackage_path: Path
+) -> None:
+    datalayer = report.treatment_datalayer
+    if datalayer is None or not datalayer.url:
+        log.warning(
+            "Funding report %s has no treatment datalayer. Skipping treatment_clip "
+            "geopackage raster layer.",
+            report.pk,
+        )
+        return
+
+    try:
+        with rasterio.Env(**get_gdal_env(allowed_extensions=".tif")):
+            with rasterio.open(with_vsi_prefix(datalayer.url)) as src:
+                data = src.read()
+                profile = {
+                    "driver": "GPKG",
+                    "height": src.height,
+                    "width": src.width,
+                    "count": src.count,
+                    "dtype": src.dtypes[0],
+                    "crs": src.crs,
+                    "transform": src.transform,
+                    "nodata": src.nodata,
+                }
+
+        with rasterio.open(
+            str(geopackage_path),
+            "w",
+            RASTER_TABLE="treatment_clip",
+            APPEND_SUBDATASET="YES",
+            **profile,
+        ) as dst:
+            dst.write(data)
+    except Exception as e:
+        log.exception(
+            "Error exporting treatment raster for funding report %s to geopackage: %s",
+            report.pk,
+            e,
+        )
+        raise e
+
+
+def export_funding_report_to_geopackage(
+    report: FundingOpportunityReport,
+) -> Optional[str]:
+    report = FundingOpportunityReport.objects.select_related(
+        "scenario__planning_area", "treatment_datalayer"
+    ).get(pk=report.pk)
+    try:
+        report.geopackage_status = GeoPackageStatus.PROCESSING
+        report.save(update_fields=["geopackage_status", "updated_at"])
+
+        temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
+        if not temp_folder.exists():
+            temp_folder.mkdir(parents=True)
+        temp_file = temp_folder / f"funding_report_{report.pk}.gpkg"
+        temp_file.unlink(missing_ok=True)
+
+        export_planning_area_results_to_geopackage(report, temp_file)
+        export_project_areas_results_to_geopackage(report, temp_file)
+        export_treatment_raster_to_geopackage(report, temp_file)
+
+        object_name = f"{settings.GEOPACKAGES_FOLDER}/funding_report_{report.pk}.gpkg"
+        if settings.PROVIDER == "gcp":
+            from core.gcs import upload_file_via_cli
+
+            geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{object_name}"
+            upload_file_via_cli(
+                object_name=object_name,
+                input_file=str(temp_file),
+                bucket_name=settings.GCS_MEDIA_BUCKET,
+            )
+        else:
+            from core.s3 import upload_file_via_s3_client
+
+            geopackage_path = f"s3://{settings.S3_BUCKET}/{object_name}"
+            upload_file_via_s3_client(
+                object_name=object_name,
+                input_file=str(temp_file),
+            )
+
+        temp_file.unlink(missing_ok=True)
+        report.geopackage_url = geopackage_path
+        report.geopackage_status = GeoPackageStatus.SUCCEEDED
+        report.save(update_fields=["geopackage_url", "geopackage_status", "updated_at"])
+        return geopackage_path
+    except Exception:
+        log.exception("Failed to export funding report %s to geopackage.", report.pk)
+        report.geopackage_url = None
+        report.geopackage_status = GeoPackageStatus.FAILED
+        report.save(update_fields=["geopackage_url", "geopackage_status", "updated_at"])
+        return None

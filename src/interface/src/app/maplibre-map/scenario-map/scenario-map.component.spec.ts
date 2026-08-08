@@ -13,6 +13,8 @@ import { DataLayerNameComponent } from '@data-layers/data-layer-name/data-layer-
 import { MapDataLayerComponent } from '@maplibre-map/map-data-layer/map-data-layer.component';
 import { MapConfigService } from '../map-config.service';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
+import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
+import { BaseLayer } from '@types';
 
 describe('ScenarioMapComponent', () => {
   let component: ScenarioMapComponent;
@@ -63,5 +65,18 @@ describe('ScenarioMapComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('removes the added sub-unit base layer on destroy so it does not leak to other maps', () => {
+    const baseLayersState = TestBed.inject(BaseLayersStateService);
+    const removeSpy = spyOn(baseLayersState, 'removeBaseLayer');
+    const layer = { id: 42 } as unknown as BaseLayer;
+
+    // simulate the sub-unit layer having been pushed into the app-wide state
+    (component as any).addedSubUnitLayer = layer;
+
+    component.ngOnDestroy();
+
+    expect(removeSpy).toHaveBeenCalledWith(layer);
   });
 });

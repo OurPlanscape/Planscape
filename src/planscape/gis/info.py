@@ -1,5 +1,7 @@
 import json
 import logging
+import math
+import os
 from typing import Any, Dict, Optional
 
 import fiona
@@ -10,6 +12,17 @@ from fiona.errors import DriverError
 from rasterio.transform import from_gcps
 
 logger = logging.getLogger(__name__)
+
+
+def resolve_num_threads(raw: Optional[str] = None) -> int:
+    """Resolves a GDAL-style thread count config (e.g. settings.GDAL_NUM_THREADS,
+    which may be a number or the literal "ALL_CPUS") into a real int, since
+    rasterio's Python APIs (unlike the GDAL CLI/config option) require an int.
+    """
+    value = raw if raw is not None else settings.GDAL_NUM_THREADS
+    if str(value).strip().upper() == "ALL_CPUS":
+        return os.cpu_count() or 1
+    return int(value)
 
 
 def get_gdal_env(
@@ -55,6 +68,21 @@ def get_gdal_env(
                 "Using default GDAL environment."
             )
     return gdal_env
+
+
+def _sanitize_non_finite(value: Any) -> Any:
+    """Replaces NaN/Infinity floats with None.
+
+    Python's json module happily emits the non-standard NaN/Infinity tokens,
+    but PostgreSQL's json/jsonb columns reject them as invalid JSON.
+    """
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    if isinstance(value, dict):
+        return {key: _sanitize_non_finite(val) for key, val in value.items()}
+    if isinstance(value, list):
+        return [_sanitize_non_finite(val) for val in value]
+    return value
 
 
 def info_raster(input_file: str) -> Dict[str, Any]:
@@ -108,7 +136,7 @@ def info_raster(input_file: str) -> Dict[str, Any]:
             info["stats"] = stats
             info["checksum"] = [src.checksum(i) for i in src.indexes]
 
-            return json.loads(json.dumps(info))
+            return _sanitize_non_finite(json.loads(json.dumps(info)))
 
 
 def info_vector_layer(input_file: str, layer: Optional[str] = None) -> Dict[str, Any]:
@@ -133,7 +161,7 @@ def info_vector_layer(input_file: str, layer: Optional[str] = None) -> Dict[str,
             )
 
         info["crs"] = src.crs.to_string()
-        return json.loads(json.dumps(info))
+        return _sanitize_non_finite(json.loads(json.dumps(info)))
 
 
 def info_vector(input_file: str) -> Dict[str, Any]:

@@ -10,11 +10,21 @@
   </div>
   <section>
     <form [formGroup]="form">
+      <div class="ng-invalid error-message">
+        <span
+          *ngIf="
+            form.controls.includedAreas.invalid &&
+            form.controls.includedAreas.touched
+          ">
+          Please select an area to include to continue.
+        </span>
+      </div>
       <sg-selectable-list
         colorPath="styles[0].data.fill-color"
         outlineColorPath="styles[0].data.fill-outline-color"
         [items]="(includableAreas$ | async) ?? []"
         groupBy="dataset.name"
+        [selectAllEnabled]="true"
         (selectedItemsChanged)="handleSelectedItemsChange($event)"
         (viewedItemsChanged)="handleViewedItemsChange($event)"
         [selectedItems]="selectedAreas"

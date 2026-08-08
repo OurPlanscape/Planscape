@@ -1,4 +1,4 @@
 [defaults]
-url = https://sentry.sig-gis.com
-org = sig
-project = planscape-fe
+url = https://sentry.io
+org = spatial-informatics-group
+project = planscape-frontend

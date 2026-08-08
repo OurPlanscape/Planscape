@@ -14,7 +14,7 @@ const containerStyle = `style="display: flex;
   flex-direction: column;"`;
 
 const meta: Meta<SearchResultCardComponent> = {
-  title: 'Components/Search Result Card',
+  title: 'Cards/Search Result Card',
   component: SearchResultCardComponent,
   decorators: [
     applicationConfig({

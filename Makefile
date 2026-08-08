@@ -56,11 +56,9 @@ remove-local-sourcemaps:
 	rm -rf ./src/interface/dist/out/**.map ; \
 	rm -rf ./src/interface/dist/interface/**.map
 
-# This command uploads sourcemaps to Sentry and injects a sourceId reference.
-# if we have a tagged release, we associate it with the sourcemaps,
-# otherwise we use the SHA as the 'release' for dev builds.
-# Note that this relies on .sentryclirc for Sentry configs
-# and this make command is ignored without that file.
+# Injects debug ids into the build and uploads the sourcemaps to Sentry.
+# Org and project come from .sentryclirc; the token comes from SENTRY_AUTH_TOKEN,
+# either exported or set in the root .env.
 upload-sentry-sourcemaps:
 	@$(SHELL) ./upload_sentry_sourcemaps.sh || \
 	echo "NOTICE: Failed to upload sentry sourcemaps. Continuing to next build step."
@@ -87,8 +85,6 @@ mypy:
 migrate:
 	uv run --directory=src/planscape manage.py migrate --no-input
 	uv run --directory=src/planscape manage.py collectstatic --no-input
-	uv run --directory=src/planscape manage.py install_functions
-	uv run --directory=src/planscape manage.py install_functions --folder stands/sql
 
 install-dependencies-backend:
 	uv sync --locked --no-install-project --dev

@@ -1,9 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { TreatmentTypeIconComponent } from '@styleguide/treatment-type-icon/treatment-type-icon.component';
-import { SequenceIconComponent } from '@styleguide/sequence-icon/sequence-icon.component';
 import { Prescription, TreatmentProjectArea } from '@types';
 import {
   PRESCRIPTIONS,
@@ -23,11 +21,8 @@ import { HighlighterDirective } from '@styleguide/highlighter/highlighter.direct
   imports: [
     MatExpansionModule,
     MatIconModule,
-    NgClass,
     NgIf,
     NgFor,
-    SequenceIconComponent,
-    TreatmentTypeIconComponent,
     HighlighterDirective,
   ],
   templateUrl: './search-result-card.component.html',

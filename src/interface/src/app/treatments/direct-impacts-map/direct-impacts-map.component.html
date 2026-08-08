@@ -54,6 +54,7 @@
 
   <app-action-button
     *ngIf="(showLegend$ | async) === false"
-    (clickedActionButton)="openTreatmentLegend()">
+    (clickedActionButton)="openTreatmentLegend()"
+    tooltipContent="Treatment Legend">
   </app-action-button>
 </mgl-map>

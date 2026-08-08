@@ -1,4 +1,5 @@
 import logging
+import mimetypes
 from typing import Any, Collection, Dict, List, Optional
 
 import boto3
@@ -142,11 +143,17 @@ def upload_file_via_api(
     object_name: str,
     input_file: str,
     upload_to: Dict[str, Any],
+    content_type: Optional[str] = None,
 ):
     logger.info(f"Uploading file {object_name}.")
+    resolved_content_type = (
+        content_type
+        or mimetypes.guess_type(input_file)[0]
+        or "application/octet-stream"
+    )
 
     with open(input_file, "rb") as f:
-        files = {"file": (object_name, f)}
+        files = {"file": (object_name, f, resolved_content_type)}
         response = requests.post(
             upload_to["url"],
             data=upload_to["fields"],

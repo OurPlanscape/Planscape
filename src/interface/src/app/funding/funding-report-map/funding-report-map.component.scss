@@ -1,0 +1,89 @@
+@import 'colors';
+@import 'media';
+@import 'variables';
+@import 'mixins';
+
+:host {
+  display: flex;
+  box-sizing: border-box;
+  height: 100%;
+  flex-direction: column;
+}
+
+mgl-map {
+  width: 100%;
+  height: 100%;
+}
+
+:host ::ng-deep .maplibregl-ctrl-bottom-left .maplibregl-ctrl {
+  margin: 0;
+  margin-right: 10px;
+  padding: 0;
+  min-width: 0;
+}
+
+:host ::ng-deep {
+  .maplibregl-ctrl-top-right,
+  .maplibregl-ctrl-top-left {
+    .maplibregl-ctrl {
+      top: 60px;
+      position: relative;
+    }
+  }
+}
+
+.selected-layer-control {
+  border-top-right-radius: 8px;
+}
+
+.label {
+  @include xs-label();
+  @include public-sans();
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  color: $color-dark-gray;
+  padding: 0 4px 0 12px;
+  border-radius: 0 8px 0 0;
+  background: $color-white;
+  box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.15);
+
+  .label-button {
+    line-height: inherit;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+  }
+}
+
+
+.mat-icon {
+  color: $color-standard-blue;
+  height: 20px;
+  width: 20px;
+  font-size: 20px;
+}
+
+.loader {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: rgba($color-black, 0.2);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 400ms cubic-bezier(0.25, 0.8, 0.25, 1);
+  pointer-events: none;
+
+  mat-spinner {
+    --mdc-circular-progress-active-indicator-color: white;
+  }
+}
+
+.loader.visible {
+  opacity: 1;
+  transition: opacity 400ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}

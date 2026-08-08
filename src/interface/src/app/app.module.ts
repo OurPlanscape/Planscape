@@ -17,7 +17,8 @@ import {
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ButtonComponent, OverlayLoaderComponent } from '@styleguide';
-import { ChipInputComponent } from '@home/chip-input/chip-input.component';
+import { ChipInputComponent } from '@styleguide/chip-input/chip-input.component';
+import { ShareDialogComponent } from '@styleguide/share-dialog/share-dialog.component';
 
 import { FeaturesModule } from '@features/features.module';
 import { HomeComponent } from '@home/home.component';
@@ -71,6 +72,7 @@ import { LoggingHttpInterceptor } from '@services/logging-http.interceptor';
     PlanningAreasComponent,
     OverlayLoaderComponent,
     ChipInputComponent,
+    ShareDialogComponent,
   ],
   providers: [
     WINDOW_PROVIDERS,

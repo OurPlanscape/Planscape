@@ -3,20 +3,21 @@ import logging
 from django.apps import AppConfig
 from django.contrib.auth import get_user_model
 from django.contrib.auth.signals import user_logged_in, user_login_failed
+from django.db import transaction
 from django.db.models.signals import post_save
 
 log = logging.getLogger(__name__)
 
 
 def log_login_failure(sender, credentials, request, **kwargs):
-    from planscape.openpanel import track_openpanel
+    from planscape.analytics import track_event
 
     login_user_identifier = (
         credentials.get("email")
         or credentials.get("username")
         or "no identifier provided"
     )
-    track_openpanel(
+    track_event(
         "users.login_failed", properties={"email": credentials.get("email") or ""}
     )
     log.warning(
@@ -27,9 +28,9 @@ def log_login_failure(sender, credentials, request, **kwargs):
 
 
 def handle_email_confirmed(sender, request, email_address, **kwargs):
-    from planscape.openpanel import track_openpanel
+    from planscape.analytics import track_event
 
-    track_openpanel(
+    track_event(
         "users.email_confirmed",
         properties={"email": email_address.email},
         user_id=email_address.user_id,
@@ -37,10 +38,10 @@ def handle_email_confirmed(sender, request, email_address, **kwargs):
 
 
 def handle_user_logged_in(sender, request, user, **kwargs):
-    from planscape.openpanel import identify_openpanel, track_openpanel
+    from planscape.analytics import identify_user, track_event
 
-    identify_openpanel(user)
-    track_openpanel(
+    identify_user(user)
+    track_event(
         "users.logged_in",
         properties={
             "email": user.email if user else None,
@@ -67,6 +68,12 @@ def create_user_profile(sender, instance, created, **kwargs):
         pass
 
 
+def handle_user_signed_up(sender, request, user, **kwargs):
+    from users.tasks import send_welcome_email
+
+    transaction.on_commit(lambda: send_welcome_email.delay(user.pk))
+
+
 class UsersConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "users"
@@ -82,7 +89,7 @@ class UsersConfig(AppConfig):
             registry.register(model)
 
     def ready(self):
-        from allauth.account.signals import email_confirmed
+        from allauth.account.signals import email_confirmed, user_signed_up
 
         self.register_actstream()
         user_login_failed.connect(
@@ -98,4 +105,8 @@ class UsersConfig(AppConfig):
         )
         email_confirmed.connect(
             handle_email_confirmed, dispatch_uid="users.handle_email_confirmed"
+        )
+        user_signed_up.connect(
+            handle_user_signed_up,
+            dispatch_uid="users.handle_user_signed_up",
         )

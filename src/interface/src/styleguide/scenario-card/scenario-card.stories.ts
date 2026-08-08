@@ -4,7 +4,7 @@ import { ScenarioCardComponent } from './scenario-card.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 const meta: Meta<ScenarioCardComponent> = {
-  title: 'Components/Scenario Card',
+  title: 'Cards/Scenario Card',
   component: ScenarioCardComponent,
   decorators: [
     applicationConfig({
@@ -36,7 +36,7 @@ export const ProjectArea: Story = {
     resultStatus: 'SUCCESS',
     creator: 'Larry Larrington',
     created_at: '2024-01-01 12:34:00',
-    origin: 'USER',
+    type: 'PROJECT_AREAS',
   },
 };
 

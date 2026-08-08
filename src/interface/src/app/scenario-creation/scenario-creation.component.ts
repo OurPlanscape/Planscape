@@ -19,6 +19,7 @@ import {
   shareReplay,
   switchMap,
   take,
+  throwError,
 } from 'rxjs';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -72,8 +73,8 @@ import { TreatmentGoalStepComponent } from '@scenario-creation/treatment-goal-st
 import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
 import { SubUnitsTreatmentTargetComponent } from './sub-units-treatment-target/sub-units-treatment-target.component';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
-import { FeatureService } from '@app/features/feature.service';
 import { IncludeAreasSelectorComponent } from './include-areas-selector/include-areas-selector.component';
+import { CreateScenarioError } from '@app/services/errors';
 
 @UntilDestroy()
 @Component({
@@ -194,6 +195,12 @@ export class ScenarioCreationComponent implements OnInit {
     map((scenario) => scenario.type)
   );
 
+  hasParent$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => {
+      return scenario.parent !== null;
+    })
+  );
+
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
     if (!this.newScenarioState.isDraftFinishedSnapshot()) {
@@ -216,21 +223,10 @@ export class ScenarioCreationComponent implements OnInit {
     private mapModuleService: MapModuleService,
     private planState: PlanState,
     private dataLayersStateService: DataLayersStateService,
-    private cdr: ChangeDetectorRef,
-    private featureService: FeatureService
+    private cdr: ChangeDetectorRef
   ) {
     // Pre load goals
     this.treatmentGoals$.pipe(take(1)).subscribe();
-
-    // Remove this block once ADD_INCLUDES be released to show always 'Include Areas' step
-    if (!this.featureService.isFeatureEnabled('ADD_INCLUDES')) {
-      this.scenarioSteps = this.scenarioSteps.filter(
-        (obj) => obj.label !== 'Include Areas'
-      );
-      this.customSteps = this.customSteps.filter(
-        (obj) => obj.label !== 'Include Areas'
-      );
-    }
   }
 
   ngOnInit(): void {
@@ -253,9 +249,15 @@ export class ScenarioCreationComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe((scenario) => {
         // Setting up the breadcrumb
+        let scenarioBackUrl = getPlanPath(this.planId);
+        // for child scenarios, we want to go to the parent dashboard, instead
+        if (scenario.parent) {
+          scenarioBackUrl += `/scenario/${scenario.parent}/dashboard`;
+        }
+
         this.breadcrumbService.updateBreadCrumb({
           label: `New Scenario: ${scenario.name}`,
-          backUrl: getPlanPath(this.planId),
+          backUrl: scenarioBackUrl,
           blackText: true,
           icon: 'close',
         });
@@ -323,9 +325,25 @@ export class ScenarioCreationComponent implements OnInit {
       .patchScenarioConfig(this.scenarioId, payload)
       .pipe(
         map((result) => !!result),
-        catchError((e) => {
-          console.error('Patch error:', e);
-          return of(false);
+        catchError((e: CreateScenarioError) => {
+          // Invalid configuration error
+          if (e.options.configurationError) {
+            let errorMessage = 'Scenario Config is invalid.';
+            // Configuration global errors
+            if (e.errorMessages['global']?.length) {
+              errorMessage = e.errorMessages['global'][0];
+            }
+            this.dialog.open(ScenarioErrorModalComponent, {
+              data: {
+                title: 'Invalid Scenario Configuration',
+                message: errorMessage,
+              },
+            });
+            return of(false);
+          }
+
+          // Rethrow unexpected errors so they can be captured by Sentry
+          return throwError(() => e);
         }),
         finalize(() => this.newScenarioState.setLoading(false))
       );
@@ -368,9 +386,28 @@ export class ScenarioCreationComponent implements OnInit {
             this.scenarioState.setScenarioId(result.id);
             this.scenarioState.reloadScenario();
           }
-          this.router.navigate(['plan', result.planning_area], {
-            state: { showInProgressModal: true },
-          });
+          // After initiating a run of the scenario...
+
+          // for scenarios with a parent id, we navigate to the parent scenario dashboard
+          if (result.parent) {
+            this.router.navigate(
+              [
+                'plan',
+                result.planning_area,
+                'scenario',
+                result.parent,
+                'dashboard',
+              ],
+              {
+                state: { showInProgressModal: true }, // this is passed to the switcher component
+              }
+            );
+          } else {
+            // all other scenarios will be directed to the planning area
+            this.router.navigate(['plan', result.planning_area], {
+              state: { showInProgressModal: true },
+            });
+          }
         },
         error: () => {
           this.dialog.open(ScenarioErrorModalComponent);

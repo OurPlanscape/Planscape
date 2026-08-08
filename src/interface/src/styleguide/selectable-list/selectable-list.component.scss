@@ -10,7 +10,6 @@ $material-checkbox-padding: 8px;
   position: relative;
   display: block;
 
-
   .view-checkbox {
     padding-left: 0;
     flex: 1;
@@ -28,7 +27,6 @@ $material-checkbox-padding: 8px;
     .mat-mdc-progress-spinner {
       margin-top: 10px;
     }
-
   }
 }
 
@@ -43,31 +41,22 @@ $material-checkbox-padding: 8px;
   width: 20px;
 }
 
-
 .group-header {
   @include top-level-label();
   line-height: 20px;
   font-weight: 500;
   height: 30px;
-
-  &:after {
-    display: none;
-  }
+  background-color: $color-lighter-gray;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
 }
 
 .items-container {
   position: relative;
   display: block;
-
-  &:after {
-    content: '';
-    position: absolute;
-    width: 1px;
-    height: 100%;
-    background-color: $color-soft-gray;
-    top: 0;
-    left: #{$select-width + $colum-gap};
-  }
 }
 
 .list-row,
@@ -78,7 +67,7 @@ $material-checkbox-padding: 8px;
 }
 
 .list-row {
-  align-items: flex-start;
+  align-items: center;
 }
 
 .list-header {
@@ -98,7 +87,6 @@ $material-checkbox-padding: 8px;
     padding-bottom: 4px;
   }
 }
-
 
 .select-title,
 .select {
@@ -140,9 +128,29 @@ $material-checkbox-padding: 8px;
   height: 16px;
   border-radius: 4px;
   visibility: hidden;
-  margin-top: 12px;
+  align-self: center;
 
   &.selected {
     visibility: visible;
   }
+}
+
+.ml-auto {
+  margin-left: auto;
+}
+
+.title-header {
+  @include standard-input-label();
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  color: $color-md-gray;
+  padding-left: 8px;
+}
+
+.toggle {
+  margin-right: auto;
+  flex: 1;
 }

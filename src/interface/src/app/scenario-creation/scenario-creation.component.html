@@ -42,7 +42,10 @@
       <!-- Preset Scenarios steps-->
       <ng-container *ngIf="!isCustomScenario(scenarioType); else customSteps">
         <sg-step [preStep]="true">
-          <app-step1-with-overview></app-step1-with-overview>
+          <app-step1-with-overview
+            [isChildScenario]="
+              (hasParent$ | async) ?? false
+            "></app-step1-with-overview>
         </sg-step>
         <sg-step *ngIf="subUnitsPrioritized">
           <app-sub-unit-selector></app-sub-unit-selector>
@@ -50,7 +53,7 @@
         <sg-step>
           <app-treatment-goal-step></app-treatment-goal-step>
         </sg-step>
-        <sg-step *appFeatureFlag="'ADD_INCLUDES'">
+        <sg-step>
           <app-include-areas-selector></app-include-areas-selector>
         </sg-step>
         <sg-step>
@@ -70,7 +73,10 @@
       <ng-template #customSteps>
         <sg-step [preStep]="true">
           <app-step1-with-overview
-            [isCustomScenario]="true"></app-step1-with-overview>
+            [isCustomScenario]="true"
+            [isChildScenario]="
+              (hasParent$ | async) ?? false
+            "></app-step1-with-overview>
         </sg-step>
         <sg-step *ngIf="subUnitsPrioritized">
           <app-sub-unit-selector></app-sub-unit-selector>
@@ -81,7 +87,7 @@
         <sg-step>
           <app-custom-cobenefits></app-custom-cobenefits>
         </sg-step>
-        <sg-step *appFeatureFlag="'ADD_INCLUDES'">
+        <sg-step>
           <app-include-areas-selector></app-include-areas-selector>
         </sg-step>
         <sg-step>

@@ -24,7 +24,7 @@ const containerStyle = `style="background-color: gray;
       align-items: center;"`;
 
 const meta: Meta<ErrorDialogComponent | PendingDialogComponent> = {
-  title: 'Components/Dialogs',
+  title: 'Dialogs & Modals/Dialogs',
 
   tags: ['autodocs'],
   decorators: [

@@ -1,0 +1,6 @@
+A result summary has been sent to you.
+
+{{ inviter_name }} has invited you to view the {{ scenario_name }} summary in Planscape.
+
+View the report:
+{{ public_url }}

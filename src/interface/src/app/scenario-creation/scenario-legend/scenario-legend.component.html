@@ -3,7 +3,7 @@
     <div class="legend icon blue">Total Planning Area Acres:</div>
     <div>{{ summary.total_area | number: '1.0-0' }} ac</div>
   </div>
-  <div>
+  <div *ngIf="showPotentialTreatableArea$ | async">
     <div class="legend icon magenta">
       <div class="legend-text">
         Potential Treatable Area:

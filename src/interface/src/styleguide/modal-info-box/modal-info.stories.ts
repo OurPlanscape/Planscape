@@ -15,7 +15,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 const meta: Meta<ModalInfoComponent> = {
-  title: 'Components/Modal Info Box',
+  title: 'Dialogs & Modals/Modal Info Box',
   component: ModalInfoComponent,
   tags: ['autodocs'],
   decorators: [

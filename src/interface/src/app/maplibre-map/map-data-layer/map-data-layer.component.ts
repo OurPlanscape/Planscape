@@ -26,8 +26,22 @@ import { FrontendConstants } from '@map/map.constants';
 })
 export class MapDataLayerComponent implements OnInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
+  /**
+   * Id of a data layer that should render *above* the funding treatment layer
+   * instead of below the rest of the stack. When the currently viewed layer
+   * matches this id, its raster is inserted just under the project-area
+   * outlines rather than before `bottom-layer`. Only set on the funding map;
+   * left null everywhere else, preserving the default below-everything order.
+   */
+  @Input() topDataLayerId: number | null = null;
+
+  /** Opacity the designated top layer renders at, overriding the shared default. */
+  private static readonly TOP_LAYER_OPACITY = 1;
+
   tileSize: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
   cogUrl: string | null = null;
+  /** Id of the data layer currently rendered as `image-layer`. */
+  private currentLayerId: number | null = null;
 
   errorCount = 0;
 
@@ -41,6 +55,7 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
       .subscribe((data) => {
         if (data) {
           this.cogUrl = `cog://${data.url}`;
+          this.currentLayerId = data.layer?.id ?? null;
           const colorFn = generateColorFunction(data.layer?.styles[0].data);
           setColorFunction(data.url, colorFn);
           this.tileSize =
@@ -49,9 +64,32 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
           this.addRasterLayer();
         } else {
           this.cogUrl = null;
+          this.currentLayerId = null;
           this.removeRasterLayer();
         }
       });
+  }
+
+  /** Whether the currently viewed layer is the designated top layer. */
+  private isTopLayer(): boolean {
+    return (
+      this.topDataLayerId != null && this.currentLayerId === this.topDataLayerId
+    );
+  }
+
+  /**
+   * Where to insert the raster in the layer stack. Defaults to `bottom-layer`
+   * (below the treatment layer). The designated `topDataLayerId` instead sits
+   * above the treatment layer, just below the project-area outlines.
+   */
+  private beforeLayerId(): string | undefined {
+    if (
+      this.isTopLayer() &&
+      this.mapLibreMap.getLayer('map-project-areas-line')
+    ) {
+      return 'map-project-areas-line';
+    }
+    return 'bottom-layer';
   }
 
   ngOnInit(): void {
@@ -85,9 +123,11 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
 
   async addRasterLayer() {
     if (this.mapLibreMap && this.cogUrl) {
-      const currentOpacity: number = await firstValueFrom(
-        this.mapConfigState.dataLayersOpacity$
-      );
+      // The top layer defaults to fully opaque rather than the shared
+      // data-layers default; other layers honor the current opacity setting.
+      const currentOpacity: number = this.isTopLayer()
+        ? MapDataLayerComponent.TOP_LAYER_OPACITY
+        : await firstValueFrom(this.mapConfigState.dataLayersOpacity$);
       const rasterSource: RasterSourceSpecification = {
         type: 'raster',
         url: this.cogUrl,
@@ -107,7 +147,7 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
       };
       this.removeRasterLayer();
       this.mapLibreMap.addSource('rasterImage', rasterSource);
-      this.mapLibreMap.addLayer(rasterLayer, 'bottom-layer');
+      this.mapLibreMap.addLayer(rasterLayer, this.beforeLayerId());
     }
   }
 

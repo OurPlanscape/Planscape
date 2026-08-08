@@ -1,4 +1,4 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -15,11 +15,10 @@ import { PLANNING_APPROACH, ScenarioDraftConfiguration } from '@types';
 import {
   CUSTOM_SCENARIO_OVERVIEW_STEPS,
   SCENARIO_OVERVIEW_STEPS,
-  ScenarioStepConfig,
 } from '@scenario/scenario.constants';
 import { STAND_SIZE } from '@plan/plan-helpers';
 import { PlanningApproachComponent } from '@scenario-creation/planning-approach/planning-approach.component';
-import { FeatureService } from '@app/features/feature.service';
+import { NgIf } from '@angular/common';
 
 type Step1WithOverviewForm = FormGroup<{
   stand_size: FormControl<STAND_SIZE | null>;
@@ -30,6 +29,7 @@ type Step1WithOverviewForm = FormGroup<{
   selector: 'app-step1-with-overview',
   standalone: true,
   imports: [
+    NgIf,
     ReactiveFormsModule,
     ProcessOverviewComponent,
     StandSizeSelectorComponent,
@@ -41,7 +41,10 @@ type Step1WithOverviewForm = FormGroup<{
     { provide: StepDirective, useExisting: Step1WithOverviewComponent },
   ],
 })
-export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfiguration> {
+export class Step1WithOverviewComponent
+  extends StepDirective<ScenarioDraftConfiguration>
+  implements OnInit
+{
   readonly form: Step1WithOverviewForm = new FormGroup({
     stand_size: new FormControl<STAND_SIZE | null>(null, Validators.required),
     planning_approach: new FormControl<PLANNING_APPROACH | null>(
@@ -50,26 +53,20 @@ export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfi
     ),
   });
 
+  ngOnInit(): void {
+    // for child scenarios, we disable the validation for planning_approach, because this will be
+    // set to a constant of 'PRIORITIZE_SUB_UNITS'
+    if (this.isChildScenario) {
+      this.form.controls.planning_approach.setValue('PRIORITIZE_SUB_UNITS');
+    }
+  }
   @Input() isCustomScenario = false;
-
-  private featureService: FeatureService = inject(FeatureService);
+  @Input() isChildScenario = false;
 
   get steps(): OverviewStep[] {
-    return this.removeNonIncludeStepsIfFeatureIsOff(
-      this.isCustomScenario
-        ? CUSTOM_SCENARIO_OVERVIEW_STEPS
-        : SCENARIO_OVERVIEW_STEPS
-    );
-  }
-
-  // ADD_INCLUDES steps return all when the feature be released
-  removeNonIncludeStepsIfFeatureIsOff(steps: ScenarioStepConfig[]) {
-    if (!this.featureService.isFeatureEnabled('ADD_INCLUDES')) {
-      return steps.filter(
-        (s: ScenarioStepConfig) => s.label !== 'Include Areas'
-      );
-    }
-    return steps;
+    return this.isCustomScenario
+      ? CUSTOM_SCENARIO_OVERVIEW_STEPS
+      : SCENARIO_OVERVIEW_STEPS;
   }
 
   constructor() {
@@ -77,7 +74,7 @@ export class Step1WithOverviewComponent extends StepDirective<ScenarioDraftConfi
   }
 
   getData() {
-    const { stand_size, planning_approach } = this.form.value;
+    let { stand_size, planning_approach } = this.form.value;
     return { stand_size, planning_approach };
   }
 }

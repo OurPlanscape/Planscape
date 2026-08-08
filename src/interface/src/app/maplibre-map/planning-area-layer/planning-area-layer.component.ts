@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import {
   FeatureComponent,
   GeoJSONSourceComponent,
@@ -8,7 +8,7 @@ import {
 import { BASE_COLORS } from '@treatments/map.styles';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { PlanState } from '@plan/plan.state';
-import { map } from 'rxjs';
+import { map, Observable, of } from 'rxjs';
 import { MARTIN_SOURCES } from '@treatments/map.sources';
 
 @Component({
@@ -24,10 +24,17 @@ import { MARTIN_SOURCES } from '@treatments/map.sources';
   ],
   templateUrl: './planning-area-layer.component.html',
 })
-export class PlanningAreaLayerComponent {
+export class PlanningAreaLayerComponent implements OnInit {
   @Input() before = '';
 
-  readonly lineColor = BASE_COLORS.blue;
+  @Input() lineColor: string = BASE_COLORS.blue;
+
+  /**
+   * Shared-link UUID for the public funding report. When set, tiles come from
+   * the unauthed shared-link martin function keyed by UUID instead of the plan
+   * id in `PlanState` (which the public view has no access to).
+   */
+  @Input() sharedLinkUuid: string | null = null;
 
   linePaint = {
     'line-color': this.lineColor,
@@ -37,11 +44,19 @@ export class PlanningAreaLayerComponent {
 
   constructor(private planState: PlanState) {}
 
-  tilesUrl$ = this.planState.currentPlanId$.pipe(
-    map((id) => {
-      return MARTIN_SOURCES.planningArea.tilesUrl + `?id=${id}`;
-    })
-  );
+  tilesUrl$!: Observable<string>;
+
+  ngOnInit() {
+    this.linePaint['line-color'] = this.lineColor;
+    this.tilesUrl$ = this.sharedLinkUuid
+      ? of(
+          MARTIN_SOURCES.planningAreaByForSharedLink.tilesUrl +
+            `?uuid=${this.sharedLinkUuid}`
+        )
+      : this.planState.currentPlanId$.pipe(
+          map((id) => MARTIN_SOURCES.planningArea.tilesUrl + `?id=${id}`)
+        );
+  }
 
   readonly sourceName = MARTIN_SOURCES.planningArea.sources.planningArea;
 }

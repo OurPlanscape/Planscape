@@ -4,6 +4,7 @@
 <section class="main">
   <div class="main-content">
     <app-planning-approach
+      *ngIf="!isChildScenario"
       [control]="form.controls.planning_approach"></app-planning-approach>
     <app-stand-size-selector
       [control]="form.controls.stand_size"></app-stand-size-selector>

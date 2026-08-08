@@ -19,6 +19,7 @@ from planning.models import (
     RegionChoices,
     ScenarioResult,
     ScenarioResultStatus,
+    ScenarioType,
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalGroup,
@@ -1160,6 +1161,7 @@ class CreateScenariosFromUpload(APITestCase):
         )
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()["origin"], "USER")
+        self.assertEqual(response.json()["type"], ScenarioType.PROJECT_AREAS)
 
     @mock.patch("planning.views_v2.create_scenario_from_upload")
     def test_invalid_geometry_returns_400_with_global_error(self, mock_create):
@@ -1333,7 +1335,6 @@ class TreatmentGoalViewSetTest(APITestCase):
         treatment_goals = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(treatment_goals), 12)
-
 
     def test_detail_treatment_goal(self):
         self.client.force_authenticate(self.user)

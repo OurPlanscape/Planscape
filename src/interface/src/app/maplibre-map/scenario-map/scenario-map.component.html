@@ -64,9 +64,19 @@
   </mgl-control>
 
   <ng-container *ngIf="showScenarioStands$ | async">
-    <app-scenario-stands
-      *ngIf="mapLibreMap"
-      [mapLibreMap]="mapLibreMap"></app-scenario-stands>
+    <!-- Stands with Includes -->
+    <ng-container
+      *ngIf="(showStandsWithIncludes$ | async) === true; else planningStands">
+      <app-scenario-stands
+        *ngIf="mapLibreMap"
+        [mapLibreMap]="mapLibreMap"></app-scenario-stands>
+    </ng-container>
+    <!-- Stands without Includes -->
+    <ng-template #planningStands>
+      <app-planning-area-stands
+        *ngIf="mapLibreMap"
+        [mapLibreMap]="mapLibreMap"></app-planning-area-stands>
+    </ng-template>
   </ng-container>
 
   <mgl-control position="top-left">

@@ -7,7 +7,7 @@ const longDescription =
   'The Treatment Effects module aims to show planners the direct impacts of treatments on their project areas and planning areas, respectively. Through an easy-to-use tool, planners can create any number of treatment scenarios to compare the impacts of their applied treatments and choose the optimal arrangement of treatments that meets their goals for resiliency.';
 
 const meta: Meta<ToolInfoCardComponent> = {
-  title: 'Components/Tool Info Card',
+  title: 'Cards/Tool Info Card',
   component: ToolInfoCardComponent,
   decorators: [
     applicationConfig({

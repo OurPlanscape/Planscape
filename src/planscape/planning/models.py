@@ -235,6 +235,7 @@ class ScenarioOrigin(models.TextChoices):
 class ScenarioType(models.TextChoices):
     PRESET = "PRESET", "Preset"
     CUSTOM = "CUSTOM", "Custom"
+    PROJECT_AREAS = "PROJECT_AREAS", "Project Areas"
 
 
 class ScenarioVersion(models.TextChoices):
@@ -450,6 +451,14 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         blank=True,
         help_text="User ID that created the Scenario.",
     )
+    parent = models.ForeignKey(
+        "self",
+        related_name="children",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Parent Scenario for child Prioritization Scenarios.",
+    )
 
     name = models.CharField(max_length=120, help_text="Name of the Scenario.")
 
@@ -590,7 +599,7 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         if not project_areas_geometry:
             return Stand.objects.none()
         return Stand.objects.within_polygon(project_areas_geometry, size)
-    
+
     def get_treatable_area_stands(self, stand_size=None) -> QuerySet[Stand]:
         if not self.treatable_area:
             return Stand.objects.none()

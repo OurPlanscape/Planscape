@@ -20,7 +20,10 @@ class GetFundingReportMetadataTest(SimpleTestCase):
                         "baseline": True,
                         "variable": FundingReportMetric.ABOVEGROUND_TOTAL,
                         "year": 2026,
-                    }
+                    },
+                    "map": {
+                        "enabled": True,
+                    },
                 }
             },
         )

@@ -209,7 +209,7 @@ export class DataLayersStateService {
     }
   }
 
-  selectDataLayer(dataLayer: DataLayer) {
+  selectDataLayer(dataLayer: DataLayer | null) {
     this.setDataLayerLoading(true);
     this._viewedDataLayer$.next(dataLayer);
   }

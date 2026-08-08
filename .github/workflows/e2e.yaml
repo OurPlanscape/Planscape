@@ -38,8 +38,8 @@ jobs:
             backend_endpoint: '/planscape-backend',
             martin_server: 'https://dev.planscape.org/tiles/',
             mapbox_key: '${{ secrets.MAPBOX_KEY }}',
-            open_panel_key: '${{ secrets.OPEN_PANEL_KEY }}',
-            open_panel_enabled: false,
+            mixpanel_token: '',
+            mixpanel_enabled: false,
             google_analytics_id: '',
             debug_layers: false,
             sentry: {

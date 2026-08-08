@@ -157,3 +157,11 @@ export const WithGroupedItems: Story = {
     colorPath: 'nested[0].properties.color',
   },
 };
+
+export const WithSelectAll: Story = {
+  args: {
+    items: items,
+    colorPath: 'otherPropertyUsedForColor',
+    selectAllEnabled: true,
+  },
+};

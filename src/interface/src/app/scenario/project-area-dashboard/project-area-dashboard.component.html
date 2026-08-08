@@ -31,8 +31,19 @@
             project area tools."
         (toolClicked)="onToolClick($event)"></app-scenario-tools>
     </div>
-    <div right-column class="project-area-column">
-      <app-project-area-coming-soon></app-project-area-coming-soon>
+    <div
+      right-column
+      class="project-area-column"
+      *ngIf="currentScenario$ | async as scenario">
+      <app-project-area-coming-soon
+        *appFeatureFlag="
+          'PRIORITIZE_PROJECT_AREAS';
+          hide: true
+        "></app-project-area-coming-soon>
+      <app-scenarios-list
+        *appFeatureFlag="'PRIORITIZE_PROJECT_AREAS'; hide: false"
+        mode="project-area"
+        [projectAreaId]="scenario.id"></app-scenarios-list>
     </div>
   </sg-dashboard-layout>
 </ng-container>

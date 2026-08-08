@@ -3,7 +3,8 @@ from unittest import mock
 
 from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
-from django.test import TestCase
+from django.conf import settings
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -13,8 +14,12 @@ from planning.tests.factories import (
 from planscape.tests.factories import UserFactory
 
 from funding_report.models import (
+    FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
+    FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
+    FLAME_LENGTH_REDUCTION_INTERVALS,
     FUNDING_REPORT_YEARS,
     FundingOpportunityReport,
+    FundingOpportunityReportRun,
     FundingOpportunityReportStatus,
     FundingReportMetric,
 )
@@ -22,7 +27,10 @@ from funding_report.tasks import (
     STALE_RUNNING_TIMEOUT,
     async_calculate_funding_report_delta,
     async_finalize_funding_report_results,
+    async_generate_aet_datalayer,
+    async_send_email_funding_report_finished,
     run_funding_opportunity_report,
+    send_weekly_funding_report_users_report,
 )
 
 
@@ -93,9 +101,64 @@ class FundingOpportunityReportTaskTest(TestCase):
             metric=FundingReportMetric.ABOVEGROUND_TOTAL.value,
             year=2026,
             datalayer_lookup={
-                (FundingReportMetric.ABOVEGROUND_TOTAL.value, 2026, True): baseline_layer,
+                (
+                    FundingReportMetric.ABOVEGROUND_TOTAL.value,
+                    2026,
+                    True,
+                ): baseline_layer,
                 (FundingReportMetric.ABOVEGROUND_TOTAL.value, 2026, False): value_layer,
             },
+            from_ft=FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
+            to_ft=FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
+        )
+
+    @mock.patch("funding_report.tasks.calculate_project_area_delta")
+    def test_delta_task_threads_custom_interval_through(self, calculate_mock):
+        baseline_layer = self.create_datalayer(
+            FundingReportMetric.TOTAL_FLAME_SEVERITY, 2026, baseline=True
+        )
+        value_layer = self.create_datalayer(
+            FundingReportMetric.TOTAL_FLAME_SEVERITY, 2026, baseline=False
+        )
+        calculate_mock.return_value = {
+            "variable": FundingReportMetric.TOTAL_FLAME_SEVERITY,
+            "project_id": self.project_area.pk,
+            "year": 2026,
+            "value": 10,
+            "baseline": 8,
+            "delta": 1.2,
+            "interval": {"from": 6.0, "to": 4.0},
+        }
+
+        result = async_calculate_funding_report_delta(
+            project_area_id=self.project_area.pk,
+            baseline_layer_id=baseline_layer.pk,
+            value_layer_id=value_layer.pk,
+            year=2026,
+            metric=FundingReportMetric.TOTAL_FLAME_SEVERITY.value,
+            from_ft=6.0,
+            to_ft=4.0,
+        )
+
+        self.assertEqual(result, calculate_mock.return_value)
+        calculate_mock.assert_called_once_with(
+            project_area=self.project_area,
+            metric=FundingReportMetric.TOTAL_FLAME_SEVERITY.value,
+            year=2026,
+            datalayer_lookup={
+                (
+                    FundingReportMetric.TOTAL_FLAME_SEVERITY.value,
+                    2026,
+                    True,
+                ): baseline_layer,
+                (
+                    FundingReportMetric.TOTAL_FLAME_SEVERITY.value,
+                    2026,
+                    False,
+                ): value_layer,
+            },
+            from_ft=6.0,
+            to_ft=4.0,
         )
 
     @mock.patch("funding_report.tasks.calculate_project_area_delta")
@@ -127,7 +190,83 @@ class FundingOpportunityReportTaskTest(TestCase):
             },
         )
 
-    def test_finalize_task_saves_results_and_success_status(self):
+    @mock.patch("funding_report.tasks.generate_aet_clip_datalayer")
+    @mock.patch("funding_report.tasks.get_aet_percentual_datalayer")
+    def test_generate_aet_datalayer_task_returns_datalayer_id(
+        self,
+        get_source_mock,
+        generate_mock,
+    ):
+        get_source_mock.return_value = DataLayerFactory.create(
+            type=DataLayerType.RASTER
+        )
+        clipped_datalayer = DataLayerFactory.create(type=DataLayerType.RASTER)
+        generate_mock.return_value = clipped_datalayer
+
+        result = async_generate_aet_datalayer(self.report.pk)
+
+        self.assertEqual(
+            result, {"kind": "aet_datalayer", "datalayer_id": clipped_datalayer.pk}
+        )
+        generate_mock.assert_called_once()
+
+    @mock.patch("funding_report.tasks.generate_aet_clip_datalayer")
+    @mock.patch("funding_report.tasks.get_aet_percentual_datalayer")
+    def test_generate_aet_datalayer_task_skips_without_source(
+        self,
+        get_source_mock,
+        generate_mock,
+    ):
+        get_source_mock.return_value = None
+
+        result = async_generate_aet_datalayer(self.report.pk)
+
+        self.assertIsNone(result)
+        generate_mock.assert_not_called()
+
+    @mock.patch("funding_report.tasks.generate_aet_clip_datalayer")
+    @mock.patch("funding_report.tasks.get_aet_percentual_datalayer")
+    def test_generate_aet_datalayer_task_returns_error_marker_on_failure(
+        self,
+        get_source_mock,
+        generate_mock,
+    ):
+        get_source_mock.return_value = DataLayerFactory.create(
+            type=DataLayerType.RASTER
+        )
+        generate_mock.side_effect = ValueError("boom")
+
+        result = async_generate_aet_datalayer(self.report.pk)
+
+        self.assertEqual(result, {"kind": "aet_datalayer", "error": "boom"})
+
+    @mock.patch("funding_report.tasks.async_generate_funding_report_geopackage.delay")
+    @mock.patch("funding_report.tasks.async_send_email_funding_report_finished.delay")
+    def test_finalize_task_saves_aet_datalayer_id(
+        self,
+        email_task_mock,
+        geopackage_task_mock,
+    ):
+        clipped_datalayer = DataLayerFactory.create(type=DataLayerType.RASTER)
+
+        async_finalize_funding_report_results(
+            project_results=[
+                {"kind": "aet_datalayer", "datalayer_id": clipped_datalayer.pk},
+            ],
+            funding_opportunity_report_id=self.report.pk,
+        )
+
+        self.report.refresh_from_db()
+        self.assertEqual(self.report.status, FundingOpportunityReportStatus.SUCCESS)
+        self.assertEqual(self.report.aet_datalayer_id, clipped_datalayer.pk)
+
+    @mock.patch("funding_report.tasks.async_generate_funding_report_geopackage.delay")
+    @mock.patch("funding_report.tasks.async_send_email_funding_report_finished.delay")
+    def test_finalize_task_saves_results_and_success_status(
+        self,
+        email_task_mock,
+        geopackage_task_mock,
+    ):
         async_finalize_funding_report_results(
             project_results=[
                 {
@@ -144,6 +283,8 @@ class FundingOpportunityReportTaskTest(TestCase):
 
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.SUCCESS)
+        geopackage_task_mock.assert_called_once_with(self.report.pk)
+        email_task_mock.assert_called_once_with(self.report.pk)
         self.assertEqual(
             self.report.results,
             {
@@ -167,7 +308,91 @@ class FundingOpportunityReportTaskTest(TestCase):
             },
         )
 
-    def test_finalize_task_sets_failed_status_with_errors(self):
+    @mock.patch("funding_report.tasks.async_generate_funding_report_geopackage.delay")
+    @mock.patch("funding_report.tasks.async_send_email_funding_report_finished.delay")
+    def test_finalize_task_buckets_flame_severity_by_interval(
+        self,
+        email_task_mock,
+        geopackage_task_mock,
+    ):
+        async_finalize_funding_report_results(
+            project_results=[
+                {
+                    "variable": FundingReportMetric.TOTAL_FLAME_SEVERITY,
+                    "project_id": self.project_area.pk,
+                    "year": 2026,
+                    "value": 10,
+                    "baseline": 40,
+                    "delta": 25.0,
+                    "interval": {"from": 7.0, "to": 4.0},
+                },
+                {
+                    "variable": FundingReportMetric.TOTAL_FLAME_SEVERITY,
+                    "project_id": self.project_area.pk,
+                    "year": 2026,
+                    "value": 5,
+                    "baseline": 40,
+                    "delta": 12.5,
+                    "interval": {"from": 6.0, "to": 4.0},
+                },
+                {
+                    "variable": FundingReportMetric.ABOVEGROUND_TOTAL,
+                    "project_id": self.project_area.pk,
+                    "year": 2026,
+                    "value": 10,
+                    "baseline": 8,
+                    "delta": 1.2,
+                },
+            ],
+            funding_opportunity_report_id=self.report.pk,
+        )
+
+        self.report.refresh_from_db()
+        self.assertEqual(self.report.status, FundingOpportunityReportStatus.SUCCESS)
+        geopackage_task_mock.assert_called_once_with(self.report.pk)
+        email_task_mock.assert_called_once_with(self.report.pk)
+        results = self.report.results
+
+        # Non-flame metrics keep their existing flat shape, untouched.
+        self.assertEqual(
+            results["summary"][FundingReportMetric.ABOVEGROUND_TOTAL],
+            [{"year": 2026, "value": 10, "baseline": 8, "delta": 25.0}],
+        )
+        self.assertNotIn(
+            "raw_value", results["summary"][FundingReportMetric.ABOVEGROUND_TOTAL][0]
+        )
+
+        flame_summary = results["summary"]["TOTAL_FLAME_SEVERITY"]
+        flame_projects = results["projects"]["TOTAL_FLAME_SEVERITY"]
+        self.assertEqual(set(flame_summary.keys()), {"7_4", "6_4"})
+        self.assertEqual(set(flame_projects.keys()), {"7_4", "6_4"})
+
+        seven_four_summary = flame_summary["7_4"][0]
+        self.assertEqual(seven_four_summary["value"], 10)
+        self.assertEqual(seven_four_summary["baseline"], 40)
+        self.assertEqual(seven_four_summary["raw_value"], seven_four_summary["value"])
+        self.assertEqual(
+            seven_four_summary["total_area"], seven_four_summary["baseline"]
+        )
+
+        seven_four_project = flame_projects["7_4"][0]
+        self.assertEqual(seven_four_project["project_id"], self.project_area.pk)
+        self.assertEqual(seven_four_project["raw_value"], seven_four_project["value"])
+        self.assertEqual(
+            seven_four_project["total_area"], seven_four_project["baseline"]
+        )
+
+        six_four_summary = flame_summary["6_4"][0]
+        self.assertEqual(six_four_summary["value"], 5)
+        self.assertEqual(six_four_summary["raw_value"], 5)
+
+    @mock.patch("funding_report.tasks.async_generate_funding_report_geopackage.delay")
+    @mock.patch("funding_report.tasks.async_send_email_funding_report_finished.delay")
+    def test_finalize_task_sets_failed_status_with_errors(
+        self,
+        email_task_mock,
+        geopackage_task_mock,
+    ):
         async_finalize_funding_report_results(
             project_results=[
                 {
@@ -191,6 +416,8 @@ class FundingOpportunityReportTaskTest(TestCase):
 
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.FAILED)
+        geopackage_task_mock.assert_not_called()
+        email_task_mock.assert_not_called()
         self.assertEqual(
             self.report.results["errors"],
             [
@@ -213,10 +440,72 @@ class FundingOpportunityReportTaskTest(TestCase):
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.RUNNING)
         chord_mock.assert_called_once()
         tasks = chord_mock.call_args.args[0]
+        non_flame_metric_count = len(FundingReportMetric) - 1
         self.assertEqual(
             len(tasks),
-            1 * len(FundingReportMetric) * len(FUNDING_REPORT_YEARS) + 2,
+            1 * non_flame_metric_count * len(FUNDING_REPORT_YEARS)
+            + 1 * len(FUNDING_REPORT_YEARS) * len(FLAME_LENGTH_REDUCTION_INTERVALS)
+            + 5,
         )
+
+    @mock.patch("funding_report.tasks.chord")
+    def test_run_task_dispatches_three_intervals_for_flame_severity(self, chord_mock):
+        self.create_all_datalayers()
+
+        run_funding_opportunity_report(self.report.pk)
+
+        tasks = chord_mock.call_args.args[0]
+        flame_tasks = [
+            task
+            for task in tasks
+            if task.kwargs.get("metric")
+            == FundingReportMetric.TOTAL_FLAME_SEVERITY.value
+        ]
+        self.assertEqual(
+            len(flame_tasks),
+            len(FUNDING_REPORT_YEARS) * len(FLAME_LENGTH_REDUCTION_INTERVALS),
+        )
+        intervals_used = {
+            (task.kwargs["from_ft"], task.kwargs["to_ft"]) for task in flame_tasks
+        }
+        self.assertEqual(intervals_used, set(FLAME_LENGTH_REDUCTION_INTERVALS))
+
+        non_flame_tasks = [
+            task
+            for task in tasks
+            if task.kwargs.get("metric")
+            not in (None, FundingReportMetric.TOTAL_FLAME_SEVERITY.value)
+        ]
+        for task in non_flame_tasks:
+            self.assertEqual(
+                task.kwargs["from_ft"], FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT
+            )
+            self.assertEqual(task.kwargs["to_ft"], FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT)
+
+    @mock.patch("funding_report.tasks.chord")
+    def test_run_task_sets_empty_status_when_no_project_areas(self, chord_mock):
+        self.project_area.delete()
+
+        run_funding_opportunity_report(self.report.pk)
+
+        self.report.refresh_from_db()
+        self.assertEqual(self.report.status, FundingOpportunityReportStatus.EMPTY)
+        chord_mock.assert_not_called()
+
+    @mock.patch("funding_report.tasks.treatment_layer_has_valid_data")
+    @mock.patch("funding_report.tasks.chord")
+    def test_run_task_sets_empty_status_when_treatment_layer_has_no_valid_data(
+        self, chord_mock, has_valid_data_mock
+    ):
+        self.create_all_datalayers()
+        has_valid_data_mock.return_value = False
+
+        run_funding_opportunity_report(self.report.pk)
+
+        self.report.refresh_from_db()
+        self.assertEqual(self.report.status, FundingOpportunityReportStatus.EMPTY)
+        chord_mock.assert_not_called()
+        has_valid_data_mock.assert_called_once_with(self.scenario)
 
     @mock.patch("funding_report.tasks.chord")
     def test_run_task_sets_failed_on_exception(self, chord_mock):
@@ -261,3 +550,74 @@ class FundingOpportunityReportTaskTest(TestCase):
         chord_mock.assert_called_once()
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.RUNNING)
+
+    @override_settings(
+        WEEKLY_FUNDING_REPORT_USERS_REPORT_EMAIL="signups@planscape.org",
+    )
+    @mock.patch("funding_report.tasks.send_mail")
+    def test_send_weekly_funding_report_users_report(self, send_mail_mock):
+        FundingOpportunityReportRun.objects.create(
+            report=self.report,
+            user=self.user,
+            email="planner@example.com",
+        )
+        FundingOpportunityReportRun.objects.create(
+            report=self.report,
+            user=self.user,
+            email="planner@example.com",
+        )
+        FundingOpportunityReportRun.objects.create(
+            report=self.report,
+            user=self.user,
+            email="other@example.com",
+        )
+
+        send_weekly_funding_report_users_report()
+
+        send_mail_mock.assert_called_once()
+        kwargs = send_mail_mock.call_args.kwargs
+
+        self.assertEqual(kwargs["recipient_list"], ["signups@planscape.org"])
+        self.assertEqual(kwargs["from_email"], settings.DEFAULT_FROM_EMAIL)
+        self.assertIn("Weekly Planscape Funding Report Users", kwargs["subject"])
+        self.assertIn("planner@example.com", kwargs["message"])
+        self.assertIn("other@example.com", kwargs["message"])
+        self.assertIn("(2 reports)", kwargs["message"])
+        self.assertIn("planner@example.com", kwargs["html_message"])
+        self.assertIn("other@example.com", kwargs["html_message"])
+
+    @override_settings(WEEKLY_FUNDING_REPORT_USERS_REPORT_EMAIL="")
+    @mock.patch("funding_report.tasks.send_mail")
+    def test_send_weekly_funding_report_users_report_skips_without_recipient(
+        self,
+        send_mail_mock,
+    ):
+        FundingOpportunityReportRun.objects.create(
+            report=self.report,
+            user=self.user,
+            email="planner@example.com",
+        )
+
+        send_weekly_funding_report_users_report()
+
+        send_mail_mock.assert_not_called()
+
+    @mock.patch("funding_report.tasks.send_mail")
+    def test_send_email_funding_report_finished_sends_to_report_creator(
+        self,
+        send_mail_mock,
+    ):
+        self.user.email = "planner@example.com"
+        self.user.first_name = "Test"
+        self.user.last_name = "Planner"
+        self.user.save(update_fields=["email", "first_name", "last_name"])
+
+        async_send_email_funding_report_finished(self.report.pk)
+
+        send_mail_mock.assert_called_once()
+        kwargs = send_mail_mock.call_args.kwargs
+        self.assertEqual(kwargs["recipient_list"], ["planner@example.com"])
+        self.assertEqual(kwargs["from_email"], settings.DEFAULT_FROM_EMAIL)
+        self.assertIn("Funding Opportunity Report", kwargs["subject"])
+        self.assertIn("message", kwargs)
+        self.assertIn("html_message", kwargs)

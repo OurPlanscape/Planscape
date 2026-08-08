@@ -30,6 +30,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ForsysService } from '@services/forsys.service';
 import { ScenarioStepConfig } from '@scenario/scenario.constants';
+import { arrayHasChanged } from '@app/scenario/scenario-helper';
 
 export interface PriorityWithLayer {
   layer: DataLayer;
@@ -169,30 +170,42 @@ export class NewScenarioState {
     this.excludedAreas$,
     this.constraints$,
     this._selectedSubUnitLayer$,
+    this.includedAreas$,
   ]).pipe(
     filter(([standsLoaded]) => !!standsLoaded),
     // only trigger/refresh on the steps that interact with the map
     filter(([_, step]) => step?.refreshAvailableStands ?? false),
-    switchMap(([_, step, standSize, excludedAreas, constraints, subUnits]) => {
-      // Inside the project fn so it runs after switchMap cancels the previous inner (and its
-      // finalize fires) — a tap() before switchMap would be overridden by that finalize.
-      this.setLoading(true);
-      return this.scenarioService
-        .getExcludedStands(
-          this.scenarioId,
-          standSize,
-          step?.includeExcludedAreas ? excludedAreas : undefined,
-          step?.includeConstraints ? constraints : undefined,
-          step?.includeSubUnits ? subUnits?.id : undefined
-        )
-        .pipe(
-          catchError(() => {
-            this.showMapError();
-            return EMPTY;
-          }),
-          finalize(() => this.setLoading(false))
-        );
-    }),
+    switchMap(
+      ([
+        _,
+        step,
+        standSize,
+        excludedAreas,
+        constraints,
+        subUnits,
+        includedAreas,
+      ]) => {
+        // Inside the project fn so it runs after switchMap cancels the previous inner (and its
+        // finalize fires) — a tap() before switchMap would be overridden by that finalize.
+        this.setLoading(true);
+        return this.scenarioService
+          .getExcludedStands(
+            this.scenarioId,
+            standSize,
+            step?.includeExcludedAreas ? excludedAreas : undefined,
+            step?.includeConstraints ? constraints : undefined,
+            step?.includeSubUnits ? subUnits?.id : undefined,
+            step?.withIncludes && includedAreas ? includedAreas : undefined
+          )
+          .pipe(
+            catchError(() => {
+              this.showMapError();
+              return EMPTY;
+            }),
+            finalize(() => this.setLoading(false))
+          );
+      }
+    ),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
@@ -265,11 +278,19 @@ export class NewScenarioState {
   }
 
   setExcludedAreas(value: number[]) {
-    this._excludedAreas$.next(value);
+    const currentValue = this._excludedAreas$.value;
+
+    if (arrayHasChanged(currentValue, value)) {
+      this._excludedAreas$.next(value);
+    }
   }
 
   setIncludedAreas(value: number[]) {
-    this._includedAreas$.next(value);
+    const currentValue = this._includedAreas$.value;
+
+    if (arrayHasChanged(currentValue, value)) {
+      this._includedAreas$.next(value);
+    }
   }
 
   setScenarioConfig(config: Partial<ScenarioDraftConfiguration>) {

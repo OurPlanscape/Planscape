@@ -28,30 +28,30 @@
     class="data-layer"
     [class.with-add-button]="displayAddButton"
     *ngFor="let layer of layers">
-    <span class="button-column" *ngIf="displayAddButton"
-      ><button
-        mat-icon-button
-        class="select-button"
-        [ngClass]="{
-          selected: isDatalayerSelected(layer.data),
-          disabled:
-            isUnselectable(layer.data) || (isSelectionCompleted$ | async),
-        }"
-        [matTooltip]="getTooltipText(layer.data, isSelectionCompleted$ | async)"
-        (click)="toggleDataLayerSelection(layer.data)"
-        type="button">
-        <mat-icon>{{
-          isDatalayerSelected(layer.data) ? 'remove' : 'add'
-        }}</mat-icon>
-      </button>
+    <span
+      class="button-column"
+      *ngIf="displayAddButton"
+      [matTooltip]="getTooltipText(layer.data, isSelectionCompleted$ | async)"
+      [matTooltipDisabled]="
+        !isUnselectable(layer.data) && (isSelectionCompleted$ | async) === false
+      ">
+      <mat-checkbox
+        class="view-checkbox"
+        [checked]="isDatalayerSelected(layer.data)"
+        [disabled]="
+          !isDatalayerSelected(layer.data) &&
+          (isUnselectable(layer.data) || (isSelectionCompleted$ | async))
+        "
+        (change)="toggleDataLayerSelection(layer.data)"></mat-checkbox>
     </span>
-    <mat-radio-button
-      [value]="layer.id"
-      class="data-layer-input"
-      [checked]="(selectedDataLayerId$ | async) === layer.id"
-      (change)="selectDataLayer(layer.data)">
-      <span [sgHighlighter]="searchTerm" [sgHighlighterText]="layer.name"></span
-    ></mat-radio-button>
+    <sg-toggle
+      class="toggle"
+      [ngModel]="(selectedDataLayerId$ | async) === layer.id"
+      (change)="selectDataLayer(layer.data, $event)">
+      <span
+        [sgHighlighter]="searchTerm"
+        [sgHighlighterText]="layer.name"></span>
+    </sg-toggle>
     <mat-spinner
       diameter="20"
       *ngIf="

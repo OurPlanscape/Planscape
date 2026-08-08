@@ -1,33 +1,45 @@
 <div class="list-header items-container" [class.grouped-header]="groupBy">
-  <div class="select-title">Select</div>
-  <div>View Layer</div>
+  <button
+    sg-button
+    *ngIf="selectAllEnabled"
+    (click)="handleSelectAll()"
+    class="ml-auto"
+    [icon]="areAllSelected ? 'remove' : 'add'">
+    {{ areAllSelected ? 'Unselect All' : 'Select All' }}
+  </button>
 </div>
 
 <div *ngFor="let group of groupedData | keyvalue" class="group-wrapper">
-  <div *ngIf="groupBy && group.key" class="group-header">
+  <div
+    *ngIf="groupBy && group.key"
+    class="group-header"
+    (click)="handleClick(group.key)">
+    <mat-icon>{{
+      isExpanded(group.key) ? 'arrow_drop_down' : 'arrow_right'
+    }}</mat-icon>
     {{ group.key }}
   </div>
 
-  <div class="items-container">
+  <div class="items-container" *ngIf="isExpanded(group.key)">
+    <div class="title-header">
+      <div>Select</div>
+      <div>View Layer</div>
+    </div>
     <div *ngFor="let item of group.value" class="list-row">
       <div class="select">
-        <button
-          mat-icon-button
-          class="select-button"
-          [ngClass]="{ selected: isSelected(item) }"
-          (click)="selectItem(item)"
-          type="button">
-          <mat-icon>{{ isSelected(item) ? 'remove' : 'add' }}</mat-icon>
-        </button>
+        <mat-checkbox
+          class="view-checkbox"
+          [checked]="isSelected(item)"
+          (change)="selectItem(item)"></mat-checkbox>
       </div>
 
       <div class="right-options">
-        <mat-checkbox
-          class="view-checkbox"
-          [checked]="isViewed(item)"
-          (change)="viewItem(item)"
-          >{{ item.name }}</mat-checkbox
-        >
+        <sg-toggle
+          class="toggle"
+          [ngModel]="isViewed(item)"
+          (change)="viewItem(item)">
+          {{ item.name }}
+        </sg-toggle>
         <div class="spinner-container">
           <!-- placeholder, to reduce UI jumpiness -->
           <mat-spinner diameter="20" *ngIf="isLoading(item)"> </mat-spinner>

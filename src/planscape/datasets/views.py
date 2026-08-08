@@ -6,10 +6,10 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.db.models import Q
 from drf_spectacular.utils import extend_schema
-from planscape.openpanel import track_openpanel
+from planscape.analytics import track_event
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -65,7 +65,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         )
         serializer = BrowseDataLayerSerializer(results, many=True)
         is_authenticated = request.user and request.user.is_authenticated
-        track_openpanel(
+        track_event(
             name="datasets.dataset.browse",
             properties={
                 "dataset_id": dataset.pk,
@@ -95,7 +95,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         return list(datalayers.all())
 
 
-class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
+class DataLayerViewSet(RetrieveModelMixin, ListModelMixin, MultiSerializerMixin, GenericViewSet):
     queryset = DataLayer.objects.none()
     permission_classes = [IsAuthenticatedOrReadOnly]
     pagination_class = LimitOffsetPagination
@@ -144,9 +144,10 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         user = self.request.user if self.request else None
 
         if self.action == "urls":
-            return DataLayer.objects.all().accessible_by(user).filter(
+            return DataLayer.objects.filter(
                 Q(dataset__visibility=VisibilityOptions.PUBLIC)
                 | Q(dataset_id=settings.CLIMATE_FORESIGHT_DATASET_ID)
+                | Q(dataset__modules__contains=["funding_report"])
             )
 
         queryset = DataLayer.objects.all().accessible_by(user)

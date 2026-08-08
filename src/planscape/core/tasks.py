@@ -1,11 +1,9 @@
-import json
 import logging
 from typing import Any, Dict
 
-import requests
 from django.conf import settings
 from django.core.management import call_command
-from django.core.serializers.json import DjangoJSONEncoder
+from mixpanel import Mixpanel, MixpanelException
 
 from core.backup_state import (
     BACKUP_STATE_FAILED,
@@ -24,23 +22,25 @@ log = logging.getLogger(__name__)
 
 
 @app.task()
-def track(payload: Dict[str, Any]) -> None:
-    if not settings.OPENPANEL_INTEGRATION:
+def track_mixpanel(payload: Dict[str, Any]) -> None:
+    if not settings.MIXPANEL_INTEGRATION:
         return
 
-    url = f"{settings.OPENPANEL_URL}/track"
-    headers = {
-        "openpanel-client-id": settings.OPENPANEL_CLIENT_ID,
-        "openpanel-client-secret": settings.OPENPANEL_CLIENT_SECRET,
-        "Content-Type": "application/json",
-    }
-    data = json.dumps(payload, cls=DjangoJSONEncoder)
-    response = requests.post(url, data=data, headers=headers)
-    if response.status_code not in (200, 202):
-        log.error("Something went wrong while posting data to OpenPanel")
+    mp = Mixpanel(settings.MIXPANEL_PROJECT_TOKEN)
+    kind = payload["type"]
+    data = payload["payload"]
+    try:
+        if kind == "track":
+            mp.track(
+                data["distinct_id"], data["event_name"], data.get("properties") or {}
+            )
+        elif kind == "identify":
+            mp.people_set(data["distinct_id"], data.get("properties") or {})
+    except MixpanelException:
+        log.exception("Something went wrong while posting data to Mixpanel")
         return
 
-    log.info("Event tracked")
+    log.info("Event tracked in Mixpanel")
 
 
 @app.task()

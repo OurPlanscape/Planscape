@@ -3,15 +3,51 @@ import logging
 from core.serializers import MultiSerializerMixin
 from datasets.models import DataLayer
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
+from django.db import transaction
 from django.db.models import Q
 from django.db.models.expressions import RawSQL
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from funding_report.models import (
+    FundingOpportunityReport,
+    FundingOpportunityReportInvite,
+    FundingOpportunityReportRun,
+    FundingOpportunityReportSharedLink,
+    FundingOpportunityReportStatus,
+)
+from funding_report.openapi_examples import (
+    FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE,
+    FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE,
+)
+from funding_report.serializers import (
+    FundingOpportunityReportInviteSharedLinkRequestSerializer,
+    FundingOpportunityReportInviteSharedLinkResponseSerializer,
+    FundingOpportunityReportPublicUrlResponseSerializer,
+    FundingOpportunityReportSerializer,
+    FundingOpportunityReportSharedLinkQuerySerializer,
+    FundingReportAETImprovementRequestSerializer,
+    FundingReportAETImprovementResponseSerializer,
+    FundingReportFlameLengthReductionRequestSerializer,
+    FundingReportFlameLengthReductionResponseSerializer,
+)
+from funding_report.services import (
+    calculate_aet_improvement,
+    calculate_funding_report_flame_length_reduction,
+    merge_aet_improvement_into_results,
+)
+from funding_report.tasks import (
+    async_generate_funding_report_geopackage,
+    run_funding_opportunity_report,
+    send_funding_opportunity_report_shared_link,
+)
+from modules.base import compute_scenario_capabilities
+from planscape.analytics import track_event
 from planscape.serializers import BaseErrorMessageSerializer
 from rest_framework import mixins, pagination, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -27,6 +63,7 @@ from planning.models import (
     PlanningArea,
     ProjectArea,
     Scenario,
+    ScenarioPlanningApproach,
     ScenarioResultStatus,
     ScenarioType,
     ScenarioVersion,
@@ -55,28 +92,8 @@ from planning.serializers import (
     UpsertConfigurationV2Serializer,
     UpsertScenarioV3Serializer,
 )
-from funding_report.models import (
-    FundingOpportunityReport,
-    FundingOpportunityReportStatus,
-)
-from funding_report.openapi_examples import (
-    FLAME_LENGTH_REDUCTION_RESPONSE_EXAMPLE,
-    FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE,
-)
-from funding_report.serializers import (
-    FundingOpportunityReportSerializer,
-    FundingReportAETImprovementRequestSerializer,
-    FundingReportAETImprovementResponseSerializer,
-    FundingReportFlameLengthReductionRequestSerializer,
-    FundingReportFlameLengthReductionResponseSerializer,
-)
-from funding_report.services import (
-    calculate_aet_improvement,
-    calculate_funding_report_flame_length_reduction,
-)
-from funding_report.tasks import run_funding_opportunity_report
-from modules.base import compute_scenario_capabilities
 from planning.services import (
+    calculate_child_project_areas,
     create_config,
     create_planning_area,
     create_scenario,
@@ -259,7 +276,38 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             )
             .prefetch_related("project_areas")
         )
+        if self.action == "list":
+            qs = qs.filter(parent__isnull=True)
         return qs
+
+    @action(methods=["get"], detail=True, url_path="children")
+    def children(self, request, pk=None):
+        parent = self.get_object()
+
+        children = self.filter_queryset(self.get_queryset().filter(parent=parent))
+
+        serializer = ListScenarioSerializer(
+            children,
+            many=True,
+            context={"request": request},
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def validate_parent_scenario(self, parent):
+        if not parent:
+            return None
+
+        parent = get_object_or_404(
+            self.get_queryset().filter(parent__isnull=True),
+            pk=parent.pk,
+        )
+
+        if parent.type != ScenarioType.PROJECT_AREAS:
+            raise DRFValidationError(
+                {"parent": ["Parent scenario must be a Project Areas scenario."]}
+            )
+
+        return parent
 
     @extend_schema(description="Retrieve a Scenario (auto-detects version).")
     def retrieve(self, request, *args, **kwargs):
@@ -290,7 +338,11 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     def create_draft(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        parent = self.validate_parent_scenario(serializer.validated_data.get("parent"))
+
         scenario_type = serializer.validated_data.get("type") or ScenarioType.PRESET
+
         configuration_data = create_config(
             targets=serializer.validated_data.get("targets") or {},
             constraints=[],
@@ -298,12 +350,24 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             excluded_areas=[],
             priorities=[],
             cobenefits=[],
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+            if parent
+            else None,
         )
+
         validated_data = {
             **serializer.validated_data,
             "configuration": configuration_data,
             "type": scenario_type,
         }
+
+        if parent:
+            validated_data["parent"] = parent
+            validated_data["planning_area"] = parent.planning_area
+            validated_data["planning_approach"] = (
+                ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+            )
+
         scenario = create_scenario(**validated_data)
 
         if hasattr(scenario, "result_status"):
@@ -390,7 +454,21 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             instance, data=request.data, partial=True
         )
         serializer.is_valid(raise_exception=True)
+        if "parent" in serializer.validated_data:
+            parent = self.validate_parent_scenario(
+                serializer.validated_data.get("parent")
+            )
+            serializer.validated_data["parent"] = parent
+
+            if parent:
+                serializer.validated_data["planning_approach"] = (
+                    ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+                )
         configuration_data = serializer.validated_data.get("configuration")
+        should_calculate_child_project_areas = (
+            "parent" in serializer.validated_data
+            or (configuration_data is not None and "stand_size" in configuration_data)
+        )
         if configuration_data:
             existing = instance.configuration or {}
             incoming_config = create_config(
@@ -411,6 +489,8 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             serializer.validated_data["configuration"] = updated_config
         self.perform_update(serializer)
         instance.refresh_from_db()
+        if should_calculate_child_project_areas:
+            calculate_child_project_areas(instance)
         instance.capabilities = compute_scenario_capabilities(instance)
         instance.save(update_fields=["capabilities"])
         response_serializer = ScenarioV3Serializer(instance)
@@ -427,11 +507,30 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @action(methods=["post"], detail=True, url_path="run-report")
     def run_report(self, request, pk=None):
         scenario = self.get_object()
-        report, _ = FundingOpportunityReport.objects.get_or_create(
+        report, created = FundingOpportunityReport.objects.get_or_create(
             scenario=scenario,
             defaults={"created_by": request.user},
         )
+
+        if not created and report.created_by_id != request.user.pk:
+            report.created_by = request.user
+            report.save(update_fields=["created_by", "updated_at"])
+
+        FundingOpportunityReportRun.objects.create(
+            report=report,
+            user=request.user,
+            email=request.user.email or "",
+        )
+
         run_funding_opportunity_report.delay(report.pk)
+        track_event(
+            name="planning.funding_report.run",
+            properties={
+                "scenario_id": scenario.pk,
+                "email": request.user.email if request.user else None,
+            },
+            user_id=request.user.pk,
+        )
         serializer = FundingOpportunityReportSerializer(instance=report)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
@@ -478,13 +577,38 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             )
 
         try:
-            results = calculate_aet_improvement(
+            aet_result = calculate_aet_improvement(
                 report=report,
                 percentage=serializer.validated_data["percentage"],
             )
         except ValueError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(results)
+
+        should_regenerate_geopackage = False
+        with transaction.atomic():
+            locked_report = FundingOpportunityReport.objects.select_for_update().get(
+                pk=report.pk
+            )
+            if locked_report.status == FundingOpportunityReportStatus.SUCCESS:
+                locked_report.results = merge_aet_improvement_into_results(
+                    locked_report.results, aet_result
+                )
+                locked_report.save(update_fields=["results", "updated_at"])
+                should_regenerate_geopackage = True
+
+        if should_regenerate_geopackage:
+            async_generate_funding_report_geopackage.delay(report.pk)
+            track_event(
+                name="planning.funding_report.aet_improvement_recomputed",
+                properties={
+                    "scenario_id": scenario.pk,
+                    "percentage": serializer.validated_data["percentage"],
+                    "email": request.user.email if request.user else None,
+                },
+                user_id=request.user.pk,
+            )
+
+        return Response(aet_result)
 
     @extend_schema(
         description=(
@@ -527,6 +651,16 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             )
         except ValueError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        track_event(
+            name="planning.funding_report.flame_length_recomputed",
+            properties={
+                "scenario_id": scenario.pk,
+                "from_ft": serializer.validated_data["from_ft"],
+                "to_ft": serializer.validated_data["to_ft"],
+                "email": request.user.email if request.user else None,
+            },
+            user_id=request.user.pk,
+        )
         return Response(results)
 
     @extend_schema(description="Trigger a ForSys run for this Scenario (V3 rules).")
@@ -608,6 +742,14 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         return Response(details, status=status.HTTP_200_OK)
 
+    @extend_schema(description="List all Project Areas for a Scenario.")
+    @action(methods=["get"], detail=True, url_path="project-areas")
+    def project_areas(self, request, pk=None):
+        scenario = self.get_object()
+        queryset = scenario.project_areas.all()
+        serializer = ProjectAreaSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @action(
         methods=["POST"], detail=True, serializer_class=GetAvailableStandsSerializer
     )
@@ -621,6 +763,137 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             out_serializer.data,
             status=status.HTTP_200_OK,
         )
+
+    @extend_schema(
+        methods=["GET"],
+        description="List funding opportunity report invite emails.",
+        responses={200: FundingOpportunityReportInviteSharedLinkResponseSerializer},
+    )
+    @extend_schema(
+        methods=["POST"],
+        description=(
+            "Create funding opportunity report invites for the submitted emails "
+            "and send a shared report link."
+        ),
+        request=FundingOpportunityReportInviteSharedLinkRequestSerializer,
+        responses={201: FundingOpportunityReportInviteSharedLinkResponseSerializer},
+    )
+    @action(methods=["GET", "POST"], detail=True, url_path="funding-report-invites")
+    def create_funding_opportunity_report_invites(self, request, pk=None):
+        scenario = self.get_object()
+        report = get_object_or_404(FundingOpportunityReport, scenario=scenario)
+
+        active_invites = FundingOpportunityReportInvite.objects.filter(
+            report=report,
+            deleted_at__isnull=True,
+        )
+
+        if request.method == "GET":
+            emails = list(active_invites.values_list("invitee_email", flat=True))
+            return Response({"emails": emails}, status=status.HTTP_200_OK)
+
+        serializer = FundingOpportunityReportInviteSharedLinkRequestSerializer(
+            data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        emails = validated_data["emails"]
+        configuration = {
+            "aet": validated_data["aet"],
+            "total_flame_severity": validated_data["total_flame_severity"],
+        }
+
+        User = get_user_model()
+        with transaction.atomic():
+            shared_link, _ = FundingOpportunityReportSharedLink.objects.get_or_create(
+                report=report,
+                configuration=configuration,
+            )
+            for email in emails:
+                invite_exists = FundingOpportunityReportInvite.objects.filter(
+                    report=report,
+                    invitee_email=email,
+                    deleted_at__isnull=True,
+                ).exists()
+                if invite_exists:
+                    continue
+
+                invitee = User.objects.filter(email__iexact=email).first()
+                FundingOpportunityReportInvite.objects.create(
+                    report=report,
+                    inviter=request.user,
+                    invitee_email=email,
+                    invitee=invitee,
+                )
+
+        recipient_emails = emails
+        if validated_data["resent_to_all_invitees"]:
+            recipient_emails = emails + list(
+                active_invites.values_list("invitee_email", flat=True)
+            )
+            recipient_emails = list(dict.fromkeys(recipient_emails))
+
+        public_url = shared_link.get_public_url()
+        inviter_name = request.user.get_full_name() or request.user.email
+        for email in recipient_emails:
+            send_funding_opportunity_report_shared_link.delay(
+                email,
+                public_url,
+                inviter_name,
+                scenario.name,
+            )
+
+        track_event(
+            name="planning.funding_report.shared",
+            properties={
+                "scenario_id": scenario.pk,
+                "report_id": report.pk,
+                "shared_link_uuid": str(shared_link.uuid),
+                # `emails` are the addresses submitted now; `recipient_emails`
+                # also includes previous invitees when resending to all.
+                "new_invites": len(emails),
+                "recipients": len(recipient_emails),
+                "resent_to_all": validated_data["resent_to_all_invitees"],
+                "aet": configuration["aet"],
+                "total_flame_severity": configuration["total_flame_severity"],
+                # Recipient addresses are deliberately left out - only counts.
+                "email": request.user.email,
+            },
+            user_id=request.user.pk,
+        )
+
+        return Response({"emails": emails}, status=status.HTTP_201_CREATED)
+
+    @extend_schema(
+        parameters=[FundingOpportunityReportSharedLinkQuerySerializer],
+        responses={200: FundingOpportunityReportPublicUrlResponseSerializer},
+    )
+    @action(methods=["GET"], detail=True, url_path="funding-report-public-url")
+    def funding_opportunity_report_public_url(self, request, pk=None):
+        scenario = self.get_object()
+
+        query_serializer = FundingOpportunityReportSharedLinkQuerySerializer(
+            data=request.query_params
+        )
+        query_serializer.is_valid(raise_exception=True)
+
+        report = get_object_or_404(FundingOpportunityReport, scenario=scenario)
+
+        shared_link, created = FundingOpportunityReportSharedLink.objects.get_or_create(
+            report=report,
+            configuration=query_serializer.validated_data,
+        )
+        if created:
+            track_event(
+                name="planning.funding_report.public_link_created",
+                properties={
+                    "scenario_id": scenario.pk,
+                    "email": request.user.email if request.user else None,
+                },
+                user_id=request.user.pk,
+            )
+        return Response({"public_url": shared_link.get_public_url()})
 
 
 # TODO: migrate this to an action inside the planning area viewset

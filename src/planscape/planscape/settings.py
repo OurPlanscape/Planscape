@@ -45,7 +45,6 @@ PLANSCAPE_APPS = [
     "datastore",
     "funding_report",
     "impacts",
-    "martin",
     "modules",
     "organizations",
     "planning",
@@ -530,6 +529,22 @@ WEEKLY_NEW_USERS_REPORT_ENABLED = config(
     "WEEKLY_NEW_USERS_REPORT_ENABLED", default=False, cast=bool
 )
 
+WEEKLY_NEW_USERS_REPORT_EMAIL = config(
+    "WEEKLY_NEW_USERS_REPORT_EMAIL",
+    default="signups@planscape.org",
+)
+
+WEEKLY_FUNDING_REPORT_USERS_REPORT_ENABLED = config(
+    "WEEKLY_FUNDING_REPORT_USERS_REPORT_ENABLED",
+    default=False,
+    cast=bool,
+)
+
+WEEKLY_FUNDING_REPORT_USERS_REPORT_EMAIL = config(
+    "WEEKLY_FUNDING_REPORT_USERS_REPORT_EMAIL",
+    default="signups@planscape.org",
+)
+
 AREA_SRID = 5070
 # Global hex grid origin (EPSG:5070) used to align ALL dynamic stands
 HEX_GRID_ORIGIN_X = config("HEX_GRID_ORIGIN_X", default=-2356881.4306262177, cast=float)
@@ -589,13 +604,9 @@ ZIP_TIMEOUT = config("ZIP_TIMEOUT", 600)  # 10m
 ADMIN_URL_PREFIX = config("ADMIN_URL_PREFIX", "admin")
 FEATURE_FLAG_S3_PROXY = config("FEATURE_FLAG_S3_PROXY", False, cast=bool)
 
-# OPENPANEL config
-OPENPANEL_INTEGRATION = config("OPENPANEL_INTEGRATION", default=True, cast=bool)
-OPENPANEL_URL = config("OPENPANEL_URL", "https://op.sig-gis.com/api")
-OPENPANEL_CLIENT_ID = config("OPENPANEL_CLIENT_ID", "fake-openpanel-client-id")
-OPENPANEL_CLIENT_SECRET = config(
-    "OPENPANEL_CLIENT_SECRET", "fake-openpanel-client-secret"
-)
+# MIXPANEL config
+MIXPANEL_INTEGRATION = config("MIXPANEL_INTEGRATION", default=False, cast=bool)
+MIXPANEL_PROJECT_TOKEN = config("MIXPANEL_PROJECT_TOKEN", "fake-mixpanel-project-token")
 
 # MARTOR (ADMIN MARKDOWN EDITOR)
 MARTOR_TOOLBAR_BUTTONS = [

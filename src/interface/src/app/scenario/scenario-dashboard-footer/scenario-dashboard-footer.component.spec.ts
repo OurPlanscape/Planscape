@@ -10,6 +10,7 @@ import { ButtonComponent } from '@styleguide';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
 import { MOCK_SCENARIO } from '@app/services/mocks';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('ScenarioDashboardFooterComponent', () => {
   let component: ScenarioDashboardFooterComponent;
@@ -17,7 +18,7 @@ describe('ScenarioDashboardFooterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ScenarioDashboardFooterComponent],
+      imports: [HttpClientTestingModule, ScenarioDashboardFooterComponent],
       declarations: [
         MockDeclarations(
           ScenarioConfigOverlayComponent,

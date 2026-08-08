@@ -1,15 +1,39 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AsyncPipe, DatePipe, DecimalPipe, NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { BaseLayer, DataLayer } from '@types';
 import { getFileExtensionFromFile, getSafeFileName } from '@shared/files';
 import { DataLayersService } from '@services/data-layers.service';
-import { Observable, shareReplay, take } from 'rxjs';
+import {
+  catchError,
+  distinctUntilChanged,
+  map,
+  of,
+  ReplaySubject,
+  startWith,
+  switchMap,
+  take,
+} from 'rxjs';
 import { ButtonComponent } from '@styleguide';
 import { AccountRoutingModule } from '@account/account-routing.module';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
-@UntilDestroy()
+type DownloadState =
+  | { status: 'loading'; link: null; filename: null }
+  | { status: 'available'; link: string; filename: string }
+  | { status: 'unavailable'; link: null; filename: null };
+
+const unavailableState: DownloadState = {
+  status: 'unavailable',
+  link: null,
+  filename: null,
+};
+
+const loadingState: DownloadState = {
+  status: 'loading',
+  link: null,
+  filename: null,
+};
+
 @Component({
   selector: 'app-data-layer-tooltip',
   standalone: true,
@@ -25,27 +49,50 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   templateUrl: './data-layer-tooltip.component.html',
   styleUrl: './data-layer-tooltip.component.scss',
 })
-export class DataLayerTooltipComponent implements OnInit {
-  @Input() layer!: DataLayer | BaseLayer;
+export class DataLayerTooltipComponent {
+  private readonly layerSubject = new ReplaySubject<DataLayer | BaseLayer>(1);
+
+  private _layer!: DataLayer | BaseLayer;
+
+  @Input({ required: true })
+  get layer(): DataLayer | BaseLayer {
+    return this._layer;
+  }
+  set layer(value: DataLayer | BaseLayer) {
+    this._layer = value;
+    this.layerSubject.next(value);
+  }
+
   @Input() showAllData = true;
 
-  downloadLink$: Observable<string> | null = null;
-  loadingLink = false;
-  filename: string | null = null;
+  readonly downloadState$ = this.layerSubject.pipe(
+    map((layer) => layer.id),
+    distinctUntilChanged(),
+    switchMap((layerId) => {
+      if (layerId == null) {
+        return of({
+          status: 'unavailable',
+          link: null,
+          filename: null,
+        });
+      }
+
+      return this.dataLayersService.getPublicUrl(layerId).pipe(
+        take(1),
+        map(
+          (link): DownloadState => ({
+            status: 'available',
+            link,
+            filename: this.transformFilename(link),
+          })
+        ),
+        catchError(() => of(unavailableState)),
+        startWith(loadingState)
+      );
+    })
+  );
 
   constructor(private dataLayersService: DataLayersService) {}
-
-  ngOnInit() {
-    this.loadingLink = true;
-    this.downloadLink$ = this.dataLayersService
-      .getPublicUrl(this.layer.id)
-      .pipe(take(1), shareReplay(1));
-
-    this.downloadLink$.pipe(untilDestroyed(this)).subscribe((link) => {
-      this.loadingLink = false;
-      this.filename = this.transformFilename(link);
-    });
-  }
 
   hasMinMax(): boolean {
     return (

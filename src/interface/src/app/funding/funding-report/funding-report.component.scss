@@ -39,7 +39,6 @@
 
     .report-section {
       scroll-margin-top: 184px;
-
     }
   }
 }
@@ -49,10 +48,12 @@
 }
 
 .map-container {
+  position: relative;
   height: 330px;
   border-radius: 8px;
-  background-color: $color-soft-gray;
+  background-color: $color-white;
   border: 1px solid $color-light-purple;
+  overflow: hidden;
 }
 
 .report-footer {
@@ -63,7 +64,6 @@
   justify-content: flex-end;
   gap: 8px;
 }
-
 
 h5 {
   font-size: 14px;
@@ -109,10 +109,31 @@ h5 {
   }
 }
 
-.summary-flex {
-  display: flex;
-  gap: 8px;
-  margin-top: 16px;
+.flame-length-label {
+  display: block;
+  color: $color-dark-gray;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  margin-bottom: 8px;
+}
+
+.flame-length-select {
+  width: 100%;
+
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    background-color: $color-white;
+  }
+}
+
+// Static (read-only) value shown in place of the flame length selector when the
+// report configuration is frozen (public shared view).
+.flame-length-static {
+  margin: 0;
+  color: $color-black;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
 }
 
 .chart-wrapper {
@@ -129,15 +150,10 @@ h5 {
   z-index: 1;
 }
 
-.summary-to {
-  margin-top: 40px;
-}
-
 .field-error {
   color: $color-error;
   margin-top: 4px;
 }
-
 
 .summary-label {
   color: $color-md-gray;
@@ -159,36 +175,46 @@ h5 {
 .summary-water {
   display: flex;
   align-items: center;
-  gap: 12px
+  gap: 12px;
 }
 
 .water-input {
   width: 80px;
 }
 
+// Static (read-only) water value shown when the configuration is frozen.
+.water-static {
+  font-weight: 600;
+}
+
+.stat-cards-wrapper {
+  position: relative;
+}
+
 .stat-cards {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 16px;
 }
 
 .stat-card {
-  border: 1px solid #e1e1e1;
+  border: 1px solid $color-soft-gray;
   border-radius: 4px;
   padding: 16px;
+  flex: 1;
 }
 
 .stat-label {
   color: $color-md-gray;
   font-size: 14px;
-  margin-bottom: 8px;
+  margin-top: 8px;
 }
 
 .stat-value {
   font-size: 28px;
   font-weight: 700;
   line-height: 1.1;
-  color: #000;
+  color: $color-black;
 }
 
 .stat-unit {
@@ -199,7 +225,8 @@ h5 {
 
 .biomass-intro {
   color: $color-md-gray;
-  margin: 0 0 16px;
+  margin: 0;
+  font-weight: 600;
 }
 
 .biomass-table {
@@ -207,7 +234,7 @@ h5 {
   border-collapse: collapse;
   font-size: 14px;
   border-radius: 4px;
-  border: 1px solid #E1E1E1;
+  border: 1px solid $color-soft-gray;
 
   th,
   td {
@@ -223,12 +250,10 @@ h5 {
     font-weight: 600;
   }
 
-
   tbody td {
     background: $color-white;
   }
 }
-
 
 .top-section-divider {
   border-top: 1px solid $color-soft-gray;
@@ -244,7 +269,6 @@ h5 {
 .report-section ::ng-deep sg-chart .canvas-wrapper {
   height: 312px;
 }
-
 
 .burn-probability-banner {
   margin: 16px 0;
@@ -263,7 +287,6 @@ h5 {
   }
 }
 
-
 .coming-soon {
   display: flex;
   padding: 24px;
@@ -278,7 +301,6 @@ h5 {
   font-weight: 400;
   line-height: 26px;
 }
-
 
 .coming-soon-header {
   display: flex;
@@ -299,6 +321,63 @@ h5 {
   }
 }
 
-.flame-length-button {
-  margin-top: 31px;
+.tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  color: $color-black;
+}
+
+.tooltip-links {
+  border-top: 1px solid $color-soft-gray;
+  padding: 24px 24px 0;
+  margin: 0 -24px;
+}
+
+.tooltip-links-heading {
+  margin: 0 0 12px;
+  color: $color-black;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.tooltip-links-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: $color-standard-blue;
+    text-decoration: underline;
+    font-weight: 600;
+
+    &:hover {
+      color: $color-active-blue;
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+.no-project-area-data-view {
+  padding: 16px;
+  background-color: $color-soft-purple;
+  display: flex;
+  flex-grow: 1;
+
+  .no-forested-land-card {
+    padding: 16px;
+    border: 1px $color-light-purple solid;
+    max-height: 120px;
+  }
 }

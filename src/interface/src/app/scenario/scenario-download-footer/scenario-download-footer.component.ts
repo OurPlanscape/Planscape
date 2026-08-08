@@ -2,7 +2,6 @@ import { Component, Input } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ButtonComponent } from '@styleguide';
-import { ScenarioService } from '@services';
 import { FileSaverService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { getSafeFileName } from '@shared/files';
@@ -34,9 +33,8 @@ import { GEO_PACKAGE_LABELS } from '../scenario.constants';
 })
 export class ScenarioDownloadFooterComponent {
   constructor(
-    private scenarioService: ScenarioService,
     private scenarioState: ScenarioState,
-    private fileServerService: FileSaverService,
+    private fileSaverService: FileSaverService,
     private snackbar: MatSnackBar,
     private dialog: MatDialog
   ) {}
@@ -66,13 +64,13 @@ export class ScenarioDownloadFooterComponent {
 
     if (this.geoPackageURL && this.scenarioName) {
       const filename = getSafeFileName(this.scenarioName) + '.zip';
-      this.scenarioService.downloadGeopackage(this.geoPackageURL).subscribe({
+      this.fileSaverService.downloadGeopackage(this.geoPackageURL).subscribe({
         next: (data) => {
           this.downloadingScenario = false;
           const blob = new Blob([data], {
             type: 'application/zip',
           });
-          this.fileServerService.saveAs(blob, filename);
+          this.fileSaverService.saveAs(blob, filename);
         },
         error: (e) => {
           this.downloadingScenario = false;

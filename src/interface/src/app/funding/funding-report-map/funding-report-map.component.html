@@ -1,0 +1,111 @@
+<mgl-map
+  *ngIf="bounds$ | async as bounds"
+  [style]="(baseLayerUrl$ | async) || ''"
+  [transformRequest]="transformRequest"
+  [maxZoom]="maxZoom"
+  [minZoom]="minZoom"
+  [dragRotate]="false"
+  [preserveDrawingBuffer]="true"
+  [fitBoundsOptions]="{ padding: { top: 70, bottom: 40, left: 20, right: 20 } }"
+  [fitBounds]="bounds"
+  [style]="(baseLayerUrl$ | async) || ''"
+  (mapLoad)="mapLoaded($event)"
+  (mapError)="onMapError($event)"
+  [scrollZoom]="allowInteraction"
+  [doubleClickZoom]="allowInteraction"
+  [touchZoomRotate]="allowInteraction">
+  <app-map-zoom-control
+    *ngIf="mapLibreMap && allowInteraction"
+    [mapLibreMap]="mapLibreMap"
+    controlsPosition="bottom-right"></app-map-zoom-control>
+
+  <!-- This *ngIf="true" is a hack to fix the issue where the planning area was displayed on top of the project areas when moving back and forward. -->
+  <app-planning-area-layer
+    [lineColor]="BASE_COLORS.standard_blue"
+    [sharedLinkUuid]="sharedLinkUuid"
+    *ngIf="true"></app-planning-area-layer>
+  <app-funding-data-layer
+    *ngIf="mapLibreMap && (fundingDataLayer$ | async) as fundingDataLayer"
+    [mapLibreMap]="mapLibreMap"
+    [dataLayer]="fundingDataLayer"></app-funding-data-layer>
+
+  <app-map-data-layer
+    *ngIf="mapLibreMap"
+    [mapLibreMap]="mapLibreMap"></app-map-data-layer>
+
+  <app-map-base-layers
+    *ngIf="mapLibreMap"
+    [mapLibreMap]="mapLibreMap"></app-map-base-layers>
+
+  <mgl-layer
+    type="background"
+    id="bottom-layer"
+    [layout]="{ visibility: 'none' }">
+  </mgl-layer>
+
+  <app-map-multi-project-areas
+    *ngIf="sharedLinkUuid || (projectAreaCount$ | async)"
+    [sharedLinkUuid]="sharedLinkUuid"
+    [allowInteraction]="allowInteraction"
+    [projectAreasCount]="(projectAreaCount$ | async) ?? null"
+    [mapLibreMap]="mapLibreMap"
+    [labelField]="'rank'"
+    (changeHoveredProjectAreaId)="setHoveredProjectAreaId($event)"
+    (changeMouseLngLat)="setMouseLngLat($event)"
+    [planningApproach]="
+      (planningApproach$ | async) || 'OPTIMIZE_PROJECT_AREAS'
+    ">
+  </app-map-multi-project-areas>
+
+  <app-map-tooltip
+    *ngIf="allowInteraction && (hoveredProjectAreaId$ | async) && mouseLngLat"
+    [lngLat]="mouseLngLat"
+    >Click project area to select
+  </app-map-tooltip>
+
+  <mgl-control position="top-left">
+    <app-map-layer-color-legend></app-map-layer-color-legend>
+  </mgl-control>
+
+  <mgl-control position="top-right" *ngIf="allowInteraction">
+    <app-action-button
+      *ngIf="(showFundingLegend$ | async) === false"
+      (clickedActionButton)="openFundingLegend()"
+      tooltipContent="Funding Report Legend"
+      icon="legend-toggle">
+    </app-action-button>
+    <app-funding-acreage-legend
+      *ngIf="(showFundingLegend$ | async) && legendData"
+      [legendData]="legendData"></app-funding-acreage-legend>
+  </mgl-control>
+
+  <mgl-control
+    position="bottom-left"
+    class="map-label-control custom-bottom-left-control">
+    <div
+      class="selected-layer-control label"
+      *ngIf="selectedLayer$ | async as selectedLayer">
+      <a
+        sg-button
+        variant="link"
+        class="label-button"
+        (click)="goToSelectedLayer(selectedLayer)">
+        {{ selectedLayer.name }}
+      </a>
+      <button
+        sg-button
+        variant="icon-only"
+        aria-label="close"
+        (click)="clearSelectedLayer()">
+        <mat-icon class="close-btn">close</mat-icon>
+      </button>
+    </div>
+  </mgl-control>
+</mgl-map>
+
+<div
+  class="loader"
+  [class.visible]="(mapLoaded$ | async) === false"
+  [attr.aria-hidden]="(mapLoaded$ | async) !== false">
+  <mat-spinner diameter="32"></mat-spinner>
+</div>

@@ -4,6 +4,7 @@
   <div class="analysis-item analysis-item--water">Water</div>
   <div class="analysis-item analysis-item--biomass">Biomass</div>
 </div>
+
 <div>
   <div class="empty-state-title">
     Funding Opportunity Report: Share outcomes that matter
@@ -15,8 +16,29 @@
   </div>
 </div>
 
+<div class="before-generate-container">
+  <div class="heading">Before you generate</div>
+  <div class="container-row">
+    <div class="left-icon"><mat-icon>check</mat-icon></div>
+    <div class="right-text">
+      <span class="opening-sentence">Reports analyze only forested land.</span>
+      All metric calculations are derived from forest coverage within your
+      planning area.
+    </div>
+  </div>
+
+  <div class="container-row last-row">
+    <div class="left-icon"><mat-icon>check</mat-icon></div>
+    <div class="right-text">
+      <span class="opening-sentence"
+        >Non-forested land will not return data. </span
+      >Project areas without forested land will return a 'No Data Available'
+      message.
+    </div>
+  </div>
+</div>
+
 <button
-  data-track="generate-funding-report"
   sg-button
   icon="assignment"
   variant="primary"

@@ -1,0 +1,222 @@
+import { AsyncPipe, NgIf } from '@angular/common';
+import { Component, Input, OnInit } from '@angular/core';
+import {
+  LngLat,
+  Map as MapLibreMap,
+  RequestTransformFunction,
+} from 'maplibre-gl';
+import {
+  ControlComponent,
+  LayerComponent,
+  MapComponent,
+} from '@maplibre/ngx-maplibre-gl';
+import {
+  addRequestHeaders,
+  getBoundsFromGeometry,
+} from '@app/maplibre-map/maplibre.helper';
+import { AuthService, DataLayersService } from '@app/services';
+import { FrontendConstants } from '@app/map/map.constants';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { BehaviorSubject, map, Observable, of, Subject, switchMap } from 'rxjs';
+import { EventData } from '@angular/cdk/testing';
+import { MapZoomControlComponent } from '@app/maplibre-map/map-zoom-control/map-zoom-control.component';
+import { MapBaseLayersComponent } from '@app/maplibre-map/map-base-layers/map-base-layers.component';
+import { MapDataLayerComponent } from '@app/maplibre-map/map-data-layer/map-data-layer.component';
+import { FundingDataLayerComponent } from '../funding-data-layer/funding-data-layer.component';
+import { PlanState } from '@app/plan/plan.state';
+import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
+import { MapConfigService } from '@app/maplibre-map/map-config.service';
+import { MapMultiProjectAreasComponent } from '../map-multi-project-areas/map-multi-project-areas.component';
+import { ScenarioState } from '@app/scenario/scenario.state';
+import { MapTooltipComponent } from '@app/treatments/map-tooltip/map-tooltip.component';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { DataLayer, Extent } from '@app/types';
+import { MatIconModule } from '@angular/material/icon';
+import { ButtonComponent } from '@styleguide';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SNACK_ERROR_CONFIG } from '@app/shared';
+import { FundingMapConfigState } from '../funding-map-config-state';
+import {
+  FundingAcreageLegendComponent,
+  FundingLegendData,
+} from '../funding-acreage-legend/funding-acreage-legend.component';
+import { MapActionButtonComponent } from '@app/treatments/map-action-button/map-action-button.component';
+import { MapLayerColorLegendComponent } from '@app/maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
+import { BASE_COLORS } from '@app/treatments/map.styles';
+
+@Component({
+  selector: 'app-funding-report-map',
+  standalone: true,
+  imports: [
+    AsyncPipe,
+    ButtonComponent,
+    ControlComponent,
+    FundingAcreageLegendComponent,
+    FundingDataLayerComponent,
+    LayerComponent,
+    MapActionButtonComponent,
+    MapBaseLayersComponent,
+    MapDataLayerComponent,
+    MapComponent,
+    MapLayerColorLegendComponent,
+    MapMultiProjectAreasComponent,
+    MapTooltipComponent,
+    MapZoomControlComponent,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    NgIf,
+    PlanningAreaLayerComponent,
+  ],
+  templateUrl: './funding-report-map.component.html',
+  styleUrl: './funding-report-map.component.scss',
+})
+export class FundingReportMapComponent implements OnInit {
+  constructor(
+    private fundingMapConfigState: FundingMapConfigState,
+    private mapConfigService: MapConfigService,
+    private dataLayersStateService: DataLayersStateService,
+    private dataLayersService: DataLayersService,
+    private authService: AuthService,
+    private planState: PlanState,
+    private scenarioState: ScenarioState,
+    private matSnackBar: MatSnackBar
+  ) {
+    this.mapConfigService.initialize();
+  }
+
+  readonly BASE_COLORS = BASE_COLORS;
+
+  @Input() allowInteraction = true;
+
+  @Input() legendData: FundingLegendData | null = null;
+
+  /**
+   * Shared-link UUID for the public funding report. When set, the project-area
+   * and planning-area layers pull unauthed tiles keyed by UUID instead of the
+   * scenario / plan state the public view has no access to.
+   */
+  @Input() sharedLinkUuid: string | null = null;
+
+  /** Id of the report's treatment datalayer to display on the map. */
+  @Input() treatmentDataLayerId!: number;
+
+  /**
+   * Id of the report's water-availability (AET) datalayer. When this layer is
+   * the one being viewed, it renders on top of the treatment layer instead of
+   * below the rest of the data layers.
+   */
+  @Input() aetDataLayerId: number | null = null;
+
+  mapLoaded$ = this.fundingMapConfigState.mapLoaded$;
+
+  mapLibreMap!: MapLibreMap;
+  /**
+   * Maplibre defaults
+   */
+  minZoom = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
+  maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
+
+  baseLayerUrl$ = this.fundingMapConfigState.baseMapUrl$;
+  showFundingLegend$ = this.fundingMapConfigState.showFundingLegend$;
+
+  opacity$ = this.fundingMapConfigState.opacity$;
+
+  projectAreaCount$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => {
+      return scenario.scenario_result?.result?.features.length;
+    })
+  );
+
+  scenarioOrigin$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => scenario.origin)
+  );
+
+  planningApproach$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => scenario.planning_approach ?? 'OPTIMIZE_PROJECT_AREAS')
+  );
+
+  private readonly _bounds$ = new BehaviorSubject<Extent | null>(null);
+
+  /**
+   * Explicit map bounds. Supplied by callers that have no plan in state (e.g.
+   * the public shared view). When unset, the map falls back to the planning-area
+   * geometry from `PlanState`, which is the authed behaviour.
+   */
+  @Input() set bounds(value: Extent | null) {
+    this._bounds$.next(value ?? null);
+  }
+
+  bounds$ = this._bounds$.pipe(
+    switchMap((explicit) =>
+      explicit
+        ? of(explicit)
+        : this.planState.planningAreaGeometry$.pipe(
+            map((geometry) => getBoundsFromGeometry(geometry))
+          )
+    )
+  );
+
+  selectedLayer$ = this.dataLayersStateService.viewedDataLayer$;
+
+  hoveredProjectAreaId$ = new Subject<number | null>();
+  mouseLngLat: LngLat | null = null;
+
+  fundingDataLayer$!: Observable<DataLayer>;
+
+  ngOnInit() {
+    this.fundingDataLayer$ = this.dataLayersService.getDataLayerById(
+      this.treatmentDataLayerId
+    );
+  }
+
+  mapLoaded(loadedMap: MapLibreMap) {
+    this.mapLibreMap = loadedMap;
+    this.fundingMapConfigState.setMapLoaded(true);
+  }
+
+  handleOpacityChange(opacity: number) {
+    this.fundingMapConfigState.setOpacity(opacity);
+  }
+
+  onMapError(event: ErrorEvent & EventData) {
+    const status = (event.error as any)?.status;
+    if (status >= 500 && status < 600) {
+      this.showMapError();
+    }
+  }
+
+  showMapError() {
+    // TODO: confirm this message
+    this.matSnackBar.open(
+      'There was a problem loading the funding report map.',
+      'Dismiss',
+      {
+        ...SNACK_ERROR_CONFIG,
+        panelClass: ['snackbar-error', 'snackbar-error-multiline'],
+      }
+    );
+  }
+
+  openFundingLegend() {
+    this.fundingMapConfigState.setFundingLegendVisibility(true);
+  }
+
+  setHoveredProjectAreaId(value: number | null) {
+    this.hoveredProjectAreaId$.next(value);
+  }
+
+  setMouseLngLat(value: LngLat | null) {
+    this.mouseLngLat = value;
+  }
+
+  goToSelectedLayer(layer: DataLayer) {
+    this.dataLayersStateService.goToSelectedLayer(layer);
+  }
+
+  clearSelectedLayer() {
+    this.dataLayersStateService.clearViewedDataLayer();
+  }
+
+  transformRequest: RequestTransformFunction = (url, resourceType) =>
+    addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
+}

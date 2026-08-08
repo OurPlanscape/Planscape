@@ -4,12 +4,18 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DashboardLayoutComponent } from '@styleguide/dashboard-layout/dashboard-layout.component';
 import { NavBarComponent } from '@standalone/nav-bar/nav-bar.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { ProductAnalyticsService } from '@services/product-analytics.service';
+import { ToolInfoCardPartner } from '@styleguide/tool-info-card/tool-info-card.component';
+import { MapConfigState } from '@app/maplibre-map/map-config.state';
+import { FundingMapConfigState } from '../funding-map-config-state';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   exhaustMap,
   filter,
   map,
+  of,
   shareReplay,
   startWith,
   switchMap,
@@ -26,7 +32,10 @@ import { ButtonComponent, ToolInfoCardComponent } from '@styleguide';
 import { ScenarioState } from '@scenario/scenario.state';
 import { scenarioHasCapability } from '@scenario/scenario-helper';
 import { FundingReportService } from '@services/funding-report.service';
-import { FundingReport } from '@types';
+import { AuthService } from '@services/auth.service';
+import { FundingReport, User } from '@types';
+import { PlanState } from '@plan/plan.state';
+import { canAddScenario } from '@plan/permissions';
 import { POLLING_INTERVAL } from '@plan/plan-helpers';
 import { SNACK_ERROR_CONFIG, SUPPORT_URL } from '@shared';
 import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
@@ -47,6 +56,13 @@ import { MessageCardComponent } from '@styleguide/message-card/message-card.comp
     MessageCardComponent,
     ButtonComponent,
   ],
+  // Preview-mode map host: provide the single FundingMapConfigState (aliased as
+  // MapConfigState) shared by the embedded funding-report and its map, mirroring
+  // full-report-view. funding-report no longer provides its own instance.
+  providers: [
+    FundingMapConfigState,
+    { provide: MapConfigState, useExisting: FundingMapConfigState },
+  ],
   templateUrl: './funding-dashboard.component.html',
   styleUrl: './funding-dashboard.component.scss',
 })
@@ -54,10 +70,13 @@ export class FundingDashboardComponent implements OnInit {
   constructor(
     private breadcrumbService: BreadcrumbService,
     private scenarioState: ScenarioState,
+    private planState: PlanState,
+    private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
     private fundingReportService: FundingReportService,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private productAnalyticsService: ProductAnalyticsService
   ) {}
 
   protected readonly SUPPORT_URL = SUPPORT_URL;
@@ -68,7 +87,7 @@ export class FundingDashboardComponent implements OnInit {
   );
 
   /** Fires on init and after `generateReport()` to (re)start polling. */
-  private reload$ = new BehaviorSubject<void>(undefined);
+  reload$ = new BehaviorSubject<void>(undefined);
 
   /** Set the moment the user clicks generate, so the view switches instantly. */
   private generationRequested$ = new BehaviorSubject<boolean>(false);
@@ -87,8 +106,10 @@ export class FundingDashboardComponent implements OnInit {
 
   isGenerating$ = combineLatest([this.report$, this.generationRequested$]).pipe(
     map(([report, requested]) => {
-      // A finished report always wins over a pending click.
-      if (report?.status === 'SUCCESS' || report?.status === 'FAILED') {
+      // A finished (terminal) report always wins over a pending click. When no
+      // report exists yet, honor the click so the spinner shows instantly
+      // instead of waiting for the server to respond and the first poll to land.
+      if (report && !this.isStillProcessing(report)) {
         return false;
       }
       return requested || this.isGenerating(report);
@@ -97,17 +118,39 @@ export class FundingDashboardComponent implements OnInit {
   hasOutput$ = this.report$.pipe(
     map((r) => r?.status === 'SUCCESS' && this.hasResults(r))
   );
-  /** Report finished successfully but produced no results (e.g. no treatable areas). */
-  hasNoResults$ = this.report$.pipe(
-    map((r) => r?.status === 'SUCCESS' && !this.hasResults(r))
-  );
+  /** Report finished but produced no results (e.g. no treatable areas). */
+  hasNoResults$ = this.report$.pipe(map((r) => r?.status === 'EMPTY'));
   hasError$ = this.report$.pipe(map((r) => r?.status === 'FAILED'));
 
-  /** Empty state shows only before a report exists and before the user asks. */
-  showEmptyState$ = combineLatest([
+  /** Report hasn't been generated yet (and the user hasn't just asked for it). */
+  private reportNotGenerated$ = combineLatest([
     this.report$,
     this.generationRequested$,
   ]).pipe(map(([report, requested]) => report === null && !requested));
+
+  /**
+   * Whether the current user can generate the report. Collaborators and Owners
+   * can (`add_scenario`); only Viewers get the no-access message instead.
+   */
+  private canEdit$ = combineLatest([
+    this.planState.currentPlan$,
+    this.authService.loggedInUser$.pipe(filter((u): u is User => !!u)),
+  ]).pipe(
+    map(([plan, user]) => plan.user === user.id || !!canAddScenario(plan)),
+    catchError(() => of(false)),
+    shareReplay(1)
+  );
+
+  /** Show the "generate report" empty state: no report yet and the user can edit. */
+  showEmptyState$ = combineLatest([
+    this.reportNotGenerated$,
+    this.canEdit$,
+  ]).pipe(map(([notGenerated, canEdit]) => notGenerated && canEdit));
+
+  /** Show the no-access message: no report yet and the user cannot edit. */
+  showNoAccess$ = combineLatest([this.reportNotGenerated$, this.canEdit$]).pipe(
+    map(([notGenerated, canEdit]) => notGenerated && !canEdit)
+  );
 
   /**
    * Polls the report every `POLLING_INTERVAL` while it is still generating,
@@ -116,12 +159,29 @@ export class FundingDashboardComponent implements OnInit {
   private pollReport(scenarioId: number) {
     return timer(0, POLLING_INTERVAL).pipe(
       exhaustMap(() => this.fundingReportService.getReport(scenarioId)),
-      takeWhile((report) => this.isGenerating(report), true)
+      takeWhile((report) => {
+        const processingResult = this.isStillProcessing(report);
+        return processingResult;
+      }, true)
     );
   }
 
   private isGenerating(report: FundingReport | null): boolean {
     return report?.status === 'PENDING' || report?.status === 'RUNNING';
+  }
+
+  private isStillProcessing(report: FundingReport | null): boolean {
+    if (!report) return false;
+    if (report.status === 'FAILED') return false;
+
+    const reportIsGenerating =
+      report.status === 'PENDING' || report.status === 'RUNNING';
+
+    const geoPackagePending =
+      report.geopackage_status === 'PENDING' ||
+      report.geopackage_status === 'PROCESSING';
+
+    return reportIsGenerating || geoPackagePending;
   }
 
   /** Whether a (successful) report actually carries results to display. */
@@ -147,10 +207,39 @@ export class FundingDashboardComponent implements OnInit {
       label: 'Scenario Dashboard ',
       backUrl: '../dashboard',
     });
+    this.redirectIfScenarioUnavailable();
     this.redirectIfFundingReportUnavailable();
   }
 
-  generateReport() {
+  /**
+   * Kick the user out to home if the scenario query fails — e.g. they don't
+   * have permission to view it (the view permission lives on the planning area).
+   */
+  private redirectIfScenarioUnavailable() {
+    this.scenarioState.currentScenarioResource$
+      .pipe(
+        filter((resource) => !!resource.error),
+        take(1),
+        untilDestroyed(this)
+      )
+      .subscribe(() => this.router.navigate(['/home']));
+  }
+
+  trackPartnerClick(partner: ToolInfoCardPartner) {
+    this.productAnalyticsService.trackEvent(
+      'funding_report.partner_link.clicked',
+      {
+        name: partner.name,
+        url: partner.url,
+      }
+    );
+  }
+
+  generateReport(source: 'empty_state' | 'retry') {
+    this.productAnalyticsService.trackEvent(
+      'funding_report.generation.requested',
+      { source }
+    );
     // Switch to the generating state immediately, before the server responds.
     this.generationRequested$.next(true);
     this.scenarioState.currentScenario$

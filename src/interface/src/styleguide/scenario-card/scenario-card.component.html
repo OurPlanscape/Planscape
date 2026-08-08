@@ -63,7 +63,7 @@
     <div class="detail-header" [hidden]="isProjectArea">Status</div>
     <div class="detail-info">
       <sg-status-chip
-        *ngIf="resultStatus && origin === 'SYSTEM'"
+        *ngIf="resultStatus && type !== 'PROJECT_AREAS'"
         [status]="getChipStatus()"
         [label]="getChipLabel()"></sg-status-chip>
     </div>

@@ -39,15 +39,15 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
 import { MapViewerCardComponent } from './map-viewer-card/map-viewer-card.component';
 import { NotesExpansionCardComponent } from './notes-expansion-card/notes-expansion-card.component';
-import { PlanScenariosListComponent } from './plan-summary/plan-scenarios-list/plan-scenarios-list.component';
 import { ScenariosEmptyListComponent } from './plan-summary/scenarios-empty-list/scenarios-empty-list.component';
 import { DetailsCardComponent } from '@styleguide/details-card/details-card.component';
 import { DashboardLayoutComponent } from '@styleguide/dashboard-layout/dashboard-layout.component';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { ScenariosListComponent } from './plan-summary/scenarios-list/scenarios-list.component';
 
 /** Components used in the plan flow. */
 @NgModule({
-  declarations: [AreaNotesComponent, PlanComponent, PlanScenariosListComponent],
+  declarations: [AreaNotesComponent, PlanComponent],
   providers: [
     WINDOW_PROVIDERS,
     MapConfigState,
@@ -76,6 +76,7 @@ import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
     UploadProjectAreasModalComponent,
     ScenarioCardComponent,
     ScenariosCardListComponent,
+    ScenariosListComponent,
     TreatmentCardComponent,
     NotesPanelComponent,
     OpacitySliderComponent,

@@ -13,6 +13,7 @@ import { MockDeclarations, MockProvider } from 'ng-mocks';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { AvailableStands } from '@types';
 import { MapConfigState } from '../map-config.state';
+import { FeatureService } from '@app/features/feature.service';
 
 describe('ScenarioStandsComponent', () => {
   const planId = 456;
@@ -58,10 +59,12 @@ describe('ScenarioStandsComponent', () => {
           currentStep$,
           setLoading: jasmine.createSpy('setLoading'),
           setBaseStandsLoaded: jasmine.createSpy('setBaseStandsLoaded'),
+          includedAreas$: new BehaviorSubject([]),
         }),
         MockProvider(MapConfigState, {
           opacity$: of(0),
         }),
+        MockProvider(FeatureService),
       ],
     }).compileComponents();
   });
@@ -73,9 +76,9 @@ describe('ScenarioStandsComponent', () => {
     return { fixture, component: fixture.componentInstance };
   }
 
-  it('reads planId from route snapshot', () => {
+  it('reads scenarioId from route snapshot', () => {
     const { component } = create();
-    expect(component.planId).toBe(planId);
+    expect(component.scenarioId).toBe(scenarioId);
   });
 
   it('tilesUrl$ emits only when stand_size exists and updates with latest', fakeAsync(() => {
@@ -89,12 +92,14 @@ describe('ScenarioStandsComponent', () => {
 
     tick();
 
-    const base = MARTIN_SOURCES.scenarioStands.tilesUrl;
-    expect(emitted).toEqual([
-      `${base}?planning_area_id=${planId}&stand_size=BIG`,
-      `${base}?planning_area_id=${planId}&stand_size=SMALL`,
-    ]);
+    const base = MARTIN_SOURCES.scenarioStands.tilesWithIncludesUrl;
+    expect(emitted[0]).toContain(
+      `${base}?scenario_id=${scenarioId}&stand_size=BIG`
+    );
 
+    expect(emitted[1]).toContain(
+      `${base}?scenario_id=${scenarioId}&stand_size=SMALL`
+    );
     sub.unsubscribe();
   }));
 

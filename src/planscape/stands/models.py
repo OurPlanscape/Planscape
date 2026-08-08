@@ -70,7 +70,7 @@ class StandQuerySet(models.QuerySet):
             raise ValueError("Invalid geometry")
 
         return (
-            Stand.objects.filter(geometry__bboverlaps=geometry)
+            self.filter(geometry__bboverlaps=geometry)
             .annotate(centroid=Centroid("geometry"))
             .filter(
                 centroid__within=geometry,

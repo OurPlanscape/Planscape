@@ -1,8 +1,8 @@
 Dear {{ user_full_name }},
 
-Your Planscape scenario is ready. {{ scenario_link }}
+Your Planscape scenario is ready. You can review it here: {{ scenario_link }}.
 
-If you have questions or need help, please refer to the User Guide (https://www.planscape.org/documentation/user-guide/).
+If you have any questions or need help, please refer to the Knowledge Base: https://support.planscape.org/support/solutions.
 
 Thank you,
 Team Planscape

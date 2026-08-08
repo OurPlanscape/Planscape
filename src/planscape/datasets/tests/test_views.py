@@ -299,6 +299,38 @@ class TestDataLayerViewSet(APITestCase):
             self.assertEqual(len(data.get("results")), test.get("expected_result"))
 
 
+    def test_retrieve_public_datalayer_succeeds(self):
+        self.client.force_authenticate(user=self.normal)
+        datalayer = DataLayerFactory.create(dataset=self.dataset, type=DataLayerType.RASTER)
+        url = reverse("api:datasets:datalayers-detail", kwargs={"pk": datalayer.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["id"], datalayer.pk)
+
+    def test_retrieve_private_datalayer_as_normal_user_returns_404(self):
+        self.client.force_authenticate(user=self.normal)
+        private_dataset = DatasetFactory(visibility=VisibilityOptions.PRIVATE)
+        datalayer = DataLayerFactory.create(dataset=private_dataset, type=DataLayerType.RASTER)
+        url = reverse("api:datasets:datalayers-detail", kwargs={"pk": datalayer.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_retrieve_private_datalayer_as_staff_succeeds(self):
+        self.client.force_authenticate(user=self.admin)
+        private_dataset = DatasetFactory(visibility=VisibilityOptions.PRIVATE)
+        datalayer = DataLayerFactory.create(dataset=private_dataset, type=DataLayerType.RASTER)
+        url = reverse("api:datasets:datalayers-detail", kwargs={"pk": datalayer.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["id"], datalayer.pk)
+
+    def test_retrieve_unauthenticated_public_datalayer_succeeds(self):
+        datalayer = DataLayerFactory.create(dataset=self.dataset, type=DataLayerType.RASTER)
+        url = reverse("api:datasets:datalayers-detail", kwargs={"pk": datalayer.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["id"], datalayer.pk)
+
     def test_find_anything(self):
         self.client.force_authenticate(user=self.normal)
         DataLayerFactory.create(
@@ -536,6 +568,16 @@ class TestPublicAccess(APITestCase):
             with self.subTest(url=url):
                 resp = self.client.get(url)
                 self.assertEqual(resp.status_code, 404)
+
+    def test_funding_report_datalayer_urls_are_accessible(self):
+        dataset = DatasetFactory.create(
+            visibility=VisibilityOptions.PRIVATE,
+            modules=["funding_report"],
+        )
+        datalayer = DataLayerFactory.create(dataset=dataset)
+        url = reverse("api:datasets:datalayers-urls", kwargs={"pk": datalayer.pk})
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
 
     def test_write_still_requires_authentication(self):
         url = reverse("api:datasets:datasets-list")

@@ -4,6 +4,7 @@ from unittest import mock
 
 from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
+from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.test import TestCase
 from django.urls import reverse
@@ -451,7 +452,7 @@ class ListScenariosForPlanningAreaTest(APITestCase):
         response_data = response.json()
         expected_acres_order = [40000, 40000, 40000, 104, 103, 102, 101, 100]
         budget_results = [s["max_treatment_area"] for s in response_data]
-        self.assertEquals(budget_results, expected_acres_order)
+        self.assertEqual(budget_results, expected_acres_order)
 
     def test_sort_scenario_by_reverse_acres_v3(self):
         for acres in range(100, 105):
@@ -527,7 +528,7 @@ class ListScenariosForPlanningAreaTest(APITestCase):
             "test scenario",
         ]
         name_results = [s["name"] for s in response_data]
-        self.assertEquals(expected_names, name_results)
+        self.assertEqual(expected_names, name_results)
 
     def test_filter_by_planning_area_returns_filtered_records(self):
         planning_area = PlanningAreaFactory.create()
@@ -606,6 +607,108 @@ class ListScenariosForPlanningAreaTest(APITestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data.get("version"), ScenarioVersion.V3)
+
+    def test_list_scenario_excludes_child_scenarios(self):
+        child = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            parent=self.scenario,
+        )
+        ScenarioResultFactory(scenario=child)
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("api:planning:scenarios-list"),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        ids = [item["id"] for item in response.json()]
+        self.assertIn(self.scenario.pk, ids)
+        self.assertNotIn(child.pk, ids)
+
+    def test_children_endpoint_returns_only_children_for_parent(self):
+        parent = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        child = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            parent=parent,
+        )
+
+        other_parent = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        other_child = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            parent=other_parent,
+        )
+
+        ScenarioResultFactory(scenario=parent)
+        ScenarioResultFactory(scenario=child)
+        ScenarioResultFactory(scenario=other_parent)
+        ScenarioResultFactory(scenario=other_child)
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("api:planning:scenarios-children", args=[parent.pk]),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        ids = [item["id"] for item in response.json()]
+        self.assertIn(child.pk, ids)
+        self.assertNotIn(other_child.pk, ids)
+        self.assertNotIn(parent.pk, ids)
+        self.assertNotIn(other_parent.pk, ids)
+
+    def test_children_endpoint_supports_ordering(self):
+        parent = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            type=ScenarioType.PROJECT_AREAS,
+        )
+
+        child_b = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            parent=parent,
+            name="B child",
+        )
+        child_a = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.owner_user,
+            parent=parent,
+            name="A child",
+        )
+
+        ScenarioResultFactory(scenario=parent)
+        ScenarioResultFactory(scenario=child_a)
+        ScenarioResultFactory(scenario=child_b)
+
+        self.client.force_authenticate(self.owner_user)
+
+        url = reverse(
+            "api:planning:scenarios-children",
+            args=[parent.pk],
+        )
+
+        response = self.client.get(
+            url,
+            {"ordering": "name"},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            [scenario["name"] for scenario in response.json()],
+            ["A child", "B child"],
+        )
 
 
 class ScenarioDetailTest(APITestCase):
@@ -889,7 +992,9 @@ class ScenarioDetailTest(APITestCase):
         )
 
     def test_detail_scenario_scenario_result_prioritize_sub_units(self):
-        scenario_result = ScenarioResultFactory(scenario=self.scenario, with_multiple_features=20)
+        scenario_result = ScenarioResultFactory(
+            scenario=self.scenario, with_multiple_features=20
+        )
 
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.save()
@@ -910,7 +1015,9 @@ class ScenarioDetailTest(APITestCase):
         self.assertEqual(len(scenario_result.result["features"]), 20)
 
     def test_detail_scenario_scenario_result_prioritize_sub_units__query_params(self):
-        scenario_result = ScenarioResultFactory(scenario=self.scenario, with_multiple_features=20)
+        scenario_result = ScenarioResultFactory(
+            scenario=self.scenario, with_multiple_features=20
+        )
 
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.save()
@@ -922,7 +1029,8 @@ class ScenarioDetailTest(APITestCase):
                 kwargs={
                     "pk": self.scenario.pk,
                 },
-            ) + "?number_of_features=13",
+            )
+            + "?number_of_features=13",
             content_type="application/json",
         )
         data = response.json()
@@ -930,8 +1038,12 @@ class ScenarioDetailTest(APITestCase):
         self.assertEqual(len(data["scenario_result"]["result"]["features"]), 13)
         self.assertEqual(len(scenario_result.result["features"]), 20)
 
-    def test_detail_scenario_scenario_result_prioritize_sub_units__query_params_all(self):
-        scenario_result = ScenarioResultFactory(scenario=self.scenario, with_multiple_features=20)
+    def test_detail_scenario_scenario_result_prioritize_sub_units__query_params_all(
+        self,
+    ):
+        scenario_result = ScenarioResultFactory(
+            scenario=self.scenario, with_multiple_features=20
+        )
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         self.scenario.save()
 
@@ -942,16 +1054,19 @@ class ScenarioDetailTest(APITestCase):
                 kwargs={
                     "pk": self.scenario.pk,
                 },
-            ) + "?number_of_features=all",
+            )
+            + "?number_of_features=all",
             content_type="application/json",
         )
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(data["scenario_result"]["result"]["features"]), 20)
         self.assertEqual(len(scenario_result.result["features"]), 20)
-    
+
     def test_detail_scenario_scenario_result__query_params(self):
-        scenario_result = ScenarioResultFactory(scenario=self.scenario, with_multiple_features=20)
+        scenario_result = ScenarioResultFactory(
+            scenario=self.scenario, with_multiple_features=20
+        )
 
         self.client.force_authenticate(self.owner_user)
         response = self.client.get(
@@ -960,7 +1075,8 @@ class ScenarioDetailTest(APITestCase):
                 kwargs={
                     "pk": self.scenario.pk,
                 },
-            ) + "?number_of_features=13",
+            )
+            + "?number_of_features=13",
             content_type="application/json",
         )
         data = response.json()
@@ -969,7 +1085,9 @@ class ScenarioDetailTest(APITestCase):
         self.assertEqual(len(scenario_result.result["features"]), 20)
 
     def test_detail_scenario_scenario_result__query_params_all(self):
-        scenario_result = ScenarioResultFactory(scenario=self.scenario, with_multiple_features=20)
+        scenario_result = ScenarioResultFactory(
+            scenario=self.scenario, with_multiple_features=20
+        )
 
         self.client.force_authenticate(self.owner_user)
         response = self.client.get(
@@ -978,7 +1096,8 @@ class ScenarioDetailTest(APITestCase):
                 kwargs={
                     "pk": self.scenario.pk,
                 },
-            ) + "?number_of_features=all",
+            )
+            + "?number_of_features=all",
             content_type="application/json",
         )
         data = response.json()
@@ -1126,7 +1245,7 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.user = UserFactory()
         self.other_user = UserFactory()
 
-        self.planning_area = PlanningAreaFactory(user=self.user)
+        self.planning_area = PlanningAreaFactory(user=self.user, with_stands=True)
         self.treatment_goal = TreatmentGoalFactory()
 
         self.scenario = ScenarioFactory(
@@ -1161,7 +1280,10 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(config.get("targets").get("estimated_cost"), 12345)
 
     # Test sequential patches, ensure we retain values as expected
-    @mock.patch("planning.serializers.calculate_scenario_treatable_area", return_value=None)
+    @mock.patch(
+        "planning.serializers.calculate_scenario_treatable_area",
+        return_value=MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1)))),
+    )
     def test_patch_scenario_incremental_updates(self, treatable_area_mock):
         # create valid excluded_areas and included_areas with real PKs
         excluded_layers = DataLayerFactory.create_batch(
@@ -1253,6 +1375,7 @@ class PatchScenarioConfigurationTest(APITestCase):
         }
         payload5 = {
             "configuration": {
+                "stand_size": "LARGE",
                 "included_areas": included_ids,
                 "constraints": [constraint],
             }
@@ -1319,12 +1442,11 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(response8.data["treatment_goal"]["name"], new_goal.name)
 
     @mock.patch(
-        "planning.serializers.calculate_scenario_treatable_area", 
-        return_value=MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
+        "planning.serializers.calculate_scenario_treatable_area",
+        return_value=MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1)))),
     )
     def test_patch_scenario_with_includes_calculates_treatable_area(
-        self, 
-        calculate_scenario_treatable_area_mock
+        self, calculate_scenario_treatable_area_mock
     ):
         included_layers = DataLayerFactory.create_batch(
             2,
@@ -1348,7 +1470,130 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.scenario.refresh_from_db()
 
         self.assertIsNotNone(self.scenario.treatable_area)
-        calculate_scenario_treatable_area_mock.assert_called_once()
+        calculate_scenario_treatable_area_mock.assert_called()
+
+    @mock.patch(
+        "planning.serializers.calculate_scenario_treatable_area",
+        return_value=MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1)))),
+    )
+    def test_patch_scenario_with_includes_invalid_datalayer_ids(
+        self, calculate_scenario_treatable_area_mock
+    ):
+        included_layers = DataLayerFactory.create_batch(
+            2,
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        included_ids = [layer.pk + 100 for layer in included_layers]
+
+        payload = {
+            "configuration": {
+                "included_areas": included_ids,
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.scenario.refresh_from_db()
+        self.assertIsNone(self.scenario.treatable_area)
+        self.assertEqual(calculate_scenario_treatable_area_mock.call_count, 0)
+
+    @mock.patch(
+        "planning.serializers.calculate_scenario_treatable_area",
+        return_value=MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1)))),
+    )
+    def test_patch_scenario_with_includes_empty_list(
+        self, calculate_scenario_treatable_area_mock
+    ):
+
+        payload = {
+            "configuration": {
+                "included_areas": [],
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.assertIn(
+            b'{"configuration":{"included_areas":["Cannot set an empty list of included_areas."]}}',
+            response.content,
+        )
+
+        self.scenario.refresh_from_db()
+        self.assertIsNone(self.scenario.treatable_area)
+        self.assertEqual(calculate_scenario_treatable_area_mock.call_count, 0)
+
+    @mock.patch(
+        "planning.serializers.calculate_scenario_treatable_area", return_value=None
+    )
+    def test_patch_scenario_with_includes_no_area(
+        self, calculate_scenario_treatable_area_mock
+    ):
+        included_layers = DataLayerFactory.create_batch(
+            2,
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        included_ids = [layer.pk for layer in included_layers]
+
+        payload = {
+            "configuration": {
+                "included_areas": included_ids,
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.assertEqual(
+            response.json()["errors"]["configuration"]["global"][0],
+            "There are no stands with the selected ownership in your planning area.  "
+            "Please 'View' ownership options to see what area is available in your planning area.",
+        )
+
+        self.scenario.refresh_from_db()
+        self.assertIsNone(self.scenario.treatable_area)
+        calculate_scenario_treatable_area_mock.assert_called()
+
+    @mock.patch(
+        "planning.serializers.calculate_scenario_treatable_area",
+        return_value=MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1)))),
+    )
+    def test_patch_scenario_with_includes_no_stands(
+        self, calculate_scenario_treatable_area_mock
+    ):
+        included_layers = DataLayerFactory.create_batch(
+            2,
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        included_ids = [layer.pk for layer in included_layers]
+
+        payload = {
+            "configuration": {
+                "stand_size": "SMALL",  # no small stands in this test
+                "included_areas": included_ids,
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        self.assertEqual(
+            response.json()["errors"]["configuration"]["global"][0],
+            "There are no stands with the selected ownership in your planning area.  "
+            "Please 'View' ownership options to see what area is available in your planning area.",
+        )
+
+        self.scenario.refresh_from_db()
+        self.assertIsNone(self.scenario.treatable_area)
+        calculate_scenario_treatable_area_mock.assert_called()
 
     def test_patch_scenario_configuration_unauthenticated(self):
         payload = {"max_budget": 5000}
@@ -1433,7 +1678,9 @@ class PatchScenarioConfigurationTest(APITestCase):
             ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS.value,
         )
 
-    def test_patch_scenario_approach_clean_sub_units_layer_when_set_planning_approach(self):
+    def test_patch_scenario_approach_clean_sub_units_layer_when_set_planning_approach(
+        self,
+    ):
         scenario = ScenarioFactory(
             user=self.user,
             planning_area=self.planning_area,
@@ -1454,9 +1701,7 @@ class PatchScenarioConfigurationTest(APITestCase):
             response.data.get("planning_approach"),
             ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS.value,
         )
-        self.assertIsNone(
-            response.data.get("sub_units_layer")
-        )
+        self.assertIsNone(response.data.get("sub_units_layer"))
 
     def test_patch_sub_units(self):
         scenario = ScenarioFactory.create(
@@ -1506,17 +1751,26 @@ class PatchScenarioConfigurationTest(APITestCase):
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
         payload = {
             "configuration": {
-                "targets" :{"sub_units_fixed_target": True, "sub_units_target_value": 1234.5}
+                "targets": {
+                    "sub_units_fixed_target": True,
+                    "sub_units_target_value": 1234.5,
+                }
             }
         }
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(
-            response.data.get("configuration", {}).get("targets", {}).get("sub_units_target_value"),
+            response.data.get("configuration", {})
+            .get("targets", {})
+            .get("sub_units_target_value"),
             1234.5,
         )
-        self.assertTrue(response.data.get("configuration", {}).get("targets", {}).get("sub_units_fixed_target"))
+        self.assertTrue(
+            response.data.get("configuration", {})
+            .get("targets", {})
+            .get("sub_units_fixed_target")
+        )
 
     def test_patch_sub_units_relative_target(self):
         scenario = ScenarioFactory.create(
@@ -1530,17 +1784,26 @@ class PatchScenarioConfigurationTest(APITestCase):
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
         payload = {
             "configuration": {
-                "targets": {"sub_units_fixed_target": False, "sub_units_target_value": 91.5}
+                "targets": {
+                    "sub_units_fixed_target": False,
+                    "sub_units_target_value": 91.5,
+                }
             }
         }
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(
-            response.data.get("configuration", {}).get("targets", {}).get("sub_units_target_value"),
+            response.data.get("configuration", {})
+            .get("targets", {})
+            .get("sub_units_target_value"),
             91.5,
         )
-        self.assertFalse(response.data.get("configuration", {}).get("targets", {}).get("sub_units_fixed_target"))
+        self.assertFalse(
+            response.data.get("configuration", {})
+            .get("targets", {})
+            .get("sub_units_fixed_target")
+        )
 
     def test_patch_sub_units_target_value_lower_than_zero(self):
         scenario = ScenarioFactory.create(
@@ -1554,7 +1817,10 @@ class PatchScenarioConfigurationTest(APITestCase):
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
         payload = {
             "configuration": {
-                "targets": {"sub_units_fixed_target": True, "sub_units_target_value": -1}
+                "targets": {
+                    "sub_units_fixed_target": True,
+                    "sub_units_target_value": -1,
+                }
             }
         }
 
@@ -1574,14 +1840,16 @@ class PatchScenarioConfigurationTest(APITestCase):
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
         payload = {
             "configuration": {
-                "targets" : {"sub_units_fixed_target": False, "sub_units_target_value": 101}
+                "targets": {
+                    "sub_units_fixed_target": False,
+                    "sub_units_target_value": 101,
+                }
             }
         }
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
 
     def test_patch_sub_units_target_value_null_with_fixed_target(self):
         scenario = ScenarioFactory.create(
@@ -1593,11 +1861,7 @@ class PatchScenarioConfigurationTest(APITestCase):
         )
 
         url = reverse("api:planning:scenarios-patch-draft", args=[scenario.pk])
-        payload = {
-            "configuration": {
-                "targets": {"sub_units_fixed_target": True}
-            }
-        }
+        payload = {"configuration": {"targets": {"sub_units_fixed_target": True}}}
 
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
@@ -1630,6 +1894,83 @@ class PatchScenarioConfigurationTest(APITestCase):
         response = self.client.patch(url, payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotIn("FORSYS", response.data.get("capabilities", []))
+
+    def test_patch_draft_with_project_areas_parent(self):
+        parent = ScenarioFactory(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        payload = {
+            "parent": parent.pk,
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.scenario.refresh_from_db()
+        self.assertEqual(self.scenario.parent, parent)
+        self.assertEqual(
+            self.scenario.planning_approach,
+            ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+
+    def test_patch_draft_calculates_project_areas_from_parent_stands(self):
+        parent = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        parent_project_area = ProjectAreaFactory.create(
+            scenario=parent,
+            name="Project Area 1",
+            geometry=self.planning_area.geometry,
+            data={"treatment_rank": 1},
+        )
+        child = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            parent=parent,
+            configuration={},
+            treatment_goal=None,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+
+        self.assertEqual(child.project_areas.count(), 0)
+
+        url = reverse(
+            "api:planning:scenarios-patch-draft",
+            args=[child.pk],
+        )
+        payload = {
+            "configuration": {
+                "stand_size": "LARGE",
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        child.refresh_from_db()
+
+        self.assertEqual(child.project_areas.count(), 1)
+
+        child_project_area = child.project_areas.get()
+        expected_stands = parent_project_area.get_stands(stand_size="LARGE")
+        expected_geometry = expected_stands.aggregate(geometry=UnionOp("geometry"))[
+            "geometry"
+        ]
+
+        self.assertTrue(child_project_area.geometry.equals(expected_geometry))
+        self.assertEqual(
+            child_project_area.data["proj_id"],
+            parent_project_area.pk,
+        )
+        self.assertEqual(
+            child_project_area.data["stand_count"],
+            expected_stands.count(),
+        )
 
 
 class ScenarioCapabilitiesViewTest(APITestCase):
@@ -1738,7 +2079,16 @@ class ScenarioCapabilitiesViewTest(APITestCase):
 
         caps = resp.data.get("capabilities")
         self.assertIsInstance(caps, list)
-        self.assertSetEqual(set(caps), {"MAP", "FORSYS", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS", "FUNDING_REPORT"})
+        self.assertSetEqual(
+            set(caps),
+            {
+                "MAP",
+                "FORSYS",
+                "CLIMATE_FORESIGHT",
+                "PRIORITIZE_SUB_UNITS",
+                "FUNDING_REPORT",
+            },
+        )
 
     def test_capabilities_present_in_detail_inside_california(self):
         self.scenario2.capabilities = compute_scenario_capabilities(self.scenario2)
@@ -1752,7 +2102,15 @@ class ScenarioCapabilitiesViewTest(APITestCase):
         caps = resp.data.get("capabilities")
         self.assertIsInstance(caps, list)
         self.assertSetEqual(
-            set(caps), {"MAP", "FORSYS", "IMPACTS", "CLIMATE_FORESIGHT", "PRIORITIZE_SUB_UNITS", "FUNDING_REPORT"}
+            set(caps),
+            {
+                "MAP",
+                "FORSYS",
+                "IMPACTS",
+                "CLIMATE_FORESIGHT",
+                "PRIORITIZE_SUB_UNITS",
+                "FUNDING_REPORT",
+            },
         )
 
     def test_capabilities_present_in_detail_outside_future_climate(self):
@@ -1864,6 +2222,57 @@ class CreateScenarioForDraftsTest(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_create_with_project_areas_parent(self):
+        parent_planning_area = PlanningAreaFactory(user=self.user)
+        parent = ScenarioFactory(
+            user=self.user,
+            planning_area=parent_planning_area,
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        payload = {
+            "name": "project areas child scenario",
+            "planning_area": self.planning_area.pk,
+            "type": ScenarioType.PRESET,
+            "parent": parent.pk,
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-create-draft"),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        child = Scenario.objects.get(pk=response.data["id"])
+        self.assertEqual(child.parent, parent)
+        self.assertEqual(child.planning_area, parent_planning_area)
+        self.assertEqual(
+            child.planning_approach,
+            ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+
+    def test_create_rejects_non_project_areas_parent(self):
+        parent = ScenarioFactory(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.PRESET,
+        )
+        payload = {
+            "name": "invalid child scenario",
+            "planning_area": self.planning_area.pk,
+            "type": ScenarioType.PRESET,
+            "parent": parent.pk,
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-create-draft"),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(
+            Scenario.objects.filter(name="invalid child scenario").exists()
+        )
+
 
 class ScenarioCapabilitiesSerializerTest(TestCase):
     def test_v2_serializer_includes_capabilities(self):
@@ -1904,7 +2313,7 @@ class RunScenarioEndpointTest(APITestCase):
             mock.patch(
                 "planning.views_v2.validate_scenario_configuration", return_value=[]
             ) as validate_mock,  # noqa: F841
-            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,  # noqa
+            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,
         ):
             response = self.client.post(self.url, format="json")
 
@@ -1924,7 +2333,7 @@ class RunScenarioEndpointTest(APITestCase):
                 "planning.views_v2.validate_scenario_configuration",
                 return_value=["Provide either `max_budget` or `max_area`."],
             ) as validate_mock,  # noqa: F841
-            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,  # noqa
+            mock.patch("planning.views_v2.trigger_scenario_run") as trigger_mock,
         ):
             response = self.client.post(self.url, format="json")
 
@@ -2071,7 +2480,7 @@ class DeleteScenarioTest(APITestCase):
 
         response = self.client.delete(url)
 
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 403)
 
     def test_delete_collab_scenario_as_viewer(self):
         url = reverse("api:planning:scenarios-detail", args=[self.collab_scenario.pk])
@@ -2087,7 +2496,9 @@ class SubUnitsDetailsTest(APITestCase):
         self.user = UserFactory.create()
         self.other_user = UserFactory.create()
         self.planning_area = PlanningAreaFactory.create(user=self.user)
-        self.scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning_area, user=self.user
+        )
         self.sub_units_layer = DataLayerFactory.create(
             type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
         )
@@ -2100,7 +2511,9 @@ class SubUnitsDetailsTest(APITestCase):
         return_value={"avg": 1, "max": 2, "min": 0},
     )
     def test_get_sub_units_details(self, mock):
-        url = reverse("api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk])
+        url = reverse(
+            "api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk]
+        )
         self.client.force_authenticate(self.user)
 
         response = self.client.get(url)
@@ -2111,7 +2524,9 @@ class SubUnitsDetailsTest(APITestCase):
         self.scenario.configuration = {}
         self.scenario.save()
 
-        url = reverse("api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk])
+        url = reverse(
+            "api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk]
+        )
         self.client.force_authenticate(self.user)
 
         response = self.client.get(url)
@@ -2123,7 +2538,9 @@ class SubUnitsDetailsTest(APITestCase):
         return_value=None,
     )
     def test_get_sub_units_details__no_result(self, mock):
-        url = reverse("api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk])
+        url = reverse(
+            "api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk]
+        )
         self.client.force_authenticate(self.user)
 
         response = self.client.get(url)
@@ -2134,11 +2551,15 @@ class SubUnitsDetailsTest(APITestCase):
         "planning.views_v2.get_sub_units_details",
         return_value={"avg": 1, "max": 2, "min": 0, "sum": 10, "targeted_value": None},
     )
-    def test_get_sub_units_details__query_param_overrides_scenario_config(self, mock_service):
+    def test_get_sub_units_details__query_param_overrides_scenario_config(
+        self, mock_service
+    ):
         override_layer = DataLayerFactory.create(
             type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
         )
-        url = reverse("api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk])
+        url = reverse(
+            "api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk]
+        )
         self.client.force_authenticate(self.user)
 
         response = self.client.get(url, {"sub_units_layer": override_layer.pk})
@@ -2151,20 +2572,26 @@ class SubUnitsDetailsTest(APITestCase):
         "planning.views_v2.get_sub_units_details",
         return_value={"avg": 1, "max": 2, "min": 0, "sum": 10, "targeted_value": None},
     )
-    def test_get_sub_units_details__query_param_works_without_scenario_config(self, mock_service):
+    def test_get_sub_units_details__query_param_works_without_scenario_config(
+        self, mock_service
+    ):
         self.scenario.configuration = {}
         self.scenario.save()
 
         override_layer = DataLayerFactory.create(
             type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
         )
-        url = reverse("api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk])
+        url = reverse(
+            "api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk]
+        )
         self.client.force_authenticate(self.user)
 
         response = self.client.get(url, {"sub_units_layer": override_layer.pk})
 
         self.assertEqual(response.status_code, 200)
-        mock_service.assert_called_once_with(self.scenario, self.scenario.get_stand_size(), override_layer, None, None)
+        mock_service.assert_called_once_with(
+            self.scenario, self.scenario.get_stand_size(), override_layer, None, None
+        )
 
     @mock.patch(
         "planning.views_v2.get_sub_units_details",
@@ -2177,18 +2604,21 @@ class SubUnitsDetailsTest(APITestCase):
         override_layer = DataLayerFactory.create(
             type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
         )
-        url = reverse("api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk])
+        url = reverse(
+            "api:planning:scenarios-get-sub-units-details", args=[self.scenario.pk]
+        )
         self.client.force_authenticate(self.user)
 
         response = self.client.get(
-            url, 
+            url,
             {
                 "sub_units_layer": override_layer.pk,
                 "sub_units_fixed_target": False,
                 "sub_units_target_value": 80,
-            }
+            },
         )
 
         self.assertEqual(response.status_code, 200)
-        mock_service.assert_called_once_with(self.scenario, self.scenario.get_stand_size(), override_layer, False, 80)
-
+        mock_service.assert_called_once_with(
+            self.scenario, self.scenario.get_stand_size(), override_layer, False, 80
+        )
