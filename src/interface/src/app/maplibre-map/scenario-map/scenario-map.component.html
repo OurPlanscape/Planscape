@@ -66,6 +66,16 @@
   <ng-container *ngIf="showScenarioStands$ | async">
 
     <ng-container>
+      <app-map-project-areas
+      *ngIf="projectAreaCount$ | async as projectAreasCount"
+      [projectAreasCount]="projectAreasCount"
+      [showHoveredProjectAreas]="false"
+      [mapLibreMap]="mapLibreMap"
+      [labelField]="'rank'"
+      [planningApproach]="
+        (planningApproach$ | async) || 'OPTIMIZE_PROJECT_AREAS'
+      ">
+    </app-map-project-areas>
       <app-project-area-stands
         *ngIf="mapLibreMap"
         [mapLibreMap]="mapLibreMap"></app-project-area-stands>

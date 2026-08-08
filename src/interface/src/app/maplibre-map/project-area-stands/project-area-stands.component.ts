@@ -57,9 +57,7 @@ export class ProjectAreaStandsComponent
     map(
       () =>
         MARTIN_SOURCES.standsByProjectAreas.tilesUrl +
-        // `?scenario_id=${this.scenarioId}`
-         `?scenario_id=5074` // TODO: remove this hardcoded test
-
+         `?scenario_id=${this.scenarioId}`
     ),
     distinctUntilChanged(),
     // when the stand size changes, set as loading
