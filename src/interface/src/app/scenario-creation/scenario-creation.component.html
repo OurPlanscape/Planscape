@@ -45,7 +45,7 @@
           <app-step1-with-overview
             [isChildScenario]="hasParent"></app-step1-with-overview>
         </sg-step>
-        <sg-step *ngIf="subUnitsPrioritized && hasParent === false">
+        <sg-step *ngIf="subUnitsPrioritized">
           <app-sub-unit-selector></app-sub-unit-selector>
         </sg-step>
         <sg-step>

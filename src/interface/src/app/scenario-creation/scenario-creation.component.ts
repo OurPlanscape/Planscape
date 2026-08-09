@@ -442,14 +442,14 @@ export class ScenarioCreationComponent implements OnInit {
       : this.scenarioSteps;
 
     this.steps =
-      this.subUnitsPrioritized && !this.hasParent
+      this.subUnitsPrioritized
         ? [SUB_UNITS_STEP, ...baseSteps]
         : baseSteps;
   }
 
   get subUnitsPrioritized() {
-    return (
-      this.config.planning_approach &&
+    return ( 
+      this.config.planning_approach && !this.hasParent &&
       isPlanningApproachSubUnits(this.config.planning_approach)
     );
   }
