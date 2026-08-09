@@ -93,6 +93,7 @@ from planning.serializers import (
     UpsertScenarioV3Serializer,
 )
 from planning.services import (
+    calculate_child_project_areas,
     create_config,
     create_planning_area,
     create_scenario,
@@ -464,6 +465,10 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                     ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
                 )
         configuration_data = serializer.validated_data.get("configuration")
+        should_calculate_child_project_areas = (
+            "parent" in serializer.validated_data
+            or (configuration_data is not None and "stand_size" in configuration_data)
+        )
         if configuration_data:
             existing = instance.configuration or {}
             incoming_config = create_config(
@@ -484,6 +489,8 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             serializer.validated_data["configuration"] = updated_config
         self.perform_update(serializer)
         instance.refresh_from_db()
+        if should_calculate_child_project_areas:
+            calculate_child_project_areas(instance)
         instance.capabilities = compute_scenario_capabilities(instance)
         instance.save(update_fields=["capabilities"])
         response_serializer = ScenarioV3Serializer(instance)
