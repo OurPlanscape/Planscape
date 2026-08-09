@@ -9,7 +9,10 @@ import html2canvas from 'html2canvas';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { addRequestHeaders } from '@app/maplibre-map/maplibre.helper';
 import { AuthService, ScenarioService } from '@app/services';
-import { FundingMapConfigState } from './funding-map-config-state';
+import {
+  FundingMapConfigState,
+  MapViewSnapshot,
+} from './funding-map-config-state';
 import {
   FundingAcreageLegendComponent,
   FundingLegendData,
@@ -51,12 +54,15 @@ export class FundingReportToPdfService {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const { MARGIN_MM, PAGE_WIDTH_MM, VERTICAL_GAP } =
       FundingReportToPdfService;
-    const map = this.fundingMapConfigState.getMapRef();
+    const mapSnapshot = this.fundingMapConfigState.getViewSnapshot();
     const scenarioId = fundingReport.scenario;
     const mapWidth = PAGE_WIDTH_MM - MARGIN_MM * 2;
     const mapHeight = mapWidth * 0.666;
 
-    // TODO: async service call...can we get this somewhere else?
+    // TODO: this probably deserves to live in something like a shared Report state,
+    // either expanding the scope of FundingMapConfigState beyond just Map stuff
+    // or maybe a separate class?
+    /// But if we go down that road, lots of other stuff might rightly live there, too
     const allAvailableProjectAreas = await firstValueFrom(
       this.scenarioService.getProjectAreas(scenarioId)
     );
@@ -83,10 +89,10 @@ export class FundingReportToPdfService {
     currentY = 20;
 
     // Map Section
-    if (map) {
+    if (mapSnapshot) {
       await this.addMapToPdf(
         pdf,
-        map,
+        mapSnapshot,
         MARGIN_MM,
         currentY,
         mapWidth,
@@ -146,13 +152,13 @@ export class FundingReportToPdfService {
 
   private async addMapToPdf(
     pdf: jsPDF,
-    activeMap: MapLibreMap,
+    mapSnapshot: MapViewSnapshot,
     x: number,
     y: number,
     width: number,
     height: number
   ): Promise<void> {
-    const printMap = await this.copyActiveMap(activeMap);
+    const printMap = await this.copyMapSnapshot(mapSnapshot);
     const imgData = printMap.getCanvas()?.toDataURL('image/png');
 
     if (imgData) {
@@ -262,30 +268,20 @@ export class FundingReportToPdfService {
     document.body.classList.remove('is-generating-pdf');
   }
 
-  private async copyActiveMap(activeMap: MapLibreMap): Promise<MapLibreMap> {
+  private async copyMapSnapshot(
+    snapshot: MapViewSnapshot
+  ): Promise<MapLibreMap> {
     const mapContainer = document.createElement('div');
-    mapContainer.id = 'printable-map';
-    Object.assign(mapContainer.style, {
-      position: 'absolute',
-      width: '1000px',
-      height: '700px',
-      left: '-9000px',
-      top: '-100px',
-    });
-    document.body.appendChild(mapContainer);
 
     const printMap = new MapLibreMap({
       container: mapContainer,
       preserveDrawingBuffer: true,
-      style: activeMap.getStyle(),
-      center: activeMap.getBounds().getCenter(),
-      zoom: activeMap.getZoom(),
-      fitBoundsOptions: {
-        padding: { top: 70, bottom: 40, left: 20, right: 20 },
-      },
-      bearing: activeMap.getBearing(),
-      pitch: activeMap.getPitch(),
-      bounds: activeMap.getBounds(),
+      style: snapshot.style,
+      center: snapshot.center,
+      zoom: snapshot.zoom,
+      bearing: snapshot.bearing,
+      pitch: snapshot.pitch,
+      bounds: snapshot.bounds,
       transformRequest: (url, resourceType) =>
         addRequestHeaders(url, resourceType, this.authService.getAuthCookie()),
     });

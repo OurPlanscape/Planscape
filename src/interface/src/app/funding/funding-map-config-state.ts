@@ -1,7 +1,22 @@
 import { Injectable } from '@angular/core';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { BehaviorSubject } from 'rxjs';
-import { Map as MapLibreMap } from 'maplibre-gl';
+import {
+  LngLat,
+  LngLatBounds,
+  Map as MapLibreMap,
+  StyleSpecification,
+} from 'maplibre-gl';
+
+export interface MapViewSnapshot {
+  style: StyleSpecification;
+  center: LngLat;
+  zoom: number;
+  bearing: number;
+  pitch: number;
+  bounds: LngLatBounds;
+}
+
 @Injectable()
 export class FundingMapConfigState extends MapConfigState {
   private _selectedProjectAreas$ = new BehaviorSubject<number[]>([]);
@@ -15,14 +30,23 @@ export class FundingMapConfigState extends MapConfigState {
 
   //TODO: just a PoC
   private _mapRef$ = new BehaviorSubject<MapLibreMap | null>(null);
-  public mapRef$ = this._mapRef$.asObservable();
 
   setMapRef(mapRef: MapLibreMap) {
     this._mapRef$.next(mapRef);
   }
 
-  getMapRef() {
-    return this._mapRef$.value;
+  getViewSnapshot(): MapViewSnapshot | null {
+    const map = this._mapRef$.value;
+    if (!map) return null;
+
+    return {
+      style: map.getStyle(),
+      center: map.getBounds().getCenter(),
+      zoom: map.getZoom(),
+      bearing: map.getBearing(),
+      pitch: map.getPitch(),
+      bounds: map.getBounds(),
+    };
   }
 
   setMapLoaded(loaded: boolean) {
