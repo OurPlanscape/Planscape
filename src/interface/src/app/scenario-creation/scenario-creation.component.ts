@@ -197,16 +197,6 @@ export class ScenarioCreationComponent implements OnInit {
 
   hasParent = false;
 
-  hasParent$ = this.scenarioState.currentScenario$.pipe(
-    map((scenario) => {
-      if (scenario.parent) {
-        //TODO: just a PoC
-        this.hasParent = true;
-      }
-      return scenario.parent !== null;
-    })
-  );
-
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
     if (!this.newScenarioState.isDraftFinishedSnapshot()) {
@@ -258,6 +248,7 @@ export class ScenarioCreationComponent implements OnInit {
         let scenarioBackUrl = getPlanPath(this.planId);
         // for child scenarios, we want to go to the parent dashboard, instead
         if (scenario.parent) {
+          this.hasParent = true;
           scenarioBackUrl += `/scenario/${scenario.parent}/dashboard`;
         }
 
@@ -449,8 +440,9 @@ export class ScenarioCreationComponent implements OnInit {
     const baseSteps = isCustomScenario(this.config.type!)
       ? this.customSteps
       : this.scenarioSteps;
+
     this.steps =
-      this.subUnitsPrioritized && this.hasParent === false
+      this.subUnitsPrioritized && !this.hasParent
         ? [SUB_UNITS_STEP, ...baseSteps]
         : baseSteps;
   }
