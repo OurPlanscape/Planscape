@@ -7,6 +7,7 @@ export const environment = {
   google_analytics_id: '',
   download_endpoint: '',
   martin_server: 'https://dev.planscape.org/tiles/',
+  feature_flags: '',
   mapbox_key: '',
   open_panel_key: '',
   open_panel_enabled: false,
