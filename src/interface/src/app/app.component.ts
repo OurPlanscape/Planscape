@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { take } from 'rxjs';
 import { AuthService } from '@services';
 import { OverlayLoaderService } from '@services/overlay-loader.service';
@@ -7,6 +7,7 @@ import { environment } from '@env/environment';
 import { ForsysService } from '@services/forsys.service';
 import { MapModuleService } from '@services/map-module.service';
 import { ProductAnalyticsService } from '@services/product-analytics.service';
+import { FEATURES_JSON } from '@features/features-config';
 
 @Component({
   selector: 'app-root',
@@ -34,7 +35,10 @@ export class AppComponent implements OnInit {
     this.sidebarOpen = !this.sidebarOpen;
   }
 
+  private flags = inject(FEATURES_JSON);
+
   ngOnInit(): void {
+    console.log(this.flags);
     // load initial forsys data
     this.forsysService.loadForsysData();
     // load map data

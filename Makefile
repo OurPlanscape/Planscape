@@ -218,55 +218,46 @@ cloud-run-build-deploy: cloud-run-build cloud-run-push cloud-run-deploy
 cloud-run-docker-tag:
 	echo "$(DOCKER_TAG)"
 
-cloud-run-build-frontend:
-	$(MAKE) cloud-run-build APP_NAME=planscape-frontend DOCKERFILE=Dockerfile.frontend DOCKER_REPO=planscape-planscape-frontend
-
-cloud-run-build-frontend-job:
-	$(MAKE) cloud-run-build APP_NAME=planscape-frontend-builder DOCKERFILE=Dockerfile.frontend-job DOCKER_REPO=planscape-planscape-frontend-builder
 
 cloud-run-build-gateway:
 	$(MAKE) cloud-run-build APP_NAME=planscape-gateway DOCKERFILE=Dockerfile.gateway DOCKER_REPO=planscape-planscape-gateway
 
-cloud-run-push-frontend:
-	$(MAKE) cloud-run-push APP_NAME=planscape-frontend DOCKERFILE=Dockerfile.frontend DOCKER_REPO=planscape-planscape-frontend
-
-cloud-run-push-frontend-job:
-	$(MAKE) cloud-run-push APP_NAME=planscape-frontend-builder DOCKERFILE=Dockerfile.frontend-job DOCKER_REPO=planscape-planscape-frontend-builder
-
 cloud-run-push-gateway:
 	$(MAKE) cloud-run-push APP_NAME=planscape-gateway DOCKERFILE=Dockerfile.gateway DOCKER_REPO=planscape-planscape-gateway
-
-cloud-run-deploy-frontend:
-	$(MAKE) cloud-run-deploy APP_NAME=planscape-frontend DOCKERFILE=Dockerfile.frontend DOCKER_REPO=planscape-planscape-frontend
 
 cloud-run-deploy-gateway:
 	$(MAKE) cloud-run-deploy APP_NAME=planscape-gateway DOCKERFILE=Dockerfile.gateway DOCKER_REPO=planscape-planscape-gateway
 
-cloud-run-docker-tag-frontend:
-	$(MAKE) cloud-run-docker-tag APP_NAME=planscape-frontend DOCKER_REPO=planscape-planscape-frontend
+cloud-run-docker-tag-gateway:
+	$(MAKE) cloud-run-docker-tag APP_NAME=planscape-gateway DOCKER_REPO=planscape-planscape-gateway
+
+
+cloud-run-deploy-frontend:
+	gcloud run jobs execute planscape-frontend-build-$(ENV) --region $(REGION)
+
+# Front-end build and deploy docker image
+cloud-run-build-frontend-job:
+	$(MAKE) cloud-run-build APP_NAME=planscape-frontend-builder DOCKERFILE=Dockerfile.frontend-job DOCKER_REPO=planscape-planscape-frontend-builder
+
+cloud-run-push-frontend-job:
+	$(MAKE) cloud-run-push APP_NAME=planscape-frontend-builder DOCKERFILE=Dockerfile.frontend-job DOCKER_REPO=planscape-planscape-frontend-builder
 
 cloud-run-docker-tag-frontend-job:
 	$(MAKE) cloud-run-docker-tag APP_NAME=planscape-frontend-builder DOCKER_REPO=planscape-planscape-frontend-builder
 
-cloud-run-docker-tag-gateway:
-	$(MAKE) cloud-run-docker-tag APP_NAME=planscape-gateway DOCKER_REPO=planscape-planscape-gateway
-
-cloud-run-execute-frontend-job:
-	gcloud run jobs execute planscape-frontend-build-$(ENV) --region $(REGION)
 
 cloud-run-build-all:
 	$(MAKE) cloud-run-build
-	$(MAKE) cloud-run-build-frontend-job
 	$(MAKE) cloud-run-build-gateway
 
 cloud-run-push-all:
 	$(MAKE) cloud-run-push
-	$(MAKE) cloud-run-push-frontend-job
 	$(MAKE) cloud-run-push-gateway
 
 cloud-run-deploy-all:
 	$(MAKE) cloud-run-deploy
 	$(MAKE) cloud-run-deploy-gateway
+	$(MAKE) cloud-run-deploy-frontend
 
 cloud-run-build-deploy-all:
 	$(MAKE) cloud-run-build-all
