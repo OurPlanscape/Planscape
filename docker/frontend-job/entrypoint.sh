@@ -91,5 +91,5 @@ fi
 destination="${destination%/}"
 
 gsutil -m rsync -r -d dist/out "$destination"
-gsutil -m setmeta -h "Cache-Control:public, max-age=31536000, immutable" "${destination}/**"
+gsutil -m setmeta -h "Cache-Control:public, max-age=604800" "${destination}/**"
 gsutil setmeta -h "Cache-Control:no-store, must-revalidate" "${destination}/index.html"
