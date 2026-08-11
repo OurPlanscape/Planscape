@@ -2684,3 +2684,56 @@ class SubUnitsDetailsTest(APITestCase):
         mock_service.assert_called_once_with(
             self.scenario, self.scenario.get_stand_size(), override_layer, False, 80
         )
+
+    @mock.patch(
+        "planning.views_v2.get_sub_units_details",
+        return_value={
+            "avg": 100,
+            "max": 200,
+            "min": 50,
+            "sum": 350,
+            "targeted_area": None,
+        },
+    )
+    def test_get_sub_units_details__project_areas_child_without_sub_units_layer(
+        self, mock_service
+    ):
+        parent = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.user,
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        child = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.user,
+            parent=parent,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+            configuration={"stand_size": "LARGE"},
+        )
+
+        url = reverse(
+            "api:planning:scenarios-get-sub-units-details",
+            args=[child.pk],
+        )
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {
+                "avg": 100,
+                "max": 200,
+                "min": 50,
+                "sum": 350,
+                "targeted_area": None,
+            },
+        )
+        mock_service.assert_called_once_with(
+            child,
+            child.get_stand_size(),
+            None,
+            None,
+            None,
+        )
