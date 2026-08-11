@@ -661,7 +661,15 @@ def calculate_child_project_areas(scenario: Scenario) -> list[ProjectArea]:
         if stand_count == 0:
             continue
 
-        geometry = stands.aggregate(geometry=UnionOp("geometry"))["geometry"]
+        geometry = parent_project_area.geometry
+
+        if scenario.treatable_area:
+            geometry = geometry.intersection(scenario.treatable_area)
+
+        if geometry.empty:
+            continue
+
+        geometry = to_multipolygon(geometry)
 
         if not geometry:
             continue

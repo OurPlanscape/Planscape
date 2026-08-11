@@ -4,7 +4,6 @@ from unittest import mock
 
 from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
-from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.test import TestCase
 from django.urls import reverse
@@ -1951,10 +1950,9 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(child.project_areas.count(), 1)
         child_project_area = child.project_areas.get()
         expected_stands = parent_project_area.get_stands(stand_size="LARGE")
-        expected_geometry = expected_stands.aggregate(geometry=UnionOp("geometry"))[
-            "geometry"
-        ]
-        self.assertTrue(child_project_area.geometry.equals(expected_geometry))
+        self.assertTrue(
+            child_project_area.geometry.equals(parent_project_area.geometry)
+        )
         self.assertEqual(
             child_project_area.data["proj_id"],
             parent_project_area.pk,
@@ -2026,8 +2024,21 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         child.refresh_from_db()
         child_project_area.refresh_from_db()
+        expected_geometry = parent_project_area.geometry.intersection(included_geometry)
+
+        if expected_geometry.geom_type == "Polygon":
+            expected_geometry = MultiPolygon(
+                expected_geometry,
+                srid=expected_geometry.srid,
+            )
+
         self.assertTrue(child.treatable_area.equals(included_geometry))
-        self.assertTrue(child_project_area.geometry.equals(included_geometry))
+        self.assertTrue(child_project_area.geometry.equals(expected_geometry))
+        self.assertEqual(child_project_area.data["stand_count"], 1)
+        self.assertLess(
+            child_project_area.data["stand_count"],
+            original_stand_count,
+        )
         self.assertEqual(child_project_area.data["stand_count"], 1)
         self.assertLess(
             child_project_area.data["stand_count"],
