@@ -655,7 +655,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
       // note: we render the map directly using a maplibremap reference
       await this.pdfService.exportPDFReport(
         this.scrollContainer.nativeElement,
-        this.report.scenario, // scenario Id
+        this.report,
         this.projectAreas
       );
     } catch (error) {

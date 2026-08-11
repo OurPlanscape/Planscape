@@ -7,9 +7,6 @@
   pointer-events: all;
   font-family: 'Public Sans';
 
-  /* ======================================================
-     1. BASE STYLES (For normal map / web application view)
-     ====================================================== */
   .treatment-acres-legend {
     border-radius: 4px;
     border: 1px solid #000;
@@ -160,9 +157,7 @@
     flex-shrink: 0;
   }
 
-  /* ======================================================
-     2. PDF PRINT OVERRIDES (Applies ONLY when .pdf-version is added)
-     ====================================================== */
+  /* Overrides for the PDF version */
   &.pdf-version {
     display: block !important;
     min-width: 360px !important;
