@@ -47,7 +47,7 @@
     [layout]="{ visibility: 'none' }">
   </mgl-layer>
 
-  <ng-container *ngIf="showProjectAreas$ | async">
+  <!-- <ng-container *ngIf="showProjectAreas$ | async">
     <app-map-project-areas
       *ngIf="projectAreaCount$ | async as projectAreasCount"
       [projectAreasCount]="projectAreasCount"
@@ -61,10 +61,26 @@
   </ng-container>
   <mgl-control position="bottom-left">
     <app-data-layer-name [showClearButton]="true"></app-data-layer-name>
-  </mgl-control>
+  </mgl-control> -->
 
   <ng-container *ngIf="showScenarioStands$ | async">
-    <!-- Stands with Includes -->
+
+    <ng-container>
+      <app-map-project-areas
+      [showHoveredProjectAreas]="false"
+      [mapLibreMap]="mapLibreMap"
+      [labelField]="'rank'"
+      [planningApproach]="
+        (planningApproach$ | async) || 'OPTIMIZE_PROJECT_AREAS'
+      ">
+    </app-map-project-areas>
+      <app-project-area-stands
+        *ngIf="mapLibreMap"
+        [mapLibreMap]="mapLibreMap"></app-project-area-stands>
+    </ng-container>
+
+
+    <!-- Stands with Includes
     <ng-container
       *ngIf="(showStandsWithIncludes$ | async) === true; else planningStands">
       <app-scenario-stands
@@ -72,11 +88,11 @@
         [mapLibreMap]="mapLibreMap"></app-scenario-stands>
     </ng-container>
     <!-- Stands without Includes -->
-    <ng-template #planningStands>
+    <!-- <ng-template #planningStands>
       <app-planning-area-stands
         *ngIf="mapLibreMap"
         [mapLibreMap]="mapLibreMap"></app-planning-area-stands>
-    </ng-template>
+    </ng-template> -->
   </ng-container>
 
   <mgl-control position="top-left">

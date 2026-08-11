@@ -1,0 +1,231 @@
+import {
+  AfterViewInit,
+  Component,
+  Input,
+  NgZone,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import { BASE_COLORS } from '@treatments/map.styles';
+import { AsyncPipe, NgIf } from '@angular/common';
+import {
+  LayerComponent,
+  VectorSourceComponent,
+} from '@maplibre/ngx-maplibre-gl';
+import { ActivatedRoute } from '@angular/router';
+import { MARTIN_SOURCES } from '@treatments/map.sources';
+import {
+  animationFrameScheduler,
+  auditTime,
+  combineLatest,
+  concat,
+  map,
+  Observable,
+  observeOn,
+  of,
+  tap,
+} from 'rxjs';
+import { distinctUntilChanged, filter } from 'rxjs/operators';
+import { FilterSpecification, Map as MapLibreMap } from 'maplibre-gl';
+import { NewScenarioState } from '@scenario-creation/new-scenario.state';
+import { MapConfigState } from '../map-config.state';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { FrontendConstants } from '@map/map.constants';
+
+@UntilDestroy()
+@Component({
+  selector: 'app-project-area-stands',
+  standalone: true,
+  imports: [AsyncPipe, LayerComponent, NgIf, VectorSourceComponent],
+  templateUrl: './project-area-stands.component.html',
+  styleUrl: './project-area-stands.component.scss'
+})
+export class ProjectAreaStandsComponent
+
+  implements OnInit, AfterViewInit, OnDestroy {
+  @Input() mapLibreMap!: MapLibreMap;
+  readonly sourceName = MARTIN_SOURCES.standsByProjectAreas.sources.stands;
+  readonly excludedKey = 'excluded';
+  readonly constrainedKey = 'constrained';
+  readonly planId = this.route.snapshot.data['planId'];
+  readonly scenarioId = this.route.snapshot.data['scenarioId'];
+
+  private standsLoaded = false;
+
+  tilesUrl$ = this.newScenarioState.scenarioConfig$.pipe(
+    // filter((config) => !!config.stand_size),
+    map(
+      () =>
+        MARTIN_SOURCES.standsByProjectAreas.tilesUrl +
+         `?scenario_id=${this.scenarioId}`
+    ),
+    distinctUntilChanged(),
+    // when the stand size changes, set as loading
+    tap(() => {
+      this.newScenarioState.setLoading(true);
+      this.standsLoaded = false;
+    })
+  );
+
+  opacity$ = this.mapConfigState.opacity$;
+
+  // local copies to reset feature state
+  private excludedStands: number[] = [];
+  private constrainedStands: number[] = [];
+
+  constructor(
+    private route: ActivatedRoute,
+    private newScenarioState: NewScenarioState,
+    private zone: NgZone,
+    private mapConfigState: MapConfigState
+  ) { }
+
+  filteredStands$: Observable<FilterSpecification | undefined> = combineLatest([
+    this.newScenarioState.currentStep$,
+    this.newScenarioState.excludedStands$,
+  ]).pipe(
+    map(([step, excluded]): FilterSpecification | undefined =>
+      // if we are showing both excluded and constraints, filter out the excluded stands on the map.
+      step?.includeExcludedAreas && step?.includeConstraints && excluded.length
+        ? ['!', ['in', ['get', 'id'], ['literal', excluded]]]
+        : undefined
+    )
+  );
+
+  // using this concat so we can keep things inside angular lifecycle without adding zone.runs or detectChanges
+  standPaint$ = concat(
+    of(FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY), // <-- emit immediately so the layer renders
+    this.opacity$.pipe(
+      // use  animationFrameScheduler (similar to requestAnimationFrame)
+      observeOn(animationFrameScheduler),
+      // collapse multiple slider events to one per frame
+      auditTime(0)
+    )
+  ).pipe(
+    map((opacity) => {
+      return {
+        'fill-color': [
+          'case',
+          ['==', ['feature-state', this.excludedKey], true],
+          BASE_COLORS.dark_gray,
+          ['==', ['feature-state', this.constrainedKey], true],
+          BASE_COLORS.light_gray,
+          BASE_COLORS.dark_magenta, // otherwise
+        ],
+        'fill-opacity-transition': { duration: 0 },
+
+        'fill-outline-color': [
+          'case',
+          ['==', ['feature-state', this.excludedKey], true],
+          BASE_COLORS.dark_gray,
+          ['==', ['feature-state', this.constrainedKey], true],
+          BASE_COLORS.light_gray,
+          BASE_COLORS.darker_magenta, // otherwise
+        ],
+        'fill-opacity': opacity,
+      } as any;
+    })
+  );
+
+  ngOnInit(): void {
+    this.mapLibreMap.on('sourcedata', this.onDataListener);
+    this.mapLibreMap.on('styledata', this.onStyleDataListener);
+
+    // clear constrained stands when navigating to a step that doesn't include constraints (or pre-step).
+    this.newScenarioState.currentStep$
+      .pipe(
+        untilDestroyed(this),
+        filter((step) => step === null || !step.includeConstraints)
+      )
+      .subscribe(() => {
+        this.constrainedStands.forEach((id) =>
+          this.removeFeatureState(id, this.constrainedKey)
+        );
+      });
+
+    this.newScenarioState.doesNotMeetConstraintsStands$
+      .pipe(untilDestroyed(this))
+      .subscribe((ids) => {
+        this.paintConstrainedStands(ids);
+      });
+
+    this.newScenarioState.excludedStands$
+      .pipe(untilDestroyed(this))
+      .subscribe((ids) => {
+        this.paintExcludedStands(ids);
+      });
+  }
+
+  ngAfterViewInit(): void {
+    // If tiles are already loaded (cached from a previous mount), sourcedata won't re-fire.
+    // Check here — after mgl-vector-source has initialized — to avoid leaving loading stuck.
+    if (
+      !this.standsLoaded &&
+      this.mapLibreMap.isSourceLoaded(this.sourceName)
+    ) {
+      this.newScenarioState.setBaseStandsLoaded(true);
+      this.standsLoaded = true;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.mapLibreMap.off('sourcedata', this.onDataListener);
+    this.mapLibreMap.off('styledata', this.onStyleDataListener);
+  }
+
+  private paintStands(ids: number[], key: string, current: number[]): number[] {
+    current.forEach((id) => this.removeFeatureState(id, key));
+    ids.forEach((id) => this.setFeatureState(id, key));
+    return ids;
+  }
+
+  private paintExcludedStands(ids: number[]) {
+    this.excludedStands = this.paintStands(
+      ids,
+      this.excludedKey,
+      this.excludedStands
+    );
+  }
+
+  private paintConstrainedStands(ids: number[]) {
+    this.constrainedStands = this.paintStands(
+      ids,
+      this.constrainedKey,
+      this.constrainedStands
+    );
+  }
+
+  private onStyleDataListener = () => {
+    this.paintExcludedStands(this.excludedStands);
+    this.paintConstrainedStands(this.constrainedStands);
+  };
+
+  private onDataListener = (event: any) => {
+    if (
+      event.sourceId === this.sourceName &&
+      event.isSourceLoaded &&
+      event.type === 'sourcedata' &&
+      !event.sourceDataType &&
+      !this.standsLoaded
+    ) {
+      this.zone.run(() => {
+        this.newScenarioState.setBaseStandsLoaded(true);
+        this.standsLoaded = true;
+      });
+    }
+  };
+
+  private setFeatureState(id: number, key: string) {
+    this.mapLibreMap.setFeatureState(
+      { source: this.sourceName, sourceLayer: this.sourceName, id },
+      { [key]: true }
+    );
+  }
+
+  private removeFeatureState(id: number, key: string) {
+    this.mapLibreMap.removeFeatureState(
+      { source: this.sourceName, sourceLayer: this.sourceName, id },
+      key
+    );
+  }
+}

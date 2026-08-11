@@ -46,6 +46,16 @@ export const MARTIN_SOURCES = {
       label: 'project_areas_by_scenario_label',
     },
   },
+  standsByProjectAreas: {
+    tilesUrl:
+      environment.martin_server +
+      'stands_by_project_areas/{z}/{x}/{y}',
+    sources: {
+      stands: 'stands_by_project_areas',
+      geometry: 'stands_by_project_areas',
+      label: 'stands_by_project_areas_label',
+    },
+  },
   standsByTxResult: {
     tilesUrl: environment.martin_server + 'stands_by_tx_result/{z}/{x}/{y}',
     sources: {
