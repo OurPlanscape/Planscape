@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { WorkspacesComponent } from 'src/app/workspaces/workspaces.component';
+import { WorkspacesComponent } from '@app/workspaces/workspaces.component';
 
 describe('WorkspacesComponent', () => {
   let component: WorkspacesComponent;
@@ -18,5 +18,16 @@ describe('WorkspacesComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('shows the empty state with a create workspace action', () => {
+    const element = fixture.nativeElement;
+
+    expect(element.textContent).toContain(
+      'Workspace: A shared space for smarter planning'
+    );
+    expect(element.querySelector('button[sg-button]').textContent).toContain(
+      'Create Workspace'
+    );
   });
 });
