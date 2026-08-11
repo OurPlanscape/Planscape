@@ -567,6 +567,27 @@ def is_project_areas_child(scenario: Scenario) -> bool:
     )
 
 
+def get_project_areas_child_stands(
+    scenario: Scenario,
+    project_area: ProjectArea,
+    stand_size: str,
+) -> QuerySet[Stand]:
+    geometry = project_area.geometry
+
+    if scenario.treatable_area:
+        geometry = geometry.intersection(scenario.treatable_area)
+
+        if geometry.empty:
+            return Stand.objects.none()
+
+        geometry = to_multipolygon(geometry)
+
+    return Stand.objects.within_polygon(
+        geometry,
+        stand_size,
+    )
+
+
 def get_project_areas_stands_lookup_table(
     scenario: Scenario,
 ) -> dict[str, list[int]]:
@@ -578,9 +599,11 @@ def get_project_areas_stands_lookup_table(
     stand_size = scenario.get_stand_size()
 
     for project_area in parent.project_areas.all():
-        stand_ids = project_area.get_stands(stand_size=stand_size).values_list(
-            "id", flat=True
-        )
+        stand_ids = get_project_areas_child_stands(
+            scenario=scenario,
+            project_area=project_area,
+            stand_size=stand_size,
+        ).values_list("id", flat=True)
 
         lookup_table[str(project_area.pk)] = list(stand_ids)
 
@@ -599,7 +622,11 @@ def get_project_areas_child_stand_ids(
 
     for project_area in parent.project_areas.all():
         stand_ids.update(
-            project_area.get_stands(stand_size=stand_size).values_list("id", flat=True)
+            get_project_areas_child_stands(
+                scenario=scenario,
+                project_area=project_area,
+                stand_size=stand_size,
+            ).values_list("id", flat=True)
         )
 
     return list(stand_ids)
@@ -624,7 +651,11 @@ def calculate_child_project_areas(scenario: Scenario) -> list[ProjectArea]:
         parent.project_areas.all(),
         start=1,
     ):
-        stands = parent_project_area.get_stands(stand_size=stand_size)
+        stands = get_project_areas_child_stands(
+            scenario=scenario,
+            project_area=parent_project_area,
+            stand_size=stand_size,
+        )
         stand_count = stands.count()
 
         if stand_count == 0:
