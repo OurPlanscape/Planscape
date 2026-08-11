@@ -28,7 +28,6 @@ export class FundingMapConfigState extends MapConfigState {
   private _showFundingLegend$ = new BehaviorSubject(true);
   public showFundingLegend$ = this._showFundingLegend$.asObservable();
 
-  //TODO: just a PoC
   private _mapRef$ = new BehaviorSubject<MapLibreMap | null>(null);
 
   setMapRef(mapRef: MapLibreMap) {
