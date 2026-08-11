@@ -34,7 +34,7 @@ export class AppComponent implements OnInit {
     this.sidebarOpen = !this.sidebarOpen;
   }
 
-    ngOnInit(): void {
+  ngOnInit(): void {
     // load initial forsys data
     this.forsysService.loadForsysData();
     // load map data
