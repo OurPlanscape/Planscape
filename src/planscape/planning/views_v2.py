@@ -102,6 +102,7 @@ from planning.services import (
     delete_scenario,
     get_available_stands,
     get_sub_units_details,
+    is_project_areas_child,
     toggle_scenario_status,
     trigger_scenario_run,
     validate_scenario_configuration,
@@ -718,14 +719,20 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         )
         query_params_serializer.is_valid(raise_exception=True)
 
-        datalayer_pk = query_params_serializer.validated_data.get(
-            "sub_units_layer"
-        ) or scenario.configuration.get("sub_units_layer")
-        if not datalayer_pk:
-            return Response(
-                {"errors": "Sub-Unit layer not selected."},
-                status=status.HTTP_412_PRECONDITION_FAILED,
-            )
+        datalayer = None
+
+        if not is_project_areas_child(scenario):
+            datalayer_pk = query_params_serializer.validated_data.get(
+                "sub_units_layer"
+            ) or scenario.configuration.get("sub_units_layer")
+
+            if not datalayer_pk:
+                return Response(
+                    {"errors": "Sub-Unit layer not selected."},
+                    status=status.HTTP_412_PRECONDITION_FAILED,
+                )
+
+            datalayer = DataLayer.objects.get(pk=datalayer_pk)
 
         sub_units_fixed_target = query_params_serializer.validated_data.get(
             "sub_units_fixed_target"
@@ -734,7 +741,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             "sub_units_target_value"
         )
 
-        datalayer = DataLayer.objects.get(pk=datalayer_pk)
         stand_size = scenario.get_stand_size()
         details = get_sub_units_details(
             scenario,

@@ -2187,15 +2187,51 @@ def get_sub_units_areas(
     return areas
 
 
+def get_project_areas_child_areas(
+    scenario: Scenario,
+    stand_size: StandSizeChoices,
+) -> list[float] | None:
+    parent = scenario.parent
+    if not parent:
+        return None
+
+    stand_area = get_min_project_area(scenario)
+    areas = []
+
+    for project_area in parent.project_areas.all():
+        stand_count = get_project_areas_child_stands(
+            scenario=scenario,
+            project_area=project_area,
+            stand_size=stand_size,
+        ).count()
+
+        if stand_count > 0:
+            areas.append(stand_count * stand_area)
+
+    return areas or None
+
+
 def get_sub_units_details(
     scenario: Scenario,
     stand_size: StandSizeChoices,
-    datalayer: DataLayer,
+    datalayer: DataLayer | None = None,
     fixed_target: bool | None = None,
     target_value: float | None = None,
 ) -> dict[str, float | None] | None:
 
-    areas = get_sub_units_areas(scenario, stand_size, datalayer)
+    if is_project_areas_child(scenario):
+        areas = get_project_areas_child_areas(
+            scenario=scenario,
+            stand_size=stand_size,
+        )
+    elif datalayer:
+        areas = get_sub_units_areas(
+            scenario,
+            stand_size,
+            datalayer,
+        )
+    else:
+        return None
 
     if areas is None:
         return
