@@ -30,10 +30,11 @@ import {
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { STAND_SIZES } from '@plan/plan-helpers';
-import { ScenarioDraftConfiguration, SubUnitsDetail } from '@app/types';
+import { Scenario, ScenarioDraftConfiguration, SubUnitsDetail } from '@app/types';
 import { ScenarioService } from '@app/services';
 import { ActivatedRoute } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ScenarioState } from '@app/scenario/scenario.state';
 
 @UntilDestroy()
 @Component({
@@ -69,11 +70,17 @@ export class SubUnitsTreatmentTargetComponent extends StepDirective<ScenarioDraf
 
   private subUnitsLayer$ = this.newScenarioState.scenarioConfig$.pipe(
     map((config) => config.sub_units_layer),
-    // filter((sub_units_layer): sub_units_layer is number => !!sub_units_layer),
     distinctUntilChanged()
   );
 
-  subUnitDetails$ = this.subUnitsLayer$.pipe(
+  private hasParent$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario: Scenario) => !!scenario?.parent)
+  );
+
+  subUnitDetails$ = combineLatest([this.subUnitsLayer$, this.hasParent$]).pipe(
+    filter(([sub_units_layer, hasParent]) => !!sub_units_layer || hasParent),
+    map(([sub_units_layer]) => sub_units_layer),
+    distinctUntilChanged(),
     switchMap((sub_units_layer) =>
       this.scenarioService.getSubUnitsDetails(this.scenarioId, {
         sub_units_layer,
@@ -90,6 +97,7 @@ export class SubUnitsTreatmentTargetComponent extends StepDirective<ScenarioDraf
 
   constructor(
     private newScenarioState: NewScenarioState,
+    private scenarioState: ScenarioState,
     private scenarioService: ScenarioService,
     private route: ActivatedRoute
   ) {

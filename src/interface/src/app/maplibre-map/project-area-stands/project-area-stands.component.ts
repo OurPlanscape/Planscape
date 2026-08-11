@@ -53,7 +53,7 @@ export class ProjectAreaStandsComponent
   private standsLoaded = false;
 
   tilesUrl$ = this.newScenarioState.scenarioConfig$.pipe(
-    // filter((config) => !!config.stand_size),
+    filter((config) => !!config.stand_size),
     map(
       () =>
         MARTIN_SOURCES.standsByProjectAreas.tilesUrl +
