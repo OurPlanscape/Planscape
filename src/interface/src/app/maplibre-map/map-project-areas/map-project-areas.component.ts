@@ -62,9 +62,11 @@ export class MapProjectAreasComponent implements OnInit {
   @Output() selectProjectArea = new EventEmitter<string>();
 
   private get martinSource() {
-    return isPlanningApproachSubUnits(this.planningApproach)
+    return MARTIN_SOURCES.projectAreasByScenario;
+
+    console.log( isPlanningApproachSubUnits(this.planningApproach)
       ? MARTIN_SOURCES.subUnitsByScenario
-      : MARTIN_SOURCES.projectAreasByScenario;
+      : MARTIN_SOURCES.projectAreasByScenario);
   }
 
   hoveredProjectAreaId$ = new Subject<number | null>();
