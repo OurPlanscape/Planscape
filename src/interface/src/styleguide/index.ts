@@ -43,3 +43,4 @@ export * from '@styleguide/treatment-card/treatment-card.component';
 export * from '@styleguide/treatment-plan-card/treatment-plan-card.component';
 export * from '@styleguide/treatment-prescription/treatment-prescription.component';
 export * from '@styleguide/treatment-type-icon/treatment-type-icon.component';
+export * from '@styleguide/workspace-card/workspace-card.component';

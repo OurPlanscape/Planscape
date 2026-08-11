@@ -1,0 +1,15 @@
+substitutions:
+  _DOCKERFILE: Dockerfile
+  _IMAGE: us-central1-docker.pkg.dev/planscape-23d66/planscape-planscape-backend/planscape-backend:latest
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - ${_DOCKERFILE}
+      - -t
+      - ${_IMAGE}
+      - .
+images:
+  - ${_IMAGE}

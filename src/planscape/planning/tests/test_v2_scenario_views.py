@@ -4,7 +4,6 @@ from unittest import mock
 
 from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
-from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.test import TestCase
 from django.urls import reverse
@@ -1934,9 +1933,7 @@ class PatchScenarioConfigurationTest(APITestCase):
             treatment_goal=None,
             planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
         )
-
         self.assertEqual(child.project_areas.count(), 0)
-
         url = reverse(
             "api:planning:scenarios-patch-draft",
             args=[child.pk],
@@ -1946,23 +1943,16 @@ class PatchScenarioConfigurationTest(APITestCase):
                 "stand_size": "LARGE",
             }
         }
-
         self.client.force_authenticate(self.user)
         response = self.client.patch(url, payload, format="json")
-
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
         child.refresh_from_db()
-
         self.assertEqual(child.project_areas.count(), 1)
-
         child_project_area = child.project_areas.get()
         expected_stands = parent_project_area.get_stands(stand_size="LARGE")
-        expected_geometry = expected_stands.aggregate(geometry=UnionOp("geometry"))[
-            "geometry"
-        ]
-
-        self.assertTrue(child_project_area.geometry.equals(expected_geometry))
+        self.assertTrue(
+            child_project_area.geometry.equals(parent_project_area.geometry)
+        )
         self.assertEqual(
             child_project_area.data["proj_id"],
             parent_project_area.pk,
@@ -1970,6 +1960,89 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(
             child_project_area.data["stand_count"],
             expected_stands.count(),
+        )
+
+    @mock.patch("planning.serializers.calculate_scenario_treatable_area")
+    def test_patch_draft_with_includes_recalculates_child_project_areas(
+        self, calculate_scenario_treatable_area_mock
+    ):
+        parent = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        parent_project_area = ProjectAreaFactory.create(
+            scenario=parent,
+            name="Project Area 1",
+            geometry=self.planning_area.geometry,
+            data={"treatment_rank": 1},
+        )
+        child = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            parent=parent,
+            configuration={},
+            treatment_goal=None,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+        url = reverse(
+            "api:planning:scenarios-patch-draft",
+            args=[child.pk],
+        )
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(
+            url,
+            {"configuration": {"stand_size": "LARGE"}},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        child.refresh_from_db()
+        child_project_area = child.project_areas.get()
+        original_stand_count = child_project_area.data["stand_count"]
+        included_stand = parent_project_area.get_stands(stand_size="LARGE").first()
+        self.assertIsNotNone(included_stand)
+        included_geometry = included_stand.geometry
+        if included_geometry.geom_type == "Polygon":
+            included_geometry = MultiPolygon(
+                included_geometry,
+                srid=included_geometry.srid,
+            )
+        calculate_scenario_treatable_area_mock.return_value = included_geometry
+        included_layer = DataLayerFactory.create(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        response = self.client.patch(
+            url,
+            {
+                "configuration": {
+                    "included_areas": [included_layer.pk],
+                }
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        child.refresh_from_db()
+        child_project_area.refresh_from_db()
+        expected_geometry = parent_project_area.geometry.intersection(included_geometry)
+
+        if expected_geometry.geom_type == "Polygon":
+            expected_geometry = MultiPolygon(
+                expected_geometry,
+                srid=expected_geometry.srid,
+            )
+
+        self.assertTrue(child.treatable_area.equals(included_geometry))
+        self.assertTrue(child_project_area.geometry.equals(expected_geometry))
+        self.assertEqual(child_project_area.data["stand_count"], 1)
+        self.assertLess(
+            child_project_area.data["stand_count"],
+            original_stand_count,
+        )
+        self.assertEqual(child_project_area.data["stand_count"], 1)
+        self.assertLess(
+            child_project_area.data["stand_count"],
+            original_stand_count,
         )
 
 
@@ -2621,4 +2694,57 @@ class SubUnitsDetailsTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         mock_service.assert_called_once_with(
             self.scenario, self.scenario.get_stand_size(), override_layer, False, 80
+        )
+
+    @mock.patch(
+        "planning.views_v2.get_sub_units_details",
+        return_value={
+            "avg": 100,
+            "max": 200,
+            "min": 50,
+            "sum": 350,
+            "targeted_area": None,
+        },
+    )
+    def test_get_sub_units_details__project_areas_child_without_sub_units_layer(
+        self, mock_service
+    ):
+        parent = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.user,
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        child = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.user,
+            parent=parent,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+            configuration={"stand_size": "LARGE"},
+        )
+
+        url = reverse(
+            "api:planning:scenarios-get-sub-units-details",
+            args=[child.pk],
+        )
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {
+                "avg": 100,
+                "max": 200,
+                "min": 50,
+                "sum": 350,
+                "targeted_area": None,
+            },
+        )
+        mock_service.assert_called_once_with(
+            child,
+            child.get_stand_size(),
+            None,
+            None,
+            None,
         )

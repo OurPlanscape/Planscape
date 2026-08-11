@@ -101,6 +101,20 @@
                   "with": "src/environments/environment.dev.ts"
                 }
               ]
+            },
+            "docker": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.docker.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -114,6 +128,10 @@
             "development": {
               "buildTarget": "interface:build:development",
               "proxyConfig": "proxy.conf.json"
+            },
+            "docker": {
+              "buildTarget": "interface:build:docker",
+              "proxyConfig": "proxy.docker.conf.json"
             }
           },
           "defaultConfiguration": "development",
