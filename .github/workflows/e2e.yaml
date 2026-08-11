@@ -37,6 +37,7 @@ jobs:
             environment: 'ci',
             backend_endpoint: '/planscape-backend',
             martin_server: 'https://dev.planscape.org/tiles/',
+            feature_flags: '',
             mapbox_key: '${{ secrets.MAPBOX_KEY }}',
             mixpanel_token: '',
             mixpanel_enabled: false,
