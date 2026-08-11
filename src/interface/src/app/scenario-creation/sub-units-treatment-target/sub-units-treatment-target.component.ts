@@ -69,7 +69,7 @@ export class SubUnitsTreatmentTargetComponent extends StepDirective<ScenarioDraf
 
   private subUnitsLayer$ = this.newScenarioState.scenarioConfig$.pipe(
     map((config) => config.sub_units_layer),
-    filter((sub_units_layer): sub_units_layer is number => !!sub_units_layer),
+    // filter((sub_units_layer): sub_units_layer is number => !!sub_units_layer),
     distinctUntilChanged()
   );
 

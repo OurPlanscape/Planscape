@@ -441,15 +441,16 @@ export class ScenarioCreationComponent implements OnInit {
       ? this.customSteps
       : this.scenarioSteps;
 
+    // omitting child scenarios, because they use project areas as subunits
     this.steps =
-      this.subUnitsPrioritized
+      this.subUnitsPrioritized && this.hasParent === false
         ? [SUB_UNITS_STEP, ...baseSteps]
         : baseSteps;
   }
 
   get subUnitsPrioritized() {
-    return ( 
-      this.config.planning_approach && !this.hasParent &&
+    return (
+      this.config.planning_approach &&
       isPlanningApproachSubUnits(this.config.planning_approach)
     );
   }
