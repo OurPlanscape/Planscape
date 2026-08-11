@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
   CanActivateFn,
+  CanMatchFn,
   Router,
   RouterStateSnapshot,
 } from '@angular/router';
@@ -39,4 +40,16 @@ export const createFeatureGuard =
       );
 
     return router.parseUrl(url || '/');
+  };
+
+/**
+ * Guard to pick between two routes that share the same path. Unlike
+ * `createFeatureGuard`, returning false here skips this route config and lets
+ * the router try the next matching one, instead of cancelling the navigation.
+ */
+export const createFeatureMatchGuard =
+  (featureName: string, inverted = false): CanMatchFn =>
+  () => {
+    const enabled = inject(FeatureService).isFeatureEnabled(featureName);
+    return inverted ? !enabled : enabled;
   };
