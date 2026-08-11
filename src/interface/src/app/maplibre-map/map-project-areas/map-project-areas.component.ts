@@ -49,6 +49,7 @@ export class MapProjectAreasComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
   @Input() showHoveredProjectAreas: boolean = true;
+  @Input() hasParent = false;
   /**
    * If provided we should fill the project areas
    */
@@ -62,11 +63,13 @@ export class MapProjectAreasComponent implements OnInit {
   @Output() selectProjectArea = new EventEmitter<string>();
 
   private get martinSource() {
+    if (
+      isPlanningApproachSubUnits(this.planningApproach) &&
+      this.hasParent === false
+    ) {
+      return MARTIN_SOURCES.subUnitsByScenario;
+    }
     return MARTIN_SOURCES.projectAreasByScenario;
-
-    console.log( isPlanningApproachSubUnits(this.planningApproach)
-      ? MARTIN_SOURCES.subUnitsByScenario
-      : MARTIN_SOURCES.projectAreasByScenario);
   }
 
   hoveredProjectAreaId$ = new Subject<number | null>();

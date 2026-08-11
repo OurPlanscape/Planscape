@@ -441,7 +441,7 @@ export class ScenarioCreationComponent implements OnInit {
       ? this.customSteps
       : this.scenarioSteps;
 
-    // child scenarios will also not need this scenario step, 
+    // child scenarios will also not need this scenario step,
     // because they are using project areas as subunits
     this.steps =
       this.subUnitsPrioritized && this.hasParent === false

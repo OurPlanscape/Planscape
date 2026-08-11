@@ -30,7 +30,11 @@ import {
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { STAND_SIZES } from '@plan/plan-helpers';
-import { Scenario, ScenarioDraftConfiguration, SubUnitsDetail } from '@app/types';
+import {
+  Scenario,
+  ScenarioDraftConfiguration,
+  SubUnitsDetail,
+} from '@app/types';
 import { ScenarioService } from '@app/services';
 import { ActivatedRoute } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';

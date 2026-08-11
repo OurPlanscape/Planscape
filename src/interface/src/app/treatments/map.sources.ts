@@ -47,9 +47,7 @@ export const MARTIN_SOURCES = {
     },
   },
   standsByProjectAreas: {
-    tilesUrl:
-      environment.martin_server +
-      'stands_by_project_areas/{z}/{x}/{y}',
+    tilesUrl: environment.martin_server + 'stands_by_project_areas/{z}/{x}/{y}',
     sources: {
       stands: 'stands_by_project_areas',
       geometry: 'stands_by_project_areas',

@@ -63,7 +63,7 @@ import { ProjectAreaStandsComponent } from '../project-area-stands/project-area-
     MapBaseLayersComponent,
     SubUnitToggleComponent,
     PlanningAreaStandsComponent,
-    ProjectAreaStandsComponent
+    ProjectAreaStandsComponent,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',

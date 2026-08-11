@@ -38,11 +38,11 @@ import { FrontendConstants } from '@map/map.constants';
   standalone: true,
   imports: [AsyncPipe, LayerComponent, NgIf, VectorSourceComponent],
   templateUrl: './project-area-stands.component.html',
-  styleUrl: './project-area-stands.component.scss'
+  styleUrl: './project-area-stands.component.scss',
 })
 export class ProjectAreaStandsComponent
-
-  implements OnInit, AfterViewInit, OnDestroy {
+  implements OnInit, AfterViewInit, OnDestroy
+{
   @Input() mapLibreMap!: MapLibreMap;
   readonly sourceName = MARTIN_SOURCES.standsByProjectAreas.sources.stands;
   readonly excludedKey = 'excluded';
@@ -57,7 +57,7 @@ export class ProjectAreaStandsComponent
     map(
       () =>
         MARTIN_SOURCES.standsByProjectAreas.tilesUrl +
-         `?scenario_id=${this.scenarioId}`
+        `?scenario_id=${this.scenarioId}`
     ),
     distinctUntilChanged(),
     // when the stand size changes, set as loading
@@ -78,7 +78,7 @@ export class ProjectAreaStandsComponent
     private newScenarioState: NewScenarioState,
     private zone: NgZone,
     private mapConfigState: MapConfigState
-  ) { }
+  ) {}
 
   filteredStands$: Observable<FilterSpecification | undefined> = combineLatest([
     this.newScenarioState.currentStep$,
