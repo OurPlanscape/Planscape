@@ -213,6 +213,9 @@ cloud-run-push:
 cloud-run-deploy:
 	gcloud run deploy $(APP) --image $(DOCKER_TAG) --platform managed --region $(REGION)
 
+cloud-run-update-job:
+	gcloud run jobs update $(JOB) --image $(DOCKER_TAG) --region $(REGION)
+
 cloud-run-build-deploy: cloud-run-build cloud-run-push cloud-run-deploy
 
 cloud-run-docker-tag:
@@ -238,9 +241,14 @@ cloud-run-build-frontend-job:
 cloud-run-push-frontend-job:
 	$(MAKE) cloud-run-push APP_NAME=planscape-frontend-builder DOCKERFILE=Dockerfile.frontend-job DOCKER_REPO=planscape-planscape-frontend-builder
 
+cloud-run-update-frontend-job:
+	$(MAKE) cloud-run-update-job JOB=planscape-frontend-build-$(ENV) APP_NAME=planscape-frontend-builder DOCKERFILE=Dockerfile.frontend-job DOCKER_REPO=planscape-planscape-frontend-builder
+
 # Deploy front-end
 cloud-run-execute-frontend-job:
 	gcloud run jobs execute planscape-frontend-build-$(ENV) --region $(REGION)
+
+cloud-run-deploy-frontend-job: cloud-run-push-frontend-job cloud-run-update-frontend-job cloud-run-execute-frontend-job
 
 cloud-run-docker-tag-frontend-job:
 	$(MAKE) cloud-run-docker-tag APP_NAME=planscape-frontend-builder DOCKER_REPO=planscape-planscape-frontend-builder
@@ -259,7 +267,7 @@ cloud-run-push-all:
 cloud-run-deploy-all:
 	$(MAKE) cloud-run-deploy
 	$(MAKE) cloud-run-deploy-gateway
-	$(MAKE) cloud-run-execute-frontend-job
+	$(MAKE) cloud-run-deploy-frontend-job
 
 cloud-run-build-deploy-all:
 	$(MAKE) cloud-run-build-all
