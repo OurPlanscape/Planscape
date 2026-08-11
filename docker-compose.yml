@@ -10,7 +10,7 @@ services:
       - GID=${GID}
     build:
       context: .
-      dockerfile: docker/${DOCKERFILE:-Dockerfile}
+      dockerfile: ${DOCKERFILE:-Dockerfile}
   web:
     image: planscape
     extends:
@@ -19,6 +19,8 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      PORT: "8000"
     depends_on:
       - db
       - redis
@@ -30,9 +32,12 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: docker/Dockerfile.frontend
+      dockerfile: Dockerfile.frontend
+    init: true
+    stop_signal: SIGINT
+    stop_grace_period: 30s
     ports:
-      - "4200:4200"
+      - "4200:8080"
     env_file:
       - .env
     depends_on:
@@ -40,6 +45,23 @@ services:
     working_dir: /app/src/interface
     volumes:
       - .:/app
+      - frontend_node_modules:/app/src/interface/node_modules
+      - frontend_angular_cache:/app/src/interface/.angular
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: "8080"
+      PLANSCAPE_FRONTEND_URL: "http://frontend:8080"
+      PLANSCAPE_BACKEND_URL: "http://web:8000"
+      PLANSCAPE_MARTIN_URL: "https://dev.planscape.org/tiles"
+      FRONTEND_ON_BUCKET: false
+    depends_on:
+      - frontend
+      - web
   redis:
     image: redis:6.2-alpine
     restart: always
@@ -94,19 +116,11 @@ services:
       - 5433:5432
     restart: unless-stopped
     command: -c fsync=off -c synchronous_commit=off -c full_page_writes=off
-  martin:
-    image: ghcr.io/maplibre/martin:v0.13.0
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    depends_on:
-      - db
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db/postgres
-    command: --config /app/martin.yaml
-    volumes:
-      - .:/app
 volumes:
   postgres: null
   cache:
+    driver: local
+  frontend_node_modules:
+    driver: local
+  frontend_angular_cache:
     driver: local

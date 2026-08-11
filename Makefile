@@ -176,7 +176,104 @@ docker-makemigrations:
 
 docker-migrate:
 	./src/planscape/bin/run.sh uv run python manage.py migrate
-	./src/planscape/bin/run.sh uv run python manage.py install_functions
+
+
+# Cloud Run commands
+
+PROJECT=planscape-23d66
+APP_NAME=planscape-backend
+DOCKERFILE=Dockerfile
+ENV=dev
+APP=$(APP_NAME)-$(ENV)
+DOCKER_REPO=planscape-$(APP_NAME)
+DOCKER_TAG=us-central1-docker.pkg.dev/$(PROJECT)/$(DOCKER_REPO)/$(APP_NAME):$(VERSION)
+REGION=us-central1
+
+cloud-run-build:
+	@BUILDS=$$(gcloud builds list --filter="images:$(DOCKER_TAG)" --format=json); \
+	if [ "$$BUILDS" = "[]" ]; then \
+		echo "Building image with tag $(DOCKER_TAG).";\
+		docker build -f $(DOCKERFILE) -t $(DOCKER_TAG) .;\
+	else \
+		echo "Docker image already pushed to artifact repo (tag: $(DOCKER_TAG))";\
+	fi;
+
+cloud-run-build-force:
+	docker build -f $(DOCKERFILE) -t $(DOCKER_TAG) .
+
+cloud-run-push:
+	@BUILDS=$$(gcloud builds list --filter="images:$(DOCKER_TAG)" --format=json); \
+	if [ "$$BUILDS" = "[]" ]; then \
+		echo "Pushing image $(DOCKER_TAG) ."; \
+		gcloud builds submit --config cloudbuild.dockerfile.yaml --substitutions _DOCKERFILE=$(DOCKERFILE),_IMAGE=$(DOCKER_TAG) .;\
+	else \
+		echo "Image $(DOCKER_TAG) already submitted"; \
+	fi;
+
+cloud-run-deploy:
+	gcloud run deploy $(APP) --image $(DOCKER_TAG) --platform managed --region $(REGION)
+
+cloud-run-update-job:
+	gcloud run jobs update $(JOB) --image $(DOCKER_TAG) --region $(REGION)
+
+cloud-run-build-deploy: cloud-run-build cloud-run-push cloud-run-deploy
+
+cloud-run-docker-tag:
+	echo "$(DOCKER_TAG)"
+
+
+cloud-run-build-gateway:
+	$(MAKE) cloud-run-build APP_NAME=planscape-gateway DOCKERFILE=Dockerfile.gateway DOCKER_REPO=planscape-planscape-gateway
+
+cloud-run-push-gateway:
+	$(MAKE) cloud-run-push APP_NAME=planscape-gateway DOCKERFILE=Dockerfile.gateway DOCKER_REPO=planscape-planscape-gateway
+
+cloud-run-deploy-gateway:
+	$(MAKE) cloud-run-deploy APP_NAME=planscape-gateway DOCKERFILE=Dockerfile.gateway DOCKER_REPO=planscape-planscape-gateway
+
+cloud-run-docker-tag-gateway:
+	$(MAKE) cloud-run-docker-tag APP_NAME=planscape-gateway DOCKER_REPO=planscape-planscape-gateway
+
+
+cloud-run-build-frontend-job:
+	$(MAKE) cloud-run-build APP_NAME=planscape-frontend-builder DOCKERFILE=Dockerfile.frontend-job DOCKER_REPO=planscape-planscape-frontend-builder
+
+cloud-run-push-frontend-job:
+	$(MAKE) cloud-run-push APP_NAME=planscape-frontend-builder DOCKERFILE=Dockerfile.frontend-job DOCKER_REPO=planscape-planscape-frontend-builder
+
+cloud-run-update-frontend-job:
+	$(MAKE) cloud-run-update-job JOB=planscape-frontend-build-$(ENV) APP_NAME=planscape-frontend-builder DOCKERFILE=Dockerfile.frontend-job DOCKER_REPO=planscape-planscape-frontend-builder
+
+# Deploy front-end
+cloud-run-execute-frontend-job:
+	gcloud run jobs execute planscape-frontend-build-$(ENV) --region $(REGION)
+
+cloud-run-deploy-frontend-job: cloud-run-push-frontend-job cloud-run-update-frontend-job cloud-run-execute-frontend-job
+
+cloud-run-docker-tag-frontend-job:
+	$(MAKE) cloud-run-docker-tag APP_NAME=planscape-frontend-builder DOCKER_REPO=planscape-planscape-frontend-builder
+
+
+cloud-run-build-all:
+	$(MAKE) cloud-run-build
+	$(MAKE) cloud-run-build-gateway
+	$(MAKE) cloud-run-build-frontend-job
+
+cloud-run-push-all:
+	$(MAKE) cloud-run-push
+	$(MAKE) cloud-run-push-gateway
+	$(MAKE) cloud-run-push-frontend-job
+
+cloud-run-deploy-all:
+	$(MAKE) cloud-run-deploy
+	$(MAKE) cloud-run-deploy-gateway
+	$(MAKE) cloud-run-deploy-frontend-job
+
+cloud-run-build-deploy-all:
+	$(MAKE) cloud-run-build-all
+	$(MAKE) cloud-run-push-all
+	$(MAKE) cloud-run-deploy-all
+
 
 # Reset relevant tables and load development fixture data
 load-dev-data:
