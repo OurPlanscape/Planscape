@@ -366,14 +366,17 @@ export class FundingReportToPdfService {
       img.crossOrigin = 'anonymous';
 
       img.onload = () => {
+        // Create a temporary canvas to rasterize the SVG into a PNG
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
 
+        // Use the SVG's natural size or fallback to standard dimensions
         canvas.width = img.naturalWidth || 200;
         canvas.height = img.naturalHeight || 50;
 
         if (ctx) {
           ctx.drawImage(img, 0, 0);
+          // Convert the canvas to a clean, uncorrupted base64 PNG data URL
           resolve(canvas.toDataURL('image/png'));
         } else {
           resolve(null);
