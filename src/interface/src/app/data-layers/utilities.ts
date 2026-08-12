@@ -187,12 +187,16 @@ function writeColorToBuffer(rgbaData: Uint8ClampedArray, color: RGBA): void {
 export function generateColorFunction(
   styleJson: StyleJson
 ): (pixel: TypedArray, rgba: Uint8ClampedArray) => void {
-  const knownNoDataValues = new Set(styleJson.no_data?.values || []);
+  const noDataValues = styleJson.no_data?.values || [];
+  const hidesNan = noDataValues.includes('nan');
+  const knownNoDataValues = new Set(
+    noDataValues.filter((value): value is number => typeof value === 'number')
+  );
   const colorMapper = determineColorFunction(styleJson);
   return (pixel: TypedArray, rgba: Uint8ClampedArray) => {
     const value = pixel[0];
 
-    if (knownNoDataValues.has(value)) {
+    if (knownNoDataValues.has(value) || (hidesNan && Number.isNaN(value))) {
       writeColorToBuffer(rgba, TRANSPARENT);
       return;
     }
