@@ -444,7 +444,7 @@ export class ScenarioCreationComponent implements OnInit {
     // child scenarios will also not need this scenario step,
     // because they are using project areas as subunits
     this.steps =
-      this.subUnitsPrioritized && this.hasParent === false
+      this.subUnitsPrioritized && !this.hasParent
         ? [SUB_UNITS_STEP, ...baseSteps]
         : baseSteps;
   }

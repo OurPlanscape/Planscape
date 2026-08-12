@@ -43,13 +43,20 @@ export class ScenarioStandsComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
   @Input() mapLibreMap!: MapLibreMap;
-  readonly sourceName =
-    MARTIN_SOURCES.scenarioStands.sources.standsWithIncludes;
+  @Input() hasParent = false;
+
   readonly excludedKey = 'excluded';
   readonly constrainedKey = 'constrained';
   readonly scenarioId = this.route.snapshot.data['scenarioId'];
 
   private standsLoaded = false;
+
+  get sourceName(): string {
+    return this.hasParent
+      ? // TODO: update this with new query when new martin query is ready
+        MARTIN_SOURCES.standsByProjectAreas.sources.stands
+      : MARTIN_SOURCES.scenarioStands.sources.standsWithIncludes;
+  }
 
   tilesUrl$ = combineLatest([
     this.newScenarioState.scenarioConfig$.pipe(
@@ -65,13 +72,18 @@ export class ScenarioStandsComponent
           ? `&includes=${includes.join(',')}`
           : '';
 
-      return (
-        MARTIN_SOURCES.scenarioStands.tilesWithIncludesUrl +
-        `?scenario_id=${this.scenarioId}` +
-        `&stand_size=${config.stand_size}` +
-        includesParam +
-        `&datetime=${new Date().toISOString()}`
-      );
+      // TODO: update query when new martin query is ready
+      return this.hasParent
+        ? MARTIN_SOURCES.standsByProjectAreas.tilesUrl +
+            `?scenario_id=${this.scenarioId}` +
+            `&stand_size=${config.stand_size}` +
+            includesParam +
+            `&datetime=${new Date().toISOString()}`
+        : MARTIN_SOURCES.scenarioStands.tilesWithIncludesUrl +
+            `?scenario_id=${this.scenarioId}` +
+            `&stand_size=${config.stand_size}` +
+            includesParam +
+            `&datetime=${new Date().toISOString()}`;
     }),
     distinctUntilChanged(),
     tap(() => {

@@ -37,7 +37,6 @@ import { SubUnitToggleComponent } from '@maplibre-map/sub-unit-toggle/sub-unit-t
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.component';
 import { PlanningAreaStandsComponent } from '../planning-area-stands/planning-area-stands.component';
-import { ProjectAreaStandsComponent } from '../project-area-stands/project-area-stands.component';
 
 @UntilDestroy()
 @Component({
@@ -63,7 +62,6 @@ import { ProjectAreaStandsComponent } from '../project-area-stands/project-area-
     MapBaseLayersComponent,
     SubUnitToggleComponent,
     PlanningAreaStandsComponent,
-    ProjectAreaStandsComponent,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',

@@ -63,10 +63,7 @@ export class MapProjectAreasComponent implements OnInit {
   @Output() selectProjectArea = new EventEmitter<string>();
 
   private get martinSource() {
-    if (
-      isPlanningApproachSubUnits(this.planningApproach) &&
-      this.hasParent === false
-    ) {
+    if (isPlanningApproachSubUnits(this.planningApproach) && !this.hasParent) {
       return MARTIN_SOURCES.subUnitsByScenario;
     }
     return MARTIN_SOURCES.projectAreasByScenario;

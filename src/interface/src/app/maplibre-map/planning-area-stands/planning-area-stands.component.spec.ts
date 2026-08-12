@@ -66,57 +66,110 @@ describe('PlanningAreaStandsComponent', () => {
     }).compileComponents();
   });
 
-  function create() {
+  // hasParent defaults to false
+  function create(hasParent = false) {
     const fixture = TestBed.createComponent(PlanningAreaStandsComponent);
     fixture.componentInstance.mapLibreMap = mockMapLibreMap;
+    fixture.componentInstance.hasParent = hasParent;
     fixture.detectChanges();
     return { fixture, component: fixture.componentInstance };
   }
 
-  it('reads planId from route snapshot', () => {
-    const { component } = create();
-    expect(component.planId).toBe(planId);
+  describe('hasParent = false (default)', () => {
+    it('reads planId from route snapshot', () => {
+      const { component } = create();
+      expect(component.planId).toBe(planId);
+    });
+
+    it('sourceName resolves to the legacy scenarioStands "stands" source', () => {
+      const { component } = create();
+      expect(component.sourceName).toBe(
+        MARTIN_SOURCES.scenarioStands.sources.stands
+      );
+    });
+
+    it('tilesUrl$ emits only when stand_size exists and updates with latest', fakeAsync(() => {
+      const { component } = create();
+
+      const emitted: string[] = [];
+      const sub = component.tilesUrl$.subscribe((v) => emitted.push(v));
+
+      scenarioConfig$.next({ stand_size: 'BIG' });
+      scenarioConfig$.next({ stand_size: 'SMALL' });
+
+      tick();
+
+      const base = MARTIN_SOURCES.scenarioStands.tilesUrl;
+      expect(emitted[0]).toContain(
+        `${base}?planning_area_id=${planId}&stand_size=BIG`
+      );
+
+      expect(emitted[1]).toContain(
+        `${base}?planning_area_id=${planId}&stand_size=SMALL`
+      );
+
+      sub.unsubscribe();
+    }));
+
+    it('tilesUrl$ does not emit for falsy stand_size values (filter)', fakeAsync(() => {
+      const { component } = create();
+
+      const emitted: string[] = [];
+      const sub = component.tilesUrl$.subscribe((v) => emitted.push(v));
+
+      scenarioConfig$.next({ stand_size: null });
+      scenarioConfig$.next({ stand_size: undefined });
+      scenarioConfig$.next({});
+
+      tick();
+
+      expect(emitted).toEqual([]);
+
+      sub.unsubscribe();
+    }));
   });
 
-  it('tilesUrl$ emits only when stand_size exists and updates with latest', fakeAsync(() => {
-    const { component } = create();
+  describe('hasParent = true', () => {
+    it('planId is undefined', () => {
+      const { component } = create(true);
+      expect(component.planId).toBeUndefined();
+    });
 
-    const emitted: string[] = [];
-    const sub = component.tilesUrl$.subscribe((v) => emitted.push(v));
+    it('sourceName resolves to the standsByProjectAreas source', () => {
+      const { component } = create(true);
+      expect(component.sourceName).toBe(
+        MARTIN_SOURCES.standsByProjectAreas.sources.stands
+      );
+    });
 
-    scenarioConfig$.next({ stand_size: 'BIG' });
-    scenarioConfig$.next({ stand_size: 'SMALL' });
+    it('tilesUrl$ is called w scenario_id', fakeAsync(() => {
+      const { component } = create(true);
 
-    tick();
+      const emitted: string[] = [];
+      const sub = component.tilesUrl$.subscribe((v) => emitted.push(v));
 
-    const base = MARTIN_SOURCES.scenarioStands.tilesUrl;
-    expect(emitted[0]).toContain(
-      `${base}?planning_area_id=${planId}&stand_size=BIG`
-    );
+      scenarioConfig$.next({ stand_size: 'LARGE' });
+      tick();
 
-    expect(emitted[1]).toContain(
-      `${base}?planning_area_id=${planId}&stand_size=SMALL`
-    );
+      const base = MARTIN_SOURCES.standsByProjectAreas.tilesUrl;
+      expect(emitted[0]).toBe(`${base}?scenario_id=${scenarioId}`);
 
-    sub.unsubscribe();
-  }));
+      sub.unsubscribe();
+    }));
 
-  it('tilesUrl$ does not emit for falsy stand_size values (filter)', fakeAsync(() => {
-    const { component } = create();
+    it('tilesUrl$ does not emit for empty stand_size values', fakeAsync(() => {
+      const { component } = create(true);
 
-    const emitted: string[] = [];
-    const sub = component.tilesUrl$.subscribe((v) => emitted.push(v));
+      const emitted: string[] = [];
+      const sub = component.tilesUrl$.subscribe((v) => emitted.push(v));
 
-    scenarioConfig$.next({ stand_size: null });
-    scenarioConfig$.next({ stand_size: undefined });
-    scenarioConfig$.next({});
+      scenarioConfig$.next({ stand_size: null });
+      tick();
 
-    tick();
-
-    expect(emitted).toEqual([]);
-
-    sub.unsubscribe();
-  }));
+      expect(emitted).toEqual([]);
+      sub.unsubscribe();
+    }));
+  });
 
   describe('ngOnInit', () => {
     it('registers sourcedata and styledata listeners on the map', () => {

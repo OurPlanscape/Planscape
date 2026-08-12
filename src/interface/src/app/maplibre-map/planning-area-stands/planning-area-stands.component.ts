@@ -44,33 +44,33 @@ export class PlanningAreaStandsComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
   @Input() mapLibreMap!: MapLibreMap;
-  readonly sourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
+
+  /* Set true when scenario has a 'project areas' parent */
+  @Input() hasParent = false;
+
   readonly excludedKey = 'excluded';
   readonly constrainedKey = 'constrained';
-  readonly planId = this.route.snapshot.data['planId'];
+  readonly scenarioId = this.route.snapshot.data['scenarioId'];
 
   private standsLoaded = false;
-
-  tilesUrl$ = this.newScenarioState.scenarioConfig$.pipe(
-    filter((config) => !!config.stand_size),
-    map(
-      (config) =>
-        MARTIN_SOURCES.scenarioStands.tilesUrl +
-        `?planning_area_id=${this.planId}&stand_size=${config.stand_size}&datetime=${new Date().toISOString()}`
-    ),
-    distinctUntilChanged(),
-    // when the stand size changes, set as loading
-    tap(() => {
-      this.newScenarioState.setLoading(true);
-      this.standsLoaded = false;
-    })
-  );
 
   opacity$ = this.mapConfigState.opacity$;
 
   // local copies to reset feature state
   private excludedStands: number[] = [];
   private constrainedStands: number[] = [];
+
+  tilesUrl$!: Observable<string>; // set via buildTilesUrl, called in ngInit
+
+  get planId() {
+    return this.hasParent ? undefined : this.route.snapshot.data['planId'];
+  }
+
+  get sourceName(): string {
+    return this.hasParent
+      ? MARTIN_SOURCES.standsByProjectAreas.sources.stands
+      : MARTIN_SOURCES.scenarioStands.sources.stands;
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -127,6 +127,8 @@ export class PlanningAreaStandsComponent
   );
 
   ngOnInit(): void {
+    this.tilesUrl$ = this.buildTilesUrl$();
+
     this.mapLibreMap.on('sourcedata', this.onDataListener);
     this.mapLibreMap.on('styledata', this.onStyleDataListener);
 
@@ -170,6 +172,39 @@ export class PlanningAreaStandsComponent
   ngOnDestroy(): void {
     this.mapLibreMap.off('sourcedata', this.onDataListener);
     this.mapLibreMap.off('styledata', this.onStyleDataListener);
+  }
+
+  private buildTilesUrl$(): Observable<string> {
+    return this.hasParent
+      ? this.newScenarioState.scenarioConfig$.pipe(
+          filter((config) => !!config.stand_size),
+          map(
+            () =>
+              MARTIN_SOURCES.standsByProjectAreas.tilesUrl +
+              `?scenario_id=${this.scenarioId}`
+          ),
+          distinctUntilChanged(),
+          tap(() => {
+            this.newScenarioState.setLoading(true);
+            this.standsLoaded = false;
+          })
+        )
+      : this.newScenarioState.scenarioConfig$.pipe(
+          filter((config) => !!config.stand_size),
+          map(
+            (config) =>
+              MARTIN_SOURCES.scenarioStands.tilesUrl +
+              `?planning_area_id=${this.planId}` +
+              `&stand_size=${config.stand_size}` +
+              `&datetime=${new Date().toISOString()}`
+          ),
+          distinctUntilChanged(),
+          // when the stand size changes, set as loading
+          tap(() => {
+            this.newScenarioState.setLoading(true);
+            this.standsLoaded = false;
+          })
+        );
   }
 
   private paintStands(ids: number[], key: string, current: number[]): number[] {
