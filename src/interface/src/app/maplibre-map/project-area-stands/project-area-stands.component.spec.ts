@@ -13,7 +13,6 @@ import { MockDeclarations, MockProvider } from 'ng-mocks';
 import { MapConfigState } from '../map-config.state';
 import { ProjectAreaStandsComponent } from './project-area-stands.component';
 
-
 describe('ProjectAreaStandsComponent', () => {
   const planId = 456;
   const scenarioId = 123;
@@ -91,9 +90,7 @@ describe('ProjectAreaStandsComponent', () => {
 
     const base = MARTIN_SOURCES.standsByProjectAreas.tilesUrl;
     expect(emitted.length).toBe(1);
-    expect(emitted[0]).toContain(
-      `${base}?scenario_id=${scenarioId}`
-    );
+    expect(emitted[0]).toContain(`${base}?scenario_id=${scenarioId}`);
 
     sub.unsubscribe();
   }));
@@ -114,7 +111,6 @@ describe('ProjectAreaStandsComponent', () => {
 
     sub.unsubscribe();
   }));
-
 
   describe('ngOnInit', () => {
     it('registers sourcedata and styledata listeners on the map', () => {
