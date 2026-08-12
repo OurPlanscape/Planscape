@@ -134,7 +134,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
                     else {"min": 0, "max": 1}
                 )
                 nodata = instance.info.get("nodata") if instance.info else None
-                if nodata:
+                if nodata is not None:
                     stats["nodata"] = nodata
                 return [get_default_raster_style(**stats)]
             case _:
@@ -395,9 +395,21 @@ class EntrySerializer(serializers.Serializer):
     )  # type: ignore
 
 
+class NoDataValueField(serializers.Field):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.lower() == "nan":
+            return "nan"
+        return serializers.FloatField().to_internal_value(data)
+
+    def to_representation(self, value):
+        if isinstance(value, str) and value.lower() == "nan":
+            return "nan"
+        return serializers.FloatField().to_representation(value)
+
+
 class NoDataSerializer(serializers.Serializer):
     values = serializers.ListField(
-        child=serializers.FloatField(),
+        child=NoDataValueField(),
         required=False,
         allow_null=True,
         default=list,
@@ -573,7 +585,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
                     else {"min": 0, "max": 1}
                 )
                 nodata = instance.info.get("nodata") if instance.info else None
-                if nodata:
+                if nodata is not None:
                     stats["nodata"] = nodata
                 return [get_default_raster_style(**stats)]
             case _:

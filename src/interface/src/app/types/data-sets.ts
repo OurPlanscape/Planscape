@@ -73,7 +73,7 @@ export interface LayerStyleEntry {
 }
 
 export interface NoData {
-  values: number[];
+  values: Array<number | 'nan'>;
   color?: string;
   opacity?: number;
   label?: string;

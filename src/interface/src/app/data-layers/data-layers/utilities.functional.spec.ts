@@ -8,7 +8,7 @@ describe('Color Function Test For RAMP type', () => {
   const rampStyle: StyleJson = {
     map_type: 'RAMP',
     no_data: {
-      values: [0.003],
+      values: [0.003, 'nan'],
       color: '#CCCCCC',
       opacity: 0.0,
       label: '0',
@@ -69,6 +69,12 @@ describe('Color Function Test For RAMP type', () => {
     const rgba = new Uint8ClampedArray(4);
     colorFunction([0.003], rgba);
     expect(rgba).toEqual(new Uint8ClampedArray([0, 0, 0, 0])); // #CCCCCC with 0 opacity
+  });
+
+  it('should set NaN pixel color to transparent when no_data includes nan sentinel', () => {
+    const rgba = new Uint8ClampedArray(4);
+    colorFunction([Number.NaN], rgba);
+    expect(rgba).toEqual(new Uint8ClampedArray([0, 0, 0, 0]));
   });
 
   it('should set pixel color to no_data color for values less than no_data', () => {
