@@ -1,11 +1,11 @@
 import { scaleLinear } from 'd3-scale';
 import { color as d3Color } from 'd3-color';
 import {
-  DataLayer,
-  LayerStyleEntry,
-  Entry,
-  StyleJson,
   ColorLegendInfo,
+  DataLayer,
+  Entry,
+  LayerStyleEntry,
+  StyleJson,
 } from '@types';
 import { TypedArray } from '@geomatico/maplibre-cog-protocol/dist/types';
 
@@ -188,15 +188,27 @@ export function generateColorFunction(
   styleJson: StyleJson
 ): (pixel: TypedArray, rgba: Uint8ClampedArray) => void {
   const noDataValues = styleJson.no_data?.values || [];
-  const hidesNan = noDataValues.includes('nan');
-  const knownNoDataValues = new Set(
-    noDataValues.filter((value): value is number => typeof value === 'number')
-  );
+  // Sentinels arrive as numbers, numeric strings, or the string 'nan' (see
+  // datasets/styles.py). Nothing normalizes them on the way out, so parse each
+  // one here. The 'nan' token needs no entry — NaN is dropped unconditionally
+  // below — but anything finite has to land in the set to be matched.
+  const knownNoDataValues = new Set<number>();
+  for (const entry of noDataValues) {
+    const parsed = typeof entry === 'string' ? Number(entry.trim()) : entry;
+    if (Number.isFinite(parsed)) {
+      knownNoDataValues.add(parsed);
+    }
+  }
   const colorMapper = determineColorFunction(styleJson);
   return (pixel: TypedArray, rgba: Uint8ClampedArray) => {
     const value = pixel[0];
 
-    if (knownNoDataValues.has(value) || (hidesNan && Number.isNaN(value))) {
+    // Non-finite pixels are never meaningful data, and they're dropped whether
+    // or not the style declared them. NaN and ±Infinity both show up in these
+    // Float32 rasters, and each is painted rather than skipped if it reaches a
+    // mapper: d3's scales only guard `isNaN`, so Infinity clamps to the end of
+    // a RAMP domain, and INTERVALS falls through to the max color for both.
+    if (knownNoDataValues.has(value) || !Number.isFinite(value)) {
       writeColorToBuffer(rgba, TRANSPARENT);
       return;
     }

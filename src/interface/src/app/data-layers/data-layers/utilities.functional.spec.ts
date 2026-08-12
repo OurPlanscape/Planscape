@@ -77,6 +77,16 @@ describe('Color Function Test For RAMP type', () => {
     expect(rgba).toEqual(new Uint8ClampedArray([0, 0, 0, 0]));
   });
 
+  // d3 continuous scales only short-circuit on isNaN, so Infinity survives into
+  // the clamped domain and paints as the end color. These rasters carry both.
+  it('should set Infinity pixels to transparent rather than the ramp end color', () => {
+    for (const value of [Infinity, -Infinity]) {
+      const rgba = new Uint8ClampedArray(4);
+      colorFunction([value], rgba);
+      expect(rgba).toEqual(new Uint8ClampedArray([0, 0, 0, 0]));
+    }
+  });
+
   it('should set pixel color to no_data color for values less than no_data', () => {
     const rgba = new Uint8ClampedArray(4);
     colorFunction([0.002], rgba);
@@ -201,6 +211,17 @@ describe('Color Function Test For INTERVALS type', () => {
     const rgba = new Uint8ClampedArray(4);
     colorFunction([0.31], rgba);
     expect(rgba).toEqual(new Uint8ClampedArray([97, 135, 242, 255]));
+  });
+
+  // Non-finite values fail every threshold comparison, so before they were
+  // dropped up front they fell through to the last entry and painted as the max
+  // color. This style doesn't declare 'nan' in no_data, which is the real case.
+  it('should treat non-finite values as no_data even when the style does not declare them', () => {
+    for (const value of [NaN, Infinity, -Infinity]) {
+      const rgba = new Uint8ClampedArray(4);
+      colorFunction([value], rgba);
+      expect(rgba).toEqual(new Uint8ClampedArray([0, 0, 0, 0]));
+    }
   });
 });
 
