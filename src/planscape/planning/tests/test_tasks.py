@@ -5,7 +5,7 @@ from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.test import TestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.utils import timezone
 from planning.models import (
     GeoPackageStatus,
@@ -34,6 +34,11 @@ from stands.models import Stand, StandMetric, StandSizeChoices
 from stands.tests.factories import StandFactory
 
 from planscape.exceptions import ForsysException, ForsysTimeoutException
+from utils.cli_utils import (
+    _call_forsys_via_api,
+    _call_forsys_via_cloud_run_job,
+    _call_forsys_via_plumber_api,
+)
 
 
 class AsyncCalculateStandMetricsTest(TestCase):
@@ -177,7 +182,7 @@ class AsyncPreForsysProcessTest(TestCase):
         self.assertEqual(variables["number_of_projects"], 10)
         self.assertEqual(variables["min_area_project"], 494)
         self.assertEqual(variables["max_area_project"], 4000)
-    
+
     def test_async_pre_forsys_process__prioritize_subunits(self):
         async_pre_forsys_process(self.scenario.pk)
 
@@ -239,8 +244,7 @@ class AsyncPreForsysProcessTest(TestCase):
             {"PRIORITY", "SECONDARY_METRIC"},
         )
         self.assertEqual(
-            {datalayer.get("weight") for datalayer in datalayers},
-            {2, None}
+            {datalayer.get("weight") for datalayer in datalayers}, {2, None}
         )
 
     def test_async_pre_forsys_process_sub_units(self):
@@ -249,21 +253,33 @@ class AsyncPreForsysProcessTest(TestCase):
         sub_units_stand_ids = stand_ids[0:60]
         sub_units_stands = Stand.objects.filter(id__in=sub_units_stand_ids).all()
 
-        with mock.patch("planning.services.get_sub_units_stands_lookup_table", return_value={"1" : stand_ids[0:10], "2": stand_ids[10:30], "3": stand_ids[30:60]}):
-            with mock.patch("planning.services.get_stands_from_sub_units", return_value=sub_units_stands):
+        with mock.patch(
+            "planning.services.get_sub_units_stands_lookup_table",
+            return_value={
+                "1": stand_ids[0:10],
+                "2": stand_ids[10:30],
+                "3": stand_ids[30:60],
+            },
+        ):
+            with mock.patch(
+                "planning.services.get_stands_from_sub_units",
+                return_value=sub_units_stands,
+            ):
                 configuration = self.scenario.configuration
                 sub_units_datalayer = DataLayerFactory.create(type=DataLayerType.VECTOR)
                 configuration.update(
                     {
                         "sub_units_layer": sub_units_datalayer.pk,
-                        "targets" :{
+                        "targets": {
                             "sub_units_fixed_target": False,
                             "sub_units_target_value": 99,
-                        }
+                        },
                     }
                 )
                 self.scenario.configuration = configuration
-                self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+                self.scenario.planning_approach = (
+                    ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+                )
                 self.scenario.save()
 
                 async_pre_forsys_process(self.scenario.pk)
@@ -277,9 +293,18 @@ class AsyncPreForsysProcessTest(TestCase):
                 output_stand_ids.sort()
                 self.assertEqual(len(sub_units_stand_ids), len(output_stand_ids))
                 self.assertListEqual(output_stand_ids, sub_units_stand_ids)
-                self.assertDictEqual(forsys_input.get("projects_data"), {"1" : stand_ids[0:10], "2": stand_ids[10:30], "3": stand_ids[30:60]})
+                self.assertDictEqual(
+                    forsys_input.get("projects_data"),
+                    {
+                        "1": stand_ids[0:10],
+                        "2": stand_ids[10:30],
+                        "3": stand_ids[30:60],
+                    },
+                )
                 self.assertFalse(forsys_input["variables"]["sub_units_fixed_target"])
-                self.assertEqual(forsys_input["variables"]["sub_units_target_value"], 0.99)
+                self.assertEqual(
+                    forsys_input["variables"]["sub_units_target_value"], 0.99
+                )
 
 
 class PrepareScenariosForForsysTest(TestCase):
@@ -384,18 +409,19 @@ class AsyncCallForsysViaAPI(TestCase):
         self.scenario_result = ScenarioResult.objects.create(scenario=self.scenario)
 
     @mock.patch(
-        "utils.cli_utils._call_forsys_via_api",
+        "planning.tasks.call_forsys",
         return_value=True,
     )
     def test_async_call_forsys_via_api(self, mock_api_call):
         async_forsys_run(self.scenario.pk)
         self.scenario.refresh_from_db()
         self.assertEqual(self.scenario.result_status, ScenarioResultStatus.RUNNING)
+        mock_api_call.assert_called_once_with(self.scenario.pk)
 
     @mock.patch(
-        "utils.cli_utils._call_forsys_via_api",
+        "planning.tasks.call_forsys",
         side_effect=ForsysTimeoutException(
-            "Forsys API call timed out after 60000 seconds."
+            "Forsys Cloud Run Job call timed out after 60000 seconds."
         ),
     )
     def test_async_call_forsys_via_api_timeout(self, mock_api_call):
@@ -406,7 +432,7 @@ class AsyncCallForsysViaAPI(TestCase):
         self.assertEqual(self.scenario_result.status, ScenarioResultStatus.TIMED_OUT)
 
     @mock.patch(
-        "utils.cli_utils._call_forsys_via_api",
+        "planning.tasks.call_forsys",
         side_effect=ForsysException("Forsys API call failed"),
     )
     def test_async_call_forsys_via_api_panic(self, mock_api_call):
@@ -417,13 +443,102 @@ class AsyncCallForsysViaAPI(TestCase):
         self.assertEqual(self.scenario_result.status, ScenarioResultStatus.PANIC)
 
 
+class CallForsysViaAPITest(SimpleTestCase):
+    @override_settings(FORSYS_USE_CLOUD_RUN_JOB=False)
+    @mock.patch("utils.cli_utils._call_forsys_via_plumber_api")
+    @mock.patch("utils.cli_utils._call_forsys_via_cloud_run_job")
+    def test_call_forsys_via_api_uses_plumber_api_when_flag_is_disabled(
+        self, mock_cloud_run_job, mock_plumber_api
+    ):
+        mock_plumber_api.return_value = {"status": "triggered"}
+
+        result = _call_forsys_via_api(123)
+
+        self.assertEqual(result, {"status": "triggered"})
+        mock_plumber_api.assert_called_once_with(123, None)
+        mock_cloud_run_job.assert_not_called()
+
+    @override_settings(FORSYS_USE_CLOUD_RUN_JOB=True)
+    @mock.patch("utils.cli_utils._call_forsys_via_plumber_api")
+    @mock.patch("utils.cli_utils._call_forsys_via_cloud_run_job")
+    def test_call_forsys_via_api_uses_cloud_run_job_when_flag_is_enabled(
+        self, mock_cloud_run_job, mock_plumber_api
+    ):
+        mock_cloud_run_job.return_value = {"metadata": {"name": "execution-name"}}
+
+        result = _call_forsys_via_api(123)
+
+        self.assertEqual(result, {"metadata": {"name": "execution-name"}})
+        mock_cloud_run_job.assert_called_once_with(123, None)
+        mock_plumber_api.assert_not_called()
+
+    @override_settings(
+        FORSYS_PLUMBER_URL="http://forsys:8001",
+        FORSYS_PLUMBER_TIMEOUT=600,
+    )
+    @mock.patch("utils.cli_utils.requests.post")
+    def test_call_forsys_via_plumber_api_posts_scenario(self, mock_post):
+        response = mock.Mock()
+        response.json.return_value = {"status": "triggered"}
+        mock_post.return_value = response
+
+        result = _call_forsys_via_plumber_api(123)
+
+        self.assertEqual(result, {"status": "triggered"})
+        mock_post.assert_called_once_with(
+            "http://forsys:8001/run_forsys",
+            json={"scenario_id": 123},
+            timeout=600,
+        )
+        response.raise_for_status.assert_called_once()
+
+    @override_settings(
+        GCP_PROJECT="test-project",
+        FORSYS_CLOUD_RUN_JOB_NAME="forsys-test",
+        FORSYS_CLOUD_RUN_REGION="us-central1",
+        FORSYS_CLOUD_RUN_API_TIMEOUT=60,
+    )
+    @mock.patch("utils.cli_utils.AuthorizedSession")
+    @mock.patch("utils.cli_utils.google.auth.default")
+    def test_call_forsys_via_api_executes_cloud_run_job(
+        self, mock_default, mock_session_class
+    ):
+        credentials = mock.Mock()
+        mock_default.return_value = (credentials, "test-project")
+        response = mock.Mock()
+        response.json.return_value = {"metadata": {"name": "execution-name"}}
+        mock_session = mock_session_class.return_value
+        mock_session.post.return_value = response
+
+        result = _call_forsys_via_cloud_run_job(123)
+
+        self.assertEqual(result, {"metadata": {"name": "execution-name"}})
+        mock_default.assert_called_once_with(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"]
+        )
+        mock_session_class.assert_called_once_with(credentials)
+        mock_session.post.assert_called_once_with(
+            "https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1"
+            "/namespaces/test-project/jobs/forsys-test:run",
+            json={
+                "overrides": {
+                    "containerOverrides": [
+                        {"name": "forsys", "args": ["--scenario", "123"]}
+                    ]
+                }
+            },
+            timeout=60,
+        )
+        response.raise_for_status.assert_called_once()
+
+
 class TriggerGeopackageGenerationTestCase(TestCase):
     @mock.patch("planning.tasks.async_generate_scenario_geopackage.delay")
     def test_trigger_geopackage_generation(self, mock_async_generate):
         scenario = ScenarioFactory.create(
             result_status=ScenarioResultStatus.SUCCESS,
             geopackage_status=GeoPackageStatus.PENDING,
-            post_process_status=ScenarioPostProcessingStatus.SUCCESS
+            post_process_status=ScenarioPostProcessingStatus.SUCCESS,
         )
 
         trigger_geopackage_generation()
@@ -435,7 +550,7 @@ class TriggerGeopackageGenerationTestCase(TestCase):
         scenario = ScenarioFactory.create(
             result_status=ScenarioResultStatus.FAILURE,
             geopackage_status=GeoPackageStatus.PENDING,
-            post_process_status=ScenarioPostProcessingStatus.SUCCESS
+            post_process_status=ScenarioPostProcessingStatus.SUCCESS,
         )
 
         trigger_geopackage_generation()
