@@ -20,7 +20,10 @@ import {
 } from '@resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from '@resolvers/scenario-loader.resolver';
 import { numberResolver } from './resolvers/number.resolver';
-import { createFeatureGuard } from '@app/features/feature.guard';
+import {
+  createFeatureGuard,
+  createFeatureMatchGuard,
+} from '@app/features/feature.guard';
 import { TreatmentEffectsHomeComponent } from './treatments/treatment-effects-home/treatment-effects-home.component';
 
 const routes: Routes = [
@@ -52,6 +55,15 @@ const routes: Routes = [
         loadComponent: () =>
           import('@standalone/forget-password/forget-password.component').then(
             (m) => m.ForgetPasswordComponent
+          ),
+      },
+      {
+        path: 'home',
+        title: 'Home',
+        canMatch: [createFeatureMatchGuard('WORKSPACES')],
+        loadComponent: () =>
+          import('@app/workspaces/workspaces.component').then(
+            (m) => m.WorkspacesComponent
           ),
       },
       {
