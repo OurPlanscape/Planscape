@@ -7,6 +7,7 @@ export * from '@styleguide/debounce-input/debounce-input.component';
 export * from '@styleguide/dialogs/dialogs';
 export * from '@styleguide/dialogs/error-dialog/error-dialog.component';
 export * from '@styleguide/dialogs/pending-dialog/pending-dialog.component';
+export * from '@styleguide/empty-state/empty-state.component';
 export * from '@styleguide/expanded-panel/expanded-panel.component';
 export * from '@styleguide/expander-section/expander-section.component';
 export * from '@styleguide/file-upload-field/file-upload-field.component';

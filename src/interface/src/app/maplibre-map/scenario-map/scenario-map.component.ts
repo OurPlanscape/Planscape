@@ -37,6 +37,8 @@ import { SubUnitToggleComponent } from '@maplibre-map/sub-unit-toggle/sub-unit-t
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.component';
 import { PlanningAreaStandsComponent } from '../planning-area-stands/planning-area-stands.component';
+import { TreatedStandsToggleComponent } from '../treated-stands-toggle/treated-stands-toggle.component';
+import { TreatedStandsComponent } from '../treated-stands/treated-stands.component';
 
 @UntilDestroy()
 @Component({
@@ -62,6 +64,8 @@ import { PlanningAreaStandsComponent } from '../planning-area-stands/planning-ar
     MapBaseLayersComponent,
     SubUnitToggleComponent,
     PlanningAreaStandsComponent,
+    TreatedStandsToggleComponent,
+    TreatedStandsComponent,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
@@ -145,7 +149,7 @@ export class ScenarioMapComponent implements OnDestroy {
     )
   );
 
-  private showSubUnitToggleOnResults$ = combineLatest([
+  showSubUnitToggleOnResults$ = combineLatest([
     this.isScenarioSuccessful$,
     this.scenarioState.currentScenario$,
   ]).pipe(
@@ -155,6 +159,16 @@ export class ScenarioMapComponent implements OnDestroy {
         !!scenario.planning_approach &&
         isPlanningApproachSubUnits(scenario.planning_approach)
     )
+  );
+
+  // We are showing treated stands if the scenario is completed and we have subunits
+  showTreatedStands$ = combineLatest([
+    this.newScenarioState.displayTreatedStands$,
+    this.showSubUnitToggleOnResults$,
+  ]).pipe(
+    map(([displayTreatedStands, showSubUnitsOnResults]) => {
+      return displayTreatedStands && showSubUnitsOnResults;
+    })
   );
 
   private showSubUnitToggle$ = combineLatest([
