@@ -43,6 +43,11 @@ export class ScenarioStandsComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
   @Input() mapLibreMap!: MapLibreMap;
+
+  /**
+   * Set true when these stands live under a parent plan / project area.
+   * Leave false (default) for the standalone scenario
+   */
   @Input() hasParent = false;
 
   readonly excludedKey = 'excluded';
@@ -50,6 +55,15 @@ export class ScenarioStandsComponent
   readonly scenarioId = this.route.snapshot.data['scenarioId'];
 
   private standsLoaded = false;
+  private excludedStands: number[] = [];
+  private constrainedStands: number[] = [];
+
+  // Assigned in ngOnInit
+  tilesUrl$!: Observable<string>;
+
+  get planId() {
+    return this.hasParent ? this.route.snapshot.data['planId'] : undefined;
+  }
 
   get sourceName(): string {
     return this.hasParent
@@ -57,44 +71,7 @@ export class ScenarioStandsComponent
       : MARTIN_SOURCES.scenarioStands.sources.standsWithIncludes;
   }
 
-  tilesUrl$ = combineLatest([
-    this.newScenarioState.scenarioConfig$.pipe(
-      filter((config) => !!config.stand_size)
-    ),
-    this.newScenarioState.includedAreas$,
-    this.newScenarioState.currentStep$,
-  ]).pipe(
-    untilDestroyed(this),
-    map(([config, includes, step]) => {
-      const includesParam =
-        step?.withIncludes && includes?.length
-          ? `&includes=${includes.join(',')}`
-          : '';
-
-      return this.hasParent
-        ? MARTIN_SOURCES.treatableStandsByProjectAreas.tilesUrl +
-            `?scenario_id=${this.scenarioId}` +
-            `&stand_size=${config.stand_size}` +
-            includesParam +
-            `&datetime=${new Date().toISOString()}`
-        : MARTIN_SOURCES.scenarioStands.tilesWithIncludesUrl +
-            `?scenario_id=${this.scenarioId}` +
-            `&stand_size=${config.stand_size}` +
-            includesParam +
-            `&datetime=${new Date().toISOString()}`;
-    }),
-    distinctUntilChanged(),
-    tap(() => {
-      this.newScenarioState.setLoading(true);
-      this.standsLoaded = false;
-    })
-  );
-
   opacity$ = this.mapConfigState.opacity$;
-
-  // local copies to reset feature state
-  private excludedStands: number[] = [];
-  private constrainedStands: number[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -151,6 +128,8 @@ export class ScenarioStandsComponent
   );
 
   ngOnInit(): void {
+    this.tilesUrl$ = this.buildTilesUrl$();
+
     this.mapLibreMap.on('sourcedata', this.onDataListener);
     this.mapLibreMap.on('styledata', this.onStyleDataListener);
 
@@ -194,6 +173,45 @@ export class ScenarioStandsComponent
   ngOnDestroy(): void {
     this.mapLibreMap.off('sourcedata', this.onDataListener);
     this.mapLibreMap.off('styledata', this.onStyleDataListener);
+  }
+
+  private buildTilesUrl$(): Observable<string> {
+    return this.hasParent
+      ? this.newScenarioState.scenarioConfig$.pipe(
+          filter((config) => !!config.stand_size),
+          map(
+            () =>
+              MARTIN_SOURCES.treatableStandsByProjectAreas.tilesUrl +
+              `?scenario_id=${this.scenarioId}`
+          ),
+          distinctUntilChanged(),
+          tap(() => {
+            this.newScenarioState.setLoading(true);
+            this.standsLoaded = false;
+          })
+        )
+      : combineLatest([
+          this.newScenarioState.scenarioConfig$.pipe(
+            filter((config) => !!config.stand_size)
+          ),
+          this.newScenarioState.includedAreas$,
+          this.newScenarioState.currentStep$,
+        ]).pipe(
+          untilDestroyed(this),
+          map(([config]) => {
+            return (
+              MARTIN_SOURCES.scenarioStands.tilesWithIncludesUrl +
+              `?scenario_id=${this.scenarioId}` +
+              `&stand_size=${config.stand_size}` +
+              `&datetime=${new Date().toISOString()}`
+            );
+          }),
+          distinctUntilChanged(),
+          tap(() => {
+            this.newScenarioState.setLoading(true);
+            this.standsLoaded = false;
+          })
+        );
   }
 
   private paintStands(ids: number[], key: string, current: number[]): number[] {

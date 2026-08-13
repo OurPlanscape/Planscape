@@ -69,9 +69,11 @@ describe('ScenarioStandsComponent', () => {
     }).compileComponents();
   });
 
-  function create() {
+  // hasParent defaults to false
+  function create(hasParent = false) {
     const fixture = TestBed.createComponent(ScenarioStandsComponent);
     fixture.componentInstance.mapLibreMap = mockMapLibreMap;
+    fixture.componentInstance.hasParent = hasParent;
     fixture.detectChanges();
     return { fixture, component: fixture.componentInstance };
   }
@@ -81,44 +83,100 @@ describe('ScenarioStandsComponent', () => {
     expect(component.scenarioId).toBe(scenarioId);
   });
 
-  it('tilesUrl$ emits only when stand_size exists and updates with latest', fakeAsync(() => {
-    const { component } = create();
+  describe('hasParent = false (default)', () => {
+    it('sourceName resolves to the standsWithIncludes source', () => {
+      const { component } = create();
+      expect(component.sourceName).toBe(
+        MARTIN_SOURCES.scenarioStands.sources.standsWithIncludes
+      );
+    });
 
-    const emitted: string[] = [];
-    const sub = component.tilesUrl$.subscribe((v) => emitted.push(v));
+    it('planId is undefined', () => {
+      const { component } = create();
+      expect(component.planId).toBeUndefined();
+    });
 
-    scenarioConfig$.next({ stand_size: 'BIG' });
-    scenarioConfig$.next({ stand_size: 'SMALL' });
+    it('tilesUrl$ emits only when stand_size exists and updates with latest', fakeAsync(() => {
+      const { component } = create();
 
-    tick();
+      const emitted: string[] = [];
+      const sub = component.tilesUrl$.subscribe((v) => emitted.push(v));
 
-    const base = MARTIN_SOURCES.scenarioStands.tilesWithIncludesUrl;
-    expect(emitted[0]).toContain(
-      `${base}?scenario_id=${scenarioId}&stand_size=BIG`
-    );
+      scenarioConfig$.next({ stand_size: 'BIG' });
+      scenarioConfig$.next({ stand_size: 'SMALL' });
 
-    expect(emitted[1]).toContain(
-      `${base}?scenario_id=${scenarioId}&stand_size=SMALL`
-    );
-    sub.unsubscribe();
-  }));
+      tick();
 
-  it('tilesUrl$ does not emit for falsy stand_size values (filter)', fakeAsync(() => {
-    const { component } = create();
+      const base = MARTIN_SOURCES.scenarioStands.tilesWithIncludesUrl;
+      expect(emitted[0]).toContain(
+        `${base}?scenario_id=${scenarioId}&stand_size=BIG`
+      );
 
-    const emitted: string[] = [];
-    const sub = component.tilesUrl$.subscribe((v) => emitted.push(v));
+      expect(emitted[1]).toContain(
+        `${base}?scenario_id=${scenarioId}&stand_size=SMALL`
+      );
+      sub.unsubscribe();
+    }));
 
-    scenarioConfig$.next({ stand_size: null });
-    scenarioConfig$.next({ stand_size: undefined });
-    scenarioConfig$.next({});
+    it('tilesUrl$ does not emit for falsy stand_size values (filter)', fakeAsync(() => {
+      const { component } = create();
 
-    tick();
+      const emitted: string[] = [];
+      const sub = component.tilesUrl$.subscribe((v) => emitted.push(v));
 
-    expect(emitted).toEqual([]);
+      scenarioConfig$.next({ stand_size: null });
+      scenarioConfig$.next({ stand_size: undefined });
+      scenarioConfig$.next({});
 
-    sub.unsubscribe();
-  }));
+      tick();
+
+      expect(emitted).toEqual([]);
+
+      sub.unsubscribe();
+    }));
+  });
+
+  describe('hasParent = true', () => {
+    it('sourceName resolves to the standsByProjectAreas source', () => {
+      const { component } = create(true);
+      expect(component.sourceName).toBe(
+        MARTIN_SOURCES.treatableStandsByProjectAreas.sources.stands
+      );
+    });
+
+    it('planId reads from route snapshot', () => {
+      const { component } = create(true);
+      expect(component.planId).toBe(planId);
+    });
+
+    it('tilesUrl$ uses the child query, keyed by scenario_id', fakeAsync(() => {
+      const { component } = create(true);
+
+      const emitted: string[] = [];
+      const sub = component.tilesUrl$.subscribe((v) => emitted.push(v));
+
+      scenarioConfig$.next({ stand_size: 'BIG' });
+      tick();
+
+      const base = MARTIN_SOURCES.treatableStandsByProjectAreas.tilesUrl;
+      expect(emitted[0]).toBe(`${base}?scenario_id=${scenarioId}`);
+
+      sub.unsubscribe();
+    }));
+
+    it('tilesUrl$ does not emit for falsy stand_size values (filter)', fakeAsync(() => {
+      const { component } = create(true);
+
+      const emitted: string[] = [];
+      const sub = component.tilesUrl$.subscribe((v) => emitted.push(v));
+
+      scenarioConfig$.next({ stand_size: null });
+      tick();
+
+      expect(emitted).toEqual([]);
+      sub.unsubscribe();
+    }));
+  });
 
   describe('ngOnInit', () => {
     it('registers sourcedata and styledata listeners on the map', () => {
