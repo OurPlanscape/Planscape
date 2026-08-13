@@ -188,6 +188,9 @@ APP=$(APP_NAME)-$(ENV)
 DOCKER_REPO=planscape-$(APP_NAME)
 DOCKER_TAG=us-central1-docker.pkg.dev/$(PROJECT)/$(DOCKER_REPO)/$(APP_NAME):$(VERSION)
 REGION=us-central1
+CELERY_WORKER_GENERAL=planscape-celery-worker-general-$(ENV)
+CELERY_WORKER_HEAVY=planscape-celery-worker-heavy-$(ENV)
+CELERY_BEAT=planscape-celery-beat-$(ENV)
 
 cloud-run-build:
 	@BUILDS=$$(gcloud builds list --filter="images:$(DOCKER_TAG)" --format=json); \
@@ -220,6 +223,18 @@ cloud-run-build-deploy: cloud-run-build cloud-run-push cloud-run-deploy
 
 cloud-run-docker-tag:
 	echo "$(DOCKER_TAG)"
+
+
+cloud-run-deploy-celery-general:
+	gcloud run services update $(CELERY_WORKER_GENERAL) --image $(DOCKER_TAG) --region $(REGION)
+
+cloud-run-deploy-celery-heavy:
+	gcloud run services update $(CELERY_WORKER_HEAVY) --image $(DOCKER_TAG) --region $(REGION)
+
+cloud-run-deploy-celery-beat:
+	gcloud run services update $(CELERY_BEAT) --image $(DOCKER_TAG) --region $(REGION)
+
+cloud-run-deploy-celery: cloud-run-push cloud-run-deploy-celery-general cloud-run-deploy-celery-heavy cloud-run-deploy-celery-beat
 
 
 cloud-run-build-gateway:
