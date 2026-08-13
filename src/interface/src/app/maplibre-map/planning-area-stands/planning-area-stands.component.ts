@@ -175,36 +175,24 @@ export class PlanningAreaStandsComponent
   }
 
   private buildTilesUrl$(): Observable<string> {
-    return this.hasParent
-      ? this.newScenarioState.scenarioConfig$.pipe(
-          filter((config) => !!config.stand_size),
-          map(
-            () =>
-              MARTIN_SOURCES.standsByProjectAreas.tilesUrl +
-              `?scenario_id=${this.scenarioId}`
-          ),
-          distinctUntilChanged(),
-          tap(() => {
-            this.newScenarioState.setLoading(true);
-            this.standsLoaded = false;
-          })
-        )
-      : this.newScenarioState.scenarioConfig$.pipe(
-          filter((config) => !!config.stand_size),
-          map(
-            (config) =>
-              MARTIN_SOURCES.scenarioStands.tilesUrl +
-              `?planning_area_id=${this.planId}` +
-              `&stand_size=${config.stand_size}` +
-              `&datetime=${new Date().toISOString()}`
-          ),
-          distinctUntilChanged(),
-          // when the stand size changes, set as loading
-          tap(() => {
-            this.newScenarioState.setLoading(true);
-            this.standsLoaded = false;
-          })
-        );
+    return this.newScenarioState.scenarioConfig$.pipe(
+      filter((config) => !!config.stand_size),
+      map((config) =>
+        this.hasParent
+          ? MARTIN_SOURCES.standsByProjectAreas.tilesUrl +
+            `?scenario_id=${this.scenarioId}`
+          : MARTIN_SOURCES.scenarioStands.tilesUrl +
+            `?planning_area_id=${this.planId}` +
+            `&stand_size=${config.stand_size}` +
+            `&datetime=${new Date().toISOString()}`
+      ),
+      distinctUntilChanged(),
+      // when the stand size changes, set as loading
+      tap(() => {
+        this.newScenarioState.setLoading(true);
+        this.standsLoaded = false;
+      })
+    );
   }
 
   private paintStands(ids: number[], key: string, current: number[]): number[] {

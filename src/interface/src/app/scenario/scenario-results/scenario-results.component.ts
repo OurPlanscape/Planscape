@@ -113,7 +113,9 @@ export class ScenarioResultsComponent implements OnChanges, OnInit {
   }
 
   get headLineText() {
-    if (this.isPlanningApproachSubUnits && this.scenarioParent === null) {
+    // We only show 'Top 10 Subunits' when both conditions are met:
+    //  it's a subunits scenario AND it's not a child scenario
+    if (this.isPlanningApproachSubUnits && !this.scenarioParent) {
       return 'Top 10 Subunits';
     }
     return 'Project Areas';
