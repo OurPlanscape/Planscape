@@ -176,42 +176,24 @@ export class ScenarioStandsComponent
   }
 
   private buildTilesUrl$(): Observable<string> {
-    return this.hasParent
-      ? this.newScenarioState.scenarioConfig$.pipe(
-          filter((config) => !!config.stand_size),
-          map(
-            () =>
-              MARTIN_SOURCES.treatableStandsByProjectAreas.tilesUrl +
-              `?scenario_id=${this.scenarioId}`
-          ),
-          distinctUntilChanged(),
-          tap(() => {
-            this.newScenarioState.setLoading(true);
-            this.standsLoaded = false;
-          })
-        )
-      : combineLatest([
-          this.newScenarioState.scenarioConfig$.pipe(
-            filter((config) => !!config.stand_size)
-          ),
-          this.newScenarioState.includedAreas$,
-          this.newScenarioState.currentStep$,
-        ]).pipe(
-          untilDestroyed(this),
-          map(([config]) => {
-            return (
-              MARTIN_SOURCES.scenarioStands.tilesWithIncludesUrl +
-              `?scenario_id=${this.scenarioId}` +
-              `&stand_size=${config.stand_size}` +
-              `&datetime=${new Date().toISOString()}`
-            );
-          }),
-          distinctUntilChanged(),
-          tap(() => {
-            this.newScenarioState.setLoading(true);
-            this.standsLoaded = false;
-          })
-        );
+    return this.newScenarioState.scenarioConfig$.pipe(
+      filter((config) => !!config?.stand_size),
+      map((config) => {
+        if (this.hasParent) {
+          return `${MARTIN_SOURCES.treatableStandsByProjectAreas.tilesUrl}?scenario_id=${this.scenarioId}`;
+        }
+
+        const baseUrl = MARTIN_SOURCES.scenarioStands.tilesWithIncludesUrl;
+        const timestamp = new Date().toISOString();
+
+        return `${baseUrl}?scenario_id=${this.scenarioId}&stand_size=${config.stand_size}&datetime=${timestamp}`;
+      }),
+      distinctUntilChanged(),
+      tap(() => {
+        this.newScenarioState.setLoading(true);
+        this.standsLoaded = false;
+      })
+    );
   }
 
   private paintStands(ids: number[], key: string, current: number[]): number[] {

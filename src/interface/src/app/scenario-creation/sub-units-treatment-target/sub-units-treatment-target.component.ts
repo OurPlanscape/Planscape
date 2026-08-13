@@ -81,14 +81,18 @@ export class SubUnitsTreatmentTargetComponent extends StepDirective<ScenarioDraf
     map((scenario: Scenario) => !!scenario?.parent)
   );
 
+  // This GETs the subunit details from the backend to populate the chart.
+  // This should happen either when we have a sub_units_layer that's changed
+  // OR when we are using a child scenario, which won't have a sub_units_layer.
   subUnitDetails$ = combineLatest([this.subUnitsLayer$, this.hasParent$]).pipe(
     filter(([sub_units_layer, hasParent]) => !!sub_units_layer || hasParent),
     map(([sub_units_layer]) => sub_units_layer),
     distinctUntilChanged(),
     switchMap((sub_units_layer) =>
-      this.scenarioService.getSubUnitsDetails(this.scenarioId, {
-        sub_units_layer,
-      })
+      this.scenarioService.getSubUnitsDetails(
+        this.scenarioId,
+        sub_units_layer ? { sub_units_layer } : {}
+      )
     ),
     // keep local copy for validations
     tap((subUnitDetails) => {
