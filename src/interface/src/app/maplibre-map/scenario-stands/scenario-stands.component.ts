@@ -53,8 +53,7 @@ export class ScenarioStandsComponent
 
   get sourceName(): string {
     return this.hasParent
-      ? // TODO: update this with new query when new martin query is ready
-        MARTIN_SOURCES.standsByProjectAreas.sources.stands
+      ? MARTIN_SOURCES.treatableStandsByProjectAreas.sources.stands
       : MARTIN_SOURCES.scenarioStands.sources.standsWithIncludes;
   }
 
@@ -72,9 +71,8 @@ export class ScenarioStandsComponent
           ? `&includes=${includes.join(',')}`
           : '';
 
-      // TODO: update query when new martin query is ready
       return this.hasParent
-        ? MARTIN_SOURCES.standsByProjectAreas.tilesUrl +
+        ? MARTIN_SOURCES.treatableStandsByProjectAreas.tilesUrl +
             `?scenario_id=${this.scenarioId}` +
             `&stand_size=${config.stand_size}` +
             includesParam +

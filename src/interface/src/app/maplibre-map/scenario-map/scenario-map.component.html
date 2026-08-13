@@ -53,6 +53,7 @@
       [projectAreasCount]="projectAreasCount"
       [showHoveredProjectAreas]="false"
       [mapLibreMap]="mapLibreMap"
+      [hasParent]="(hasParent$ | async) ?? false"
       [labelField]="'rank'"
       [planningApproach]="
         (planningApproach$ | async) || 'OPTIMIZE_PROJECT_AREAS'
