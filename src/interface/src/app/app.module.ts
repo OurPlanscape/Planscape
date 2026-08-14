@@ -39,11 +39,7 @@ import * as Sentry from '@sentry/angular';
 import { LoggingHttpInterceptor } from '@services/logging-http.interceptor';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    HomeComponent,
-    SharePlanDialogComponent,
-  ],
+  declarations: [AppComponent, HomeComponent, SharePlanDialogComponent],
   imports: [
     AppRoutingModule,
     BrowserAnimationsModule,
