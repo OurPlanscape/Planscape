@@ -236,7 +236,8 @@ export class ScenariosListComponent implements OnInit {
 
     if (this.mode === 'project-area') {
       const base = ['/plan', this.plan!.id, 'scenario', clickedScenario.id];
-      this.router.navigate(isFinished ? [...base, 'dashboard'] : base);
+      // Note that these child scenarios should not navigate to a dashboard on completion
+      this.router.navigate(isFinished ? [...base] : base);
       this.breadcrumbService.updateBreadCrumb({
         label: 'Project Area Dashboard',
         backUrl: getPlanPath(clickedScenario.planning_area),

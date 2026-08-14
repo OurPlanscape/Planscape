@@ -55,7 +55,6 @@
       [projectAreasCount]="projectAreasCount"
       [showHoveredProjectAreas]="false"
       [mapLibreMap]="mapLibreMap"
-      [hasParent]="(hasParent$ | async) ?? false"
       [labelField]="'rank'"
       [planningApproach]="
         (planningApproach$ | async) || 'OPTIMIZE_PROJECT_AREAS'
@@ -82,18 +81,18 @@
         [hasParent]="(hasParent$ | async) ?? false"
         [mapLibreMap]="mapLibreMap"></app-planning-area-stands>
     </ng-template>
-  </ng-container>
 
-  <ng-container *ngIf="(hasParent$ | async) === true">
-    <app-map-project-areas
-      [showHoveredProjectAreas]="false"
-      [mapLibreMap]="mapLibreMap"
-      [hasParent]="true"
-      [labelField]="'rank'"
-      [planningApproach]="
-        (planningApproach$ | async) || 'PRIORITIZE_SUB_UNITS'
-      ">
-    </app-map-project-areas>
+    <ng-container *ngIf="(hasParent$ | async) === true">
+      <app-map-project-areas
+        [showHoveredProjectAreas]="false"
+        [mapLibreMap]="mapLibreMap"
+        [hasParent]="true"
+        [labelField]="'rank'"
+        [planningApproach]="
+          (planningApproach$ | async) || 'PRIORITIZE_SUB_UNITS'
+        ">
+      </app-map-project-areas>
+    </ng-container>
   </ng-container>
 
   <ng-container *ngIf="showTreatedStands$ | async">
