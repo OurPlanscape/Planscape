@@ -30,7 +30,6 @@ import { NgxMaskModule } from 'ngx-mask';
 
 import { SharePlanDialogComponent } from '@home/share-plan-dialog/share-plan-dialog.component';
 import { SharedModule } from '@shared';
-import { WelcomeComponent } from '@home/welcome/welcome.component';
 import { environment } from '@env/environment';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 
@@ -44,7 +43,6 @@ import { LoggingHttpInterceptor } from '@services/logging-http.interceptor';
     AppComponent,
     HomeComponent,
     SharePlanDialogComponent,
-    WelcomeComponent,
   ],
   imports: [
     AppRoutingModule,

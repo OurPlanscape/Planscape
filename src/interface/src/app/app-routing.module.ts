@@ -10,6 +10,8 @@ import { HomeComponent } from '@home/home.component';
 import {
   AuthGuard,
   DevelopmentRouteGuard,
+  loggedInMatchGuard,
+  loggedOutMatchGuard,
   passwordResetTokenResolver,
   RedirectGuard,
   redirectResolver,
@@ -57,10 +59,21 @@ const routes: Routes = [
             (m) => m.ForgetPasswordComponent
           ),
       },
+      // `home` renders one of three components, first match wins:
+      // logged out -> welcome, logged in -> home, logged in + flag -> workspaces
       {
         path: 'home',
         title: 'Home',
-        canMatch: [createFeatureMatchGuard('WORKSPACES')],
+        canMatch: [loggedOutMatchGuard],
+        loadComponent: () =>
+          import('@home/welcome/welcome.component').then(
+            (m) => m.WelcomeComponent
+          ),
+      },
+      {
+        path: 'home',
+        title: 'Home',
+        canMatch: [loggedInMatchGuard, createFeatureMatchGuard('WORKSPACES')],
         loadComponent: () =>
           import('@app/workspaces/workspaces.component').then(
             (m) => m.WorkspacesComponent
