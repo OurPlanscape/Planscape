@@ -1,0 +1,70 @@
+@import 'colors';
+@import 'mixins';
+
+:host {
+  display: flex;
+  border-radius: 8px;
+  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.16);
+  padding: 16px;
+  gap: 16px;
+  background-color: $color-white;
+  align-items: center;
+
+  .map-container {
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+  }
+
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.header {
+  display: inline-flex;
+  align-items: center;
+  .more-menu-button {
+    margin-left: auto;
+  }
+}
+
+.title {
+  @include h4();
+}
+
+.details-row {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+
+  .detail-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .detail-header {
+      font-size: 14px;
+      font-weight: 700;
+      color: $color-md-gray;
+      text-transform: uppercase;
+    }
+
+    .detail-info {
+      font-size: 14px;
+      font-weight: 600;
+      color: $color-black;
+    }
+  }
+}
+
+.delete {
+  color: $color-error;
+
+  mat-icon {
+    color: $color-error;
+  }
+}
