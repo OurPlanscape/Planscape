@@ -129,6 +129,32 @@ const routes: Routes = [
       {
         path: 'map-viewer',
         title: 'Map Viewer',
+        // With workspaces the map viewer belongs to a workspace, so a bare
+        // `map-viewer` has nothing to show: send them to pick one on `home`.
+        // A `canMatch` + `redirectTo` route can't do this, the router applies
+        // the redirect without ever running the guard.
+        canActivate: [
+          createFeatureGuard({
+            featureName: 'WORKSPACES',
+            inverted: true,
+            fallback: '/home',
+          }),
+        ],
+        loadComponent: () =>
+          import('@explore/explore/explore.component').then(
+            (m) => m.ExploreComponent
+          ),
+        resolve: {
+          planInit: planResetResolver,
+        },
+      },
+      // Declared before `map-viewer/:planId` so `workspace` is never read as a
+      // plan id. Plans will move under the workspace later.
+      {
+        path: 'map-viewer/workspace/:workspaceId',
+        title: 'Map Viewer',
+        canMatch: [createFeatureMatchGuard('WORKSPACES')],
+        canActivate: [AuthGuard],
         loadComponent: () =>
           import('@explore/explore/explore.component').then(
             (m) => m.ExploreComponent
