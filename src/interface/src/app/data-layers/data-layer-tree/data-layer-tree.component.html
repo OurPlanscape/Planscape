@@ -19,32 +19,31 @@
         matTreeNodePadding
         class="data-layer"
         [class.padded]="displayAddButton">
-        <span class="button-column" *ngIf="displayAddButton"
-          ><button
-            mat-icon-button
-            class="select-button"
-            [ngClass]="{
-              selected: isDatalayerSelected(node.item),
-              disabled:
-                isUnselectable(node.item) || (isSelectionCompleted$ | async),
-            }"
-            [matTooltip]="
-              getTooltipText(node.item, isSelectionCompleted$ | async)
+        <span
+          class="button-column"
+          *ngIf="displayAddButton"
+          [matTooltip]="
+            getTooltipText(node.item, isSelectionCompleted$ | async)
+          "
+          [matTooltipDisabled]="
+            !isUnselectable(node.item) &&
+            (isSelectionCompleted$ | async) === false
+          ">
+          <mat-checkbox
+            class="view-checkbox"
+            [checked]="isDatalayerSelected(node.item)"
+            [disabled]="
+              !isDatalayerSelected(node.item) &&
+              (isUnselectable(node.item) || (isSelectionCompleted$ | async))
             "
-            (click)="toggleDataLayerSelection(node.item)"
-            type="button">
-            <mat-icon>{{
-              isDatalayerSelected(node.item) ? 'remove' : 'add'
-            }}</mat-icon>
-          </button>
+            (change)="toggleDataLayerSelection(node.item)"></mat-checkbox>
         </span>
-        <mat-radio-button
-          [value]="node.item.id"
-          class="data-layer-input"
-          [ngClass]="{ selected: treeContainerModel.value === node.item.id }"
-          (change)="selectDataLayer(node.item)">
+        <sg-toggle
+          class="toggle"
+          [ngModel]="treeContainerModel.value === node.item.id"
+          (change)="selectDataLayer(node.item, $event)">
           {{ node.name }}
-        </mat-radio-button>
+        </sg-toggle>
         <mat-spinner
           diameter="20"
           *ngIf="

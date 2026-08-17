@@ -1,0 +1,16 @@
+<mat-icon
+  *ngIf="icon"
+  class="empty-state-icon"
+  [class.material-symbols-outlined]="outlined"
+  >{{ icon }}
+</mat-icon>
+
+<div class="empty-state-title" *ngIf="title">{{ title }}</div>
+
+<div class="empty-state-description" *ngIf="description">
+  {{ description }}
+</div>
+
+<div class="empty-state-actions">
+  <ng-content></ng-content>
+</div>

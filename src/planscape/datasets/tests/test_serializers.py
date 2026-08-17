@@ -310,6 +310,16 @@ class TestCreateStyleSerializer(TestCase):
         )
         self.assertTrue(serializer.is_valid())
 
+    def test_valid_data_with_nan_nodata_sentinel(self):
+        self.valid_payload["data"]["no_data"]["values"] = ["nan"]
+
+        serializer = CreateStyleSerializer(
+            data=self.valid_payload,
+            context={"request": self.request},
+        )
+
+        self.assertTrue(serializer.is_valid())
+
     def test_invalid_data_no_type(self):
         serializer = CreateStyleSerializer(
             data=self.invalid_payload_no_type,

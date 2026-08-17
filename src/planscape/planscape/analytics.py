@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Dict, Optional, Union
 
-from core.tasks import track, track_mixpanel
+from core.tasks import track_mixpanel
 from django.conf import settings
 from django.contrib.auth.models import User
 
@@ -13,16 +13,13 @@ def get_domain(email: str) -> str:
     return domain
 
 
-def _dispatch(
-    openpanel_payload: Dict[str, Any], mixpanel_payload: Dict[str, Any]
-) -> None:
+def _dispatch(payload: Dict[str, Any]) -> None:
     if settings.TESTING_MODE:
         return
-    track.delay(payload=openpanel_payload)  # type: ignore
-    track_mixpanel.delay(payload=mixpanel_payload)  # type: ignore
+    track_mixpanel.delay(payload=payload)  # type: ignore
 
 
-def track_openpanel(
+def track_event(
     name: str,
     properties: Optional[Dict[str, Any]] = None,
     user_id: Optional[Union[str, int]] = None,
@@ -34,17 +31,9 @@ def track_openpanel(
         properties["domain"] = domain
 
     distinct_id = str(user_id) if user_id else "anonymous"
-    log.info(f"tracking openpanel event {name}")
+    log.info(f"tracking event {name}")
     _dispatch(
-        openpanel_payload={
-            "type": "track",
-            "payload": {
-                "name": name,
-                "profileId": str(user_id) if user_id else None,
-                "properties": properties,
-            },
-        },
-        mixpanel_payload={
+        payload={
             "type": "track",
             "payload": {
                 "distinct_id": distinct_id,
@@ -55,26 +44,10 @@ def track_openpanel(
     )
 
 
-def identify_openpanel(user: User) -> None:
+def identify_user(user: User) -> None:
     distinct_id = str(user.pk)
-    shared_properties = {
-        "organization": None,
-        "last_login": user.last_login,
-    }
     _dispatch(
-        openpanel_payload={
-            "type": "identify",
-            "payload": {
-                "profileId": distinct_id,
-                "traits": {
-                    "firstName": user.first_name,
-                    "lastName": user.last_name,
-                    "email": user.email,
-                },
-                "properties": shared_properties,
-            },
-        },
-        mixpanel_payload={
+        payload={
             "type": "identify",
             "payload": {
                 "distinct_id": distinct_id,
@@ -82,7 +55,8 @@ def identify_openpanel(user: User) -> None:
                     "$first_name": user.first_name,
                     "$last_name": user.last_name,
                     "$email": user.email,
-                    **shared_properties,
+                    "organization": None,
+                    "last_login": user.last_login,
                 },
             },
         },

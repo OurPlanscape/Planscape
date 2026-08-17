@@ -54,6 +54,7 @@ dependencies = [
     "django-cacheops~=7.1",
     "martor>=1.6.45,<2",
     "django-redis>=5.4,<6",
+    "google-auth>=2.40.3,<3",
     "google-cloud-storage>=3.1.1,<4",
     "gevent>=25.9.1,<26",
     "zope-event==5.1.1",

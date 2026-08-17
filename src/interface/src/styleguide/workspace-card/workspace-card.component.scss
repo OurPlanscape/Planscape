@@ -1,0 +1,97 @@
+@import 'mixins';
+@import 'colors';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid $color-soft-gray;
+  background-color: $color-white;
+  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.16);
+  cursor: pointer;
+
+  &:hover {
+    background-color: $color-lighter-gray;
+  }
+}
+
+.title-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  .workspace-icon {
+    color: $color-black;
+    font-size: 32px;
+    height: 32px;
+    width: 32px;
+  }
+}
+
+.workspace-name {
+  @include h5();
+}
+
+.planning-areas {
+  @include regular-paragraph();
+  font-size: 14px;
+  color: $color-dark-gray;
+}
+
+.detail-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  .detail-line {
+    @include xs-label();
+    color: $color-dark-gray;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .detail-icon {
+    color: $color-standard-blue;
+    font-size: 20px;
+    height: 20px;
+    width: 20px;
+  }
+
+  .separator {
+    color: $color-dark-gray;
+  }
+}
+
+.action-button {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  width: 100%;
+  align-items: center;
+  padding: 12px;
+  @include small-paragraph();
+  color: $color-black;
+
+  mat-icon {
+    color: $color-black;
+    font-size: 20px;
+    height: 20px;
+    width: 20px;
+    margin: 0;
+  }
+}
+
+.action-button.delete {
+  color: $color-error;
+
+  mat-icon {
+    color: $color-error;
+  }
+}

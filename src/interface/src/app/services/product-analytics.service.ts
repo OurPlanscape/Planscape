@@ -1,40 +1,35 @@
 import { Injectable } from '@angular/core';
 
 import { MixpanelService } from '@services/mixpanel.service';
-import { OpenPanelService } from '@services/open-panel.service';
 
 /**
- * Single entry point for product analytics while we migrate from OpenPanel to
- * Mixpanel.
+ * Single entry point for product analytics. Components depend on this rather
+ * than on Mixpanel directly, so swapping or adding an SDK stays a change to
+ * this file instead of a hunt through call sites.
  *
  * Distinct from `AnalyticsService`, which is Google Analytics.
  *
  * Event names follow the backend convention (`app.model.verb`) so client and
  * server events for the same flow line up.
  *
- * Call `trackEvent` explicitly for anything worth naming. T
- *
- * What you should NOT re-emit here, because both SDKs already send it:
- * - navigation: `screen_view` on OpenPanel, `$mp_web_page_view` on Mixpanel
- * - any click: `link_out` on OpenPanel, `$mp_click` on Mixpanel
+ * Call `trackEvent` explicitly for anything worth naming. Do NOT re-emit what
+ * Mixpanel's autocapture already sends - navigation as `$mp_web_page_view` and
+ * clicks as `$mp_click` - or you will double count. A presentational component
+ * that shouldn't know about analytics can expose an `@Output` and let its
+ * consumer track it.
  */
 @Injectable({
   providedIn: 'root',
 })
 export class ProductAnalyticsService {
-  constructor(
-    private openPanelService: OpenPanelService,
-    private mixpanelService: MixpanelService
-  ) {}
+  constructor(private mixpanelService: MixpanelService) {}
 
-  /** Starts both SDKs. Safe to call more than once. */
+  /** Starts the SDK. Safe to call more than once. */
   init(): void {
-    this.openPanelService.init();
     this.mixpanelService.init();
   }
 
   trackEvent(name: string, properties?: Record<string, unknown>): void {
-    this.openPanelService.trackEvent(name, properties);
     this.mixpanelService.track(name, properties);
   }
 }

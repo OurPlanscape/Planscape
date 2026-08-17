@@ -165,3 +165,11 @@ export const WithSelectAll: Story = {
     selectAllEnabled: true,
   },
 };
+
+export const WithOnlyOneGroup: Story = {
+  args: {
+    items: [groupedItems[0]],
+    groupBy: 'dataset.name',
+    colorPath: 'nested[0].properties.color',
+  },
+};

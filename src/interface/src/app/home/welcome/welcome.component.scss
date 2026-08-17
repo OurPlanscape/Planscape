@@ -3,7 +3,7 @@
 
 :host {
   flex: 1;
-  overflow: scroll;
+  height: 100%;
   @include on-large() {
     display: flex;
   }

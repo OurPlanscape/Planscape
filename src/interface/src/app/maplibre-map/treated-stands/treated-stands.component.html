@@ -1,0 +1,13 @@
+<mgl-vector-source
+  id="scenarioProjectAreasLayer"
+  [tiles]="[vectorLayer]"
+  promoteId="id">
+</mgl-vector-source>
+
+<mgl-layer
+  id="projectAreasFill"
+  type="fill"
+  source="scenarioProjectAreasLayer"
+  [sourceLayer]="martinSource.sources.geometry"
+  [paint]="standPaint">
+</mgl-layer>

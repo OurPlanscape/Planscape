@@ -75,9 +75,9 @@
   display: flex;
   width: 100%;
   align-items: center;
-  
+
   &.with-add-button {
-    gap:16px;
+    gap: 16px;
   }
 }
 
@@ -137,4 +137,9 @@
   color: $color-md-gray;
   padding-top: 8px;
   padding-bottom: 8px;
+}
+
+.toggle {
+  margin-right: auto;
+  flex: 1;
 }

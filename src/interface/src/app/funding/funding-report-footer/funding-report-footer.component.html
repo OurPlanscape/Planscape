@@ -1,10 +1,11 @@
 <ng-container *ngIf="showShare">
   <button
     sg-button
-    icon="share_outlined"
+    [outlined]="true"
+    icon="send"
     (click)="shareReport()"
     *appFeatureFlag="'SHARE_FUNDING_REPORTS'">
-    Share
+    Send results summary
   </button>
 </ng-container>
 <button

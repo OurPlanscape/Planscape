@@ -93,6 +93,7 @@
             mat-stroked-button
             color="primary"
             data-id="map-viewer"
+            *appFeatureFlag="'WORKSPACES'; hide: true"
             [routerLink]="'/map-viewer'"
             class="login-form-button guest-button">
             Map Viewer

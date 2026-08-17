@@ -10,6 +10,8 @@ import { HomeComponent } from '@home/home.component';
 import {
   AuthGuard,
   DevelopmentRouteGuard,
+  loggedInMatchGuard,
+  loggedOutMatchGuard,
   passwordResetTokenResolver,
   RedirectGuard,
   redirectResolver,
@@ -20,7 +22,10 @@ import {
 } from '@resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from '@resolvers/scenario-loader.resolver';
 import { numberResolver } from './resolvers/number.resolver';
-import { createFeatureGuard } from '@app/features/feature.guard';
+import {
+  createFeatureGuard,
+  createFeatureMatchGuard,
+} from '@app/features/feature.guard';
 import { TreatmentEffectsHomeComponent } from './treatments/treatment-effects-home/treatment-effects-home.component';
 
 const routes: Routes = [
@@ -52,6 +57,26 @@ const routes: Routes = [
         loadComponent: () =>
           import('@standalone/forget-password/forget-password.component').then(
             (m) => m.ForgetPasswordComponent
+          ),
+      },
+      // `home` renders one of three components, first match wins:
+      // logged out -> welcome, logged in -> home, logged in + flag -> workspaces
+      {
+        path: 'home',
+        title: 'Home',
+        canMatch: [loggedOutMatchGuard],
+        loadComponent: () =>
+          import('@home/welcome/welcome.component').then(
+            (m) => m.WelcomeComponent
+          ),
+      },
+      {
+        path: 'home',
+        title: 'Home',
+        canMatch: [loggedInMatchGuard, createFeatureMatchGuard('WORKSPACES')],
+        loadComponent: () =>
+          import('@app/workspaces/workspaces.component').then(
+            (m) => m.WorkspacesComponent
           ),
       },
       {
@@ -104,6 +129,32 @@ const routes: Routes = [
       {
         path: 'map-viewer',
         title: 'Map Viewer',
+        // With workspaces the map viewer belongs to a workspace, so a bare
+        // `map-viewer` has nothing to show: send them to pick one on `home`.
+        // A `canMatch` + `redirectTo` route can't do this, the router applies
+        // the redirect without ever running the guard.
+        canActivate: [
+          createFeatureGuard({
+            featureName: 'WORKSPACES',
+            inverted: true,
+            fallback: '/home',
+          }),
+        ],
+        loadComponent: () =>
+          import('@explore/explore/explore.component').then(
+            (m) => m.ExploreComponent
+          ),
+        resolve: {
+          planInit: planResetResolver,
+        },
+      },
+      // Declared before `map-viewer/:planId` so `workspace` is never read as a
+      // plan id. Plans will move under the workspace later.
+      {
+        path: 'map-viewer/workspace/:workspaceId',
+        title: 'Map Viewer',
+        canMatch: [createFeatureMatchGuard('WORKSPACES')],
+        canActivate: [AuthGuard],
         loadComponent: () =>
           import('@explore/explore/explore.component').then(
             (m) => m.ExploreComponent

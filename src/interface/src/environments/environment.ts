@@ -10,9 +10,8 @@ export const environment = {
   google_analytics_id: '', // Replace with actual ID.
   download_endpoint: '', // Replace with actual URL
   martin_server: 'https://dev.planscape.org/tiles/',
+  feature_flags: '',
   mapbox_key: '',
-  open_panel_key: '',
-  open_panel_enabled: false,
   mixpanel_token: '',
   mixpanel_enabled: false,
   debug_layers: false,

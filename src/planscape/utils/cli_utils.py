@@ -3,10 +3,13 @@ import subprocess
 from pathlib import Path
 from typing import Any, Collection, Dict, Optional
 
+import google.auth
 import requests
 import toml
 from django.conf import settings
+from google.auth.exceptions import GoogleAuthError
 from gis.core import with_vsi_prefix
+from google.auth.transport.requests import AuthorizedSession
 from requests.exceptions import HTTPError, RequestException, Timeout
 
 from planscape.exceptions import ForsysException, ForsysTimeoutException
@@ -205,7 +208,17 @@ def _call_forsys_via_api(
     scenario_id: int,
     timeout: Optional[int] = None,
 ):
-    """Call the forsys API."""
+    """Call forsys using the configured API backend."""
+    if settings.FORSYS_USE_CLOUD_RUN_JOB:
+        return _call_forsys_via_cloud_run_job(scenario_id, timeout)
+    return _call_forsys_via_plumber_api(scenario_id, timeout)
+
+
+def _call_forsys_via_plumber_api(
+    scenario_id: int,
+    timeout: Optional[int] = None,
+):
+    """Call the forsys Plumber API."""
     try:
         response = requests.post(
             f"{settings.FORSYS_PLUMBER_URL}/run_forsys",
@@ -218,8 +231,49 @@ def _call_forsys_via_api(
         raise ForsysTimeoutException(
             f"Forsys API call timed out after {timeout} seconds."
         ) from e
-    except HTTPError or RequestException as e:
+    except (HTTPError, RequestException) as e:
         raise ForsysException(f"Forsys API call failed: {e}") from e
+
+
+def _call_forsys_via_cloud_run_job(
+    scenario_id: int,
+    timeout: Optional[int] = None,
+):
+    """Execute the forsys Cloud Run Job."""
+    url = (
+        f"https://{settings.FORSYS_CLOUD_RUN_REGION}-run.googleapis.com"
+        "/apis/run.googleapis.com/v1"
+        f"/namespaces/{settings.GCP_PROJECT}"
+        f"/jobs/{settings.FORSYS_CLOUD_RUN_JOB_NAME}:run"
+    )
+    payload = {
+        "overrides": {
+            "containerOverrides": [
+                {
+                    "name": "forsys",
+                    "args": ["--scenario", str(scenario_id)],
+                }
+            ]
+        }
+    }
+    try:
+        credentials, _ = google.auth.default(
+            scopes=["https://www.googleapis.com/auth/cloud-platform"]
+        )
+        session = AuthorizedSession(credentials)
+        response = session.post(
+            url,
+            json=payload,
+            timeout=timeout or settings.FORSYS_CLOUD_RUN_API_TIMEOUT,
+        )
+        response.raise_for_status()
+        return response.json()
+    except Timeout as e:
+        raise ForsysTimeoutException(
+            f"Forsys Cloud Run Job call timed out after {timeout} seconds."
+        ) from e
+    except (GoogleAuthError, HTTPError, RequestException) as e:
+        raise ForsysException(f"Forsys Cloud Run Job call failed: {e}") from e
 
 
 def call_forsys(scenario_id, env=None, check=True, timeout=None):

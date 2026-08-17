@@ -48,6 +48,7 @@ from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
+from planscape.analytics import track_event
 from planscape.serializers import BaseErrorMessageSerializer
 
 log = logging.getLogger(__name__)
@@ -178,6 +179,14 @@ class TreatmentPlanViewSet(
     def download(self, request, pk=None):
         treatment_plan = self.get_object()
         output_path = export_geopackage(treatment_plan)
+        track_event(
+            name="impacts.treatment_plan.downloaded",
+            properties={
+                "treatment_plan_id": treatment_plan.pk,
+                "email": request.user.email if request.user else None,
+            },
+            user_id=request.user.pk,
+        )
         return FileResponse(
             open(output_path, "rb"),
             as_attachment=True,

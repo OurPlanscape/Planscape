@@ -2,7 +2,11 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { DataLayer, DataLayerSearchResult } from '@types';
-import { ButtonComponent, HighlighterDirective } from '@styleguide';
+import {
+  ButtonComponent,
+  HighlighterDirective,
+  ToggleComponent,
+} from '@styleguide';
 import { MatRadioModule } from '@angular/material/radio';
 import { DataLayersStateService } from '../data-layers.state.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -11,6 +15,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { DataLayerTooltipComponent } from '@data-layers/data-layer-tooltip/data-layer-tooltip.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { unselectableReason } from '@app/shared';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-data-set',
@@ -28,6 +34,9 @@ import { unselectableReason } from '@app/shared';
     MatMenuModule,
     DataLayerTooltipComponent,
     MatTooltipModule,
+    MatCheckboxModule,
+    ToggleComponent,
+    FormsModule,
   ],
   templateUrl: './data-set.component.html',
   styleUrl: './data-set.component.scss',
@@ -79,8 +88,14 @@ export class DataSetComponent {
 
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
-  selectDataLayer(dataLayer: DataLayer) {
-    this.dataLayersStateService.selectDataLayer(dataLayer);
+  selectDataLayer(dataLayer: DataLayer, event: Event) {
+    const target = event.target as HTMLInputElement;
+
+    if (target.checked) {
+      this.dataLayersStateService.selectDataLayer(dataLayer);
+    } else {
+      this.dataLayersStateService.selectDataLayer(null);
+    }
   }
 
   isDatalayerSelected(layer: DataLayer) {
