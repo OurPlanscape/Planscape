@@ -1,0 +1,44 @@
+<div class="map-container">
+  <ng-content select="[mapSlot]"></ng-content>
+</div>
+<div class="content">
+  <div class="header">
+    <div class="title">{{ planningArea.name }}</div>
+    <button
+      [matMenuTriggerFor]="menu"
+      aria-label="More scenario options"
+      class="more-menu-button"
+      mat-icon-button
+      matTooltip="More actions">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="rename.emit()">
+        <mat-icon class="material-symbols-outlined">edit</mat-icon>
+        <span>Rename</span>
+      </button>
+      <button class="delete" mat-menu-item (click)="delete.emit()">
+        <mat-icon class="material-symbols-outlined">delete</mat-icon>
+        <span>Delete</span>
+      </button>
+    </mat-menu>
+  </div>
+  <div class="details-row">
+    <div class="detail-column">
+      <div class="detail-header">Creator</div>
+      <div class="detail-info">{{ planningArea.creator }}</div>
+    </div>
+    <div class="detail-column">
+      <div class="detail-header">Total Acres</div>
+      <div class="detail-info">
+        {{ planningArea.area_acres | number: '1.0-0' }}
+      </div>
+    </div>
+    <div class="detail-column">
+      <div class="detail-header">Date Created</div>
+      <div class="detail-info">
+        {{ planningArea.created_at | date: 'MMM d, y' }}
+      </div>
+    </div>
+  </div>
+</div>
