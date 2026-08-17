@@ -34,14 +34,14 @@ describe('HomeComponent', () => {
     setUpComponent();
   });
 
-  it('should show welcome if not logged in', fakeAsync(() => {
+  it('should not show planning areas if not logged in', fakeAsync(() => {
     const auth = TestBed.inject(AuthService);
     auth.loggedInStatus$.next(false);
     fixture.detectChanges();
     tick();
     fixture.detectChanges();
-    const planTable = fixture.debugElement.query(By.css('app-welcome'));
-    expect(planTable).toBeTruthy();
+    const planTable = fixture.debugElement.query(By.css('app-planning-areas'));
+    expect(planTable).toBeNull();
   }));
   it('should show planning areas if logged in', fakeAsync(() => {
     const auth = TestBed.inject(AuthService);

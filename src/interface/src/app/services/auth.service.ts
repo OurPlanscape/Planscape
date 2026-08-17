@@ -1,7 +1,8 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
+  CanMatchFn,
   Router,
   RouterStateSnapshot,
 } from '@angular/router';
@@ -12,6 +13,7 @@ import {
   catchError,
   concatMap,
   EMPTY,
+  filter,
   map,
   Observable,
   of,
@@ -417,3 +419,23 @@ export class AuthGuard {
     );
   }
 }
+
+/**
+ * Guards to pick between routes that share the same path, based on whether the
+ * user is signed in. Unlike `AuthGuard`, not matching here doesn't redirect to
+ * login: the router just skips this route config and tries the next one.
+ *
+ * They wait for the first known (non null) value of `isLoggedIn$`, since the
+ * app resolves the logged in user asynchronously on startup.
+ */
+const matchLoggedInStatus =
+  (expected: boolean): CanMatchFn =>
+  () =>
+    inject(AuthService).isLoggedIn$.pipe(
+      filter((loggedIn): loggedIn is boolean => loggedIn !== null),
+      take(1),
+      map((loggedIn) => loggedIn === expected)
+    );
+
+export const loggedInMatchGuard = matchLoggedInStatus(true);
+export const loggedOutMatchGuard = matchLoggedInStatus(false);

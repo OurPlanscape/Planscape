@@ -11,6 +11,7 @@ import { of } from 'rxjs';
 import { Location } from '@angular/common';
 import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { overrideFeatureFlags } from '@features/testing';
 
 @Component({
   template: '',
@@ -22,7 +23,7 @@ describe('LoginComponent', () => {
   let fixture: ComponentFixture<LoginComponent>;
   let fakeAuthService: jasmine.SpyObj<AuthService>;
 
-  beforeEach(async () => {
+  function setUpComponent(flags: string[] = []) {
     fakeAuthService = jasmine.createSpyObj<AuthService>('AuthService', [
       'login',
     ]);
@@ -43,8 +44,14 @@ describe('LoginComponent', () => {
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [{ provide: AuthService, useValue: fakeAuthService }],
     });
+    overrideFeatureFlags(...flags);
+
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
+  }
+
+  beforeEach(async () => {
+    setUpComponent();
   });
 
   it('can load instance', () => {
@@ -106,6 +113,21 @@ describe('LoginComponent', () => {
       const location = TestBed.inject(Location);
       fixture.detectChanges();
       expect(location.path()).toEqual('/map-viewer');
+    });
+
+    it('is hidden when workspaces are enabled', () => {
+      // the map viewer needs a workspace, so there is nowhere for a logged out
+      // visitor to go
+      TestBed.resetTestingModule();
+      setUpComponent(['WORKSPACES']);
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.query(By.css('[data-id="map-viewer"]'))
+      ).toBeNull();
+      expect(
+        fixture.debugElement.query(By.css('[data-id="create-account"]'))
+      ).not.toBeNull();
     });
   });
   describe('create account', () => {
