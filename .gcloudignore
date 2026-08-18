@@ -1,0 +1,11 @@
+.git/
+.env
+.venv/
+.ruff_cache/
+__pycache__/
+*.pyc
+data/
+src/interface/node_modules/
+src/interface/.angular/
+src/interface/dist/
+src/interface/coverage/

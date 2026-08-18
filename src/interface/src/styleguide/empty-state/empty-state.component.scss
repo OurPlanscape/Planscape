@@ -1,0 +1,35 @@
+@import 'mixins';
+@import 'colors';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.empty-state-icon {
+  color: $color-md-gray;
+  font-size: 48px;
+  height: 48px;
+  width: 48px;
+}
+
+.empty-state-title {
+  @include h5();
+  color: $color-black;
+}
+
+.empty-state-description {
+  @include small-paragraph();
+  color: $color-dark-gray;
+}
+
+.empty-state-actions:empty {
+  display: none;
+}

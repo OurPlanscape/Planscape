@@ -73,7 +73,10 @@ export interface LayerStyleEntry {
 }
 
 export interface NoData {
-  values: number[];
+  // The API encodes a NaN sentinel as the string 'nan', and numeric sentinels
+  // may arrive as either numbers or numeric strings — read paths return
+  // style.data verbatim, so nothing normalizes these on the way out.
+  values: Array<number | string>;
   color?: string;
   opacity?: number;
   label?: string;

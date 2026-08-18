@@ -1353,9 +1353,10 @@ class FundingReportLayersOfInterestTest(TestCase):
 
         result = get_funding_report_layers_of_interest()
 
-        self.assertCountEqual(
+        # Order matters: it's the order the layer toggles render in the report.
+        self.assertEqual(
             result[FundingReportLayerCategory.CARBON],
-            [aboveground, smoke],
+            [smoke, aboveground],
         )
         self.assertCountEqual(
             result[FundingReportLayerCategory.WATER],

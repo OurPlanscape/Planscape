@@ -1,8 +1,10 @@
+import json
+
 from datasets.styles import get_default_raster_style
-from django.test import TestCase
+from django.test import SimpleTestCase
 
 
-class TestGetDefaultRasterStyle(TestCase):
+class TestGetDefaultRasterStyle(SimpleTestCase):
     def test_normal_range(self):
         result = get_default_raster_style(0, 70)
         result = result["data"]
@@ -42,3 +44,25 @@ class TestGetDefaultRasterStyle(TestCase):
         self.assertEqual(len(result["entries"]), 7)
         self.assertAlmostEquals(result["entries"][0]["value"], 1000, 2)
         self.assertAlmostEquals(result["entries"][-1]["value"], 5000, 2)
+
+    def test_includes_nan_nodata_sentinel(self):
+        result = get_default_raster_style(0, 70)["data"]
+
+        self.assertEqual(result["no_data"]["values"], ["nan"])
+        json.dumps(result, allow_nan=False)
+
+    def test_includes_finite_nodata_with_nan_sentinel(self):
+        result = get_default_raster_style(0, 70, nodata=-9999)["data"]
+
+        self.assertEqual(result["no_data"]["values"], ["nan", -9999])
+
+    def test_includes_zero_nodata(self):
+        result = get_default_raster_style(0, 70, nodata=0)["data"]
+
+        self.assertEqual(result["no_data"]["values"], ["nan", 0])
+
+    def test_nan_nodata_is_json_safe(self):
+        result = get_default_raster_style(0, 70, nodata=float("nan"))["data"]
+
+        self.assertEqual(result["no_data"]["values"], ["nan"])
+        json.dumps(result, allow_nan=False)

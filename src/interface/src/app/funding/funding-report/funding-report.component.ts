@@ -249,8 +249,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
 
   /**
    * Id of the raster layer currently shown on the map (from the shared
-   * data-layer state), or null. Drives the single-select sections' radio groups
-   * so only the active layer stays selected, even across sections.
+   * data-layer state), or null. Drives the single-select sections' toggles so
+   * only the active layer stays on, even across sections.
    */
   viewedLayerId$ = this.dataLayersStateService.viewedDataLayer$.pipe(
     map((layer) => layer?.id ?? null)
@@ -603,6 +603,14 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
         );
     }
     this.showLayer.emit(layer.id);
+  }
+
+  /**
+   * Switching the active layer's toggle off takes it back off the map, the same
+   * way clearing the selection in the Data Layers tab does.
+   */
+  onLayerCleared(): void {
+    this.dataLayersStateService.selectDataLayer(null);
   }
 
   /**

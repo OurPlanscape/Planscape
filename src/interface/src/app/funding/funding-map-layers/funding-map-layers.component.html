@@ -24,18 +24,18 @@
 </div>
 
 <ng-template #singleSelect>
-  <mat-radio-group
-    [value]="selected"
-    (change)="selectedLayer.emit($event.value)">
-    <mat-radio-button
-      *ngFor="let layer of layers"
-      [value]="layer"
-      class="layer-radio">
-      {{ layer.name }}
+  <div class="toggle-list">
+    <div class="layer-toggle" *ngFor="let layer of layers">
+      <sg-toggle
+        class="toggle"
+        [checked]="isSelected(layer)"
+        (changed)="onToggled(layer, $event)">
+        {{ layer.name }}
+      </sg-toggle>
       <mat-spinner
         class="side-spinner"
         diameter="20"
         *ngIf="isLoading(layer)"></mat-spinner>
-    </mat-radio-button>
-  </mat-radio-group>
+    </div>
+  </div>
 </ng-template>

@@ -4,9 +4,14 @@ import {
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { CookieService } from 'ngx-cookie-service';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { User } from '@types';
-import { AuthGuard, AuthService } from './auth.service';
+import {
+  AuthGuard,
+  AuthService,
+  loggedInMatchGuard,
+  loggedOutMatchGuard,
+} from './auth.service';
 import { RedirectService } from './redirect.service';
 import { MockProvider } from 'ng-mocks';
 import { environment } from '@env/environment';
@@ -20,8 +25,12 @@ import {
 
 // Define a dummy component for the route
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { provideRouter, Router, Routes } from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
+import { provideLocationMocks } from '@angular/common/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { createFeatureMatchGuard } from '@features/feature.guard';
+import { FeatureService } from '@features/feature.service';
 
 @Component({
   template: '',
@@ -607,5 +616,92 @@ describe('AuthGuard', () => {
         done();
       });
     });
+  });
+});
+
+@Component({ standalone: true, template: 'welcome' })
+class WelcomeStubComponent {}
+
+@Component({ standalone: true, template: 'workspaces' })
+class WorkspacesStubComponent {}
+
+@Component({ standalone: true, template: 'home' })
+class HomeStubComponent {}
+
+describe('logged in match guards', () => {
+  let loggedIn$: BehaviorSubject<boolean | null>;
+  let featureServiceSpy: jasmine.SpyObj<FeatureService>;
+
+  // mirrors the `home` routes: logged out -> welcome, logged in -> home,
+  // logged in + flag -> workspaces
+  const routes: Routes = [
+    {
+      path: 'home',
+      canMatch: [loggedOutMatchGuard],
+      component: WelcomeStubComponent,
+    },
+    {
+      path: 'home',
+      canMatch: [loggedInMatchGuard, createFeatureMatchGuard('WORKSPACES')],
+      component: WorkspacesStubComponent,
+    },
+    { path: 'home', component: HomeStubComponent },
+  ];
+
+  beforeEach(() => {
+    loggedIn$ = new BehaviorSubject<boolean | null>(null);
+    featureServiceSpy = jasmine.createSpyObj('FeatureService', [
+      'isFeatureEnabled',
+    ]);
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: AuthService, useValue: { isLoggedIn$: loggedIn$ } },
+        { provide: FeatureService, useValue: featureServiceSpy },
+        provideRouter(routes),
+        provideLocationMocks(),
+      ],
+    });
+  });
+
+  it('shows welcome when logged out, even with the flag on', async () => {
+    featureServiceSpy.isFeatureEnabled.and.returnValue(true);
+    loggedIn$.next(false);
+
+    const harness = await RouterTestingHarness.create();
+    const component = await harness.navigateByUrl('/home');
+
+    expect(component).toBeInstanceOf(WelcomeStubComponent);
+  });
+
+  it('shows workspaces when logged in and the flag is on', async () => {
+    featureServiceSpy.isFeatureEnabled.and.returnValue(true);
+    loggedIn$.next(true);
+
+    const harness = await RouterTestingHarness.create();
+    const component = await harness.navigateByUrl('/home');
+
+    expect(component).toBeInstanceOf(WorkspacesStubComponent);
+  });
+
+  it('shows home when logged in and the flag is off', async () => {
+    featureServiceSpy.isFeatureEnabled.and.returnValue(false);
+    loggedIn$.next(true);
+
+    const harness = await RouterTestingHarness.create();
+    const component = await harness.navigateByUrl('/home');
+
+    expect(component).toBeInstanceOf(HomeStubComponent);
+  });
+
+  it('waits for the logged in status to resolve before matching', async () => {
+    featureServiceSpy.isFeatureEnabled.and.returnValue(true);
+    // status is still unknown (null), as it is while the app boots
+    const harness = await RouterTestingHarness.create();
+    const navigation = harness.navigateByUrl('/home');
+
+    loggedIn$.next(false);
+
+    expect(await navigation).toBeInstanceOf(WelcomeStubComponent);
   });
 });

@@ -43,7 +43,7 @@ from funding_report.tasks import (
     send_funding_opportunity_report_shared_link,
 )
 from modules.base import compute_scenario_capabilities
-from planscape.openpanel import track_openpanel
+from planscape.analytics import track_event
 from planscape.serializers import BaseErrorMessageSerializer
 from rest_framework import mixins, pagination, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -93,6 +93,7 @@ from planning.serializers import (
     UpsertScenarioV3Serializer,
 )
 from planning.services import (
+    calculate_child_project_areas,
     create_config,
     create_planning_area,
     create_scenario,
@@ -101,6 +102,7 @@ from planning.services import (
     delete_scenario,
     get_available_stands,
     get_sub_units_details,
+    is_project_areas_child,
     toggle_scenario_status,
     trigger_scenario_run,
     validate_scenario_configuration,
@@ -464,6 +466,16 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                     ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
                 )
         configuration_data = serializer.validated_data.get("configuration")
+        should_calculate_child_project_areas = (
+            "parent" in serializer.validated_data
+            or (
+                configuration_data is not None
+                and (
+                    "stand_size" in configuration_data
+                    or "included_areas_ids" in configuration_data
+                )
+            )
+        )
         if configuration_data:
             existing = instance.configuration or {}
             incoming_config = create_config(
@@ -484,6 +496,8 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             serializer.validated_data["configuration"] = updated_config
         self.perform_update(serializer)
         instance.refresh_from_db()
+        if should_calculate_child_project_areas:
+            calculate_child_project_areas(instance)
         instance.capabilities = compute_scenario_capabilities(instance)
         instance.save(update_fields=["capabilities"])
         response_serializer = ScenarioV3Serializer(instance)
@@ -516,6 +530,14 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         )
 
         run_funding_opportunity_report.delay(report.pk)
+        track_event(
+            name="planning.funding_report.run",
+            properties={
+                "scenario_id": scenario.pk,
+                "email": request.user.email if request.user else None,
+            },
+            user_id=request.user.pk,
+        )
         serializer = FundingOpportunityReportSerializer(instance=report)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 
@@ -583,6 +605,15 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         if should_regenerate_geopackage:
             async_generate_funding_report_geopackage.delay(report.pk)
+            track_event(
+                name="planning.funding_report.aet_improvement_recomputed",
+                properties={
+                    "scenario_id": scenario.pk,
+                    "percentage": serializer.validated_data["percentage"],
+                    "email": request.user.email if request.user else None,
+                },
+                user_id=request.user.pk,
+            )
 
         return Response(aet_result)
 
@@ -627,6 +658,16 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             )
         except ValueError as exc:
             return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        track_event(
+            name="planning.funding_report.flame_length_recomputed",
+            properties={
+                "scenario_id": scenario.pk,
+                "from_ft": serializer.validated_data["from_ft"],
+                "to_ft": serializer.validated_data["to_ft"],
+                "email": request.user.email if request.user else None,
+            },
+            user_id=request.user.pk,
+        )
         return Response(results)
 
     @extend_schema(description="Trigger a ForSys run for this Scenario (V3 rules).")
@@ -678,14 +719,20 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         )
         query_params_serializer.is_valid(raise_exception=True)
 
-        datalayer_pk = query_params_serializer.validated_data.get(
-            "sub_units_layer"
-        ) or scenario.configuration.get("sub_units_layer")
-        if not datalayer_pk:
-            return Response(
-                {"errors": "Sub-Unit layer not selected."},
-                status=status.HTTP_412_PRECONDITION_FAILED,
-            )
+        datalayer = None
+
+        if not is_project_areas_child(scenario):
+            datalayer_pk = query_params_serializer.validated_data.get(
+                "sub_units_layer"
+            ) or scenario.configuration.get("sub_units_layer")
+
+            if not datalayer_pk:
+                return Response(
+                    {"errors": "Sub-Unit layer not selected."},
+                    status=status.HTTP_412_PRECONDITION_FAILED,
+                )
+
+            datalayer = DataLayer.objects.get(pk=datalayer_pk)
 
         sub_units_fixed_target = query_params_serializer.validated_data.get(
             "sub_units_fixed_target"
@@ -694,7 +741,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             "sub_units_target_value"
         )
 
-        datalayer = DataLayer.objects.get(pk=datalayer_pk)
         stand_size = scenario.get_stand_size()
         details = get_sub_units_details(
             scenario,
@@ -810,8 +856,8 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 scenario.name,
             )
 
-        track_openpanel(
-            name="funding_report.shared_link.sent",
+        track_event(
+            name="planning.funding_report.shared",
             properties={
                 "scenario_id": scenario.pk,
                 "report_id": report.pk,
@@ -846,10 +892,19 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         report = get_object_or_404(FundingOpportunityReport, scenario=scenario)
 
-        shared_link, _ = FundingOpportunityReportSharedLink.objects.get_or_create(
+        shared_link, created = FundingOpportunityReportSharedLink.objects.get_or_create(
             report=report,
             configuration=query_serializer.validated_data,
         )
+        if created:
+            track_event(
+                name="planning.funding_report.public_link_created",
+                properties={
+                    "scenario_id": scenario.pk,
+                    "email": request.user.email if request.user else None,
+                },
+                user_id=request.user.pk,
+            )
         return Response({"public_url": shared_link.get_public_url()})
 
 

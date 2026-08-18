@@ -1,0 +1,62 @@
+<div class="title-row">
+  <mat-icon class="material-symbols-outlined workspace-icon">folder</mat-icon>
+
+  <button
+    [matMenuTriggerFor]="menu"
+    aria-label="More workspace options"
+    class="more-menu-button"
+    (click)="stopEventPropagation($event)"
+    mat-icon-button
+    matTooltip="More actions">
+    <mat-icon>more_vert</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu" class="workspace-more-menu">
+    <button
+      mat-menu-item
+      class="action-button"
+      *ngIf="userCanRename"
+      (click)="rename.emit()">
+      <mat-icon class="material-symbols-outlined">edit</mat-icon>
+      <span>Rename</span>
+    </button>
+    <button
+      mat-menu-item
+      class="action-button"
+      *ngIf="userCanShare"
+      (click)="share.emit()">
+      <mat-icon class="material-symbols-outlined">share</mat-icon>
+      <span>Share</span>
+    </button>
+    <button
+      mat-menu-item
+      class="action-button delete"
+      *ngIf="userCanDelete"
+      (click)="delete.emit()">
+      <mat-icon class="material-symbols-outlined">delete</mat-icon>
+      <span>Delete</span>
+    </button>
+  </mat-menu>
+</div>
+
+<div class="workspace-name">{{ name }}</div>
+
+<div class="planning-areas">
+  {{ planningAreasCount | number: '1.0-0' }} {{ planningAreasLabel }}
+</div>
+
+<div class="detail-row">
+  <div class="detail-line">
+    <mat-icon class="material-symbols-outlined detail-icon">person</mat-icon>
+    <span>Creator: {{ creator || 'N/A' }}</span>
+  </div>
+  <span class="separator" aria-hidden="true">&bull;</span>
+  <div class="detail-line">
+    <mat-icon class="material-symbols-outlined detail-icon"
+      >calendar_month</mat-icon
+    >
+    <span
+      >Created Date:
+      {{ createdAt ? (createdAt | date: 'MMM d, y') : '-' }}</span
+    >
+  </div>
+</div>

@@ -8,12 +8,15 @@ import boto3
 import django_stubs_ext
 import sentry_sdk
 from corsheaders.defaults import default_headers
-from decouple import Config, RepositoryEnv
+from decouple import Config, RepositoryEmpty, RepositoryEnv
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from utils.logging import NotInTestingFilter
 
-config = Config(RepositoryEnv("../../.env"))
+try:
+    config = Config(RepositoryEnv("../../.env"))
+except FileNotFoundError:
+    config = Config(RepositoryEmpty())
 django_stubs_ext.monkeypatch()
 
 TESTING_MODE = "test" in sys.argv
@@ -125,6 +128,7 @@ PLANSCAPE_DATABASE_PASSWORD = config("PLANSCAPE_DATABASE_PASSWORD", default="pas
 PLANSCAPE_DATABASE_USER = config("PLANSCAPE_DATABASE_USER", default="planscape")
 PLANSCAPE_DATABASE_NAME = config("PLANSCAPE_DATABASE_NAME", default="planscape")
 PLANSCAPE_DATABASE_PORT = config("PLANSCAPE_PORT", default=5432)
+
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
@@ -199,8 +203,8 @@ CORS_ALLOW_HEADERS = list(default_headers) + ["Set-Cookie"]
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_HTTPONLY = False
 CSRF_HEADER_NAME = "CSRF_COOKIE"
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = config("SESSION_COOKIE_SECURE", default=False, cast=bool)
+CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=False, cast=bool)
 CSRF_COOKIE_SAMESITE = None
 SESSION_COOKIE_SAMESITE = None
 
@@ -387,8 +391,13 @@ FORSYS_EXCLUSION_LIMIT = config("FORSYS_EXCLUSION_LIMIT", 0.5, cast=float)
 FORSYS_SAMPLE_FRACTION = config("FORSYS_SAMPLE_FRAC", 0.1, cast=float)
 
 # FORSYS API
+FORSYS_USE_CLOUD_RUN_JOB = config("FORSYS_USE_CLOUD_RUN_JOB", False, cast=bool)
 FORSYS_PLUMBER_URL = config("FORSYS_PLUMBER_URL", "http://forsys:8001/")
 FORSYS_PLUMBER_TIMEOUT = config("FORSYS_PLUMBER_TIMEOUT", 600, cast=int)  # 10m
+GCP_PROJECT = config("GCP_PROJECT", "planscape-23d66")
+FORSYS_CLOUD_RUN_JOB_NAME = config("FORSYS_CLOUD_RUN_JOB_NAME", "forsys-dev")
+FORSYS_CLOUD_RUN_REGION = config("FORSYS_CLOUD_RUN_REGION", "us-central1")
+FORSYS_CLOUD_RUN_API_TIMEOUT = config("FORSYS_CLOUD_RUN_API_TIMEOUT", 60, cast=int)
 
 # TODO: Move this to a conf file that R can read?
 OUTPUT_DIR = config("FORSYS_OUTPUT_DIR", default=BASE_DIR / "output")
@@ -566,8 +575,8 @@ SPECTACULAR_SETTINGS = {
 
 BACKUPS_PATH = config("BACKUPS_PATH", "/mnt/backups")
 S3_BUCKET = config("S3_BUCKET", "planscape-control-dev")
-AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
+AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID", default=None)
+AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", default=None)
 AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", "us-west-2")
 AWS_S3_ENDPOINT_URL = config("AWS_S3_ENDPOINT_URL", default=None)
 UPLOAD_EXPIRATION_TTL = config("UPLOAD_EXPIRATION_TTL", default=3600, cast=int)
@@ -583,13 +592,19 @@ GOOGLE_APPLICATION_CREDENTIALS_FILE = config(
 )
 STORAGE_SERVICE_ACCOUNT = config("STORAGE_SERVICE_ACCOUNT", default=None)
 
-os.environ["AWS_ACCESS_KEY_ID"] = str(AWS_ACCESS_KEY_ID)
-os.environ["AWS_SECRET_ACCESS_KEY"] = str(AWS_SECRET_ACCESS_KEY)
-os.environ["AWS_DEFAULT_REGION"] = str(AWS_DEFAULT_REGION)
+if AWS_ACCESS_KEY_ID:
+    os.environ["AWS_ACCESS_KEY_ID"] = str(AWS_ACCESS_KEY_ID)
+if AWS_SECRET_ACCESS_KEY:
+    os.environ["AWS_SECRET_ACCESS_KEY"] = str(AWS_SECRET_ACCESS_KEY)
+if AWS_DEFAULT_REGION:
+    os.environ["AWS_DEFAULT_REGION"] = str(AWS_DEFAULT_REGION)
 if AWS_S3_ENDPOINT_URL:
     os.environ["AWS_S3_ENDPOINT"] = str(AWS_S3_ENDPOINT_URL)
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(GOOGLE_APPLICATION_CREDENTIALS_FILE)
+if GOOGLE_APPLICATION_CREDENTIALS_FILE:
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(
+        GOOGLE_APPLICATION_CREDENTIALS_FILE
+    )
 
 
 boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
@@ -603,14 +618,6 @@ OGR2OGR_TIMEOUT = config("OGR2OGR_TIMEOUT", 600)  # 10m
 ZIP_TIMEOUT = config("ZIP_TIMEOUT", 600)  # 10m
 ADMIN_URL_PREFIX = config("ADMIN_URL_PREFIX", "admin")
 FEATURE_FLAG_S3_PROXY = config("FEATURE_FLAG_S3_PROXY", False, cast=bool)
-
-# OPENPANEL config
-OPENPANEL_INTEGRATION = config("OPENPANEL_INTEGRATION", default=True, cast=bool)
-OPENPANEL_URL = config("OPENPANEL_URL", "https://op.sig-gis.com/api")
-OPENPANEL_CLIENT_ID = config("OPENPANEL_CLIENT_ID", "fake-openpanel-client-id")
-OPENPANEL_CLIENT_SECRET = config(
-    "OPENPANEL_CLIENT_SECRET", "fake-openpanel-client-secret"
-)
 
 # MIXPANEL config
 MIXPANEL_INTEGRATION = config("MIXPANEL_INTEGRATION", default=False, cast=bool)

@@ -1,0 +1,11 @@
+{
+  "/planscape-backend": {
+    "target": "http://web:8000/",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/planscape-backend": ""
+    }
+  }
+}
