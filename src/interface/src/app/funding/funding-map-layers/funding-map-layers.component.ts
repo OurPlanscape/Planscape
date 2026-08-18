@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+import { NgFor, NgIf, NgTemplateOutlet } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ToggleComponent } from '@styleguide';
@@ -29,6 +29,7 @@ export interface MapLayer {
   imports: [
     NgFor,
     NgIf,
+    NgTemplateOutlet,
     ToggleComponent,
     MatCheckboxModule,
     MatProgressSpinnerModule,
@@ -47,6 +48,12 @@ export class FundingMapLayersComponent {
   @Input() selectedLayerIds: number[] = [];
   /** Ids of the layers currently loading onto the map; each shows a spinner. */
   @Input() loadingLayerIds: number[] = [];
+  /**
+   * True while the layer list itself is still being fetched, which shows a
+   * placeholder in place of the list. Distinct from `loadingLayerIds`, which is
+   * about a known layer being drawn onto the map.
+   */
+  @Input() loading = false;
   @Output() selectedLayer = new EventEmitter<MapLayer>();
   /** Emitted when a single-select layer is toggled back off. */
   @Output() clearedLayer = new EventEmitter<MapLayer>();

@@ -242,6 +242,13 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     biomass: [],
   };
 
+  /**
+   * True while the `funding_report` module fetch is in flight. The module is
+   * one request for every section's layers, so each section's layer block shows
+   * a placeholder until it lands rather than sitting empty.
+   */
+  loadingSectionLayers = true;
+
   /** Raster data layers (carbon/water/wildfire) by id, to drive the map on select. */
   private layersById = new Map<number, DataLayer>();
   /** Vector base layers (biomass) by id, to toggle on the map on select. */
@@ -419,9 +426,15 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
    * `wildfire_risk_reduction`, which maps to this report's `wildfire` section.
    */
   private loadSectionLayers(): void {
+    this.loadingSectionLayers = true;
     this.fundingModuleService
       .loadFundingModule()
-      .pipe(untilDestroyed(this))
+      .pipe(
+        // `finalize` so a failed fetch clears the placeholders instead of
+        // leaving every section spinning forever.
+        finalize(() => (this.loadingSectionLayers = false)),
+        untilDestroyed(this)
+      )
       .subscribe((module) => {
         const datalayers: FundingReportDataLayers = module.options.datalayers;
         this.sectionLayers = {

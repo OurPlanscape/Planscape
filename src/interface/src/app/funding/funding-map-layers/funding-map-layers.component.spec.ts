@@ -60,6 +60,37 @@ describe('FundingMapLayersComponent', () => {
     expect(selected).toEqual([]);
   });
 
+  it('shows a placeholder instead of the list while loading', () => {
+    component.layers = [{ id: 1, name: 'Layer A' }];
+    component.loading = true;
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.layers-loading')).toBeTruthy();
+    expect(el.querySelector('sg-toggle')).toBeNull();
+
+    component.loading = false;
+    fixture.detectChanges();
+
+    expect(el.querySelector('.layers-loading')).toBeNull();
+    expect(el.querySelector('sg-toggle')).toBeTruthy();
+  });
+
+  it('shows the checkbox list once loaded in multi-select', () => {
+    component.multiSelect = true;
+    component.layers = [{ id: 1, name: 'Layer A' }];
+    component.loading = true;
+    fixture.detectChanges();
+
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('mat-checkbox')).toBeNull();
+
+    component.loading = false;
+    fixture.detectChanges();
+
+    expect(el.querySelector('mat-checkbox')).toBeTruthy();
+  });
+
   it('marks only the layer matching `selectedLayerId` as selected', () => {
     const layerA: MapLayer = { id: 1, name: 'Layer A' };
     const layerB: MapLayer = { id: 2, name: 'Layer B' };
