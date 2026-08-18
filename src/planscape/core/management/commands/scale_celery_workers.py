@@ -16,8 +16,8 @@ class WorkerScaleConfig:
     service: str
     queues: list[str]
     messages_per_instance: int
-    min_instances: int
-    max_instances: int
+    scale_min: int
+    scale_max: int
 
 
 def get_required_env(name: str) -> str:
@@ -64,8 +64,8 @@ class Command(BaseCommand):
                 messages_per_instance=get_int_env(
                     "CELERY_GENERAL_MESSAGES_PER_INSTANCE", 10
                 ),
-                min_instances=get_int_env("CELERY_GENERAL_MIN_INSTANCES", 1),
-                max_instances=get_int_env("CELERY_GENERAL_MAX_INSTANCES", 10),
+                scale_min=get_int_env("CELERY_GENERAL_MIN_INSTANCES", 1),
+                scale_max=get_int_env("CELERY_GENERAL_MAX_INSTANCES", 10),
             ),
             WorkerScaleConfig(
                 name="heavy",
@@ -74,8 +74,8 @@ class Command(BaseCommand):
                 messages_per_instance=get_int_env(
                     "CELERY_HEAVY_MESSAGES_PER_INSTANCE", 2
                 ),
-                min_instances=get_int_env("CELERY_HEAVY_MIN_INSTANCES", 1),
-                max_instances=get_int_env("CELERY_HEAVY_MAX_INSTANCES", 10),
+                scale_min=get_int_env("CELERY_HEAVY_MIN_INSTANCES", 1),
+                scale_max=get_int_env("CELERY_HEAVY_MAX_INSTANCES", 10),
             ),
         ]
 
@@ -117,9 +117,9 @@ class Command(BaseCommand):
         queue_lengths = {queue: redis_client.llen(queue) for queue in worker.queues}
         backlog = sum(queue_lengths.values())
         desired = math.ceil(backlog / worker.messages_per_instance) if backlog else 0
-        desired = clamp(desired, worker.min_instances, worker.max_instances)
+        desired = clamp(desired, worker.scale_min, worker.scale_max)
 
-        current = self.get_current_min_instances(
+        current = self.get_current_manual_instances(
             session, project, region, worker.service
         )
         state_key = f"{state_prefix}:{worker.name}:last_backlog_at"
@@ -141,7 +141,7 @@ class Command(BaseCommand):
         if desired == current:
             action = "none"
         else:
-            self.update_min_instances(
+            self.update_manual_instances(
                 session, project, region, worker.service, desired
             )
             action = "scale_up" if desired > current else "scale_down"
@@ -151,31 +151,31 @@ class Command(BaseCommand):
             f"action={action} queues={queue_lengths}"
         )
 
-    def get_current_min_instances(
+    def get_current_manual_instances(
         self, session: AuthorizedSession, project: str, region: str, service: str
     ) -> int:
         url = self.get_service_url(project, region, service)
         response = session.get(url, timeout=30)
         response.raise_for_status()
         service_config = response.json()
-        scaling = service_config.get("template", {}).get("scaling", {})
-        return int(scaling.get("minInstanceCount", 0))
+        scaling = service_config.get("scaling", {})
+        return int(scaling.get("manualInstanceCount", 0))
 
-    def update_min_instances(
+    def update_manual_instances(
         self,
         session: AuthorizedSession,
         project: str,
         region: str,
         service: str,
-        min_instances: int,
+        instance_count: int,
     ) -> None:
         url = (
             f"{self.get_service_url(project, region, service)}"
-            "?updateMask=template.scaling.min_instance_count"
+            "?updateMask=scaling.manualInstanceCount"
         )
         response = session.patch(
             url,
-            json={"template": {"scaling": {"minInstanceCount": min_instances}}},
+            json={"scaling": {"manualInstanceCount": instance_count}},
             timeout=30,
         )
         response.raise_for_status()

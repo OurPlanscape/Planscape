@@ -277,7 +277,6 @@ cloud-run-build-all:
 cloud-run-push-all:
 	$(MAKE) cloud-run-push
 	$(MAKE) cloud-run-push-gateway
-	$(MAKE) cloud-run-push-frontend-job
 
 cloud-run-deploy-all:
 	$(MAKE) cloud-run-deploy
