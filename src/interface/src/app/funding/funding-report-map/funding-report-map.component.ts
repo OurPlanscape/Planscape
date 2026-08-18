@@ -172,6 +172,7 @@ export class FundingReportMapComponent implements OnInit {
   mapLoaded(loadedMap: MapLibreMap) {
     this.mapLibreMap = loadedMap;
     this.fundingMapConfigState.setMapLoaded(true);
+    this.fundingMapConfigState.setMapRef(this.mapLibreMap);
   }
 
   handleOpacityChange(opacity: number) {

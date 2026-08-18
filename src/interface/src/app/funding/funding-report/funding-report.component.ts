@@ -671,16 +671,14 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
       return;
     }
     this.generatingPdf$.next(true);
+
     try {
-      // In the dashboard preview the map is inside the captured sections. In the
-      // full view it lives in a sibling pane, so grab its canvas to draw on top.
-      const mapCanvas = this.isPreview
-        ? null
-        : document.querySelector<HTMLCanvasElement>('.maplibregl-canvas');
-      await this.pdfService.exportReport(
+      // note: we render the map directly using a maplibremap reference
+      await this.pdfService.exportPDFReport(
         this.scrollContainer.nativeElement,
-        `planscape-funding-report-${this.report.scenario}`,
-        mapCanvas
+        this.isPreview,
+        this.report,
+        this.projectAreas
       );
     } catch (error) {
       this.displayDownloadErrorSnackbar();

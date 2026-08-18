@@ -72,7 +72,6 @@ import { FUNDING_REPORT_INFO_URL } from '@shared';
 })
 export class FundingReportViewComponent {
   private readonly _report$ = new BehaviorSubject<FundingReport | null>(null);
-  private readonly _allProjectAreas$ = new BehaviorSubject<ProjectArea[]>([]);
 
   /** The report to render. `null` shows a loading spinner. */
   @Input() set report(value: FundingReport | null) {
@@ -81,7 +80,7 @@ export class FundingReportViewComponent {
 
   /** Project areas the legend needs for its acreage figures. */
   @Input() set allProjectAreas(value: ProjectArea[] | null) {
-    this._allProjectAreas$.next(value ?? []);
+    this.fundingMapConfigState.setAllProjectAreas(value ?? []);
   }
 
   /** Options for the "Viewing outcomes for" selector. */
@@ -117,6 +116,7 @@ export class FundingReportViewComponent {
 
   report$ = this._report$.asObservable();
   selectedProjectAreas$ = this.fundingMapConfigState.selectedProjectAreas$;
+  allProjectAreas$ = this.fundingMapConfigState.allProjectAreas$;
   opacity$ = this.fundingMapConfigState.opacity$;
 
   treatmentDataLayerId$ = this.report$.pipe(
@@ -130,11 +130,16 @@ export class FundingReportViewComponent {
   legendData$ = combineLatest([
     this.report$,
     this.selectedProjectAreas$,
-    this._allProjectAreas$,
+    this.allProjectAreas$,
   ]).pipe(
-    map(([report, areas, projAreas]) =>
-      generateLegendFromReport(report?.results ?? null, areas, projAreas)
-    )
+    map(([report, areas, projAreas]) => {
+      const legendData = generateLegendFromReport(
+        report?.results ?? null,
+        areas,
+        projAreas
+      );
+      return legendData;
+    })
   );
 
   protected readonly FUNDING_REPORT_INFO_URL = FUNDING_REPORT_INFO_URL;
