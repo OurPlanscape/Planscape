@@ -159,12 +159,14 @@ def get_funding_report_layers_of_interest() -> Dict[str, List[DataLayer]]:
     def _as_list(datalayer: DataLayer | None) -> List[DataLayer]:
         return [datalayer] if datalayer else []
 
+    # Insertion order is the order the layers are listed under each section in
+    # the report UI, so keep these grouped by category and in display order.
     layers_by_key = {
-        FundingReportLayerKey.BASELINE_ABOVEGROUND_CARBON_2026: _as_list(
-            lookup.get((FundingReportMetric.ABOVEGROUND_TOTAL.value, 2026, True))
-        ),
         FundingReportLayerKey.BASELINE_SMOKE_PRODUCTION_2026: _as_list(
             lookup.get((FundingReportMetric.POTENTIAL_SMOKE.value, 2026, True))
+        ),
+        FundingReportLayerKey.BASELINE_ABOVEGROUND_CARBON_2026: _as_list(
+            lookup.get((FundingReportMetric.ABOVEGROUND_TOTAL.value, 2026, True))
         ),
         FundingReportLayerKey.BASELINE_FLAME_LENGTH_2026: _as_list(
             lookup.get((FundingReportMetric.TOTAL_FLAME_SEVERITY.value, 2026, True))
