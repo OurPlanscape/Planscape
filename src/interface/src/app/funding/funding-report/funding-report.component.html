@@ -74,7 +74,8 @@
           [layers]="sectionLayers['carbon']"
           [selectedLayerId]="viewedLayerId$ | async"
           [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
-          (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
+          (selectedLayer)="onLayerSelected($event)"
+          (clearedLayer)="onLayerCleared()"></app-funding-map-layers>
       </div>
 
       <div>
@@ -115,7 +116,8 @@
           [layers]="sectionLayers['wildfire']"
           [selectedLayerId]="viewedLayerId$ | async"
           [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
-          (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
+          (selectedLayer)="onLayerSelected($event)"
+          (clearedLayer)="onLayerCleared()"></app-funding-map-layers>
       </div>
       <div>
         <h5>
@@ -188,7 +190,8 @@
           [layers]="sectionLayers['water']"
           [selectedLayerId]="viewedLayerId$ | async"
           [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
-          (selectedLayer)="onLayerSelected($event)"></app-funding-map-layers>
+          (selectedLayer)="onLayerSelected($event)"
+          (clearedLayer)="onLayerCleared()"></app-funding-map-layers>
       </div>
       <div class="summary-card" *ngIf="!isPreview && configEditable">
         <div class="summary-water">

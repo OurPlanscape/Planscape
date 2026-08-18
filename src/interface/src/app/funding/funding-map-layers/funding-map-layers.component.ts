@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
-import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ToggleComponent } from '@styleguide';
 import { BASE_LAYERS_DEFAULT } from '@shared';
 
 export interface MapLayer {
@@ -15,11 +15,13 @@ export interface MapLayer {
 }
 
 /**
- * A list of map layers. Single-select (the default) renders a radio group for
- * raster data layers; multi-select renders checkboxes with a color swatch for
- * vector base layers, like the Ownership base layers. Meant to live inside a
- * `.summary-card` (kept in the parent, since that wrapper is shared by other
- * report blocks). Emits the chosen/toggled layer on `selectedLayer`.
+ * A list of map layers. Single-select (the default) renders one toggle per
+ * raster data layer, only one of which can be on at a time; multi-select
+ * renders checkboxes with a color swatch for vector base layers, like the
+ * Ownership base layers. Meant to live inside a `.summary-card` (kept in the
+ * parent, since that wrapper is shared by other report blocks). Emits the
+ * chosen/toggled layer on `selectedLayer`, and — single-select only — the
+ * layer switched off on `clearedLayer`.
  */
 @Component({
   selector: 'app-funding-map-layers',
@@ -27,7 +29,7 @@ export interface MapLayer {
   imports: [
     NgFor,
     NgIf,
-    MatRadioModule,
+    ToggleComponent,
     MatCheckboxModule,
     MatProgressSpinnerModule,
   ],
@@ -46,18 +48,31 @@ export class FundingMapLayersComponent {
   /** Ids of the layers currently loading onto the map; each shows a spinner. */
   @Input() loadingLayerIds: number[] = [];
   @Output() selectedLayer = new EventEmitter<MapLayer>();
+  /** Emitted when a single-select layer is toggled back off. */
+  @Output() clearedLayer = new EventEmitter<MapLayer>();
 
   BASE_LAYERS_DEFAULT = BASE_LAYERS_DEFAULT;
 
   /**
-   * The layer in this group matching `selectedLayerId`, used as the radio
-   * group's value. Returns null when the active layer belongs to another
-   * section, which leaves this group unselected.
+   * Whether this layer is the one currently on the map. False for every layer
+   * in the group when the active layer belongs to another section, which leaves
+   * all of this group's toggles off.
    */
-  get selected(): MapLayer | null {
-    return (
-      this.layers.find((layer) => layer.id === this.selectedLayerId) ?? null
-    );
+  isSelected(layer: MapLayer): boolean {
+    return layer.id === this.selectedLayerId;
+  }
+
+  /**
+   * Single-select toggles: switching one on emits it (the parent swaps the
+   * viewed layer, which turns the previous one off), switching one off clears
+   * the map.
+   */
+  onToggled(layer: MapLayer, checked: boolean): void {
+    if (checked) {
+      this.selectedLayer.emit(layer);
+    } else {
+      this.clearedLayer.emit(layer);
+    }
   }
 
   isChecked(layer: MapLayer): boolean {
