@@ -1,4 +1,3 @@
-<app-welcome *ngIf="(loggedIn$ | async) === false"></app-welcome>
 <ng-container *ngIf="loggedIn$ | async">
   <app-planning-areas *ngIf="showPlanningAreas"></app-planning-areas>
 </ng-container>

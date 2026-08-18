@@ -391,8 +391,13 @@ FORSYS_EXCLUSION_LIMIT = config("FORSYS_EXCLUSION_LIMIT", 0.5, cast=float)
 FORSYS_SAMPLE_FRACTION = config("FORSYS_SAMPLE_FRAC", 0.1, cast=float)
 
 # FORSYS API
+FORSYS_USE_CLOUD_RUN_JOB = config("FORSYS_USE_CLOUD_RUN_JOB", False, cast=bool)
 FORSYS_PLUMBER_URL = config("FORSYS_PLUMBER_URL", "http://forsys:8001/")
 FORSYS_PLUMBER_TIMEOUT = config("FORSYS_PLUMBER_TIMEOUT", 600, cast=int)  # 10m
+GCP_PROJECT = config("GCP_PROJECT", "planscape-23d66")
+FORSYS_CLOUD_RUN_JOB_NAME = config("FORSYS_CLOUD_RUN_JOB_NAME", "forsys-dev")
+FORSYS_CLOUD_RUN_REGION = config("FORSYS_CLOUD_RUN_REGION", "us-central1")
+FORSYS_CLOUD_RUN_API_TIMEOUT = config("FORSYS_CLOUD_RUN_API_TIMEOUT", 60, cast=int)
 
 # TODO: Move this to a conf file that R can read?
 OUTPUT_DIR = config("FORSYS_OUTPUT_DIR", default=BASE_DIR / "output")

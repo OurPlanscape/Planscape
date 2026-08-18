@@ -20,6 +20,7 @@ import { CommonModule } from '@angular/common';
 import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { AboutComponent } from '@standalone/about/about.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { FeaturesModule } from '@features/features.module';
 
 @Component({
   selector: 'app-login',
@@ -34,6 +35,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     ReactiveFormsModule,
     RouterModule,
     SharedModule,
+    FeaturesModule,
   ],
 })
 export class LoginComponent {

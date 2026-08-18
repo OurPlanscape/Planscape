@@ -12,6 +12,8 @@
   <app-sub-unit-toggle
     *ngIf="subUnitToggleLayer$ | async as layer"
     [layer]="layer"></app-sub-unit-toggle>
+  <app-treated-stands-toggle
+    *ngIf="showSubUnitToggleOnResults$ | async"></app-treated-stands-toggle>
 </app-map-nav-bar>
 
 <mgl-map
@@ -79,6 +81,11 @@
     </ng-template>
   </ng-container>
 
+  <ng-container *ngIf="showTreatedStands$ | async">
+    <app-treated-stands
+      *ngIf="mapLibreMap"
+      [mapLibreMap]="mapLibreMap"></app-treated-stands>
+  </ng-container>
   <mgl-control position="top-left">
     <app-map-layer-color-legend></app-map-layer-color-legend>
   </mgl-control>

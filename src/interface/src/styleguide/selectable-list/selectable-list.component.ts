@@ -99,6 +99,12 @@ export class SelectableListComponent<T extends Item> implements OnChanges {
       },
       {} as Record<string, T[]>
     );
+
+    // Expand the group by default if there is only 1 group
+    const keys = Object.keys(this.groupedData);
+    if (keys.length === 1 && !this.isExpanded(keys[0])) {
+      this.openedGroups.push(keys[0]);
+    }
   }
 
   private resolvePath(obj: any, path: string): string {

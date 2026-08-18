@@ -1,6 +1,21 @@
+import math
+from copy import deepcopy
 from typing import Any, Dict, Optional
 
 from datasets.models import DataLayer, Style
+
+NODATA_NAN = "nan"
+
+
+def _nodata_style_value(nodata: Any) -> Any:
+    if isinstance(nodata, float):
+        if math.isnan(nodata):
+            return NODATA_NAN
+        if not math.isfinite(nodata):
+            return None
+    if isinstance(nodata, str) and nodata.lower() == NODATA_NAN:
+        return NODATA_NAN
+    return nodata
 
 
 def get_default_vector_style(**kwargs) -> Dict[str, Any]:
@@ -17,11 +32,14 @@ def get_default_vector_style(**kwargs) -> Dict[str, Any]:
 
 def get_raster_style(datalayer: DataLayer, style: Style) -> Dict[str, Any]:
     nodata = datalayer.info.get("nodata") if datalayer.info else None
-    style_data = style.data
+    style_data = deepcopy(style.data)
     if nodata is not None:
+        nodata_value = _nodata_style_value(nodata)
+        if nodata_value is None:
+            return {"id": style.id, "data": style_data}
         previous = style_data.get("no_data", {}) or {}
         values = previous.get("values", []) or []
-        style_data["no_data"] = {**previous, "values": [*values, nodata]}
+        style_data["no_data"] = {**previous, "values": [*values, nodata_value]}
     return {"id": style.id, "data": style_data}
 
 
@@ -57,9 +75,11 @@ def get_default_raster_style(
         )
 
     # merge no data from the layer
-    nodata_dict = {"values": [], "color": None, "opacity": 0, "label": ""}
-    if nodata:
-        nodata_dict["values"].append(nodata)
+    nodata_dict = {"values": [NODATA_NAN], "color": None, "opacity": 0, "label": ""}
+    if nodata is not None:
+        nodata_value = _nodata_style_value(nodata)
+        if nodata_value is not None and nodata_value not in nodata_dict["values"]:
+            nodata_dict["values"].append(nodata_value)
 
     return {
         "id": 0,
