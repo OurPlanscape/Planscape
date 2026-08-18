@@ -8,7 +8,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { addRequestHeaders } from '@app/maplibre-map/maplibre.helper';
-import { AuthService, ScenarioService } from '@app/services';
+import { AuthService } from '@app/services';
 import {
   FundingMapConfigState,
   MapViewSnapshot,
@@ -39,8 +39,7 @@ export class FundingReportToPdfService {
   constructor(
     private authService: AuthService,
     private fundingMapConfigState: FundingMapConfigState,
-    private injector: EnvironmentInjector,
-    private scenarioService: ScenarioService
+    private injector: EnvironmentInjector
   ) {}
 
   /**
@@ -58,13 +57,8 @@ export class FundingReportToPdfService {
     const scenarioId = fundingReport.scenario;
     const mapWidth = PAGE_WIDTH_MM - MARGIN_MM * 2;
     const mapHeight = mapWidth * 0.666;
-
-    // TODO: this probably deserves to live in something like a shared Report state,
-    // either expanding the scope of FundingMapConfigState beyond just Map stuff
-    // or maybe a separate class?
-    /// But if we go down that road, lots of other stuff might rightly live there, too
     const allAvailableProjectAreas = await firstValueFrom(
-      this.scenarioService.getProjectAreas(scenarioId)
+      this.fundingMapConfigState.allProjectAreas$
     );
 
     // This currentY is essentially a "cursor" for where we have advanced
@@ -217,7 +211,7 @@ export class FundingReportToPdfService {
     let pageStartY = startY;
     let currentColumn = 0;
 
-    for (let i = 1; i < cards.length; i++) {
+    for (let i = 0; i < cards.length; i++) {
       const card = cards[i] as HTMLElement;
 
       const canvas = await html2canvas(card, {

@@ -7,6 +7,7 @@ import {
   Map as MapLibreMap,
   StyleSpecification,
 } from 'maplibre-gl';
+import { ProjectArea } from '@app/types';
 
 export interface MapViewSnapshot {
   style: StyleSpecification;
@@ -29,6 +30,9 @@ export class FundingMapConfigState extends MapConfigState {
   public showFundingLegend$ = this._showFundingLegend$.asObservable();
 
   private _mapRef$ = new BehaviorSubject<MapLibreMap | null>(null);
+
+  private _allProjectAreas$ = new BehaviorSubject<ProjectArea[]>([]);
+  public allProjectAreas$ = this._allProjectAreas$.asObservable();
 
   setMapRef(mapRef: MapLibreMap) {
     this._mapRef$.next(mapRef);
@@ -73,5 +77,9 @@ export class FundingMapConfigState extends MapConfigState {
 
       this._selectedProjectAreas$.next([...currentSelection, id]);
     }
+  }
+
+  setAllProjectAreas(areas: ProjectArea[]): void {
+    this._allProjectAreas$.next(areas);
   }
 }
