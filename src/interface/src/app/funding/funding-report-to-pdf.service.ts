@@ -20,6 +20,8 @@ import {
 import { firstValueFrom } from 'rxjs';
 import { generateLegendFromReport } from './funding-report/funding-report.helper';
 import { FundingReport, ProjectArea } from '@app/types';
+import { MapLayerColorLegendComponent } from '@app/maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 
 /**
  * Exports the funding report as a PDF by rasterizing the live report DOM
@@ -39,7 +41,8 @@ export class FundingReportToPdfService {
   constructor(
     private authService: AuthService,
     private fundingMapConfigState: FundingMapConfigState,
-    private injector: EnvironmentInjector
+    private injector: EnvironmentInjector,
+    private dataLayerStateService: DataLayersStateService
   ) {}
 
   /**
@@ -47,6 +50,7 @@ export class FundingReportToPdfService {
    */
   async exportPDFReport(
     element: HTMLElement,
+    isPreview: boolean,
     fundingReport: FundingReport,
     selectedProjects?: number[]
   ): Promise<void> {
@@ -95,7 +99,15 @@ export class FundingReportToPdfService {
     }
     // Legend Section
     currentY += mapHeight + VERTICAL_GAP;
-    const legendWidth = mapWidth / 3;
+    const rightLegendWidth = mapWidth / 3;
+
+    // if a layer is selected, this will render the legend for it
+    const leftLegendDimentions = await this.addLayerLegendToPdf(
+      pdf,
+      MARGIN_MM,
+      currentY,
+      mapWidth / 4
+    );
 
     //recalcuate this in this context, because we never do it in the preview
     const legendData = generateLegendFromReport(
@@ -104,17 +116,25 @@ export class FundingReportToPdfService {
       allAvailableProjectAreas
     );
 
-    const legendDimensions = await this.addLegendToPdf(
+    const rightLegendDimensions = await this.addSelectionLegendToPdf(
       pdf,
       legendData,
-      MARGIN_MM + legendWidth * 2,
+      MARGIN_MM + rightLegendWidth * 2,
       currentY,
-      legendWidth
+      rightLegendWidth
     );
 
     // Report Cards Section
-    currentY += legendDimensions.height + VERTICAL_GAP;
-    await this.renderReportCards(pdf, element, currentY, renderHeader);
+    currentY +=
+      Math.max(rightLegendDimensions.height, leftLegendDimentions.height) +
+      VERTICAL_GAP;
+    await this.renderReportCards(
+      pdf,
+      isPreview,
+      element,
+      currentY,
+      renderHeader
+    );
 
     pdf.save(`planscape-funding-report-${scenarioId}.pdf`);
   }
@@ -168,7 +188,33 @@ export class FundingReportToPdfService {
     printMap.getContainer().remove();
   }
 
-  private async addLegendToPdf(
+  private async addLayerLegendToPdf(
+    pdf: jsPDF,
+    x: number,
+    y: number,
+    targetWidth: number
+  ): Promise<{ width: number; height: number }> {
+    const {
+      imgData,
+      width: canvasWidth,
+      height: canvasHeight,
+    } = await this.captureComponent(MapLayerColorLegendComponent, {}, [
+      'pdf-version',
+    ]);
+
+    // if there is no layer selected, we don't need to bother rendering, but
+    // we should return 0,0 in case we're calculating heights from the return values
+    if (!canvasWidth || !canvasHeight) {
+      return { width: 0, height: 0 };
+    }
+
+    const targetHeight = (canvasHeight / canvasWidth) * targetWidth;
+    pdf.addImage(imgData, 'PNG', x, y, targetWidth, targetHeight);
+
+    return { width: targetWidth, height: targetHeight };
+  }
+
+  private async addSelectionLegendToPdf(
     pdf: jsPDF,
     legendData: FundingLegendData,
     x: number,
@@ -193,6 +239,7 @@ export class FundingReportToPdfService {
 
   private async renderReportCards(
     pdf: jsPDF,
+    isPreview: boolean,
     element: HTMLElement,
     startY: number,
     drawHeader: () => void
@@ -210,8 +257,9 @@ export class FundingReportToPdfService {
     let currentY = startY;
     let pageStartY = startY;
     let currentColumn = 0;
+    let startingCard = isPreview ? 1 : 0;
 
-    for (let i = 0; i < cards.length; i++) {
+    for (let i = startingCard; i < cards.length; i++) {
       const card = cards[i] as HTMLElement;
 
       const canvas = await html2canvas(card, {
@@ -295,6 +343,10 @@ export class FundingReportToPdfService {
         {
           provide: FundingMapConfigState,
           useValue: this.fundingMapConfigState,
+        },
+        {
+          provide: DataLayersStateService,
+          useValue: this.dataLayerStateService,
         },
       ],
       parent: this.injector,
