@@ -12,21 +12,21 @@ h5 {
   justify-content: space-between;
 }
 
-mat-radio-button {
-  display: block;
-  margin-left: -8px;
+.toggle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.layer-radio {
-  ::ng-deep .mdc-form-field {
-    width: 100%;
-  }
+.layer-toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
 
-  ::ng-deep .mdc-label {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  .toggle {
+    flex: 1;
+    min-width: 0;
   }
 }
 
