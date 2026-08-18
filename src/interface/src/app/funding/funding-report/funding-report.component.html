@@ -71,6 +71,7 @@
       <div class="summary-card" *ngIf="!isPreview">
         <app-funding-map-layers
           heading="Map Layers"
+          [loading]="loadingSectionLayers"
           [layers]="sectionLayers['carbon']"
           [selectedLayerId]="viewedLayerId$ | async"
           [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
@@ -113,6 +114,7 @@
       <div class="summary-card" *ngIf="!isPreview">
         <app-funding-map-layers
           heading="Map Layers"
+          [loading]="loadingSectionLayers"
           [layers]="sectionLayers['wildfire']"
           [selectedLayerId]="viewedLayerId$ | async"
           [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
@@ -187,6 +189,7 @@
       <div class="summary-card" *ngIf="!isPreview">
         <app-funding-map-layers
           heading="Map Layers"
+          [loading]="loadingSectionLayers"
           [layers]="sectionLayers['water']"
           [selectedLayerId]="viewedLayerId$ | async"
           [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
@@ -263,6 +266,7 @@
       <div class="summary-card" *ngIf="!isPreview">
         <app-funding-map-layers
           heading="Map Layers (Mills & other biomass facilities)"
+          [loading]="loadingSectionLayers"
           [multiSelect]="true"
           [layers]="sectionLayers['biomass']"
           [selectedLayerIds]="(selectedBaseLayerIds$ | async) ?? []"

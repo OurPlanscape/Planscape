@@ -12,6 +12,13 @@ h5 {
   justify-content: space-between;
 }
 
+.layers-loading {
+  display: flex;
+  align-items: center;
+  // Roughly one toggle row, so the card doesn't jump when the layers land.
+  min-height: 24px;
+}
+
 .toggle-list {
   display: flex;
   flex-direction: column;
