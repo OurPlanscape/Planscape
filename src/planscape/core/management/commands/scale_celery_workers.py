@@ -126,13 +126,14 @@ class Command(BaseCommand):
 
         if backlog > 0:
             redis_client.set(state_key, now)
-        elif desired < current:
+
+        if desired < current:
             last_backlog_at_raw = redis_client.get(state_key)
             last_backlog_at = int(last_backlog_at_raw or 0)
             elapsed = now - last_backlog_at
             if elapsed < cooldown_seconds:
                 self.stdout.write(
-                    f"{worker.name}: backlog=0 current={current} desired={desired} "
+                    f"{worker.name}: backlog={backlog} current={current} desired={desired} "
                     f"action=skip_scale_down cooldown_remaining="
                     f"{cooldown_seconds - elapsed}s queues={queue_lengths}"
                 )
