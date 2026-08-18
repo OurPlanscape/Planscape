@@ -5,6 +5,61 @@
 :host {
   box-sizing: border-box;
   pointer-events: all;
+
+  &.pdf-version {
+    display: block;
+    min-width: 200px;
+    box-sizing: border-box;
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .layer-color-legend {
+      font-size: 12px;
+      width: auto;
+      min-width: 200px;
+      height: auto;
+      max-height: none;
+      overflow: visible;
+      background: white;
+      background-color: $color-white;
+      border-radius: 8px;
+      border: 1px solid $color-light-purple;
+      backdrop-filter: none;
+      box-shadow: none;
+      transition: none;
+      color: black;
+
+      /* Disable the hover-to-expand behavior in print */
+      &:hover {
+        width: auto;
+        max-width: none;
+      }
+    }
+
+    .legend-title,
+    .swatch-label,
+    .ramp-label,
+    .ramp-label-box {
+      font-size: 12px;
+      color: black;
+    }
+
+    /* Uncap all nested section heights so entries flow naturally */
+    .entries-legend,
+    .ramp-legend,
+    .compact .ramp-legend {
+      height: auto;
+      max-height: none;
+      overflow: visible;
+      flex: none;
+    }
+
+    .entries-legend:hover {
+      overflow-y: visible;
+    }
+  }
 }
 
 .layer-color-legend {
@@ -12,7 +67,8 @@
   border: 1px solid #000;
   background: rgba(42, 42, 42, 0.9);
   backdrop-filter: blur(10px);
-  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);  display: flex;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  display: flex;
   padding: 16px;
   flex-direction: column;
   align-items: flex-start;
