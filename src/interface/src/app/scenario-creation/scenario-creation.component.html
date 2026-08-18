@@ -43,9 +43,11 @@
       <ng-container *ngIf="!isCustomScenario(scenarioType); else customSteps">
         <sg-step [preStep]="true">
           <app-step1-with-overview
-            [isChildScenario]="hasParent"></app-step1-with-overview>
+            [isChildScenario]="
+              (hasParent$ | async) ?? false
+            "></app-step1-with-overview>
         </sg-step>
-        <sg-step *ngIf="subUnitsPrioritized && hasParent === false">
+        <sg-step *ngIf="subUnitsPrioritized && (hasParent$ | async) === false">
           <app-sub-unit-selector></app-sub-unit-selector>
         </sg-step>
         <sg-step>
@@ -72,9 +74,11 @@
         <sg-step [preStep]="true">
           <app-step1-with-overview
             [isCustomScenario]="true"
-            [isChildScenario]="hasParent"></app-step1-with-overview>
+            [isChildScenario]="
+              (hasParent$ | async) ?? false
+            "></app-step1-with-overview>
         </sg-step>
-        <sg-step *ngIf="subUnitsPrioritized && hasParent === false">
+        <sg-step *ngIf="subUnitsPrioritized && (hasParent$ | async) === false">
           <app-sub-unit-selector></app-sub-unit-selector>
         </sg-step>
         <sg-step>
