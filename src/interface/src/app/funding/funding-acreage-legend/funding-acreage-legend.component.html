@@ -24,8 +24,10 @@
           <div class="swatch-box total-acres"></div>
           <div class="swatch-label">Total Planning Area Acres</div>
         </div>
-        <div *ngIf="currentPlan$ | async as plan" class="acres-line">
-          {{ plan.area_acres | number: '1.0-0' }} acres
+        <div
+          *ngIf="legendData.totalPlanningAreaAcres !== null"
+          class="acres-line">
+          {{ legendData.totalPlanningAreaAcres | number: '1.0-0' }} acres
         </div>
       </div>
       <div class="static-row">

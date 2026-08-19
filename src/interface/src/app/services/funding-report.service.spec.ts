@@ -40,6 +40,7 @@ describe('FundingReportService', () => {
       aet_datalayer: null,
       geopackage_status: null,
       geopackage_url: null,
+      planning_area_acres: 500,
     };
     let result: FundingReport | null | undefined;
     service.getReport(123).subscribe((r) => (result = r));

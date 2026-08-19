@@ -1,11 +1,10 @@
-import { AsyncPipe, DecimalPipe, NgFor, NgIf, NgStyle } from '@angular/common';
+import { DecimalPipe, NgFor, NgIf, NgStyle } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { ButtonComponent } from '@styleguide';
 import { FundingMapConfigState } from '../funding-map-config-state';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
-import { PlanState } from '@app/plan/plan.state';
 
 export const TREATMENT_ORDER = [
   'No Treatment',
@@ -18,6 +17,11 @@ export const TREATMENT_ORDER = [
 export type LegendTreatmentType = (typeof TREATMENT_ORDER)[number];
 
 export interface FundingLegendData {
+  /**
+   * Total acreage of the planning area, straight off the report. Null when the
+   * report doesn't carry it (older payloads), which hides the acreage line.
+   */
+  totalPlanningAreaAcres: number | null;
   selectedAcres: number;
   noTreatmentAcres: number;
   treatmentAcresTotals?: Array<{
@@ -30,7 +34,6 @@ export interface FundingLegendData {
   selector: 'app-funding-acreage-legend',
   standalone: true,
   imports: [
-    AsyncPipe,
     ButtonComponent,
     DecimalPipe,
     MatIconModule,
@@ -44,16 +47,9 @@ export interface FundingLegendData {
   styleUrl: './funding-acreage-legend.component.scss',
 })
 export class FundingAcreageLegendComponent {
-  constructor(
-    private fundingMapConfig: FundingMapConfigState,
-    private planState: PlanState
-  ) {}
+  constructor(private fundingMapConfig: FundingMapConfigState) {}
 
   @Input() legendData!: FundingLegendData;
-
-  currentPlan$ = this.planState.currentPlan$;
-
-  selectedAcres = this.legendData?.selectedAcres ?? 0;
 
   treatmentColors: Record<LegendTreatmentType, string> = {
     'No Treatment': 'transparent',

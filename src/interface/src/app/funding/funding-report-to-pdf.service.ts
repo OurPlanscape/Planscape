@@ -113,7 +113,8 @@ export class FundingReportToPdfService {
     const legendData = generateLegendFromReport(
       fundingReport.results,
       selectedProjects ?? [],
-      allAvailableProjectAreas
+      allAvailableProjectAreas,
+      fundingReport.planning_area_acres
     );
 
     const rightLegendDimensions = await this.addSelectionLegendToPdf(

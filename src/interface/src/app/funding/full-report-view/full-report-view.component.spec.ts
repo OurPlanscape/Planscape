@@ -82,6 +82,7 @@ describe('FullReportViewComponent recalculations', () => {
     scenario: 123,
     treatment_datalayer: null,
     aet_datalayer: null,
+    planning_area_acres: 500,
     results: {
       summary: {
         POTENTIAL_SMOKE: [{ year: 0, value: 1, baseline: 1, delta: 0 }],

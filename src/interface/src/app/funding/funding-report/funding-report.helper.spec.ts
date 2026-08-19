@@ -431,16 +431,46 @@ describe('generateLegendFromReport', () => {
     treatment_areas: mockTreatmentAreas,
   };
 
-  it('should return zeros when results is null', () => {
-    const result = generateLegendFromReport(null, [1, 2], mockProjectAreas);
-    expect(result).toEqual({ selectedAcres: 0, noTreatmentAcres: 0 });
+  it('should return zeros when results is null, keeping the planning area acres', () => {
+    const result = generateLegendFromReport(
+      null,
+      [1, 2],
+      mockProjectAreas,
+      900
+    );
+    expect(result).toEqual({
+      totalPlanningAreaAcres: 900,
+      selectedAcres: 0,
+      noTreatmentAcres: 0,
+    });
+  });
+
+  it('should pass through the planning area acres from the report', () => {
+    const result = generateLegendFromReport(
+      mockResults,
+      [1, 3],
+      mockProjectAreas,
+      119049
+    );
+    expect(result.totalPlanningAreaAcres).toBe(119049);
+  });
+
+  it('should leave the planning area acres null when the report has none', () => {
+    const result = generateLegendFromReport(
+      mockResults,
+      [1, 3],
+      mockProjectAreas,
+      null
+    );
+    expect(result.totalPlanningAreaAcres).toBeNull();
   });
 
   it('should calculate selectedAcres from selected areas (ids 1 and 3: 500 + 750 = 1250)', () => {
     const result = generateLegendFromReport(
       mockResults,
       [1, 3],
-      mockProjectAreas
+      mockProjectAreas,
+      900
     );
     expect(result.selectedAcres).toBe(1250);
   });
@@ -449,9 +479,11 @@ describe('generateLegendFromReport', () => {
     const result = generateLegendFromReport(
       mockResults,
       [1, 2, 3, 4],
-      mockProjectAreas
+      mockProjectAreas,
+      900
     );
     expect(result).toEqual({
+      totalPlanningAreaAcres: 900,
       selectedAcres: 3500,
       treatmentAcresTotals: [
         { treatment: 'Rx Burn', acres: 1078 },
@@ -465,7 +497,8 @@ describe('generateLegendFromReport', () => {
     const result = generateLegendFromReport(
       mockResults,
       [1, 3],
-      mockProjectAreas
+      mockProjectAreas,
+      900
     );
     expect(result.selectedAcres).toBe(1250);
     expect(result.treatmentAcresTotals).toEqual([
@@ -476,7 +509,12 @@ describe('generateLegendFromReport', () => {
   });
 
   it('should select all areas when selectedAreas is empty', () => {
-    const result = generateLegendFromReport(mockResults, [], mockProjectAreas);
+    const result = generateLegendFromReport(
+      mockResults,
+      [],
+      mockProjectAreas,
+      900
+    );
     expect(result.selectedAcres).toBe(3500);
   });
 });

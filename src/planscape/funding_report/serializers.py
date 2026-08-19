@@ -6,10 +6,25 @@ from funding_report.models import FundingOpportunityReport
 from funding_report.services import calculate_aet_improvement
 from planning.models import PlanningArea, Scenario
 from planning.serializers import ProjectAreaSerializer
+from planning.services import get_acreage
+
+
+def get_planning_area_acres(instance: FundingOpportunityReport) -> Optional[float]:
+    """Total acreage of the report's planning area.
+
+    Carried on the report itself so every consumer - authenticated or public -
+    reads it from the report payload, instead of the public shared view having
+    to reach for the authenticated planning area endpoint.
+    """
+    planning_area = getattr(instance.scenario, "planning_area", None)
+    if not planning_area or not planning_area.geometry:
+        return None
+    return get_acreage(planning_area.geometry)
 
 
 class FundingOpportunityReportSerializer(serializers.ModelSerializer):
     geopackage_url = serializers.SerializerMethodField()
+    planning_area_acres = serializers.SerializerMethodField()
 
     class Meta:
         model = FundingOpportunityReport
@@ -25,11 +40,17 @@ class FundingOpportunityReportSerializer(serializers.ModelSerializer):
             "aet_datalayer",
             "geopackage_status",
             "geopackage_url",
+            "planning_area_acres",
         ]
         read_only_fields = fields
 
     def get_geopackage_url(self, instance: FundingOpportunityReport) -> Optional[str]:
         return instance.get_geopackage_url()
+
+    def get_planning_area_acres(
+        self, instance: FundingOpportunityReport
+    ) -> Optional[float]:
+        return get_planning_area_acres(instance)
 
 
 class FundingOpportunityReportPlanningAreaSerializer(serializers.ModelSerializer):
@@ -57,6 +78,7 @@ class FundingOpportunityReportPublicSerializer(serializers.ModelSerializer):
     results = serializers.SerializerMethodField()
     geopackage_url = serializers.SerializerMethodField()
     shared_configuration = serializers.SerializerMethodField()
+    planning_area_acres = serializers.SerializerMethodField()
     class Meta:
         model = FundingOpportunityReport
         fields = [
@@ -69,6 +91,7 @@ class FundingOpportunityReportPublicSerializer(serializers.ModelSerializer):
             "geopackage_status",
             "geopackage_url",
             "shared_configuration",
+            "planning_area_acres",
         ]
         read_only_fields = fields
 
@@ -113,6 +136,11 @@ class FundingOpportunityReportPublicSerializer(serializers.ModelSerializer):
 
     def get_shared_configuration(self, instance: FundingOpportunityReport) -> Optional[Dict]:
         return self.context
+
+    def get_planning_area_acres(
+        self, instance: FundingOpportunityReport
+    ) -> Optional[float]:
+        return get_planning_area_acres(instance)
 
 class FundingOpportunityReportPublicProjectAreaQueryParamsSerializer(serializers.Serializer):
     number_of_features = serializers.IntegerField(min_value=1, required=False)
