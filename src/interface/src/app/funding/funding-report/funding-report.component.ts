@@ -242,6 +242,13 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     biomass: [],
   };
 
+  /**
+   * True while the `funding_report` module fetch is in flight. The module is
+   * one request for every section's layers, so each section's layer block shows
+   * a placeholder until it lands rather than sitting empty.
+   */
+  loadingSectionLayers = true;
+
   /** Raster data layers (carbon/water/wildfire) by id, to drive the map on select. */
   private layersById = new Map<number, DataLayer>();
   /** Vector base layers (biomass) by id, to toggle on the map on select. */
@@ -249,8 +256,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
 
   /**
    * Id of the raster layer currently shown on the map (from the shared
-   * data-layer state), or null. Drives the single-select sections' radio groups
-   * so only the active layer stays selected, even across sections.
+   * data-layer state), or null. Drives the single-select sections' toggles so
+   * only the active layer stays on, even across sections.
    */
   viewedLayerId$ = this.dataLayersStateService.viewedDataLayer$.pipe(
     map((layer) => layer?.id ?? null)
@@ -419,9 +426,15 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
    * `wildfire_risk_reduction`, which maps to this report's `wildfire` section.
    */
   private loadSectionLayers(): void {
+    this.loadingSectionLayers = true;
     this.fundingModuleService
       .loadFundingModule()
-      .pipe(untilDestroyed(this))
+      .pipe(
+        // `finalize` so a failed fetch clears the placeholders instead of
+        // leaving every section spinning forever.
+        finalize(() => (this.loadingSectionLayers = false)),
+        untilDestroyed(this)
+      )
       .subscribe((module) => {
         const datalayers: FundingReportDataLayers = module.options.datalayers;
         this.sectionLayers = {
@@ -606,6 +619,14 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   /**
+   * Switching the active layer's toggle off takes it back off the map, the same
+   * way clearing the selection in the Data Layers tab does.
+   */
+  onLayerCleared(): void {
+    this.dataLayersStateService.selectDataLayer(null);
+  }
+
+  /**
    * Toggle a biomass (vector) layer on the map via the shared base-layer state,
    * the same plumbing the Base Layers tab and Ownership layers use. `isMulti`
    * is true so multiple mills layers can be shown at once.
@@ -650,16 +671,14 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
       return;
     }
     this.generatingPdf$.next(true);
+
     try {
-      // In the dashboard preview the map is inside the captured sections. In the
-      // full view it lives in a sibling pane, so grab its canvas to draw on top.
-      const mapCanvas = this.isPreview
-        ? null
-        : document.querySelector<HTMLCanvasElement>('.maplibregl-canvas');
-      await this.pdfService.exportReport(
+      // note: we render the map directly using a maplibremap reference
+      await this.pdfService.exportPDFReport(
         this.scrollContainer.nativeElement,
-        `planscape-funding-report-${this.report.scenario}`,
-        mapCanvas
+        this.isPreview,
+        this.report,
+        this.projectAreas
       );
     } catch (error) {
       this.displayDownloadErrorSnackbar();

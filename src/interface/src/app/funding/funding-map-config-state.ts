@@ -1,6 +1,22 @@
 import { Injectable } from '@angular/core';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { BehaviorSubject } from 'rxjs';
+import {
+  LngLat,
+  LngLatBounds,
+  Map as MapLibreMap,
+  StyleSpecification,
+} from 'maplibre-gl';
+import { ProjectArea } from '@app/types';
+
+export interface MapViewSnapshot {
+  style: StyleSpecification;
+  center: LngLat;
+  zoom: number;
+  bearing: number;
+  pitch: number;
+  bounds: LngLatBounds;
+}
 
 @Injectable()
 export class FundingMapConfigState extends MapConfigState {
@@ -12,6 +28,29 @@ export class FundingMapConfigState extends MapConfigState {
 
   private _showFundingLegend$ = new BehaviorSubject(true);
   public showFundingLegend$ = this._showFundingLegend$.asObservable();
+
+  private _mapRef$ = new BehaviorSubject<MapLibreMap | null>(null);
+
+  private _allProjectAreas$ = new BehaviorSubject<ProjectArea[]>([]);
+  public allProjectAreas$ = this._allProjectAreas$.asObservable();
+
+  setMapRef(mapRef: MapLibreMap) {
+    this._mapRef$.next(mapRef);
+  }
+
+  getViewSnapshot(): MapViewSnapshot | null {
+    const map = this._mapRef$.value;
+    if (!map) return null;
+
+    return {
+      style: map.getStyle(),
+      center: map.getBounds().getCenter(),
+      zoom: map.getZoom(),
+      bearing: map.getBearing(),
+      pitch: map.getPitch(),
+      bounds: map.getBounds(),
+    };
+  }
 
   setMapLoaded(loaded: boolean) {
     this._mapLoaded$.next(loaded);
@@ -38,5 +77,9 @@ export class FundingMapConfigState extends MapConfigState {
 
       this._selectedProjectAreas$.next([...currentSelection, id]);
     }
+  }
+
+  setAllProjectAreas(areas: ProjectArea[]): void {
+    this._allProjectAreas$.next(areas);
   }
 }

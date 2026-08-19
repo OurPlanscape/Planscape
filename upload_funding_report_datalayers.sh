@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "/media/george/vaa-linux/projects/Planscape/src/planscape"
 
-DATASET_ID="1063"
+DATASET_ID="1064"
 RASTER_DIR="${RASTER_DIR:-/media/george/vaa-linux/planscape/for-reports}"
 PYTHON_BIN=(${PYTHON_BIN:-uv run python})
 MAP_SERVICE_TYPE="${MAP_SERVICE_TYPE:-COG}"
@@ -46,12 +46,13 @@ BIOMASS_WOOD_TYPE_METADATA='{"modules":{"funding_report":{"variable":"BIOMASS","
 "${PYTHON_BIN[@]}" manage.py datalayers create "Legalmax 2046 aboveground_total_live" --input-file "$RASTER_DIR/Legalmax_2046_aboveground_total_live.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --funding
 "${PYTHON_BIN[@]}" manage.py datalayers create "Legalmax 2046 pot_smoke_sev" --input-file "$RASTER_DIR/Legalmax_2046_pot_smoke_sev.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --funding
 "${PYTHON_BIN[@]}" manage.py datalayers create "Legalmax 2046 tot_flame_sev" --input-file "$RASTER_DIR/Legalmax_2046_tot_flame_sev.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --funding
-"${PYTHON_BIN[@]}" manage.py datalayers create "AET baseline" --input-file "$RASTER_DIR/AET_baseline_fvsmasked-003.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$AET_BASELINE_METADATA"
-"${PYTHON_BIN[@]}" manage.py datalayers create "AET target" --input-file "$RASTER_DIR/AET_legalmax_fvsmasked-001.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$AET_TARGET_METADATA"
-"${PYTHON_BIN[@]}" manage.py datalayers create "AET delta" --input-file "$RASTER_DIR/AET_legalmax_difference_fvsmasked-002.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$AET_DELTA_METADATA"
+# Missing from $RASTER_DIR:
+# "${PYTHON_BIN[@]}" manage.py datalayers create "AET baseline" --input-file "$RASTER_DIR/AET_baseline_fvsmasked-003.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$AET_BASELINE_METADATA"
+# "${PYTHON_BIN[@]}" manage.py datalayers create "AET target" --input-file "$RASTER_DIR/AET_legalmax_fvsmasked-001.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$AET_TARGET_METADATA"
+# "${PYTHON_BIN[@]}" manage.py datalayers create "AET delta" --input-file "$RASTER_DIR/AET_legalmax_difference_fvsmasked-002.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$AET_DELTA_METADATA"
 "${PYTHON_BIN[@]}" manage.py datalayers create "Water Percentual Change" --input-file "$RASTER_DIR/water_avail_perc_change_legalmax_fvsmasked.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$AET_PERC_METADATA"
 
-"${PYTHON_BIN[@]}" manage.py datalayers create "Treatments" --input-file "$RASTER_DIR/treatments.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$TREATMENT_METADATA"
-"${PYTHON_BIN[@]}" manage.py datalayers create "Biomass Merchantable" --input-file "$RASTER_DIR/merch-2026.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$BIOMASS_MERCH_METADATA"
-"${PYTHON_BIN[@]}" manage.py datalayers create "Biomass Non-Merchantable" --input-file "$RASTER_DIR/non-merch-2026.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$BIOMASS_NON_MERCH_METADATA"
+"${PYTHON_BIN[@]}" manage.py datalayers create "Treatments" --input-file "$RASTER_DIR/tx_key_rxfire1_thinburn2.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$TREATMENT_METADATA"
+"${PYTHON_BIN[@]}" manage.py datalayers create "Biomass Merchantable" --input-file "$RASTER_DIR/Baseline_2026_bdft.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$BIOMASS_MERCH_METADATA"
+"${PYTHON_BIN[@]}" manage.py datalayers create "Biomass Non-Merchantable" --input-file "$RASTER_DIR/Baseline_2026_nonmerch_cuft.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$BIOMASS_NON_MERCH_METADATA"
 "${PYTHON_BIN[@]}" manage.py datalayers create "Biomass Wood Type" --input-file "$RASTER_DIR/softwood_hardwood_mixed.tif" --dataset "$DATASET_ID" --map-service-type "$MAP_SERVICE_TYPE" --metadata "$BIOMASS_WOOD_TYPE_METADATA"

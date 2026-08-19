@@ -12,21 +12,28 @@ h5 {
   justify-content: space-between;
 }
 
-mat-radio-button {
-  display: block;
-  margin-left: -8px;
+.layers-loading {
+  display: flex;
+  align-items: center;
+  // Roughly one toggle row, so the card doesn't jump when the layers land.
+  min-height: 24px;
 }
 
-.layer-radio {
-  ::ng-deep .mdc-form-field {
-    width: 100%;
-  }
+.toggle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
-  ::ng-deep .mdc-label {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.layer-toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+
+  .toggle {
+    flex: 1;
+    min-width: 0;
   }
 }
 

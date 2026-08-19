@@ -8,7 +8,13 @@
   </p>
 
   <div class="actions">
-    <a sg-button variant="ghost" routerLink="/map-viewer">Explore</a>
+    <a
+      sg-button
+      variant="ghost"
+      routerLink="/map-viewer"
+      *appFeatureFlag="'WORKSPACES'; hide: true"
+      >Explore</a
+    >
     <a sg-button variant="primary" routerLink="/login">Sign in</a>
   </div>
 

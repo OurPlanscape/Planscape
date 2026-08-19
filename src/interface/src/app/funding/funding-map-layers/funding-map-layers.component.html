@@ -1,41 +1,53 @@
 <h5>{{ heading }}</h5>
 
-<div *ngIf="multiSelect; else singleSelect" class="checkbox-list">
-  <mat-checkbox
-    *ngFor="let layer of layers"
-    [checked]="isChecked(layer)"
-    class="layer-checkbox"
-    (change)="selectedLayer.emit(layer)">
-    {{ layer.name }}
-    <span class="right-items">
-      <mat-spinner
-        class="side-spinner"
-        diameter="20"
-        *ngIf="isLoading(layer)"></mat-spinner>
-      <span
-        class="base-layer-legend"
-        *ngIf="isChecked(layer)"
-        [style.backgroundColor]="layer.color || BASE_LAYERS_DEFAULT.COLOR"
-        [style.border-color]="
-          layer.outlineColor || BASE_LAYERS_DEFAULT.COLOR
-        "></span>
-    </span>
-  </mat-checkbox>
+<div class="layers-loading" *ngIf="loading">
+  <mat-spinner diameter="20"></mat-spinner>
 </div>
 
-<ng-template #singleSelect>
-  <mat-radio-group
-    [value]="selected"
-    (change)="selectedLayer.emit($event.value)">
-    <mat-radio-button
+<ng-container *ngIf="!loading">
+  <ng-container
+    *ngTemplateOutlet="multiSelect ? multiSelectList : singleSelect">
+  </ng-container>
+</ng-container>
+
+<ng-template #multiSelectList>
+  <div class="checkbox-list">
+    <mat-checkbox
       *ngFor="let layer of layers"
-      [value]="layer"
-      class="layer-radio">
+      [checked]="isChecked(layer)"
+      class="layer-checkbox"
+      (change)="selectedLayer.emit(layer)">
       {{ layer.name }}
+      <span class="right-items">
+        <mat-spinner
+          class="side-spinner"
+          diameter="20"
+          *ngIf="isLoading(layer)"></mat-spinner>
+        <span
+          class="base-layer-legend"
+          *ngIf="isChecked(layer)"
+          [style.backgroundColor]="layer.color || BASE_LAYERS_DEFAULT.COLOR"
+          [style.border-color]="
+            layer.outlineColor || BASE_LAYERS_DEFAULT.COLOR
+          "></span>
+      </span>
+    </mat-checkbox>
+  </div>
+</ng-template>
+
+<ng-template #singleSelect>
+  <div class="toggle-list">
+    <div class="layer-toggle" *ngFor="let layer of layers">
+      <sg-toggle
+        class="toggle"
+        [checked]="isSelected(layer)"
+        (changed)="onToggled(layer, $event)">
+        {{ layer.name }}
+      </sg-toggle>
       <mat-spinner
         class="side-spinner"
         diameter="20"
         *ngIf="isLoading(layer)"></mat-spinner>
-    </mat-radio-button>
-  </mat-radio-group>
+    </div>
+  </div>
 </ng-template>

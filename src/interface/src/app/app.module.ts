@@ -30,7 +30,6 @@ import { NgxMaskModule } from 'ngx-mask';
 
 import { SharePlanDialogComponent } from '@home/share-plan-dialog/share-plan-dialog.component';
 import { SharedModule } from '@shared';
-import { WelcomeComponent } from '@home/welcome/welcome.component';
 import { environment } from '@env/environment';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 
@@ -40,12 +39,7 @@ import * as Sentry from '@sentry/angular';
 import { LoggingHttpInterceptor } from '@services/logging-http.interceptor';
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    HomeComponent,
-    SharePlanDialogComponent,
-    WelcomeComponent,
-  ],
+  declarations: [AppComponent, HomeComponent, SharePlanDialogComponent],
   imports: [
     AppRoutingModule,
     BrowserAnimationsModule,
