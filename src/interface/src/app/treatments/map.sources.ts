@@ -46,6 +46,26 @@ export const MARTIN_SOURCES = {
       label: 'project_areas_by_scenario_label',
     },
   },
+  // This query is used by child scenarios of project areas, without includes/excludes
+  standsByProjectAreas: {
+    tilesUrl: environment.martin_server + 'stands_by_project_areas/{z}/{x}/{y}',
+    sources: {
+      stands: 'stands_by_project_areas',
+      geometry: 'stands_by_project_areas',
+      label: 'stands_by_project_areas_label',
+    },
+  },
+  // This query is used by child scenarios of project areas, *with* includes/excludes
+  treatableStandsByProjectAreas: {
+    tilesUrl:
+      environment.martin_server +
+      'treatable_stands_by_project_areas/{z}/{x}/{y}',
+    sources: {
+      stands: 'treatable_stands_by_project_areas',
+      geometry: 'treatable_stands_by_project_areas',
+      label: 'treatable_stands_by_project_areas_label',
+    },
+  },
   standsByTxResult: {
     tilesUrl: environment.martin_server + 'stands_by_tx_result/{z}/{x}/{y}',
     sources: {

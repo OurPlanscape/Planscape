@@ -118,6 +118,10 @@ export class ScenarioMapComponent implements OnDestroy {
     })
   );
 
+  hasParent$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => !!scenario?.parent)
+  );
+
   showStandsWithIncludes$ = this.newScenarioState.currentStep$.pipe(
     map((step) => {
       return step?.withIncludes;

@@ -43,48 +43,35 @@ export class ScenarioStandsComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
   @Input() mapLibreMap!: MapLibreMap;
-  readonly sourceName =
-    MARTIN_SOURCES.scenarioStands.sources.standsWithIncludes;
+
+  /**
+   * Set true when these stands live under a parent plan / project area.
+   * Leave false (default) for the standalone scenario
+   */
+  @Input() hasParent = false;
+
   readonly excludedKey = 'excluded';
   readonly constrainedKey = 'constrained';
   readonly scenarioId = this.route.snapshot.data['scenarioId'];
 
   private standsLoaded = false;
-
-  tilesUrl$ = combineLatest([
-    this.newScenarioState.scenarioConfig$.pipe(
-      filter((config) => !!config.stand_size)
-    ),
-    this.newScenarioState.includedAreas$,
-    this.newScenarioState.currentStep$,
-  ]).pipe(
-    untilDestroyed(this),
-    map(([config, includes, step]) => {
-      const includesParam =
-        step?.withIncludes && includes?.length
-          ? `&includes=${includes.join(',')}`
-          : '';
-
-      return (
-        MARTIN_SOURCES.scenarioStands.tilesWithIncludesUrl +
-        `?scenario_id=${this.scenarioId}` +
-        `&stand_size=${config.stand_size}` +
-        includesParam +
-        `&datetime=${new Date().toISOString()}`
-      );
-    }),
-    distinctUntilChanged(),
-    tap(() => {
-      this.newScenarioState.setLoading(true);
-      this.standsLoaded = false;
-    })
-  );
-
-  opacity$ = this.mapConfigState.opacity$;
-
-  // local copies to reset feature state
   private excludedStands: number[] = [];
   private constrainedStands: number[] = [];
+
+  // Assigned in ngOnInit
+  tilesUrl$!: Observable<string>;
+
+  get planId() {
+    return this.hasParent ? this.route.snapshot.data['planId'] : undefined;
+  }
+
+  get sourceName(): string {
+    return this.hasParent
+      ? MARTIN_SOURCES.treatableStandsByProjectAreas.sources.stands
+      : MARTIN_SOURCES.scenarioStands.sources.standsWithIncludes;
+  }
+
+  opacity$ = this.mapConfigState.opacity$;
 
   constructor(
     private route: ActivatedRoute,
@@ -141,6 +128,8 @@ export class ScenarioStandsComponent
   );
 
   ngOnInit(): void {
+    this.tilesUrl$ = this.buildTilesUrl$();
+
     this.mapLibreMap.on('sourcedata', this.onDataListener);
     this.mapLibreMap.on('styledata', this.onStyleDataListener);
 
@@ -184,6 +173,27 @@ export class ScenarioStandsComponent
   ngOnDestroy(): void {
     this.mapLibreMap.off('sourcedata', this.onDataListener);
     this.mapLibreMap.off('styledata', this.onStyleDataListener);
+  }
+
+  private buildTilesUrl$(): Observable<string> {
+    return this.newScenarioState.scenarioConfig$.pipe(
+      filter((config) => !!config?.stand_size),
+      map((config) => {
+        if (this.hasParent) {
+          return `${MARTIN_SOURCES.treatableStandsByProjectAreas.tilesUrl}?scenario_id=${this.scenarioId}`;
+        }
+
+        const baseUrl = MARTIN_SOURCES.scenarioStands.tilesWithIncludesUrl;
+        const timestamp = new Date().toISOString();
+
+        return `${baseUrl}?scenario_id=${this.scenarioId}&stand_size=${config.stand_size}&datetime=${timestamp}`;
+      }),
+      distinctUntilChanged(),
+      tap(() => {
+        this.newScenarioState.setLoading(true);
+        this.standsLoaded = false;
+      })
+    );
   }
 
   private paintStands(ids: number[], key: string, current: number[]): number[] {

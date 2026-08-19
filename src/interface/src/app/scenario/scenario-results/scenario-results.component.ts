@@ -41,6 +41,7 @@ import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 export class ScenarioResultsComponent implements OnChanges, OnInit {
   @Input() scenarioId!: number;
   @Input() scenarioVersion!: string;
+  @Input() scenarioParent: number | null = null;
   @Input() planningApproach!: PLANNING_APPROACH;
   @Input() scenarioName = 'scenario_results';
   @Input() results: ScenarioResult | null = null;
@@ -109,6 +110,15 @@ export class ScenarioResultsComponent implements OnChanges, OnInit {
       analytics = hasAnalytics(this.results);
     }
     return analytics;
+  }
+
+  get headLineText() {
+    // We only show 'Top 10 Subunits' when both conditions are met:
+    //  it's a subunits scenario AND it's not a child scenario
+    if (this.isPlanningApproachSubUnits && !this.scenarioParent) {
+      return 'Top 10 Subunits';
+    }
+    return 'Project Areas';
   }
 
   get isPlanningApproachSubUnits() {

@@ -12,6 +12,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { SubUnitSelectorComponent } from './sub-unit-selector/sub-unit-selector.component';
 import {
   catchError,
+  combineLatest,
   finalize,
   map,
   Observable,
@@ -196,9 +197,30 @@ export class ScenarioCreationComponent implements OnInit {
   );
 
   hasParent$ = this.scenarioState.currentScenario$.pipe(
-    map((scenario) => {
-      return scenario.parent !== null;
-    })
+    map((scenario) => scenario?.parent != null),
+    shareReplay(1)
+  );
+
+  steps$ = combineLatest([
+    this.newScenarioState.scenarioConfig$,
+    this.hasParent$,
+  ]).pipe(
+    map(([config, hasParent]) => {
+      if (!config?.type) return [];
+
+      const baseSteps = isCustomScenario(config.type)
+        ? this.customSteps
+        : this.scenarioSteps;
+
+      const subUnitsPrioritized =
+        config.planning_approach &&
+        isPlanningApproachSubUnits(config.planning_approach);
+
+      return subUnitsPrioritized && !hasParent
+        ? [SUB_UNITS_STEP, ...baseSteps]
+        : baseSteps;
+    }),
+    shareReplay(1)
   );
 
   @HostListener('window:beforeunload', ['$event'])
@@ -242,6 +264,11 @@ export class ScenarioCreationComponent implements OnInit {
     if (this.scenarioId) {
       this.loadExistingScenario();
     }
+
+    this.steps$.pipe(untilDestroyed(this)).subscribe((steps) => {
+      this.steps = steps;
+      this.cdr.markForCheck();
+    });
   }
 
   loadExistingScenario() {
@@ -266,9 +293,6 @@ export class ScenarioCreationComponent implements OnInit {
         this.newScenarioState.setScenarioConfig(currentConfig);
         // Setting the initial state for the configuration (must be before subUnitsPrioritized check)
         this.config = currentConfig;
-
-        this.rebuildNavSteps();
-        this.cdr.markForCheck();
       });
   }
 
@@ -303,8 +327,6 @@ export class ScenarioCreationComponent implements OnInit {
         }
         this.config = { ...this.config, ...data };
         this.newScenarioState.setScenarioConfig(this.config);
-        this.rebuildNavSteps();
-        this.cdr.markForCheck();
         return this.savePatch(data).pipe(catchError(() => of(false)));
       }),
       catchError(() => of(false))
@@ -437,15 +459,6 @@ export class ScenarioCreationComponent implements OnInit {
 
   isCustomScenario(type: SCENARIO_TYPE) {
     return isCustomScenario(type);
-  }
-
-  private rebuildNavSteps() {
-    const baseSteps = isCustomScenario(this.config.type!)
-      ? this.customSteps
-      : this.scenarioSteps;
-    this.steps = this.subUnitsPrioritized
-      ? [SUB_UNITS_STEP, ...baseSteps]
-      : baseSteps;
   }
 
   get subUnitsPrioritized() {

@@ -405,7 +405,7 @@ describe('ScenariosListComponent should support various modes', () => {
       ]);
     });
 
-    it('routes finished scenarios to the dashboard under the /plan prefix', () => {
+    it('routes finished scenarios to the fullview under the /plan prefix', () => {
       fixture.detectChanges();
       const scenario = {
         ...makeScenario(1),
@@ -419,7 +419,6 @@ describe('ScenariosListComponent should support various modes', () => {
         mockPlan$.value.id,
         'scenario',
         scenario.id,
-        'dashboard',
       ]);
     });
   });
