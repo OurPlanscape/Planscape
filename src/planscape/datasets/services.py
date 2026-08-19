@@ -79,6 +79,18 @@ def get_storage_url(
     return f"{get_bucket_url()}/{get_object_name(organization_id, uuid, original_name, mimetype)}"
 
 
+def get_storage_path(
+    organization_id: int,
+    uuid: str,
+    original_name: str,
+    mimetype: Optional[str] = None,
+) -> str:
+    if settings.MOUNTED_DATASTORE_BUCKET_ROOT is None:
+        raise ValueError("Datastore Bucket not mounted.")
+
+    return f"{settings.MOUNTED_DATASTORE_BUCKET_ROOT}/{get_object_name(organization_id, uuid, original_name, mimetype)}"
+
+
 def create_upload_url_for_org(
     organization_id: int,
     uuid: str,
