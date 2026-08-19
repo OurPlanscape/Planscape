@@ -94,14 +94,14 @@ describe('PlanningAreaStandsComponent', () => {
       const emitted: string[] = [];
       const sub = component.tilesUrl$.subscribe((v) => emitted.push(v));
 
-      scenarioConfig$.next({ stand_size: 'BIG' });
+      scenarioConfig$.next({ stand_size: 'LARGE' });
       scenarioConfig$.next({ stand_size: 'SMALL' });
 
       tick();
 
       const base = MARTIN_SOURCES.scenarioStands.tilesUrl;
       expect(emitted[0]).toContain(
-        `${base}?planning_area_id=${planId}&stand_size=BIG`
+        `${base}?planning_area_id=${planId}&stand_size=LARGE`
       );
 
       expect(emitted[1]).toContain(
@@ -150,9 +150,12 @@ describe('PlanningAreaStandsComponent', () => {
 
       scenarioConfig$.next({ stand_size: 'LARGE' });
       tick();
-
-      const base = MARTIN_SOURCES.standsByProjectAreas.tilesUrl;
-      expect(emitted[0]).toBe(`${base}?scenario_id=${scenarioId}`);
+      const url = new URL(emitted[0]);
+      expect(url.searchParams.get('scenario_id')).toBe(scenarioId.toString());
+      expect(url.searchParams.get('stand_size')).toBe('LARGE');
+      const datetime = url.searchParams.get('datetime');
+      expect(datetime).toBeTruthy();
+      expect(datetime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
 
       sub.unsubscribe();
     }));

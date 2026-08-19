@@ -102,14 +102,14 @@ describe('ScenarioStandsComponent', () => {
       const emitted: string[] = [];
       const sub = component.tilesUrl$.subscribe((v) => emitted.push(v));
 
-      scenarioConfig$.next({ stand_size: 'BIG' });
+      scenarioConfig$.next({ stand_size: 'LARGE' });
       scenarioConfig$.next({ stand_size: 'SMALL' });
 
       tick();
 
       const base = MARTIN_SOURCES.scenarioStands.tilesWithIncludesUrl;
       expect(emitted[0]).toContain(
-        `${base}?scenario_id=${scenarioId}&stand_size=BIG`
+        `${base}?scenario_id=${scenarioId}&stand_size=LARGE`
       );
 
       expect(emitted[1]).toContain(
@@ -155,7 +155,7 @@ describe('ScenarioStandsComponent', () => {
       const emitted: string[] = [];
       const sub = component.tilesUrl$.subscribe((v) => emitted.push(v));
 
-      scenarioConfig$.next({ stand_size: 'BIG' });
+      scenarioConfig$.next({ stand_size: 'LARGE' });
       tick();
 
       const base = MARTIN_SOURCES.treatableStandsByProjectAreas.tilesUrl;

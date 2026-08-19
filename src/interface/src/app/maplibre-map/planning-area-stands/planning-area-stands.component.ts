@@ -180,7 +180,9 @@ export class PlanningAreaStandsComponent
       map((config) =>
         this.hasParent
           ? MARTIN_SOURCES.standsByProjectAreas.tilesUrl +
-            `?scenario_id=${this.scenarioId}`
+            `?scenario_id=${this.scenarioId}` +
+            `&stand_size=${config.stand_size}` +
+            `&datetime=${new Date().toISOString()}`
           : MARTIN_SOURCES.scenarioStands.tilesUrl +
             `?planning_area_id=${this.planId}` +
             `&stand_size=${config.stand_size}` +
