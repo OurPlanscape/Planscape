@@ -13,6 +13,7 @@ describe('FundingAcreageLegendComponent', () => {
   let fixture: ComponentFixture<FundingAcreageLegendComponent>;
 
   let testLegendData: FundingLegendData = {
+    totalPlanningAreaAcres: 119049,
     selectedAcres: 100,
     treatmentAcresTotals: [],
     noTreatmentAcres: 0,
@@ -34,5 +35,19 @@ describe('FundingAcreageLegendComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should render the total planning area acres from the legend data', () => {
+    expect(fixture.nativeElement.textContent).toContain('119,049 acres');
+  });
+
+  it('should omit the acreage line when the report has no planning area acres', () => {
+    component.legendData = { ...testLegendData, totalPlanningAreaAcres: null };
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Total Planning Area Acres'
+    );
+    expect(fixture.nativeElement.textContent).not.toContain('119,049 acres');
   });
 });

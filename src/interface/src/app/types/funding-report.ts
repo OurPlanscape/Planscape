@@ -151,6 +151,12 @@ export interface FundingReport {
   aet_datalayer: number | null;
   geopackage_status: null | 'SUCCEEDED' | 'PROCESSING' | 'PENDING' | 'FAILED';
   geopackage_url: null | string;
+  /**
+   * Total acreage of the scenario's planning area. Carried on the report itself
+   * so the legend reads it from the report payload in both the authed and the
+   * public shared view (the latter has no access to the plan endpoint).
+   */
+  planning_area_acres: number | null;
 }
 
 /**
@@ -195,6 +201,8 @@ export interface FundingReportPublic {
   geopackage_status: FundingReport['geopackage_status'];
   geopackage_url: string | null;
   shared_configuration: FundingReportSharedConfiguration;
+  /** Total acreage of the planning area; see {@link FundingReport}. */
+  planning_area_acres: number | null;
 }
 
 /**

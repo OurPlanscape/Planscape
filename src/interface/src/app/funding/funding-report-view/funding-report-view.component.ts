@@ -136,7 +136,8 @@ export class FundingReportViewComponent {
       const legendData = generateLegendFromReport(
         report?.results ?? null,
         areas,
-        projAreas
+        projAreas,
+        report?.planning_area_acres ?? null
       );
       return legendData;
     })

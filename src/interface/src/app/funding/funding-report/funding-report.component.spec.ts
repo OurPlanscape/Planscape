@@ -47,6 +47,7 @@ function makeReport(overrides: Partial<FundingReport> = {}): FundingReport {
     aet_datalayer: null,
     geopackage_status: null,
     geopackage_url: null,
+    planning_area_acres: null,
     ...overrides,
   };
 }

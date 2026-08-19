@@ -221,17 +221,25 @@ export function aggregateAetSummary(
   };
 }
 
+/**
+ * Legend figures for the map. `planningAreaAcres` is the report's own
+ * `planning_area_acres` — the legend takes it from the report so the public
+ * shared view, which can't read the authenticated plan endpoint, shows the same
+ * total as the authed view.
+ */
 export function generateLegendFromReport(
   results: FundingReportResults | null,
   selectedAreas: number[],
-  projectAreas: ProjectArea[]
+  projectAreas: ProjectArea[],
+  planningAreaAcres: number | null
 ): FundingLegendData {
   const legendData: FundingLegendData = {
+    totalPlanningAreaAcres: planningAreaAcres,
     selectedAcres: 0,
     noTreatmentAcres: 0,
   };
   if (!results) {
-    return { selectedAcres: 0, noTreatmentAcres: 0 };
+    return legendData;
   }
   const txAreas = results?.treatment_areas;
 

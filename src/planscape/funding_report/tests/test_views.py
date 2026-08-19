@@ -7,6 +7,7 @@ from collaboration.tests.factories import UserObjectRoleFactory
 from django.conf import settings
 from django.urls import reverse
 from planning.models import ScenarioPlanningApproach
+from planning.services import get_acreage
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -247,6 +248,18 @@ class GetReportTest(APITestCase):
         self.assertIn("created_by", data)
         self.assertIn("results", data)
         self.assertEqual(data["results"], {"summary": {}, "projects": {}})
+
+    def test_get_report_returns_planning_area_acres(self):
+        self._create_report()
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertAlmostEqual(
+            response.json()["planning_area_acres"],
+            get_acreage(self.planning_area.geometry),
+            places=6,
+        )
 
     def test_get_report_requires_authentication(self):
         self._create_report()
@@ -536,6 +549,11 @@ class PublicFundingOpportunityReportTest(APITestCase):
         self.assertEqual(data["shared_configuration"], self.shared_link.configuration)
         self.assertEqual(data["geopackage_status"], self.report.geopackage_status)
         self.assertEqual(data["geopackage_url"], self.report.get_geopackage_url())
+        self.assertAlmostEqual(
+            data["planning_area_acres"],
+            get_acreage(self.report.scenario.planning_area.geometry),
+            places=6,
+        )
         self.assertEqual(
             data["results"]["summary"]["AET"],
             {

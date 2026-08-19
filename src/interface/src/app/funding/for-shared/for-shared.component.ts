@@ -147,6 +147,7 @@ export class ForSharedComponent implements OnInit {
       aet_datalayer: report.aet_datalayer,
       geopackage_status: report.geopackage_status,
       geopackage_url: report.geopackage_url,
+      planning_area_acres: report.planning_area_acres,
       id: 0,
       scenario: 0,
       created_by: 0,

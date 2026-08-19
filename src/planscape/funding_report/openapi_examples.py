@@ -39,6 +39,7 @@ FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE = OpenApiExample(
         "aet_datalayer": 483,
         "geopackage_status": "SUCCEEDED",
         "geopackage_url": "https://storage.googleapis.com/bucket/funding_report_1.gpkg?signature=...",
+        "planning_area_acres": 6500.0,
         "results": {
             "summary": {
                 "ABOVEGROUND_TOTAL": [
