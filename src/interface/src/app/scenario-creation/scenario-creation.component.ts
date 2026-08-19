@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   HostListener,
   OnInit,
@@ -221,6 +222,7 @@ export class ScenarioCreationComponent implements OnInit {
     }),
     shareReplay(1)
   );
+
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
     if (!this.newScenarioState.isDraftFinishedSnapshot()) {
@@ -242,7 +244,8 @@ export class ScenarioCreationComponent implements OnInit {
     private treatmentGoalsService: TreatmentGoalsService,
     private mapModuleService: MapModuleService,
     private planState: PlanState,
-    private dataLayersStateService: DataLayersStateService
+    private dataLayersStateService: DataLayersStateService,
+    private cdr: ChangeDetectorRef
   ) {
     // Pre load goals
     this.treatmentGoals$.pipe(take(1)).subscribe();
@@ -262,9 +265,10 @@ export class ScenarioCreationComponent implements OnInit {
       this.loadExistingScenario();
     }
 
-    this.steps$
-      .pipe(untilDestroyed(this))
-      .subscribe((steps) => (this.steps = steps));
+    this.steps$.pipe(untilDestroyed(this)).subscribe((steps) => {
+      this.steps = steps;
+      this.cdr.markForCheck();
+    });
   }
 
   loadExistingScenario() {
