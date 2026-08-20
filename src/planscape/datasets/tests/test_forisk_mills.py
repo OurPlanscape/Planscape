@@ -120,7 +120,7 @@ class ForiskMillsTest(SimpleTestCase):
     @patch("datasets.tasks.datalayer_uploaded")
     @patch("datasets.forisk_mills.upload_geojson_to_storage")
     @patch("datasets.forisk_mills.geometry_from_info")
-    @patch("datasets.forisk_mills.get_storage_url")
+    @patch("datasets.forisk_mills.get_storage_url_and_path")
     @patch("datasets.forisk_mills.fetch_geometry_type")
     @patch("datasets.forisk_mills.detect_mimetype")
     @patch("datasets.forisk_mills.get_layer_info")
@@ -135,7 +135,7 @@ class ForiskMillsTest(SimpleTestCase):
         get_layer_info_mock,
         detect_mimetype_mock,
         fetch_geometry_type_mock,
-        get_storage_url_mock,
+        get_storage_url_and_path_mock,
         geometry_from_info_mock,
         upload_geojson_mock,
         datalayer_uploaded_mock,
@@ -148,7 +148,7 @@ class ForiskMillsTest(SimpleTestCase):
         get_layer_info_mock.return_value = ("VECTOR", {"layer": {"count": 1}})
         detect_mimetype_mock.return_value = "application/geo+json"
         fetch_geometry_type_mock.return_value = "POINT"
-        get_storage_url_mock.return_value = "gs://bucket/open_mills.geojson"
+        get_storage_url_and_path_mock.return_value = "gs://bucket/open_mills.geojson", None
         geometry = Mock()
         geometry_from_info_mock.return_value = geometry
         datalayer_model_mock.objects.create.return_value = created_datalayer
@@ -206,7 +206,7 @@ class ForiskMillsTest(SimpleTestCase):
     @patch("datasets.tasks.datalayer_uploaded")
     @patch("datasets.forisk_mills.upload_geojson_to_storage")
     @patch("datasets.forisk_mills.geometry_from_info")
-    @patch("datasets.forisk_mills.get_storage_url")
+    @patch("datasets.forisk_mills.get_storage_url_and_path")
     @patch("datasets.forisk_mills.fetch_geometry_type")
     @patch("datasets.forisk_mills.detect_mimetype")
     @patch("datasets.forisk_mills.get_layer_info")
@@ -221,7 +221,7 @@ class ForiskMillsTest(SimpleTestCase):
         get_layer_info_mock,
         detect_mimetype_mock,
         fetch_geometry_type_mock,
-        get_storage_url_mock,
+        get_storage_url_and_path_mock,
         geometry_from_info_mock,
         upload_geojson_mock,
         datalayer_uploaded_mock,
@@ -243,7 +243,7 @@ class ForiskMillsTest(SimpleTestCase):
         get_layer_info_mock.return_value = ("VECTOR", {"layer": {"count": 1}})
         detect_mimetype_mock.return_value = "application/geo+json"
         fetch_geometry_type_mock.return_value = "POINT"
-        get_storage_url_mock.return_value = "gs://bucket/open_mills.geojson"
+        get_storage_url_and_path_mock.return_value = "gs://bucket/open_mills.geojson", None
         geometry_from_info_mock.return_value = Mock()
         datalayer_model_mock.objects.create.return_value = created_datalayer
         existing_layers = datalayer_model_mock.dead_or_alive.filter.return_value
