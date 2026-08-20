@@ -27,6 +27,8 @@
   @include h4();
   height: 32px;
   line-height: 32px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .name {

@@ -1,29 +1,32 @@
-<mgl-map
-  *ngIf="bounds$ | async as bounds"
-  [id]="'map_viewer_card'"
-  [fitBoundsOptions]="boundsOptions"
-  [fitBounds]="bounds"
-  [attributionControl]="false"
-  [transformRequest]="transformRequest"
-  [interactive]="false"
-  [style]="baseLayerUrl"
-  (mapLoad)="onMapLoad($event)">
-  <mgl-layer
-    type="background"
-    id="middle-layer"
-    [layout]="{ visibility: 'none' }">
-  </mgl-layer>
-  <app-planning-area-layer before="middle-layer"></app-planning-area-layer>
+<sg-card-link
+  label="Map Viewer"
+  (navigate)="navigateToExplore()"
+  [height]="height"
+  [showFooter]="planId ? true : false">
+  <mgl-map
+    *ngIf="bounds$ | async as bounds"
+    [id]="'map_viewer_card'"
+    [fitBoundsOptions]="boundsOptions"
+    [fitBounds]="bounds"
+    [attributionControl]="false"
+    [transformRequest]="transformRequest"
+    [interactive]="false"
+    [style]="baseLayerUrl"
+    (mapLoad)="onMapLoad($event)"
+    cardContent>
+    <mgl-layer
+      type="background"
+      id="middle-layer"
+      [layout]="{ visibility: 'none' }">
+    </mgl-layer>
+    <app-planning-area-layer before="middle-layer"></app-planning-area-layer>
 
-  <ng-container *ngIf="showProjectAreas">
-    <app-map-project-areas
-      [showHoveredProjectAreas]="false"
-      [mapLibreMap]="mapLibreMap"
-      [labelField]="''">
-    </app-map-project-areas>
-  </ng-container>
-</mgl-map>
-<div *ngIf="planId" class="overlay-navigation" (click)="navigateToExplore()">
-  <div class="label">Map Viewer</div>
-  <mat-icon>chevron_right</mat-icon>
-</div>
+    <ng-container *ngIf="showProjectAreas">
+      <app-map-project-areas
+        [showHoveredProjectAreas]="false"
+        [mapLibreMap]="mapLibreMap"
+        [labelField]="''">
+      </app-map-project-areas>
+    </ng-container>
+  </mgl-map>
+</sg-card-link>

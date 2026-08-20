@@ -97,3 +97,12 @@ export const Loading: Story = {
     loading: true,
   },
 };
+
+export const WithShareButton: Story = {
+  args: {
+    creator: 'Luke Skywalker',
+    acres: 52572,
+    created_at: '2026-04-07T12:09:36Z',
+    canShare: true,
+  },
+};
