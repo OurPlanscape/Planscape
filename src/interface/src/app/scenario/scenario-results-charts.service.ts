@@ -5,7 +5,7 @@ const AVAILABLE_COLORS: string[] = [
   '#483D78',
   '#A59CCD',
   '#BBE3B6',
-  '#FFDB69',
+  '#E598DA',
   '#F18226',
   '#CC4678',
   '#FB6F92',
