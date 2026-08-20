@@ -25,7 +25,7 @@ from datasets.models import (
     GeometryType,
     Style,
 )
-from datasets.services import create_datalayer, get_storage_url
+from datasets.services import create_datalayer, get_storage_url_and_path
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon
@@ -347,13 +347,13 @@ def run_promote_analysis(
 
             uuid = str(uuid4())
             original_name = f"{name.replace(' ', '_')}_{uuid}.tif"
-            storage_url = get_storage_url(
+            storage_url, storage_path = get_storage_url_and_path(
                 organization_id=current_layer.organization.pk,
                 uuid=uuid,
                 original_name=original_name,
             )
 
-            to_planscape_streaming(temp_path, storage_url)
+            to_planscape_streaming(temp_path, storage_path or storage_url)
 
             raster_info = info_raster(storage_url)
 

@@ -3,7 +3,7 @@ import json
 import logging
 import mimetypes
 from pathlib import Path
-from typing import Any, Collection, Dict, Optional
+from typing import Any, Collection, Dict, Optional, Tuple
 from uuid import uuid4
 
 import mmh3
@@ -89,6 +89,30 @@ def get_storage_path(
         raise ValueError("Datastore Bucket not mounted.")
 
     return f"{settings.MOUNTED_DATASTORE_BUCKET_ROOT}/{get_object_name(organization_id, uuid, original_name, mimetype)}"
+
+
+def get_storage_url_and_path(
+    organization_id: int,
+    uuid: str,
+    original_name: str,
+    mimetype: Optional[str] = None,
+) -> Tuple[str, Optional[str]]:
+    storage_url = get_storage_url(
+        organization_id=organization_id,
+        uuid=uuid,
+        original_name=original_name,
+        mimetype=mimetype,
+    )
+    storage_path = None
+    if settings.MOUNTED_DATASTORE_BUCKET_ROOT:
+        storage_path = get_storage_path(
+            organization_id=organization_id,
+            uuid=uuid,
+            original_name=original_name,
+            mimetype=mimetype,
+        )
+
+    return storage_url, storage_path
 
 
 def create_upload_url_for_org(

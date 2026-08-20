@@ -22,7 +22,7 @@ from datasets.models import (
     StorageTypeChoices,
     VisibilityOptions,
 )
-from datasets.services import geometry_from_info, get_storage_url
+from datasets.services import geometry_from_info, get_storage_url_and_path
 from gis.core import fetch_geometry_type, get_layer_info, with_vsi_prefix
 from gis.io import detect_mimetype
 from organizations.models import Organization
@@ -184,7 +184,7 @@ def replace_forisk_mill_datalayer(
     created_by = user_model.objects.get(email=settings.DEFAULT_ADMIN_EMAIL)
     original_name = f"{name.lower().replace(' ', '_')}.geojson"
     uuid = str(uuid4())
-    storage_url = get_storage_url(
+    storage_url, storage_path = get_storage_url_and_path(
         organization_id=organization.pk,
         uuid=uuid,
         original_name=original_name,
@@ -192,7 +192,7 @@ def replace_forisk_mill_datalayer(
     )
 
     upload_geojson_to_storage(
-        storage_url=storage_url,
+        storage_url=storage_path or storage_url,
         feature_collection=feature_collection,
     )
 
