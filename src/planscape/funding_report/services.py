@@ -18,7 +18,7 @@ from datasets.models import (
     DataLayerType,
     StorageTypeChoices,
 )
-from datasets.services import geometry_from_info, get_storage_url
+from datasets.services import geometry_from_info, get_storage_url_and_path
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db.models import Union as UnionOp
@@ -717,13 +717,13 @@ def generate_treatment_clip_datalayer(report: FundingOpportunityReport) -> DataL
         organization = source.organization
         uuid_value = str(uuid4())
         original_name = f"funding_report_treatments_scenario_{scenario.pk}.tif"
-        storage_url = get_storage_url(
+        storage_url, storage_path = get_storage_url_and_path(
             organization_id=organization.pk,
             uuid=uuid_value,
             original_name=original_name,
             mimetype="image/tiff",
         )
-        to_cog_streaming(input_file=clipped_path, output_file=storage_url)
+        to_cog_streaming(input_file=clipped_path, output_file=storage_path or storage_url)
     finally:
         Path(clipped_path).unlink(missing_ok=True)
 
@@ -816,13 +816,13 @@ def generate_aet_clip_datalayer(report: FundingOpportunityReport) -> DataLayer:
         organization = source.organization
         uuid_value = str(uuid4())
         original_name = f"funding_report_aet_percentual_scenario_{scenario.pk}.tif"
-        storage_url = get_storage_url(
+        storage_url, storage_path = get_storage_url_and_path(
             organization_id=organization.pk,
             uuid=uuid_value,
             original_name=original_name,
             mimetype="image/tiff",
         )
-        to_cog_streaming(input_file=clipped_path, output_file=storage_url)
+        to_cog_streaming(input_file=clipped_path, output_file=storage_path or storage_url)
     finally:
         Path(clipped_path).unlink(missing_ok=True)
 

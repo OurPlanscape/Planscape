@@ -22,7 +22,7 @@ from datasets.models import (
     GeometryType,
     Style,
 )
-from datasets.services import create_datalayer, get_storage_url
+from datasets.services import create_datalayer, get_storage_url_and_path
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import IntegrityError
@@ -140,7 +140,7 @@ def aggregate_rasters_simple_average(
     uuid = str(uuid4())
     original_name = f"{output_name.replace(' ', '_')}_{uuid}.tif"
 
-    storage_url = get_storage_url(
+    storage_url, storage_path = get_storage_url_and_path(
         organization_id=organization_id,
         uuid=uuid,
         original_name=original_name,
@@ -148,7 +148,7 @@ def aggregate_rasters_simple_average(
 
     to_planscape_streaming(
         input_file=temp_path,
-        output_file=storage_url,
+        output_file=storage_path or storage_url,
     )
 
     existing_layer = DataLayer.objects.filter(
@@ -440,7 +440,7 @@ def rollup_landscape(
                 uuid = str(uuid4())
                 original_name = f"{clipped_name.replace(' ', '_')}_{uuid}.tif"
 
-                storage_url = get_storage_url(
+                storage_url, storage_path = get_storage_url_and_path(
                     organization_id=future_layer.organization.pk,
                     uuid=uuid,
                     original_name=original_name,
@@ -448,7 +448,7 @@ def rollup_landscape(
 
                 to_planscape_streaming(
                     input_file=temp_clipped_path,
-                    output_file=storage_url,
+                    output_file=storage_path or storage_url,
                 )
 
                 raster_info = info_raster(storage_url)
@@ -623,7 +623,7 @@ def rollup_landscape(
 
                 uuid_str = str(uuid4())
                 aligned_name = f"Future_Conditions_Landscape_Aligned_{uuid_str}.tif"
-                aligned_storage_url = get_storage_url(
+                aligned_storage_url, aligned_storage_path = get_storage_url_and_path(
                     organization_id=current_layers[0].organization.pk,
                     uuid=uuid_str,
                     original_name=aligned_name,
@@ -631,7 +631,7 @@ def rollup_landscape(
 
                 to_planscape_streaming(
                     input_file=temp_aligned_path,
-                    output_file=aligned_storage_url,
+                    output_file=aligned_storage_path or aligned_storage_url,
                 )
 
                 raster_info = info_raster(aligned_storage_url)
@@ -700,7 +700,7 @@ def rollup_landscape(
                 current_aligned_name = (
                     f"Current_Conditions_Landscape_Aligned_{uuid_current}.tif"
                 )
-                current_aligned_storage_url = get_storage_url(
+                current_aligned_storage_url, current_aligned_storage_path = get_storage_url_and_path(
                     organization_id=current_layers[0].organization.pk,
                     uuid=uuid_current,
                     original_name=current_aligned_name,
@@ -708,7 +708,7 @@ def rollup_landscape(
 
                 to_planscape_streaming(
                     input_file=temp_current_aligned_path,
-                    output_file=current_aligned_storage_url,
+                    output_file=current_aligned_storage_path or current_aligned_storage_url,
                 )
 
                 current_raster_info = info_raster(current_aligned_storage_url)
@@ -726,7 +726,7 @@ def rollup_landscape(
                 future_aligned_name = (
                     f"Future_Conditions_Landscape_Aligned_{uuid_future}.tif"
                 )
-                future_aligned_storage_url = get_storage_url(
+                future_aligned_storage_url, future_aligned_storage_path = get_storage_url_and_path(
                     organization_id=current_layers[0].organization.pk,
                     uuid=uuid_future,
                     original_name=future_aligned_name,
@@ -734,7 +734,7 @@ def rollup_landscape(
 
                 to_planscape_streaming(
                     input_file=temp_future_aligned_path,
-                    output_file=future_aligned_storage_url,
+                    output_file=future_aligned_storage_path or future_aligned_storage_url,
                 )
 
                 future_raster_info = info_raster(future_aligned_storage_url)

@@ -1,5 +1,4 @@
 import logging
-import shutil
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -328,8 +327,7 @@ def to_planscape_streaming(input_file: str, output_file: str) -> str:
                             dst.write(src.read())
             else:
                 # Fallback to local destinations
-
-                shutil.copy2(processing_file, output_file)
+                to_cog_streaming(input_file=processing_file, output_file=output_file)
 
     if warped_file:
         Path(warped_file).unlink(missing_ok=True)

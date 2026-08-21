@@ -87,7 +87,7 @@ def async_create_stands(planning_area_id: int, stand_size: StandSizeChoices) -> 
         raise
 
 
-@app.task(max_retries=3, retry_backoff=True)
+@app.task()
 def async_forsys_run(scenario_id: int) -> None:
     try:
         scenario = Scenario.objects.get(id=scenario_id)
@@ -185,7 +185,7 @@ def async_calculate_vector_metrics(
     )
 
 
-@app.task(max_retries=3, retry_backoff=True)
+@app.task()
 def async_calculate_stand_metrics_with_stand_list(
     stand_ids: list,
     datalayer_id: int,

@@ -17,6 +17,7 @@ class RequestSessionWrap(Session):
             connect=retries,
             backoff_factor=backoff_factor,
             status_forcelist=status_forcelist,
+            allowed_methods={"GET", "POST"},
         )
         adapter = HTTPAdapter(max_retries=retry)
         self.mount("http://", adapter)

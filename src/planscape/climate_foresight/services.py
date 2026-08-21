@@ -18,7 +18,7 @@ from datasets.models import (
     GeometryType,
     Style,
 )
-from datasets.services import create_datalayer, get_storage_url
+from datasets.services import create_datalayer, get_storage_url_and_path
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon
@@ -593,7 +593,7 @@ def normalize_raster_layer(
 
     original_name = f"normalized_{uuid}.tif"
 
-    storage_url = get_storage_url(
+    storage_url, storage_path = get_storage_url_and_path(
         organization_id=organization.pk,
         uuid=uuid,
         original_name=original_name,
@@ -601,7 +601,7 @@ def normalize_raster_layer(
 
     to_planscape_streaming(
         input_file=temp_path,
-        output_file=storage_url,
+        output_file=storage_path or storage_url,
     )
 
     raster_info = info_raster(storage_url)
@@ -952,7 +952,7 @@ def rollup_pillar(
 
     original_name = f"pillar_rollup_{pillar.name.replace(' ', '_')}_{uuid}.tif"
 
-    storage_url = get_storage_url(
+    storage_url, storage_path = get_storage_url_and_path(
         organization_id=organization.pk,
         uuid=uuid,
         original_name=original_name,
@@ -960,7 +960,7 @@ def rollup_pillar(
 
     to_planscape_streaming(
         input_file=temp_path,
-        output_file=storage_url,
+        output_file=storage_path or storage_url,
     )
 
     raster_info = info_raster(storage_url)
