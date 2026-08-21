@@ -1,5 +1,10 @@
 <div class="heading">
-  <div class="title" *ngIf="cardTitle">{{ cardTitle }}</div>
+  <div class="title" *ngIf="cardTitle">
+    {{ cardTitle }}
+    <div class="share-button" *ngIf="canShare">
+      <button sg-button icon="share">Share</button>
+    </div>
+  </div>
   <div class="name" *ngIf="subtitle">{{ subtitle }}</div>
 </div>
 <div class="details">

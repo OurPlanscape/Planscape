@@ -1,0 +1,28 @@
+@import 'colors';
+
+.workspace-dashboard-layout {
+  background-color: $color-light-gray;
+}
+
+.workspace-overview-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.planing-areas-column {
+  flex: 1;
+  display: flex;
+}
+
+.left-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.map-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

@@ -1,0 +1,12 @@
+<ng-content select="[cardContent]"></ng-content>
+<div *ngIf="showFooter" class="overlay-navigation" (click)="navigate.emit()">
+  <div class="label-section" *ngIf="label">
+    <div class="label">
+      {{ label }}
+    </div>
+    <div class="sub-label" *ngIf="subLabel">
+      {{ subLabel }}
+    </div>
+  </div>
+  <mat-icon>chevron_right</mat-icon>
+</div>
