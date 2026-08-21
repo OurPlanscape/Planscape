@@ -328,8 +328,9 @@ def to_planscape_streaming(input_file: str, output_file: str) -> str:
                             dst.write(src.read())
             else:
                 # Fallback to local destinations
+                to_cog_streaming(input_file=processing_file, output_file=output_file)
 
-                shutil.copy2(processing_file, output_file)
+                # shutil.copy2(processing_file, output_file)
 
     if warped_file:
         Path(warped_file).unlink(missing_ok=True)
