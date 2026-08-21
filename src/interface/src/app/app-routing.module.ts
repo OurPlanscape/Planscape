@@ -85,6 +85,16 @@ const routes: Routes = [
         component: HomeComponent,
       },
       {
+        path: 'workspace/:workspaceId',
+        title: 'Workspace',
+        canMatch: [createFeatureMatchGuard('WORKSPACES')],
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import(
+            '@app/workspaces/workspace-landing/workspace-landing.component'
+          ).then((m) => m.WorkspaceLandingComponent),
+      },
+      {
         path: 'signup',
         title: 'Signup',
         resolve: { redirectUrl: redirectResolver },

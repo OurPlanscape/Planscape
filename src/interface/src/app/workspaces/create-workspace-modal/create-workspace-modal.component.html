@@ -1,0 +1,30 @@
+<sg-modal
+  title="New Workspace"
+  [showClose]="false"
+  secondaryButtonText="Cancel"
+  [primaryButtonText]="primaryCTA"
+  [hasPrimarySpinner]="true"
+  [isInSpinState]="submitting"
+  [primaryButtonDisabled]="submitting || form.invalid"
+  (clickedSecondary)="cancel()"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="handleSubmit()">
+  <div modalBodyContent>
+    <form [formGroup]="form" (ngSubmit)="handleSubmit()">
+      <sg-input-field
+        label="Workspace name"
+        size="full"
+        [error]="displayError"
+        showSupportMessage="on-error"
+        supportMessage="Something went wrong while creating your workspace. Please try again in a moment.">
+        <input
+          sgInput
+          name="name"
+          placeholder="Insert text"
+          cdkFocusInitial
+          [required]="true"
+          formControlName="name" />
+      </sg-input-field>
+    </form>
+  </div>
+</sg-modal>
