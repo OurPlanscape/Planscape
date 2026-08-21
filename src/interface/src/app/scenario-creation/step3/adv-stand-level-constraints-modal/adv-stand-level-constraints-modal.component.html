@@ -1,0 +1,108 @@
+<sg-modal
+  title="Stand-level Constraints Configuration"
+  [showClose]="true"
+  primaryButtonText="Apply"
+  secondaryButtonText="Cancel"
+  [hasPrimarySpinner]="true"
+  (clickedSecondary)="cancel()"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="handleApply()">
+  <sg-modal-info
+    modalInfoBox
+    infoType="info"
+    leadingIcon="info_filled"
+    message="Advanced constraints will be applied to results but are not shown on the map.">
+  </sg-modal-info>
+  <div modalBodyContent>
+    <!-- add form here-->
+    <div>
+      <div *ngIf="dataLayerName">
+        Only treat stands where
+        <span class="datalayer-name">{{ dataLayerName }}</span> is:
+      </div>
+      <form [formGroup]="form" class="constraints-form">
+        <label for="max_slope" class="input-label">Operator</label>
+        <div class="flex">
+          <mat-form-field
+            class="stand-picker-field"
+            appearance="outline"
+            subscriptSizing="dynamic">
+            <mat-select
+              name="constraintOperator"
+              formControlName="constraintOperator"
+              [ngModel]="operatorSelection"
+              (ngModelChange)="handleOperatorChange($event)">
+              <mat-option class="nav-page-item" value="eq">
+                Equal to (=)
+              </mat-option>
+              <mat-option class="nav-page-item" value="dne">
+                Does not equal (!=)
+              </mat-option>
+              <mat-option class="nav-page-item" value="gt">
+                Greater than (&gt;)
+              </mat-option>
+              <mat-option class="nav-page-item" value="ge">
+                Greater than or euql to (&ge;)
+              </mat-option>
+              <mat-option class="nav-page-item" value="lt">
+                Less than (&lt;)
+              </mat-option>
+              <mat-option class="nav-page-item" value="le">
+                Less than or equal to (&le;)
+              </mat-option>
+              <mat-option class="nav-page-item" value="btw">
+                Between
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div class="inputs-column">
+            <label for="constraintValueOne" class="input-label"> Value</label>
+            <mat-form-field
+              class="input"
+              appearance="outline"
+              floatLabel="always">
+              <input
+                id="constraintValueOne"
+                class="step3-input"
+                formControlName="constraintValueOne"
+                min="0"
+                max="100"
+                matInput
+                type="number" />
+              <mat-error
+                *ngIf="
+                  form.get('constraintValueOne')?.touched &&
+                  form.get('constraintValueOne')?.hasError('max')
+                ">
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div *ngIf="showSecondValue">
+            <label for="constraintValueOne" class="input-label"> Value</label>
+            <mat-form-field
+              class="input"
+              appearance="outline"
+              floatLabel="always">
+              <input
+                id="constraintValueTwo"
+                class="step3-input"
+                formControlName="constraintValueTwo"
+                min="0"
+                max="100"
+                matInput
+                type="number" />
+              <mat-error
+                *ngIf="
+                  form.get('constraintValueTwo')?.touched &&
+                  form.get('constraintValueTwo')?.hasError('max')
+                ">
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</sg-modal>

@@ -1,0 +1,18 @@
+<!-- Stand levels constraints -->
+<sg-section
+  headline="Advanced Stand Level Constraints (OPTIONAL)"
+  class="constraints-step"
+  tooltipContent="TBD">
+  <p class="stand-label">
+    Choose from any data layers in Planscape to define eligible stands for
+    treatment.
+  </p>
+
+  <a (click)="handleClickOpenModal()">TEST: open modal</a>
+  <section class="datalayers-section">
+    <app-data-layers
+      [useClearFooter]="false"
+      [displayAddButton]="true"
+      class="sticky-search"></app-data-layers>
+  </section>
+</sg-section>

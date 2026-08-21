@@ -20,3 +20,5 @@ The name and value of the flag will be shared by frontend and backend.
 `API_ZONAL_STATS`: Calculate Zonal Status using Stand-Metrics API
 
 `WORKSPACES`: Enables workspaces
+
+`ADV_STAND_LEVEL_CONSTRAINTS`: Enables Adv Stand Level Constraints

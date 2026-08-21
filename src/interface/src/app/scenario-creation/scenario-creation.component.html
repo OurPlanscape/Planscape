@@ -55,12 +55,17 @@
         </sg-step>
         <sg-step>
           <app-include-areas-selector></app-include-areas-selector>
+          <app-adv-stand-level-constraints></app-adv-stand-level-constraints>
         </sg-step>
         <sg-step>
           <app-exclude-areas-selector></app-exclude-areas-selector>
         </sg-step>
         <sg-step>
           <app-stand-level-constraints></app-stand-level-constraints>
+          <app-adv-stand-level-constraints
+            *appFeatureFlag="
+              'ADV_STAND_LEVEL_CONSTRAINTS'
+            "></app-adv-stand-level-constraints>
         </sg-step>
         <sg-step>
           <app-treatment-target

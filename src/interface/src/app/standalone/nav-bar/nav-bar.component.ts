@@ -10,6 +10,7 @@ import { PlanState } from '@plan/plan.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { ButtonComponent, SectionComponent } from '@styleguide';
 import { CommonModule } from '@angular/common';
+import { AdvStandLevelConstraintsModalComponent } from '@app/scenario-creation/step3/adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
 
 @Component({
   standalone: true,
@@ -67,5 +68,23 @@ export class NavBarComponent implements OnInit {
       restoreFocus: false,
       panelClass: 'no-padding-dialog',
     });
+  }
+
+  // TODO: remove this:
+  handleClickOpenModal() {
+    const dialogRef = this.dialog.open(AdvStandLevelConstraintsModalComponent, {
+      maxWidth: '560px',
+      data: 'This is a data layer',
+    });
+
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          console.log('what is this?', confirmed);
+          // store the constraint
+        }
+      });
   }
 }

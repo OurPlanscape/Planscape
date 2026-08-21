@@ -47,6 +47,7 @@
 
       <app-data-layer-tree
         *ngIf="(hasNoData$ | async) === false"
+        (layerSelected)="handleLayerSelection($event)"
         [displayAddButton]="displayAddButton"></app-data-layer-tree>
 
       <div *ngIf="hasNoData$ | async" class="no-data">

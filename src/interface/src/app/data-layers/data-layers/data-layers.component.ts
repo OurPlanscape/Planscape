@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
-import { BaseDataSet } from '@types';
+import { BaseDataSet, DataLayer } from '@types';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCommonModule } from '@angular/material/core';
@@ -127,6 +127,10 @@ export class DataLayersComponent {
   viewDatasetCategories(dataSet: BaseDataSet) {
     this.dataLayersStateService.resetPath();
     this.dataLayersStateService.selectDataSet(dataSet);
+  }
+
+  handleLayerSelection(dl: DataLayer) {
+    console.log('layer was selected and we are handling it:', dl);
   }
 
   goBack() {

@@ -1,4 +1,11 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { ButtonComponent, ToggleComponent } from '@styleguide';
 import { MatTreeModule } from '@angular/material/tree';
@@ -43,6 +50,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 })
 export class DataLayerTreeComponent {
   @Input() displayAddButton = false;
+  @Output() layerSelected = new EventEmitter<DataLayer>();
 
   constructor(private dataLayersStateService: DataLayersStateService) {
     this.dataLayersStateService.paths$
@@ -155,7 +163,9 @@ export class DataLayerTreeComponent {
   }
 
   toggleDataLayerSelection(dl: DataLayer) {
+    console.log('we are toggling the layer:', dl);
     this.dataLayersStateService.toggleLayerAdition(dl);
+    this.layerSelected.emit(dl);
   }
 
   hasLeafChildren(node: any): boolean {
