@@ -15,6 +15,18 @@
   padding: 0;
 }
 
+// rounder than the 4px default. The radius lives on the surface only, so the
+// dialog content must not round itself too, or the two corners disagree and
+// the surface shows through as a second arc.
+.rounded-dialog {
+  --mdc-dialog-container-shape: 8px;
+
+  .mat-mdc-dialog-container .mat-mdc-dialog-surface {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+}
+
 .mat-card mat-card-title.mat-card-title {
   font-size: 24px;
   line-height: 20px;

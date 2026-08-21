@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ButtonComponent, EmptyStateComponent } from '@styleguide';
+import { WorkspaceCreationService } from './workspace-creation.service';
 
 @Component({
   selector: 'app-workspaces',
@@ -9,7 +10,11 @@ import { ButtonComponent, EmptyStateComponent } from '@styleguide';
   styleUrl: './workspaces.component.scss',
 })
 export class WorkspacesComponent {
+  private workspaceCreationService = inject(WorkspaceCreationService);
+
   createWorkspace() {
-    // TODO: open the create workspace flow
+    this.workspaceCreationService
+      .openCreateWorkspaceModal('empty-state')
+      .subscribe();
   }
 }

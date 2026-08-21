@@ -1,0 +1,59 @@
+@import 'colors';
+@import 'mixins';
+
+// the corners come from `.rounded-dialog` on the dialog surface, not from here
+:host {
+  display: block;
+  background-color: $color-white;
+}
+
+.illustration {
+  height: 250px;
+  background-color: $color-brand-teal;
+  background-image: url('/assets/png/workspaces.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.content {
+  padding: 24px;
+}
+
+.title {
+  @include h4();
+  line-height: 32px;
+  margin: 0 0 24px;
+  text-align: center;
+  color: $color-black;
+}
+
+// Rows read as a left-aligned block, centered as a group.
+.highlights {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 448px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.highlight {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  color: $color-black;
+
+  mat-icon {
+    flex-shrink: 0;
+    color: $color-standard-blue;
+  }
+}
+
+.actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+}

@@ -1,0 +1,18 @@
+<div class="illustration" aria-hidden="true"></div>
+
+<div class="content">
+  <h2 class="title">Welcome to Your Workspace</h2>
+
+  <ul class="highlights">
+    <li class="highlight" *ngFor="let highlight of highlights">
+      <mat-icon class="material-symbols-outlined">{{
+        highlight.icon
+      }}</mat-icon>
+      <span>{{ highlight.text }}</span>
+    </li>
+  </ul>
+
+  <div class="actions">
+    <button sg-button variant="primary" (click)="close()">Close</button>
+  </div>
+</div>
