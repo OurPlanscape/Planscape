@@ -280,6 +280,7 @@ cloud-run-push-all:
 
 cloud-run-deploy-all:
 	$(MAKE) cloud-run-deploy
+	$(MAKE) cloud-run-deploy-celery
 	$(MAKE) cloud-run-deploy-gateway
 	$(MAKE) cloud-run-deploy-frontend-job
 
