@@ -1,5 +1,4 @@
 import logging
-import shutil
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
