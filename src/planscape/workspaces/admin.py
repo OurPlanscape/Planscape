@@ -5,9 +5,18 @@ from workspaces.models import UserAccessWorkspace, Workspace
 
 @admin.register(Workspace)
 class WorkspaceAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "visibility", "created_at", "updated_at", "deleted_at")
-    list_filter = ("visibility",)
-    search_fields = ("name",)
+    list_display = (
+        "id",
+        "name",
+        "kind",
+        "visibility",
+        "creator_name",
+        "created_at",
+        "updated_at",
+        "deleted_at",
+    )
+    list_filter = ("kind", "visibility")
+    search_fields = ("name", "creator_name")
     readonly_fields = ("created_at", "updated_at", "deleted_at")
 
 

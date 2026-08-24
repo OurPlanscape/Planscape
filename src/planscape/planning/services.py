@@ -117,6 +117,7 @@ def create_planning_area(
     region_name: str | None = None,
     geometry: Any = None,
     notes: str | None = None,
+    workspace: Any = None,
 ) -> PlanningArea:
     from planning.tasks import (
         async_create_stands,
@@ -139,6 +140,7 @@ def create_planning_area(
         region_name=region_name,
         geometry=geometry,
         notes=notes,
+        workspace=workspace,
         map_status=PlanningAreaMapStatus.PENDING,
     )
     planning_area.capabilities = compute_planning_area_capabilities(planning_area)

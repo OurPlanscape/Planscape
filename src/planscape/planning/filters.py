@@ -69,10 +69,19 @@ class PlanningAreaFilter(filters.FilterSet):
         given_param="creator",
         help_text="Creator(s) ID(s) of Planning Area(s)",
     )
+    workspace = filters.NumberFilter(
+        field_name="workspace_id",
+        help_text="Only Planning Areas belonging to this Workspace.",
+    )
+    without_workspace = filters.BooleanFilter(
+        field_name="workspace_id",
+        lookup_expr="isnull",
+        help_text="Only Planning Areas that do not belong to any Workspace.",
+    )
 
     class Meta:
         model = PlanningArea
-        fields = ["name", "region_name", "creator"]
+        fields = ["name", "region_name", "creator", "workspace", "without_workspace"]
 
 
 def get_planning_areas_for_filter(request: Optional[Request]) -> QuerySet:
