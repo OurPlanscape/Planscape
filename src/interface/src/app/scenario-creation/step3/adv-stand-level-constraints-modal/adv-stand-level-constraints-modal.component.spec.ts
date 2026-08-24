@@ -7,16 +7,24 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 describe('AdvStandLevelConstraintsModalComponent', () => {
   let component: AdvStandLevelConstraintsModalComponent;
   let fixture: ComponentFixture<AdvStandLevelConstraintsModalComponent>;
-  let dialogRefSpy: jasmine.SpyObj<MatDialogRef<AdvStandLevelConstraintsModalComponent>>;
+  let dialogRefSpy: jasmine.SpyObj<
+    MatDialogRef<AdvStandLevelConstraintsModalComponent>
+  >;
 
   beforeEach(async () => {
     dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['close']);
 
     await TestBed.configureTestingModule({
-      imports: [AdvStandLevelConstraintsModalComponent, BrowserAnimationsModule],
+      imports: [
+        AdvStandLevelConstraintsModalComponent,
+        BrowserAnimationsModule,
+      ],
       providers: [
         { provide: MatDialogRef, useValue: dialogRefSpy },
-        { provide: MAT_DIALOG_DATA, useValue: { dataLayerName: 'Test Layer Alpha' } },
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: { dataLayerName: 'Test Layer Alpha' },
+        },
       ],
     }).compileComponents();
 
@@ -31,13 +39,19 @@ describe('AdvStandLevelConstraintsModalComponent', () => {
   });
 
   it('should invalidate the form if valueOne is empty', () => {
-    component.form.patchValue({ constraintOperator: 'eq', constraintValueOne: null });
+    component.form.patchValue({
+      constraintOperator: 'eq',
+      constraintValueOne: null,
+    });
     expect(component.form.valid).toBeFalse();
     expect(component.isButtonDisabled).toBeTrue();
   });
 
   it('should validate the form if valueOne is present for standard operators', () => {
-    component.form.patchValue({ constraintOperator: 'eq', constraintValueOne: 42 });
+    component.form.patchValue({
+      constraintOperator: 'eq',
+      constraintValueOne: 42,
+    });
     expect(component.form.valid).toBeTrue();
     expect(component.isButtonDisabled).toBeFalse();
   });
