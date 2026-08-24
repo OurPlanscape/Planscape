@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { map, switchMap } from 'rxjs';
 
 import { AuthService } from '@services';
+import { FeatureService } from '@app/features/feature.service';
 import { KNOWLEDGE_BASE_URL, SUPPORT_URL } from '@app/shared';
 
 @Component({
@@ -37,8 +38,16 @@ export class TopBarComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private featureService: FeatureService
   ) {}
+
+  /** `/home` lists workspaces once the flag is on, plans otherwise. */
+  get homeLabel(): string {
+    return this.featureService.isFeatureEnabled('WORKSPACES')
+      ? 'Workspaces'
+      : 'Plans';
+  }
 
   ngOnInit(): void {
     this.router.events.subscribe((event) => {

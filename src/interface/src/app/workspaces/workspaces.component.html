@@ -1,8 +1,43 @@
+<sg-overlay-loader *ngIf="isLoading$ | async"></sg-overlay-loader>
+
 <sg-empty-state
-  icon="folder"
-  title="Workspace: A shared space for smarter planning"
-  description="Get started by creating a workspace to collaborate with your team and organize everything you need for planning.">
-  <button sg-button variant="primary" (click)="createWorkspace()">
-    Create Workspace
-  </button>
+  *ngIf="hasError$ | async"
+  icon="error"
+  title="We couldn't load your workspaces"
+  description="Something went wrong. Please try again.">
+  <button sg-button variant="primary" (click)="retry()">Try Again</button>
 </sg-empty-state>
+
+<ng-container *ngIf="workspaces$ | async as workspaces">
+  <sg-empty-state
+    *ngIf="workspaces.length === 0; else workspaceList"
+    icon="folder"
+    title="Workspace: A shared space for smarter planning"
+    description="Get started by creating a workspace to collaborate with your team and organize everything you need for planning.">
+    <button sg-button variant="primary" (click)="createWorkspace()">
+      Create Workspace
+    </button>
+  </sg-empty-state>
+
+  <ng-template #workspaceList>
+    <div class="workspaces-header">
+      <h1>Workspaces</h1>
+      <button sg-button variant="primary" (click)="createWorkspace()">
+        Create Workspace
+      </button>
+    </div>
+
+    <div class="workspaces-grid">
+      <sg-workspace-card
+        *ngFor="let workspace of workspaces; trackBy: trackById"
+        [name]="workspace.name"
+        [planningAreasCount]="workspace.planning_areas_count"
+        [creator]="workspace.creator"
+        [createdAt]="workspace.created_at"
+        [userCanRename]="can(workspace, 'change_workspace')"
+        [userCanDelete]="can(workspace, 'remove_workspace')"
+        [userCanShare]="can(workspace, 'add_collaborator')"
+        (clicked)="goToWorkspace(workspace)"></sg-workspace-card>
+    </div>
+  </ng-template>
+</ng-container>
