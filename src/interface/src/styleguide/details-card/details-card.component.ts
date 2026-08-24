@@ -2,6 +2,7 @@ import { DatePipe, DecimalPipe, NgForOf, NgIf } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ButtonComponent } from '@styleguide/button/button.component';
 
 export interface CardDetails {
   icon: string;
@@ -19,6 +20,7 @@ export interface CardDetails {
     DatePipe,
     DecimalPipe,
     MatProgressSpinnerModule,
+    ButtonComponent,
   ],
   templateUrl: './details-card.component.html',
   styleUrl: './details-card.component.scss',
@@ -34,4 +36,5 @@ export class DetailsCardComponent {
   @Input() details: CardDetails[] | null = [];
 
   @Input() loading: boolean = false;
+  @Input() canShare: Boolean = false;
 }

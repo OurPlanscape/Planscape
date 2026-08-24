@@ -1,0 +1,37 @@
+<sg-overlay-loader *ngIf="isWorkspaceLoading$ | async"></sg-overlay-loader>
+
+<div class="no-workspace" *ngIf="workspaceNotFound$ | async">
+  <app-resource-unavailable resource="workspace"></app-resource-unavailable>
+</div>
+
+<ng-container *ngIf="currentWorkspace$ | async as workspace">
+  <sg-dashboard-layout
+    class="workspace-dashboard-layout"
+    layoutVariant="disable-right-scroll">
+    <div header class="workspace-overview-column">
+      <app-nav-bar area="SCENARIO"></app-nav-bar>
+    </div>
+    <div left-column class="left-column">
+      <sg-details-card
+        [cardTitle]="workspace.name"
+        [creator]="workspace.creator"
+        [canShare]="true"
+        [created_at]="workspace.created_at">
+      </sg-details-card>
+
+      <sg-card-link
+        label="Map Viewer"
+        subLabel="View & upload data"
+        height="normal">
+        <img
+          class="map-image"
+          cardContent
+          src="assets/svg/map_layer.svg"
+          alt="map" />
+      </sg-card-link>
+    </div>
+    <div right-column class="planing-areas-column">
+      Planning area list placeholder
+    </div>
+  </sg-dashboard-layout>
+</ng-container>

@@ -27,6 +27,7 @@ import {
   createFeatureMatchGuard,
 } from '@app/features/feature.guard';
 import { TreatmentEffectsHomeComponent } from './treatments/treatment-effects-home/treatment-effects-home.component';
+import { workspaceLoaderResolver } from './resolvers/workspace-loader.resolver';
 
 const routes: Routes = [
   {
@@ -89,10 +90,13 @@ const routes: Routes = [
         title: 'Workspace',
         canMatch: [createFeatureMatchGuard('WORKSPACES')],
         canActivate: [AuthGuard],
+        resolve: {
+          workspaceId: workspaceLoaderResolver,
+        },
         loadComponent: () =>
           import(
-            '@app/workspaces/workspace-landing/workspace-landing.component'
-          ).then((m) => m.WorkspaceLandingComponent),
+            '@app/workspaces/workspace-dashboard/workspace-dashboard.component'
+          ).then((m) => m.WorkspaceDashboardComponent),
       },
       {
         path: 'signup',
