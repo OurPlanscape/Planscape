@@ -18,7 +18,12 @@ from rest_framework.viewsets import GenericViewSet
 
 from datasets.models import VisibilityOptions
 from workspaces.filters import WorkspaceFilterSet
-from workspaces.models import UserAccessWorkspace, Workspace, WorkspaceRole
+from workspaces.models import (
+    UserAccessWorkspace,
+    Workspace,
+    WorkspaceKind,
+    WorkspaceRole,
+)
 from workspaces.serializers import (
     CreateWorkspaceSerializer,
     UpdateWorkspaceSerializer,
@@ -54,9 +59,8 @@ class AdminWorkspaceViewSet(
     def get_queryset(self):
         user = self.request.user
         return (
-            Workspace.objects.filter(
-                Q(visibility=VisibilityOptions.PUBLIC) | Q(user_access__user=user)
-            )
+            Workspace.objects.filter(kind=WorkspaceKind.DATA)
+            .filter(Q(visibility=VisibilityOptions.PUBLIC) | Q(user_access__user=user))
             .annotate(
                 datasets_count=Count("datasets", distinct=True),
                 styles_count=Count("styles", distinct=True),

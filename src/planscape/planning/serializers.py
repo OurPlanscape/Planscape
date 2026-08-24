@@ -30,6 +30,9 @@ from planning.models import (
     User,
     UserPrefs,
 )
+from workspaces.models import Workspace, WorkspaceKind
+from workspaces.permissions import WorkspacePermission
+
 from planning.services import (
     calculate_scenario_treatable_area,
     get_acreage,
@@ -100,6 +103,7 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
             "role",
             "permissions",
             "map_status",
+            "workspace",
         )
         model = PlanningArea
 
@@ -112,6 +116,22 @@ class CreatePlanningAreaSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
     )
+    workspace = serializers.PrimaryKeyRelatedField(
+        queryset=Workspace.objects.filter(kind=WorkspaceKind.PLANNING),
+        required=False,
+        allow_null=True,
+        help_text="Optional Workspace to create the Planning Area in.",
+    )
+
+    def validate_workspace(self, workspace):
+        if workspace is None:
+            return workspace
+        user = self.context["request"].user
+        if not WorkspacePermission.can_add(user, workspace):
+            raise serializers.ValidationError(
+                "You do not have permission to add planning areas to this workspace."
+            )
+        return workspace
 
     def validate(self, attrs):
         region_val = attrs.get("region_name")
@@ -159,6 +179,7 @@ class CreatePlanningAreaSerializer(serializers.ModelSerializer):
             "region_name",
             "geometry",
             "notes",
+            "workspace",
         )
         validators = []
 
@@ -214,6 +235,7 @@ class PlanningAreaSerializer(
             "permissions",
             "geometry",
             "map_status",
+            "workspace",
         )
         model = PlanningArea
         geo_field = "geometry"

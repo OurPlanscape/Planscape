@@ -9,9 +9,23 @@ def recalculate_planning_area_capabilities(apps, schema_editor):
     from modules.base import compute_planning_area_capabilities
     from planning.models import PlanningArea
 
-    for planning_area in PlanningArea.objects.all().iterator(
-        chunk_size=ROW_FETCH_CHUNK_SIZE
-    ):
+    # This has to use the live model, because compute_planning_area_capabilities
+    # needs model methods that historical models don't carry. The live model may
+    # declare columns that don't exist in the database yet at this point in the
+    # migration history, so defer anything the historical model doesn't know.
+    historical = apps.get_model("planning", "PlanningArea")
+    known = {field.attname for field in historical._meta.concrete_fields}
+    unknown = [
+        field.name
+        for field in PlanningArea._meta.concrete_fields
+        if field.attname not in known
+    ]
+
+    planning_areas = PlanningArea.objects.all()
+    if unknown:
+        planning_areas = planning_areas.defer(*unknown)
+
+    for planning_area in planning_areas.iterator(chunk_size=ROW_FETCH_CHUNK_SIZE):
         planning_area.capabilities = compute_planning_area_capabilities(planning_area)
         planning_area.save(update_fields=["capabilities"])
 
