@@ -94,6 +94,16 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
         help_text="User ID that created the Planning Area.",
     )
 
+    workspace_id: int
+    workspace = models.ForeignKey(
+        "workspaces.Workspace",
+        related_name="planning_areas",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Workspace this Planning Area belongs to.",
+    )
+
     region_name: models.CharField = models.CharField(
         max_length=120,
         choices=RegionChoices.choices,

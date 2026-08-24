@@ -6,6 +6,7 @@ from django.urls import include, path
 from impacts.routers import router as impacts_router
 from modules.routers import router as modules_router
 from planning.routers import router as planning_router
+from workspaces.routers import router as workspaces_router
 from rest_framework.routers import SimpleRouter
 
 core_router = SimpleRouter()
@@ -21,6 +22,7 @@ urlpatterns = [
     path("", include((core_router.urls, "core"), namespace="core")),
     path("", include((datasets_router.urls, "datasets"), namespace="datasets")),
     path("", include((modules_router.urls, "modules"), namespace="modules")),
+    path("", include((workspaces_router.urls, "workspaces"), namespace="workspaces")),
     path(
         "",
         include(
