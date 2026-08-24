@@ -16,7 +16,7 @@
         size="full"
         [error]="displayError"
         showSupportMessage="on-error"
-        supportMessage="This name is already in use by another Workspace.">
+        [supportMessage]="errorMessage || ''">
         <input
           sgInput
           name="name"

@@ -1,55 +1,57 @@
 import { Injectable } from '@angular/core';
-import { delay, Observable, of, throwError } from 'rxjs';
-import { CreateWorkspacePayload, Workspace } from '@types';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import {
+  CreateWorkspacePayload,
+  Pagination,
+  UpdateWorkspacePayload,
+  Workspace,
+} from '@types';
+import { environment } from '@env/environment';
 
-/**
- * TODO: mocked until the backend endpoints exist.
- */
 @Injectable({
   providedIn: 'root',
 })
 export class WorkspacesService {
-  private readonly mockLatency = 600;
+  readonly v2Path = environment.backend_endpoint + '/v2/workspaces/';
 
-  createWorkspace(payload: CreateWorkspacePayload): Observable<Workspace> {
-    const workspace: Workspace = {
-      id: this.mockId(),
-      name: payload.name,
-      creator: '',
-      created_at: new Date().toISOString(),
-    };
+  constructor(private http: HttpClient) {}
 
-    return of(workspace).pipe(delay(this.mockLatency));
+  listWorkspaces(search?: string): Observable<Pagination<Workspace>> {
+    const params: Record<string, string> = {};
+    if (search) {
+      params['search'] = search;
+    }
+    return this.http.get<Pagination<Workspace>>(this.v2Path, {
+      withCredentials: true,
+      params,
+    });
   }
 
   getWorkspace(id: number): Observable<Workspace> {
-    // Mocking an error
-    if (id === 404) {
-      return throwError(
-        () =>
-          new HttpErrorResponse({
-            status: 404,
-            statusText: 'Not Found',
-            error: {
-              detail: 'Workspace not found',
-            },
-          })
-      ).pipe(delay(this.mockLatency));
-    }
-
-    // Mocking a workspace
-    const workspace: Workspace = {
-      id,
-      name: 'Mock Workspace',
-      creator: 'Han Solo',
-      created_at: new Date().toISOString(),
-    };
-
-    return of(workspace).pipe(delay(this.mockLatency));
+    return this.http.get<Workspace>(`${this.v2Path}${id}/`, {
+      withCredentials: true,
+    });
   }
 
-  private mockId(): number {
-    return Math.floor(Math.random() * 100000);
+  createWorkspace(payload: CreateWorkspacePayload): Observable<Workspace> {
+    return this.http.post<Workspace>(this.v2Path, payload, {
+      withCredentials: true,
+    });
+  }
+
+  updateWorkspace(
+    id: number,
+    payload: UpdateWorkspacePayload
+  ): Observable<Workspace> {
+    return this.http.patch<Workspace>(`${this.v2Path}${id}/`, payload, {
+      withCredentials: true,
+    });
+  }
+
+  deleteWorkspace(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.v2Path}${id}/`, {
+      withCredentials: true,
+    });
   }
 }

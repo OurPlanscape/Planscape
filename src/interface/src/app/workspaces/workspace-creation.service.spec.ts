@@ -18,8 +18,14 @@ describe('WorkspaceCreationService', () => {
   const workspace: Workspace = {
     id: 5,
     name: 'My workspace',
-    creator: '',
+    creator: 'Han Solo',
+    created_by: 3,
     created_at: '2026-08-21T00:00:00Z',
+    updated_at: '2026-08-21T00:00:00Z',
+    planning_areas_count: 0,
+    collaborators_count: 1,
+    role: 'OWNER',
+    permissions: ['view_workspace'],
   };
 
   function setUp(closedWith: Workspace | undefined) {
