@@ -177,10 +177,20 @@ export interface ScenarioGoal {
 }
 
 // Backend constraint definition (thresholds for stands).
+export type CONSTRAINT_OPERATOR =
+  | 'eq'
+  | 'dne'
+  | 'lt'
+  | 'lte'
+  | 'gt'
+  | 'gte'
+  | 'btw';
+
 export interface Constraint {
   datalayer: number;
-  operator: 'eq' | 'lt' | 'lte' | 'gt' | 'gte';
+  operator: CONSTRAINT_OPERATOR;
   value: number; // be supports string
+  value2?: number; // be supports string //TODO: rename?
 }
 
 export interface ScenarioPriority {
