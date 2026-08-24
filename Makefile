@@ -191,6 +191,11 @@ REGION=us-central1
 CELERY_WORKER_GENERAL=planscape-celery-worker-general-$(ENV)
 CELERY_WORKER_HEAVY=planscape-celery-worker-heavy-$(ENV)
 CELERY_BEAT=planscape-celery-beat-$(ENV)
+DJANGO_JOB=planscape-django-cmd-$(ENV)
+MANAGE_ARGS=migrate --no-input
+COMMA=,
+EMPTY=
+SPACE=$(EMPTY) $(EMPTY)
 
 cloud-run-build:
 	@BUILDS=$$(gcloud builds list --filter="images:$(DOCKER_TAG)" --format=json); \
@@ -237,6 +242,15 @@ cloud-run-deploy-celery-beat:
 cloud-run-deploy-celery: cloud-run-push cloud-run-deploy-celery-general cloud-run-deploy-celery-heavy cloud-run-deploy-celery-beat
 
 
+cloud-run-update-django-job:
+	$(MAKE) cloud-run-update-job JOB=$(DJANGO_JOB)
+
+cloud-run-execute-django-job:
+	gcloud run jobs execute $(DJANGO_JOB) --region $(REGION) --args "$(subst $(SPACE),$(COMMA),$(MANAGE_ARGS))" --wait
+
+cloud-run-deploy-django-job: cloud-run-push cloud-run-update-django-job
+
+
 cloud-run-build-gateway:
 	$(MAKE) cloud-run-build APP_NAME=planscape-gateway DOCKERFILE=Dockerfile.gateway DOCKER_REPO=planscape-planscape-gateway
 
@@ -280,6 +294,7 @@ cloud-run-push-all:
 
 cloud-run-deploy-all:
 	$(MAKE) cloud-run-deploy
+	$(MAKE) cloud-run-update-django-job
 	$(MAKE) cloud-run-deploy-celery
 	$(MAKE) cloud-run-deploy-gateway
 	$(MAKE) cloud-run-deploy-frontend-job
