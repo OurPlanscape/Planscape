@@ -1,3 +1,47 @@
+@import "colors";
+@import "mixins";
+
+
 .datalayer-name {
     font-weight: bold;
+}
+
+.form-heading-row {
+    @include small-input-label();
+    padding: 24px 0;
+}
+
+.inputs-grid {
+    display: grid;
+    grid-template-columns: minmax(250px, 1.2fr) 1fr;
+    grid-template-rows: auto;
+    gap: 16px;
+
+    .row-2 {
+        grid-column: 2;
+    }
+}
+
+.label {
+    @include small-input-label();
+    color: $color-black;
+    margin-bottom: 4px;
+}
+
+.required {
+    color: $color-error;
+}
+
+
+.constraints-form ::ng-deep .value-input .label {
+    @include small-input-label();
+
+}
+
+.operator-picker {
+    width: 100%;
+}
+
+.value-input {
+    width: 100%;
 }

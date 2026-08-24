@@ -74,7 +74,7 @@ export class NavBarComponent implements OnInit {
   handleClickOpenModal() {
     const dialogRef = this.dialog.open(AdvStandLevelConstraintsModalComponent, {
       maxWidth: '560px',
-      data: 'This is a data layer',
+      data: { dataLayerName: 'Data Layer Name' },
     });
 
     dialogRef
@@ -82,7 +82,7 @@ export class NavBarComponent implements OnInit {
       .pipe(take(1))
       .subscribe((confirmed) => {
         if (confirmed) {
-          console.log('what is this?', confirmed);
+          console.log('here is the result:', confirmed);
           // store the constraint
         }
       });
