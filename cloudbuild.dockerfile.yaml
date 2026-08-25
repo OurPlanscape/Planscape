@@ -1,15 +1,19 @@
 substitutions:
   _DOCKERFILE: Dockerfile
   _IMAGE: us-central1-docker.pkg.dev/planscape-23d66/planscape-planscape-backend/planscape-backend:latest
+  _CACHE_FROM: ""
 
 steps:
   - name: gcr.io/cloud-builders/docker
+    entrypoint: bash
     args:
-      - build
-      - -f
-      - ${_DOCKERFILE}
-      - -t
-      - ${_IMAGE}
-      - .
+      - -c
+      - |
+        if [ -n "${_CACHE_FROM}" ]; then
+          docker pull "${_CACHE_FROM}" || true
+          docker build --cache-from "${_CACHE_FROM}" -f "${_DOCKERFILE}" -t "${_IMAGE}" .
+        else
+          docker build -f "${_DOCKERFILE}" -t "${_IMAGE}" .
+        fi
 images:
   - ${_IMAGE}

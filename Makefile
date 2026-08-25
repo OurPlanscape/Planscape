@@ -186,7 +186,8 @@ DOCKERFILE=Dockerfile
 ENV=dev
 APP=$(APP_NAME)-$(ENV)
 DOCKER_REPO=planscape-$(APP_NAME)
-DOCKER_TAG=us-central1-docker.pkg.dev/$(PROJECT)/$(DOCKER_REPO)/$(APP_NAME):$(VERSION)
+DOCKER_IMAGE=us-central1-docker.pkg.dev/$(PROJECT)/$(DOCKER_REPO)/$(APP_NAME)
+DOCKER_TAG=$(DOCKER_IMAGE):$(VERSION)
 REGION=us-central1
 CELERY_WORKER_GENERAL=planscape-celery-worker-general-$(ENV)
 CELERY_WORKER_HEAVY=planscape-celery-worker-heavy-$(ENV)
@@ -212,8 +213,16 @@ cloud-run-build-force:
 cloud-run-push:
 	@BUILDS=$$(gcloud builds list --filter="images:$(DOCKER_TAG)" --format=json); \
 	if [ "$$BUILDS" = "[]" ]; then \
+		CACHE_TAG=$$(gcloud artifacts docker images list "$(DOCKER_IMAGE)" --include-tags --filter="tags:*" --sort-by="~UPDATE_TIME" --limit=1 --format="value(tags[0])" 2>/dev/null || true); \
+		CACHE_FROM=""; \
+		if [ -n "$$CACHE_TAG" ]; then \
+			CACHE_FROM="$(DOCKER_IMAGE):$$CACHE_TAG"; \
+			echo "Using Docker cache from $$CACHE_FROM ."; \
+		else \
+			echo "No existing Docker image found for cache."; \
+		fi; \
 		echo "Pushing image $(DOCKER_TAG) ."; \
-		gcloud builds submit --config cloudbuild.dockerfile.yaml --substitutions _DOCKERFILE=$(DOCKERFILE),_IMAGE=$(DOCKER_TAG) .;\
+		gcloud builds submit --config cloudbuild.dockerfile.yaml --substitutions _DOCKERFILE=$(DOCKERFILE),_IMAGE=$(DOCKER_TAG),_CACHE_FROM=$$CACHE_FROM .;\
 	else \
 		echo "Image $(DOCKER_TAG) already submitted"; \
 	fi;
