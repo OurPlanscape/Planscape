@@ -8,13 +8,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import {
-  CurrencyPipe,
-  DatePipe,
-  NgClass,
-  NgIf,
-  NgSwitch,
-} from '@angular/common';
+import { NgIf } from '@angular/common';
 import { ButtonComponent } from '@styleguide/button/button.component';
 import { InputFieldComponent } from '@styleguide/input/input-field.component';
 import { MatIconModule } from '@angular/material/icon';
@@ -38,11 +32,7 @@ import { InputDirective } from '@styleguide/input/input.directive';
   selector: 'sg-search-bar',
   standalone: true,
   imports: [
-    DatePipe,
     NgIf,
-    CurrencyPipe,
-    NgSwitch,
-    NgClass,
     ButtonComponent,
     MatIconModule,
     MatMenuModule,
@@ -87,6 +77,11 @@ export class SearchBarComponent implements OnInit, OnDestroy {
    * Determines if we should show a close button
    */
   @Input() showCloseButton = false;
+
+  /**
+   * Determines if we should show a close button
+   */
+  @Input() fullWidth = false;
   /**
    *
    */

@@ -1,11 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { MockProvider } from 'ng-mocks';
 
 import { WorkspacesComponent } from '@app/workspaces/workspaces.component';
 import { WorkspaceCreationService } from '@app/workspaces/workspace-creation.service';
-import { WorkspacesService } from '@services';
+import { ListWorkspacesOptions, WorkspacesService } from '@services';
 import { Workspace } from '@types';
 
 describe('WorkspacesComponent', () => {
@@ -27,10 +28,14 @@ describe('WorkspacesComponent', () => {
     permissions: ['view_workspace', 'change_workspace', 'remove_workspace'],
   };
 
-  function setup(listResult = of({ count: 1, results: [workspace] })) {
+  function setup(
+    listResult = of({ count: 1, results: [workspace] }),
+    searchResult = listResult
+  ) {
     workspacesService = TestBed.inject(WorkspacesService);
-    spyOn(workspacesService, 'listWorkspaces').and.returnValue(
-      listResult as any
+    spyOn(workspacesService, 'listWorkspaces').and.callFake(
+      (options: ListWorkspacesOptions = {}) =>
+        (options.search ? searchResult : listResult) as any
     );
 
     creationService = TestBed.inject(WorkspaceCreationService);
@@ -42,7 +47,7 @@ describe('WorkspacesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [WorkspacesComponent],
+      imports: [WorkspacesComponent, NoopAnimationsModule],
       providers: [
         MockProvider(WorkspaceCreationService),
         MockProvider(WorkspacesService),
@@ -70,6 +75,19 @@ describe('WorkspacesComponent', () => {
       expect(fixture.nativeElement.textContent).not.toContain(
         'Workspace: A shared space for smarter planning'
       );
+    });
+
+    it('creates from the header without the welcome flow', () => {
+      const spy = spyOn(
+        creationService,
+        'openCreateWorkspaceModal'
+      ).and.returnValue(of(null));
+
+      fixture.nativeElement
+        .querySelector('.workspaces-header button[sg-button]')
+        .click();
+
+      expect(spy).toHaveBeenCalledWith('list');
     });
 
     it('navigates to the workspace when a card is clicked', () => {
@@ -106,7 +124,7 @@ describe('WorkspacesComponent', () => {
         of(workspace)
       );
 
-      fixture.componentInstance.createWorkspace();
+      fixture.componentInstance.createWorkspace('list');
 
       expect(workspacesService.listWorkspaces).toHaveBeenCalledTimes(2);
     });
@@ -128,6 +146,137 @@ describe('WorkspacesComponent', () => {
       fixture.componentInstance.retry();
 
       expect(workspacesService.listWorkspaces).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('search', () => {
+    const noResults = of({ count: 0, results: [] });
+
+    function search(term: string) {
+      fixture.componentInstance.search(term);
+      fixture.detectChanges();
+    }
+
+    it('requests the filtered list', () => {
+      setup();
+
+      search('wild');
+
+      expect(workspacesService.listWorkspaces).toHaveBeenCalledWith(
+        jasmine.objectContaining({ search: 'wild' })
+      );
+    });
+
+    it('shows a no results state when nothing matches', () => {
+      setup(of({ count: 1, results: [workspace] }), noResults);
+
+      search('nope');
+
+      expect(fixture.nativeElement.textContent).toContain(
+        'No Results for "nope"'
+      );
+      expect(fixture.nativeElement.textContent).not.toContain(
+        'Workspace: A shared space for smarter planning'
+      );
+    });
+
+    it('keeps the search bar around so the term can be changed', () => {
+      setup(of({ count: 1, results: [workspace] }), noResults);
+
+      search('nope');
+
+      expect(fixture.nativeElement.querySelector('sg-search-bar')).toBeTruthy();
+    });
+
+    it('shows the create empty state when there is nothing to search', () => {
+      setup(noResults);
+
+      expect(fixture.nativeElement.querySelector('sg-no-results')).toBeNull();
+      expect(fixture.nativeElement.textContent).toContain(
+        'Workspace: A shared space for smarter planning'
+      );
+    });
+  });
+
+  describe('pagination', () => {
+    it('is hidden when everything fits on one page', () => {
+      setup();
+
+      expect(fixture.nativeElement.querySelector('sg-paginator')).toBeNull();
+    });
+
+    it('shows a compact paginator once there is more than one page', () => {
+      setup(of({ count: 30, results: [workspace] }));
+
+      const paginator = fixture.nativeElement.querySelector('sg-paginator');
+
+      expect(paginator).toBeTruthy();
+      expect(paginator.querySelector('.per-page-picker')).toBeNull();
+    });
+
+    it('requests the matching offset when the page changes', () => {
+      setup(of({ count: 30, results: [workspace] }));
+
+      fixture.componentInstance.goToPage(3);
+
+      expect(workspacesService.listWorkspaces).toHaveBeenCalledWith(
+        jasmine.objectContaining({ limit: 12, offset: 24 })
+      );
+    });
+
+    it('stays put while the next page loads', () => {
+      setup(of({ count: 30, results: [workspace] }));
+      (workspacesService.listWorkspaces as jasmine.Spy).and.returnValue(
+        new Subject<any>()
+      );
+
+      fixture.componentInstance.goToPage(2);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('sg-paginator')).toBeTruthy();
+    });
+
+    it('goes back to the first page on a new search', () => {
+      setup(of({ count: 30, results: [workspace] }));
+      fixture.componentInstance.goToPage(3);
+
+      fixture.componentInstance.search('wild');
+
+      expect(workspacesService.listWorkspaces).toHaveBeenCalledWith(
+        jasmine.objectContaining({ search: 'wild', offset: 0 })
+      );
+    });
+  });
+
+  describe('while a request is in flight', () => {
+    it('shows the header and a spinner, not the create empty state', () => {
+      setup(new Subject<any>());
+
+      expect(
+        fixture.nativeElement.querySelector('.workspaces-header')
+      ).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('mat-spinner')).toBeTruthy();
+      expect(fixture.nativeElement.textContent).not.toContain(
+        'Workspace: A shared space for smarter planning'
+      );
+    });
+
+    it('keeps the shell while a cleared search reloads', () => {
+      const cleared = new Subject<any>();
+      setup(cleared, of({ count: 0, results: [] }));
+      cleared.next({ count: 1, results: [workspace] });
+      fixture.detectChanges();
+
+      fixture.componentInstance.search('nope');
+      fixture.detectChanges();
+      fixture.componentInstance.search('');
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).not.toContain(
+        'Workspace: A shared space for smarter planning'
+      );
+      expect(fixture.nativeElement.querySelector('mat-spinner')).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('sg-search-bar')).toBeTruthy();
     });
   });
 });
