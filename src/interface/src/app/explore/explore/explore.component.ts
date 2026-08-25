@@ -142,7 +142,7 @@ export class ExploreComponent implements OnDestroy, OnInit {
         if (scenarioId && plan && scenario) {
           label = 'Map Viewer: ' + scenario.name;
           backUrl += getPlanPath(plan.id) + `/scenario/${scenarioId}/dashboard`;
-        // otherwise, just route back to the planning area
+          // otherwise, just route back to the planning area
         } else if (plan) {
           label = 'Map Viewer: ' + plan.name;
           backUrl = getPlanPath(plan.id);

@@ -17,7 +17,6 @@ import { of } from 'rxjs';
 import { Plan, Scenario } from '@app/types';
 import { Geometry } from '@turf/helpers';
 
-
 describe('ExploreComponent', () => {
   let fixture: ComponentFixture<ExploreComponent>;
   let breadcrumbService: BreadcrumbService;
