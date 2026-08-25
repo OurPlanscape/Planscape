@@ -260,7 +260,11 @@ class PrioritizeSubUnitsModuleTest(TestCase):
             visibility=VisibilityOptions.PUBLIC, 
             modules=["prioritize_sub_units"],
         )
-        DataLayerFactory.create(dataset=base_dataset, metadata={"modules": {"prioritize_sub_units": {"enabled": True}}})
+        DataLayerFactory.create(
+            dataset=base_dataset,
+            type=DataLayerType.VECTOR,
+            metadata={"modules": {"prioritize_sub_units": {"enabled": True}}},
+        )
 
         module = get_module("prioritize_sub_units")
         configuration: Dict[str, Any] = module.get_configuration()
@@ -286,6 +290,30 @@ class PrioritizeSubUnitsModuleTest(TestCase):
         self.assertEqual(len(base), 1)
         self.assertEqual(len(sub_units), 1)
 
+    def test_excludes_raster_layers(self):
+        base_dataset = DatasetFactory.create(
+            name="base1",
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
+            visibility=VisibilityOptions.PUBLIC,
+            modules=["prioritize_sub_units"],
+        )
+        DataLayerFactory.create(
+            dataset=base_dataset,
+            type=DataLayerType.VECTOR,
+            metadata={"modules": {"prioritize_sub_units": {"enabled": True}}},
+        )
+        DataLayerFactory.create(
+            dataset=base_dataset,
+            type=DataLayerType.RASTER,
+            metadata={"modules": {"prioritize_sub_units": {"enabled": True}}},
+        )
+
+        module = get_module("prioritize_sub_units")
+        configuration: Dict[str, Any] = module.get_configuration()
+        sub_units = configuration["options"]["sub_units"]
+
+        self.assertEqual(len(sub_units), 1)
+        self.assertEqual(sub_units[0].type, DataLayerType.VECTOR)
 
     def test_returns_private_dataset_for_staff_users(self):
         private_base_dataset = DatasetFactory.create(
@@ -312,8 +340,16 @@ class PrioritizeSubUnitsModuleTest(TestCase):
             visibility=VisibilityOptions.PUBLIC, 
             modules=["prioritize_sub_units"],
         )
-        DataLayerFactory.create(dataset=private_base_dataset, metadata={"modules": {"prioritize_sub_units": {"enabled": True}}})
-        DataLayerFactory.create(dataset=public_base_dataset, metadata={"modules": {"prioritize_sub_units": {"enabled": True}}})
+        DataLayerFactory.create(
+            dataset=private_base_dataset,
+            type=DataLayerType.VECTOR,
+            metadata={"modules": {"prioritize_sub_units": {"enabled": True}}},
+        )
+        DataLayerFactory.create(
+            dataset=public_base_dataset,
+            type=DataLayerType.VECTOR,
+            metadata={"modules": {"prioritize_sub_units": {"enabled": True}}},
+        )
 
         staff_user = UserFactory.create(is_staff=True)
         standard_user = UserFactory.create(is_staff=False)
