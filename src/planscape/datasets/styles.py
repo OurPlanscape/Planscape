@@ -44,11 +44,17 @@ def get_raster_style(datalayer: DataLayer, style: Style) -> Dict[str, Any]:
 
 
 def get_default_raster_style(
-    min: float,
-    max: float,
+    min: Optional[float] = None,
+    max: Optional[float] = None,
     nodata: Optional[float] = None,
     **kwargs,
 ) -> Dict[str, Any]:
+    # min/max can be None when the raster's stats couldn't be computed
+    # (e.g. an all-nodata band gets sanitized from NaN to None before
+    # being stored). Fall back to a 0-1 range so we still produce a style.
+    if min is None or max is None:
+        min, max = 0.0, 1.0
+
     steps = 7
     delta = max - min
     interval = delta / (steps - 1)
