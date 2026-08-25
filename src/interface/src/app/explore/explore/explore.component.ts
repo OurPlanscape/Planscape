@@ -24,6 +24,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FrontendConstants } from '@map/map.constants';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { ActivatedRoute } from '@angular/router';
+import { ScenarioState } from '@app/scenario/scenario.state';
 
 enum SidebarTabs {
   DATA_LAYERS,
@@ -86,13 +87,13 @@ export class ExploreComponent implements OnDestroy {
     private multiMapConfigState: MultiMapConfigState,
     private mapConfigService: MapConfigService,
     private planState: PlanState,
+    private scenarioState: ScenarioState,
     private drawService: DrawService,
     private route: ActivatedRoute,
   ) {
     this.loadStateFromLocalStorage();
 
     const scenarioId = this.route.snapshot.data['scenarioId'];
-
 
     this.planState.currentPlanId$
       .pipe(
@@ -107,13 +108,16 @@ export class ExploreComponent implements OnDestroy {
       .subscribe((plan) => {
         let label = 'New Plan';
         let backUrl = '/';
-        if (plan) {
+        if (scenarioId && plan) {
+          this.scenarioState.currentScenario$.pipe(take(1)).subscribe((scenario) => {
+            label = 'Map Viewer: ' + scenario.name;
+            backUrl += getPlanPath(plan.id) + `/scenario/${scenarioId}/dashboard`;
+          })
+        } else if (plan) {
           label = 'Map Viewer: ' + plan.name;
           backUrl = getPlanPath(plan.id);
         }
-        if (scenarioId) {
-            backUrl += `/scenario/${scenarioId}/dashboard`;
-        }
+
         this.breadcrumbService.updateBreadCrumb({
           label,
           backUrl,
