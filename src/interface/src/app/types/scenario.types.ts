@@ -125,9 +125,9 @@ export interface ScenarioV3Config {
   excluded_areas: number[];
   included_areas: number[];
   stand_size: STAND_SIZE;
-  priority_objectives?: number[]; // TODO: ensure this matches up with backend field
+  priority_objectives?: number[];
   priorities?: ScenarioPriority[];
-  cobenefits?: number[]; // TODO: ensure this matches up with backend field
+  cobenefits?: number[];
   constraints: Constraint[]; // the constraints for the scenario, like max slope or distance to roads
   treatment_goal: number;
   sub_units_layer?: number;
@@ -149,6 +149,8 @@ export interface ScenarioV3Payload {
   treatment_goal: number;
   planning_approach: PLANNING_APPROACH;
   sub_units_layer?: number;
+  capabilities?: string[];
+  usage_types?: UsageType[];
 }
 
 // TODO is this the right type?

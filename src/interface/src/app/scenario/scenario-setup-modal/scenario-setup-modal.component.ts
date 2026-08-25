@@ -201,6 +201,14 @@ export class ScenarioSetupModalComponent implements OnInit {
       payload.planning_approach = oldScenario.planning_approach;
     }
 
+    if (oldScenario.capabilities) {
+      payload.capabilities = oldScenario.capabilities;
+    }
+
+    if (oldScenario.usage_types) {
+      payload.usage_types = structuredClone(oldScenario.usage_types);
+    }
+
     return sanitizePayloadForScenarioType(newScenario, payload);
   }
 
