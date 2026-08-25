@@ -79,7 +79,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   @Input() showCloseButton = false;
 
   /**
-   * Determines if we should show a close button
+   * Determines if the input is full width
    */
   @Input() fullWidth = false;
   /**

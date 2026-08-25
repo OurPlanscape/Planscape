@@ -47,16 +47,20 @@
 <div class="detail-row">
   <div class="detail-line">
     <mat-icon class="material-symbols-outlined detail-icon">person</mat-icon>
-    <span>Creator: {{ creator || 'N/A' }}</span>
+    <span
+      >Creator: <span class="detail-info">{{ creator || 'N/A' }}</span>
+    </span>
   </div>
   <span class="separator" aria-hidden="true">&bull;</span>
   <div class="detail-line">
     <mat-icon class="material-symbols-outlined detail-icon"
-      >calendar_month</mat-icon
-    >
+      >calendar_month
+    </mat-icon>
     <span
       >Created Date:
-      {{ createdAt ? (createdAt | date: 'MMM d, y') : '-' }}</span
-    >
+      <span class="detail-info">{{
+        createdAt ? (createdAt | date: 'MMM d, y') : '-'
+      }}</span>
+    </span>
   </div>
 </div>
