@@ -61,6 +61,9 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
     area_acres = serializers.SerializerMethodField(
         help_text="Area of the Planning Area represented in Acres."
     )
+    bbox = serializers.SerializerMethodField(
+        help_text="Bounding box of the Planning Area as [xmin, ymin, xmax, ymax]."
+    )
     creator = serializers.CharField(
         source="creator_name", help_text="User ID that created the Planning Area."
     )
@@ -76,6 +79,11 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
 
     def get_area_acres(self, instance):
         return get_acreage(instance.geometry)
+
+    def get_bbox(self, instance) -> Optional[List[float]]:
+        if not instance.geometry:
+            return None
+        return list(instance.geometry.extent)
 
     def get_latest_updated(self, instance):
         return instance.updated_at
@@ -99,6 +107,7 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
             "latest_updated",
             "created_at",
             "area_acres",
+            "bbox",
             "creator",
             "role",
             "permissions",
@@ -230,6 +239,7 @@ class PlanningAreaSerializer(
             "latest_updated",
             "created_at",
             "area_acres",
+            "bbox",
             "creator",
             "role",
             "permissions",
@@ -774,7 +784,6 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         return included_areas
 
     def validate(self, attrs):
-
         included_areas = attrs.get("included_areas_ids")
         if included_areas:
             scenario = self.parent.instance
