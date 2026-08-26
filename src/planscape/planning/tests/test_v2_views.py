@@ -1055,7 +1055,8 @@ class CreateScenariosFromUpload(APITestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_create_from_multi_feature_shpjs(self):
+    @mock.patch("planning.serializers.track_event")
+    def test_create_from_multi_feature_shpjs(self, track_event_mock):
         self.client.force_authenticate(self.owner_user)
         payload = {
             "geometry": json.dumps(self.pasadena_pomona),
@@ -1083,7 +1084,16 @@ class CreateScenariosFromUpload(APITestCase):
         for f in result_record.result["features"]:
             self.assertIn("project_id", f["properties"])
 
-    def test_create_uncontained_geometry(self):
+        validation_call = next(
+            call
+            for call in track_event_mock.call_args_list
+            if call.kwargs["name"] == "planning.project_areas_upload.validation"
+        )
+        self.assertEqual(validation_call.kwargs["properties"]["status"], "passed")
+        self.assertIn("stage", validation_call.kwargs["properties"])
+
+    @mock.patch("planning.serializers.track_event")
+    def test_create_uncontained_geometry(self, track_event_mock):
         self.client.force_authenticate(self.owner_user)
         payload = {
             "geometry": json.dumps(self.sandiego),
@@ -1108,6 +1118,19 @@ class CreateScenariosFromUpload(APITestCase):
             },
         }
         self.assertEqual(response.json(), expected_error)
+        track_event_mock.assert_called_once_with(
+            name="planning.project_areas_upload.validation",
+            properties={
+                "stage": "containment",
+                "status": "failed",
+                "planning_area_id": self.planning_area.pk,
+                "stand_size": "LARGE",
+                "scenario_name": "new scenario",
+                "email": self.owner_user.email,
+                "error": "The uploaded geometry is not within the selected planning area.",
+            },
+            user_id=self.owner_user.pk,
+        )
 
     def test_create_with_duplicate_names(self):
         self.client.force_authenticate(self.owner_user)

@@ -56,7 +56,12 @@ from stands.models import Stand, StandMetric, StandSizeChoices, area_from_size
 from stands.services import get_datalayer_metric, get_stand_grid_key_search_precision
 from utils.geometry import to_multi
 
-from planning.geometry import coerce_geojson, coerce_geometry, to_multipolygon
+from planning.geometry import (
+    coerce_geojson,
+    coerce_geometry,
+    fix_geometry,
+    to_multipolygon,
+)
 from planning.models import (
     GeoPackageStatus,
     PlanningArea,
@@ -395,6 +400,7 @@ def feature_to_project_area(
     scenario: Scenario,
     geometry_dict: dict[str, Any],
     idx: int = 1,
+    clip_to_planning_area: bool = False,
 ):
     user = scenario.user
     stand_size = scenario.get_stand_size()
@@ -403,6 +409,10 @@ def feature_to_project_area(
         logger.info("creating project area %s %s", area_name, geometry_dict)
         _bbox = geometry_dict.pop("bbox", None)
         geometry = coerce_geometry(geometry_dict)
+        if clip_to_planning_area:
+            geometry = to_multipolygon(
+                fix_geometry(geometry.intersection(scenario.planning_area.geometry))
+            )
 
         stand_count = Stand.objects.within_polygon(
             geometry,
@@ -438,6 +448,7 @@ def feature_to_project_area(
 def create_scenario_from_upload(validated_data, user) -> Scenario:
     planning_area = PlanningArea.objects.get(pk=validated_data["planning_area"])
     feature_collection = validated_data["geometry"]
+    clip_to_planning_area = validated_data.get("clip_project_areas_to_planning_area")
 
     if planning_area.map_status == PlanningAreaMapStatus.OVERSIZE:
         raise ValueError(
@@ -476,6 +487,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
                 scenario=scenario,
                 idx=i[0],
                 geometry_dict=i[1].get("geometry", {}),
+                clip_to_planning_area=clip_to_planning_area,
             ),
             enumerate(feature_collection.get("features"), 1),
         )
@@ -1861,6 +1873,22 @@ def planning_area_covers(
     stand_size: StandSizeChoices,
     buffer_size: float = -1.0,
 ) -> bool:
+    return bool(
+        planning_area_covering_source(
+            planning_area=planning_area,
+            geometry=geometry,
+            stand_size=stand_size,
+            buffer_size=buffer_size,
+        )
+    )
+
+
+def planning_area_covering_source(
+    planning_area: PlanningArea,
+    geometry: GEOSGeometry,
+    stand_size: StandSizeChoices,
+    buffer_size: float = -1.0,
+) -> str | None:
     """Specialized version of `covers` predicate for Planning Area.
     This is necessary because some times our users want to upload
     project areas that are slightly off the planning area. So this
@@ -1870,7 +1898,7 @@ def planning_area_covers(
     """
     if planning_area.geometry.covers(geometry):
         logger.info("Planning Area covers geometry using DE9IM matrix.")
-        return True
+        return "planning_area"
 
     all_stands = Stand.objects.within_polygon(
         planning_area.geometry,
@@ -1878,11 +1906,11 @@ def planning_area_covers(
     ).aggregate(geometry=UnionOp("geometry"))["geometry"]
 
     if all_stands is None:
-        return False
+        return None
 
     if all_stands.covers(geometry):
         logger.info("Planning Area covers geometry using stands DE9IM matrix.")
-        return True
+        return "stands"
 
     # units here are in meters
     test_geometry = geometry.transform(settings.AREA_SRID, clone=True)
@@ -1892,8 +1920,8 @@ def planning_area_covers(
         logger.info(
             "Planning Area covers geometry using a buffered version of test geometry."
         )
-        return True
-    return False
+        return "buffered_geometry"
+    return None
 
 
 def get_excluded_stands(stands_qs, datalayer: DataLayer):

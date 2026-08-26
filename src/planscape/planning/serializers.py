@@ -7,6 +7,7 @@ from datasets.models import DataLayer, DataLayerStatus, DataLayerType, GeometryT
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.utils import timezone
+from planscape.analytics import track_event
 from planscape.exceptions import InvalidGeometry
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
@@ -37,7 +38,7 @@ from planning.services import (
     calculate_scenario_treatable_area,
     get_acreage,
     get_min_project_area,
-    planning_area_covers,
+    planning_area_covering_source,
     union_geojson,
 )
 
@@ -1482,11 +1483,30 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
             exists = exists.exclude(pk=self.instance.pk)
 
         if exists.exists():
+            self._track_upload_validation(
+                stage="duplicate_name",
+                status="failed",
+                planning_area_id=planning_area_id,
+                stand_size=stand_size,
+                error="A scenario with this name already exists.",
+            )
             raise serializers.ValidationError(
                 {"name": "A scenario with this name already exists."}
             )
 
-        if not self._is_inside_planning_area(geometry, planning_area_id, stand_size):
+        covering_source = self._get_planning_area_covering_source(
+            geometry,
+            planning_area_id,
+            stand_size,
+        )
+        if not covering_source:
+            self._track_upload_validation(
+                stage="containment",
+                status="failed",
+                planning_area_id=planning_area_id,
+                stand_size=stand_size,
+                error="The uploaded geometry is not within the selected planning area.",
+            )
             raise serializers.ValidationError(
                 {
                     "global": [
@@ -1494,6 +1514,18 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
                     ]
                 }
             )
+        attrs["clip_project_areas_to_planning_area"] = (
+            covering_source == "buffered_geometry"
+        )
+        self._track_upload_validation(
+            stage=covering_source,
+            status="passed",
+            planning_area_id=planning_area_id,
+            stand_size=stand_size,
+            clip_project_areas_to_planning_area=attrs[
+                "clip_project_areas_to_planning_area"
+            ],
+        )
         return attrs
 
     def validate_geometry(self, value):
@@ -1505,6 +1537,11 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
                 if fc.get("type") == "FeatureCollection":
                     merged_feature_collection["features"].extend(fc.get("features", []))
                 else:
+                    self._track_upload_validation(
+                        stage="geometry_format",
+                        status="failed",
+                        error="All items must be GeoJSON FeatureCollection objects",
+                    )
                     raise ValueError(
                         "All items must be GeoJSON FeatureCollection objects"
                     )
@@ -1512,26 +1549,89 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
 
         # convert if neither dict nor list
         if not isinstance(value, (dict, list)):
-            value = json.loads(value)
+            try:
+                value = json.loads(value)
+            except ValueError as e:
+                self._track_upload_validation(
+                    stage="geometry_format",
+                    status="failed",
+                    error=str(e),
+                )
+                raise e
 
         geojson_serializer = GeoJSONSerializer(data=value)
-        geojson_serializer.is_valid(raise_exception=True)
+        if not geojson_serializer.is_valid():
+            self._track_upload_validation(
+                stage="geometry_format",
+                status="failed",
+                error=geojson_serializer.errors,
+            )
+            raise serializers.ValidationError(geojson_serializer.errors)
         return geojson_serializer.validated_data
 
-    def _is_inside_planning_area(self, geometry, planning_area_id, stand_size) -> bool:
+    def _get_planning_area_covering_source(
+        self, geometry, planning_area_id, stand_size
+    ) -> str | None:
         try:
             uploaded_geos = union_geojson(geometry)
         except ValueError as e:
+            self._track_upload_validation(
+                stage="polygon_union",
+                status="failed",
+                planning_area_id=planning_area_id,
+                stand_size=stand_size,
+                error=str(e),
+            )
             raise serializers.ValidationError({"global": [str(e)]})
         try:
             planning_area = PlanningArea.objects.get(pk=planning_area_id)
         except PlanningArea.DoesNotExist:
+            self._track_upload_validation(
+                stage="planning_area_lookup",
+                status="failed",
+                planning_area_id=planning_area_id,
+                stand_size=stand_size,
+                error="Planning area does not exist.",
+            )
             raise serializers.ValidationError("Planning area does not exist.")
 
-        return planning_area_covers(
+        return planning_area_covering_source(
             planning_area=planning_area,
             geometry=uploaded_geos,
             stand_size=stand_size or StandSizeChoices.SMALL,
+        )
+
+    def _track_upload_validation(
+        self,
+        stage: str,
+        status: str,
+        planning_area_id: int | None = None,
+        stand_size: str | None = None,
+        error=None,
+        clip_project_areas_to_planning_area: bool | None = None,
+    ) -> None:
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        properties = {
+            "stage": stage,
+            "status": status,
+            "planning_area_id": planning_area_id
+            or self.initial_data.get("planning_area"),
+            "stand_size": stand_size or self.initial_data.get("stand_size"),
+            "scenario_name": self.initial_data.get("name"),
+            "email": getattr(user, "email", None),
+        }
+        if error:
+            properties["error"] = str(error)
+        if clip_project_areas_to_planning_area is not None:
+            properties[
+                "clip_project_areas_to_planning_area"
+            ] = clip_project_areas_to_planning_area
+
+        track_event(
+            name="planning.project_areas_upload.validation",
+            properties=properties,
+            user_id=getattr(user, "pk", None),
         )
 
 

@@ -14,7 +14,7 @@ from datasets.models import DataLayerType, GeometryType
 from datasets.tasks import datalayer_uploaded
 from datasets.tests.factories import DataLayerFactory
 from django.conf import settings
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import connection
 from django.test import TestCase, override_settings
 from fiona.crs import to_string
@@ -35,6 +35,7 @@ from planning.services import (
     calculate_and_update_scenario_result,
     create_planning_area,
     create_scenario,
+    create_scenario_from_upload,
     export_planning_area_to_geopackage,
     export_scenario_inputs_to_geopackage,
     export_scenario_stand_outputs_to_geopackage,
@@ -50,6 +51,7 @@ from planning.services import (
     get_max_treatable_stand_count,
     get_schema,
     get_sub_units_details,
+    planning_area_covering_source,
     planning_area_covers,
     sanitize_shp_field_name,
     trigger_scenario_run,
@@ -834,6 +836,82 @@ class TestPlanningAreaCovers(TestCase):
                 stand_size=StandSizeChoices.LARGE,
             )
         )
+
+    def test_covering_source_identifies_buffered_geometry_fallback(self):
+        outside_geometry = GEOSGeometry(
+            "POLYGON ((-121.2 40.3, -120.6 40.4, -120.0 40.0, -120.0 41.2, -120.4 41.1, -121.0 40.6, -121.2 40.3))",
+            srid=4269,
+        )
+        stands_geometry = mock.Mock()
+        stands_geometry.covers.side_effect = [False, True]
+        stands_qs = mock.Mock()
+        stands_qs.aggregate.return_value = {"geometry": stands_geometry}
+
+        with mock.patch(
+            "planning.services.Stand.objects.within_polygon",
+            return_value=stands_qs,
+        ):
+            source = planning_area_covering_source(
+                self.real_world_planning_area,
+                outside_geometry,
+                stand_size=StandSizeChoices.LARGE,
+            )
+
+        self.assertEqual(source, "buffered_geometry")
+
+
+class CreateScenarioFromUploadTest(TestCase):
+    def test_clips_project_area_geometry_to_planning_area_when_requested(self):
+        user = UserFactory.create()
+        planning_area = PlanningAreaFactory.create(
+            user=user,
+            geometry=MultiPolygon(
+                Polygon(((0, 0), (0, 1), (1, 1), (1, 0), (0, 0))),
+                srid=4269,
+            ),
+        )
+        uploaded_geometry = {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [0, 0],
+                    [0, 1],
+                    [2, 1],
+                    [2, 0],
+                    [0, 0],
+                ]
+            ],
+        }
+        stands_qs = mock.Mock()
+        stands_qs.count.return_value = 0
+
+        with mock.patch(
+            "planning.services.Stand.objects.within_polygon",
+            return_value=stands_qs,
+        ):
+            scenario = create_scenario_from_upload(
+                {
+                    "name": "uploaded scenario",
+                    "planning_area": planning_area.pk,
+                    "stand_size": StandSizeChoices.SMALL,
+                    "geometry": {
+                        "type": "FeatureCollection",
+                        "features": [
+                            {
+                                "type": "Feature",
+                                "properties": {},
+                                "geometry": uploaded_geometry,
+                            }
+                        ],
+                    },
+                    "clip_project_areas_to_planning_area": True,
+                },
+                user=user,
+            )
+
+        project_area = scenario.project_areas.get()
+        self.assertTrue(planning_area.geometry.covers(project_area.geometry))
+        self.assertAlmostEqual(project_area.geometry.area, planning_area.geometry.area)
 
 
 # compare with known turf.js results
