@@ -1,21 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { ExploreComponent } from './explore.component';
-import { BreadcrumbService } from '@services/breadcrumb.service';
-import { MockDeclarations, MockProvider, MockProviders } from 'ng-mocks';
-import { SharedModule } from '@shared';
-import { SyncedMapsComponent } from '@maplibre-map/synced-maps/synced-maps.component';
 import { MatTabsModule } from '@angular/material/tabs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ExploreStorageService } from '@services/local-storage.service';
-import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
-import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { ActivatedRoute } from '@angular/router';
-import { ScenarioState } from '@app/scenario/scenario.state';
 import { PlanState } from '@app/plan/plan.state';
-import { BehaviorSubject, of } from 'rxjs';
+import { ScenarioState } from '@app/scenario/scenario.state';
+import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { Plan, Scenario } from '@app/types';
+import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
+import { SyncedMapsComponent } from '@maplibre-map/synced-maps/synced-maps.component';
+import { BreadcrumbService } from '@services/breadcrumb.service';
+import { ExploreStorageService } from '@services/local-storage.service';
+import { SharedModule } from '@shared';
 import { Geometry } from '@turf/helpers';
+import { MockDeclarations, MockProvider, MockProviders } from 'ng-mocks';
+import { BehaviorSubject, of } from 'rxjs';
+import { ExploreComponent } from './explore.component';
 
 describe('ExploreComponent', () => {
   let fixture: ComponentFixture<ExploreComponent>;
