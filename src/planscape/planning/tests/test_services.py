@@ -35,6 +35,7 @@ from planning.services import (
     calculate_and_update_scenario_result,
     create_planning_area,
     create_scenario,
+    clone_scenario,
     export_planning_area_to_geopackage,
     export_scenario_inputs_to_geopackage,
     export_scenario_stand_outputs_to_geopackage,
@@ -1412,6 +1413,33 @@ class ProjectAreasChildForSysTest(TestCase):
             errors,
         )
         self.assertEqual(errors, [])
+
+
+class CloneScenarioTest(TestCase):
+    def setUp(self):
+            self.user = UserFactory.create()
+            self.secondUser = UserFactory.create()
+            self.treatment_goal = TreatmentGoalFactory.create()
+            self.planning_area = PlanningAreaFactory.create()
+
+    # test the cloning of a V3 scenario
+    def test_cloning_of_v3_scenario(self):
+        scenarioV3 = ScenarioFactory.create(planning_area=self.planning_area)
+        cloned_scenario = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
+        print(cloned_scenario)
+
+    ## Test cloning of legacy scenario types
+    # test the cloning of a V1 scenario
+    def test_cloning_of_v1_scenario(self):
+        scenarioV1 = ScenarioFactory.create(planning_area=self.planning_area)
+        cloned_scenario = clone_scenario(scenarioV1.id, self.secondUser, 'some new scenario')
+        print(cloned_scenario)
+
+    # test the cloning of a V2 scenario
+    def test_cloning_of_v2_scenario(self):
+        scenarioV2 = ScenarioFactory.create(planning_area=self.planning_area)
+        cloned_scenario = clone_scenario(scenarioV2.id, self.secondUser, 'some new scenario')
+        print(cloned_scenario)
 
 
 class CreateScenarioGuardTest(TestCase):

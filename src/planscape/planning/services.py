@@ -4,6 +4,7 @@ import json
 import logging
 import math
 import os
+import uuid
 import zipfile
 from collections.abc import Collection
 from datetime import date, datetime, time
@@ -18,7 +19,6 @@ from typing import (  # noqa: F401
     Type,
     Union,
 )
-
 import fiona
 from actstream import action
 from cacheops import cached
@@ -65,10 +65,12 @@ from planning.models import (
     Scenario,
     ScenarioOrigin,
     ScenarioPlanningApproach,
+    ScenarioPostProcessingStatus,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
     ScenarioType,
+    ScenarioVersion,
     TreatmentGoal,
     TreatmentGoalUsageType,
 )
@@ -283,6 +285,91 @@ def create_config(
 
     return config
 
+
+def _get_unique_clone_name(planning_area_id: int, base_name: str) -> str:
+    """
+    Guarantees a unique scenario name within the planning area 
+    if the provided name conflicts with an existing active scenario.
+    """
+    new_name = base_name
+    counter = 1
+
+    while Scenario.objects.filter(
+        planning_area_id=planning_area_id, 
+        name=new_name, 
+        deleted_at__isnull=True
+    ).exists():
+        counter += 1
+        new_name = f"{base_name} ({counter})"
+
+    return new_name
+
+def migrate_configuration(configuration: Dict[str, Any], current_version: ScenarioVersion) -> Dict[str, Any]:
+    """
+    Migrates V1 or V2 scenario configuration to V3 schema.
+    """
+    config = copy.deepcopy(configuration or {})
+
+    if current_version == ScenarioVersion.V1:
+        # TODO: Implement V1 -> V2/V3 migration logic
+        # e.g., config['targets'] = transform_v1_to_v3(config)
+        # config.pop('question_id', None)
+        pass
+
+    elif current_version == ScenarioVersion.V2:
+        # TODO: Implement V2 -> V3 migration logic
+        # e.g., config['targets'] = transform_v2_to_v3(config)
+        pass
+
+    return config
+
+@transaction.atomic
+def clone_scenario(
+    original_scenario_id: int, 
+    user: User, 
+    name: Optional[str] = None
+) -> Scenario:
+
+    original = Scenario.objects.select_for_update().get(pk=original_scenario_id)
+
+    target_name = name or f"{original.name} (Copy)"
+    final_name = _get_unique_clone_name(original.planning_area_id, target_name)
+
+    current_version = original.version
+    if current_version in (ScenarioVersion.V1, ScenarioVersion.V2):
+        new_config = migrate_configuration(original.configuration, current_version)
+    else:
+        new_config = copy.deepcopy(original.configuration)
+
+    clone = Scenario(
+        user=user,
+        planning_area=original.planning_area,
+        parent=original.parent,
+        treatment_goal=original.treatment_goal,
+
+        name=final_name,
+        origin=original.origin,
+        type=original.type,
+        planning_approach=original.planning_approach,
+        notes=original.notes,
+
+        configuration=new_config,
+        forsys_input=copy.deepcopy(original.forsys_input) if original.forsys_input else None,
+        capabilities=list(original.capabilities) if original.capabilities else [],
+        treatable_area=original.treatable_area.clone() if original.treatable_area else None,
+
+        status=ScenarioStatus.ACTIVE,
+        result_status=None,
+        geopackage_status=GeoPackageStatus.PENDING,
+        post_process_status=ScenarioPostProcessingStatus.PENDING,
+        geopackage_url=None,
+        ready_email_sent_at=None,
+
+        uuid=uuid.uuid4(),
+    )
+
+    clone.save()
+    return clone
 
 @transaction.atomic()
 def create_scenario(user: User, **kwargs) -> Scenario:
