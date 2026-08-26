@@ -44,7 +44,7 @@ jobs:
             && (github.event.release.prerelease && 'staging' || 'production')
             || 'dev' }}
         run: |
-          make cloud-run-deply-all ENV=$ENV
+          make cloud-run-deploy-all ENV=$ENV
 
   notify:
     runs-on: ubuntu-latest
