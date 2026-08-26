@@ -1,0 +1,73 @@
+name: Deploy to GCP Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types: [published]
+
+env:
+  APP_NAME: planscape-backend
+  ENV: dev
+  REPO_URL: us-central1-docker.pkg.dev
+  REGION: us-central1
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set Target Environment
+
+        run: echo "DEPLOYING TO $ENV"
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Google Cloud SDK
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: "${{ secrets.GCP_CREDENTIALS }}"
+
+      - name: Set up Cloud SDK
+        uses: "google-github-actions/setup-gcloud@v3"
+
+      - name: Configure Docker for GCP
+        run: gcloud auth configure-docker
+
+      - name: Build and push Docker image
+        env:
+          # sets the ENV value to be based on the type of event triggerd
+          # push -> DEV
+          # prereleased -> STAGING
+          # releases -> PRODUCTION
+          ENV: ${{ github.event_name == 'release'
+            && (github.event.release.prerelease && 'staging' || 'production')
+            || 'dev' }}
+        run: |
+          make cloud-run-deply-all ENV=$ENV
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+
+    steps:
+      - name: Notify Mattermost
+        env:
+          ENV: ${{ github.event_name == 'release'
+            && (github.event.release.prerelease && 'staging' || 'production')
+            || 'dev' }}
+          WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+        run: |
+          STATUS="${{ needs.deploy.result }}"
+
+          if [ "$STATUS" = "success" ]; then
+            TEXT="Planscape $ENV - :white_check_mark: Deployment succeeded."
+          else
+            TEXT="Planscape $ENV - :x: Deployment failed"
+          fi
+
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"text\":\"$TEXT\"}" \
+            "$WEBHOOK_URL"

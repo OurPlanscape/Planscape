@@ -284,7 +284,7 @@ cloud-run-update-frontend-job:
 
 # Deploy front-end
 cloud-run-execute-frontend-job:
-	gcloud run jobs execute planscape-frontend-build-$(ENV) --region $(REGION)
+	gcloud run jobs execute planscape-frontend-build-$(ENV) --region $(REGION) --wait
 
 cloud-run-deploy-frontend-job: cloud-run-push-frontend-job cloud-run-update-frontend-job cloud-run-execute-frontend-job
 
@@ -299,19 +299,17 @@ cloud-run-build-all:
 
 cloud-run-push-all:
 	$(MAKE) cloud-run-push
+	$(MAKE) cloud-run-push-frontend-job
 	$(MAKE) cloud-run-push-gateway
 
+# TODO: Add migration step after Jenkins decomissioning [ $(MAKE) cloud-run-execute-django-job MANAGE_ARGS="migrate --no-input" ]
 cloud-run-deploy-all:
-	$(MAKE) cloud-run-deploy
+	$(MAKE) cloud-run-push-all
 	$(MAKE) cloud-run-update-django-job
 	$(MAKE) cloud-run-deploy-celery
-	$(MAKE) cloud-run-deploy-gateway
+	$(MAKE) cloud-run-deploy
 	$(MAKE) cloud-run-deploy-frontend-job
-
-cloud-run-build-deploy-all:
-	$(MAKE) cloud-run-build-all
-	$(MAKE) cloud-run-push-all
-	$(MAKE) cloud-run-deploy-all
+	$(MAKE) cloud-run-deploy-gateway
 
 
 # Reset relevant tables and load development fixture data

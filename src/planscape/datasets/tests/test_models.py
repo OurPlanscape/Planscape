@@ -44,6 +44,28 @@ class ValidateDatasetModulesTest(TestCase):
             validate_dataset_modules(["not-a-module"])
 
 
+class ByMetaModuleTest(TestCase):
+    def test_includes_layer_without_enabled_key(self):
+        DataLayerFactory.create(metadata={"modules": {"forsys": {}}})
+
+        self.assertEqual(DataLayer.objects.all().by_meta_module("forsys").count(), 1)
+
+    def test_includes_layer_with_enabled_true(self):
+        DataLayerFactory.create(metadata={"modules": {"forsys": {"enabled": True}}})
+
+        self.assertEqual(DataLayer.objects.all().by_meta_module("forsys").count(), 1)
+
+    def test_excludes_layer_with_enabled_false(self):
+        DataLayerFactory.create(metadata={"modules": {"forsys": {"enabled": False}}})
+
+        self.assertEqual(DataLayer.objects.all().by_meta_module("forsys").count(), 0)
+
+    def test_excludes_layer_without_module_key(self):
+        DataLayerFactory.create(metadata={"modules": {"other": {"enabled": True}}})
+
+        self.assertEqual(DataLayer.objects.all().by_meta_module("forsys").count(), 0)
+
+
 class DataLayerModelTest(TestCase):
     def setUp(self):
         DataLayerFactory.create(name="Layer 1")
