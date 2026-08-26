@@ -239,6 +239,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(planning_areas["count"], 46)
         self.assertEqual(len(planning_areas["results"]), 46)
+        self.assertEqual(planning_areas["results"][0]["bbox"], [1.0, 2.0, 3.0, 4.0])
 
     def test_list_planning_areas_offset(self):
         self.client.force_authenticate(self.user)
