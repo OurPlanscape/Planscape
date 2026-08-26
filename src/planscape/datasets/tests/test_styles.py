@@ -66,3 +66,17 @@ class TestGetDefaultRasterStyle(SimpleTestCase):
 
         self.assertEqual(result["no_data"]["values"], ["nan"])
         json.dumps(result, allow_nan=False)
+
+    def test_none_min_and_max_falls_back_to_default_range(self):
+        result = get_default_raster_style(min=None, max=None)["data"]
+
+        self.assertEqual(len(result["entries"]), 7)
+        self.assertEqual(result["entries"][0]["value"], 0.0)
+        self.assertEqual(result["entries"][-1]["value"], 1.0)
+
+    def test_none_max_falls_back_to_default_range(self):
+        result = get_default_raster_style(min=5, max=None)["data"]
+
+        self.assertEqual(len(result["entries"]), 7)
+        self.assertEqual(result["entries"][0]["value"], 0.0)
+        self.assertEqual(result["entries"][-1]["value"], 1.0)
