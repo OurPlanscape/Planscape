@@ -298,18 +298,13 @@ cloud-run-build-all:
 	$(MAKE) cloud-run-build-frontend-job
 
 cloud-run-push-all:
-	$(MAKE) cloud-run-push
-	$(MAKE) cloud-run-push-frontend-job
-	$(MAKE) cloud-run-push-gateway
+	$(MAKE) -j3 cloud-run-push cloud-run-push-frontend-job cloud-run-push-gateway
 
 # TODO: Add migration step after Jenkins decomissioning [ $(MAKE) cloud-run-execute-django-job MANAGE_ARGS="migrate --no-input" ]
 cloud-run-deploy-all:
 	$(MAKE) cloud-run-push-all
-	$(MAKE) cloud-run-update-django-job
-	$(MAKE) cloud-run-deploy-celery
-	$(MAKE) cloud-run-deploy
-	$(MAKE) cloud-run-deploy-frontend-job
-	$(MAKE) cloud-run-deploy-gateway
+	$(MAKE) -j7 cloud-run-update-django-job cloud-run-deploy-celery-general cloud-run-deploy-celery-heavy cloud-run-deploy-celery-beat cloud-run-deploy cloud-run-deploy-gateway cloud-run-update-frontend-job
+	$(MAKE) cloud-run-execute-frontend-job
 
 
 # Reset relevant tables and load development fixture data
