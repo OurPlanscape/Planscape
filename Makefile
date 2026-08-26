@@ -299,6 +299,7 @@ cloud-run-build-all:
 
 cloud-run-push-all:
 	$(MAKE) cloud-run-push
+	$(MAKE) cloud-run-push-frontend-job
 	$(MAKE) cloud-run-push-gateway
 
 # TODO: Add migration step after Jenkins decomissioning [ $(MAKE) cloud-run-execute-django-job MANAGE_ARGS="migrate --no-input" ]
