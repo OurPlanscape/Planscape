@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, Observable } from 'rxjs';
 import {
   AvailableStands,
@@ -102,18 +102,25 @@ export class ScenarioService {
         withCredentials: true,
       })
       .pipe(
-        catchError((error) => {
+        catchError((error: HttpErrorResponse) => {
+          const payload = error?.error;
+          const configError =
+            payload?.errors?.configuration ?? payload?.configuration;
+
           // Configuration errors
-          if (error.error.errors?.configuration) {
+          if (configError) {
             throw new CreateScenarioError('', {
               configurationError: true,
-              errorMessages: error.error.errors.configuration,
+              errorMessages: configError,
             });
           }
 
-          // Global errors
+          // Global / Network / Fallback errors
           const message =
-            error.error.errors?.global?.[0] ?? 'Failed to save configuration';
+            payload?.errors?.global?.[0] ??
+            payload?.detail ??
+            error?.message ??
+            'Failed to save configuration';
 
           throw new CreateScenarioError(message, {
             configurationError: false,
