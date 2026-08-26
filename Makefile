@@ -301,10 +301,10 @@ cloud-run-push-all:
 	$(MAKE) cloud-run-push
 	$(MAKE) cloud-run-push-gateway
 
+# TODO: Add migration step after Jenkins decomissioning [ $(MAKE) cloud-run-execute-django-job MANAGE_ARGS="migrate --no-input" ]
 cloud-run-deploy-all:
 	$(MAKE) cloud-run-push-all
 	$(MAKE) cloud-run-update-django-job
-	$(MAKE) cloud-run-execute-django-job MANAGE_ARGS="migrate --no-input"
 	$(MAKE) cloud-run-deploy-celery
 	$(MAKE) cloud-run-deploy
 	$(MAKE) cloud-run-deploy-gateway
