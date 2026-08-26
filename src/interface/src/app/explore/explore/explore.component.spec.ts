@@ -13,19 +13,16 @@ import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { ActivatedRoute } from '@angular/router';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { PlanState } from '@app/plan/plan.state';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { Plan, Scenario } from '@app/types';
 import { Geometry } from '@turf/helpers';
 
 describe('ExploreComponent', () => {
   let fixture: ComponentFixture<ExploreComponent>;
   let breadcrumbService: BreadcrumbService;
+  let currentPlanId$: BehaviorSubject<number | null>;
 
-  // Mutable route data object we can change per test
-  const mockRouteSnapshotData: { planId?: number; scenarioId?: number } = {
-    planId: 24,
-    scenarioId: 1234,
-  };
+  const mockRouteSnapshotData: { planId?: number; scenarioId?: number } = {};
 
   const mockPlan: Plan = {
     id: 999,
@@ -45,7 +42,23 @@ describe('ExploreComponent', () => {
     type: 'PROJECT_AREAS',
   };
 
+  function setupComponent() {
+    fixture = TestBed.createComponent(ExploreComponent);
+    spyOn(breadcrumbService, 'updateBreadCrumb');
+    fixture.detectChanges();
+  }
+
+  function lastBreadcrumbConfig() {
+    return (
+      breadcrumbService.updateBreadCrumb as jasmine.Spy
+    ).calls.mostRecent().args[0];
+  }
+
   beforeEach(async () => {
+    mockRouteSnapshotData.planId = 24;
+    mockRouteSnapshotData.scenarioId = 1234;
+    currentPlanId$ = new BehaviorSubject<number | null>(24);
+
     await TestBed.configureTestingModule({
       imports: [
         ExploreComponent,
@@ -56,13 +69,12 @@ describe('ExploreComponent', () => {
       providers: [
         MockProviders(BreadcrumbService, ExploreStorageService),
         MockProvider(PlanState, {
-          currentPlanId$: of(24),
+          currentPlanId$,
           currentPlan$: of(mockPlan),
         }),
         MockProvider(ScenarioState, {
           currentScenario$: of(mockScenario),
         }),
-        // Point ActivatedRoute to our mutable object
         MockProvider(ActivatedRoute, {
           snapshot: { data: mockRouteSnapshotData } as any,
         }),
@@ -79,31 +91,31 @@ describe('ExploreComponent', () => {
     breadcrumbService = TestBed.inject(BreadcrumbService);
   });
 
-  it('should use scenario breadcrumb label and backUrl when scenarioId, plan and scenario exist', (done) => {
-    mockRouteSnapshotData.scenarioId = 1234;
+  it('should use scenario breadcrumb label and backUrl when scenarioId, plan and scenario exist', () => {
+    setupComponent();
 
-    fixture = TestBed.createComponent(ExploreComponent);
-
-    spyOn(breadcrumbService, 'updateBreadCrumb').and.callFake((config) => {
-      expect(config.label).toEqual('Map Viewer: Test Scenario');
-      expect(config.backUrl).toContain('/scenario/1234/dashboard');
-      done();
-    });
-
-    fixture.detectChanges();
+    const config = lastBreadcrumbConfig();
+    expect(config.label).toEqual('Map Viewer: Test Scenario');
+    expect(config.backUrl).toContain('/scenario/1234/dashboard');
   });
 
-  it('should fallback to plan breadcrumb when no scenarioId is present', (done) => {
+  it('should set a breadcrumb to Plan when no scenarioId is present', () => {
     delete mockRouteSnapshotData.scenarioId;
+    setupComponent();
 
-    fixture = TestBed.createComponent(ExploreComponent);
+    const config = lastBreadcrumbConfig();
+    expect(config.label).toEqual('Map Viewer: Test Plan');
+    expect(config.backUrl).not.toContain('/scenario/');
+  });
 
-    spyOn(breadcrumbService, 'updateBreadCrumb').and.callFake((config) => {
-      expect(config.label).toEqual('Map Viewer: Test Plan');
-      expect(config.backUrl).not.toContain('/scenario/');
-      done();
-    });
+  it('should set a "New Plan" breadcrumb with no plan', () => {
+    delete mockRouteSnapshotData.planId;
+    delete mockRouteSnapshotData.scenarioId;
+    currentPlanId$.next(null);
+    setupComponent();
 
-    fixture.detectChanges();
+    const config = lastBreadcrumbConfig();
+    expect(config.label).toEqual('New Plan');
+    expect(config.backUrl).toEqual('/');
   });
 });
