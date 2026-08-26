@@ -308,8 +308,8 @@ cloud-run-deploy-all:
 	$(MAKE) cloud-run-update-django-job
 	$(MAKE) cloud-run-deploy-celery
 	$(MAKE) cloud-run-deploy
-	$(MAKE) cloud-run-deploy-gateway
 	$(MAKE) cloud-run-deploy-frontend-job
+	$(MAKE) cloud-run-deploy-gateway
 
 
 # Reset relevant tables and load development fixture data
