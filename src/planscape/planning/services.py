@@ -44,6 +44,7 @@ from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from modules.base import (
+    ForsysModule,
     PrioritizeSubUnitsModule,
     compute_planning_area_capabilities,
     compute_scenario_capabilities,
@@ -1996,6 +1997,11 @@ def get_available_stands(
 
         excluded_ids.extend(list(stand_ids))
 
+    constraints = [
+        constraint
+        for constraint in constraints
+        if constraint.get("datalayer").has_module(ForsysModule.name)
+    ]
     for constraint in constraints:
         stands_queryset = stands.all()
         constrained_stands = get_constrained_stands(
