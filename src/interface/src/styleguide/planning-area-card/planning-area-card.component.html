@@ -4,24 +4,14 @@
 <div class="content">
   <div class="header">
     <div class="title">{{ planningArea.name }}</div>
-    <button
-      [matMenuTriggerFor]="menu"
-      aria-label="More scenario options"
-      class="more-menu-button"
-      mat-icon-button
-      matTooltip="More actions">
-      <mat-icon>more_vert</mat-icon>
-    </button>
-    <mat-menu #menu="matMenu">
-      <button mat-menu-item (click)="rename.emit()">
-        <mat-icon class="material-symbols-outlined">edit</mat-icon>
-        <span>Rename</span>
-      </button>
-      <button class="delete" mat-menu-item (click)="delete.emit()">
-        <mat-icon class="material-symbols-outlined">delete</mat-icon>
-        <span>Delete</span>
-      </button>
-    </mat-menu>
+    <app-planning-area-menu
+      class="menu"
+      [plan]="planningArea"
+      [showOpen]="false"
+      [showViewMap]="false"
+      [showShare]="false"
+      (afterDelete)="afterDelete.emit()"
+      (afterRename)="afterRename.emit()"></app-planning-area-menu>
   </div>
   <div class="details-row">
     <div class="detail-column">

@@ -27,7 +27,7 @@
 .header {
   display: inline-flex;
   align-items: center;
-  .more-menu-button {
+  .menu {
     margin-left: auto;
   }
 }
@@ -58,13 +58,5 @@
       font-weight: 600;
       color: $color-black;
     }
-  }
-}
-
-.delete {
-  color: $color-error;
-
-  mat-icon {
-    color: $color-error;
   }
 }

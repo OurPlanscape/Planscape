@@ -7,22 +7,26 @@
   <mat-icon>more_vert</mat-icon>
 </button>
 <mat-menu #menu="matMenu" class="planning-area-menu">
-  <a mat-menu-item [routerLink]="['/plan', plan.id]">
+  <a mat-menu-item [routerLink]="['/plan', plan.id]" *ngIf="showOpen">
     <mat-icon class="material-symbols-outlined">folder_open</mat-icon>
     <span>Open</span>
   </a>
   <a
     mat-menu-item
     [routerLink]="['/map-viewer', plan.id]"
-    (click)="saveBreadcrumbs()">
+    (click)="saveBreadcrumbs()"
+    *ngIf="showViewMap">
     <mat-icon class="material-symbols-outlined">map</mat-icon>
     <span>View Map</span>
   </a>
-  <button *ngIf="canEditPlanName" mat-menu-item (click)="editPlanName()">
+  <button
+    *ngIf="showRename && canEditPlanName"
+    mat-menu-item
+    (click)="editPlanName()">
     <mat-icon class="material-symbols-outlined">edit</mat-icon>
     <span>Rename</span>
   </button>
-  <button mat-menu-item (click)="sharePlan()" *ngIf="shareEnabled">
+  <button mat-menu-item (click)="sharePlan()" *ngIf="showShare && shareEnabled">
     <mat-icon class="material-symbols-outlined">share</mat-icon>
     <span>Share</span>
   </button>
@@ -30,7 +34,7 @@
     mat-menu-item
     class="delete"
     (click)="deletePlan()"
-    *ngIf="canDeletePlanningArea">
+    *ngIf="showDelete && canDeletePlanningArea">
     <mat-icon class="material-symbols-outlined">delete_outlined</mat-icon>
     <span>Delete</span>
   </button>
