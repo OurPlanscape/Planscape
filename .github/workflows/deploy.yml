@@ -44,7 +44,14 @@ jobs:
             && (github.event.release.prerelease && 'staging' || 'production')
             || 'dev' }}
         run: |
-          make cloud-run-deploy-all ENV=$ENV
+          if [ "$ENV" == "dev" ]; then
+            make cloud-run-deploy-all ENV=$ENV
+          else
+            make cloud-run-push-all ENV=$ENV
+            make -j6 cloud-run-update-django-job cloud-run-deploy-celery-general cloud-run-deploy-celery-heavy cloud-run-deploy cloud-run-deploy-gateway cloud-run-update-frontend-job ENV=$ENV
+            make cloud-run-execute-frontend-job ENV=$ENV
+          fi
+
 
   notify:
     runs-on: ubuntu-latest
