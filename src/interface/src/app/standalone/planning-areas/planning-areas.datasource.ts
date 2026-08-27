@@ -24,6 +24,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   public pageOptions = this.queryParamsService.getInitialPageParams();
   public searchTerm = this.queryParamsService.getInitialFilterParam();
   public pages$ = this._pages$.asObservable();
+  public data$ = this._dataStream.asObservable();
 
   /**
    * Emits `true` if loading the first time or applying filters (where number of results change)
@@ -83,6 +84,10 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
 
   connect(): Observable<PreviewPlan[]> {
     return this._dataStream.asObservable();
+  }
+
+  data(): Observable<PreviewPlan[]> {
+    return this.data$;
   }
 
   /**
