@@ -98,3 +98,29 @@ class DataLayerModelTest(TestCase):
 
         self.assertEqual(DataLayer.objects.all().count(), 3)
         self.assertEqual(DataLayer.dead_or_alive.all().count(), 3)
+
+    def test_has_module_returns_true_when_enabled(self):
+        datalayer = DataLayerFactory.create(
+            metadata={"modules": {"forsys": {"enabled": True}}}
+        )
+
+        self.assertTrue(datalayer.has_module("forsys"))
+
+    def test_has_module_returns_false_when_disabled(self):
+        datalayer = DataLayerFactory.create(
+            metadata={"modules": {"forsys": {"enabled": False}}}
+        )
+
+        self.assertFalse(datalayer.has_module("forsys"))
+
+    def test_has_module_returns_false_when_module_missing(self):
+        datalayer = DataLayerFactory.create(
+            metadata={"modules": {"impacts": {"enabled": True}}}
+        )
+
+        self.assertFalse(datalayer.has_module("forsys"))
+
+    def test_has_module_returns_false_when_modules_missing(self):
+        datalayer = DataLayerFactory.create(metadata={})
+
+        self.assertFalse(datalayer.has_module("forsys"))

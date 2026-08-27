@@ -563,6 +563,12 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     def get_assigned_style(self) -> Optional[Style]:
         return self.styles.all().first()
 
+    def has_module(self, module) -> bool:
+        module_enabled = (
+            self.metadata.get("modules", {}).get(module, {}).get("enabled", False)
+        )
+        return module_enabled
+
     def __str__(self) -> str:
         return f"{self.name} [{self.type}]"
 

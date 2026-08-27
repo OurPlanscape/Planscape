@@ -42,6 +42,7 @@ from planning.services import (
     export_to_shapefile,
     get_acreage,
     get_available_stand_ids,
+    get_available_stands,
     get_constrained_stands,
     get_excluded_stands,
     get_flatten_geojson,
@@ -1108,6 +1109,44 @@ class TestRemoveExcludes(TestCase):
             stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
             self.assertEquals(17, len(stands))
             self.assertLess(len(stand_ids), len(stands) - 1)
+
+    def test_get_available_stands_applies_forsys_constraint(self):
+        self.datalayer.metadata = {
+            "modules": {"forsys": {"enabled": True, "metric_column": "majority"}}
+        }
+        self.datalayer.save(update_fields=["metadata"])
+
+        result = get_available_stands(
+            self.scenario,
+            stand_size=StandSizeChoices.LARGE,
+            constraints=[
+                {
+                    "datalayer": self.datalayer,
+                    "operator": None,
+                    "value": 1,
+                }
+            ],
+        )
+
+        self.assertEqual(6, len(result["unavailable"]["by_thresholds"]))
+
+    def test_get_available_stands_ignores_non_forsys_constraint(self):
+        self.datalayer.metadata = {"modules": {"forsys": {"enabled": False}}}
+        self.datalayer.save(update_fields=["metadata"])
+
+        result = get_available_stands(
+            self.scenario,
+            stand_size=StandSizeChoices.LARGE,
+            constraints=[
+                {
+                    "datalayer": self.datalayer,
+                    "operator": None,
+                    "value": 1,
+                }
+            ],
+        )
+
+        self.assertEqual(0, len(result["unavailable"]["by_thresholds"]))
 
 
 class ValidateScenarioConfigurationTest(TestCase):
