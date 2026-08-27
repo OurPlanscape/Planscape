@@ -129,4 +129,8 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.dataSource.destroy();
   }
+
+  reload() {
+    this.dataSource.loadData();
+  }
 }

@@ -42,7 +42,11 @@
   <div class="content" *ngIf="planningAreas$ | async as planningAreas">
     <ng-container *ngIf="baseLayerUrl$ | async as baseLayerUrl">
       <ng-container *ngFor="let planning of planningAreas">
-        <sg-planning-area-card *ngIf="planning" [planningArea]="planning">
+        <sg-planning-area-card
+          *ngIf="planning"
+          [planningArea]="planning"
+          (afterDelete)="reload()"
+          (afterRename)="reload()">
           <div mapSlot class="map">
             <mgl-map
               [style]="baseLayerUrl"
