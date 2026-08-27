@@ -92,6 +92,8 @@ install-dependencies-backend:
 
 deploy-backend: install-dependencies-backend migrate restart
 
+deploy-backend-wo-migration: install-dependencies-backend restart
+
 deploy-all: deploy-backend deploy-frontend
 
 start-celery:
@@ -303,7 +305,9 @@ cloud-run-push-all:
 # TODO: Add migration step after Jenkins decomissioning [ $(MAKE) cloud-run-execute-django-job MANAGE_ARGS="migrate --no-input" ]
 cloud-run-deploy-all:
 	$(MAKE) cloud-run-push-all
-	$(MAKE) -j7 cloud-run-update-django-job cloud-run-deploy-celery-general cloud-run-deploy-celery-heavy cloud-run-deploy-celery-beat cloud-run-deploy cloud-run-deploy-gateway cloud-run-update-frontend-job
+	$(MAKE) cloud-run-update-django-job 
+	$(MAKE) cloud-run-execute-django-job MANAGE_ARGS="migrate --no-input"
+	$(MAKE) -j6 cloud-run-deploy-celery-general cloud-run-deploy-celery-heavy cloud-run-deploy-celery-beat cloud-run-deploy cloud-run-deploy-gateway cloud-run-update-frontend-job
 	$(MAKE) cloud-run-execute-frontend-job
 
 
