@@ -26,8 +26,8 @@ import { WorkspacesService } from '@services';
 import { LoadedResult, Pagination, Resource, Workspace } from '@types';
 import {
   CreateWorkspaceOrigin,
-  WorkspaceCreationService,
-} from './workspace-creation.service';
+  WorkspaceActionsService,
+} from './workspace-actions.service';
 
 interface WorkspacesQuery {
   search: string;
@@ -58,7 +58,7 @@ const PAGE_SIZE = 12;
   styleUrl: './workspaces.component.scss',
 })
 export class WorkspacesComponent {
-  private workspaceCreationService = inject(WorkspaceCreationService);
+  private workspaceActionsService = inject(WorkspaceActionsService);
   private workspacesService = inject(WorkspacesService);
   private router = inject(Router);
 
@@ -76,6 +76,9 @@ export class WorkspacesComponent {
   /** Kept between requests so the paginator stays put while a page loads. */
   private pageCount = 0;
 
+  /** How many cards the current page holds, so deleting the last one can step back. */
+  private resultsOnPage = 0;
+
   private workspacesResource$: Observable<Resource<Pagination<Workspace>>> =
     combineLatest([this.reload$, this.query$]).pipe(
       switchMap(([_, query]) =>
@@ -92,6 +95,7 @@ export class WorkspacesComponent {
               // any workspaces; a search finding nothing does not.
               tap((page) => {
                 this.pageCount = Math.ceil(page.count / PAGE_SIZE);
+                this.resultsOnPage = page.results.length;
                 if (!query.search) {
                   this.hasWorkspaces = page.results.length > 0;
                 }
@@ -144,13 +148,43 @@ export class WorkspacesComponent {
   }
 
   createWorkspace(origin: CreateWorkspaceOrigin) {
-    this.workspaceCreationService
+    this.workspaceActionsService
       .openCreateWorkspaceModal(origin)
       .subscribe((workspace) => {
         if (workspace) {
           this.reload$.next();
         }
       });
+  }
+
+  renameWorkspace(workspace: Workspace) {
+    this.workspaceActionsService
+      .renameWorkspace(workspace)
+      .subscribe((renamed) => {
+        if (renamed) {
+          this.reload$.next();
+        }
+      });
+  }
+
+  deleteWorkspace(workspace: Workspace) {
+    this.workspaceActionsService
+      .deleteWorkspace(workspace)
+      .subscribe((deleted) => {
+        if (deleted) {
+          this.reloadAfterDelete();
+        }
+      });
+  }
+
+  /** Deleting the only card on a page would otherwise strand us on an empty one. */
+  private reloadAfterDelete() {
+    const { page } = this.query$.value;
+    if (page > 1 && this.resultsOnPage === 1) {
+      this.goToPage(page - 1);
+    } else {
+      this.reload$.next();
+    }
   }
 
   goToWorkspace(workspace: Workspace) {

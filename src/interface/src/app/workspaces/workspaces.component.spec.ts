@@ -5,13 +5,13 @@ import { of, Subject, throwError } from 'rxjs';
 import { MockProvider } from 'ng-mocks';
 
 import { WorkspacesComponent } from '@app/workspaces/workspaces.component';
-import { WorkspaceCreationService } from '@app/workspaces/workspace-creation.service';
+import { WorkspaceActionsService } from '@app/workspaces/workspace-actions.service';
 import { ListWorkspacesOptions, WorkspacesService } from '@services';
 import { Workspace } from '@types';
 
 describe('WorkspacesComponent', () => {
   let fixture: ComponentFixture<WorkspacesComponent>;
-  let creationService: WorkspaceCreationService;
+  let actionsService: WorkspaceActionsService;
   let workspacesService: WorkspacesService;
   let router: Router;
 
@@ -38,7 +38,7 @@ describe('WorkspacesComponent', () => {
         (options.search ? searchResult : listResult) as any
     );
 
-    creationService = TestBed.inject(WorkspaceCreationService);
+    actionsService = TestBed.inject(WorkspaceActionsService);
     router = TestBed.inject(Router);
 
     fixture = TestBed.createComponent(WorkspacesComponent);
@@ -49,7 +49,7 @@ describe('WorkspacesComponent', () => {
     await TestBed.configureTestingModule({
       imports: [WorkspacesComponent, NoopAnimationsModule],
       providers: [
-        MockProvider(WorkspaceCreationService),
+        MockProvider(WorkspaceActionsService),
         MockProvider(WorkspacesService),
         MockProvider(Router),
       ],
@@ -79,7 +79,7 @@ describe('WorkspacesComponent', () => {
 
     it('creates from the header without the welcome flow', () => {
       const spy = spyOn(
-        creationService,
+        actionsService,
         'openCreateWorkspaceModal'
       ).and.returnValue(of(null));
 
@@ -110,7 +110,7 @@ describe('WorkspacesComponent', () => {
 
     it('starts the create flow from the empty state', () => {
       const spy = spyOn(
-        creationService,
+        actionsService,
         'openCreateWorkspaceModal'
       ).and.returnValue(of(null));
 
@@ -120,7 +120,7 @@ describe('WorkspacesComponent', () => {
     });
 
     it('reloads the list after a workspace is created', () => {
-      spyOn(creationService, 'openCreateWorkspaceModal').and.returnValue(
+      spyOn(actionsService, 'openCreateWorkspaceModal').and.returnValue(
         of(workspace)
       );
 
@@ -244,6 +244,57 @@ describe('WorkspacesComponent', () => {
 
       expect(workspacesService.listWorkspaces).toHaveBeenCalledWith(
         jasmine.objectContaining({ search: 'wild', offset: 0 })
+      );
+    });
+  });
+
+  describe('card actions', () => {
+    it('reloads the list after a rename', () => {
+      setup();
+      spyOn(actionsService, 'renameWorkspace').and.returnValue(of(workspace));
+
+      fixture.componentInstance.renameWorkspace(workspace);
+
+      expect(workspacesService.listWorkspaces).toHaveBeenCalledTimes(2);
+    });
+
+    it('leaves the list alone when a rename is cancelled', () => {
+      setup();
+      spyOn(actionsService, 'renameWorkspace').and.returnValue(of(null));
+
+      fixture.componentInstance.renameWorkspace(workspace);
+
+      expect(workspacesService.listWorkspaces).toHaveBeenCalledTimes(1);
+    });
+
+    it('reloads the list after a delete', () => {
+      setup();
+      spyOn(actionsService, 'deleteWorkspace').and.returnValue(of(true));
+
+      fixture.componentInstance.deleteWorkspace(workspace);
+
+      expect(workspacesService.listWorkspaces).toHaveBeenCalledTimes(2);
+    });
+
+    it('leaves the list alone when a delete is cancelled', () => {
+      setup();
+      spyOn(actionsService, 'deleteWorkspace').and.returnValue(of(false));
+
+      fixture.componentInstance.deleteWorkspace(workspace);
+
+      expect(workspacesService.listWorkspaces).toHaveBeenCalledTimes(1);
+    });
+
+    it('steps back a page when the last card on it is deleted', () => {
+      setup(of({ count: 13, results: [workspace] }));
+      fixture.componentInstance.goToPage(2);
+      spyOn(actionsService, 'deleteWorkspace').and.returnValue(of(true));
+
+      fixture.componentInstance.deleteWorkspace(workspace);
+
+      const spy = workspacesService.listWorkspaces as jasmine.Spy;
+      expect(spy.calls.mostRecent().args[0]).toEqual(
+        jasmine.objectContaining({ offset: 0 })
       );
     });
   });
