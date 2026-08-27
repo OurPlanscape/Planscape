@@ -1,6 +1,7 @@
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import {
   BehaviorSubject,
@@ -22,6 +23,7 @@ import {
   SearchBarComponent,
   WorkspaceCardComponent,
 } from '@styleguide';
+import { SNACK_ERROR_CONFIG } from '@shared';
 import { WorkspacesService } from '@services';
 import { LoadedResult, Pagination, Resource, Workspace } from '@types';
 import {
@@ -61,6 +63,7 @@ export class WorkspacesComponent {
   private workspaceActionsService = inject(WorkspaceActionsService);
   private workspacesService = inject(WorkspacesService);
   private router = inject(Router);
+  private snackbar = inject(MatSnackBar);
 
   private reload$ = new BehaviorSubject<void>(undefined);
 
@@ -76,8 +79,11 @@ export class WorkspacesComponent {
   /** Kept between requests so the paginator stays put while a page loads. */
   private pageCount = 0;
 
-  /** How many cards the current page holds, so deleting the last one can step back. */
-  private resultsOnPage = 0;
+  /**
+   * The cards on screen. Edits land here first so the grid keeps working while
+   * the list reloads behind it.
+   */
+  private currentWorkspaces$ = new BehaviorSubject<Workspace[]>([]);
 
   private workspacesResource$: Observable<Resource<Pagination<Workspace>>> =
     combineLatest([this.reload$, this.query$]).pipe(
@@ -95,7 +101,7 @@ export class WorkspacesComponent {
               // any workspaces; a search finding nothing does not.
               tap((page) => {
                 this.pageCount = Math.ceil(page.count / PAGE_SIZE);
-                this.resultsOnPage = page.results.length;
+                this.currentWorkspaces$.next(page.results);
                 if (!query.search) {
                   this.hasWorkspaces = page.results.length > 0;
                 }
@@ -107,23 +113,41 @@ export class WorkspacesComponent {
                     isLoading: false,
                   }) as LoadedResult<Pagination<Workspace>>
               ),
-              catchError((error) => of({ isLoading: false, error }))
+              catchError((error) => {
+                // Losing a grid that still works over a failed refresh is
+                // worse than the stale count it leaves behind.
+                if (this.currentWorkspaces$.value.length) {
+                  this.snackbar.open(
+                    'Unable to refresh your workspaces',
+                    'Dismiss',
+                    SNACK_ERROR_CONFIG
+                  );
+                  return of({
+                    isLoading: false,
+                  } as Resource<Pagination<Workspace>>);
+                }
+                return of({ isLoading: false, error });
+              })
             )
         )
       ),
       shareReplay(1)
     );
 
-  /** What the panel shows. Loading wins, so nothing else can flash first. */
-  view$: Observable<WorkspacesView> = this.workspacesResource$.pipe(
-    map((resource) => {
-      if (resource.isLoading) {
-        return 'loading';
-      }
+  /** What the panel shows. Only one of these is ever on screen. */
+  view$: Observable<WorkspacesView> = combineLatest([
+    this.workspacesResource$,
+    this.currentWorkspaces$,
+  ]).pipe(
+    map(([resource, workspaces]) => {
       if (resource.error) {
         return 'error';
       }
-      if (resource.data?.results.length) {
+      // Reloading behind cards we already have is not worth a spinner.
+      if (resource.isLoading && !workspaces.length) {
+        return 'loading';
+      }
+      if (workspaces.length) {
         return 'list';
       }
       return this.query$.value.search ? 'no-results' : 'empty';
@@ -133,18 +157,24 @@ export class WorkspacesComponent {
   /** The search and create controls are pointless before the first workspace. */
   showHeaderActions$ = this.view$.pipe(map(() => this.hasWorkspaces));
 
-  workspaces$ = this.workspacesResource$.pipe(map((r) => r.data?.results));
+  workspaces$ = this.currentWorkspaces$.asObservable();
   pageCount$ = this.workspacesResource$.pipe(map(() => this.pageCount));
 
   searchTerm$ = this.query$.pipe(map((query) => query.search));
   page$ = this.query$.pipe(map((query) => query.page));
 
   search(searchTerm: string) {
-    this.query$.next({ search: searchTerm, page: 1 });
+    this.setQuery({ search: searchTerm, page: 1 });
   }
 
   goToPage(page: number) {
-    this.query$.next({ ...this.query$.value, page });
+    this.setQuery({ ...this.query$.value, page });
+  }
+
+  /** Cards from the old query are worse than a spinner, so drop them first. */
+  private setQuery(query: WorkspacesQuery) {
+    this.currentWorkspaces$.next([]);
+    this.query$.next(query);
   }
 
   createWorkspace(origin: CreateWorkspaceOrigin) {
@@ -157,12 +187,17 @@ export class WorkspacesComponent {
       });
   }
 
+  /** The list is ordered by creation date, so a rename never moves the card. */
   renameWorkspace(workspace: Workspace) {
     this.workspaceActionsService
       .renameWorkspace(workspace)
       .subscribe((renamed) => {
         if (renamed) {
-          this.reload$.next();
+          this.currentWorkspaces$.next(
+            this.currentWorkspaces$.value.map((w) =>
+              w.id === renamed.id ? renamed : w
+            )
+          );
         }
       });
   }
@@ -172,15 +207,21 @@ export class WorkspacesComponent {
       .deleteWorkspace(workspace)
       .subscribe((deleted) => {
         if (deleted) {
+          this.currentWorkspaces$.next(
+            this.currentWorkspaces$.value.filter((w) => w.id !== workspace.id)
+          );
           this.reloadAfterDelete();
         }
       });
   }
 
-  /** Deleting the only card on a page would otherwise strand us on an empty one. */
+  /**
+   * The card is already gone from the list; this refills the page behind it,
+   * or steps back when it was the only one left on this page.
+   */
   private reloadAfterDelete() {
     const { page } = this.query$.value;
-    if (page > 1 && this.resultsOnPage === 1) {
+    if (page > 1 && !this.currentWorkspaces$.value.length) {
       this.goToPage(page - 1);
     } else {
       this.reload$.next();

@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
 import { MockProvider } from 'ng-mocks';
@@ -7,6 +8,7 @@ import { MockProvider } from 'ng-mocks';
 import { WorkspacesComponent } from '@app/workspaces/workspaces.component';
 import { WorkspaceActionsService } from '@app/workspaces/workspace-actions.service';
 import { ListWorkspacesOptions, WorkspacesService } from '@services';
+import { SNACK_ERROR_CONFIG } from '@shared';
 import { Workspace } from '@types';
 
 describe('WorkspacesComponent', () => {
@@ -14,6 +16,7 @@ describe('WorkspacesComponent', () => {
   let actionsService: WorkspaceActionsService;
   let workspacesService: WorkspacesService;
   let router: Router;
+  let snackbar: MatSnackBar;
 
   const workspace: Workspace = {
     id: 7,
@@ -28,6 +31,12 @@ describe('WorkspacesComponent', () => {
     permissions: ['view_workspace', 'change_workspace', 'remove_workspace'],
   };
 
+  const otherWorkspace: Workspace = {
+    ...workspace,
+    id: 8,
+    name: 'Southern Sierra',
+  };
+
   function setup(
     listResult = of({ count: 1, results: [workspace] }),
     searchResult = listResult
@@ -40,6 +49,7 @@ describe('WorkspacesComponent', () => {
 
     actionsService = TestBed.inject(WorkspaceActionsService);
     router = TestBed.inject(Router);
+    snackbar = TestBed.inject(MatSnackBar);
 
     fixture = TestBed.createComponent(WorkspacesComponent);
     fixture.detectChanges();
@@ -52,6 +62,7 @@ describe('WorkspacesComponent', () => {
         MockProvider(WorkspaceActionsService),
         MockProvider(WorkspacesService),
         MockProvider(Router),
+        MockProvider(MatSnackBar),
       ],
     }).compileComponents();
   });
@@ -236,6 +247,19 @@ describe('WorkspacesComponent', () => {
       expect(fixture.nativeElement.querySelector('sg-paginator')).toBeTruthy();
     });
 
+    it('drops the current page rather than show it while the next loads', () => {
+      setup(of({ count: 30, results: [workspace] }));
+      (workspacesService.listWorkspaces as jasmine.Spy).and.returnValue(
+        new Subject<any>()
+      );
+
+      fixture.componentInstance.goToPage(2);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).not.toContain('Wildfire North');
+      expect(fixture.nativeElement.querySelector('mat-spinner')).toBeTruthy();
+    });
+
     it('goes back to the first page on a new search', () => {
       setup(of({ count: 30, results: [workspace] }));
       fixture.componentInstance.goToPage(3);
@@ -249,13 +273,18 @@ describe('WorkspacesComponent', () => {
   });
 
   describe('card actions', () => {
-    it('reloads the list after a rename', () => {
+    it('updates the card in place after a rename, without refetching', () => {
       setup();
-      spyOn(actionsService, 'renameWorkspace').and.returnValue(of(workspace));
+      spyOn(actionsService, 'renameWorkspace').and.returnValue(
+        of({ ...workspace, name: 'Renamed' })
+      );
 
       fixture.componentInstance.renameWorkspace(workspace);
+      fixture.detectChanges();
 
-      expect(workspacesService.listWorkspaces).toHaveBeenCalledTimes(2);
+      expect(fixture.nativeElement.textContent).toContain('Renamed');
+      expect(fixture.nativeElement.textContent).not.toContain('Wildfire North');
+      expect(workspacesService.listWorkspaces).toHaveBeenCalledTimes(1);
     });
 
     it('leaves the list alone when a rename is cancelled', () => {
@@ -283,6 +312,43 @@ describe('WorkspacesComponent', () => {
       fixture.componentInstance.deleteWorkspace(workspace);
 
       expect(workspacesService.listWorkspaces).toHaveBeenCalledTimes(1);
+    });
+
+    it('drops the card and keeps the grid up while the list reloads', () => {
+      setup(of({ count: 2, results: [workspace, otherWorkspace] }));
+      (workspacesService.listWorkspaces as jasmine.Spy).and.returnValue(
+        new Subject<any>()
+      );
+      spyOn(actionsService, 'deleteWorkspace').and.returnValue(of(true));
+
+      fixture.componentInstance.deleteWorkspace(workspace);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).not.toContain('Wildfire North');
+      expect(fixture.nativeElement.textContent).toContain('Southern Sierra');
+      expect(fixture.nativeElement.querySelector('mat-spinner')).toBeNull();
+    });
+
+    it('toasts and keeps the grid when the reload after a delete fails', () => {
+      setup(of({ count: 2, results: [workspace, otherWorkspace] }));
+      const spy = spyOn(snackbar, 'open');
+      (workspacesService.listWorkspaces as jasmine.Spy).and.returnValue(
+        throwError(() => new Error('nope'))
+      );
+      spyOn(actionsService, 'deleteWorkspace').and.returnValue(of(true));
+
+      fixture.componentInstance.deleteWorkspace(workspace);
+      fixture.detectChanges();
+
+      expect(spy).toHaveBeenCalledWith(
+        'Unable to refresh your workspaces',
+        'Dismiss',
+        SNACK_ERROR_CONFIG
+      );
+      expect(fixture.nativeElement.textContent).toContain('Southern Sierra');
+      expect(fixture.nativeElement.textContent).not.toContain(
+        "We couldn't load your workspaces"
+      );
     });
 
     it('steps back a page when the last card on it is deleted', () => {
