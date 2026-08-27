@@ -621,16 +621,10 @@ class TargetsSerializer(serializers.Serializer):
                 configuration = initial_data.get("configuration", initial_data)
                 incoming_stand_size = configuration.get("stand_size")
 
-                if incoming_stand_size == StandSizeChoices.SMALL:
-                    stand_area = settings.MIN_AREA_PROJECT_SMALL
-                elif incoming_stand_size == StandSizeChoices.MEDIUM:
-                    stand_area = settings.MIN_AREA_PROJECT_MEDIUM
-                elif incoming_stand_size == StandSizeChoices.LARGE:
-                    stand_area = settings.MIN_AREA_PROJECT_LARGE
-                elif instance:
-                    stand_area = get_min_project_area(scenario=instance)
-                else:
-                    stand_area = settings.MIN_AREA_PROJECT_LARGE
+                stand_size = incoming_stand_size or (
+                    instance.get_stand_size() if instance else StandSizeChoices.LARGE
+                )
+                stand_area = get_min_project_area(stand_size)
 
                 if sub_units_target_value < stand_area:
                     raise serializers.ValidationError(

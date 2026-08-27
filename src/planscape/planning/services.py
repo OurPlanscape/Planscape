@@ -9,7 +9,7 @@ from collections.abc import Collection
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
-from typing import (  # noqa: F401
+from typing import (  # noqa
     Any,
     Dict,
     List,
@@ -834,7 +834,7 @@ def build_run_configuration(scenario: "Scenario") -> dict[str, Any]:
     targets = cfg.get("targets", {})
     number_of_projects = targets.get("max_project_count", 1)
 
-    min_area_project = get_min_project_area(scenario)
+    min_area_project = get_min_project_area(scenario.get_stand_size())
     max_area_project = get_max_area_project(scenario=scenario)
 
     sdw = settings.FORSYS_SDW
@@ -950,7 +950,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> list[str]:
                 )
 
             elif sub_units_fixed_target is True:
-                min_area = get_min_project_area(scenario=scenario)
+                min_area = get_min_project_area(stand_size or StandSizeChoices.LARGE)
 
                 if sub_units_target_value < min_area:
                     errors.append(
@@ -986,7 +986,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> list[str]:
 
             elif sub_units_fixed_target is True:
                 sub_units_layer = DataLayer.objects.get(pk=sub_units_layer_id)
-                min_area = get_min_project_area(scenario=scenario)
+                min_area = get_min_project_area(stand_size or StandSizeChoices.LARGE)
                 max_area = get_sub_units_details(
                     scenario=scenario,
                     stand_size=scenario.get_stand_size(),
@@ -1012,7 +1012,9 @@ def validate_scenario_configuration(scenario: "Scenario") -> list[str]:
             )
 
         if max_area is not None:
-            min_area_project = get_min_project_area(scenario)
+            min_area_project = get_min_project_area(
+                stand_size or StandSizeChoices.LARGE
+            )
             if max_area < min_area_project:
                 errors.append(
                     f"Target `max_area` must be at least {min_area_project} acres "
@@ -1091,7 +1093,7 @@ def get_max_area_project(scenario: Scenario) -> float:
     return (
         float(max_area)
         if max_area is not None
-        else float(get_min_project_area(scenario))
+        else float(get_min_project_area(scenario.get_stand_size()))
     )
 
 
@@ -2174,8 +2176,7 @@ def calculate_scenario_treatable_area(
     return to_multipolygon(included_geometry) if included_geometry else None
 
 
-def get_min_project_area(scenario: Scenario) -> float:
-    stand_size = scenario.get_stand_size()
+def get_min_project_area(stand_size: StandSizeChoices) -> float:
     match stand_size:
         case StandSizeChoices.SMALL:
             return settings.MIN_AREA_PROJECT_SMALL
@@ -2195,7 +2196,7 @@ def get_sub_units_areas(
     stands = planning_area.get_stands(stand_size).annotate(
         centroid=Centroid("geometry")
     )
-    stand_area = get_min_project_area(scenario=scenario)
+    stand_area = get_min_project_area(stand_size)
 
     queryset = DynamicModel.objects.filter(geometry__bboverlaps=geometry).filter(
         geometry__intersects=geometry
@@ -2225,7 +2226,7 @@ def get_project_areas_child_areas(
     if not parent:
         return None
 
-    stand_area = get_min_project_area(scenario)
+    stand_area = get_min_project_area(stand_size)
     areas = []
 
     for project_area in parent.project_areas.all():
@@ -2430,7 +2431,7 @@ def calculate_and_update_pct_treatable_area(scenario: Scenario, features: list) 
     forsys_input = scenario.forsys_input or {}
 
     number_of_stands = len(forsys_input.get("stand_ids", []))
-    stand_area = get_min_project_area(scenario=scenario)
+    stand_area = get_min_project_area(scenario.get_stand_size())
 
     treatable_area = number_of_stands * stand_area
 
