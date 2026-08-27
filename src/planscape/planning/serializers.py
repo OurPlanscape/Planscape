@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional
+from typing import List, Optional  # noqa
 
 import markdown
 from collaboration.services import get_permissions, get_role
@@ -12,6 +12,8 @@ from planscape.exceptions import InvalidGeometry
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from stands.models import Stand, StandSizeChoices
+from workspaces.models import Workspace, WorkspaceKind
+from workspaces.permissions import WorkspacePermission
 
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
@@ -31,9 +33,6 @@ from planning.models import (
     User,
     UserPrefs,
 )
-from workspaces.models import Workspace, WorkspaceKind
-from workspaces.permissions import WorkspacePermission
-
 from planning.services import (
     calculate_scenario_treatable_area,
     get_acreage,
@@ -81,7 +80,7 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
     def get_area_acres(self, instance):
         return get_acreage(instance.geometry)
 
-    def get_bbox(self, instance) -> Optional[List[float]]:
+    def get_bbox(self, instance) -> list[float] | None:
         if not instance.geometry:
             return None
         return list(instance.geometry.extent)
@@ -617,11 +616,22 @@ class TargetsSerializer(serializers.Serializer):
 
             if sub_units_fixed_target is True:
                 instance = self.parent.parent.instance
-                stand_area = (
-                    get_min_project_area(scenario=instance)
-                    if instance
-                    else settings.MIN_AREA_PROJECT_LARGE
-                )
+
+                initial_data = getattr(self.root, "initial_data", {})
+                configuration = initial_data.get("configuration", initial_data)
+                incoming_stand_size = configuration.get("stand_size")
+
+                if incoming_stand_size == StandSizeChoices.SMALL:
+                    stand_area = settings.MIN_AREA_PROJECT_SMALL
+                elif incoming_stand_size == StandSizeChoices.MEDIUM:
+                    stand_area = settings.MIN_AREA_PROJECT_MEDIUM
+                elif incoming_stand_size == StandSizeChoices.LARGE:
+                    stand_area = settings.MIN_AREA_PROJECT_LARGE
+                elif instance:
+                    stand_area = get_min_project_area(scenario=instance)
+                else:
+                    stand_area = settings.MIN_AREA_PROJECT_LARGE
+
                 if sub_units_target_value < stand_area:
                     raise serializers.ValidationError(
                         "`sub_units_target_value` cannot be smaller than 1 Stand."
@@ -924,7 +934,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             return targets.get("max_area")
         return cfg.get("max_treatment_area_ratio")
 
-    def get_bbox(self, instance) -> Optional[List[float]]:
+    def get_bbox(self, instance) -> list[float] | None:
         geometries = list(
             [
                 Polygon.from_bbox(pa.extent)
@@ -985,7 +995,7 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
         source="treatment_goal.datalayer_usages", many=True, read_only=True
     )
 
-    def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
+    def get_geopackage_url(self, scenario: Scenario) -> str | None:
         """
         Returns the URL to download the scenario's geopackage file.
         If the scenario is currently being exported, returns None.
@@ -1047,14 +1057,14 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
     geopackage_url = serializers.SerializerMethodField()
     usage_types = serializers.SerializerMethodField()
 
-    def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
+    def get_geopackage_url(self, scenario: Scenario) -> str | None:
         """
         Returns the URL to download the scenario's geopackage file.
         If the scenario is currently being exported, returns None.
         """
         return scenario.get_geopackage_url()
 
-    def get_usage_types(self, scenario: Scenario) -> List[dict]:
+    def get_usage_types(self, scenario: Scenario) -> list[dict]:
         if scenario.type == ScenarioType.CUSTOM:
             cfg = scenario.configuration or {}
             priorities = cfg.get("priorities") or []
@@ -1295,7 +1305,7 @@ class ScenarioSerializer(
         validated_data["user"] = self.context["user"] or None
         return super().update(instance, validated_data)
 
-    def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
+    def get_geopackage_url(self, scenario: Scenario) -> str | None:
         """
         Returns the URL to download the scenario's geopackage file.
         If the scenario is currently being exported, returns None.
@@ -1454,7 +1464,7 @@ class GeoJSONSerializer(serializers.Serializer):
         try:
             GEOSGeometry(json.dumps(value) if isinstance(value, dict) else value)
         except Exception as e:
-            raise serializers.ValidationError(f"Invalid geometry: {str(e)}")
+            raise serializers.ValidationError(f"Invalid geometry: {e!s}")
 
 
 class UploadedScenarioDataSerializer(serializers.Serializer):
@@ -1624,9 +1634,9 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
         if error:
             properties["error"] = str(error)
         if clip_project_areas_to_planning_area is not None:
-            properties[
-                "clip_project_areas_to_planning_area"
-            ] = clip_project_areas_to_planning_area
+            properties["clip_project_areas_to_planning_area"] = (
+                clip_project_areas_to_planning_area
+            )
 
         track_event(
             name="planning.project_areas_upload.validation",
