@@ -1,9 +1,16 @@
+from unittest.mock import patch
+
 from django.urls import reverse
 from planning.tests.factories import PlanningAreaFactory
 from planscape.tests.factories import UserFactory
 from rest_framework.test import APITestCase
 
-from workspaces.models import UserAccessWorkspace, Workspace, WorkspaceKind, WorkspaceRole
+from workspaces.models import (
+    UserAccessWorkspace,
+    Workspace,
+    WorkspaceKind,
+    WorkspaceRole,
+)
 from workspaces.tests.factories import (
     PlanningWorkspaceFactory,
     UserAccessWorkspaceFactory,
@@ -12,6 +19,11 @@ from workspaces.tests.factories import (
 
 LIST_URL = "api:workspaces:workspaces-list"
 DETAIL_URL = "api:workspaces:workspaces-detail"
+INVITE_URL = "api:workspaces:workspaces-invite"
+ACCEPT_INVITE_URL = "api:workspaces:workspaces-accept-invite"
+USERS_URL = "api:workspaces:workspaces-users"
+MANAGE_USER_URL = "api:workspaces:workspaces-manage-user"
+PLANNING_AREAS_URL = "api:workspaces:workspaces-planning-areas"
 
 
 class CreateWorkspaceTest(APITestCase):
@@ -151,9 +163,7 @@ class ListWorkspaceTest(APITestCase):
     def test_list_counts_planning_areas(self):
         workspace = PlanningWorkspaceFactory.create(created_by=self.user)
         PlanningAreaFactory.create_batch(2, user=self.user, workspace=workspace)
-        PlanningAreaFactory.create(
-            user=self.user, workspace=workspace
-        ).delete()
+        PlanningAreaFactory.create(user=self.user, workspace=workspace).delete()
         PlanningAreaFactory.create(user=self.user)
 
         self.client.force_authenticate(user=self.user)
@@ -183,14 +193,18 @@ class RetrieveWorkspaceTest(APITestCase):
 
     def test_retrieve_by_owner_returns_200(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(reverse(DETAIL_URL, kwargs={"pk": self.workspace.pk}))
+        response = self.client.get(
+            reverse(DETAIL_URL, kwargs={"pk": self.workspace.pk})
+        )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["name"], "Falcon")
 
     def test_retrieve_by_stranger_returns_404(self):
         self.client.force_authenticate(user=self.other)
-        response = self.client.get(reverse(DETAIL_URL, kwargs={"pk": self.workspace.pk}))
+        response = self.client.get(
+            reverse(DETAIL_URL, kwargs={"pk": self.workspace.pk})
+        )
 
         self.assertEqual(response.status_code, 404)
 
@@ -201,7 +215,9 @@ class RetrieveWorkspaceTest(APITestCase):
         )
 
         self.client.force_authenticate(user=self.other)
-        response = self.client.get(reverse(DETAIL_URL, kwargs={"pk": self.workspace.pk}))
+        response = self.client.get(
+            reverse(DETAIL_URL, kwargs={"pk": self.workspace.pk})
+        )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["creator"], self.user.get_full_name())
@@ -290,9 +306,7 @@ class DeleteWorkspaceTest(APITestCase):
 
         self.assertEqual(response.status_code, 204)
         self.assertFalse(Workspace.objects.filter(pk=self.workspace.pk).exists())
-        self.assertTrue(
-            Workspace.dead_or_alive.filter(pk=self.workspace.pk).exists()
-        )
+        self.assertTrue(Workspace.dead_or_alive.filter(pk=self.workspace.pk).exists())
 
     def test_viewer_cannot_delete(self):
         self.client.force_authenticate(user=self.viewer)
@@ -420,3 +434,310 @@ class PlanningAreaWorkspaceTest(APITestCase):
 
         ids = [row["id"] for row in response.json()["results"]]
         self.assertEqual(ids, [loose.pk])
+
+
+class InviteWorkspaceMemberTest(APITestCase):
+    def setUp(self):
+        self.owner = UserFactory.create()
+        self.collaborator = UserFactory.create()
+        self.workspace = PlanningWorkspaceFactory.create(created_by=self.owner)
+        UserAccessWorkspaceFactory.create(
+            user=self.collaborator,
+            workspace=self.workspace,
+            role=WorkspaceRole.COLLABORATOR,
+        )
+
+    def _invite(self, **payload):
+        return self.client.post(
+            reverse(INVITE_URL, kwargs={"pk": self.workspace.pk}),
+            data={
+                "email": "invitee@example.com",
+                "role": WorkspaceRole.VIEWER,
+                **payload,
+            },
+            format="json",
+        )
+
+    def test_invite_requires_authentication(self):
+        response = self._invite()
+        self.assertIn(response.status_code, (401, 403))
+
+    @patch("workspaces.services.send_workspace_invitation.delay")
+    def test_owner_can_invite(self, send_invitation):
+        self.client.force_authenticate(user=self.owner)
+        response = self._invite()
+
+        self.assertEqual(response.status_code, 201, response.json())
+        access = UserAccessWorkspace.objects.get(
+            workspace=self.workspace, email="invitee@example.com"
+        )
+        self.assertIsNone(access.user)
+        self.assertEqual(access.role, WorkspaceRole.VIEWER)
+        self.assertEqual(access.invited_by, self.owner)
+        send_invitation.assert_called_once()
+
+    @patch("workspaces.services.send_workspace_invitation.delay")
+    def test_collaborator_cannot_invite(self, send_invitation):
+        self.client.force_authenticate(user=self.collaborator)
+        response = self._invite()
+
+        self.assertEqual(response.status_code, 403)
+        send_invitation.assert_not_called()
+
+    @patch("workspaces.services.send_workspace_invitation.delay")
+    def test_inviting_an_existing_member_returns_400(self, send_invitation):
+        self.client.force_authenticate(user=self.owner)
+        response = self._invite(email=self.collaborator.email)
+
+        self.assertEqual(response.status_code, 400)
+        send_invitation.assert_not_called()
+
+    @patch("workspaces.services.send_workspace_invitation.delay")
+    def test_re_inviting_updates_the_pending_role(self, send_invitation):
+        self.client.force_authenticate(user=self.owner)
+        self._invite(role=WorkspaceRole.VIEWER)
+        response = self._invite(role=WorkspaceRole.COLLABORATOR)
+
+        self.assertEqual(response.status_code, 201, response.json())
+        self.assertEqual(
+            UserAccessWorkspace.objects.filter(
+                workspace=self.workspace, email="invitee@example.com"
+            ).count(),
+            1,
+        )
+        access = UserAccessWorkspace.objects.get(
+            workspace=self.workspace, email="invitee@example.com"
+        )
+        self.assertEqual(access.role, WorkspaceRole.COLLABORATOR)
+
+    def test_inviting_as_owner_role_is_rejected(self):
+        self.client.force_authenticate(user=self.owner)
+        response = self._invite(role=WorkspaceRole.OWNER)
+
+        self.assertEqual(response.status_code, 400)
+
+
+class AcceptWorkspaceInviteTest(APITestCase):
+    def setUp(self):
+        self.owner = UserFactory.create()
+        self.invitee = UserFactory.create(email="invitee@example.com")
+        self.stranger = UserFactory.create()
+        self.workspace = PlanningWorkspaceFactory.create(created_by=self.owner)
+        self.pending = UserAccessWorkspace.objects.create(
+            workspace=self.workspace,
+            email="invitee@example.com",
+            role=WorkspaceRole.VIEWER,
+            invited_by=self.owner,
+        )
+
+    def _accept(self):
+        return self.client.post(
+            reverse(ACCEPT_INVITE_URL, kwargs={"pk": self.workspace.pk})
+        )
+
+    def test_accept_requires_authentication(self):
+        response = self._accept()
+        self.assertIn(response.status_code, (401, 403))
+
+    def test_invitee_can_accept(self):
+        self.client.force_authenticate(user=self.invitee)
+        response = self._accept()
+
+        self.assertEqual(response.status_code, 200, response.json())
+        self.pending.refresh_from_db()
+        self.assertEqual(self.pending.user, self.invitee)
+        self.assertEqual(response.json()["status"], "ACTIVE")
+
+    def test_non_invited_user_gets_404(self):
+        self.client.force_authenticate(user=self.stranger)
+        response = self._accept()
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_accepting_twice_returns_404_the_second_time(self):
+        self.client.force_authenticate(user=self.invitee)
+        self._accept()
+        response = self._accept()
+
+        self.assertEqual(response.status_code, 404)
+
+
+class ListWorkspaceUsersTest(APITestCase):
+    def setUp(self):
+        self.owner = UserFactory.create()
+        self.viewer = UserFactory.create()
+        self.stranger = UserFactory.create()
+        self.workspace = PlanningWorkspaceFactory.create(created_by=self.owner)
+        UserAccessWorkspaceFactory.create(
+            user=self.viewer, workspace=self.workspace, role=WorkspaceRole.VIEWER
+        )
+        UserAccessWorkspace.objects.create(
+            workspace=self.workspace,
+            email="pending@example.com",
+            role=WorkspaceRole.VIEWER,
+            invited_by=self.owner,
+        )
+
+    def test_member_can_list_users(self):
+        self.client.force_authenticate(user=self.viewer)
+        response = self.client.get(reverse(USERS_URL, kwargs={"pk": self.workspace.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        rows = {row["email"]: row["status"] for row in response.json()}
+        self.assertEqual(
+            rows,
+            {
+                self.owner.email: "ACTIVE",
+                self.viewer.email: "ACTIVE",
+                "pending@example.com": "PENDING",
+            },
+        )
+
+    def test_stranger_gets_404(self):
+        self.client.force_authenticate(user=self.stranger)
+        response = self.client.get(reverse(USERS_URL, kwargs={"pk": self.workspace.pk}))
+
+        self.assertEqual(response.status_code, 404)
+
+
+class UpdateWorkspaceMemberTest(APITestCase):
+    def setUp(self):
+        self.owner = UserFactory.create()
+        self.member = UserFactory.create()
+        self.workspace = PlanningWorkspaceFactory.create(created_by=self.owner)
+        UserAccessWorkspaceFactory.create(
+            user=self.member,
+            workspace=self.workspace,
+            role=WorkspaceRole.COLLABORATOR,
+        )
+
+    def _patch(self, user_id, **payload):
+        return self.client.patch(
+            reverse(
+                MANAGE_USER_URL, kwargs={"pk": self.workspace.pk, "user_id": user_id}
+            ),
+            data={"role": WorkspaceRole.VIEWER, **payload},
+            format="json",
+        )
+
+    def test_owner_can_change_a_members_role(self):
+        self.client.force_authenticate(user=self.owner)
+        response = self._patch(self.member.pk)
+
+        self.assertEqual(response.status_code, 200, response.json())
+        access = UserAccessWorkspace.objects.get(
+            workspace=self.workspace, user=self.member
+        )
+        self.assertEqual(access.role, WorkspaceRole.VIEWER)
+
+    def test_non_owner_cannot_change_roles(self):
+        self.client.force_authenticate(user=self.member)
+        response = self._patch(self.owner.pk)
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_cannot_change_the_creators_role(self):
+        self.client.force_authenticate(user=self.owner)
+        response = self._patch(self.owner.pk)
+
+        self.assertEqual(response.status_code, 400)
+
+
+class RemoveWorkspaceMemberTest(APITestCase):
+    def setUp(self):
+        self.owner = UserFactory.create()
+        self.member = UserFactory.create()
+        self.other_member = UserFactory.create()
+        self.workspace = PlanningWorkspaceFactory.create(created_by=self.owner)
+        UserAccessWorkspaceFactory.create(
+            user=self.member,
+            workspace=self.workspace,
+            role=WorkspaceRole.COLLABORATOR,
+        )
+        UserAccessWorkspaceFactory.create(
+            user=self.other_member,
+            workspace=self.workspace,
+            role=WorkspaceRole.VIEWER,
+        )
+
+    def _delete(self, user_id):
+        return self.client.delete(
+            reverse(
+                MANAGE_USER_URL, kwargs={"pk": self.workspace.pk, "user_id": user_id}
+            )
+        )
+
+    def test_owner_can_remove_a_member(self):
+        self.client.force_authenticate(user=self.owner)
+        response = self._delete(self.member.pk)
+
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(
+            UserAccessWorkspace.objects.filter(
+                workspace=self.workspace, user=self.member
+            ).exists()
+        )
+
+    def test_member_cannot_remove_another_member(self):
+        self.client.force_authenticate(user=self.member)
+        response = self._delete(self.other_member.pk)
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_member_can_leave(self):
+        self.client.force_authenticate(user=self.member)
+        response = self._delete(self.member.pk)
+
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(
+            UserAccessWorkspace.objects.filter(
+                workspace=self.workspace, user=self.member
+            ).exists()
+        )
+
+    def test_creator_cannot_leave(self):
+        self.client.force_authenticate(user=self.owner)
+        response = self._delete(self.owner.pk)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(
+            UserAccessWorkspace.objects.filter(
+                workspace=self.workspace, user=self.owner
+            ).exists()
+        )
+
+
+class WorkspacePlanningAreasListTest(APITestCase):
+    def setUp(self):
+        self.owner = UserFactory.create()
+        self.viewer = UserFactory.create()
+        self.stranger = UserFactory.create()
+        self.workspace = PlanningWorkspaceFactory.create(created_by=self.owner)
+        UserAccessWorkspaceFactory.create(
+            user=self.viewer, workspace=self.workspace, role=WorkspaceRole.VIEWER
+        )
+        # Created by the owner, not the viewer - proves this endpoint gates on
+        # workspace role rather than per-planning-area collaboration.
+        self.inside = PlanningAreaFactory.create(
+            user=self.owner, workspace=self.workspace
+        )
+        PlanningAreaFactory.create(user=self.owner, workspace=self.workspace).delete()
+        PlanningAreaFactory.create(user=self.owner, workspace=None)
+
+    def test_member_sees_all_workspace_planning_areas(self):
+        self.client.force_authenticate(user=self.viewer)
+        response = self.client.get(
+            reverse(PLANNING_AREAS_URL, kwargs={"pk": self.workspace.pk})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        ids = [row["id"] for row in response.json()]
+        self.assertEqual(ids, [self.inside.pk])
+
+    def test_stranger_gets_404(self):
+        self.client.force_authenticate(user=self.stranger)
+        response = self.client.get(
+            reverse(PLANNING_AREAS_URL, kwargs={"pk": self.workspace.pk})
+        )
+
+        self.assertEqual(response.status_code, 404)
