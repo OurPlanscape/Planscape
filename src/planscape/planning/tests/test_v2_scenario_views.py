@@ -2045,6 +2045,45 @@ class PatchScenarioConfigurationTest(APITestCase):
             original_stand_count,
         )
 
+    def test_patch_full_configuration_uses_incoming_stand_size_for_fixed_target(
+        self,
+    ):
+        scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            configuration={},
+            treatment_goal=None,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+
+        url = reverse(
+            "api:planning:scenarios-patch-draft",
+            args=[scenario.pk],
+        )
+
+        payload = {
+            "configuration": {
+                "stand_size": "SMALL",
+                "targets": {
+                    "sub_units_fixed_target": True,
+                    "sub_units_target_value": 50,
+                },
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data["configuration"]["stand_size"],
+            "SMALL",
+        )
+        self.assertEqual(
+            response.data["configuration"]["targets"]["sub_units_target_value"],
+            50,
+        )
+
 
 class ScenarioCapabilitiesViewTest(APITestCase):
     def setUp(self):
