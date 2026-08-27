@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
   FeatureComponent,
   GeoJSONSourceComponent,
@@ -24,10 +24,12 @@ import { MARTIN_SOURCES } from '@treatments/map.sources';
   ],
   templateUrl: './planning-area-layer.component.html',
 })
-export class PlanningAreaLayerComponent implements OnInit {
+export class PlanningAreaLayerComponent implements OnChanges {
   @Input() before = '';
 
   @Input() lineColor: string = BASE_COLORS.blue;
+
+  @Input() planId: number | null = null;
 
   /**
    * Shared-link UUID for the public funding report. When set, tiles come from
@@ -46,17 +48,31 @@ export class PlanningAreaLayerComponent implements OnInit {
 
   tilesUrl$!: Observable<string>;
 
-  ngOnInit() {
-    this.linePaint['line-color'] = this.lineColor;
-    this.tilesUrl$ = this.sharedLinkUuid
-      ? of(
-          MARTIN_SOURCES.planningAreaByForSharedLink.tilesUrl +
-            `?uuid=${this.sharedLinkUuid}`
-        )
-      : this.planState.currentPlanId$.pipe(
-          map((id) => MARTIN_SOURCES.planningArea.tilesUrl + `?id=${id}`)
-        );
+  readonly sourceName = MARTIN_SOURCES.planningArea.sources.planningArea;
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['planId'] || changes['sharedLinkUuid']) {
+      this.setTilesUrl();
+    }
   }
 
-  readonly sourceName = MARTIN_SOURCES.planningArea.sources.planningArea;
+  private setTilesUrl() {
+    if (this.planId !== null) {
+      this.tilesUrl$ = of(
+        `${MARTIN_SOURCES.planningArea.tilesUrl}?id=${this.planId}`
+      );
+      return;
+    }
+
+    if (this.sharedLinkUuid) {
+      this.tilesUrl$ = of(
+        `${MARTIN_SOURCES.planningAreaByForSharedLink.tilesUrl}?uuid=${this.sharedLinkUuid}`
+      );
+      return;
+    }
+
+    this.tilesUrl$ = this.planState.currentPlanId$.pipe(
+      map((id) => `${MARTIN_SOURCES.planningArea.tilesUrl}?id=${id}`)
+    );
+  }
 }

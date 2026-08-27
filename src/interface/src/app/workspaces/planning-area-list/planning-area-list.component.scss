@@ -1,0 +1,96 @@
+@import 'colors';
+@import 'mixins';
+@import 'media';
+
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.planning-header,
+.planning-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+
+  width: 100%;
+  padding: 16px;
+  gap: 8px;
+
+  box-sizing: border-box;
+  background: $color-white;
+  border-radius: 8px;
+}
+
+.planning-header {
+  h4 {
+    margin: 0 auto 0 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  @include on-small() {
+    flex-direction: column-reverse;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+}
+
+.sort-header {
+  color: $color-black;
+}
+
+.content {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+
+  min-height: 0;
+  width: 100%;
+  padding: 16px;
+  gap: 16px;
+
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.loading-row {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+}
+
+.map {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+
+  border-radius: 8px;
+  overflow: hidden;
+
+  mgl-map {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+::ng-deep .planning-area-options-menu {
+  margin-top: 8px;
+  min-width: 190px;
+}
+
+.new-planning-down {
+  height: 38px;
+  line-height: 40px;
+
+  padding: 0 8px;
+  margin-left: 6px;
+  margin-right: -12px;
+
+  border-left: 1px solid $color-soft-gray;
+}
