@@ -37,7 +37,6 @@ from planning.services import (
     calculate_scenario_treatable_area,
     get_acreage,
     get_min_project_area,
-    planning_area_covering_source,
     union_geojson,
 )
 
@@ -1473,7 +1472,6 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
     geometry = serializers.JSONField(required=True)
 
     def validate(self, attrs):
-        geometry = attrs.get("geometry")
         planning_area_id = attrs.get("planning_area")
         stand_size = attrs.get("stand_size")
         name = attrs.get("name")
@@ -1498,37 +1496,25 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
                 {"name": "A scenario with this name already exists."}
             )
 
-        covering_source = self._get_planning_area_covering_source(
-            geometry,
-            planning_area_id,
-            stand_size,
-        )
-        if not covering_source:
+        if not PlanningArea.objects.filter(pk=planning_area_id).exists():
             self._track_upload_validation(
-                stage="containment",
+                stage="planning_area_lookup",
                 status="failed",
                 planning_area_id=planning_area_id,
                 stand_size=stand_size,
-                error="The uploaded geometry is not within the selected planning area.",
+                error="Planning area does not exist.",
             )
-            raise serializers.ValidationError(
-                {
-                    "global": [
-                        "The uploaded geometry is not within the selected planning area."
-                    ]
-                }
-            )
-        attrs["clip_project_areas_to_planning_area"] = (
-            covering_source == "buffered_geometry"
-        )
+            raise serializers.ValidationError("Planning area does not exist.")
+
+        # Containment is no longer validated here: project areas are always
+        # clipped to the planning area's geometry (see
+        # planning.services.feature_to_project_area), and
+        # create_scenario_from_upload raises if that leaves nothing behind.
         self._track_upload_validation(
-            stage=covering_source,
+            stage="upload",
             status="passed",
             planning_area_id=planning_area_id,
             stand_size=stand_size,
-            clip_project_areas_to_planning_area=attrs[
-                "clip_project_areas_to_planning_area"
-            ],
         )
         return attrs
 
@@ -1573,38 +1559,6 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
             raise serializers.ValidationError(geojson_serializer.errors)
         return geojson_serializer.validated_data
 
-    def _get_planning_area_covering_source(
-        self, geometry, planning_area_id, stand_size
-    ) -> str | None:
-        try:
-            uploaded_geos = union_geojson(geometry)
-        except ValueError as e:
-            self._track_upload_validation(
-                stage="polygon_union",
-                status="failed",
-                planning_area_id=planning_area_id,
-                stand_size=stand_size,
-                error=str(e),
-            )
-            raise serializers.ValidationError({"global": [str(e)]})
-        try:
-            planning_area = PlanningArea.objects.get(pk=planning_area_id)
-        except PlanningArea.DoesNotExist:
-            self._track_upload_validation(
-                stage="planning_area_lookup",
-                status="failed",
-                planning_area_id=planning_area_id,
-                stand_size=stand_size,
-                error="Planning area does not exist.",
-            )
-            raise serializers.ValidationError("Planning area does not exist.")
-
-        return planning_area_covering_source(
-            planning_area=planning_area,
-            geometry=uploaded_geos,
-            stand_size=stand_size or StandSizeChoices.SMALL,
-        )
-
     def _track_upload_validation(
         self,
         stage: str,
@@ -1612,7 +1566,6 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
         planning_area_id: int | None = None,
         stand_size: str | None = None,
         error=None,
-        clip_project_areas_to_planning_area: bool | None = None,
     ) -> None:
         request = self.context.get("request")
         user = getattr(request, "user", None)
@@ -1627,10 +1580,6 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
         }
         if error:
             properties["error"] = str(error)
-        if clip_project_areas_to_planning_area is not None:
-            properties["clip_project_areas_to_planning_area"] = (
-                clip_project_areas_to_planning_area
-            )
 
         track_event(
             name="planning.project_areas_upload.validation",
