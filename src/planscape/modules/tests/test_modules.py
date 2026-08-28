@@ -415,13 +415,13 @@ class AdvancedStandLevelConstraintModuleTest(TestCase):
         self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
         return super().setUp()
 
-    def test_get_module_returns_advanced_level_constraint_module(self):
-        module = get_module("advanced_level_constraint")
+    def test_get_module_returns_advanced_stand_level_constraint_module(self):
+        module = get_module("advanced_stand_level_constraint")
 
-        self.assertEqual(module.name, "advanced_level_constraint")
+        self.assertEqual(module.name, "advanced_stand_level_constraint")
 
     def test_can_run_scenario_but_not_planning_area(self):
-        module = get_module("advanced_level_constraint")
+        module = get_module("advanced_stand_level_constraint")
 
         self.assertFalse(module.can_run(self.planning_area))
         self.assertTrue(module.can_run(self.scenario))
@@ -431,16 +431,16 @@ class AdvancedStandLevelConstraintModuleTest(TestCase):
             name="base1",
             preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
             visibility=VisibilityOptions.PUBLIC,
-            modules=["advanced_level_constraint"],
+            modules=["advanced_stand_level_constraint"],
         )
         DatasetFactory.create(
             name="main1",
             preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
             visibility=VisibilityOptions.PUBLIC,
-            modules=["advanced_level_constraint"],
+            modules=["advanced_stand_level_constraint"],
         )
 
-        module = get_module("advanced_level_constraint")
+        module = get_module("advanced_stand_level_constraint")
         configuration = module.get_configuration()
         datasets = configuration["options"]["datasets"]
 
