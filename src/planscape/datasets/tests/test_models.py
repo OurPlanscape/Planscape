@@ -44,6 +44,28 @@ class ValidateDatasetModulesTest(TestCase):
             validate_dataset_modules(["not-a-module"])
 
 
+class ByMetaModuleTest(TestCase):
+    def test_includes_layer_without_enabled_key(self):
+        DataLayerFactory.create(metadata={"modules": {"forsys": {}}})
+
+        self.assertEqual(DataLayer.objects.all().by_meta_module("forsys").count(), 1)
+
+    def test_includes_layer_with_enabled_true(self):
+        DataLayerFactory.create(metadata={"modules": {"forsys": {"enabled": True}}})
+
+        self.assertEqual(DataLayer.objects.all().by_meta_module("forsys").count(), 1)
+
+    def test_excludes_layer_with_enabled_false(self):
+        DataLayerFactory.create(metadata={"modules": {"forsys": {"enabled": False}}})
+
+        self.assertEqual(DataLayer.objects.all().by_meta_module("forsys").count(), 0)
+
+    def test_excludes_layer_without_module_key(self):
+        DataLayerFactory.create(metadata={"modules": {"other": {"enabled": True}}})
+
+        self.assertEqual(DataLayer.objects.all().by_meta_module("forsys").count(), 0)
+
+
 class DataLayerModelTest(TestCase):
     def setUp(self):
         DataLayerFactory.create(name="Layer 1")
@@ -76,3 +98,34 @@ class DataLayerModelTest(TestCase):
 
         self.assertEqual(DataLayer.objects.all().count(), 3)
         self.assertEqual(DataLayer.dead_or_alive.all().count(), 3)
+
+    def test_has_module_returns_true_when_enabled(self):
+        datalayer = DataLayerFactory.create(
+            metadata={"modules": {"forsys": {"enabled": True}}}
+        )
+
+        self.assertTrue(datalayer.has_module("forsys"))
+
+    def test_has_module_returns_true_when_enabled_key_missing(self):
+        datalayer = DataLayerFactory.create(metadata={"modules": {"forsys": {}}})
+
+        self.assertTrue(datalayer.has_module("forsys"))
+
+    def test_has_module_returns_false_when_disabled(self):
+        datalayer = DataLayerFactory.create(
+            metadata={"modules": {"forsys": {"enabled": False}}}
+        )
+
+        self.assertFalse(datalayer.has_module("forsys"))
+
+    def test_has_module_returns_false_when_module_missing(self):
+        datalayer = DataLayerFactory.create(
+            metadata={"modules": {"impacts": {"enabled": True}}}
+        )
+
+        self.assertFalse(datalayer.has_module("forsys"))
+
+    def test_has_module_returns_false_when_modules_missing(self):
+        datalayer = DataLayerFactory.create(metadata={})
+
+        self.assertFalse(datalayer.has_module("forsys"))

@@ -9,6 +9,7 @@ import { DetailsCardComponent } from '@styleguide/details-card/details-card.comp
 import { WorkspaceState } from '../workspace.state';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ResourceUnavailableComponent } from '@app/shared/resource-unavailable/resource-unavailable.component';
+import { PlanningAreaListComponent } from '../planning-area-list/planning-area-list.component';
 
 @Component({
   selector: 'app-workspace-dashboard',
@@ -22,6 +23,7 @@ import { ResourceUnavailableComponent } from '@app/shared/resource-unavailable/r
     NgIf,
     OverlayLoaderComponent,
     ResourceUnavailableComponent,
+    PlanningAreaListComponent,
   ],
   templateUrl: './workspace-dashboard.component.html',
   providers: [MapConfigService],

@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PlanningAreaCardComponent } from './planning-area-card.component';
 import { PreviewPlan } from '@app/types';
+import { PlanningAreaMenuComponent } from '@app/standalone/planning-area-menu/planning-area-menu.component';
+import { MockDeclaration } from 'ng-mocks';
 
 describe('PlanningAreaCardComponent', () => {
   let component: PlanningAreaCardComponent;
@@ -22,6 +24,7 @@ describe('PlanningAreaCardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PlanningAreaCardComponent],
+      declarations: [MockDeclaration(PlanningAreaMenuComponent)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PlanningAreaCardComponent);

@@ -92,6 +92,8 @@ install-dependencies-backend:
 
 deploy-backend: install-dependencies-backend migrate restart
 
+deploy-backend-wo-migration: install-dependencies-backend restart
+
 deploy-all: deploy-backend deploy-frontend
 
 start-celery:
@@ -186,7 +188,8 @@ DOCKERFILE=Dockerfile
 ENV=dev
 APP=$(APP_NAME)-$(ENV)
 DOCKER_REPO=planscape-$(APP_NAME)
-DOCKER_TAG=us-central1-docker.pkg.dev/$(PROJECT)/$(DOCKER_REPO)/$(APP_NAME):$(VERSION)
+DOCKER_IMAGE=us-central1-docker.pkg.dev/$(PROJECT)/$(DOCKER_REPO)/$(APP_NAME)
+DOCKER_TAG=$(DOCKER_IMAGE):$(VERSION)
 REGION=us-central1
 CELERY_WORKER_GENERAL=planscape-celery-worker-general-$(ENV)
 CELERY_WORKER_HEAVY=planscape-celery-worker-heavy-$(ENV)
@@ -212,8 +215,16 @@ cloud-run-build-force:
 cloud-run-push:
 	@BUILDS=$$(gcloud builds list --filter="images:$(DOCKER_TAG)" --format=json); \
 	if [ "$$BUILDS" = "[]" ]; then \
+		CACHE_TAG=$$(gcloud artifacts docker images list "$(DOCKER_IMAGE)" --include-tags --filter="tags:*" --sort-by="~UPDATE_TIME" --limit=1 --format="value(tags[0])" 2>/dev/null || true); \
+		CACHE_FROM=""; \
+		if [ -n "$$CACHE_TAG" ]; then \
+			CACHE_FROM="$(DOCKER_IMAGE):$$CACHE_TAG"; \
+			echo "Using Docker cache from $$CACHE_FROM ."; \
+		else \
+			echo "No existing Docker image found for cache."; \
+		fi; \
 		echo "Pushing image $(DOCKER_TAG) ."; \
-		gcloud builds submit --config cloudbuild.dockerfile.yaml --substitutions _DOCKERFILE=$(DOCKERFILE),_IMAGE=$(DOCKER_TAG) .;\
+		gcloud builds submit --config cloudbuild.dockerfile.yaml --substitutions _DOCKERFILE=$(DOCKERFILE),_IMAGE=$(DOCKER_TAG),_CACHE_FROM=$$CACHE_FROM .;\
 	else \
 		echo "Image $(DOCKER_TAG) already submitted"; \
 	fi;
@@ -275,7 +286,7 @@ cloud-run-update-frontend-job:
 
 # Deploy front-end
 cloud-run-execute-frontend-job:
-	gcloud run jobs execute planscape-frontend-build-$(ENV) --region $(REGION)
+	gcloud run jobs execute planscape-frontend-build-$(ENV) --region $(REGION) --wait
 
 cloud-run-deploy-frontend-job: cloud-run-push-frontend-job cloud-run-update-frontend-job cloud-run-execute-frontend-job
 
@@ -289,20 +300,15 @@ cloud-run-build-all:
 	$(MAKE) cloud-run-build-frontend-job
 
 cloud-run-push-all:
-	$(MAKE) cloud-run-push
-	$(MAKE) cloud-run-push-gateway
+	$(MAKE) -j3 cloud-run-push cloud-run-push-frontend-job cloud-run-push-gateway
 
+# TODO: Add migration step after Jenkins decomissioning [ $(MAKE) cloud-run-execute-django-job MANAGE_ARGS="migrate --no-input" ]
 cloud-run-deploy-all:
-	$(MAKE) cloud-run-deploy
-	$(MAKE) cloud-run-update-django-job
-	$(MAKE) cloud-run-deploy-celery
-	$(MAKE) cloud-run-deploy-gateway
-	$(MAKE) cloud-run-deploy-frontend-job
-
-cloud-run-build-deploy-all:
-	$(MAKE) cloud-run-build-all
 	$(MAKE) cloud-run-push-all
-	$(MAKE) cloud-run-deploy-all
+	$(MAKE) cloud-run-update-django-job 
+	$(MAKE) cloud-run-execute-django-job MANAGE_ARGS="migrate --no-input"
+	$(MAKE) -j6 cloud-run-deploy-celery-general cloud-run-deploy-celery-heavy cloud-run-deploy-celery-beat cloud-run-deploy cloud-run-deploy-gateway cloud-run-update-frontend-job
+	$(MAKE) cloud-run-execute-frontend-job
 
 
 # Reset relevant tables and load development fixture data

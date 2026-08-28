@@ -9,6 +9,12 @@ import {
 } from '@types';
 import { environment } from '@env/environment';
 
+export interface ListWorkspacesOptions {
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -17,10 +23,18 @@ export class WorkspacesService {
 
   constructor(private http: HttpClient) {}
 
-  listWorkspaces(search?: string): Observable<Pagination<Workspace>> {
+  listWorkspaces(
+    options: ListWorkspacesOptions = {}
+  ): Observable<Pagination<Workspace>> {
     const params: Record<string, string> = {};
-    if (search) {
-      params['search'] = search;
+    if (options.search) {
+      params['search'] = options.search;
+    }
+    if (options.limit !== undefined) {
+      params['limit'] = String(options.limit);
+    }
+    if (options.offset) {
+      params['offset'] = String(options.offset);
     }
     return this.http.get<Pagination<Workspace>>(this.v2Path, {
       withCredentials: true,

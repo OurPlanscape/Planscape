@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, List, Optional, Type, Union
 
-from datasets.models import DataLayer, Dataset, PreferredDisplayType
+from datasets.models import DataLayer, DataLayerType, Dataset, PreferredDisplayType
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q, QuerySet
@@ -285,7 +285,10 @@ class PrioritizeSubUnitsModule(BaseModule):
         user = kwargs.get("user")
         options = super()._get_options(**kwargs)
         sub_units_layers = (
-            DataLayer.objects.all().accessible_by(user).by_meta_module(self.name)
+            DataLayer.objects.all()
+            .accessible_by(user)
+            .by_meta_module(self.name)
+            .filter(type=DataLayerType.VECTOR)
         )
         return {**options, "sub_units": list(sub_units_layers)}
 
