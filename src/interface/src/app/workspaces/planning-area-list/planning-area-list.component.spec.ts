@@ -5,8 +5,9 @@ import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { AuthService } from '@app/services';
 import { BehaviorSubject, of } from 'rxjs';
-import { MockProvider } from 'ng-mocks';
+import { MockProviders } from 'ng-mocks';
 import { MapService } from '@maplibre/ngx-maplibre-gl';
+import { Router } from '@angular/router';
 
 describe('PlanningAreaListComponent', () => {
   let component: PlanningAreaListComponent;
@@ -71,7 +72,7 @@ describe('PlanningAreaListComponent', () => {
       .overrideComponent(PlanningAreaListComponent, {
         set: {
           providers: [
-            MockProvider(MapService),
+            MockProviders(MapService, Router),
             {
               provide: PlanningAreasDataSource,
               useValue: dataSourceMock,
