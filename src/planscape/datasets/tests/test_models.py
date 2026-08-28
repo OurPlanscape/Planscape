@@ -106,6 +106,11 @@ class DataLayerModelTest(TestCase):
 
         self.assertTrue(datalayer.has_module("forsys"))
 
+    def test_has_module_returns_true_when_enabled_key_missing(self):
+        datalayer = DataLayerFactory.create(metadata={"modules": {"forsys": {}}})
+
+        self.assertTrue(datalayer.has_module("forsys"))
+
     def test_has_module_returns_false_when_disabled(self):
         datalayer = DataLayerFactory.create(
             metadata={"modules": {"forsys": {"enabled": False}}}

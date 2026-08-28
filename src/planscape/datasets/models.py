@@ -564,9 +564,10 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         return self.styles.all().first()
 
     def has_module(self, module) -> bool:
-        module_enabled = (
-            self.metadata.get("modules", {}).get(module, {}).get("enabled", False)
-        )
+        module_config = self.metadata.get("modules", {}).get(module)
+        if module_config is None:
+            return False
+        module_enabled = module_config.get("enabled", True)
         return module_enabled
 
     def __str__(self) -> str:
