@@ -7,7 +7,6 @@ from types import SimpleNamespace
 from unittest import mock
 
 import fiona
-import shapely
 from cacheops import invalidate_all
 from datasets.dynamic_models import qualify_for_django
 from datasets.models import DataLayerType, GeometryType
@@ -52,8 +51,6 @@ from planning.services import (
     get_max_treatable_stand_count,
     get_schema,
     get_sub_units_details,
-    planning_area_covering_source,
-    planning_area_covers,
     sanitize_shp_field_name,
     trigger_scenario_run,
     validate_scenario_configuration,
@@ -796,81 +793,42 @@ class TestExportToGeopackage(TestCase):
         shutil.rmtree("/tmp/planscape-test-output", ignore_errors=True)
 
 
-class TestPlanningAreaCovers(TestCase):
-    def setUp(self):
-        self.real_world_geom = "MULTIPOLYGON (((-120.592804 40.388397, -120.653229 40.089629, -121.098175 40.043386, -121.308289 40.179923, -121.059723 40.687928, -120.433502 41.088667, -120.013275 41.096947, -120.009155 40.701464, -120.010529 39.949753, -120.592804 40.388397)))"
-        self.real_world_planning_area = PlanningAreaFactory.create(
-            geometry=GEOSGeometry(self.real_world_geom, srid=4269)
-        )
-        self.covers_de9im = GEOSGeometry(
-            "POLYGON ((-121.13497533859726 40.378055548860004, -120.5974285753569 40.45918503498109, -120.0351560371661 40.02304123541387, -120.0295412055665 41.05622374781322, -120.40813814721828 41.0493352414621, -120.99739165146956 40.63587551109521, -121.13497533859726 40.378055548860004))",
-            srid=4269,
-        )
-        # in this is not necessary to create the stands, they are present by the usage of a migration
-        # that autoloads the LARGE stands.
-
-    def test_real_world(self):
-        with fiona.open(
-            "planning/tests/test_data/project_areas_for_pa_covers.shp"
-        ) as shapefile:
-            features = [f for f in shapefile]
-            # this convoluted conversion step is because Django automatically
-            # considers geometries coming FROM geojson to be 4326
-            geometries = [shapely.geometry.shape(f.geometry) for f in features]
-            geometries = MultiPolygon(
-                [GEOSGeometry(g.wkt, srid=4269) for g in geometries], srid=4269
-            )
-            test_geometry = geometries.unary_union
-        self.assertTrue(
-            planning_area_covers(
-                self.real_world_planning_area,
-                test_geometry,
-                stand_size=StandSizeChoices.LARGE,
-            )
-        )
-
-    def test_de9im_covers(self):
-        self.assertTrue(
-            planning_area_covers(
-                self.real_world_planning_area,
-                self.covers_de9im,
-                stand_size=StandSizeChoices.LARGE,
-            )
-        )
-
-    def test_covering_source_identifies_buffered_geometry_fallback(self):
-        outside_geometry = GEOSGeometry(
-            "POLYGON ((-121.2 40.3, -120.6 40.4, -120.0 40.0, -120.0 41.2, -120.4 41.1, -121.0 40.6, -121.2 40.3))",
-            srid=4269,
-        )
-        stands_geometry = mock.Mock()
-        stands_geometry.covers.side_effect = [False, True]
-        stands_qs = mock.Mock()
-        stands_qs.aggregate.return_value = {"geometry": stands_geometry}
-
-        with mock.patch(
-            "planning.services.Stand.objects.within_polygon",
-            return_value=stands_qs,
-        ):
-            source = planning_area_covering_source(
-                self.real_world_planning_area,
-                outside_geometry,
-                stand_size=StandSizeChoices.LARGE,
-            )
-
-        self.assertEqual(source, "buffered_geometry")
-
-
 class CreateScenarioFromUploadTest(TestCase):
-    def test_clips_project_area_geometry_to_planning_area_when_requested(self):
-        user = UserFactory.create()
-        planning_area = PlanningAreaFactory.create(
-            user=user,
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.user,
             geometry=MultiPolygon(
                 Polygon(((0, 0), (0, 1), (1, 1), (1, 0), (0, 0))),
                 srid=4269,
             ),
         )
+        stands_qs = mock.Mock()
+        stands_qs.count.return_value = 0
+        self.stands_patcher = mock.patch(
+            "planning.services.Stand.objects.within_polygon",
+            return_value=stands_qs,
+        )
+        self.stands_patcher.start()
+        self.addCleanup(self.stands_patcher.stop)
+
+    def _upload(self, geometry, name="uploaded scenario"):
+        return create_scenario_from_upload(
+            {
+                "name": name,
+                "planning_area": self.planning_area.pk,
+                "stand_size": StandSizeChoices.SMALL,
+                "geometry": {
+                    "type": "FeatureCollection",
+                    "features": [
+                        {"type": "Feature", "properties": {}, "geometry": geometry}
+                    ],
+                },
+            },
+            user=self.user,
+        )
+
+    def test_clips_project_area_geometry_to_planning_area(self):
         uploaded_geometry = {
             "type": "Polygon",
             "coordinates": [
@@ -883,36 +841,32 @@ class CreateScenarioFromUploadTest(TestCase):
                 ]
             ],
         }
-        stands_qs = mock.Mock()
-        stands_qs.count.return_value = 0
-
-        with mock.patch(
-            "planning.services.Stand.objects.within_polygon",
-            return_value=stands_qs,
-        ):
-            scenario = create_scenario_from_upload(
-                {
-                    "name": "uploaded scenario",
-                    "planning_area": planning_area.pk,
-                    "stand_size": StandSizeChoices.SMALL,
-                    "geometry": {
-                        "type": "FeatureCollection",
-                        "features": [
-                            {
-                                "type": "Feature",
-                                "properties": {},
-                                "geometry": uploaded_geometry,
-                            }
-                        ],
-                    },
-                    "clip_project_areas_to_planning_area": True,
-                },
-                user=user,
-            )
+        scenario = self._upload(uploaded_geometry)
 
         project_area = scenario.project_areas.get()
-        self.assertTrue(planning_area.geometry.covers(project_area.geometry))
-        self.assertAlmostEqual(project_area.geometry.area, planning_area.geometry.area)
+        self.assertTrue(self.planning_area.geometry.covers(project_area.geometry))
+        self.assertAlmostEqual(
+            project_area.geometry.area, self.planning_area.geometry.area
+        )
+
+    def test_raises_when_no_project_area_overlaps_the_planning_area(self):
+        outside_geometry = {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [10, 10],
+                    [10, 11],
+                    [11, 11],
+                    [11, 10],
+                    [10, 10],
+                ]
+            ],
+        }
+        with self.assertRaisesMessage(
+            ValueError,
+            "None of the uploaded project areas overlap the selected planning area.",
+        ):
+            self._upload(outside_geometry)
 
 
 # compare with known turf.js results
@@ -1155,6 +1109,44 @@ class TestRemoveExcludes(TestCase):
             stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
             self.assertEqual(17, len(stands))
             self.assertLess(len(stand_ids), len(stands) - 1)
+
+    def test_get_available_stands_applies_forsys_constraint(self):
+        self.datalayer.metadata = {
+            "modules": {"forsys": {"enabled": True, "metric_column": "majority"}}
+        }
+        self.datalayer.save(update_fields=["metadata"])
+
+        result = get_available_stands(
+            self.scenario,
+            stand_size=StandSizeChoices.LARGE,
+            constraints=[
+                {
+                    "datalayer": self.datalayer,
+                    "operator": None,
+                    "value": 1,
+                }
+            ],
+        )
+
+        self.assertEqual(6, len(result["unavailable"]["by_thresholds"]))
+
+    def test_get_available_stands_ignores_non_forsys_constraint(self):
+        self.datalayer.metadata = {"modules": {"forsys": {"enabled": False}}}
+        self.datalayer.save(update_fields=["metadata"])
+
+        result = get_available_stands(
+            self.scenario,
+            stand_size=StandSizeChoices.LARGE,
+            constraints=[
+                {
+                    "datalayer": self.datalayer,
+                    "operator": None,
+                    "value": 1,
+                }
+            ],
+        )
+
+        self.assertEqual(0, len(result["unavailable"]["by_thresholds"]))
 
 
 class ValidateScenarioConfigurationTest(TestCase):
@@ -1682,7 +1674,6 @@ class SubUnitsDetailsTest(TestCase):
 
     @mock.patch("planning.services.get_sub_units_areas", return_value=None)
     def test_no_areas(self, mock_get_units_area):
-
         details = get_sub_units_details(
             self.scenario, self.scenario.get_stand_size(), self.datalayer
         )

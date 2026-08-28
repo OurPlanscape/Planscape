@@ -1092,8 +1092,9 @@ class CreateScenariosFromUpload(APITestCase):
         self.assertEqual(validation_call.kwargs["properties"]["status"], "passed")
         self.assertIn("stage", validation_call.kwargs["properties"])
 
-    @mock.patch("planning.serializers.track_event")
-    def test_create_uncontained_geometry(self, track_event_mock):
+    def test_create_uncontained_geometry(self):
+        # San Diego doesn't overlap the LA-area planning area at all, so
+        # every uploaded project area is clipped down to nothing.
         self.client.force_authenticate(self.owner_user)
         payload = {
             "geometry": json.dumps(self.sandiego),
@@ -1113,24 +1114,11 @@ class CreateScenariosFromUpload(APITestCase):
             "detail": "Validation error.",
             "errors": {
                 "global": [
-                    "The uploaded geometry is not within the selected planning area."
+                    "None of the uploaded project areas overlap the selected planning area."
                 ]
             },
         }
         self.assertEqual(response.json(), expected_error)
-        track_event_mock.assert_called_once_with(
-            name="planning.project_areas_upload.validation",
-            properties={
-                "stage": "containment",
-                "status": "failed",
-                "planning_area_id": self.planning_area.pk,
-                "stand_size": "LARGE",
-                "scenario_name": "new scenario",
-                "email": self.owner_user.email,
-                "error": "The uploaded geometry is not within the selected planning area.",
-            },
-            user_id=self.owner_user.pk,
-        )
 
     def test_create_with_duplicate_names(self):
         self.client.force_authenticate(self.owner_user)

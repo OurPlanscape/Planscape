@@ -1,4 +1,10 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import {
   FeatureComponent,
   GeoJSONSourceComponent,
@@ -24,7 +30,7 @@ import { MARTIN_SOURCES } from '@treatments/map.sources';
   ],
   templateUrl: './planning-area-layer.component.html',
 })
-export class PlanningAreaLayerComponent implements OnChanges {
+export class PlanningAreaLayerComponent implements OnChanges, OnInit {
   @Input() before = '';
 
   @Input() lineColor: string = BASE_COLORS.blue;
@@ -49,6 +55,10 @@ export class PlanningAreaLayerComponent implements OnChanges {
   tilesUrl$!: Observable<string>;
 
   readonly sourceName = MARTIN_SOURCES.planningArea.sources.planningArea;
+
+  ngOnInit(): void {
+    this.setTilesUrl();
+  }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['planId'] || changes['sharedLinkUuid']) {

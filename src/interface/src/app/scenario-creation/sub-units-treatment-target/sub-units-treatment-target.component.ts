@@ -77,7 +77,7 @@ export class SubUnitsTreatmentTargetComponent extends StepDirective<ScenarioDraf
     distinctUntilChanged()
   );
 
-  private hasParent$ = this.scenarioState.currentScenario$.pipe(
+  hasParent$ = this.scenarioState.currentScenario$.pipe(
     map((scenario: Scenario) => !!scenario?.parent)
   );
 
