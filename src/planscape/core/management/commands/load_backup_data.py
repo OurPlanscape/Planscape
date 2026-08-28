@@ -206,7 +206,7 @@ class Command(BaseCommand):
 
             # Copy to tmp folder and rename all `url` fields
             self.stdout.write(f"Copying file from {file_path} to /tmp/{filename}.")
-            shutil.copy(file_path, f"/tmp/{filename}")
+            shutil.copyfile(file_path, f"/tmp/{filename}")
 
             self.stdout.write(
                 f"Replacing  `planscape-datastore-{source_env}` with `planscape-datastore-{settings.ENV}` on /tmp/{filename}."

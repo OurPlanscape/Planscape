@@ -410,7 +410,10 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         from planscape.exceptions import InvalidGeometry
         from rest_framework.exceptions import ValidationError as DRFValidationError
 
-        serializer = UploadedScenarioDataSerializer(data=request.data)
+        serializer = UploadedScenarioDataSerializer(
+            data=request.data,
+            context={"request": request},
+        )
         serializer.is_valid(raise_exception=True)
         try:
             new_scenario = create_scenario_from_upload(

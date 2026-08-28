@@ -273,7 +273,12 @@ class DataLayerQuerySet(models.QuerySet):
         return temp_geometry
 
     def by_meta_module(self, module: str):
-        return self.all().filter(metadata__modules__has_key=module)
+        enabled_lookup = f"metadata__modules__{module}__enabled"
+        return (
+            self.all()
+            .filter(metadata__modules__has_key=module)
+            .filter(Q(**{enabled_lookup: True}) | Q(**{f"{enabled_lookup}__isnull": True}))
+        )
 
     def by_meta_name(self, name: str):
         query = {"modules": {"forsys": {"name": name}}}
@@ -557,6 +562,13 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
     def get_assigned_style(self) -> Optional[Style]:
         return self.styles.all().first()
+
+    def has_module(self, module) -> bool:
+        module_config = self.metadata.get("modules", {}).get(module)
+        if module_config is None:
+            return False
+        module_enabled = module_config.get("enabled", True)
+        return module_enabled
 
     def __str__(self) -> str:
         return f"{self.name} [{self.type}]"

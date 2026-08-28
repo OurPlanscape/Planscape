@@ -1,0 +1,88 @@
+<div class="planning-header">
+  <h4>Planning Areas</h4>
+
+  <button class="sort-header" sg-button variant="text" (click)="changeSort()">
+    <mat-icon class="material-symbols-outlined">
+      {{ sortDirection === 'desc' ? 'arrow_downward_alt' : 'arrow_upward_alt' }}
+    </mat-icon>
+    <span>Date Created</span>
+  </button>
+  <button
+    sg-button
+    class="selection-button"
+    icon="add"
+    variant="primary"
+    [matMenuTriggerFor]="menu"
+    #trigger="matMenuTrigger">
+    Planning Area
+
+    <mat-icon class="material-symbols-outlined new-planning-down"
+      >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
+    </mat-icon>
+  </button>
+  <mat-menu #menu="matMenu" class="planning-area-options-menu">
+    <button mat-menu-item (click)="uploadPlanningArea()">
+      <mat-icon class="material-symbols-outlined">upload_file</mat-icon>
+      Upload
+    </button>
+    <button mat-menu-item (click)="drawPlanningArea()">
+      <mat-icon class="material-symbols-outlined">draw</mat-icon>
+      Draw
+    </button>
+  </mat-menu>
+</div>
+<!-- Loading state -->
+<ng-container *ngIf="loading$ | async; else loaded">
+  <div class="loading-row">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+</ng-container>
+<!-- Content in case we loaded the planning areas -->
+<ng-template #loaded>
+  <div class="content" *ngIf="planningAreas$ | async as planningAreas">
+    <ng-container *ngIf="baseLayerUrl$ | async as baseLayerUrl">
+      <ng-container *ngFor="let planning of planningAreas">
+        <sg-planning-area-card
+          *ngIf="planning"
+          [planningArea]="planning"
+          (afterDelete)="reload()"
+          (afterRename)="reload()">
+          <div mapSlot class="map">
+            <mgl-map
+              [style]="baseLayerUrl"
+              [transformRequest]="transformRequest"
+              [maxZoom]="maxZoom"
+              [minZoom]="minZoom"
+              [fitBounds]="planning.bbox"
+              [dragRotate]="false"
+              [dragPan]="false"
+              [scrollZoom]="false"
+              [doubleClickZoom]="false"
+              [touchZoomRotate]="false"
+              [keyboard]="false"
+              [attributionControl]="false"
+              [fitBoundsOptions]="{
+                padding: 8,
+              }"
+              (mapError)="onMapError($event)">
+              <app-planning-area-layer
+                mapSlot
+                [planId]="planning.id"></app-planning-area-layer>
+            </mgl-map>
+          </div>
+        </sg-planning-area-card>
+      </ng-container>
+    </ng-container>
+  </div>
+  <div class="planning-footer">
+    <ng-container *ngIf="pages$ | async as pages">
+      <sg-paginator
+        [currentPage]="pageOptions.page"
+        [recordsPerPage]="pageOptions.limit"
+        (pageChanged)="goToPage($event)"
+        (recordsPerPageChanged)="changePageSize($event)"
+        [pageCount]="pages">
+      </sg-paginator>
+    </ng-container>
+  </div>
+</ng-template>

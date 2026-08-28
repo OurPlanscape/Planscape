@@ -15,6 +15,7 @@ export interface Plan {
   role: string;
   user: number;
   capabilities: Capabilities[];
+  bbox?: [number, number, number, number];
   map_status?:
     | 'DONE'
     | 'PENDING'

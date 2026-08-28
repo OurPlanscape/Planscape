@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional
+from typing import List, Optional  # noqa
 
 import markdown
 from collaboration.services import get_permissions, get_role
@@ -7,10 +7,13 @@ from datasets.models import DataLayer, DataLayerStatus, DataLayerType, GeometryT
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.utils import timezone
+from planscape.analytics import track_event
 from planscape.exceptions import InvalidGeometry
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from stands.models import Stand, StandSizeChoices
+from workspaces.models import Workspace, WorkspaceKind
+from workspaces.permissions import WorkspacePermission
 
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
@@ -30,14 +33,10 @@ from planning.models import (
     User,
     UserPrefs,
 )
-from workspaces.models import Workspace, WorkspaceKind
-from workspaces.permissions import WorkspacePermission
-
 from planning.services import (
     calculate_scenario_treatable_area,
     get_acreage,
     get_min_project_area,
-    planning_area_covers,
     union_geojson,
 )
 
@@ -61,6 +60,9 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
     area_acres = serializers.SerializerMethodField(
         help_text="Area of the Planning Area represented in Acres."
     )
+    bbox = serializers.SerializerMethodField(
+        help_text="Bounding box of the Planning Area as [xmin, ymin, xmax, ymax]."
+    )
     creator = serializers.CharField(
         source="creator_name", help_text="User ID that created the Planning Area."
     )
@@ -76,6 +78,11 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
 
     def get_area_acres(self, instance):
         return get_acreage(instance.geometry)
+
+    def get_bbox(self, instance) -> list[float] | None:
+        if not instance.geometry:
+            return None
+        return list(instance.geometry.extent)
 
     def get_latest_updated(self, instance):
         return instance.updated_at
@@ -99,6 +106,7 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
             "latest_updated",
             "created_at",
             "area_acres",
+            "bbox",
             "creator",
             "role",
             "permissions",
@@ -230,6 +238,7 @@ class PlanningAreaSerializer(
             "latest_updated",
             "created_at",
             "area_acres",
+            "bbox",
             "creator",
             "role",
             "permissions",
@@ -606,11 +615,16 @@ class TargetsSerializer(serializers.Serializer):
 
             if sub_units_fixed_target is True:
                 instance = self.parent.parent.instance
-                stand_area = (
-                    get_min_project_area(scenario=instance)
-                    if instance
-                    else settings.MIN_AREA_PROJECT_LARGE
+
+                initial_data = getattr(self.root, "initial_data", {})
+                configuration = initial_data.get("configuration", initial_data)
+                incoming_stand_size = configuration.get("stand_size")
+
+                stand_size = incoming_stand_size or (
+                    instance.get_stand_size() if instance else StandSizeChoices.LARGE
                 )
+                stand_area = get_min_project_area(stand_size)
+
                 if sub_units_target_value < stand_area:
                     raise serializers.ValidationError(
                         "`sub_units_target_value` cannot be smaller than 1 Stand."
@@ -774,7 +788,6 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         return included_areas
 
     def validate(self, attrs):
-
         included_areas = attrs.get("included_areas_ids")
         if included_areas:
             scenario = self.parent.instance
@@ -914,7 +927,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             return targets.get("max_area")
         return cfg.get("max_treatment_area_ratio")
 
-    def get_bbox(self, instance) -> Optional[List[float]]:
+    def get_bbox(self, instance) -> list[float] | None:
         geometries = list(
             [
                 Polygon.from_bbox(pa.extent)
@@ -975,7 +988,7 @@ class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
         source="treatment_goal.datalayer_usages", many=True, read_only=True
     )
 
-    def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
+    def get_geopackage_url(self, scenario: Scenario) -> str | None:
         """
         Returns the URL to download the scenario's geopackage file.
         If the scenario is currently being exported, returns None.
@@ -1037,14 +1050,14 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
     geopackage_url = serializers.SerializerMethodField()
     usage_types = serializers.SerializerMethodField()
 
-    def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
+    def get_geopackage_url(self, scenario: Scenario) -> str | None:
         """
         Returns the URL to download the scenario's geopackage file.
         If the scenario is currently being exported, returns None.
         """
         return scenario.get_geopackage_url()
 
-    def get_usage_types(self, scenario: Scenario) -> List[dict]:
+    def get_usage_types(self, scenario: Scenario) -> list[dict]:
         if scenario.type == ScenarioType.CUSTOM:
             cfg = scenario.configuration or {}
             priorities = cfg.get("priorities") or []
@@ -1285,7 +1298,7 @@ class ScenarioSerializer(
         validated_data["user"] = self.context["user"] or None
         return super().update(instance, validated_data)
 
-    def get_geopackage_url(self, scenario: Scenario) -> Optional[str]:
+    def get_geopackage_url(self, scenario: Scenario) -> str | None:
         """
         Returns the URL to download the scenario's geopackage file.
         If the scenario is currently being exported, returns None.
@@ -1444,7 +1457,7 @@ class GeoJSONSerializer(serializers.Serializer):
         try:
             GEOSGeometry(json.dumps(value) if isinstance(value, dict) else value)
         except Exception as e:
-            raise serializers.ValidationError(f"Invalid geometry: {str(e)}")
+            raise serializers.ValidationError(f"Invalid geometry: {e!s}")
 
 
 class UploadedScenarioDataSerializer(serializers.Serializer):
@@ -1459,7 +1472,6 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
     geometry = serializers.JSONField(required=True)
 
     def validate(self, attrs):
-        geometry = attrs.get("geometry")
         planning_area_id = attrs.get("planning_area")
         stand_size = attrs.get("stand_size")
         name = attrs.get("name")
@@ -1473,18 +1485,37 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
             exists = exists.exclude(pk=self.instance.pk)
 
         if exists.exists():
+            self._track_upload_validation(
+                stage="duplicate_name",
+                status="failed",
+                planning_area_id=planning_area_id,
+                stand_size=stand_size,
+                error="A scenario with this name already exists.",
+            )
             raise serializers.ValidationError(
                 {"name": "A scenario with this name already exists."}
             )
 
-        if not self._is_inside_planning_area(geometry, planning_area_id, stand_size):
-            raise serializers.ValidationError(
-                {
-                    "global": [
-                        "The uploaded geometry is not within the selected planning area."
-                    ]
-                }
+        if not PlanningArea.objects.filter(pk=planning_area_id).exists():
+            self._track_upload_validation(
+                stage="planning_area_lookup",
+                status="failed",
+                planning_area_id=planning_area_id,
+                stand_size=stand_size,
+                error="Planning area does not exist.",
             )
+            raise serializers.ValidationError("Planning area does not exist.")
+
+        # Containment is no longer validated here: project areas are always
+        # clipped to the planning area's geometry (see
+        # planning.services.feature_to_project_area), and
+        # create_scenario_from_upload raises if that leaves nothing behind.
+        self._track_upload_validation(
+            stage="upload",
+            status="passed",
+            planning_area_id=planning_area_id,
+            stand_size=stand_size,
+        )
         return attrs
 
     def validate_geometry(self, value):
@@ -1496,6 +1527,11 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
                 if fc.get("type") == "FeatureCollection":
                     merged_feature_collection["features"].extend(fc.get("features", []))
                 else:
+                    self._track_upload_validation(
+                        stage="geometry_format",
+                        status="failed",
+                        error="All items must be GeoJSON FeatureCollection objects",
+                    )
                     raise ValueError(
                         "All items must be GeoJSON FeatureCollection objects"
                     )
@@ -1503,26 +1539,52 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
 
         # convert if neither dict nor list
         if not isinstance(value, (dict, list)):
-            value = json.loads(value)
+            try:
+                value = json.loads(value)
+            except ValueError as e:
+                self._track_upload_validation(
+                    stage="geometry_format",
+                    status="failed",
+                    error=str(e),
+                )
+                raise e
 
         geojson_serializer = GeoJSONSerializer(data=value)
-        geojson_serializer.is_valid(raise_exception=True)
+        if not geojson_serializer.is_valid():
+            self._track_upload_validation(
+                stage="geometry_format",
+                status="failed",
+                error=geojson_serializer.errors,
+            )
+            raise serializers.ValidationError(geojson_serializer.errors)
         return geojson_serializer.validated_data
 
-    def _is_inside_planning_area(self, geometry, planning_area_id, stand_size) -> bool:
-        try:
-            uploaded_geos = union_geojson(geometry)
-        except ValueError as e:
-            raise serializers.ValidationError({"global": [str(e)]})
-        try:
-            planning_area = PlanningArea.objects.get(pk=planning_area_id)
-        except PlanningArea.DoesNotExist:
-            raise serializers.ValidationError("Planning area does not exist.")
+    def _track_upload_validation(
+        self,
+        stage: str,
+        status: str,
+        planning_area_id: int | None = None,
+        stand_size: str | None = None,
+        error=None,
+    ) -> None:
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        properties = {
+            "stage": stage,
+            "status": status,
+            "planning_area_id": planning_area_id
+            or self.initial_data.get("planning_area"),
+            "stand_size": stand_size or self.initial_data.get("stand_size"),
+            "scenario_name": self.initial_data.get("name"),
+            "email": getattr(user, "email", None),
+        }
+        if error:
+            properties["error"] = str(error)
 
-        return planning_area_covers(
-            planning_area=planning_area,
-            geometry=uploaded_geos,
-            stand_size=stand_size or StandSizeChoices.SMALL,
+        track_event(
+            name="planning.project_areas_upload.validation",
+            properties=properties,
+            user_id=getattr(user, "pk", None),
         )
 
 

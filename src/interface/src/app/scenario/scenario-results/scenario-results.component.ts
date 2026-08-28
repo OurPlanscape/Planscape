@@ -138,8 +138,10 @@ Treatment Opportunity x Subunits compares each subunits's potential to deliver t
 
 Cumulative Attainment x Cumulative Area Treated reveals how attainment stacks up across all subunits, showing the cumulative opportunity if all projects were sequentially implemented to achieve treatment goals.`;
 
-    return this.isPlanningApproachSubUnits
-      ? subUnitTooltip
-      : projectAreaTooltip;
+    if (this.isPlanningApproachSubUnits && this.scenarioParent === null) {
+      return subUnitTooltip;
+    } else {
+      return projectAreaTooltip;
+    }
   }
 }
