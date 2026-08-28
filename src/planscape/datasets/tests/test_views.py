@@ -1,3 +1,4 @@
+from unittest import mock
 from urllib.parse import urlencode
 
 from django.contrib.auth import get_user_model
@@ -91,6 +92,30 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(1, data.get("count"))
         self.assertEqual(datalayer.name, data.get("results")[0].get("name"))
 
+    @mock.patch("planscape.filters.track_event")
+    def test_full_text_search_tracks_search_event(self, track_event_mock):
+        # `search` on this endpoint is handled ad hoc in get_queryset(), not
+        # through the FilterSet - confirms it's still tracked via
+        # DataLayerViewSet.tracked_query_params.
+        self.client.force_authenticate(user=self.normal)
+        DataLayerFactory.create(
+            dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
+        )
+        filter = {"search": "Forest"}
+        url = f"{reverse('api:datasets:datalayers-list')}?{urlencode(filter)}"
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        track_event_mock.assert_called_once_with(
+            name="search.filtered",
+            properties={
+                "resource": "DataLayer",
+                "params": {"search": "Forest"},
+                "email": self.normal.email,
+            },
+            user_id=self.normal.pk,
+        )
+
     def test_filter_by_full_text_search_datalayer_name_multiple_return(self):
         self.client.force_authenticate(user=self.normal)
         DataLayerFactory.create(
@@ -157,7 +182,7 @@ class TestDataLayerViewSet(APITestCase):
                 dataset=self.dataset, name=f"Foo {i}", type=DataLayerType.RASTER
             )
             datalayer_ids.append(str(datalayer.pk))
-        
+
         filter = {
             "id__in": ",".join(datalayer_ids[:3]),
         }
@@ -217,7 +242,9 @@ class TestDataLayerViewSet(APITestCase):
 
         for i in range(2):
             DataLayerFactory.create(
-                dataset=private_dataset, name=f"private R {i}", type=DataLayerType.RASTER
+                dataset=private_dataset,
+                name=f"private R {i}",
+                type=DataLayerType.RASTER,
             )
 
         for i in range(3):
@@ -237,7 +264,9 @@ class TestDataLayerViewSet(APITestCase):
 
         for i in range(2):
             DataLayerFactory.create(
-                dataset=private_dataset, name=f"private R {i}", type=DataLayerType.RASTER
+                dataset=private_dataset,
+                name=f"private R {i}",
+                type=DataLayerType.RASTER,
             )
 
         for i in range(3):
@@ -264,9 +293,7 @@ class TestDataLayerViewSet(APITestCase):
             workspace=shared_workspace,
         )
 
-        hidden_workspace = WorkspaceFactory.create(
-            owner=self.normal
-        )
+        hidden_workspace = WorkspaceFactory.create(owner=self.normal)
         hidden_dataset = DatasetFactory(
             visibility=VisibilityOptions.PRIVATE,
             workspace=hidden_workspace,
@@ -274,16 +301,16 @@ class TestDataLayerViewSet(APITestCase):
 
         for i in range(5):
             DataLayerFactory.create(
-                dataset=shared_dataset, 
-                name=f"shared private R {i}", 
+                dataset=shared_dataset,
+                name=f"shared private R {i}",
                 type=DataLayerType.RASTER,
-                workspace=shared_workspace
+                workspace=shared_workspace,
             )
             DataLayerFactory.create(
-                dataset=hidden_dataset, 
-                name=f"hidden private R {i}", 
+                dataset=hidden_dataset,
+                name=f"hidden private R {i}",
                 type=DataLayerType.RASTER,
-                workspace=hidden_workspace
+                workspace=hidden_workspace,
             )
 
         for test in [
@@ -298,10 +325,11 @@ class TestDataLayerViewSet(APITestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(len(data.get("results")), test.get("expected_result"))
 
-
     def test_retrieve_public_datalayer_succeeds(self):
         self.client.force_authenticate(user=self.normal)
-        datalayer = DataLayerFactory.create(dataset=self.dataset, type=DataLayerType.RASTER)
+        datalayer = DataLayerFactory.create(
+            dataset=self.dataset, type=DataLayerType.RASTER
+        )
         url = reverse("api:datasets:datalayers-detail", kwargs={"pk": datalayer.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -310,7 +338,9 @@ class TestDataLayerViewSet(APITestCase):
     def test_retrieve_private_datalayer_as_normal_user_returns_404(self):
         self.client.force_authenticate(user=self.normal)
         private_dataset = DatasetFactory(visibility=VisibilityOptions.PRIVATE)
-        datalayer = DataLayerFactory.create(dataset=private_dataset, type=DataLayerType.RASTER)
+        datalayer = DataLayerFactory.create(
+            dataset=private_dataset, type=DataLayerType.RASTER
+        )
         url = reverse("api:datasets:datalayers-detail", kwargs={"pk": datalayer.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
@@ -318,14 +348,18 @@ class TestDataLayerViewSet(APITestCase):
     def test_retrieve_private_datalayer_as_staff_succeeds(self):
         self.client.force_authenticate(user=self.admin)
         private_dataset = DatasetFactory(visibility=VisibilityOptions.PRIVATE)
-        datalayer = DataLayerFactory.create(dataset=private_dataset, type=DataLayerType.RASTER)
+        datalayer = DataLayerFactory.create(
+            dataset=private_dataset, type=DataLayerType.RASTER
+        )
         url = reverse("api:datasets:datalayers-detail", kwargs={"pk": datalayer.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["id"], datalayer.pk)
 
     def test_retrieve_unauthenticated_public_datalayer_succeeds(self):
-        datalayer = DataLayerFactory.create(dataset=self.dataset, type=DataLayerType.RASTER)
+        datalayer = DataLayerFactory.create(
+            dataset=self.dataset, type=DataLayerType.RASTER
+        )
         url = reverse("api:datasets:datalayers-detail", kwargs={"pk": datalayer.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -359,6 +393,49 @@ class TestDataLayerViewSet(APITestCase):
         for row in data["results"]:
             self.assertEqual("RASTER", row["data"]["type"])
 
+    @mock.patch("datasets.views.track_event")
+    def test_find_anything_tracks_search_event(self, track_event_mock):
+        self.client.force_authenticate(user=self.normal)
+        DataLayerFactory.create(
+            dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
+        )
+        params = {"term": "forest", "type": "RASTER"}
+        url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(params)}"
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        track_event_mock.assert_called_once_with(
+            name="search.filtered",
+            properties={
+                "resource": "find_anything",
+                "params": {"term": "forest", "type": "RASTER"},
+                "result_count": 1,
+                "email": self.normal.email,
+            },
+            user_id=self.normal.pk,
+        )
+
+    @mock.patch("datasets.views.track_event")
+    def test_find_anything_tracks_anonymous_search(self, track_event_mock):
+        DataLayerFactory.create(
+            dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
+        )
+        params = {"term": "forest", "type": "RASTER"}
+        url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(params)}"
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        track_event_mock.assert_called_once_with(
+            name="search.filtered",
+            properties={
+                "resource": "find_anything",
+                "params": {"term": "forest", "type": "RASTER"},
+                "result_count": 1,
+                "email": None,
+            },
+            user_id=None,
+        )
+
     def test_find_anything_type_vector_returns_vectors(self):
         self.client.force_authenticate(user=self.normal)
         for i in range(3):
@@ -385,7 +462,9 @@ class TestDataLayerViewSet(APITestCase):
 
         for i in range(5):
             DataLayerFactory.create(
-                dataset=private_dataset, name=f"private R {i}", type=DataLayerType.RASTER
+                dataset=private_dataset,
+                name=f"private R {i}",
+                type=DataLayerType.RASTER,
             )
 
         params = {"term": "priv", "type": "RASTER"}
@@ -394,14 +473,16 @@ class TestDataLayerViewSet(APITestCase):
         data = resp.json()
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(5, data.get("count"))
-        
+
     def test_find_anything_private_as_normal_user(self):
         self.client.force_authenticate(user=self.normal)
         private_dataset = DatasetFactory(visibility=VisibilityOptions.PRIVATE)
 
         for i in range(5):
             DataLayerFactory.create(
-                dataset=private_dataset, name=f"private R {i}", type=DataLayerType.RASTER
+                dataset=private_dataset,
+                name=f"private R {i}",
+                type=DataLayerType.RASTER,
             )
 
         params = {"term": "priv", "type": "RASTER"}
@@ -424,9 +505,7 @@ class TestDataLayerViewSet(APITestCase):
             workspace=shared_workspace,
         )
 
-        hidden_workspace = WorkspaceFactory.create(
-            owner=self.normal
-        )
+        hidden_workspace = WorkspaceFactory.create(owner=self.normal)
         hidden_dataset = DatasetFactory(
             visibility=VisibilityOptions.PRIVATE,
             workspace=hidden_workspace,
@@ -434,16 +513,16 @@ class TestDataLayerViewSet(APITestCase):
 
         for i in range(5):
             DataLayerFactory.create(
-                dataset=shared_dataset, 
-                name=f"shared private R {i}", 
+                dataset=shared_dataset,
+                name=f"shared private R {i}",
                 type=DataLayerType.RASTER,
-                workspace=shared_workspace
+                workspace=shared_workspace,
             )
             DataLayerFactory.create(
-                dataset=hidden_dataset, 
-                name=f"hidden private R {i}", 
+                dataset=hidden_dataset,
+                name=f"hidden private R {i}",
                 type=DataLayerType.RASTER,
-                workspace=hidden_workspace
+                workspace=hidden_workspace,
             )
 
         for test in [
@@ -539,7 +618,9 @@ class TestPublicAccess(APITestCase):
         self.public_dataset = DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
         self.public_datalayer = DataLayerFactory.create(dataset=self.public_dataset)
 
-        self.private_dataset = DatasetFactory.create(visibility=VisibilityOptions.PRIVATE)
+        self.private_dataset = DatasetFactory.create(
+            visibility=VisibilityOptions.PRIVATE
+        )
         self.private_datalayer = DataLayerFactory.create(dataset=self.private_dataset)
 
     def test_datasets_list_is_public(self):
@@ -550,9 +631,13 @@ class TestPublicAccess(APITestCase):
 
     def test_all_public_endpoints_are_readable(self):
         urls = [
-            reverse("api:datasets:datasets-browse", kwargs={"pk": self.public_dataset.pk}),
+            reverse(
+                "api:datasets:datasets-browse", kwargs={"pk": self.public_dataset.pk}
+            ),
             f"{reverse('api:datasets:datalayers-find-anything')}?term=x&type=RASTER",
-            reverse("api:datasets:datalayers-urls", kwargs={"pk": self.public_datalayer.pk}),
+            reverse(
+                "api:datasets:datalayers-urls", kwargs={"pk": self.public_datalayer.pk}
+            ),
         ]
         for url in urls:
             with self.subTest(url=url):
@@ -561,8 +646,12 @@ class TestPublicAccess(APITestCase):
 
     def test_private_endpoints_are_not_visible(self):
         urls = [
-            reverse("api:datasets:datasets-browse", kwargs={"pk": self.private_dataset.pk}),
-            reverse("api:datasets:datalayers-urls", kwargs={"pk": self.private_datalayer.pk}),
+            reverse(
+                "api:datasets:datasets-browse", kwargs={"pk": self.private_dataset.pk}
+            ),
+            reverse(
+                "api:datasets:datalayers-urls", kwargs={"pk": self.private_datalayer.pk}
+            ),
         ]
         for url in urls:
             with self.subTest(url=url):

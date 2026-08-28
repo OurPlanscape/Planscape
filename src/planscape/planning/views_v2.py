@@ -8,7 +8,6 @@ from django.db.models import Q
 from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from funding_report.models import (
     FundingOpportunityReport,
@@ -44,6 +43,7 @@ from funding_report.tasks import (
 )
 from modules.base import compute_scenario_capabilities
 from planscape.analytics import track_event
+from planscape.filters import TrackedFilterBackend
 from planscape.serializers import BaseErrorMessageSerializer
 from rest_framework import mixins, pagination, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -157,7 +157,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
     pagination_class = pagination.LimitOffsetPagination
     filterset_class = PlanningAreaFilter
     filter_backends = [
-        DjangoFilterBackend,
+        TrackedFilterBackend,
         PlanningAreaOrderingFilter,
         OrderingFilter,
     ]
@@ -257,7 +257,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
     filterset_class = ScenarioFilter
     filter_backends = [
-        DjangoFilterBackend,
+        TrackedFilterBackend,
         ScenarioOrderingFilter,
     ]
 
@@ -960,7 +960,7 @@ class TreatmentGoalViewSet(
     serializer_class = TreatmentGoalSerializer
     filterset_class = TreatmentGoalFilter
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [TrackedFilterBackend, OrderingFilter]
     ordering_fields = ["category", "name"]
     ordering = ["category", "name"]
 
