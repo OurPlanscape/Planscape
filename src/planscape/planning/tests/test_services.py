@@ -6,6 +6,9 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
+# TODO: remove
+from pprint import pprint 
+
 import fiona
 import shapely
 from cacheops import invalidate_all
@@ -1422,24 +1425,124 @@ class CloneScenarioTest(TestCase):
             self.treatment_goal = TreatmentGoalFactory.create()
             self.planning_area = PlanningAreaFactory.create()
 
-    # test the cloning of a V3 scenario
-    def test_cloning_of_v3_scenario(self):
-        scenarioV3 = ScenarioFactory.create(planning_area=self.planning_area)
+    def test_cloning_of_scenario(self):
+        orig_scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
+
+        pprint(orig_scenario.__dict__)
+        cloned_scenario = clone_scenario(orig_scenario.id, self.secondUser, 'some new scenario')
+        pprint(cloned_scenario.__dict__)
+        # assert that some cloned attributes should match
+        self.assertEqual(orig_scenario.planning_area_id, cloned_scenario.planning_area_id)
+        self.assertEqual(orig_scenario.origin, cloned_scenario.origin)
+        self.assertEqual(orig_scenario.type, cloned_scenario.type)
+        self.assertEqual(orig_scenario.capabilities, cloned_scenario.capabilities)
+        self.assertEqual(orig_scenario.treatment_goal, cloned_scenario.treatment_goal)
+       
+        # assert that clone is associated with user doing the cloning
+        self.assertEqual(cloned_scenario.user, self.secondUser)
+        
+        # assert that some attributes should not be cloned
+        self.assertNotEqual(orig_scenario.user, cloned_scenario.user)
+        self.assertNotEqual(orig_scenario.uuid, cloned_scenario.uuid)
+        self.assertNotEqual(orig_scenario.result_status, cloned_scenario.result_status)
+
+    def test_cloning_of_scenario_with_results(self):
+        print("basic cloning\n")
+        orig_scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
+        ScenarioResultFactory.create(
+            scenario=orig_scenario, status=ScenarioResultStatus.SUCCESS
+        )
+        pprint(orig_scenario.__dict__)
+        print("\n and results?\n")
+        pprint(vars(orig_scenario.results))
+
+
+
+        cloned_scenario = clone_scenario(orig_scenario.id, self.secondUser, 'some new scenario')
+        print("and the clone\n")
+        pprint(cloned_scenario.__dict__)
+        # assert that some cloned attributes should match
+        self.assertEqual(orig_scenario.planning_area_id, cloned_scenario.planning_area_id)
+        self.assertEqual(orig_scenario.origin, cloned_scenario.origin)
+        self.assertEqual(orig_scenario.type, cloned_scenario.type)
+        self.assertEqual(orig_scenario.capabilities, cloned_scenario.capabilities)
+        self.assertEqual(orig_scenario.treatment_goal, cloned_scenario.treatment_goal)
+       
+        # assert that clone is associated with user doing the cloning
+        self.assertEqual(cloned_scenario.user, self.secondUser)
+
+        # assert that the clone has no results
+        self.assertFalse(hasattr(cloned_scenario, 'results'))
+
+        # assert that some attributes should not be cloned
+        self.assertNotEqual(orig_scenario.user, cloned_scenario.user)
+        self.assertNotEqual(orig_scenario.uuid, cloned_scenario.uuid)
+        self.assertNotEqual(orig_scenario.result_status, cloned_scenario.result_status)
+
+    def test_cloning_of_scenario_with_name_collisions(self):
+        scenarioV3 = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
+        
         cloned_scenario = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
-        print(cloned_scenario)
+        cloned_scenario_2 = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
+        cloned_scenario_3 = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
+        self.assertNotEqual(cloned_scenario.name, cloned_scenario_2.name)
+        self.assertNotEqual(cloned_scenario.name, cloned_scenario_3.name)
+        self.assertNotEqual(cloned_scenario_2.name, cloned_scenario_3.name)
+        self.assertEqual(cloned_scenario_3.name, "some new scenario (3)")
+
+    def test_cloning_w_configuration(self):
+        config = {
+            "min_distance_from_road": 100,
+            "max_project_count": 5,
+            "configuration": {
+                "targets": {
+                    "estimated_cost": 12345,
+                    "max_area": 11111,
+                    "max_project_count": 10,
+                },
+            },
+        }
+        scenarioV3 = ScenarioFactory.create(planning_area=self.planning_area, user=self.user, configuration=config)
+        print("\nscenario w config:")
+        pprint(vars(scenarioV3))
+        cloned_scenario = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
+        print("\nclone w config?")
+        pprint(vars(cloned_scenario))
+
+    # TODO: we should validate conconfiguration at some point -- before and after cloning?
+    def test_cloning_w_invalid_configuration(self):
+        config = {
+            "min_distance_from_road": 100,
+            "max_project_count": 5,
+            "configuration": {
+                "targets": {
+                    "estimated_cost": 12345,
+                    "max_area": 11111,
+                    "max_project_count": 10,
+                },
+            },
+        }
+        scenarioV3 = ScenarioFactory.create(planning_area=self.planning_area, user=self.user, configuration=config)
+        print("\nscenario w config:")
+        pprint(vars(scenarioV3))
+        cloned_scenario = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
+        print("\n\nclone w config?")
+        pprint(vars(cloned_scenario))
+
+
 
     ## Test cloning of legacy scenario types
     # test the cloning of a V1 scenario
     def test_cloning_of_v1_scenario(self):
         scenarioV1 = ScenarioFactory.create(planning_area=self.planning_area)
         cloned_scenario = clone_scenario(scenarioV1.id, self.secondUser, 'some new scenario')
-        print(cloned_scenario)
+        pprint(cloned_scenario.__dict__)
 
     # test the cloning of a V2 scenario
     def test_cloning_of_v2_scenario(self):
         scenarioV2 = ScenarioFactory.create(planning_area=self.planning_area)
         cloned_scenario = clone_scenario(scenarioV2.id, self.secondUser, 'some new scenario')
-        print(cloned_scenario)
+        pprint(cloned_scenario.__dict__)
 
 
 class CreateScenarioGuardTest(TestCase):
