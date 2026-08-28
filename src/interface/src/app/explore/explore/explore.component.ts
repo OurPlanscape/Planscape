@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { AsyncPipe, CommonModule, NgClass, NgIf } from '@angular/common';
 import { MapNavbarComponent } from '@maplibre-map/map-nav-bar/map-nav-bar.component';
 import { MapConfigState } from '@maplibre-map/map-config.state';
@@ -8,7 +8,15 @@ import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
 import { SyncedMapsComponent } from '@maplibre-map/synced-maps/synced-maps.component';
 import { MultiMapControlComponent } from '@maplibre-map/multi-map-control/multi-map-control.component';
 import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
-import { firstValueFrom, map, of, skip, switchMap, take } from 'rxjs';
+import {
+  combineLatest,
+  firstValueFrom,
+  map,
+  of,
+  skip,
+  switchMap,
+  take,
+} from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
@@ -23,6 +31,8 @@ import { getPlanPath } from '@plan/plan-helpers';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FrontendConstants } from '@map/map.constants';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { ActivatedRoute } from '@angular/router';
+import { ScenarioState } from '@app/scenario/scenario.state';
 
 enum SidebarTabs {
   DATA_LAYERS,
@@ -63,7 +73,7 @@ enum SidebarTabs {
     MapConfigService,
   ],
 })
-export class ExploreComponent implements OnDestroy {
+export class ExploreComponent implements OnDestroy, OnInit {
   dataLayerOpacity$ = this.multiMapConfigState.dataLayersOpacity$;
   defaultDataLayerOpacity = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY;
 
@@ -85,34 +95,11 @@ export class ExploreComponent implements OnDestroy {
     private multiMapConfigState: MultiMapConfigState,
     private mapConfigService: MapConfigService,
     private planState: PlanState,
-    private drawService: DrawService
+    private scenarioState: ScenarioState,
+    private drawService: DrawService,
+    private route: ActivatedRoute
   ) {
     this.loadStateFromLocalStorage();
-
-    this.planState.currentPlanId$
-      .pipe(
-        take(1),
-        switchMap((id) => {
-          if (id) {
-            return this.planState.currentPlan$;
-          }
-          return of(null);
-        })
-      )
-      .subscribe((plan) => {
-        let label = 'New Plan';
-        let backUrl = '/';
-        if (plan) {
-          label = 'Map Viewer: ' + plan.name;
-          backUrl = getPlanPath(plan.id);
-        }
-        this.breadcrumbService.updateBreadCrumb({
-          label,
-          backUrl,
-          blackText: true,
-          icon: 'close',
-        });
-      });
 
     // expand panel automatically when the selected map change
     // (when the user clicks on the data layer name on the map)
@@ -127,6 +114,47 @@ export class ExploreComponent implements OnDestroy {
       });
 
     this.mapConfigService.initialize();
+  }
+
+  ngOnInit() {
+    const scenarioId = this.route.snapshot.data['scenarioId'];
+
+    this.planState.currentPlanId$
+      .pipe(
+        take(1),
+        switchMap((id) => {
+          if (!id) {
+            return of({ plan: null, scenario: null });
+          }
+
+          return combineLatest({
+            plan: this.planState.currentPlan$,
+            scenario: scenarioId
+              ? this.scenarioState.currentScenario$
+              : of(null),
+          });
+        })
+      )
+      .subscribe(({ plan, scenario }) => {
+        let label = 'New Plan';
+        let backUrl = '/';
+        // If we have a scenarioId (from the route) AND plan and scenario
+        if (scenarioId && plan && scenario) {
+          label = 'Map Viewer: ' + scenario.name;
+          backUrl += getPlanPath(plan.id) + `/scenario/${scenarioId}/dashboard`;
+          // otherwise, just route back to the planning area
+        } else if (plan) {
+          label = 'Map Viewer: ' + plan.name;
+          backUrl = getPlanPath(plan.id);
+        }
+
+        this.breadcrumbService.updateBreadCrumb({
+          label,
+          backUrl,
+          blackText: true,
+          icon: 'close',
+        });
+      });
   }
 
   handleOpacityChange(opacity: number) {
