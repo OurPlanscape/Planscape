@@ -409,7 +409,7 @@ class PrioritizeSubUnitsModuleTest(TestCase):
         self.assertEqual(len(sub_units), 1)
 
 
-class AdvancedLevelConstraintModuleTest(TestCase):
+class AdvancedStandLevelConstraintModuleTest(TestCase):
     def setUp(self):
         self.planning_area = PlanningAreaFactory.create()
         self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
@@ -453,8 +453,8 @@ class AdvancedLevelConstraintModuleTest(TestCase):
             self.planning_area
         )
 
-        self.assertIn("ADVANCED_LEVEL_CONSTRAINT", scenario_capabilities)
-        self.assertNotIn("ADVANCED_LEVEL_CONSTRAINT", planning_area_capabilities)
+        self.assertIn("ADVANCED_STAND_LEVEL_CONSTRAINT", scenario_capabilities)
+        self.assertNotIn("ADVANCED_STAND_LEVEL_CONSTRAINT", planning_area_capabilities)
 
 
 class ImpactsModulesTest(TestCase):
