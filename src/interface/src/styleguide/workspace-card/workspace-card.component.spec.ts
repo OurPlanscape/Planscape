@@ -130,15 +130,26 @@ describe('WorkspaceCardComponent', () => {
     component.link = ['/workspace', 7];
     fixture.detectChanges();
 
-    const event = new MouseEvent('click', {
-      bubbles: true,
-      cancelable: true,
-      metaKey: true,
-    });
-    fixture.nativeElement.querySelector('.workspace-name').dispatchEvent(event);
+    // RouterLink leaves a modified click alone, which means the browser would
+    // really follow the href and reload the test page. Record its decision,
+    // then stop the navigation.
+    let leftToTheBrowser = false;
+    const stopRealNavigation = (event: Event) => {
+      leftToTheBrowser = !event.defaultPrevented;
+      event.preventDefault();
+    };
+    document.addEventListener('click', stopRealNavigation);
+    fixture.nativeElement.querySelector('.workspace-name').dispatchEvent(
+      new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        metaKey: true,
+      })
+    );
+    document.removeEventListener('click', stopRealNavigation);
 
     expect(navigate).not.toHaveBeenCalled();
-    expect(event.defaultPrevented).toBe(false);
+    expect(leftToTheBrowser).toBe(true);
   });
 
   it('does not navigate when the menu button is clicked', () => {
