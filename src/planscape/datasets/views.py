@@ -134,14 +134,11 @@ class DataLayerViewSet(
         user = request.user
         is_authenticated = bool(user and user.is_authenticated)
         track_event(
-            name="search.filtered",
+            name="datasets.datalayer.find_anything",
             properties={
-                "resource": "find_anything",
-                "params": {
-                    key: str(value)
-                    for key, value in serializer.validated_data.items()
-                    if value not in (None, "")
-                },
+                "term": serializer.validated_data.get("term"),
+                "type": serializer.validated_data.get("type"),
+                "module": serializer.validated_data.get("module"),
                 "result_count": len(search_results),
                 "email": user.email if is_authenticated else None,
             },

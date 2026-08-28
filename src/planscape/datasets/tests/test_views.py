@@ -405,10 +405,11 @@ class TestDataLayerViewSet(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         track_event_mock.assert_called_once_with(
-            name="search.filtered",
+            name="datasets.datalayer.find_anything",
             properties={
-                "resource": "find_anything",
-                "params": {"term": "forest", "type": "RASTER"},
+                "term": "forest",
+                "type": "RASTER",
+                "module": None,
                 "result_count": 1,
                 "email": self.normal.email,
             },
@@ -426,10 +427,11 @@ class TestDataLayerViewSet(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         track_event_mock.assert_called_once_with(
-            name="search.filtered",
+            name="datasets.datalayer.find_anything",
             properties={
-                "resource": "find_anything",
-                "params": {"term": "forest", "type": "RASTER"},
+                "term": "forest",
+                "type": "RASTER",
+                "module": None,
                 "result_count": 1,
                 "email": None,
             },
