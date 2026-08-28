@@ -1747,6 +1747,46 @@ class SubUnitsDetailsTest(TestCase):
         # 100 + 200 + 300 + 400 + 500 + 550 (of 600) + 550 (of 700) + 550 (of 800) + 550 (of 900) + 550 (of 100))
         self.assertEqual(details.get("targeted_area"), 4250)
 
+    @mock.patch(
+        "planning.services.get_acreage",
+        side_effect=[5.0, 15.0],
+    )
+    def test_project_areas_child_uses_project_area_acreage(
+        self,
+        mock_get_acreage,
+    ):
+        parent = ScenarioFactory.create(
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        child = ScenarioFactory.create(
+            parent=parent,
+            planning_area=parent.planning_area,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+            configuration={"stand_size": StandSizeChoices.LARGE},
+        )
+
+        ProjectAreaFactory.create(
+            scenario=parent,
+            name="Project Area 1",
+        )
+        ProjectAreaFactory.create(
+            scenario=parent,
+            name="Project Area 2",
+        )
+
+        details = get_sub_units_details(
+            child,
+            child.get_stand_size(),
+        )
+
+        self.assertEqual(details["avg"], 10.0)
+        self.assertEqual(details["min"], 5.0)
+        self.assertEqual(details["max"], 15.0)
+        self.assertEqual(details["sum"], 20.0)
+        self.assertIsNone(details["targeted_area"])
+
+        self.assertEqual(mock_get_acreage.call_count, 2)
+
 
 class CalculateAndUpdateScenarioResult(TestCase):
     def setUp(self):

@@ -2193,24 +2193,15 @@ def get_sub_units_areas(
 
 def get_project_areas_child_areas(
     scenario: Scenario,
-    stand_size: StandSizeChoices,
 ) -> list[float] | None:
     parent = scenario.parent
     if not parent:
         return None
 
-    stand_area = get_min_project_area(stand_size)
-    areas = []
-
-    for project_area in parent.project_areas.all():
-        stand_count = get_project_areas_child_stands(
-            scenario=scenario,
-            project_area=project_area,
-            stand_size=stand_size,
-        ).count()
-
-        if stand_count > 0:
-            areas.append(stand_count * stand_area)
+    areas = [
+        get_acreage(project_area.geometry)
+        for project_area in parent.project_areas.all()
+    ]
 
     return areas or None
 
@@ -2225,7 +2216,6 @@ def get_sub_units_details(
     if is_project_areas_child(scenario):
         areas = get_project_areas_child_areas(
             scenario=scenario,
-            stand_size=stand_size,
         )
     elif datalayer:
         areas = get_sub_units_areas(
