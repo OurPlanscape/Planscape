@@ -293,8 +293,8 @@ class PrioritizeSubUnitsModule(BaseModule):
         return {**options, "sub_units": list(sub_units_layers)}
 
 
-class AdvancedLevelConstraintModule(BaseModule):
-    name = "advanced_level_constraint"
+class AdvancedStandLevelConstraintModule(BaseModule):
+    name = "advanced_stand_level_constraint"
 
     def _can_run_planning_area(self, runnable: PlanningArea) -> bool:
         return False
@@ -340,5 +340,5 @@ MODULE_HANDLERS = {
     "climate_foresight": ClimateForesightModule(),
     "prioritize_sub_units": PrioritizeSubUnitsModule(),
     "funding_report": FundingReportModule(),
-    "advanced_level_constraint": AdvancedLevelConstraintModule()
+    "advanced_stand_level_constraint": AdvancedStandLevelConstraintModule()
 }

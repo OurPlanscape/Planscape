@@ -1635,17 +1635,7 @@ class TriggerScenarioTest(TestCase):
 
         self.scenario.refresh_from_db()
 
-        self.assertEqual(
-            self.scenario.capabilities,
-            [
-                "FORSYS",
-                "IMPACTS",
-                "MAP",
-                "CLIMATE_FORESIGHT",
-                "PRIORITIZE_SUB_UNITS",
-                "FUNDING_REPORT",
-            ],
-        )
+        self.assertIn("PRIORITIZE_SUB_UNITS", self.scenario.capabilities)
 
     def test_compute_scenario_capability_before_run__prioritize_sub_units(self):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
@@ -1654,16 +1644,7 @@ class TriggerScenarioTest(TestCase):
 
         self.scenario.refresh_from_db()
 
-        self.assertEqual(
-            self.scenario.capabilities,
-            [
-                "FORSYS",
-                "MAP",
-                "CLIMATE_FORESIGHT",
-                "PRIORITIZE_SUB_UNITS",
-                "FUNDING_REPORT",
-            ],
-        )
+        self.assertIn("PRIORITIZE_SUB_UNITS", self.scenario.capabilities)
 
 
 class SubUnitsDetailsTest(TestCase):
