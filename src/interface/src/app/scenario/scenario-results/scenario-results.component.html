@@ -44,7 +44,8 @@
     *ngIf="results"
     [usageTypes]="usageTypes"
     [planningApproach]="planningApproach"
-    [scenarioResult]="results"></app-treatment-opportunity-chart>
+    [scenarioResult]="results"
+    [hasParent]="scenarioParent !== null"></app-treatment-opportunity-chart>
 
   <app-cumulative-attainment-chart
     class="chart"
