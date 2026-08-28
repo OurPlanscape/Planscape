@@ -293,6 +293,24 @@ class PrioritizeSubUnitsModule(BaseModule):
         return {**options, "sub_units": list(sub_units_layers)}
 
 
+class AdvancedLevelConstraintModule(BaseModule):
+    name = "advanced_level_constraint"
+
+    def _can_run_planning_area(self, runnable: PlanningArea) -> bool:
+        return False
+
+    def _can_run_scenario(self, runnable: Scenario) -> bool:
+        return True
+
+    def get_datasets(
+        self,
+        geometry: Optional[GEOSGeometry] = None,
+        user: Optional[User] = None,
+        **kwargs,
+    ) -> QuerySet[Dataset]:
+        return Dataset.objects.none()
+
+
 def get_module(module_name: str) -> BaseModule:
     return MODULE_HANDLERS[module_name]
 
@@ -322,4 +340,5 @@ MODULE_HANDLERS = {
     "climate_foresight": ClimateForesightModule(),
     "prioritize_sub_units": PrioritizeSubUnitsModule(),
     "funding_report": FundingReportModule(),
+    "advanced_level_constraint": AdvancedLevelConstraintModule()
 }
