@@ -642,6 +642,16 @@ class UpdateWorkspaceMemberTest(APITestCase):
 
         self.assertEqual(response.status_code, 400)
 
+    def test_cannot_promote_a_member_to_owner(self):
+        self.client.force_authenticate(user=self.owner)
+        response = self._patch(self.member.pk, role=WorkspaceRole.OWNER)
+
+        self.assertEqual(response.status_code, 400)
+        access = UserAccessWorkspace.objects.get(
+            workspace=self.workspace, user=self.member
+        )
+        self.assertEqual(access.role, WorkspaceRole.COLLABORATOR)
+
 
 class RemoveWorkspaceMemberTest(APITestCase):
     def setUp(self):
