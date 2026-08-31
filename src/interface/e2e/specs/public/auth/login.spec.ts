@@ -14,8 +14,11 @@ test('shows error with invalid credentials', async ({ page }) => {
   await loginPage.goto();
   await loginPage.login(TEST_USER.email, 'WrongPassword999!');
 
-  // Should stay on login page and show some error
+  // Should stay on login page and show the credentials error banner
   await expect(page).toHaveURL(/\/login/);
-  const error = page.locator('app-form-message, mat-error, .mat-mdc-snack-bar-container');
-  await expect(error.first()).toBeVisible();
+  const error = page.locator('sg-banner.error');
+  await expect(error).toBeVisible();
+  await expect(error).toContainText(
+    'Either the user name or password that you have entered is incorrect. Please try again.'
+  );
 });
