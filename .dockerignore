@@ -5,7 +5,6 @@ data/
 src/interface/node_modules/
 src/interface/.angular/
 src/interface/dist/
-src/planscape/compiled-static/
 __pycache__/
 *.pyc
 .claude/

@@ -38,8 +38,6 @@ COPY --chown=app:app . /app
 
 WORKDIR /app/src/planscape
 
-RUN uv run python manage.py collectstatic --no-input
-
 EXPOSE 8000
 
 CMD ["bin/run_gunicorn.sh"]
