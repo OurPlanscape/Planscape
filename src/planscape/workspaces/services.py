@@ -94,9 +94,6 @@ def invite_member(
         raise PermissionDenied(
             "You do not have permission to invite members to this workspace."
         )
-    if role == WorkspaceRole.OWNER:
-        raise ValidationError({"role": "Members cannot be invited as owner."})
-
     email = email.lower()
     already_member = workspace.user_access.filter(user__email__iexact=email).exists()
     if already_member:
@@ -163,9 +160,6 @@ def update_member_role(
         raise ValidationError(
             {"role": "The workspace creator's role cannot be changed."}
         )
-    if role == WorkspaceRole.OWNER:
-        raise ValidationError({"role": "Members cannot be promoted to owner."})
-
     access = workspace.user_access.filter(user_id=target_user_id).first()
     if not access:
         raise NotFound("This user is not a member of the workspace.")

@@ -510,11 +510,16 @@ class InviteWorkspaceMemberTest(APITestCase):
         )
         self.assertEqual(access.role, WorkspaceRole.COLLABORATOR)
 
-    def test_inviting_as_owner_role_is_rejected(self):
+    @patch("workspaces.services.send_workspace_invitation.delay")
+    def test_owner_can_invite_as_owner(self, send_invitation):
         self.client.force_authenticate(user=self.owner)
         response = self._invite(role=WorkspaceRole.OWNER)
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 201, response.json())
+        access = UserAccessWorkspace.objects.get(
+            workspace=self.workspace, email="invitee@example.com"
+        )
+        self.assertEqual(access.role, WorkspaceRole.OWNER)
 
 
 class AcceptWorkspaceInviteTest(APITestCase):
@@ -642,15 +647,15 @@ class UpdateWorkspaceMemberTest(APITestCase):
 
         self.assertEqual(response.status_code, 400)
 
-    def test_cannot_promote_a_member_to_owner(self):
+    def test_owner_can_promote_a_member_to_owner(self):
         self.client.force_authenticate(user=self.owner)
         response = self._patch(self.member.pk, role=WorkspaceRole.OWNER)
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200, response.json())
         access = UserAccessWorkspace.objects.get(
             workspace=self.workspace, user=self.member
         )
-        self.assertEqual(access.role, WorkspaceRole.COLLABORATOR)
+        self.assertEqual(access.role, WorkspaceRole.OWNER)
 
 
 class RemoveWorkspaceMemberTest(APITestCase):

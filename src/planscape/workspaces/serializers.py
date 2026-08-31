@@ -187,23 +187,14 @@ class UpdatePlanningWorkspaceSerializer(serializers.ModelSerializer):
         validators = []
 
 
-# Members can be invited/reassigned as COLLABORATOR or VIEWER only. Ownership
-# transfer isn't supported yet, so OWNER is excluded here.
-INVITABLE_ROLE_CHOICES = [
-    (choice, label)
-    for choice, label in WorkspaceRole.choices
-    if choice != WorkspaceRole.OWNER
-]
-
-
 class InviteWorkspaceMemberSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    role = serializers.ChoiceField(choices=INVITABLE_ROLE_CHOICES)
+    role = serializers.ChoiceField(choices=WorkspaceRole.choices)
     message = serializers.CharField(required=False, allow_blank=True, default="")
 
 
 class UpdateWorkspaceMemberSerializer(serializers.Serializer):
-    role = serializers.ChoiceField(choices=INVITABLE_ROLE_CHOICES)
+    role = serializers.ChoiceField(choices=WorkspaceRole.choices)
 
 
 class WorkspaceMemberSerializer(serializers.ModelSerializer):
