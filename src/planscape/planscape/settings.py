@@ -375,7 +375,6 @@ if SENTRY_DSN is not None:
         enable_tracing=True,
         profiles_sample_rate=0.1,
         traces_sample_rate=0.05,
-        transport=sentry_sdk.HttpTransport(timeout=SENTRY_TIMEOUT),
         debug=SENTRY_DEBUG,
     )
 
