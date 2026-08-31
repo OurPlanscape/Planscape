@@ -30,6 +30,7 @@ export class TreatmentOpportunityChartComponent implements OnInit {
   @Input() scenarioResult!: ScenarioResult;
   @Input() usageTypes: UsageType[] | null = [];
   @Input() planningApproach: PLANNING_APPROACH = 'OPTIMIZE_PROJECT_AREAS';
+  @Input() hasParent: boolean = false;
 
   public barChartType: 'bar' = 'bar';
 
@@ -138,8 +139,9 @@ export class TreatmentOpportunityChartComponent implements OnInit {
   }
 
   get chartXAxisLabel() {
-    return isPlanningApproachSubUnits(this.planningApproach)
-      ? 'Subunits'
-      : 'Project Areas';
+    if (isPlanningApproachSubUnits(this.planningApproach) && !this.hasParent) {
+      return 'Subunits';
+    }
+    return 'Project Areas';
   }
 }

@@ -40,8 +40,10 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
 
     def get_queryset(self):
         user = self.request.user if self.request else None
-        return Dataset.objects.all().accessible_by(user).select_related(
-            "organization", "created_by"
+        return (
+            Dataset.objects.all()
+            .accessible_by(user)
+            .select_related("organization", "created_by")
         )
 
     @extend_schema(
@@ -95,7 +97,9 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         return list(datalayers.all())
 
 
-class DataLayerViewSet(RetrieveModelMixin, ListModelMixin, MultiSerializerMixin, GenericViewSet):
+class DataLayerViewSet(
+    RetrieveModelMixin, ListModelMixin, MultiSerializerMixin, GenericViewSet
+):
     queryset = DataLayer.objects.none()
     permission_classes = [IsAuthenticatedOrReadOnly]
     pagination_class = LimitOffsetPagination
@@ -104,6 +108,10 @@ class DataLayerViewSet(RetrieveModelMixin, ListModelMixin, MultiSerializerMixin,
         "list": DataLayerSerializer,
     }
     filterset_class = DataLayerFilterSet
+    # `search` is handled ad hoc in get_queryset() below (full-text search),
+    # not through the FilterSet - list it explicitly so TrackedFilterBackend
+    # still tracks it.
+    tracked_query_params = ["search"]
 
     @action(detail=True, methods=["get"])
     def urls(self, request, pk=None):
@@ -122,6 +130,21 @@ class DataLayerViewSet(RetrieveModelMixin, ListModelMixin, MultiSerializerMixin,
 
         results = find_anything(user=request.user, **serializer.validated_data)
         search_results = list(results.values())
+
+        user = request.user
+        is_authenticated = bool(user and user.is_authenticated)
+        track_event(
+            name="datasets.datalayer.find_anything",
+            properties={
+                "term": serializer.validated_data.get("term"),
+                "type": serializer.validated_data.get("type"),
+                "module": serializer.validated_data.get("module"),
+                "result_count": len(search_results),
+                "email": user.email if is_authenticated else None,
+            },
+            user_id=user.pk if is_authenticated else None,
+        )
+
         page = self.paginate_queryset(search_results)  # type: ignore
         if page is not None:
             out_serializer = SearchResultsSerializer(

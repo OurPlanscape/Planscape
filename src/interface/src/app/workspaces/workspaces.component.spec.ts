@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 import { of, Subject, throwError } from 'rxjs';
 import { MockProvider } from 'ng-mocks';
 
@@ -15,7 +15,6 @@ describe('WorkspacesComponent', () => {
   let fixture: ComponentFixture<WorkspacesComponent>;
   let actionsService: WorkspaceActionsService;
   let workspacesService: WorkspacesService;
-  let router: Router;
   let snackbar: MatSnackBar;
 
   const workspace: Workspace = {
@@ -48,7 +47,6 @@ describe('WorkspacesComponent', () => {
     );
 
     actionsService = TestBed.inject(WorkspaceActionsService);
-    router = TestBed.inject(Router);
     snackbar = TestBed.inject(MatSnackBar);
 
     fixture = TestBed.createComponent(WorkspacesComponent);
@@ -57,11 +55,10 @@ describe('WorkspacesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [WorkspacesComponent, NoopAnimationsModule],
+      imports: [WorkspacesComponent, NoopAnimationsModule, RouterTestingModule],
       providers: [
         MockProvider(WorkspaceActionsService),
         MockProvider(WorkspacesService),
-        MockProvider(Router),
         MockProvider(MatSnackBar),
       ],
     }).compileComponents();
@@ -101,12 +98,12 @@ describe('WorkspacesComponent', () => {
       expect(spy).toHaveBeenCalledWith('list');
     });
 
-    it('navigates to the workspace when a card is clicked', () => {
-      const spy = spyOn(router, 'navigate');
+    it('links each card to its workspace', () => {
+      const link = fixture.nativeElement.querySelector(
+        'sg-workspace-card a.card-link'
+      );
 
-      fixture.nativeElement.querySelector('sg-workspace-card').click();
-
-      expect(spy).toHaveBeenCalledWith(['/workspace', 7]);
+      expect(link.getAttribute('href')).toBe('/workspace/7');
     });
   });
 
