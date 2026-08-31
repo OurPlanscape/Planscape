@@ -1018,7 +1018,7 @@ class TestRemoveExcludes(TestCase):
 
     def test_get_excluded_stands_excluded_zones(self):
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.assertEquals(17, len(stands))
+        self.assertEqual(17, len(stands))
         excluded_stands = get_excluded_stands(
             stands,
             self.datalayer,
@@ -1028,7 +1028,7 @@ class TestRemoveExcludes(TestCase):
 
     def test_get_constrained_stands_thresholds(self):
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.assertEquals(17, len(stands))
+        self.assertEqual(17, len(stands))
         # in this scenario, without operator and with THRESHOLD usagetype
         # we are getting all the stands that are NOT equals 1
         excluded_stands = get_constrained_stands(
@@ -1046,7 +1046,7 @@ class TestRemoveExcludes(TestCase):
             type=DataLayerType.RASTER,
         )
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.assertEquals(17, len(stands))
+        self.assertEqual(17, len(stands))
 
         for stand in stands:
             StandMetricFactory.create(
@@ -1069,22 +1069,22 @@ class TestRemoveExcludes(TestCase):
     def test_get_available_stands_ids(self):
         stand_ids = get_available_stand_ids(self.scenario, StandSizeChoices.LARGE)
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.assertEquals(17, len(stands))
-        self.assertEquals(len(stand_ids), len(stands))
+        self.assertEqual(17, len(stands))
+        self.assertEqual(len(stand_ids), len(stands))
 
     @override_settings(FEATURE_FLAGS="ADD_INCLUDES")
     def test_get_available_stands_ids_add_includes(self):
         stand_ids = get_available_stand_ids(self.scenario, StandSizeChoices.LARGE)
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.assertEquals(17, len(stands))
-        self.assertEquals(len(stand_ids), len(stands))
+        self.assertEqual(17, len(stands))
+        self.assertEqual(len(stand_ids), len(stands))
 
     def test_get_available_stands_ids_with_excluded_area(self):
         stand_ids = get_available_stand_ids(
             self.scenario, StandSizeChoices.LARGE, [self.datalayer]
         )
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.assertEquals(17, len(stands))
+        self.assertEqual(17, len(stands))
         self.assertLess(len(stand_ids), len(stands))
 
     def test_get_available_stands_ids_with_sub_units(self):
@@ -1107,7 +1107,7 @@ class TestRemoveExcludes(TestCase):
                 scenario, StandSizeChoices.LARGE, [self.datalayer]
             )
             stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-            self.assertEquals(17, len(stands))
+            self.assertEqual(17, len(stands))
             self.assertLess(len(stand_ids), len(stands) - 1)
 
     def test_get_available_stands_applies_forsys_constraint(self):
@@ -1484,6 +1484,33 @@ class ProjectAreasChildForSysTest(TestCase):
         )
         self.assertEqual(errors, [])
 
+    def test_available_stands_summary_uses_parent_project_areas(self):
+        stand = self.planning_area.get_stands(StandSizeChoices.LARGE).first()
+        self.assertIsNotNone(stand)
+
+        self.project_area.geometry = MultiPolygon(
+            stand.geometry,
+            srid=stand.geometry.srid,
+        )
+        self.project_area.save(update_fields=["geometry"])
+
+        result = get_available_stands(
+            self.child,
+            stand_size=StandSizeChoices.LARGE,
+        )
+
+        summary = result["summary"]
+
+        self.assertEqual(summary["treatable_stand_count"], 1)
+        self.assertLess(
+            summary["treatable_area"],
+            summary["total_area"],
+        )
+        self.assertAlmostEqual(
+            summary["available_area"],
+            summary["treatable_area"],
+        )
+
 
 class CreateScenarioGuardTest(TestCase):
     def setUp(self):
@@ -1719,6 +1746,46 @@ class SubUnitsDetailsTest(TestCase):
 
         # 100 + 200 + 300 + 400 + 500 + 550 (of 600) + 550 (of 700) + 550 (of 800) + 550 (of 900) + 550 (of 100))
         self.assertEqual(details.get("targeted_area"), 4250)
+
+    @mock.patch(
+        "planning.services.get_acreage",
+        side_effect=[5.0, 15.0],
+    )
+    def test_project_areas_child_uses_project_area_acreage(
+        self,
+        mock_get_acreage,
+    ):
+        parent = ScenarioFactory.create(
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        child = ScenarioFactory.create(
+            parent=parent,
+            planning_area=parent.planning_area,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+            configuration={"stand_size": StandSizeChoices.LARGE},
+        )
+
+        ProjectAreaFactory.create(
+            scenario=parent,
+            name="Project Area 1",
+        )
+        ProjectAreaFactory.create(
+            scenario=parent,
+            name="Project Area 2",
+        )
+
+        details = get_sub_units_details(
+            child,
+            child.get_stand_size(),
+        )
+
+        self.assertEqual(details["avg"], 10.0)
+        self.assertEqual(details["min"], 5.0)
+        self.assertEqual(details["max"], 15.0)
+        self.assertEqual(details["sum"], 20.0)
+        self.assertIsNone(details["targeted_area"])
+
+        self.assertEqual(mock_get_acreage.call_count, 2)
 
 
 class CalculateAndUpdateScenarioResult(TestCase):

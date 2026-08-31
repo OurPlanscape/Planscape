@@ -1972,7 +1972,17 @@ def get_available_stands(
         stands = planning_area.get_stands(stand_size)
 
     stands = stands.annotate(area=area_transform)
-    total_area = stands.all().aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+
+    total_area = stands.aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+
+    if is_project_areas_child(scenario):
+        project_area_stand_ids = get_project_areas_child_stand_ids(
+            scenario=scenario,
+            stand_size=stand_size,
+        )
+        stands = stands.filter(id__in=project_area_stand_ids)
+
+    potential_area = stands.aggregate(total_area_m2=Sum("area"))["total_area_m2"]
 
     excluded_ids = []
     constrained_ids = []
@@ -1982,13 +1992,16 @@ def get_available_stands(
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
     if (
-        scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        not is_project_areas_child(scenario)
+        and scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         and sub_unit
     ):
-        # Exclude stands that is not included to any sub-unit
         stands_queryset = stands.all()
         sub_units_stands = get_stands_from_sub_units(
-            stands_queryset, planning_area, scenario.get_stand_size(), sub_unit
+            stands_queryset,
+            planning_area,
+            scenario.get_stand_size(),
+            sub_unit,
         )
         sub_units_stands_ids = set(sub_units_stands.values_list("id", flat=True))
         stand_ids = stands_queryset.exclude(id__in=sub_units_stands_ids).values_list(
@@ -2030,12 +2043,14 @@ def get_available_stands(
     )
     if not total_area:
         total_area = A(sq_m=0)
+    if not potential_area:
+        potential_area = A(sq_m=0)
     if not total_excluded_area:
         total_excluded_area = A(sq_m=0)
     if not total_constrained_area:
         total_constrained_area = A(sq_m=0)
 
-    available_area = total_area - total_excluded_area
+    available_area = potential_area - total_excluded_area
     treatable_area = available_area - total_constrained_area
     total_unavailable_area = total_excluded_area + total_constrained_area
     return {
@@ -2178,24 +2193,15 @@ def get_sub_units_areas(
 
 def get_project_areas_child_areas(
     scenario: Scenario,
-    stand_size: StandSizeChoices,
 ) -> list[float] | None:
     parent = scenario.parent
     if not parent:
         return None
 
-    stand_area = get_min_project_area(stand_size)
-    areas = []
-
-    for project_area in parent.project_areas.all():
-        stand_count = get_project_areas_child_stands(
-            scenario=scenario,
-            project_area=project_area,
-            stand_size=stand_size,
-        ).count()
-
-        if stand_count > 0:
-            areas.append(stand_count * stand_area)
+    areas = [
+        get_acreage(project_area.geometry)
+        for project_area in parent.project_areas.all()
+    ]
 
     return areas or None
 
@@ -2210,7 +2216,6 @@ def get_sub_units_details(
     if is_project_areas_child(scenario):
         areas = get_project_areas_child_areas(
             scenario=scenario,
-            stand_size=stand_size,
         )
     elif datalayer:
         areas = get_sub_units_areas(
