@@ -11,6 +11,7 @@ from corsheaders.defaults import default_headers
 from decouple import Config, RepositoryEmpty, RepositoryEnv
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.gcp import GcpIntegration
 from utils.logging import NotInTestingFilter
 
 try:
@@ -30,6 +31,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config("SECRET_KEY")
+SENTRY_DEBUG = config("SENTRY_DEBUG", default=False, cast=bool)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("PLANSCAPE_DEBUG", default=False, cast=bool)
@@ -365,12 +367,14 @@ if SENTRY_DSN is not None:
         integrations=[
             DjangoIntegration(),
             CeleryIntegration(),
+            GcpIntegration(),
         ],
         send_default_pii=True,
         environment=ENV,
         enable_tracing=True,
         profiles_sample_rate=0.1,
         traces_sample_rate=0.05,
+        debug=SENTRY_DEBUG,
     )
 
 # Planning area settings
