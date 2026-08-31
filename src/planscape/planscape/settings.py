@@ -361,7 +361,7 @@ ENV = config("ENV", "dev")
 PROVIDER = config("PROVIDER", "aws", cast=str).lower()
 SENTRY_DSN = config("SENTRY_DSN", None)
 SENTRY_DEBUG = config("SENTRY_DEBUG", default=False, cast=bool)
-SENTRY_TIMEOUT = config("SENTRY_TIMEOUT", default=10, cast=int)
+SENTRY_TIMEOUT = config("SENTRY_TIMEOUT", default=10.0, cast=float)
 if SENTRY_DSN is not None:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
