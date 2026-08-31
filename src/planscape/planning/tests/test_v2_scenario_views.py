@@ -2199,6 +2199,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
                 "CLIMATE_FORESIGHT",
                 "PRIORITIZE_SUB_UNITS",
                 "FUNDING_REPORT",
+                "ADVANCED_STAND_LEVEL_CONSTRAINT",
             },
         )
 
@@ -2222,6 +2223,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
                 "CLIMATE_FORESIGHT",
                 "PRIORITIZE_SUB_UNITS",
                 "FUNDING_REPORT",
+                "ADVANCED_STAND_LEVEL_CONSTRAINT",
             },
         )
 
@@ -2236,7 +2238,14 @@ class ScenarioCapabilitiesViewTest(APITestCase):
 
         caps = resp.data.get("capabilities")
         self.assertIsInstance(caps, list)
-        self.assertSetEqual(set(caps), {"MAP", "FORSYS", "PRIORITIZE_SUB_UNITS"})
+        self.assertSetEqual(
+            set(caps), 
+            {
+                "MAP", 
+                "FORSYS", 
+                "PRIORITIZE_SUB_UNITS", 
+                "ADVANCED_STAND_LEVEL_CONSTRAINT",
+        })
 
 
 class CreateScenarioForDraftsTest(APITestCase):

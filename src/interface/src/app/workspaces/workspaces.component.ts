@@ -2,7 +2,6 @@ import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
 import {
   BehaviorSubject,
   catchError,
@@ -62,7 +61,6 @@ const PAGE_SIZE = 12;
 export class WorkspacesComponent {
   private workspaceActionsService = inject(WorkspaceActionsService);
   private workspacesService = inject(WorkspacesService);
-  private router = inject(Router);
   private snackbar = inject(MatSnackBar);
 
   private reload$ = new BehaviorSubject<void>(undefined);
@@ -226,10 +224,6 @@ export class WorkspacesComponent {
     } else {
       this.reload$.next();
     }
-  }
-
-  goToWorkspace(workspace: Workspace) {
-    this.router.navigate(['/workspace', workspace.id]);
   }
 
   can(workspace: Workspace, permission: string): boolean {
