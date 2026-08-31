@@ -1,0 +1,15 @@
+<ng-container *ngIf="tilesUrl$ | async as tilesUrl">
+  <ng-container *ngFor="let source of [sourceName]; trackBy: trackBySourceName">
+    <mgl-vector-source [id]="source" [tiles]="[tilesUrl]" promoteId="id">
+    </mgl-vector-source>
+
+    <mgl-layer
+      id="scenario-stands-fill"
+      type="fill"
+      [source]="source"
+      [sourceLayer]="source"
+      [filter]="(filteredStands$ | async) || undefined"
+      [paint]="standPaint$ | async">
+    </mgl-layer>
+  </ng-container>
+</ng-container>
