@@ -31,7 +31,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config("SECRET_KEY")
-SENTRY_DEBUG = config("SENTRY_DEBUG", default=False, cast=bool)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("PLANSCAPE_DEBUG", default=False, cast=bool)
@@ -361,6 +360,8 @@ LOGGING = {
 ENV = config("ENV", "dev")
 PROVIDER = config("PROVIDER", "aws", cast=str).lower()
 SENTRY_DSN = config("SENTRY_DSN", None)
+SENTRY_DEBUG = config("SENTRY_DEBUG", default=False, cast=bool)
+SENTRY_TIMEOUT = config("SENTRY_TIMEOUT", default=10, cast=int)
 if SENTRY_DSN is not None:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
@@ -374,6 +375,7 @@ if SENTRY_DSN is not None:
         enable_tracing=True,
         profiles_sample_rate=0.1,
         traces_sample_rate=0.05,
+        transport=sentry_sdk.HttpTransport(timeout=SENTRY_TIMEOUT),
         debug=SENTRY_DEBUG,
     )
 
