@@ -180,7 +180,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = "planscape-backend/static/"
+STATIC_URL = "/planscape-backend/static/"
 DEFAULT_STATIC_ROOT = BASE_DIR / "compiled-static/"
 STATIC_ROOT = config("STATIC_ROOT", DEFAULT_STATIC_ROOT.resolve())
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
@@ -219,7 +219,7 @@ REST_FRAMEWORK = {
     ),
     "NON_FIELD_ERRORS_KEY": "global",
     "DEFAULT_FILTER_BACKENDS": [
-        "django_filters.rest_framework.DjangoFilterBackend",
+        "planscape.filters.TrackedFilterBackend",
         "rest_framework.filters.OrderingFilter",
     ],
     "DEFAULT_PAGINATION_CLASS": None,

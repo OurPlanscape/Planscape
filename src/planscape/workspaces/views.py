@@ -1,6 +1,6 @@
 from core.serializers import MultiSerializerMixin
-from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from planscape.filters import TrackedFilterBackend
 from planscape.serializers import BaseErrorMessageSerializer
 from rest_framework import pagination, status, viewsets
 from rest_framework.filters import OrderingFilter
@@ -48,7 +48,7 @@ class WorkspaceViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     }
     pagination_class = pagination.LimitOffsetPagination
     filterset_class = PlanningWorkspaceFilterSet
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [TrackedFilterBackend, OrderingFilter]
     ordering_fields = [
         "name",
         "created_at",

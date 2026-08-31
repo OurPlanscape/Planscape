@@ -190,6 +190,7 @@ APP=$(APP_NAME)-$(ENV)
 DOCKER_REPO=planscape-$(APP_NAME)
 DOCKER_IMAGE=us-central1-docker.pkg.dev/$(PROJECT)/$(DOCKER_REPO)/$(APP_NAME)
 DOCKER_TAG=$(DOCKER_IMAGE):$(VERSION)
+SECRET_KEY_SECRET=planscape-backend-secret-key-$(ENV)
 REGION=us-central1
 CELERY_WORKER_GENERAL=planscape-celery-worker-general-$(ENV)
 CELERY_WORKER_HEAVY=planscape-celery-worker-heavy-$(ENV)
@@ -224,7 +225,7 @@ cloud-run-push:
 			echo "No existing Docker image found for cache."; \
 		fi; \
 		echo "Pushing image $(DOCKER_TAG) ."; \
-		gcloud builds submit --config cloudbuild.dockerfile.yaml --substitutions _DOCKERFILE=$(DOCKERFILE),_IMAGE=$(DOCKER_TAG),_CACHE_FROM=$$CACHE_FROM .;\
+		gcloud builds submit --config cloudbuild.dockerfile.yaml --substitutions _DOCKERFILE=$(DOCKERFILE),_IMAGE=$(DOCKER_TAG),_CACHE_FROM=$$CACHE_FROM,_SECRET_KEY_SECRET=$(SECRET_KEY_SECRET) .;\
 	else \
 		echo "Image $(DOCKER_TAG) already submitted"; \
 	fi;
