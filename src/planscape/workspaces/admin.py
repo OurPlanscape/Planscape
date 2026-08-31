@@ -22,7 +22,15 @@ class WorkspaceAdmin(admin.ModelAdmin):
 
 @admin.register(UserAccessWorkspace)
 class UserAccessWorkspaceAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "workspace", "role", "created_at", "updated_at")
+    list_display = (
+        "id",
+        "user",
+        "email",
+        "workspace",
+        "role",
+        "created_at",
+        "updated_at",
+    )
     list_filter = ("role",)
-    search_fields = ("user__email", "workspace__name")
+    search_fields = ("user__email", "email", "workspace__name")
     readonly_fields = ("created_at", "updated_at")

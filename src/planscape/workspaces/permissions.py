@@ -78,6 +78,30 @@ class WorkspacePermission(CheckPermissionMixin):
     def can_remove(user: AbstractUser, workspace: Workspace) -> bool:
         return get_workspace_role(user, workspace) == WorkspaceRole.OWNER
 
+    @staticmethod
+    def can_manage_members(user: AbstractUser, workspace: Workspace) -> bool:
+        return get_workspace_role(user, workspace) == WorkspaceRole.OWNER
+
 
 class WorkspaceViewPermission(PlanscapePermission):
     permission_set = WorkspacePermission
+
+    def has_object_permission(self, request, view, obj):
+        match view.action:
+            case "invite":
+                return self.permission_set.can_manage_members(request.user, obj)
+            case "accept_invite":
+                # Authorization here is "there's a pending invite matching
+                # your email", which the service layer checks (and 404s on).
+                # The requester doesn't have workspace access yet, so the
+                # usual can_view gate doesn't apply.
+                return True
+            case "manage_user":
+                user_id = view.kwargs.get("user_id")
+                if request.method == "DELETE" and str(request.user.pk) == str(user_id):
+                    # Self-leave; the creator-can't-leave rule is enforced in
+                    # the service layer, not here.
+                    return True
+                return self.permission_set.can_manage_members(request.user, obj)
+            case _:
+                return super().has_object_permission(request, view, obj)

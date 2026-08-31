@@ -1,7 +1,7 @@
 from datasets.models import Dataset, Style
 from rest_framework import serializers
 
-from workspaces.models import UserAccessWorkspace, Workspace
+from workspaces.models import UserAccessWorkspace, Workspace, WorkspaceRole
 from workspaces.permissions import get_workspace_permissions, get_workspace_role
 
 
@@ -166,9 +166,7 @@ class CreatePlanningWorkspaceSerializer(serializers.ModelSerializer):
 class UpdatePlanningWorkspaceSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if not attrs.get("name"):
-            raise serializers.ValidationError(
-                {"name": "A workspace name is required."}
-            )
+            raise serializers.ValidationError({"name": "A workspace name is required."})
         instance = self.instance
         if (
             Workspace.objects.filter(
@@ -187,3 +185,46 @@ class UpdatePlanningWorkspaceSerializer(serializers.ModelSerializer):
         model = Workspace
         fields = ("name",)
         validators = []
+
+
+class InviteWorkspaceMemberSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    role = serializers.ChoiceField(choices=WorkspaceRole.choices)
+    message = serializers.CharField(required=False, allow_blank=True, default="")
+
+
+class UpdateWorkspaceMemberSerializer(serializers.Serializer):
+    role = serializers.ChoiceField(choices=WorkspaceRole.choices)
+
+
+class WorkspaceMemberSerializer(serializers.ModelSerializer):
+    """Planning-facing roster entry: covers both accepted members (user set)
+    and pending invites (user is null, email set)."""
+
+    email = serializers.SerializerMethodField()
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+
+    def get_email(self, instance) -> str:
+        return instance.user.email if instance.user_id else instance.email
+
+    def get_first_name(self, instance) -> str:
+        return instance.user.first_name if instance.user_id else ""
+
+    def get_last_name(self, instance) -> str:
+        return instance.user.last_name if instance.user_id else ""
+
+    def get_status(self, instance) -> str:
+        return "ACTIVE" if instance.user_id else "PENDING"
+
+    class Meta:
+        model = UserAccessWorkspace
+        fields = [
+            "user_id",
+            "email",
+            "first_name",
+            "last_name",
+            "role",
+            "status",
+        ]
