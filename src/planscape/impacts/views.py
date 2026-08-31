@@ -1,7 +1,6 @@
 import logging
 
 from django.http import FileResponse
-from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiTypes, extend_schema, extend_schema_view
 from impacts.filters import TreatmentPlanFilterSet, TreatmentPlanNoteFilterSet
 from impacts.models import (
@@ -49,6 +48,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
 from planscape.analytics import track_event
+from planscape.filters import TrackedFilterBackend
 from planscape.serializers import BaseErrorMessageSerializer
 
 log = logging.getLogger(__name__)
@@ -447,7 +447,7 @@ class TreatmentPlanNoteViewSet(viewsets.ModelViewSet):
         "create": TreatmentPlanNoteCreateSerializer,
     }
     filterset_class = TreatmentPlanNoteFilterSet
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [TrackedFilterBackend]
 
     def get_serializer_class(self):
         return (

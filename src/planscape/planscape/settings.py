@@ -219,7 +219,7 @@ REST_FRAMEWORK = {
     ),
     "NON_FIELD_ERRORS_KEY": "global",
     "DEFAULT_FILTER_BACKENDS": [
-        "django_filters.rest_framework.DjangoFilterBackend",
+        "planscape.filters.TrackedFilterBackend",
         "rest_framework.filters.OrderingFilter",
     ],
     "DEFAULT_PAGINATION_CLASS": None,
