@@ -1,8 +1,76 @@
-<sg-empty-state
-  icon="folder"
-  title="Workspace: A shared space for smarter planning"
-  description="Get started by creating a workspace to collaborate with your team and organize everything you need for planning.">
-  <button sg-button variant="primary" (click)="createWorkspace()">
-    Create Workspace
-  </button>
-</sg-empty-state>
+<ng-container *ngIf="view$ | async as view">
+  <div class="workspaces-header">
+    <h1>Home</h1>
+
+    <ng-container *ngIf="showHeaderActions$ | async">
+      <sg-search-bar
+        [fullWidth]="true"
+        searchPlaceholder="Search"
+        [searchValue]="(searchTerm$ | async) || ''"
+        (searchString)="search($event)"></sg-search-bar>
+      <button
+        sg-button
+        variant="primary"
+        (click)="createWorkspace('list')"
+        icon="add">
+        Create Workspace
+      </button>
+    </ng-container>
+  </div>
+
+  <div class="workspaces-panel">
+    <mat-spinner
+      *ngIf="view === 'loading'"
+      class="main-loader"
+      diameter="48"></mat-spinner>
+
+    <sg-empty-state
+      *ngIf="view === 'error'"
+      icon="error"
+      title="We couldn't load your workspaces"
+      description="Something went wrong. Please try again.">
+      <button sg-button variant="primary" (click)="retry()">Try Again</button>
+    </sg-empty-state>
+
+    <sg-empty-state
+      *ngIf="view === 'empty'"
+      icon="folder"
+      title="Workspace: A shared space for smarter planning"
+      description="Get started by creating a workspace to collaborate with your team and organize everything you need for planning.">
+      <button
+        sg-button
+        variant="primary"
+        (click)="createWorkspace('empty-state')">
+        Create Workspace
+      </button>
+    </sg-empty-state>
+
+    <sg-no-results
+      *ngIf="view === 'no-results'"
+      [searchString]="(searchTerm$ | async) || ''"></sg-no-results>
+
+    <div class="workspaces-content" *ngIf="view === 'list'">
+      <div class="workspaces-grid">
+        <sg-workspace-card
+          *ngFor="let workspace of workspaces$ | async; trackBy: trackById"
+          [name]="workspace.name"
+          [planningAreasCount]="workspace.planning_areas_count"
+          [creator]="workspace.creator"
+          [createdAt]="workspace.created_at"
+          [userCanRename]="can(workspace, 'change_workspace')"
+          [userCanDelete]="can(workspace, 'remove_workspace')"
+          [userCanShare]="can(workspace, 'add_collaborator')"
+          [link]="['/workspace', workspace.id]"
+          (rename)="renameWorkspace(workspace)"
+          (delete)="deleteWorkspace(workspace)"></sg-workspace-card>
+      </div>
+    </div>
+
+    <sg-paginator
+      *ngIf="((pageCount$ | async) || 0) > 1"
+      [compact]="true"
+      [currentPage]="(page$ | async) || 1"
+      [pageCount]="(pageCount$ | async) || 0"
+      (pageChanged)="goToPage($event)"></sg-paginator>
+  </div>
+</ng-container>

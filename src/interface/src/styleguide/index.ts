@@ -29,6 +29,7 @@ export * from '@styleguide/project-area-expander/project-area-expander.component
 export * from '@styleguide/scenario-card/scenario-card.component';
 export * from '@styleguide/search-bar/search-bar.component';
 export * from '@styleguide/search-result-card/search-result-card.component';
+export * from '@styleguide/selectable-link/selectable-link.directive';
 export * from '@styleguide/section/section.component';
 export * from '@styleguide/share-dialog/share-dialog.component';
 export * from '@styleguide/sequence-icon/sequence-icon.component';
@@ -45,3 +46,4 @@ export * from '@styleguide/treatment-plan-card/treatment-plan-card.component';
 export * from '@styleguide/treatment-prescription/treatment-prescription.component';
 export * from '@styleguide/treatment-type-icon/treatment-type-icon.component';
 export * from '@styleguide/workspace-card/workspace-card.component';
+export * from '@styleguide/card-link/card-link.component';

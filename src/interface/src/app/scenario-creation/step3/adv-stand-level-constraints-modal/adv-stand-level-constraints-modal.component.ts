@@ -21,8 +21,9 @@ import {
   ModalInfoComponent,
 } from '@styleguide';
 
-
-export const betweenValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+export const betweenValidator: ValidatorFn = (
+  control: AbstractControl
+): ValidationErrors | null => {
   const operator = control.get('constraintOperator')?.value;
   if (operator !== 'btw') {
     return null;
@@ -60,7 +61,9 @@ export const betweenValidator: ValidatorFn = (control: AbstractControl): Validat
   styleUrl: './adv-stand-level-constraints-modal.component.scss',
 })
 export class AdvStandLevelConstraintsModalComponent implements OnInit {
-  readonly dialogRef = inject(MatDialogRef<AdvStandLevelConstraintsModalComponent>);
+  readonly dialogRef = inject(
+    MatDialogRef<AdvStandLevelConstraintsModalComponent>
+  );
   readonly data = inject(MAT_DIALOG_DATA);
 
   dataLayerName = this.data?.dataLayerName;
@@ -70,7 +73,9 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
       constraintOperator: new FormControl<CONSTRAINT_OPERATOR | null>('eq', {
         nonNullable: false,
       }),
-      constraintValueOne: new FormControl<number | null>(null, [Validators.required]),
+      constraintValueOne: new FormControl<number | null>(null, [
+        Validators.required,
+      ]),
       constraintValueTwo: new FormControl<number | null>(null),
     },
     { validators: [betweenValidator] }
@@ -98,7 +103,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
     });
   }
 
-handleApply() {
+  handleApply() {
     if (this.form.valid) {
       const formVal = this.form.value;
       const operator = formVal.constraintOperator ?? 'eq';
@@ -106,7 +111,11 @@ handleApply() {
         operator,
         value: formVal.constraintValueOne ?? 0,
       };
-      if (operator === 'btw' && formVal.constraintValueTwo !== null && formVal.constraintValueTwo !== undefined) {
+      if (
+        operator === 'btw' &&
+        formVal.constraintValueTwo !== null &&
+        formVal.constraintValueTwo !== undefined
+      ) {
         constraintSelection.value2 = formVal.constraintValueTwo;
       }
       this.dialogRef.close(constraintSelection);

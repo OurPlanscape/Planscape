@@ -1,13 +1,81 @@
 @import 'colors';
+@import 'media';
+@import 'mixins';
 
 :host {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
   flex: 1 0 0;
   height: 100%;
   box-sizing: border-box;
-  padding: 16px;
+  padding: 24px;
+  background-color: $color-light-gray;
+  overflow: hidden;
+}
+
+.workspaces-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+
+  h1 {
+    @include h3();
+    margin: 0 auto 0 0;
+    line-height: 32px;
+  }
+
+  sg-search-bar {
+    width: 300px;
+  }
+}
+
+.workspaces-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   background-color: $color-white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.workspaces-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+sg-paginator {
+  flex: 0 0 auto;
+  border-top: 1px solid $color-soft-gray;
+  padding: 16px;
+}
+
+// Centered in the panel; the grid stays pinned to the top.
+sg-empty-state,
+sg-no-results,
+.main-loader {
+  margin: auto;
+}
+
+.workspaces-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  @include on-large() {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include on-extra-large() {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @include on-extra-extra-large() {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }

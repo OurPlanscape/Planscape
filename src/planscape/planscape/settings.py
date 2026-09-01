@@ -7,10 +7,13 @@ from pathlib import Path
 import boto3
 import django_stubs_ext
 import sentry_sdk
+import urllib3
 from corsheaders.defaults import default_headers
 from decouple import Config, RepositoryEmpty, RepositoryEnv
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.gcp import GcpIntegration
+from sentry_sdk.transport import HttpTransport
 from utils.logging import NotInTestingFilter
 
 try:
@@ -180,7 +183,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = "planscape-backend/static/"
+STATIC_URL = "/planscape-backend/static/"
 DEFAULT_STATIC_ROOT = BASE_DIR / "compiled-static/"
 STATIC_ROOT = config("STATIC_ROOT", DEFAULT_STATIC_ROOT.resolve())
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
@@ -219,7 +222,7 @@ REST_FRAMEWORK = {
     ),
     "NON_FIELD_ERRORS_KEY": "global",
     "DEFAULT_FILTER_BACKENDS": [
-        "django_filters.rest_framework.DjangoFilterBackend",
+        "planscape.filters.TrackedFilterBackend",
         "rest_framework.filters.OrderingFilter",
     ],
     "DEFAULT_PAGINATION_CLASS": None,
@@ -359,18 +362,52 @@ LOGGING = {
 ENV = config("ENV", "dev")
 PROVIDER = config("PROVIDER", "aws", cast=str).lower()
 SENTRY_DSN = config("SENTRY_DSN", None)
+SENTRY_DEBUG = config("SENTRY_DEBUG", default=False, cast=bool)
+SENTRY_TIMEOUT = config("SENTRY_TIMEOUT", default=10.0, cast=float)
+SENTRY_CONNECT_TIMEOUT = config("SENTRY_CONNECT_TIMEOUT", default=2.0, cast=float)
+SENTRY_MAX_RETRIES = config("SENTRY_MAX_RETRIES", default=3, cast=int)
+SENTRY_RETRY_BACKOFF = config("SENTRY_RETRY_BACKOFF", default=0.25, cast=float)
+SENTRY_QUEUE_SIZE = config("SENTRY_QUEUE_SIZE", default=100, cast=int)
+
+
+class RetryingSentryHttpTransport(HttpTransport):
+    def _get_pool_options(self, ca_certs):
+        options = super()._get_pool_options(ca_certs)
+        options["timeout"] = urllib3.Timeout(
+            connect=SENTRY_CONNECT_TIMEOUT,
+            read=SENTRY_TIMEOUT,
+        )
+        options["retries"] = urllib3.Retry(
+            total=SENTRY_MAX_RETRIES,
+            connect=SENTRY_MAX_RETRIES,
+            read=SENTRY_MAX_RETRIES,
+            other=SENTRY_MAX_RETRIES,
+            backoff_factor=SENTRY_RETRY_BACKOFF,
+            status_forcelist=(500, 502, 503, 504),
+            allowed_methods=None,
+            raise_on_status=False,
+        )
+        return options
+
+
 if SENTRY_DSN is not None:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         integrations=[
             DjangoIntegration(),
             CeleryIntegration(),
+            GcpIntegration(),
         ],
         send_default_pii=True,
         environment=ENV,
         enable_tracing=True,
         profiles_sample_rate=0.1,
         traces_sample_rate=0.05,
+        debug=SENTRY_DEBUG,
+        transport=RetryingSentryHttpTransport,
+        keep_alive=True,
+        shutdown_timeout=SENTRY_TIMEOUT,
+        transport_queue_size=SENTRY_QUEUE_SIZE,
     )
 
 # Planning area settings

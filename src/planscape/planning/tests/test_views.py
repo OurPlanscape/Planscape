@@ -246,6 +246,7 @@ class ListPlanningAreasWithPermissionsTest(APITestCase):
         self.assertEqual(planning_areas[0]["role"], "Creator")
         self.assertEqual(planning_areas[1]["role"], "Creator")
         self.assertEqual(planning_areas[2]["role"], "Creator")
+        self.assertEqual(planning_areas[0]["bbox"], [1.0, 2.0, 3.0, 4.0])
         self.assertCountEqual(planning_areas[0]["permissions"], expected_perms)
         self.assertCountEqual(planning_areas[1]["permissions"], expected_perms)
         self.assertCountEqual(planning_areas[2]["permissions"], expected_perms)

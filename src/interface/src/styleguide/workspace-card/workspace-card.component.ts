@@ -1,15 +1,11 @@
-import {
-  Component,
-  EventEmitter,
-  HostListener,
-  Input,
-  Output,
-} from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { DatePipe, DecimalPipe, NgIf } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { SelectableLinkDirective } from '../selectable-link/selectable-link.directive';
 
 /**
  * Workspace Card for displaying a workspace on the workspaces list
@@ -21,6 +17,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     DatePipe,
     DecimalPipe,
     NgIf,
+    RouterLink,
+    SelectableLinkDirective,
     MatIconModule,
     MatMenuModule,
     MatButtonModule,
@@ -35,11 +33,13 @@ export class WorkspaceCardComponent {
   @Input() creator = '';
   @Input() createdAt = '';
 
+  /** Where the card navigates. The whole card is the link. */
+  @Input() link: string | any[] = [];
+
   @Input() userCanRename = false;
   @Input() userCanDelete = false;
   @Input() userCanShare = false;
 
-  @Output() clicked = new EventEmitter<void>();
   @Output() rename = new EventEmitter<void>();
   @Output() share = new EventEmitter<void>();
   @Output() delete = new EventEmitter<void>();
@@ -48,12 +48,9 @@ export class WorkspaceCardComponent {
     return this.planningAreasCount === 1 ? 'Planning Area' : 'Planning Areas';
   }
 
-  @HostListener('click')
-  handleClick() {
-    this.clicked.emit();
-  }
-
-  stopEventPropagation(event: Event) {
+  /** The menu sits inside the card's link, so its clicks must not navigate. */
+  handleMenuClick(event: Event) {
+    event.preventDefault();
     event.stopPropagation();
   }
 }

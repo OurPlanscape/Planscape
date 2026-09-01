@@ -14,16 +14,12 @@
       leadingIcon="info_filled"
       message="Advanced constraints will be applied to results but are not shown on the map.">
     </sg-modal-info>
-    <!-- add form here-->
     <div *ngIf="dataLayerName" class="form-heading-row">
       Only treat stands where
       <span class="datalayer-name">{{ dataLayerName }}</span> is:
     </div>
     <form [formGroup]="form" class="constraints-form">
       <div class="inputs-grid">
-        <!-- Row 1: Labels -->
-
-        <!-- Row 2: Inputs -->
         <div class="col-left">
           <div class="label">Operator <span class="required">*</span></div>
           <mat-form-field
@@ -76,8 +72,6 @@
               formControlName="constraintValueOne"
               required
               id="constraintValueOne"
-              min="0"
-              max="100"
               type="number" />
           </sg-input-field>
         </div>
@@ -104,8 +98,6 @@
                 formControlName="constraintValueTwo"
                 required
                 id="constraintValueTwo"
-                min="0"
-                max="100"
                 type="number" />
             </sg-input-field>
           </div>

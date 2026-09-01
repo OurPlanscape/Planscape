@@ -10,7 +10,11 @@ from django.contrib.gis.geos import GEOSGeometry
 
 from funding_report.models import FundingReportLayerCategory, FundingReportMetric
 
-from modules.base import get_module
+from modules.base import (
+    compute_planning_area_capabilities,
+    compute_scenario_capabilities,
+    get_module,
+)
 from modules.serializers import FundingReportModuleSerializer
 
 from planscape.tests.factories import UserFactory
@@ -260,7 +264,11 @@ class PrioritizeSubUnitsModuleTest(TestCase):
             visibility=VisibilityOptions.PUBLIC, 
             modules=["prioritize_sub_units"],
         )
-        DataLayerFactory.create(dataset=base_dataset, metadata={"modules": {"prioritize_sub_units": {"enabled": True}}})
+        DataLayerFactory.create(
+            dataset=base_dataset,
+            type=DataLayerType.VECTOR,
+            metadata={"modules": {"prioritize_sub_units": {"enabled": True}}},
+        )
 
         module = get_module("prioritize_sub_units")
         configuration: Dict[str, Any] = module.get_configuration()
@@ -286,6 +294,30 @@ class PrioritizeSubUnitsModuleTest(TestCase):
         self.assertEqual(len(base), 1)
         self.assertEqual(len(sub_units), 1)
 
+    def test_excludes_raster_layers(self):
+        base_dataset = DatasetFactory.create(
+            name="base1",
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
+            visibility=VisibilityOptions.PUBLIC,
+            modules=["prioritize_sub_units"],
+        )
+        DataLayerFactory.create(
+            dataset=base_dataset,
+            type=DataLayerType.VECTOR,
+            metadata={"modules": {"prioritize_sub_units": {"enabled": True}}},
+        )
+        DataLayerFactory.create(
+            dataset=base_dataset,
+            type=DataLayerType.RASTER,
+            metadata={"modules": {"prioritize_sub_units": {"enabled": True}}},
+        )
+
+        module = get_module("prioritize_sub_units")
+        configuration: Dict[str, Any] = module.get_configuration()
+        sub_units = configuration["options"]["sub_units"]
+
+        self.assertEqual(len(sub_units), 1)
+        self.assertEqual(sub_units[0].type, DataLayerType.VECTOR)
 
     def test_returns_private_dataset_for_staff_users(self):
         private_base_dataset = DatasetFactory.create(
@@ -312,8 +344,16 @@ class PrioritizeSubUnitsModuleTest(TestCase):
             visibility=VisibilityOptions.PUBLIC, 
             modules=["prioritize_sub_units"],
         )
-        DataLayerFactory.create(dataset=private_base_dataset, metadata={"modules": {"prioritize_sub_units": {"enabled": True}}})
-        DataLayerFactory.create(dataset=public_base_dataset, metadata={"modules": {"prioritize_sub_units": {"enabled": True}}})
+        DataLayerFactory.create(
+            dataset=private_base_dataset,
+            type=DataLayerType.VECTOR,
+            metadata={"modules": {"prioritize_sub_units": {"enabled": True}}},
+        )
+        DataLayerFactory.create(
+            dataset=public_base_dataset,
+            type=DataLayerType.VECTOR,
+            metadata={"modules": {"prioritize_sub_units": {"enabled": True}}},
+        )
 
         staff_user = UserFactory.create(is_staff=True)
         standard_user = UserFactory.create(is_staff=False)
@@ -367,6 +407,54 @@ class PrioritizeSubUnitsModuleTest(TestCase):
         self.assertEqual(len(main), 1)
         self.assertEqual(len(base), 1)
         self.assertEqual(len(sub_units), 1)
+
+
+class AdvancedStandLevelConstraintModuleTest(TestCase):
+    def setUp(self):
+        self.planning_area = PlanningAreaFactory.create()
+        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
+        return super().setUp()
+
+    def test_get_module_returns_advanced_stand_level_constraint_module(self):
+        module = get_module("advanced_stand_level_constraint")
+
+        self.assertEqual(module.name, "advanced_stand_level_constraint")
+
+    def test_can_run_scenario_but_not_planning_area(self):
+        module = get_module("advanced_stand_level_constraint")
+
+        self.assertFalse(module.can_run(self.planning_area))
+        self.assertTrue(module.can_run(self.scenario))
+
+    def test_returns_empty_dataset_options(self):
+        DatasetFactory.create(
+            name="base1",
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
+            visibility=VisibilityOptions.PUBLIC,
+            modules=["advanced_stand_level_constraint"],
+        )
+        DatasetFactory.create(
+            name="main1",
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+            visibility=VisibilityOptions.PUBLIC,
+            modules=["advanced_stand_level_constraint"],
+        )
+
+        module = get_module("advanced_stand_level_constraint")
+        configuration = module.get_configuration()
+        datasets = configuration["options"]["datasets"]
+
+        self.assertEqual(len(datasets["main_datasets"]), 0)
+        self.assertEqual(len(datasets["base_datasets"]), 0)
+
+    def test_capabilities_include_scenario_but_not_planning_area(self):
+        scenario_capabilities = compute_scenario_capabilities(self.scenario)
+        planning_area_capabilities = compute_planning_area_capabilities(
+            self.planning_area
+        )
+
+        self.assertIn("ADVANCED_STAND_LEVEL_CONSTRAINT", scenario_capabilities)
+        self.assertNotIn("ADVANCED_STAND_LEVEL_CONSTRAINT", planning_area_capabilities)
 
 
 class ImpactsModulesTest(TestCase):
@@ -503,4 +591,3 @@ class FundingReportModuleTest(TestCase):
             serialized_datalayers[FundingReportLayerCategory.BIOMASS][0]["id"],
             mill_layer.id,
         )
-

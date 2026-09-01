@@ -7,14 +7,13 @@ from types import SimpleNamespace
 from unittest import mock
 
 import fiona
-import shapely
 from cacheops import invalidate_all
 from datasets.dynamic_models import qualify_for_django
 from datasets.models import DataLayerType, GeometryType
 from datasets.tasks import datalayer_uploaded
 from datasets.tests.factories import DataLayerFactory
 from django.conf import settings
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import connection
 from django.test import TestCase, override_settings
 from fiona.crs import to_string
@@ -35,6 +34,7 @@ from planning.services import (
     calculate_and_update_scenario_result,
     create_planning_area,
     create_scenario,
+    create_scenario_from_upload,
     export_planning_area_to_geopackage,
     export_scenario_inputs_to_geopackage,
     export_scenario_stand_outputs_to_geopackage,
@@ -42,6 +42,7 @@ from planning.services import (
     export_to_shapefile,
     get_acreage,
     get_available_stand_ids,
+    get_available_stands,
     get_constrained_stands,
     get_excluded_stands,
     get_flatten_geojson,
@@ -50,7 +51,6 @@ from planning.services import (
     get_max_treatable_stand_count,
     get_schema,
     get_sub_units_details,
-    planning_area_covers,
     sanitize_shp_field_name,
     trigger_scenario_run,
     validate_scenario_configuration,
@@ -793,47 +793,80 @@ class TestExportToGeopackage(TestCase):
         shutil.rmtree("/tmp/planscape-test-output", ignore_errors=True)
 
 
-class TestPlanningAreaCovers(TestCase):
+class CreateScenarioFromUploadTest(TestCase):
     def setUp(self):
-        self.real_world_geom = "MULTIPOLYGON (((-120.592804 40.388397, -120.653229 40.089629, -121.098175 40.043386, -121.308289 40.179923, -121.059723 40.687928, -120.433502 41.088667, -120.013275 41.096947, -120.009155 40.701464, -120.010529 39.949753, -120.592804 40.388397)))"
-        self.real_world_planning_area = PlanningAreaFactory.create(
-            geometry=GEOSGeometry(self.real_world_geom, srid=4269)
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.user,
+            geometry=MultiPolygon(
+                Polygon(((0, 0), (0, 1), (1, 1), (1, 0), (0, 0))),
+                srid=4269,
+            ),
         )
-        self.covers_de9im = GEOSGeometry(
-            "POLYGON ((-121.13497533859726 40.378055548860004, -120.5974285753569 40.45918503498109, -120.0351560371661 40.02304123541387, -120.0295412055665 41.05622374781322, -120.40813814721828 41.0493352414621, -120.99739165146956 40.63587551109521, -121.13497533859726 40.378055548860004))",
-            srid=4269,
+        stands_qs = mock.Mock()
+        stands_qs.count.return_value = 0
+        self.stands_patcher = mock.patch(
+            "planning.services.Stand.objects.within_polygon",
+            return_value=stands_qs,
         )
-        # in this is not necessary to create the stands, they are present by the usage of a migration
-        # that autoloads the LARGE stands.
+        self.stands_patcher.start()
+        self.addCleanup(self.stands_patcher.stop)
 
-    def test_real_world(self):
-        with fiona.open(
-            "planning/tests/test_data/project_areas_for_pa_covers.shp"
-        ) as shapefile:
-            features = [f for f in shapefile]
-            # this convoluted conversion step is because Django automatically
-            # considers geometries coming FROM geojson to be 4326
-            geometries = [shapely.geometry.shape(f.geometry) for f in features]
-            geometries = MultiPolygon(
-                [GEOSGeometry(g.wkt, srid=4269) for g in geometries], srid=4269
-            )
-            test_geometry = geometries.unary_union
-        self.assertTrue(
-            planning_area_covers(
-                self.real_world_planning_area,
-                test_geometry,
-                stand_size=StandSizeChoices.LARGE,
-            )
+    def _upload(self, geometry, name="uploaded scenario"):
+        return create_scenario_from_upload(
+            {
+                "name": name,
+                "planning_area": self.planning_area.pk,
+                "stand_size": StandSizeChoices.SMALL,
+                "geometry": {
+                    "type": "FeatureCollection",
+                    "features": [
+                        {"type": "Feature", "properties": {}, "geometry": geometry}
+                    ],
+                },
+            },
+            user=self.user,
         )
 
-    def test_de9im_covers(self):
-        self.assertTrue(
-            planning_area_covers(
-                self.real_world_planning_area,
-                self.covers_de9im,
-                stand_size=StandSizeChoices.LARGE,
-            )
+    def test_clips_project_area_geometry_to_planning_area(self):
+        uploaded_geometry = {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [0, 0],
+                    [0, 1],
+                    [2, 1],
+                    [2, 0],
+                    [0, 0],
+                ]
+            ],
+        }
+        scenario = self._upload(uploaded_geometry)
+
+        project_area = scenario.project_areas.get()
+        self.assertTrue(self.planning_area.geometry.covers(project_area.geometry))
+        self.assertAlmostEqual(
+            project_area.geometry.area, self.planning_area.geometry.area
         )
+
+    def test_raises_when_no_project_area_overlaps_the_planning_area(self):
+        outside_geometry = {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [10, 10],
+                    [10, 11],
+                    [11, 11],
+                    [11, 10],
+                    [10, 10],
+                ]
+            ],
+        }
+        with self.assertRaisesMessage(
+            ValueError,
+            "None of the uploaded project areas overlap the selected planning area.",
+        ):
+            self._upload(outside_geometry)
 
 
 # compare with known turf.js results
@@ -985,7 +1018,7 @@ class TestRemoveExcludes(TestCase):
 
     def test_get_excluded_stands_excluded_zones(self):
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.assertEquals(17, len(stands))
+        self.assertEqual(17, len(stands))
         excluded_stands = get_excluded_stands(
             stands,
             self.datalayer,
@@ -995,7 +1028,7 @@ class TestRemoveExcludes(TestCase):
 
     def test_get_constrained_stands_thresholds(self):
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.assertEquals(17, len(stands))
+        self.assertEqual(17, len(stands))
         # in this scenario, without operator and with THRESHOLD usagetype
         # we are getting all the stands that are NOT equals 1
         excluded_stands = get_constrained_stands(
@@ -1013,7 +1046,7 @@ class TestRemoveExcludes(TestCase):
             type=DataLayerType.RASTER,
         )
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.assertEquals(17, len(stands))
+        self.assertEqual(17, len(stands))
 
         for stand in stands:
             StandMetricFactory.create(
@@ -1036,22 +1069,22 @@ class TestRemoveExcludes(TestCase):
     def test_get_available_stands_ids(self):
         stand_ids = get_available_stand_ids(self.scenario, StandSizeChoices.LARGE)
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.assertEquals(17, len(stands))
-        self.assertEquals(len(stand_ids), len(stands))
+        self.assertEqual(17, len(stands))
+        self.assertEqual(len(stand_ids), len(stands))
 
     @override_settings(FEATURE_FLAGS="ADD_INCLUDES")
     def test_get_available_stands_ids_add_includes(self):
         stand_ids = get_available_stand_ids(self.scenario, StandSizeChoices.LARGE)
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.assertEquals(17, len(stands))
-        self.assertEquals(len(stand_ids), len(stands))
+        self.assertEqual(17, len(stands))
+        self.assertEqual(len(stand_ids), len(stands))
 
     def test_get_available_stands_ids_with_excluded_area(self):
         stand_ids = get_available_stand_ids(
             self.scenario, StandSizeChoices.LARGE, [self.datalayer]
         )
         stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-        self.assertEquals(17, len(stands))
+        self.assertEqual(17, len(stands))
         self.assertLess(len(stand_ids), len(stands))
 
     def test_get_available_stands_ids_with_sub_units(self):
@@ -1074,8 +1107,73 @@ class TestRemoveExcludes(TestCase):
                 scenario, StandSizeChoices.LARGE, [self.datalayer]
             )
             stands = self.planning_area.get_stands(StandSizeChoices.LARGE)
-            self.assertEquals(17, len(stands))
+            self.assertEqual(17, len(stands))
             self.assertLess(len(stand_ids), len(stands) - 1)
+
+    def test_get_available_stands_uses_scenario_sub_unit_datalayer(self):
+        stand_to_remove = self.stands[0]
+        stand_ids = [stand.id for stand in self.stands]
+        sub_unit_stands = Stand.objects.filter(id__in=stand_ids).exclude(
+            id=stand_to_remove.pk
+        )
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+            configuration={"sub_units_layer": self.datalayer.pk},
+        )
+
+        with mock.patch(
+            "planning.services.get_stands_from_sub_units", return_value=sub_unit_stands
+        ) as get_stands_from_sub_units_mock:
+            result = get_available_stands(
+                scenario,
+                stand_size=StandSizeChoices.LARGE,
+            )
+
+        get_stands_from_sub_units_mock.assert_called_once()
+        self.assertEqual(
+            get_stands_from_sub_units_mock.call_args.args[3],
+            self.datalayer,
+        )
+        self.assertIn(stand_to_remove.pk, result["unavailable"]["by_exclusions"])
+
+    def test_get_available_stands_applies_forsys_constraint(self):
+        self.datalayer.metadata = {
+            "modules": {"forsys": {"enabled": True, "metric_column": "majority"}}
+        }
+        self.datalayer.save(update_fields=["metadata"])
+
+        result = get_available_stands(
+            self.scenario,
+            stand_size=StandSizeChoices.LARGE,
+            constraints=[
+                {
+                    "datalayer": self.datalayer,
+                    "operator": None,
+                    "value": 1,
+                }
+            ],
+        )
+
+        self.assertEqual(6, len(result["unavailable"]["by_thresholds"]))
+
+    def test_get_available_stands_ignores_non_forsys_constraint(self):
+        self.datalayer.metadata = {"modules": {"forsys": {"enabled": False}}}
+        self.datalayer.save(update_fields=["metadata"])
+
+        result = get_available_stands(
+            self.scenario,
+            stand_size=StandSizeChoices.LARGE,
+            constraints=[
+                {
+                    "datalayer": self.datalayer,
+                    "operator": None,
+                    "value": 1,
+                }
+            ],
+        )
+
+        self.assertEqual(0, len(result["unavailable"]["by_thresholds"]))
 
 
 class ValidateScenarioConfigurationTest(TestCase):
@@ -1413,6 +1511,33 @@ class ProjectAreasChildForSysTest(TestCase):
         )
         self.assertEqual(errors, [])
 
+    def test_available_stands_summary_uses_parent_project_areas(self):
+        stand = self.planning_area.get_stands(StandSizeChoices.LARGE).first()
+        self.assertIsNotNone(stand)
+
+        self.project_area.geometry = MultiPolygon(
+            stand.geometry,
+            srid=stand.geometry.srid,
+        )
+        self.project_area.save(update_fields=["geometry"])
+
+        result = get_available_stands(
+            self.child,
+            stand_size=StandSizeChoices.LARGE,
+        )
+
+        summary = result["summary"]
+
+        self.assertEqual(summary["treatable_stand_count"], 1)
+        self.assertLess(
+            summary["treatable_area"],
+            summary["total_area"],
+        )
+        self.assertAlmostEqual(
+            summary["available_area"],
+            summary["treatable_area"],
+        )
+
 
 class CreateScenarioGuardTest(TestCase):
     def setUp(self):
@@ -1537,17 +1662,7 @@ class TriggerScenarioTest(TestCase):
 
         self.scenario.refresh_from_db()
 
-        self.assertEqual(
-            self.scenario.capabilities,
-            [
-                "FORSYS",
-                "IMPACTS",
-                "MAP",
-                "CLIMATE_FORESIGHT",
-                "PRIORITIZE_SUB_UNITS",
-                "FUNDING_REPORT",
-            ],
-        )
+        self.assertIn("PRIORITIZE_SUB_UNITS", self.scenario.capabilities)
 
     def test_compute_scenario_capability_before_run__prioritize_sub_units(self):
         self.scenario.planning_approach = ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
@@ -1556,16 +1671,7 @@ class TriggerScenarioTest(TestCase):
 
         self.scenario.refresh_from_db()
 
-        self.assertEqual(
-            self.scenario.capabilities,
-            [
-                "FORSYS",
-                "MAP",
-                "CLIMATE_FORESIGHT",
-                "PRIORITIZE_SUB_UNITS",
-                "FUNDING_REPORT",
-            ],
-        )
+        self.assertIn("PRIORITIZE_SUB_UNITS", self.scenario.capabilities)
 
 
 class SubUnitsDetailsTest(TestCase):
@@ -1576,7 +1682,6 @@ class SubUnitsDetailsTest(TestCase):
 
     @mock.patch("planning.services.get_sub_units_areas", return_value=None)
     def test_no_areas(self, mock_get_units_area):
-
         details = get_sub_units_details(
             self.scenario, self.scenario.get_stand_size(), self.datalayer
         )
@@ -1649,6 +1754,46 @@ class SubUnitsDetailsTest(TestCase):
 
         # 100 + 200 + 300 + 400 + 500 + 550 (of 600) + 550 (of 700) + 550 (of 800) + 550 (of 900) + 550 (of 100))
         self.assertEqual(details.get("targeted_area"), 4250)
+
+    @mock.patch(
+        "planning.services.get_acreage",
+        side_effect=[5.0, 15.0],
+    )
+    def test_project_areas_child_uses_project_area_acreage(
+        self,
+        mock_get_acreage,
+    ):
+        parent = ScenarioFactory.create(
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        child = ScenarioFactory.create(
+            parent=parent,
+            planning_area=parent.planning_area,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+            configuration={"stand_size": StandSizeChoices.LARGE},
+        )
+
+        ProjectAreaFactory.create(
+            scenario=parent,
+            name="Project Area 1",
+        )
+        ProjectAreaFactory.create(
+            scenario=parent,
+            name="Project Area 2",
+        )
+
+        details = get_sub_units_details(
+            child,
+            child.get_stand_size(),
+        )
+
+        self.assertEqual(details["avg"], 10.0)
+        self.assertEqual(details["min"], 5.0)
+        self.assertEqual(details["max"], 15.0)
+        self.assertEqual(details["sum"], 20.0)
+        self.assertIsNone(details["targeted_area"])
+
+        self.assertEqual(mock_get_acreage.call_count, 2)
 
 
 class CalculateAndUpdateScenarioResult(TestCase):

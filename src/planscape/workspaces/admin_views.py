@@ -1,6 +1,5 @@
 from core.serializers import MultiSerializerMixin
 from django.db.models import Count, Q
-from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
@@ -17,8 +16,14 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from datasets.models import VisibilityOptions
+from planscape.filters import TrackedFilterBackend
 from workspaces.filters import WorkspaceFilterSet
-from workspaces.models import UserAccessWorkspace, Workspace, WorkspaceRole
+from workspaces.models import (
+    UserAccessWorkspace,
+    Workspace,
+    WorkspaceKind,
+    WorkspaceRole,
+)
 from workspaces.serializers import (
     CreateWorkspaceSerializer,
     UpdateWorkspaceSerializer,
@@ -48,15 +53,14 @@ class AdminWorkspaceViewSet(
         "partial_update": UpdateWorkspaceSerializer,
     }
     pagination_class = LimitOffsetPagination
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [TrackedFilterBackend]
     filterset_class = WorkspaceFilterSet
 
     def get_queryset(self):
         user = self.request.user
         return (
-            Workspace.objects.filter(
-                Q(visibility=VisibilityOptions.PUBLIC) | Q(user_access__user=user)
-            )
+            Workspace.objects.filter(kind=WorkspaceKind.DATA)
+            .filter(Q(visibility=VisibilityOptions.PUBLIC) | Q(user_access__user=user))
             .annotate(
                 datasets_count=Count("datasets", distinct=True),
                 styles_count=Count("styles", distinct=True),

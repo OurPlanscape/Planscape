@@ -2,7 +2,12 @@ import factory
 from planscape.tests.factories import UserFactory
 
 from datasets.models import VisibilityOptions
-from workspaces.models import UserAccessWorkspace, Workspace, WorkspaceRole
+from workspaces.models import (
+    UserAccessWorkspace,
+    Workspace,
+    WorkspaceKind,
+    WorkspaceRole,
+)
 
 
 class WorkspaceFactory(factory.django.DjangoModelFactory):
@@ -11,6 +16,7 @@ class WorkspaceFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda x: f"Workspace {x}")
     visibility = VisibilityOptions.PRIVATE
+    kind = WorkspaceKind.DATA
 
 
     @factory.post_generation
@@ -44,3 +50,23 @@ class UserAccessWorkspaceFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     workspace = factory.SubFactory(WorkspaceFactory)
     role = WorkspaceRole.VIEWER
+
+
+class PlanningWorkspaceFactory(WorkspaceFactory):
+    """A user-facing workspace, always owned by its creator."""
+
+    kind = WorkspaceKind.PLANNING
+    created_by = factory.SubFactory(UserFactory)
+    creator_name = factory.LazyAttribute(
+        lambda workspace: workspace.created_by.get_full_name()
+    )
+
+    @factory.post_generation
+    def creator_access(self, create, extracted, **kwargs):
+        if not create or not self.created_by:
+            return
+        UserAccessWorkspaceFactory.create(
+            user=self.created_by,
+            workspace=self,
+            role=WorkspaceRole.OWNER,
+        )

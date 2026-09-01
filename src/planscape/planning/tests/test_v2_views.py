@@ -239,6 +239,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(planning_areas["count"], 46)
         self.assertEqual(len(planning_areas["results"]), 46)
+        self.assertEqual(planning_areas["results"][0]["bbox"], [1.0, 2.0, 3.0, 4.0])
 
     def test_list_planning_areas_offset(self):
         self.client.force_authenticate(self.user)
@@ -1054,7 +1055,8 @@ class CreateScenariosFromUpload(APITestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_create_from_multi_feature_shpjs(self):
+    @mock.patch("planning.serializers.track_event")
+    def test_create_from_multi_feature_shpjs(self, track_event_mock):
         self.client.force_authenticate(self.owner_user)
         payload = {
             "geometry": json.dumps(self.pasadena_pomona),
@@ -1082,7 +1084,17 @@ class CreateScenariosFromUpload(APITestCase):
         for f in result_record.result["features"]:
             self.assertIn("project_id", f["properties"])
 
+        validation_call = next(
+            call
+            for call in track_event_mock.call_args_list
+            if call.kwargs["name"] == "planning.project_areas_upload.validation"
+        )
+        self.assertEqual(validation_call.kwargs["properties"]["status"], "passed")
+        self.assertIn("stage", validation_call.kwargs["properties"])
+
     def test_create_uncontained_geometry(self):
+        # San Diego doesn't overlap the LA-area planning area at all, so
+        # every uploaded project area is clipped down to nothing.
         self.client.force_authenticate(self.owner_user)
         payload = {
             "geometry": json.dumps(self.sandiego),
@@ -1102,7 +1114,7 @@ class CreateScenariosFromUpload(APITestCase):
             "detail": "Validation error.",
             "errors": {
                 "global": [
-                    "The uploaded geometry is not within the selected planning area."
+                    "None of the uploaded project areas overlap the selected planning area."
                 ]
             },
         }

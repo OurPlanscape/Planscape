@@ -17,6 +17,8 @@ import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { MockDeclarations } from 'ng-mocks';
 import { ButtonComponent } from '@styleguide';
 import { MatMenuHarness } from '@angular/material/menu/testing';
+import { FeaturesModule } from '@features/features.module';
+import { overrideFeatureFlags } from '@features/testing';
 
 describe('TopBarComponent', () => {
   let component: TopBarComponent;
@@ -41,6 +43,7 @@ describe('TopBarComponent', () => {
         LegacyMaterialModule,
         RouterTestingModule,
         NoopAnimationsModule,
+        FeaturesModule,
       ],
       declarations: [TopBarComponent, MockDeclarations(ButtonComponent)],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -115,6 +118,22 @@ describe('TopBarComponent', () => {
         );
 
         expect(texts).toEqual(['Plans', 'Account', 'Sign Out']);
+      });
+
+      it('drops `plans` when the workspaces flag is on', async () => {
+        overrideFeatureFlags('WORKSPACES');
+        setUpComponent();
+        const harness = await loader.getHarness(MatMenuHarness);
+        await harness.open();
+        const items = await harness.getItems();
+
+        expect(items.length).toBe(2);
+
+        const texts = await Promise.all(
+          items.map(async (item) => await item.getText())
+        );
+
+        expect(texts).toEqual(['Account', 'Sign Out']);
       });
     });
   });

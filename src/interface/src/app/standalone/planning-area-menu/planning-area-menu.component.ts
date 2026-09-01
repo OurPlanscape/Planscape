@@ -40,6 +40,11 @@ import { MatButtonModule } from '@angular/material/button';
 })
 export class PlanningAreaMenuComponent {
   @Input() plan!: Plan | PreviewPlan;
+  @Input() showOpen = true;
+  @Input() showViewMap = true;
+  @Input() showRename = true;
+  @Input() showShare = true;
+  @Input() showDelete = true;
   @Output() afterDelete = new EventEmitter();
   @Output() afterRename = new EventEmitter();
 

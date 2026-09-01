@@ -9,7 +9,7 @@ from collections.abc import Collection
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
-from typing import (  # noqa: F401
+from typing import (  # noqa
     Any,
     Dict,
     List,
@@ -44,6 +44,7 @@ from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from modules.base import (
+    ForsysModule,
     PrioritizeSubUnitsModule,
     compute_planning_area_capabilities,
     compute_scenario_capabilities,
@@ -56,7 +57,12 @@ from stands.models import Stand, StandMetric, StandSizeChoices, area_from_size
 from stands.services import get_datalayer_metric, get_stand_grid_key_search_precision
 from utils.geometry import to_multi
 
-from planning.geometry import coerce_geojson, coerce_geometry, to_multipolygon
+from planning.geometry import (
+    coerce_geojson,
+    coerce_geometry,
+    fix_geometry,
+    to_multipolygon,
+)
 from planning.models import (
     GeoPackageStatus,
     PlanningArea,
@@ -117,6 +123,7 @@ def create_planning_area(
     region_name: str | None = None,
     geometry: Any = None,
     notes: str | None = None,
+    workspace: Any = None,
 ) -> PlanningArea:
     from planning.tasks import (
         async_create_stands,
@@ -139,6 +146,7 @@ def create_planning_area(
         region_name=region_name,
         geometry=geometry,
         notes=notes,
+        workspace=workspace,
         map_status=PlanningAreaMapStatus.PENDING,
     )
     planning_area.capabilities = compute_planning_area_capabilities(planning_area)
@@ -394,6 +402,10 @@ def feature_to_project_area(
     geometry_dict: dict[str, Any],
     idx: int = 1,
 ):
+    """Creates a ProjectArea from an uploaded geometry. The stored geometry is
+    always the intersection with the Scenario's Planning Area - returns None
+    (no ProjectArea is created) if the uploaded shape doesn't overlap the
+    planning area at all."""
     user = scenario.user
     stand_size = scenario.get_stand_size()
     try:
@@ -401,6 +413,12 @@ def feature_to_project_area(
         logger.info("creating project area %s %s", area_name, geometry_dict)
         _bbox = geometry_dict.pop("bbox", None)
         geometry = coerce_geometry(geometry_dict)
+
+        geometry = geometry.intersection(scenario.planning_area.geometry)
+        if geometry.empty:
+            logger.info("%s does not overlap the planning area, skipping", area_name)
+            return None
+        geometry = to_multipolygon(fix_geometry(geometry))
 
         stand_count = Stand.objects.within_polygon(
             geometry,
@@ -468,16 +486,22 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
             target=scenario.planning_area,
         )
     )
-    project_areas = list(
-        map(
-            lambda i: feature_to_project_area(
+    project_areas = [
+        project_area
+        for project_area in (
+            feature_to_project_area(
                 scenario=scenario,
-                idx=i[0],
-                geometry_dict=i[1].get("geometry", {}),
-            ),
-            enumerate(feature_collection.get("features"), 1),
+                idx=idx,
+                geometry_dict=feature.get("geometry", {}),
+            )
+            for idx, feature in enumerate(feature_collection.get("features"), 1)
         )
-    )
+        if project_area is not None
+    ]
+    if not project_areas:
+        raise ValueError(
+            "None of the uploaded project areas overlap the selected planning area."
+        )
     result = {
         "type": "FeatureCollection",
         "features": [
@@ -820,7 +844,7 @@ def build_run_configuration(scenario: "Scenario") -> dict[str, Any]:
     targets = cfg.get("targets", {})
     number_of_projects = targets.get("max_project_count", 1)
 
-    min_area_project = get_min_project_area(scenario)
+    min_area_project = get_min_project_area(scenario.get_stand_size())
     max_area_project = get_max_area_project(scenario=scenario)
 
     sdw = settings.FORSYS_SDW
@@ -936,7 +960,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> list[str]:
                 )
 
             elif sub_units_fixed_target is True:
-                min_area = get_min_project_area(scenario=scenario)
+                min_area = get_min_project_area(stand_size or StandSizeChoices.LARGE)
 
                 if sub_units_target_value < min_area:
                     errors.append(
@@ -972,7 +996,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> list[str]:
 
             elif sub_units_fixed_target is True:
                 sub_units_layer = DataLayer.objects.get(pk=sub_units_layer_id)
-                min_area = get_min_project_area(scenario=scenario)
+                min_area = get_min_project_area(stand_size or StandSizeChoices.LARGE)
                 max_area = get_sub_units_details(
                     scenario=scenario,
                     stand_size=scenario.get_stand_size(),
@@ -998,7 +1022,9 @@ def validate_scenario_configuration(scenario: "Scenario") -> list[str]:
             )
 
         if max_area is not None:
-            min_area_project = get_min_project_area(scenario)
+            min_area_project = get_min_project_area(
+                stand_size or StandSizeChoices.LARGE
+            )
             if max_area < min_area_project:
                 errors.append(
                     f"Target `max_area` must be at least {min_area_project} acres "
@@ -1077,7 +1103,7 @@ def get_max_area_project(scenario: Scenario) -> float:
     return (
         float(max_area)
         if max_area is not None
-        else float(get_min_project_area(scenario))
+        else float(get_min_project_area(scenario.get_stand_size()))
     )
 
 
@@ -1853,47 +1879,6 @@ def toggle_scenario_status(scenario: Scenario, user: User) -> Scenario:
     return scenario
 
 
-def planning_area_covers(
-    planning_area: PlanningArea,
-    geometry: GEOSGeometry,
-    stand_size: StandSizeChoices,
-    buffer_size: float = -1.0,
-) -> bool:
-    """Specialized version of `covers` predicate for Planning Area.
-    This is necessary because some times our users want to upload
-    project areas that are slightly off the planning area. So this
-    function first considers the Planning Area itself, then all the
-    stands that make up the planning area and lastly it considers
-    a buffered version of the test geometry (negative means smaller).
-    """
-    if planning_area.geometry.covers(geometry):
-        logger.info("Planning Area covers geometry using DE9IM matrix.")
-        return True
-
-    all_stands = Stand.objects.within_polygon(
-        planning_area.geometry,
-        stand_size,
-    ).aggregate(geometry=UnionOp("geometry"))["geometry"]
-
-    if all_stands is None:
-        return False
-
-    if all_stands.covers(geometry):
-        logger.info("Planning Area covers geometry using stands DE9IM matrix.")
-        return True
-
-    # units here are in meters
-    test_geometry = geometry.transform(settings.AREA_SRID, clone=True)
-    test_geometry = test_geometry.buffer(buffer_size).transform(4269, clone=True)
-
-    if all_stands.covers(test_geometry):
-        logger.info(
-            "Planning Area covers geometry using a buffered version of test geometry."
-        )
-        return True
-    return False
-
-
 def get_excluded_stands(stands_qs, datalayer: DataLayer):
     return stands_qs.filter(
         metrics__datalayer_id=datalayer.pk, metrics__majority=1
@@ -1979,6 +1964,9 @@ def get_available_stands(
         excludes = list()
     if not constraints:
         constraints = list()
+    if not sub_unit:
+        sub_unit = scenario.sub_unit_datalayer
+
     planning_area = scenario.planning_area
     area_transform = Area(Transform("geometry", settings.AREA_SRID))
     if feature_enabled("ADD_INCLUDES") and scenario.treatable_area is not None:
@@ -1987,7 +1975,17 @@ def get_available_stands(
         stands = planning_area.get_stands(stand_size)
 
     stands = stands.annotate(area=area_transform)
-    total_area = stands.all().aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+
+    total_area = stands.aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+
+    if is_project_areas_child(scenario):
+        project_area_stand_ids = get_project_areas_child_stand_ids(
+            scenario=scenario,
+            stand_size=stand_size,
+        )
+        stands = stands.filter(id__in=project_area_stand_ids)
+
+    potential_area = stands.aggregate(total_area_m2=Sum("area"))["total_area_m2"]
 
     excluded_ids = []
     constrained_ids = []
@@ -1997,13 +1995,16 @@ def get_available_stands(
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
     if (
-        scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        not is_project_areas_child(scenario)
+        and scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         and sub_unit
     ):
-        # Exclude stands that is not included to any sub-unit
         stands_queryset = stands.all()
         sub_units_stands = get_stands_from_sub_units(
-            stands_queryset, planning_area, scenario.get_stand_size(), sub_unit
+            stands_queryset,
+            planning_area,
+            scenario.get_stand_size(),
+            sub_unit,
         )
         sub_units_stands_ids = set(sub_units_stands.values_list("id", flat=True))
         stand_ids = stands_queryset.exclude(id__in=sub_units_stands_ids).values_list(
@@ -2012,6 +2013,11 @@ def get_available_stands(
 
         excluded_ids.extend(list(stand_ids))
 
+    constraints = [
+        constraint
+        for constraint in constraints
+        if constraint.get("datalayer").has_module(ForsysModule.name)
+    ]
     for constraint in constraints:
         stands_queryset = stands.all()
         constrained_stands = get_constrained_stands(
@@ -2040,12 +2046,14 @@ def get_available_stands(
     )
     if not total_area:
         total_area = A(sq_m=0)
+    if not potential_area:
+        potential_area = A(sq_m=0)
     if not total_excluded_area:
         total_excluded_area = A(sq_m=0)
     if not total_constrained_area:
         total_constrained_area = A(sq_m=0)
 
-    available_area = total_area - total_excluded_area
+    available_area = potential_area - total_excluded_area
     treatable_area = available_area - total_constrained_area
     total_unavailable_area = total_excluded_area + total_constrained_area
     return {
@@ -2144,8 +2152,7 @@ def calculate_scenario_treatable_area(
     return to_multipolygon(included_geometry) if included_geometry else None
 
 
-def get_min_project_area(scenario: Scenario) -> float:
-    stand_size = scenario.get_stand_size()
+def get_min_project_area(stand_size: StandSizeChoices) -> float:
     match stand_size:
         case StandSizeChoices.SMALL:
             return settings.MIN_AREA_PROJECT_SMALL
@@ -2165,7 +2172,7 @@ def get_sub_units_areas(
     stands = planning_area.get_stands(stand_size).annotate(
         centroid=Centroid("geometry")
     )
-    stand_area = get_min_project_area(scenario=scenario)
+    stand_area = get_min_project_area(stand_size)
 
     queryset = DynamicModel.objects.filter(geometry__bboverlaps=geometry).filter(
         geometry__intersects=geometry
@@ -2189,24 +2196,15 @@ def get_sub_units_areas(
 
 def get_project_areas_child_areas(
     scenario: Scenario,
-    stand_size: StandSizeChoices,
 ) -> list[float] | None:
     parent = scenario.parent
     if not parent:
         return None
 
-    stand_area = get_min_project_area(scenario)
-    areas = []
-
-    for project_area in parent.project_areas.all():
-        stand_count = get_project_areas_child_stands(
-            scenario=scenario,
-            project_area=project_area,
-            stand_size=stand_size,
-        ).count()
-
-        if stand_count > 0:
-            areas.append(stand_count * stand_area)
+    areas = [
+        get_acreage(project_area.geometry)
+        for project_area in parent.project_areas.all()
+    ]
 
     return areas or None
 
@@ -2218,11 +2216,9 @@ def get_sub_units_details(
     fixed_target: bool | None = None,
     target_value: float | None = None,
 ) -> dict[str, float | None] | None:
-
     if is_project_areas_child(scenario):
         areas = get_project_areas_child_areas(
             scenario=scenario,
-            stand_size=stand_size,
         )
     elif datalayer:
         areas = get_sub_units_areas(
@@ -2400,7 +2396,7 @@ def calculate_and_update_pct_treatable_area(scenario: Scenario, features: list) 
     forsys_input = scenario.forsys_input or {}
 
     number_of_stands = len(forsys_input.get("stand_ids", []))
-    stand_area = get_min_project_area(scenario=scenario)
+    stand_area = get_min_project_area(scenario.get_stand_size())
 
     treatable_area = number_of_stands * stand_area
 

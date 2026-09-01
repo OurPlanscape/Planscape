@@ -94,6 +94,16 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
         help_text="User ID that created the Planning Area.",
     )
 
+    workspace_id: int
+    workspace = models.ForeignKey(
+        "workspaces.Workspace",
+        related_name="planning_areas",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Workspace this Planning Area belongs to.",
+    )
+
     region_name: models.CharField = models.CharField(
         max_length=120,
         choices=RegionChoices.choices,
@@ -565,6 +575,13 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         if "question_id" in cfg:
             return ScenarioVersion.V1
         return ScenarioVersion.V2
+
+    @cached_property
+    def sub_unit_datalayer(self) -> Optional[DataLayer]:
+        sub_units_layer_id = self.configuration.get("sub_units_layer")
+        if not sub_units_layer_id:
+            return None
+        return DataLayer.objects.filter(pk=sub_units_layer_id).first()
 
     def creator_name(self) -> str:
         return self.user.get_full_name()

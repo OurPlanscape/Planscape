@@ -1,4 +1,4 @@
-import { Component, HostBinding, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { PlanningAreaLayerComponent } from '@app/maplibre-map/planning-area-layer/planning-area-layer.component';
 import { MapComponent, LayerComponent } from '@maplibre/ngx-maplibre-gl';
@@ -17,6 +17,7 @@ import { baseMapStyles } from '@app/maplibre-map/map-base-layers';
 import { PlanState } from '../plan.state';
 import { map } from 'rxjs';
 import { MapProjectAreasComponent } from '@app/maplibre-map/map-project-areas/map-project-areas.component';
+import { CardLinkComponent } from '@styleguide';
 
 @Component({
   selector: 'app-map-viewer-card',
@@ -30,6 +31,7 @@ import { MapProjectAreasComponent } from '@app/maplibre-map/map-project-areas/ma
     NgIf,
     PlanningAreaLayerComponent,
     RouterModule,
+    CardLinkComponent,
   ],
   providers: [MapConfigState],
   templateUrl: './map-viewer-card.component.html',
@@ -89,10 +91,5 @@ export class MapViewerCardComponent {
         ? ['/map-viewer', this.planId, this.scenarioId]
         : ['/map-viewer', this.planId]
     );
-  }
-
-  @HostBinding('class.tall')
-  get isTall() {
-    return this.height === 'tall';
   }
 }
