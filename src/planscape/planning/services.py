@@ -1964,6 +1964,9 @@ def get_available_stands(
         excludes = list()
     if not constraints:
         constraints = list()
+    if not sub_unit:
+        sub_unit = scenario.sub_unit_datalayer
+
     planning_area = scenario.planning_area
     area_transform = Area(Transform("geometry", settings.AREA_SRID))
     if feature_enabled("ADD_INCLUDES") and scenario.treatable_area is not None:

@@ -1110,6 +1110,33 @@ class TestRemoveExcludes(TestCase):
             self.assertEqual(17, len(stands))
             self.assertLess(len(stand_ids), len(stands) - 1)
 
+    def test_get_available_stands_uses_scenario_sub_unit_datalayer(self):
+        stand_to_remove = self.stands[0]
+        stand_ids = [stand.id for stand in self.stands]
+        sub_unit_stands = Stand.objects.filter(id__in=stand_ids).exclude(
+            id=stand_to_remove.pk
+        )
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+            configuration={"sub_units_layer": self.datalayer.pk},
+        )
+
+        with mock.patch(
+            "planning.services.get_stands_from_sub_units", return_value=sub_unit_stands
+        ) as get_stands_from_sub_units_mock:
+            result = get_available_stands(
+                scenario,
+                stand_size=StandSizeChoices.LARGE,
+            )
+
+        get_stands_from_sub_units_mock.assert_called_once()
+        self.assertEqual(
+            get_stands_from_sub_units_mock.call_args.args[3],
+            self.datalayer,
+        )
+        self.assertIn(stand_to_remove.pk, result["unavailable"]["by_exclusions"])
+
     def test_get_available_stands_applies_forsys_constraint(self):
         self.datalayer.metadata = {
             "modules": {"forsys": {"enabled": True, "metric_column": "majority"}}

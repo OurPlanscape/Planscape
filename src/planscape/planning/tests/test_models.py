@@ -118,3 +118,19 @@ class ScenarioModelTest(TestCase):
 
         self.assertEqual(child.parent, parent)
         self.assertIn(child, parent.children.all())
+
+    def test_sub_unit_datalayer_returns_none_without_config_value(self):
+        scenario = ScenarioFactory(configuration={})
+
+        self.assertIsNone(scenario.sub_unit_datalayer)
+
+    def test_sub_unit_datalayer_returns_configured_datalayer(self):
+        datalayer = DataLayerFactory.create(type=DataLayerType.VECTOR)
+        scenario = ScenarioFactory(configuration={"sub_units_layer": datalayer.pk})
+
+        self.assertEqual(scenario.sub_unit_datalayer, datalayer)
+
+    def test_sub_unit_datalayer_returns_none_for_missing_datalayer_id(self):
+        scenario = ScenarioFactory(configuration={"sub_units_layer": 99999999})
+
+        self.assertIsNone(scenario.sub_unit_datalayer)
