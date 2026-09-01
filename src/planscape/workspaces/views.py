@@ -26,6 +26,8 @@ from workspaces.services import (
     delete_workspace,
     invite_member,
     remove_member,
+    revoke_invite,
+    update_invite_role,
     update_member_role,
 )
 
@@ -190,6 +192,38 @@ class WorkspaceViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             actor=request.user,
             workspace=workspace,
             target_user_id=int(user_id),
+            role=serializer.validated_data["role"],
+        )
+        return Response(WorkspaceMemberSerializer(access).data)
+
+    @extend_schema(
+        description="Change a pending invite's role (PATCH), or revoke it "
+        "(DELETE). Accepted members are managed through `users/<user_id>`.",
+        request=UpdateWorkspaceMemberSerializer,
+        responses={200: WorkspaceMemberSerializer, 204: None},
+    )
+    @action(
+        detail=True,
+        methods=["patch", "delete"],
+        url_path=r"invites/(?P<invite_id>\d+)",
+    )
+    def manage_invite(self, request, pk=None, invite_id=None):
+        workspace = self.get_object()
+
+        if request.method == "DELETE":
+            revoke_invite(
+                actor=request.user,
+                workspace=workspace,
+                invite_id=int(invite_id),
+            )
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        serializer = UpdateWorkspaceMemberSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        access = update_invite_role(
+            actor=request.user,
+            workspace=workspace,
+            invite_id=int(invite_id),
             role=serializer.validated_data["role"],
         )
         return Response(WorkspaceMemberSerializer(access).data)

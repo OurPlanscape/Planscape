@@ -10,6 +10,7 @@ import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.c
 import { WorkspaceActionsService } from './workspace-actions.service';
 import { CreateWorkspaceModalComponent } from './create-workspace-modal/create-workspace-modal.component';
 import { WelcomeWorkspaceModalComponent } from './welcome-workspace-modal/welcome-workspace-modal.component';
+import { ShareDialogComponent } from '@app/sharing/share-dialog/share-dialog.component';
 
 describe('WorkspaceActionsService', () => {
   let service: WorkspaceActionsService;
@@ -55,6 +56,19 @@ describe('WorkspaceActionsService', () => {
     });
     service = TestBed.inject(WorkspaceActionsService);
   }
+
+  it('opens the share modal for the workspace', () => {
+    setUp(undefined);
+
+    service.shareWorkspace(workspace);
+
+    expect(dialog.open).toHaveBeenCalledWith(
+      ShareDialogComponent,
+      jasmine.objectContaining({
+        data: { kind: 'workspace', workspace },
+      })
+    );
+  });
 
   it('opens the create workspace modal', () => {
     setUp(workspace);

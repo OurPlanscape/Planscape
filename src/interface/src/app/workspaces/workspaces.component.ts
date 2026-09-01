@@ -200,6 +200,10 @@ export class WorkspacesComponent {
       });
   }
 
+  shareWorkspace(workspace: Workspace) {
+    this.workspaceActionsService.shareWorkspace(workspace);
+  }
+
   deleteWorkspace(workspace: Workspace) {
     this.workspaceActionsService
       .deleteWorkspace(workspace)
