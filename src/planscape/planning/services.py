@@ -730,6 +730,26 @@ def calculate_child_project_areas(scenario: Scenario) -> list[ProjectArea]:
     return project_areas
 
 
+def _get_operation(operator: str, value: Any) -> str:
+    match operator:
+        case "btw":
+            min_value, max_value = str(value).split(",", maxsplit=1)
+            return f"value >= {min_value.strip()} & value <= {max_value.strip()}"
+        case _:
+            # normal cases
+            # constraints datalayers from scenario configuration
+            OPERATOR_MAP = {
+                "eq": "=",
+                "dne": "!=",
+                "lt": "<",
+                "lte": "<=",
+                "gt": ">",
+                "gte": ">=",
+            }
+
+            return f"value {OPERATOR_MAP.get(operator, operator)} {value}"
+
+
 def build_run_configuration(scenario: "Scenario") -> dict[str, Any]:
     tx_goal = scenario.treatment_goal
     datalayers = []
@@ -749,14 +769,6 @@ def build_run_configuration(scenario: "Scenario") -> dict[str, Any]:
 
             datalayers.append(item)
 
-    # constraints datalayers from scenario configuration
-    OPERATOR_MAP = {
-        "eq": "=",
-        "lt": "<",
-        "lte": "<=",
-        "gt": ">",
-        "gte": ">=",
-    }
     cfg = getattr(scenario, "configuration", {}) or {}
     constraints = cfg.get("constraints") or []
     priorities = cfg.get("priorities") or []
@@ -776,9 +788,7 @@ def build_run_configuration(scenario: "Scenario") -> dict[str, Any]:
 
         # Defer custom objectives/cobenefits so their thresholds get applied later.
         if datalayer_id in custom_datalayer_ids:
-            custom_thresholds[datalayer_id] = (
-                f"value {OPERATOR_MAP.get(operator, operator)} {value}"
-            )
+            custom_thresholds[datalayer_id] = _get_operation(operator, value)
             continue
 
         dl = DataLayer.objects.get(pk=datalayer_id)
@@ -789,7 +799,7 @@ def build_run_configuration(scenario: "Scenario") -> dict[str, Any]:
                 "metric": get_datalayer_metric(dl),
                 "type": dl.type,
                 "geometry_type": dl.geometry_type,
-                "threshold": f"value {OPERATOR_MAP.get(operator, operator)} {value}",
+                "threshold": _get_operation(operator, value),
                 "usage_type": "THRESHOLD",
                 "weight": None,
             }

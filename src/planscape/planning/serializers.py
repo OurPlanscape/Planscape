@@ -549,20 +549,22 @@ class ConstraintSerializer(serializers.Serializer):
     )
 
     operator = serializers.ChoiceField(
-        choices=["eq", "lt", "lte", "gt", "gte"],
+        choices=["eq", "dne", "lt", "lte", "gt", "gte", "btw"],
         required=True,
     )
 
     value = serializers.CharField(
-        max_length=16,
+        max_length=32,
         required=True,
     )
 
 
 class ConstraintReadSerializer(serializers.Serializer):
     datalayer = serializers.IntegerField()
-    operator = serializers.ChoiceField(choices=["eq", "lt", "lte", "gt", "gte"])
-    value = serializers.CharField(max_length=16)
+    operator = serializers.ChoiceField(
+        choices=["eq", "dne", "lt", "lte", "gt", "gte", "btw"]
+    )
+    value = serializers.CharField(max_length=32)
 
 
 class TargetsSerializer(serializers.Serializer):
