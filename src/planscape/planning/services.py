@@ -736,7 +736,7 @@ def _get_operation(operator: str, value: str) -> str:
             values = value.strip().replace(" ", "").split(",", maxsplit=1)
             values.sort()
             min_value, max_value = values
-            return f"value >= {min_value.strip()} & value <= {max_value.strip()}"
+            return f"value >= {float(min_value)} & value <= {float(max_value)}"
         case _:
             # normal cases
             # constraints datalayers from scenario configuration
