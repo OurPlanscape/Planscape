@@ -5,7 +5,6 @@ import { scenarioLoaderResolver } from '@resolvers/scenario-loader.resolver';
 import { ScenarioComponent } from './scenario.component';
 import { canDeactivateGuard } from '@services/can-deactivate.guard';
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
-import { createFeatureGuard } from '@app/features/feature.guard';
 import { DashboardSwitcherComponent } from './dashboard-switcher/dashboard-switcher.component';
 import { FundingDashboardComponent } from '@app/funding/funding-dashboard/funding-dashboard.component';
 import { FullReportViewComponent } from '@app/funding/full-report-view/full-report-view.component';
@@ -34,7 +33,6 @@ const routes: Routes = [
     component: FundingDashboardComponent,
     title: 'Funding Dashboard',
     canDeactivate: [canDeactivateGuard],
-    canActivate: [createFeatureGuard({ featureName: 'FUNDING_REPORTS' })],
     resolve: {
       scenarioId: scenarioLoaderResolver,
       dataLayerInit: resetDatalayerResolver,
@@ -45,7 +43,6 @@ const routes: Routes = [
     component: FullReportViewComponent,
     title: 'Funding Report',
     canDeactivate: [canDeactivateGuard],
-    canActivate: [createFeatureGuard({ featureName: 'FUNDING_REPORTS' })],
     resolve: {
       scenarioId: scenarioLoaderResolver,
       dataLayerInit: resetDatalayerResolver,

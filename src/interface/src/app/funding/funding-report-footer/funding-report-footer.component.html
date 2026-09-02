@@ -1,13 +1,11 @@
-<ng-container *ngIf="showShare">
-  <button
-    sg-button
-    [outlined]="true"
-    icon="send"
-    (click)="shareReport()"
-    *appFeatureFlag="'SHARE_FUNDING_REPORTS'">
-    Send results summary
-  </button>
-</ng-container>
+<button
+  sg-button
+  *ngIf="showShare"
+  [outlined]="true"
+  icon="send"
+  (click)="shareReport()">
+  Send results summary
+</button>
 <button
   sg-button
   icon="download"
