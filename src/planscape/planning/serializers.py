@@ -567,13 +567,13 @@ class ConstraintSerializer(serializers.Serializer):
                 min_value = float(min_value)
                 max_value = float(max_value)
                 return f"{min_value},{max_value}"
-            except:
+            except ValueError:
                 raise serializers.ValidationError("Invalid constraint value(s)")
         else:
             try:
                 float(value)
                 return value
-            except:
+            except ValueError:
                 raise serializers.ValidationError("Invalid constraint value")
 
 
