@@ -154,7 +154,7 @@ class BuildRunConfigurationTest(TestCase):
         self.assertEqual(datalayers[dne_datalayer.pk]["threshold"], "value != 10")
         self.assertEqual(
             datalayers[btw_datalayer.pk]["threshold"],
-            "value >= 10 & value <= 20",
+            "value >= 10.0 & value <= 20.0",
         )
         self.assertEqual(
             datalayers[dne_datalayer.pk]["usage_type"],
@@ -201,7 +201,7 @@ class BuildRunConfigurationTest(TestCase):
         self.assertEqual(datalayers[priority.pk]["threshold"], "value != 10")
         self.assertEqual(
             datalayers[cobenefit.pk]["threshold"],
-            "value >= 10 & value <= 20",
+            "value >= 10.0 & value <= 20.0",
         )
         self.assertEqual(
             datalayers[priority.pk]["usage_type"],
