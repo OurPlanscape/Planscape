@@ -303,7 +303,6 @@ cloud-run-build-all:
 cloud-run-push-all:
 	$(MAKE) -j3 cloud-run-push cloud-run-push-frontend-job cloud-run-push-gateway
 
-# TODO: Add migration step after Jenkins decomissioning [ $(MAKE) cloud-run-execute-django-job MANAGE_ARGS="migrate --no-input" ]
 cloud-run-deploy-all:
 	$(MAKE) cloud-run-push-all
 	$(MAKE) -j2 cloud-run-update-django-job cloud-run-update-frontend-job
