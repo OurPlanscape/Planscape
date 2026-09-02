@@ -730,10 +730,10 @@ def calculate_child_project_areas(scenario: Scenario) -> list[ProjectArea]:
     return project_areas
 
 
-def _get_operation(operator: str, value: Any) -> str:
+def _get_operation(operator: str, value: str) -> str:
     match operator:
         case "btw":
-            values = str(value).split(",", maxsplit=1)
+            values = value.strip().replace(" ", "").split(",", maxsplit=1)
             values.sort()
             min_value, max_value = values
             return f"value >= {min_value.strip()} & value <= {max_value.strip()}"
