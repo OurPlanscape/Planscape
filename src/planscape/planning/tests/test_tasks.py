@@ -377,6 +377,106 @@ class PrepareScenariosForForsysTest(TestCase):
 
         mock_chord.assert_called_once()
 
+    @mock.patch("planning.tasks.async_calculate_stand_metrics_with_stand_list.si")
+    @mock.patch("planning.tasks.get_missing_stand_ids_for_datalayer_within_geometry")
+    @mock.patch("planning.tasks.group")
+    @mock.patch("planning.tasks.chord")
+    def test_prepare_scenario_custom_adds_constraint_datalayer_metrics(
+        self, mock_chord, mock_group, mock_missing_stands, mock_metric_task
+    ):
+        mock_group.side_effect = lambda tasks: tasks
+        mock_chord.return_value = mock.Mock(
+            on_error=mock.Mock(), apply_async=mock.Mock()
+        )
+        mock_chord.return_value.on_error.return_value = mock_chord.return_value
+        mock_missing_stands.return_value = [1, 2]
+        mock_metric_task.return_value = mock.sentinel.metric_task
+
+        priority = DataLayerFactory.create(type=DataLayerType.RASTER)
+        constraint = DataLayerFactory.create(type=DataLayerType.RASTER)
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=None,
+            type=ScenarioType.CUSTOM,
+            configuration={
+                "priorities": [{"datalayer": priority.id, "weight": 1}],
+                "constraints": [{"datalayer": constraint.id}],
+            },
+        )
+
+        prepare_scenarios_for_forsys_and_run(scenario.pk)
+
+        mock_metric_task.assert_any_call(stand_ids=[1, 2], datalayer_id=constraint.id)
+
+    @mock.patch("planning.tasks.async_calculate_stand_metrics_with_stand_list.si")
+    @mock.patch("planning.tasks.get_missing_stand_ids_for_datalayer_within_geometry")
+    @mock.patch("planning.tasks.group")
+    @mock.patch("planning.tasks.chord")
+    def test_prepare_scenario_ignores_forsys_constraint_datalayers(
+        self, mock_chord, mock_group, mock_missing_stands, mock_metric_task
+    ):
+        mock_group.side_effect = lambda tasks: tasks
+        mock_chord.return_value = mock.Mock(
+            on_error=mock.Mock(), apply_async=mock.Mock()
+        )
+        mock_chord.return_value.on_error.return_value = mock_chord.return_value
+        mock_missing_stands.return_value = [1, 2]
+
+        priority = DataLayerFactory.create(type=DataLayerType.RASTER)
+        constraint = DataLayerFactory.create(
+            type=DataLayerType.RASTER,
+            metadata={"modules": {"forsys": {}}},
+        )
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=None,
+            type=ScenarioType.CUSTOM,
+            configuration={
+                "priorities": [{"datalayer": priority.id, "weight": 1}],
+                "constraints": [{"datalayer": constraint.id}],
+            },
+        )
+
+        prepare_scenarios_for_forsys_and_run(scenario.pk)
+
+        self.assertNotIn(
+            mock.call(stand_ids=[1, 2], datalayer_id=constraint.id),
+            mock_metric_task.call_args_list,
+        )
+
+    @mock.patch("planning.tasks.async_calculate_stand_metrics_with_stand_list.si")
+    @mock.patch("planning.tasks.get_missing_stand_ids_for_datalayer_within_geometry")
+    @mock.patch("planning.tasks.group")
+    @mock.patch("planning.tasks.chord")
+    def test_prepare_scenario_ignores_non_raster_constraint_datalayers(
+        self, mock_chord, mock_group, mock_missing_stands, mock_metric_task
+    ):
+        mock_group.side_effect = lambda tasks: tasks
+        mock_chord.return_value = mock.Mock(
+            on_error=mock.Mock(), apply_async=mock.Mock()
+        )
+        mock_chord.return_value.on_error.return_value = mock_chord.return_value
+        mock_missing_stands.return_value = [1, 2]
+
+        priority = DataLayerFactory.create(type=DataLayerType.RASTER)
+        constraint = DataLayerFactory.create(type=DataLayerType.VECTOR)
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=None,
+            type=ScenarioType.CUSTOM,
+            configuration={
+                "priorities": [{"datalayer": priority.id, "weight": 1}],
+                "constraints": [{"datalayer": constraint.id}],
+            },
+        )
+
+        prepare_scenarios_for_forsys_and_run(scenario.pk)
+
+        self.assertNotIn(
+            mock.call(stand_ids=[1, 2], datalayer_id=constraint.id),
+            mock_metric_task.call_args_list,
+        )
+
     @mock.patch("planning.tasks.group")
     @mock.patch("planning.tasks.chord")
     def test_prepare_scenario_preset_uses_treatment_goal_datalayers(
