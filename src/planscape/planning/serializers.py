@@ -558,6 +558,24 @@ class ConstraintSerializer(serializers.Serializer):
         required=True,
     )
 
+    def validate_value(self, value):
+        if "," in str(value):
+            values = value.strip().replace(" ", "").split(",", maxsplit=1)
+            values.sort()
+            min_value, max_value = values
+            try:
+                min_value = float(min_value)
+                max_value = float(max_value)
+                return f"{min_value},{max_value}"
+            except:
+                raise serializers.ValidationError("Invalid constraint value(s)")
+        else:
+            try:
+                float(value)
+                return value
+            except:
+                raise serializers.ValidationError("Invalid constraint value")
+
 
 class ConstraintReadSerializer(serializers.Serializer):
     datalayer = serializers.IntegerField()
