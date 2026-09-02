@@ -733,7 +733,9 @@ def calculate_child_project_areas(scenario: Scenario) -> list[ProjectArea]:
 def _get_operation(operator: str, value: Any) -> str:
     match operator:
         case "btw":
-            min_value, max_value = str(value).split(",", maxsplit=1)
+            values = str(value).split(",", maxsplit=1)
+            values.sort()
+            min_value, max_value = values
             return f"value >= {min_value.strip()} & value <= {max_value.strip()}"
         case _:
             # normal cases
