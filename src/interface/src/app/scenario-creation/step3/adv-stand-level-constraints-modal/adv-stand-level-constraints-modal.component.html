@@ -60,9 +60,8 @@
             showSupportMessage="on-error"
             size="full"
             [error]="
-              (form?.hasError('requiredOne') &&
-                form.get('constraintValueOne')?.touched === true) ??
-              false
+              (form.hasError('requiredOne') &&
+                form.get('constraintValueOne')?.touched === true)
             ">
             <input
               sgInput
@@ -85,9 +84,8 @@
               required
               showSupportMessage="on-error"
               [error]="
-                (form?.hasError('requiredTwo') &&
-                  form.get('constraintValueTwo')?.touched === true) ??
-                false
+                (form.hasError('requiredTwo') &&
+                  form.get('constraintValueTwo')?.touched === true)
               "
               size="full">
               <input

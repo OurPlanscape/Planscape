@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { BaseDataSet, DataLayer } from '@types';
 import { MatTreeModule } from '@angular/material/tree';
@@ -62,6 +62,11 @@ import { FormsModule } from '@angular/forms';
 export class DataLayersComponent {
   @Input() displayAddButton = false;
   @Input() useClearFooter = true;
+
+ // todo: just a poc...
+  @Output() layerSelected = new EventEmitter<DataLayer>()
+  @Output() layerUnselected = new EventEmitter<DataLayer>()
+
 
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
@@ -131,7 +136,8 @@ export class DataLayersComponent {
 
   handleLayerSelection(dl: DataLayer) {
     console.log('layer was selected and we are handling it:', dl);
-  }
+    this.layerSelected.emit(dl);
+  } 
 
   goBack() {
     this.dataLayersStateService.goBackToSearchResults();
