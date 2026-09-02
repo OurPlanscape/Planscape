@@ -117,6 +117,102 @@ class MaxAreaProjectTest(TestCase):
         self.assertEqual(max_project_area, 494.0)
 
 
+class BuildRunConfigurationTest(TestCase):
+    def setUp(self):
+        self.planning_area = PlanningAreaFactory.create()
+
+    def test_build_run_configuration_renders_constraint_operators(self):
+        dne_datalayer = DataLayerFactory.create(type=DataLayerType.RASTER)
+        btw_datalayer = DataLayerFactory.create(type=DataLayerType.RASTER)
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=None,
+            configuration={
+                "stand_size": StandSizeChoices.LARGE,
+                "targets": {"max_area": 1000},
+                "constraints": [
+                    {
+                        "datalayer": dne_datalayer.pk,
+                        "operator": "dne",
+                        "value": "10",
+                    },
+                    {
+                        "datalayer": btw_datalayer.pk,
+                        "operator": "btw",
+                        "value": "10,20",
+                    },
+                ],
+            },
+        )
+
+        run_configuration = build_run_configuration(scenario)
+
+        datalayers = {
+            datalayer["id"]: datalayer
+            for datalayer in run_configuration["datalayers"]
+        }
+        self.assertEqual(datalayers[dne_datalayer.pk]["threshold"], "value != 10")
+        self.assertEqual(
+            datalayers[btw_datalayer.pk]["threshold"],
+            "value >= 10 & value <= 20",
+        )
+        self.assertEqual(
+            datalayers[dne_datalayer.pk]["usage_type"],
+            TreatmentGoalUsageType.THRESHOLD,
+        )
+        self.assertEqual(
+            datalayers[btw_datalayer.pk]["usage_type"],
+            TreatmentGoalUsageType.THRESHOLD,
+        )
+
+    def test_build_run_configuration_applies_constraints_to_custom_datalayers(self):
+        priority = DataLayerFactory.create(type=DataLayerType.RASTER)
+        cobenefit = DataLayerFactory.create(type=DataLayerType.RASTER)
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=None,
+            type=ScenarioType.CUSTOM,
+            configuration={
+                "stand_size": StandSizeChoices.LARGE,
+                "targets": {"max_area": 1000},
+                "priorities": [{"datalayer": priority.pk, "weight": 2}],
+                "cobenefits": [cobenefit.pk],
+                "constraints": [
+                    {
+                        "datalayer": priority.pk,
+                        "operator": "dne",
+                        "value": "10",
+                    },
+                    {
+                        "datalayer": cobenefit.pk,
+                        "operator": "btw",
+                        "value": "10, 20",
+                    },
+                ],
+            },
+        )
+
+        run_configuration = build_run_configuration(scenario)
+
+        datalayers = {
+            datalayer["id"]: datalayer
+            for datalayer in run_configuration["datalayers"]
+        }
+        self.assertEqual(datalayers[priority.pk]["threshold"], "value != 10")
+        self.assertEqual(
+            datalayers[cobenefit.pk]["threshold"],
+            "value >= 10 & value <= 20",
+        )
+        self.assertEqual(
+            datalayers[priority.pk]["usage_type"],
+            TreatmentGoalUsageType.PRIORITY,
+        )
+        self.assertEqual(
+            datalayers[cobenefit.pk]["usage_type"],
+            TreatmentGoalUsageType.SECONDARY_METRIC,
+        )
+
+
 class ValidateScenarioTreatmentRatioTest(TestCase):
     def setUp(self) -> None:
         # Test Polygon is 12165389.42118729 spherical acres
