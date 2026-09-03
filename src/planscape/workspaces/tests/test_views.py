@@ -23,6 +23,7 @@ INVITE_URL = "api:workspaces:workspaces-invite"
 ACCEPT_INVITE_URL = "api:workspaces:workspaces-accept-invite"
 USERS_URL = "api:workspaces:workspaces-users"
 MANAGE_USER_URL = "api:workspaces:workspaces-manage-user"
+MANAGE_INVITE_URL = "api:workspaces:workspaces-manage-invite"
 PLANNING_AREAS_URL = "api:workspaces:workspaces-planning-areas"
 
 
@@ -656,6 +657,78 @@ class UpdateWorkspaceMemberTest(APITestCase):
             workspace=self.workspace, user=self.member
         )
         self.assertEqual(access.role, WorkspaceRole.OWNER)
+
+
+class ManageWorkspaceInviteTest(APITestCase):
+    """Pending invites have no user yet, so they are managed by their own row
+    id instead of through `users/<user_id>`."""
+
+    def setUp(self):
+        self.owner = UserFactory.create()
+        self.member = UserFactory.create()
+        self.workspace = PlanningWorkspaceFactory.create(created_by=self.owner)
+        UserAccessWorkspaceFactory.create(
+            user=self.member,
+            workspace=self.workspace,
+            role=WorkspaceRole.COLLABORATOR,
+        )
+        self.invite = UserAccessWorkspace.objects.create(
+            workspace=self.workspace,
+            email="pending@example.com",
+            role=WorkspaceRole.VIEWER,
+            invited_by=self.owner,
+        )
+
+    def _url(self, invite_id):
+        return reverse(
+            MANAGE_INVITE_URL,
+            kwargs={"pk": self.workspace.pk, "invite_id": invite_id},
+        )
+
+    def test_owner_can_change_a_pending_invites_role(self):
+        self.client.force_authenticate(user=self.owner)
+        response = self.client.patch(
+            self._url(self.invite.pk),
+            data={"role": WorkspaceRole.OWNER},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200, response.json())
+        self.invite.refresh_from_db()
+        self.assertEqual(self.invite.role, WorkspaceRole.OWNER)
+
+    def test_owner_can_revoke_a_pending_invite(self):
+        self.client.force_authenticate(user=self.owner)
+        response = self.client.delete(self._url(self.invite.pk))
+
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(UserAccessWorkspace.objects.filter(pk=self.invite.pk).exists())
+
+    def test_non_owner_cannot_manage_invites(self):
+        self.client.force_authenticate(user=self.member)
+        response = self.client.delete(self._url(self.invite.pk))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(UserAccessWorkspace.objects.filter(pk=self.invite.pk).exists())
+
+    def test_accepted_membership_is_not_reachable_as_an_invite(self):
+        accepted = UserAccessWorkspace.objects.get(
+            workspace=self.workspace, user=self.member
+        )
+        self.client.force_authenticate(user=self.owner)
+        response = self.client.delete(self._url(accepted.pk))
+
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(UserAccessWorkspace.objects.filter(pk=accepted.pk).exists())
+
+    def test_listing_users_exposes_the_row_id(self):
+        self.client.force_authenticate(user=self.owner)
+        response = self.client.get(reverse(USERS_URL, kwargs={"pk": self.workspace.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        pending = next(row for row in response.json() if row["status"] == "PENDING")
+        self.assertEqual(pending["id"], self.invite.pk)
+        self.assertIsNone(pending["user_id"])
 
 
 class RemoveWorkspaceMemberTest(APITestCase):

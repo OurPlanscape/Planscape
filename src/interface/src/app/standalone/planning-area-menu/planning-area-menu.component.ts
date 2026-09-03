@@ -12,7 +12,7 @@ import { take } from 'rxjs';
 import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { AuthService, PlanService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SharePlanDialogComponent } from '@home/share-plan-dialog/share-plan-dialog.component';
+import { ShareDialogComponent } from '@app/sharing/share-dialog/share-dialog.component';
 import {
   MatDialog,
   MatDialogModule,
@@ -66,10 +66,8 @@ export class PlanningAreaMenuComponent {
   }
 
   sharePlan() {
-    this.dialog.open(SharePlanDialogComponent, {
-      data: {
-        plan: this.plan,
-      },
+    this.dialog.open(ShareDialogComponent, {
+      data: { kind: 'plan', plan: this.plan },
       restoreFocus: false,
       panelClass: 'no-padding-dialog',
     });
