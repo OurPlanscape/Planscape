@@ -1278,6 +1278,53 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(config.get("stand_size"), "SMALL")
         self.assertEqual(config.get("targets").get("estimated_cost"), 12345)
 
+    def test_patch_scenario_configuration_accepts_dne_and_btw_constraints(self):
+        dne_datalayer = DataLayerFactory(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        btw_datalayer = DataLayerFactory(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        payload = {
+            "configuration": {
+                "constraints": [
+                    {
+                        "datalayer": dne_datalayer.pk,
+                        "operator": "dne",
+                        "value": "10",
+                    },
+                    {
+                        "datalayer": btw_datalayer.pk,
+                        "operator": "btw",
+                        "value": "10,20",
+                    },
+                ],
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        config = response.data.get("configuration", {})
+        self.assertEqual(
+            config["constraints"],
+            [
+                {
+                    "datalayer": dne_datalayer.pk,
+                    "operator": "dne",
+                    "value": "10",
+                },
+                {
+                    "datalayer": btw_datalayer.pk,
+                    "operator": "btw",
+                    "value": "10.0,20.0",
+                },
+            ],
+        )
+
     # Test sequential patches, ensure we retain values as expected
     @mock.patch(
         "planning.serializers.calculate_scenario_treatable_area",
