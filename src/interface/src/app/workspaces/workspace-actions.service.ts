@@ -9,6 +9,7 @@ import { Workspace } from '@types';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 import { CreateWorkspaceModalComponent } from './create-workspace-modal/create-workspace-modal.component';
 import { WelcomeWorkspaceModalComponent } from './welcome-workspace-modal/welcome-workspace-modal.component';
+import { ShareDialogComponent } from '@app/sharing/share-dialog/share-dialog.component';
 
 export type CreateWorkspaceOrigin = 'empty-state' | 'list';
 
@@ -65,6 +66,15 @@ export class WorkspaceActionsService {
           }
         })
       );
+  }
+
+  /** Opens the share modal on the workspace's access list. */
+  shareWorkspace(workspace: Workspace) {
+    this.dialog.open(ShareDialogComponent, {
+      data: { kind: 'workspace', workspace },
+      restoreFocus: false,
+      panelClass: 'no-padding-dialog',
+    });
   }
 
   /**

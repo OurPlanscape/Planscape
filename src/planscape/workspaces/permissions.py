@@ -96,6 +96,8 @@ class WorkspaceViewPermission(PlanscapePermission):
                 # The requester doesn't have workspace access yet, so the
                 # usual can_view gate doesn't apply.
                 return True
+            case "manage_invite":
+                return self.permission_set.can_manage_members(request.user, obj)
             case "manage_user":
                 user_id = view.kwargs.get("user_id")
                 if request.method == "DELETE" and str(request.user.pk) == str(user_id):

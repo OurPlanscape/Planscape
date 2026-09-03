@@ -1,5 +1,5 @@
 import { DatePipe, DecimalPipe, NgForOf, NgIf } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ButtonComponent } from '@styleguide/button/button.component';
@@ -37,4 +37,6 @@ export class DetailsCardComponent {
 
   @Input() loading: boolean = false;
   @Input() canShare: Boolean = false;
+
+  @Output() share = new EventEmitter<void>();
 }

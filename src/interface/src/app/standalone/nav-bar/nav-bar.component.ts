@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 
-import { SharePlanDialogComponent } from '@home/share-plan-dialog/share-plan-dialog.component';
+import { ShareDialogComponent } from '@app/sharing/share-dialog/share-dialog.component';
 import { Params, RouterModule } from '@angular/router';
 import { filter, lastValueFrom, map, take } from 'rxjs';
 import { canViewCollaborators } from '@plan/permissions';
@@ -62,8 +62,8 @@ export class NavBarComponent implements OnInit {
   async sharePlan() {
     const plan = await lastValueFrom(this.currentPlan$.pipe(take(1)));
 
-    this.dialog.open(SharePlanDialogComponent, {
-      data: { plan },
+    this.dialog.open(ShareDialogComponent, {
+      data: { kind: 'plan', plan },
       restoreFocus: false,
       panelClass: 'no-padding-dialog',
     });
