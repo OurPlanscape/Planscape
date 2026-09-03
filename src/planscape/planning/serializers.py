@@ -549,20 +549,40 @@ class ConstraintSerializer(serializers.Serializer):
     )
 
     operator = serializers.ChoiceField(
-        choices=["eq", "lt", "lte", "gt", "gte"],
+        choices=["eq", "dne", "lt", "lte", "gt", "gte", "btw"],
         required=True,
     )
 
     value = serializers.CharField(
-        max_length=16,
+        max_length=32,
         required=True,
     )
+
+    def validate_value(self, value):
+        if "," in str(value):
+            values = value.strip().replace(" ", "").split(",", maxsplit=1)
+            values.sort()
+            min_value, max_value = values
+            try:
+                min_value = float(min_value)
+                max_value = float(max_value)
+                return f"{min_value},{max_value}"
+            except ValueError:
+                raise serializers.ValidationError("Invalid constraint value(s)")
+        else:
+            try:
+                float(value)
+                return value
+            except ValueError:
+                raise serializers.ValidationError("Invalid constraint value")
 
 
 class ConstraintReadSerializer(serializers.Serializer):
     datalayer = serializers.IntegerField()
-    operator = serializers.ChoiceField(choices=["eq", "lt", "lte", "gt", "gte"])
-    value = serializers.CharField(max_length=16)
+    operator = serializers.ChoiceField(
+        choices=["eq", "dne", "lt", "lte", "gt", "gte", "btw"]
+    )
+    value = serializers.CharField(max_length=32)
 
 
 class TargetsSerializer(serializers.Serializer):
