@@ -253,9 +253,6 @@ const routes: Routes = [
       {
         path: 'funding-report/:id',
         title: 'Funding Opportunity Report',
-        canActivate: [
-          createFeatureGuard({ featureName: 'SHARE_FUNDING_REPORTS' }),
-        ],
         loadComponent: () =>
           import('@app/funding/for-shared/for-shared.component').then(
             (m) => m.ForSharedComponent
