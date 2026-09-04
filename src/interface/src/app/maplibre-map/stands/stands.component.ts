@@ -7,7 +7,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { BASE_COLORS } from '@treatments/map.styles';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import {
   LayerComponent,
   VectorSourceComponent,
@@ -23,6 +23,7 @@ import {
   Observable,
   observeOn,
   of,
+  switchMap,
   tap,
 } from 'rxjs';
 import { distinctUntilChanged, filter } from 'rxjs/operators';
@@ -32,16 +33,29 @@ import { MapConfigState } from '../map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FrontendConstants } from '@map/map.constants';
 
+/**
+  Replaces ScenarioStandsComponent + PlanningAreaStandsComponent.
+  
+  Previously, two different components were swapped using *ngIf/else based on
+  showStandsWithIncludes$, which caused a full destroy + create cycle
+  (and sometimes a DOUBLE one, due to a race condition between
+  showScenarioStands$ and showStandsWithIncludes$, since they are
+  independent streams).
+ 
+  Now, there is a single instance that remains mounted and reacts internally
+  to currentStep$ (the single source of truth) to determine the sourceName/tilesUrl.
+  When switching steps, the tileset legitimately changes (so it still needs to
+  reload once, which is unavoidable), but the component is no longer
+  destroyed/recreated, and the map listeners are no longer re-registered.
+ */
 @UntilDestroy()
 @Component({
-  selector: 'app-scenario-stands',
+  selector: 'app-stands',
   standalone: true,
-  imports: [AsyncPipe, LayerComponent, NgIf, VectorSourceComponent],
-  templateUrl: './scenario-stands.component.html',
+  imports: [AsyncPipe, LayerComponent, NgIf, VectorSourceComponent, NgFor],
+  templateUrl: './stands.component.html',
 })
-export class ScenarioStandsComponent
-  implements OnInit, AfterViewInit, OnDestroy
-{
+export class StandsComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
 
   /**
@@ -58,20 +72,36 @@ export class ScenarioStandsComponent
   private excludedStands: number[] = [];
   private constrainedStands: number[] = [];
 
-  // Assigned in ngOnInit
+  // Synchronous mirror of useIncludes$, used in non-async getters/listeners
+  private useIncludes = false;
+
+  /** true when the current step corresponds to the "with includes" flow */
+  useIncludes$ = this.newScenarioState.currentStep$.pipe(
+    map((step) => !!step?.withIncludes),
+    distinctUntilChanged()
+  );
+
+  opacity$ = this.mapConfigState.opacity$;
+
   tilesUrl$!: Observable<string>;
 
-  get planId() {
-    return this.hasParent ? this.route.snapshot.data['planId'] : undefined;
+  get planId(): string | undefined {
+    if (this.useIncludes) {
+      return this.hasParent ? this.route.snapshot.data['planId'] : undefined;
+    }
+    return this.hasParent ? undefined : this.route.snapshot.data['planId'];
   }
 
   get sourceName(): string {
+    if (this.useIncludes) {
+      return this.hasParent
+        ? MARTIN_SOURCES.treatableStandsByProjectAreas.sources.stands
+        : MARTIN_SOURCES.scenarioStands.sources.standsWithIncludes;
+    }
     return this.hasParent
-      ? MARTIN_SOURCES.treatableStandsByProjectAreas.sources.stands
-      : MARTIN_SOURCES.scenarioStands.sources.standsWithIncludes;
+      ? MARTIN_SOURCES.standsByProjectAreas.sources.stands
+      : MARTIN_SOURCES.scenarioStands.sources.stands;
   }
-
-  opacity$ = this.mapConfigState.opacity$;
 
   constructor(
     private route: ActivatedRoute,
@@ -95,12 +125,7 @@ export class ScenarioStandsComponent
   // using this concat so we can keep things inside angular lifecycle without adding zone.runs or detectChanges
   standPaint$ = concat(
     of(FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY), // <-- emit immediately so the layer renders
-    this.opacity$.pipe(
-      // use  animationFrameScheduler (similar to requestAnimationFrame)
-      observeOn(animationFrameScheduler),
-      // collapse multiple slider events to one per frame
-      auditTime(0)
-    )
+    this.opacity$.pipe(observeOn(animationFrameScheduler), auditTime(0))
   ).pipe(
     map((opacity) => {
       return {
@@ -128,6 +153,12 @@ export class ScenarioStandsComponent
   );
 
   ngOnInit(): void {
+    // Keep the synchronous useIncludes mirror updated BEFORE building tilesUrl$,
+    // so the getters (sourceName/planId) are consistent as soon as they are read.
+    this.useIncludes$
+      .pipe(untilDestroyed(this))
+      .subscribe((useIncludes) => (this.useIncludes = useIncludes));
+
     this.tilesUrl$ = this.buildTilesUrl$();
 
     this.mapLibreMap.on('sourcedata', this.onDataListener);
@@ -159,13 +190,12 @@ export class ScenarioStandsComponent
   }
 
   ngAfterViewInit(): void {
-    // If tiles are already loaded (cached from a previous mount), sourcedata won't re-fire.
-    // Check here — after mgl-vector-source has initialized — to avoid leaving loading stuck.
     if (
       !this.standsLoaded &&
       this.mapLibreMap.isSourceLoaded(this.sourceName)
     ) {
       this.newScenarioState.setBaseStandsLoaded(true);
+      this.newScenarioState.setBaseStandsLoading(false);
       this.standsLoaded = true;
     }
   }
@@ -176,23 +206,46 @@ export class ScenarioStandsComponent
   }
 
   private buildTilesUrl$(): Observable<string> {
-    return this.newScenarioState.scenarioConfig$.pipe(
-      filter((config) => !!config?.stand_size),
-      map((config) => {
-        if (this.hasParent) {
-          return `${MARTIN_SOURCES.treatableStandsByProjectAreas.tilesUrl}?scenario_id=${this.scenarioId}`;
-        }
+    return this.useIncludes$.pipe(
+      // switchMap: if useIncludes changes midway through, cancel the previous pipe
+      switchMap((useIncludes) =>
+        this.newScenarioState.scenarioConfig$.pipe(
+          filter((config) => !!config?.stand_size),
+          map((config) => {
+            const timestamp = new Date().toISOString();
 
-        const baseUrl = MARTIN_SOURCES.scenarioStands.tilesWithIncludesUrl;
-        const timestamp = new Date().toISOString();
+            if (useIncludes) {
+              if (this.hasParent) {
+                return `${MARTIN_SOURCES.treatableStandsByProjectAreas.tilesUrl}?scenario_id=${this.scenarioId}`;
+              }
+              const baseUrl =
+                MARTIN_SOURCES.scenarioStands.tilesWithIncludesUrl;
+              return `${baseUrl}?scenario_id=${this.scenarioId}&stand_size=${config.stand_size}&datetime=${timestamp}`;
+            }
 
-        return `${baseUrl}?scenario_id=${this.scenarioId}&stand_size=${config.stand_size}&datetime=${timestamp}`;
-      }),
-      distinctUntilChanged(),
-      tap(() => {
-        this.newScenarioState.setLoading(true);
-        this.standsLoaded = false;
-      })
+            if (this.hasParent) {
+              return (
+                MARTIN_SOURCES.standsByProjectAreas.tilesUrl +
+                `?scenario_id=${this.scenarioId}` +
+                `&stand_size=${config.stand_size}` +
+                `&datetime=${timestamp}`
+              );
+            }
+            return (
+              MARTIN_SOURCES.scenarioStands.tilesUrl +
+              `?planning_area_id=${this.planId}` +
+              `&stand_size=${config.stand_size}` +
+              `&datetime=${timestamp}`
+            );
+          }),
+          distinctUntilChanged(),
+          tap(() => {
+            this.newScenarioState.setBaseStandsLoading(true);
+            this.newScenarioState.setBaseStandsLoaded(false);
+            this.standsLoaded = false;
+          })
+        )
+      )
     );
   }
 
@@ -225,30 +278,70 @@ export class ScenarioStandsComponent
 
   private onDataListener = (event: any) => {
     if (
-      event.sourceId === this.sourceName &&
-      event.isSourceLoaded &&
-      event.type === 'sourcedata' &&
-      !event.sourceDataType &&
-      !this.standsLoaded
+      event.sourceId !== this.sourceName ||
+      !event.isSourceLoaded ||
+      event.type !== 'sourcedata' ||
+      event.sourceDataType
     ) {
+      return;
+    }
+
+    if (!this.standsLoaded) {
       this.zone.run(() => {
         this.newScenarioState.setBaseStandsLoaded(true);
+        this.newScenarioState.setBaseStandsLoading(false);
+
         this.standsLoaded = true;
       });
     }
+
+    this.paintExcludedStands(this.excludedStands);
+    this.paintConstrainedStands(this.constrainedStands);
   };
 
+  private isSourceReady(): boolean {
+    try {
+      return !!this.mapLibreMap.getSource(this.sourceName);
+    } catch {
+      return false;
+    }
+  }
+
   private setFeatureState(id: number, key: string) {
-    this.mapLibreMap.setFeatureState(
-      { source: this.sourceName, sourceLayer: this.sourceName, id },
-      { [key]: true }
-    );
+    if (!this.isSourceReady()) {
+      // Don't passively wait for another 'sourcedata' event (it may never fire
+      // if the user doesn't interact with the map again).
+      // Explicitly retry on the next 'idle' event.
+      this.mapLibreMap.once('idle', () => this.setFeatureState(id, key));
+      return;
+    }
+    try {
+      this.mapLibreMap.setFeatureState(
+        { source: this.sourceName, sourceLayer: this.sourceName, id },
+        { [key]: true }
+      );
+    } catch {
+      this.mapLibreMap.once('idle', () => this.setFeatureState(id, key));
+    }
   }
 
   private removeFeatureState(id: number, key: string) {
-    this.mapLibreMap.removeFeatureState(
-      { source: this.sourceName, sourceLayer: this.sourceName, id },
-      key
-    );
+    if (!this.isSourceReady()) {
+      return;
+    }
+    try {
+      this.mapLibreMap.removeFeatureState(
+        { source: this.sourceName, sourceLayer: this.sourceName, id },
+        key
+      );
+    } catch {
+      // Same as setFeatureState — remove is best-effort, so there's no need to
+      // retry aggressively: if the ID no longer exists in the new source,
+      // there's nothing to remove.
+    }
+  }
+
+  trackBySourceName(_index: number, sourceName: string): string {
+    return sourceName;
   }
 }
