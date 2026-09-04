@@ -37,7 +37,7 @@
               <app-scenario-minimal-map></app-scenario-minimal-map>
             </div>
             <sg-section
-              headline="Project Areas"
+              [headline]="headlineText(scenario)"
               [isCollapsible]="true"
               [defaultExpanded]="true"
               class="project-areas">

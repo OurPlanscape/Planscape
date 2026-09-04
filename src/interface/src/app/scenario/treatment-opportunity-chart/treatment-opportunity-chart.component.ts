@@ -140,8 +140,8 @@ export class TreatmentOpportunityChartComponent implements OnInit {
 
   get chartXAxisLabel() {
     if (isPlanningApproachSubUnits(this.planningApproach) && !this.hasParent) {
-      return 'Subunits';
+      return 'Subunit Rank';
     }
-    return 'Project Areas';
+    return 'Project Area Rank';
   }
 }
