@@ -16,6 +16,7 @@ import { MAP_MODULE_NAME } from '@app/services/map-module.token';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { PlanState } from '@app/plan/plan.state';
 import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-adv-stand-level-constraints',
@@ -29,12 +30,15 @@ import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.c
     AdvStandLevelConstraintsModalComponent,
     SectionComponent,
     MatExpansionModule,
+    MatIconModule,
   ],
   templateUrl: './adv-stand-level-constraints.component.html',
   styleUrl: './adv-stand-level-constraints.component.scss',
 })
 export class AdvStandLevelConstraintsComponent {
   selectedConstraints$ = new BehaviorSubject<NamedConstraint[]>([]);
+
+  showLayersPanel = false;
 
   constructor(
     private dialog: MatDialog,
@@ -80,11 +84,13 @@ export class AdvStandLevelConstraintsComponent {
       .pipe(take(1))
       .subscribe((confirmed) => {
         if (confirmed) {
-          console.log('here is the result:', confirmed);
-          // store the constraint
           this.handleConstraintAdded(confirmed);
         }
       });
+  }
+
+  toggleLayersSection() {
+    this.showLayersPanel = !this.showLayersPanel;
   }
 
   handleConstraintClicked(e: Event) {

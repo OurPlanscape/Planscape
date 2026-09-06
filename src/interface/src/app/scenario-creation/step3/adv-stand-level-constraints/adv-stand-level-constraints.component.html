@@ -1,24 +1,39 @@
 <!-- Stand levels constraints -->
 <sg-section
   headline="Advanced Stand-Level Constraints (OPTIONAL)"
-  class="constraints-step"
+  class="adv-stand-level-constraints"
   [tooltipTemplate]="tooltipContent">
-  <p class="stand-label">
-    Choose from any data layers in Planscape to define eligible stands for
-    treatment.
-  </p>
-  <div class="num-constraints-line">
-    {{ (selectedConstraints$ | async)?.length || 0 }} Applied (No Limit)
+  <div class="padded-section">
+    <p class="stand-label">
+      Choose from any data layers in Planscape to define eligible stands for
+      treatment.
+    </p>
+    <div class="num-constraints-line">
+      {{ (selectedConstraints$ | async)?.length || 0 }} Applied (No Limit)
+    </div>
+    <sg-chip-selector
+      [items]="(selectedConstraints$ | async) ?? []"
+      (itemClicked)="handleConstraintClicked($event)"></sg-chip-selector>
   </div>
-  <sg-chip-selector
-    [items]="(selectedConstraints$ | async) ?? []"
-    (itemClicked)="handleConstraintClicked($event)"></sg-chip-selector>
-  <section class="datalayers-section">
+  <mat-expansion-panel
+    class="datalayers-section"
+    (opened)="toggleLayersSection()"
+    (closed)="toggleLayersSection()"
+    [hideToggle]="true">
+    <mat-expansion-panel-header class="datalayers-header">
+      <div class="header-content">
+        <span>Advanced Stand-Level Constraints</span>
+        <mat-icon>{{
+          showLayersPanel ? 'expand_less' : 'expand_more'
+        }}</mat-icon>
+      </div>
+    </mat-expansion-panel-header>
+
     <app-data-layers
       [useClearFooter]="false"
       [displayAddButton]="true"
       (layerSelected)="handleSelectedLayer($event)"></app-data-layers>
-  </section>
+  </mat-expansion-panel>
 </sg-section>
 
 <ng-template #tooltipContent>
