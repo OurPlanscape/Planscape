@@ -1,6 +1,10 @@
 <!-- Stand levels constraints -->
 <sg-section
-  headline="Stand Level Constraints (OPTIONAL)"
+  [headline]="
+    isAdvSLCEnabled
+      ? 'Apply Stand-Level Constraints (OPTIONAL)'
+      : 'Stand Level Constraints (OPTIONAL)'
+  "
   class="constraints-step"
   tooltipContent="<b>What are stand-level constraints?</b>
 Stand-level constraints set the conditions a stand must meet to be eligible for treatment by ForSys. These are based on operational factors that define where treatments can realistically occur.
@@ -15,8 +19,14 @@ They help ensure that only feasible and operationally suitable areas are targete
     treatment.
   </p>
 
-  <form [formGroup]="form" class="constraints-form">
-    <div>
+  <form
+    [formGroup]="form"
+    class="constraints-form"
+    [ngClass]="{
+      'constraints-form': !isAdvSLCEnabled,
+      'apply-constraints-form': isAdvSLCEnabled,
+    }">
+    <div class="field-area">
       <label for="max_slope" class="input-label">Max Slope</label>
       <div class="flex">
         <mat-form-field
@@ -27,6 +37,7 @@ They help ensure that only feasible and operationally suitable areas are targete
             id="max_slope"
             class="step3-input"
             formControlName="max_slope"
+            placeholder="Enter Value"
             min="0"
             max="100"
             matInput
@@ -42,7 +53,7 @@ They help ensure that only feasible and operationally suitable areas are targete
         </mat-form-field>
       </div>
     </div>
-    <div>
+    <div class="field-area">
       <label for="min_distance_from_road" class="input-label">
         Max Distance From Roads</label
       >
@@ -55,6 +66,7 @@ They help ensure that only feasible and operationally suitable areas are targete
             id="min_distance_from_road"
             class="step3-input"
             formControlName="min_distance_from_road"
+            placeholder="Enter Value"
             matInput
             type="text"
             mask="separator"
