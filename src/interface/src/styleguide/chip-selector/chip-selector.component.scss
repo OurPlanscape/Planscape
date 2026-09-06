@@ -32,6 +32,25 @@
             height: 16px;
             font-size: 16px;
         }
+
+        &.is-hoverable {
+            pointer-events: auto;
+            cursor: pointer;
+
+            &:hover {
+                background-color: $color-brand-teal;
+                color: white;
+                --mdc-chip-label-text-color: #{$color-white};
+                --mdc-chip-with-icon-icon-color: #fff;
+
+                ::ng-deep {
+                    .mat-mdc-chip-remove {
+                        color: white;
+                        --mdc-chip-with-icon-icon-color: #fff;
+                    }
+                }
+            }
+        }
     }
 
     ::ng-deep {
