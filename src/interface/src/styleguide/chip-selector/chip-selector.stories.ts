@@ -56,6 +56,13 @@ export const WithEditIcon: Story = {
   },
 };
 
+export const WithSelectedItem: Story = {
+  args: {
+    items: items,
+    selectedItem: { id: 4, name: 'Neuromorphic Ontology' },
+  },
+};
+
 export const NoItems: Story = {
   args: {
     items: [],
