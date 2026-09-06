@@ -29,25 +29,11 @@
             <mat-select
               name="constraintOperator"
               formControlName="constraintOperator">
-              <mat-option class="nav-page-item" value="eq"
-                >Equal to (=)</mat-option
-              >
-              <mat-option class="nav-page-item" value="dne"
-                >Does not equal (!=)</mat-option
-              >
-              <mat-option class="nav-page-item" value="gt"
-                >Greater than (&gt;)</mat-option
-              >
-              <mat-option class="nav-page-item" value="gte"
-                >Greater than or equal to (&ge;)</mat-option
-              >
-              <mat-option class="nav-page-item" value="lt"
-                >Less than (&lt;)</mat-option
-              >
-              <mat-option class="nav-page-item" value="lte"
-                >Less than or equal to (&le;)</mat-option
-              >
-              <mat-option class="nav-page-item" value="btw">Between</mat-option>
+              @for (op of constraintOperators; track op.value) {
+                <mat-option class="nav-page-item" [value]="op.value">
+                  {{ op.label }} ({{ op.symbol }})
+                </mat-option>
+              }
             </mat-select>
           </mat-form-field>
         </div>
@@ -60,8 +46,8 @@
             showSupportMessage="on-error"
             size="full"
             [error]="
-              (form.hasError('requiredOne') &&
-                form.get('constraintValueOne')?.touched === true)
+              form.hasError('requiredOne') &&
+              form.get('constraintValueOne')?.touched === true
             ">
             <input
               sgInput
@@ -84,8 +70,8 @@
               required
               showSupportMessage="on-error"
               [error]="
-                (form.hasError('requiredTwo') &&
-                  form.get('constraintValueTwo')?.touched === true)
+                form.hasError('requiredTwo') &&
+                form.get('constraintValueTwo')?.touched === true
               "
               size="full">
               <input

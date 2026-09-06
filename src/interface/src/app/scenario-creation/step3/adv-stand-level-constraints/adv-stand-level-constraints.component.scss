@@ -1,0 +1,9 @@
+@import 'colors';
+@import 'variables';
+@import 'mixins';
+
+.num-constraints-line {
+    @include xs-label();
+    color: $color-brand-teal;
+    padding-bottom: 16px;
+}

@@ -63,10 +63,9 @@ export class DataLayersComponent {
   @Input() displayAddButton = false;
   @Input() useClearFooter = true;
 
- // todo: just a poc...
-  @Output() layerSelected = new EventEmitter<DataLayer>()
-  @Output() layerUnselected = new EventEmitter<DataLayer>()
-
+  // todo: just a poc...
+  @Output() layerSelected = new EventEmitter<DataLayer>();
+  @Output() layerUnselected = new EventEmitter<DataLayer>();
 
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
@@ -137,7 +136,7 @@ export class DataLayersComponent {
   handleLayerSelection(dl: DataLayer) {
     console.log('layer was selected and we are handling it:', dl);
     this.layerSelected.emit(dl);
-  } 
+  }
 
   goBack() {
     this.dataLayersStateService.goBackToSearchResults();

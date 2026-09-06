@@ -193,6 +193,27 @@ export interface Constraint {
   value2?: number; // be supports string //TODO: rename?
 }
 
+export interface OperatorDefinition {
+  value: CONSTRAINT_OPERATOR;
+  label: string;
+  symbol: string;
+}
+
+export const CONSTRAINT_OPERATORS: OperatorDefinition[] = [
+  { value: 'eq', label: 'Equal to', symbol: '=' },
+  { value: 'dne', label: 'Does not equal', symbol: '!=' },
+  { value: 'gt', label: 'Greater than', symbol: '>' },
+  { value: 'gte', label: 'Greater than or equal to', symbol: '≥' },
+  { value: 'lt', label: 'Less than', symbol: '<' },
+  { value: 'lte', label: 'Less than or equal to', symbol: '≤' },
+  { value: 'btw', label: 'Between', symbol: 'Between' },
+];
+
+export const CONSTRAINT_OPERATOR_MAP = new Map<
+  CONSTRAINT_OPERATOR,
+  OperatorDefinition
+>(CONSTRAINT_OPERATORS.map((op) => [op.value, op]));
+
 export interface ScenarioPriority {
   datalayer: number;
   weight: number;

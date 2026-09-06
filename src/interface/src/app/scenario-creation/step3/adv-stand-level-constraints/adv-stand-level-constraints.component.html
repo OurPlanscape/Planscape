@@ -1,19 +1,39 @@
 <!-- Stand levels constraints -->
 <sg-section
-  headline="Advanced Stand Level Constraints (OPTIONAL)"
+  headline="Advanced Stand-Level Constraints (OPTIONAL)"
   class="constraints-step"
-  tooltipContent="TBD">
+  [tooltipTemplate]="tooltipContent">
   <p class="stand-label">
     Choose from any data layers in Planscape to define eligible stands for
     treatment.
   </p>
-
-  <a (click)="openConstraintModal()">TEST: open modal</a>
+  <div class="num-constraints-line">
+    {{ (selectedConstraints$ | async)?.length || 0 }} Applied (No Limit)
+  </div>
+  <sg-chip-selector
+    [items]="(selectedConstraints$ | async) ?? []"
+    (itemClicked)="handleConstraintClicked($event)"></sg-chip-selector>
   <section class="datalayers-section">
     <app-data-layers
       [useClearFooter]="false"
       [displayAddButton]="true"
-      (layerSelected)="handleSelectedLayer($event)"
-      class="sticky-search"></app-data-layers>
+      (layerSelected)="handleSelectedLayer($event)"></app-data-layers>
   </section>
 </sg-section>
+
+<ng-template #tooltipContent>
+  <b>What are Advanced Stand-Level Constraints?</b>
+  <p>
+    Advanced stand-level constraints let you define conditions that stands must
+    meet to be eligible for treatment using available data layers.
+  </p>
+  <p>
+    For continuous variables, you can set thresholds (e.g., Probability of High
+    Severity Fire > 0) to focus on higher-value stands.
+  </p>
+  <p>
+    For categorical variables, you must use the raster values that represent
+    each class. For example, if Owl Habitat is coded as 1 = habitat and 0 =
+    non-habitat, you would set Owl Habitat = 0 to avoid treating habitat areas.
+  </p>
+</ng-template>
