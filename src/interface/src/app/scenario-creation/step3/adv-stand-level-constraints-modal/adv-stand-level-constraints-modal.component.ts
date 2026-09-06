@@ -49,6 +49,16 @@ export const betweenValidator: ValidatorFn = (
     errors['requiredTwo'] = true;
   }
 
+  // Only check range logic if both fields have values
+  if (!errors['requiredOne'] && !errors['requiredTwo']) {
+    const min = Number(valOne);
+    const max = Number(valTwo);
+
+    if (!isNaN(min) && !isNaN(max) && min > max) {
+      errors['minGreaterThanMax'] = true;
+    }
+  }
+
   return Object.keys(errors).length > 0 ? errors : null;
 };
 

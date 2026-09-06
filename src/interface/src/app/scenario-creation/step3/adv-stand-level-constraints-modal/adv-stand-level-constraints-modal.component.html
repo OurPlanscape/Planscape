@@ -46,7 +46,8 @@
             showSupportMessage="on-error"
             size="full"
             [error]="
-              form.hasError('requiredOne') &&
+              (form.hasError('requiredOne') ||
+                form.hasError('minGreaterThanMax')) &&
               form.get('constraintValueOne')?.touched === true
             ">
             <input
@@ -70,7 +71,8 @@
               required
               showSupportMessage="on-error"
               [error]="
-                form.hasError('requiredTwo') &&
+                (form.hasError('requiredTwo') ||
+                  form.hasError('minGreaterThanMax')) &&
                 form.get('constraintValueTwo')?.touched === true
               "
               size="full">
