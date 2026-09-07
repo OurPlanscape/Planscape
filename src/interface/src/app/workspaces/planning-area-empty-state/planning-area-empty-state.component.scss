@@ -1,0 +1,33 @@
+@import 'colors';
+@import 'mixins';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+
+  .image {
+    width: 140px;
+    height: 140px;
+  }
+
+  .text-content {
+    text-align: center;
+    .title {
+      @include h4();
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      @include regular-paragraph();
+      color: $color-dark-gray;
+    }
+  }
+
+  .action-row {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+  }
+}
