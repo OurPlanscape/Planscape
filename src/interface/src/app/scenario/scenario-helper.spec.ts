@@ -2,6 +2,7 @@ import {
   arrayHasChanged,
   convertOldConfigurationToV3Payload,
   getGroupedGoals,
+  getResultsTableHeadline,
   sanitizePayloadForScenarioType,
   scenarioHasCapability,
   suggestUniqueName,
@@ -453,5 +454,25 @@ describe('sanitizePayloadForScenarioType', () => {
     it('should return false for two empty arrays', () => {
       expect(arrayHasChanged([], [])).toBeFalse();
     });
+  });
+});
+
+describe('getResultsTableHeadline', () => {
+  it('returns the subunits headline for a top level subunits scenario', () => {
+    expect(getResultsTableHeadline('PRIORITIZE_SUB_UNITS', null)).toBe(
+      'Top 10 Subunits'
+    );
+  });
+
+  it('returns the project areas headline for a child of a subunits scenario', () => {
+    expect(getResultsTableHeadline('PRIORITIZE_SUB_UNITS', 12)).toBe(
+      'Project Areas'
+    );
+  });
+
+  it('returns the project areas headline for a project areas scenario', () => {
+    expect(getResultsTableHeadline('OPTIMIZE_PROJECT_AREAS', null)).toBe(
+      'Project Areas'
+    );
   });
 });
