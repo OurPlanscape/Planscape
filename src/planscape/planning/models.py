@@ -691,6 +691,8 @@ class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Mode
 
     run_details = models.JSONField(null=True)
 
+    errors = models.JSONField(null=True, encoder=DjangoJSONEncoder)
+
     started_at = models.DateTimeField(
         null=True, help_text="Start of the Forsys run, in UTC timezone."
     )

@@ -108,6 +108,15 @@ def async_forsys_run(scenario_id: int) -> None:
         scenario.save(update_fields=["result_status", "updated_at"])
         if hasattr(scenario, "results"):
             scenario.results.status = ScenarioResultStatus.TIMED_OUT
+            errors = scenario.results.errors
+            if not errors:
+                errors = []
+            errors.append(
+                {
+                    "error_code": ScenarioResultStatus.TIMED_OUT, 
+                    "description": "ForSys execution timed out."
+                }
+            )
             scenario.results.save()
         log.error(
             "Running forsys for scenario %s timed-out. Might be too big.",
@@ -119,6 +128,15 @@ def async_forsys_run(scenario_id: int) -> None:
         scenario.save(update_fields=["result_status", "updated_at"])
         if hasattr(scenario, "results"):
             scenario.results.status = ScenarioResultStatus.PANIC
+            errors = scenario.results.errors
+            if not errors:
+                errors = []
+            errors.append(
+                {
+                    "error_code": ScenarioResultStatus.PANIC, 
+                    "description": "ForSys execution failed."
+                }
+            )
             scenario.results.save()
         log.error(
             "A panic error happened while trying to call forsys for %s",
