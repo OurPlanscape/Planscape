@@ -15,6 +15,7 @@ import { FundingMapConfigState } from '../funding-map-config-state';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { FundingReportService } from '@services/funding-report.service';
 import { FundingReport, FundingReportAETSummary } from '@types';
+import { FEATURES_JSON } from '@app/features/features-config';
 
 describe('FullReportViewComponent', () => {
   let component: FullReportViewComponent;
@@ -55,6 +56,7 @@ describe('FullReportViewComponent', () => {
           provide: Router,
           useValue: jasmine.createSpyObj('Router', ['navigate']),
         },
+        { provide: FEATURES_JSON, useValue: {} },
       ],
     }).compileComponents();
 
@@ -185,6 +187,7 @@ describe('FullReportViewComponent recalculations', () => {
           provide: Router,
           useValue: jasmine.createSpyObj('Router', ['navigate']),
         },
+        { provide: FEATURES_JSON, useValue: {} },
       ],
     }).compileComponents();
 
