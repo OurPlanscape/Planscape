@@ -22,6 +22,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatMenuModule } from '@angular/material/menu';
 import { PreviewPlan } from '@app/types';
 import { Router } from '@angular/router';
+import { PlanningAreaEmptyStateComponent } from '../planning-area-empty-state/planning-area-empty-state.component';
 
 @Component({
   selector: 'app-planning-area-list',
@@ -38,6 +39,7 @@ import { Router } from '@angular/router';
     ButtonComponent,
     MatProgressSpinnerModule,
     MatMenuModule,
+    PlanningAreaEmptyStateComponent,
   ],
   providers: [
     PlanService,
