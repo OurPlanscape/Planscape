@@ -22,6 +22,7 @@
     .subtitle {
       @include regular-paragraph();
       color: $color-dark-gray;
+      margin: 0;
     }
   }
 
