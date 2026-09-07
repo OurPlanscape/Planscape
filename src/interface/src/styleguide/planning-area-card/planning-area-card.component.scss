@@ -1,7 +1,7 @@
 @import 'colors';
 @import 'mixins';
 
-:host {
+.card-link {
   display: flex;
   border-radius: 8px;
   box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.16);
@@ -9,6 +9,9 @@
   gap: 16px;
   background-color: $color-white;
   align-items: center;
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
 
   .map-container {
     display: flex;
@@ -22,6 +25,10 @@
     flex-direction: column;
     gap: 16px;
   }
+}
+
+.card-link:hover {
+  background-color: $color-light-gray;
 }
 
 .header {

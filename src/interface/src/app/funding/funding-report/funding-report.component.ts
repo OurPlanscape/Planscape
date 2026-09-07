@@ -347,8 +347,6 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     );
   }
 
-  @Input() showMap = true;
-  @Input() showFooter = true;
   @Input() reportType: 'preview' | 'full' = 'preview';
   @Input() report!: FundingReport;
   /** Selected project area ids; empty means show the whole-scenario summary. */
@@ -364,7 +362,6 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   @Input() updatingWaterAvailability = false;
 
   // todo datalayer probably
-  @Output() showLayer = new EventEmitter<number>();
   @Output() updateWaterAvailability = new EventEmitter<number>();
 
   ngOnInit(): void {
@@ -615,7 +612,6 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
           this.dataLayersStateService.selectDataLayer(fetched)
         );
     }
-    this.showLayer.emit(layer.id);
   }
 
   /**

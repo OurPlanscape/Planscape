@@ -45,6 +45,7 @@
         <sg-planning-area-card
           *ngIf="planning"
           [planningArea]="planning"
+          [link]="['/plan', planning.id]"
           (afterDelete)="reload()"
           (afterRename)="reload()">
           <div mapSlot class="map">

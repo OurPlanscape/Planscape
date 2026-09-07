@@ -1,0 +1,28 @@
+<sg-share-dialog
+  [title]="target.title"
+  [submitting]="submitting"
+  [showRoles]="true"
+  [roles]="target.roles"
+  [people]="(people$ | async) || []"
+  [peopleLoading]="isLoading"
+  peopleLabel="People with access"
+  [showMessage]="true"
+  [showHelpButton]="true"
+  [allowStartOver]="true"
+  [hideBodyWhileComposing]="true"
+  primaryLabel="INVITE"
+  idleLabel="DONE"
+  (primaryAction)="onPrimary($event)"
+  (roleChange)="onChangeRole($event)"
+  (resend)="onResend($event)"
+  (removeAccess)="onRemoveAccess($event)"
+  (closed)="close()">
+  <section shareDialogHelp class="help">
+    <div class="help-content">
+      <ng-container *ngFor="let entry of target.help">
+        <h4>{{ entry.question }}</h4>
+        <p>{{ entry.answer }}</p>
+      </ng-container>
+    </div>
+  </section>
+</sg-share-dialog>

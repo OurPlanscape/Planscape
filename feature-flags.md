@@ -11,10 +11,6 @@ The name and value of the flag will be shared by frontend and backend.
 
 ## Current flags
 
-`FUNDING_REPORTS`: Enables funding reports
-
-`SHARE_FUNDING_REPORTS`: Enables Sharing funding reports
-
 `PRIORITIZE_PROJECT_AREAS`: Enables features for prioritize project areas epic
 
 `API_ZONAL_STATS`: Calculate Zonal Status using Stand-Metrics API

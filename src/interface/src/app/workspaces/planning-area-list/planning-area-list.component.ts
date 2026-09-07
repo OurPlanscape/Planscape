@@ -20,6 +20,8 @@ import { SortDirection } from '@angular/material/sort';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatMenuModule } from '@angular/material/menu';
+import { PreviewPlan } from '@app/types';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-planning-area-list',
@@ -67,6 +69,7 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   public mapConfigState = inject(MapConfigState);
   public authService = inject(AuthService);
   public newScenarioState = inject(NewScenarioState);
+  public router = inject(Router);
 
   planningAreas$ = this.dataSource.data();
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
@@ -132,5 +135,10 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
 
   reload() {
     this.dataSource.loadData();
+  }
+
+  handlePlanningAreaClick(planningArea: PreviewPlan) {
+    this.router.navigate(['plan', planningArea.id]);
+    return;
   }
 }

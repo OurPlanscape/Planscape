@@ -213,3 +213,65 @@ def remove_member(
         },
         user_id=actor.pk,
     )
+
+
+def _get_pending_invite(
+    workspace: Workspace,
+    invite_id: int,
+) -> UserAccessWorkspace:
+    invite = workspace.user_access.filter(pk=invite_id, user__isnull=True).first()
+    if not invite:
+        raise NotFound("This invite does not exist or was already accepted.")
+    return invite
+
+
+def update_invite_role(
+    actor: AbstractUser,
+    workspace: Workspace,
+    invite_id: int,
+    role: str,
+) -> UserAccessWorkspace:
+    """Changes the role a pending invite will grant once it is accepted.
+    Accepted memberships go through `update_member_role` instead - they are
+    keyed by user, and a pending row has no user yet."""
+    if not WorkspacePermission.can_manage_members(actor, workspace):
+        raise PermissionDenied(
+            "You do not have permission to change roles in this workspace."
+        )
+    invite = _get_pending_invite(workspace, invite_id)
+    invite.role = role
+    invite.save()
+
+    track_event(
+        name="workspace.invite.role_changed",
+        properties={
+            "workspace_id": workspace.pk,
+            "invitee_email": invite.email,
+            "role": role,
+            "email": actor.email if actor else None,
+        },
+        user_id=actor.pk,
+    )
+    return invite
+
+
+def revoke_invite(
+    actor: AbstractUser,
+    workspace: Workspace,
+    invite_id: int,
+) -> None:
+    if not WorkspacePermission.can_manage_members(actor, workspace):
+        raise PermissionDenied("You do not have permission to revoke this invite.")
+    invite = _get_pending_invite(workspace, invite_id)
+    invitee_email = invite.email
+    invite.delete()
+
+    track_event(
+        name="workspace.invite.revoked",
+        properties={
+            "workspace_id": workspace.pk,
+            "invitee_email": invitee_email,
+            "email": actor.email if actor else None,
+        },
+        user_id=actor.pk,
+    )
