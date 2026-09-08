@@ -19,9 +19,15 @@ interface HasName {
 export class ChipSelectorComponent<T extends HasName> {
   @Input() items: T[] = [];
   @Input() maxCollapsedItems = 4;
+  @Input() selectedItem: T | null = null;
+  @Input() showEdit = false;
+  @Input() showClose = true;
+  @Input() hoverable = false;
 
   @Output() addItem = new EventEmitter<T>();
   @Output() removeItem = new EventEmitter<T>();
+
+  @Output() itemClicked = new EventEmitter<T>();
 
   expanded: boolean = false;
 
@@ -33,8 +39,27 @@ export class ChipSelectorComponent<T extends HasName> {
     }
   }
 
+  isSelected(item: T): boolean {
+    if (!this.selectedItem) return false;
+
+    // Compare by unique 'name' property if it exists,
+    // otherwise fallback to reference equality
+    const itemWithKey = item as unknown as { name?: string };
+    const selectedWithKey = this.selectedItem as unknown as { name?: string };
+
+    if (itemWithKey.name && selectedWithKey.name) {
+      return itemWithKey.name === selectedWithKey.name;
+    }
+
+    return item === this.selectedItem;
+  }
+
   handleRemove(item: T) {
     this.removeItem.emit(item);
+  }
+
+  handleClick(item: T) {
+    this.itemClicked.emit(item);
   }
 
   expand() {
