@@ -64,6 +64,7 @@ import {
   MapLayer,
 } from '../funding-map-layers/funding-map-layers.component';
 import { ScrollSpyDirective } from '@app/standalone/scroll-spy-directive/scroll-spy.directive';
+import { AbbreviatedNumberPipe } from '@app/standalone/abbreviated-number.pipe';
 import { FundingMapConfigState } from '../funding-map-config-state';
 import { FundingReportToPdfService } from '../funding-report-to-pdf.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -138,6 +139,7 @@ export type ReportInteractivity = boolean | 'readonly';
     ReactiveFormsModule,
     MessageCardComponent,
     ScrollSpyDirective,
+    AbbreviatedNumberPipe,
   ],
   providers: [FundingReportToPdfService],
   templateUrl: './funding-report.component.html',
