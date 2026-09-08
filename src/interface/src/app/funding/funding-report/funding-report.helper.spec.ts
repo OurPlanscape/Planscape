@@ -9,7 +9,6 @@ import {
   aggregateFlameLengthSummary,
   aggregateMetricSummary,
   hasFlameLengthData,
-  formatBiomassVolume,
   percentDelta,
   generateLegendFromReport,
   calculateTreatmentAcreSums,
@@ -517,25 +516,5 @@ describe('generateLegendFromReport', () => {
       900
     );
     expect(result.selectedAcres).toBe(3500);
-  });
-});
-
-describe('formatBiomassVolume', () => {
-  it('rounds values under a million to whole numbers', () => {
-    expect(formatBiomassVolume(750897.7)).toBe('750,898');
-    expect(formatBiomassVolume(1942.9)).toBe('1,943');
-    expect(formatBiomassVolume(0)).toBe('0');
-  });
-
-  it('abbreviates values of a million or more', () => {
-    expect(formatBiomassVolume(1500000)).toBe('1.5 Million');
-    expect(formatBiomassVolume(2000000)).toBe('2 Million');
-    expect(formatBiomassVolume(21000000)).toBe('21 Million');
-    expect(formatBiomassVolume(1234567)).toBe('1.2 Million');
-  });
-
-  it('returns an empty string for missing values', () => {
-    expect(formatBiomassVolume(null)).toBe('');
-    expect(formatBiomassVolume(undefined)).toBe('');
   });
 });

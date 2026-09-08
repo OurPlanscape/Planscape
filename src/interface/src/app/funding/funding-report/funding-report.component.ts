@@ -53,7 +53,6 @@ import {
   aggregateAetSummary,
   aggregateFlameLengthSummary,
   aggregateMetricSummary,
-  formatBiomassVolume,
   hasFlameLengthData,
   hasMetricData,
 } from './funding-report.helper';
@@ -65,6 +64,7 @@ import {
   MapLayer,
 } from '../funding-map-layers/funding-map-layers.component';
 import { ScrollSpyDirective } from '@app/standalone/scroll-spy-directive/scroll-spy.directive';
+import { AbbreviatedNumberPipe } from '@app/standalone/abbreviated-number.pipe';
 import { FundingMapConfigState } from '../funding-map-config-state';
 import { FundingReportToPdfService } from '../funding-report-to-pdf.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -139,6 +139,7 @@ export type ReportInteractivity = boolean | 'readonly';
     ReactiveFormsModule,
     MessageCardComponent,
     ScrollSpyDirective,
+    AbbreviatedNumberPipe,
   ],
   providers: [FundingReportToPdfService],
   templateUrl: './funding-report.component.html',
@@ -515,8 +516,6 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
    * report carries no biomass data. Rebuilt alongside the charts.
    */
   biomass?: FundingReportBiomassVolumes;
-
-  formatBiomassVolume = formatBiomassVolume;
 
   private buildCharts(): void {
     this.smokeChart = this.buildSummaryChart('POTENTIAL_SMOKE', 'blue');

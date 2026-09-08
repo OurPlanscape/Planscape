@@ -318,19 +318,3 @@ export function calculateTreatmentAcreSums(
     noTreatmentSum: noTreatmentAcres,
   };
 }
-
-/**
- * Biomass volumes for display: whole numbers, with anything from a million up
- * abbreviated (1,500,000 -> "1.5 Million").
- */
-export function formatBiomassVolume(value: number | null | undefined): string {
-  if (value === null || value === undefined || isNaN(value)) {
-    return '';
-  }
-  const rounded = Math.round(value);
-  if (Math.abs(rounded) < 1_000_000) {
-    return rounded.toLocaleString('en-US');
-  }
-  const millions = Math.round(rounded / 100_000) / 10;
-  return `${millions.toLocaleString('en-US')} Million`;
-}
