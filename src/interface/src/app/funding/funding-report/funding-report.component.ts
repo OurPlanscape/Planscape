@@ -53,6 +53,7 @@ import {
   aggregateAetSummary,
   aggregateFlameLengthSummary,
   aggregateMetricSummary,
+  formatBiomassVolume,
   hasFlameLengthData,
   hasMetricData,
 } from './funding-report.helper';
@@ -514,6 +515,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
    * report carries no biomass data. Rebuilt alongside the charts.
    */
   biomass?: FundingReportBiomassVolumes;
+
+  formatBiomassVolume = formatBiomassVolume;
 
   private buildCharts(): void {
     this.smokeChart = this.buildSummaryChart('POTENTIAL_SMOKE', 'blue');
