@@ -34,6 +34,7 @@ from planning.models import (
     PlanningAreaMapStatus,
     Scenario,
     ScenarioPostProcessingStatus,
+    ScenarioResultErrorCode,
     ScenarioResultStatus,
     ScenarioType,
     TreatmentGoalUsageType,
@@ -113,8 +114,8 @@ def async_forsys_run(scenario_id: int) -> None:
                 errors = []
             errors.append(
                 {
-                    "error_code": ScenarioResultStatus.TIMED_OUT, 
-                    "description": "ForSys execution timed out."
+                    "error_code": ScenarioResultErrorCode.TIME_OUT,
+                    "description": "ForSys execution timed out.",
                 }
             )
             scenario.results.save()
@@ -133,8 +134,8 @@ def async_forsys_run(scenario_id: int) -> None:
                 errors = []
             errors.append(
                 {
-                    "error_code": ScenarioResultStatus.PANIC, 
-                    "description": "ForSys execution failed."
+                    "error_code": ScenarioResultErrorCode.GENERIC_PANIC,
+                    "description": "ForSys execution failed.",
                 }
             )
             scenario.results.save()
@@ -310,6 +311,22 @@ def async_pre_forsys_process(scenario_id: int) -> None:
     stand_ids = get_available_stand_ids(
         scenario, scenario.get_stand_size(), excluded_datalayers
     )
+    if len(stand_ids) == 0:
+        if hasattr(scenario, "results"):
+            scenario.results.status = ScenarioResultStatus.PANIC
+            errors = scenario.results.errors
+            if not errors:
+                errors = []
+            errors.append(
+                {
+                    "error_code": ScenarioResultErrorCode.NO_AVAILABLE_STANDS,
+                    "description": "No available stands found for Scenario.",
+                }
+            )
+            scenario.results.save()
+        log.error("No stands available for Scenario %s", scenario_id)
+        raise ForsysException
+
     run_config = build_run_configuration(scenario)
 
     variables = run_config["variables"]
@@ -421,6 +438,18 @@ def async_mark_scenario_panic(scenario_id: int) -> None:
     try:
         scenario = Scenario.objects.get(pk=scenario_id)
         scenario.result_status = ScenarioResultStatus.PANIC
+        if hasattr(scenario, "results"):
+            scenario.results.status = ScenarioResultStatus.PANIC
+            errors = scenario.results.errors
+            if not errors:
+                errors = []
+            errors.append(
+                {
+                    "error_code": ScenarioResultErrorCode.STAND_METRIC_FAILURE,
+                    "description": "Failed to calculate stand metrics.",
+                }
+            )
+            scenario.results.save()
         scenario.save(update_fields=["result_status", "updated_at"])
         log.info("Scenario %s marked as PANIC due to workflow error.", scenario_id)
     except Scenario.DoesNotExist:
