@@ -330,6 +330,7 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
             "status",
             "result",
             "run_details",
+            "errors",
         )
         model = ScenarioResult
 
