@@ -15,8 +15,9 @@
       <sg-details-card
         [cardTitle]="workspace.name"
         [creator]="workspace.creator"
-        [canShare]="true"
-        [created_at]="workspace.created_at">
+        [canShare]="canShare(workspace)"
+        [created_at]="workspace.created_at"
+        (share)="shareWorkspace(workspace)">
       </sg-details-card>
 
       <sg-card-link

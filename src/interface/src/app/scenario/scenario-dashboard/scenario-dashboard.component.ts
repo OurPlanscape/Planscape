@@ -17,6 +17,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatMenuModule } from '@angular/material/menu';
 import { ScenarioDashboardFooterComponent } from '../scenario-dashboard-footer/scenario-dashboard-footer.component';
 import {
+  getResultsTableHeadline,
   isPlanningApproachSubUnits,
   suggestUniqueName,
 } from '../scenario-helper';
@@ -97,6 +98,13 @@ export class ScenarioDashboardComponent implements OnInit {
           };
       this.breadcrumbService.updateBreadCrumb(breadcrumb);
     });
+  }
+
+  headlineText(scenario: Scenario) {
+    return getResultsTableHeadline(
+      scenario.planning_approach || 'OPTIMIZE_PROJECT_AREAS',
+      scenario.parent
+    );
   }
 
   isPlanningApproachSubUnits(scenario: Scenario) {

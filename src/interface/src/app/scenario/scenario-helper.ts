@@ -205,6 +205,20 @@ export function isPlanningApproachSubUnits(type: PLANNING_APPROACH) {
   return type === 'PRIORITIZE_SUB_UNITS';
 }
 
+/**
+ * Headline for the ranked results table. A child scenario ranks the project
+ * areas within a single subunit, so only a top level subunits scenario lists
+ * subunits.
+ */
+export function getResultsTableHeadline(
+  planningApproach: PLANNING_APPROACH,
+  parent: number | null | undefined
+) {
+  return isPlanningApproachSubUnits(planningApproach) && !parent
+    ? 'Top 10 Subunits'
+    : 'Project Areas';
+}
+
 function stripEmptyConfigurations(
   config: Partial<ScenarioV3Config>
 ): Partial<ScenarioV3Config> {

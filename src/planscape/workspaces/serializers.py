@@ -221,6 +221,7 @@ class WorkspaceMemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAccessWorkspace
         fields = [
+            "id",
             "user_id",
             "email",
             "first_name",

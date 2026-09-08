@@ -18,6 +18,7 @@ import { debounceTime, map, switchMap } from 'rxjs';
 import { distinctUntilChanged, filter, take } from 'rxjs/operators';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
+import { FeatureService } from '@app/features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -56,7 +57,8 @@ export class StandLevelConstraintsComponent
 
   constructor(
     private newScenarioState: NewScenarioState,
-    private forsysService: ForsysService
+    private forsysService: ForsysService,
+    private featureService: FeatureService
   ) {
     super();
   }
@@ -134,5 +136,9 @@ export class StandLevelConstraintsComponent
         )
       )
       .subscribe((config) => {});
+  }
+
+  get isAdvSLCEnabled() {
+    return this.featureService.isFeatureEnabled('ADV_STAND_LEVEL_CONSTRAINTS');
   }
 }

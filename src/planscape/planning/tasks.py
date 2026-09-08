@@ -14,6 +14,7 @@ from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils import timezone
 from gis.core import get_storage_session
+from modules.base import ForsysModule
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 from stands.models import Stand, StandSizeChoices
@@ -344,6 +345,26 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
     else:
         log.warning("Scenario %s has no scenario type set.", scenario_id)
         return
+
+    datalayers = list(datalayers)  # type: ignore
+
+    constraints = scenario.configuration.get("constraints")
+    if constraints:
+        datalayer_ids = [constraint.get("datalayer") for constraint in constraints]
+        constraints_datalayers = DataLayer.objects.filter(
+            pk__in=datalayer_ids,
+            type=DataLayerType.RASTER,
+        )
+        constraints_datalayers = list(constraints_datalayers)
+
+        # Datalayers with module ForsysModule already have all stand metrics calculated
+        constraints_datalayers = [
+            constraint
+            for constraint in constraints_datalayers
+            if not constraint.has_module(ForsysModule.name)
+        ]
+
+        datalayers.extend(constraints_datalayers)
 
     tasks = [async_pre_forsys_process.si(scenario_id=scenario.pk)]
     for datalayer in datalayers:

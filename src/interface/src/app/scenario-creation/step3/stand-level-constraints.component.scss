@@ -58,6 +58,27 @@
   gap: 8px;
 }
 
+/* can remove this .constraints-form when 
+ADV_STAND_LEVEL_CONSTRAINTS flag is removed
+*/
+.constraints-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* keep this after ADV_STAND_LEVEL_CONSTRAINTS flag is removed
+*/
+.apply-constraints-form {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+
+  .field-area {
+    flex-grow: 1;
+  }
+}
+
 .flex {
   display: flex;
   gap: 12px;
@@ -74,6 +95,7 @@
 
 
 :host ::ng-deep {
+
   input[type="number"]::-webkit-inner-spin-button,
   input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
