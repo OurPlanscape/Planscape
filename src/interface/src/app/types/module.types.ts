@@ -33,6 +33,14 @@ export interface MapDataDataSet extends BaseDataSet {
   selection_type: 'SINGLE' | 'MULTIPLE';
 }
 
+export interface AdvStandLevelConstraintData {
+  datasets: {
+    main_datasets: MapDataDataSet[];
+    base_datasets: MapDataDataSet[];
+  };
+  datalayers: any;
+}
+
 /**
  * The `funding_report` module: a fixed set of data layers grouped by the report
  * sections they belong to (carbon, water, biomass, wildfire risk reduction).

@@ -1,5 +1,6 @@
 <!-- Stand levels constraints -->
 <sg-section
+  *ngIf="constraintLayers$ | async as layers"
   headline="Advanced Stand-Level Constraints (OPTIONAL)"
   class="adv-stand-level-constraints"
   [tooltipTemplate]="tooltipContent">
@@ -13,7 +14,9 @@
     </div>
     <sg-chip-selector
       [items]="(selectedConstraints$ | async) ?? []"
-      (itemClicked)="handleConstraintClicked($event)"></sg-chip-selector>
+      (itemClicked)="handleConstraintClicked($event)"
+      [showClose]="false"
+      [showEdit]="true"></sg-chip-selector>
   </div>
   <mat-expansion-panel
     class="datalayers-section"
