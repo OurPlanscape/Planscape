@@ -212,6 +212,22 @@ class ScenarioResultStatus(models.TextChoices):
     DRAFT = "DRAFT", "Draft"
 
 
+class ScenarioResultErrorCode(models.TextChoices):
+    TIME_OUT = "TIME_OUT", "Time Out"
+    GENERIC_PANIC = "GENERIC_PANIC", "Generic Panic"
+    NO_AVAILABLE_STANDS = "NO_AVAILABLE_STANDS", "No Available Stands"
+    STAND_METRIC_FAILURE = "STAND_METRIC_FAILURE", "Stand Metric Failure"
+    UNKNOWN_ERROR = "UNKNOWN_ERROR", "Unknown Error"
+    SCENARIO_LOAD_ERROR = "SCENARIO_LOAD_ERROR", "Scenario Load Error"
+    STAND_DATA_ERROR = "STAND_DATA_ERROR", "Stand Data Error"
+    PROJECT_DATA_ERROR = "PROJECT_DATA_ERROR", "Project Data Error"
+    FORSYS_PREPARATION_ERROR = "FORSYS_PREPARATION_ERROR", "Forsys Preparation Error"
+    FORSYS_EXECUTION_ERROR = "FORSYS_EXECUTION_ERROR", "Forsys Execution Error"
+    FORSYS_EMPTY_RESULT = "FORSYS_EMPTY_RESULT", "Forsys Empty Result"
+    RESULT_PROCESSING_ERROR = "RESULT_PROCESSING_ERROR", "Result Processing Error"
+    PROJECT_AREA_UPDATE_ERROR = "PROJECT_AREA_UPDATE_ERROR", "Project Area Update Error"
+
+
 class ScenarioPostProcessingStatus(models.TextChoices):
     PENDING = "PENDING", "Pending"
     RUNNING = "RUNNING", "Running"
