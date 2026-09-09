@@ -312,19 +312,11 @@ class AdvancedStandLevelConstraintModule(BaseModule):
     def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
         return AdvancedStandLevelConstraintSerializer
 
-    def get_datasets(
+    def _get_datalayers_queryset(
         self,
         geometry: Optional[GEOSGeometry] = None,
         user: Optional[User] = None,
-        **kwargs,
-    ) -> QuerySet[Dataset]:
-        return Dataset.objects.none()
-
-    def get_datalayers(
-        self,
-        geometry: Optional[GEOSGeometry] = None,
-        user: Optional[User] = None,
-    ) -> List[Any]:
+    ) -> QuerySet[DataLayer]:
         queryset = (
             DataLayer.objects.filter(
                 status=DataLayerStatus.READY,
@@ -332,15 +324,38 @@ class AdvancedStandLevelConstraintModule(BaseModule):
             )
             .accessible_by(user)
             .by_meta_module(self.name)
-            .select_related("organization", "dataset", "category")
-            .prefetch_related("styles")
             .distinct()
         )
 
         if geometry is not None:
             queryset = queryset.filter(outline__intersects=geometry)
 
-        return list(queryset.all())
+        return queryset
+
+    def get_datasets(
+        self,
+        geometry: Optional[GEOSGeometry] = None,
+        user: Optional[User] = None,
+        **kwargs,
+    ) -> QuerySet[Dataset]:
+        datalayers = self._get_datalayers_queryset(geometry=geometry, user=user)
+        return (
+            Dataset.objects.filter(datalayers__in=datalayers)
+            .select_related("organization")
+            .distinct()
+        )
+
+    def get_datalayers(
+        self,
+        geometry: Optional[GEOSGeometry] = None,
+        user: Optional[User] = None,
+    ) -> List[DataLayer]:
+        queryset = (
+            self._get_datalayers_queryset(geometry=geometry, user=user)
+            .select_related("organization", "dataset", "category")
+            .prefetch_related("styles")
+        )
+        return list(queryset)
 
 
 def get_module(module_name: str) -> BaseModule:
