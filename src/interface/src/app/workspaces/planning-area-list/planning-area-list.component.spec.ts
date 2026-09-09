@@ -7,7 +7,7 @@ import { AuthService } from '@app/services';
 import { BehaviorSubject, of } from 'rxjs';
 import { MockProviders } from 'ng-mocks';
 import { MapService } from '@maplibre/ngx-maplibre-gl';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 describe('PlanningAreaListComponent', () => {
   let component: PlanningAreaListComponent;
@@ -88,6 +88,16 @@ describe('PlanningAreaListComponent', () => {
             {
               provide: AuthService,
               useValue: authServiceMock,
+            },
+            {
+              provide: ActivatedRoute,
+              useValue: {
+                snapshot: {
+                  data: {
+                    workspaceId: 1,
+                  },
+                },
+              },
             },
           ],
         },

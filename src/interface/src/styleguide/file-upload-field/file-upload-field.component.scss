@@ -24,8 +24,7 @@
 }
 
 .required-label {
-  @include italic-sm();
-  color: $color-text-gray;
+  color: $color-error;
 }
 
 .input-container {

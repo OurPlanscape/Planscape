@@ -21,8 +21,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatMenuModule } from '@angular/material/menu';
 import { PreviewPlan } from '@app/types';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PlanningAreaEmptyStateComponent } from '../planning-area-empty-state/planning-area-empty-state.component';
+import { PlanningAreaCreationModalComponent } from '../planning-area-creation-modal/planning-area-creation-modal.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-planning-area-list',
@@ -55,11 +57,17 @@ import { PlanningAreaEmptyStateComponent } from '../planning-area-empty-state/pl
       provide: PlanningAreasDataSource,
       useFactory: (
         planService: PlanService,
-        queryParamsService: QueryParamsService
+        queryParamsService: QueryParamsService,
+        route: ActivatedRoute
       ) => {
-        return new PlanningAreasDataSource(planService, queryParamsService);
+        const workspaceId = route.snapshot.data['workspaceId'];
+        return new PlanningAreasDataSource(
+          planService,
+          queryParamsService,
+          workspaceId
+        );
       },
-      deps: [PlanService, QueryParamsService],
+      deps: [PlanService, QueryParamsService, ActivatedRoute],
     },
   ],
   templateUrl: './planning-area-list.component.html',
@@ -72,6 +80,8 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   public authService = inject(AuthService);
   public newScenarioState = inject(NewScenarioState);
   public router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private dialog = inject(MatDialog);
 
   planningAreas$ = this.dataSource.data();
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
@@ -86,6 +96,8 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   sortDirection: SortDirection = 'desc';
 
   loading$ = this.dataSource.loading$;
+
+  workspaceId = this.route.snapshot.data['workspaceId'];
 
   ngOnInit(): void {
     this.dataSource.loadData();
@@ -124,7 +136,18 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   }
 
   uploadPlanningArea() {
-    // TODO: Open upload modal planning area
+    this.dialog
+      .open(PlanningAreaCreationModalComponent, {
+        data: {
+          workspaceId: this.workspaceId,
+        },
+      })
+      .afterClosed()
+      .subscribe((reload) => {
+        if (reload === true) {
+          this.reload();
+        }
+      });
   }
 
   drawPlanningArea() {
