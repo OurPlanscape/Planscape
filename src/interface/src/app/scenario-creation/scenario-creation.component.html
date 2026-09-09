@@ -51,6 +51,8 @@
               'ADV_STAND_LEVEL_CONSTRAINTS'
             "></app-adv-stand-level-constraints>
         </sg-step>
+
+        <!-- TODO : just showing step earlier for faster debugging purposes -->
         <sg-step>
           <app-stand-level-constraints></app-stand-level-constraints>
           <app-adv-stand-level-constraints
@@ -58,8 +60,7 @@
               'ADV_STAND_LEVEL_CONSTRAINTS'
             "></app-adv-stand-level-constraints>
         </sg-step>
-        <!-- TODO: removed just for debugging
-         
+
         <sg-step *ngIf="subUnitsPrioritized && (hasParent$ | async) === false">
           <app-sub-unit-selector></app-sub-unit-selector>
         </sg-step>
@@ -68,7 +69,6 @@
         </sg-step>
         <sg-step>
           <app-include-areas-selector></app-include-areas-selector>
-          <app-adv-stand-level-constraints></app-adv-stand-level-constraints>
         </sg-step>
         <sg-step>
           <app-exclude-areas-selector></app-exclude-areas-selector>
@@ -79,7 +79,7 @@
             *appFeatureFlag="
               'ADV_STAND_LEVEL_CONSTRAINTS'
             "></app-adv-stand-level-constraints>
-        </sg-step> -->
+        </sg-step>
         <sg-step>
           <app-treatment-target
             *ngIf="!subUnitsPrioritized"></app-treatment-target>

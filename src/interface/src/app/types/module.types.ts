@@ -38,7 +38,7 @@ export interface AdvStandLevelConstraintData {
     main_datasets: MapDataDataSet[];
     base_datasets: MapDataDataSet[];
   };
-  datalayers: any;
+  datalayers: DataLayer[];
 }
 
 /**
