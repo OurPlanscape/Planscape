@@ -495,7 +495,10 @@ class AdvancedStandLevelConstraintModuleTest(TestCase):
 
         datalayers = self.module.get_configuration()["options"]["datalayers"]
 
-        self.assertEqual(set(datalayers), {str(enabled.id), str(implicitly_enabled.id)})
+        self.assertEqual(
+            {datalayer.id for datalayer in datalayers},
+            {enabled.id, implicitly_enabled.id},
+        )
 
     def test_filters_datalayers_by_outline(self):
         dataset = DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
@@ -529,7 +532,7 @@ class AdvancedStandLevelConstraintModuleTest(TestCase):
             "datalayers"
         ]
 
-        self.assertEqual(set(datalayers), {str(included.id)})
+        self.assertEqual([datalayer.id for datalayer in datalayers], [included.id])
 
     def test_filters_datalayers_by_dataset_access(self):
         public_dataset = DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
@@ -553,13 +556,15 @@ class AdvancedStandLevelConstraintModuleTest(TestCase):
             "options"
         ]["datalayers"]
 
-        self.assertEqual(set(anonymous_layers), {str(public_layer.id)})
         self.assertEqual(
-            set(owner_layers),
-            {str(public_layer.id), str(private_layer.id)},
+            {datalayer.id for datalayer in anonymous_layers}, {public_layer.id}
+        )
+        self.assertEqual(
+            {datalayer.id for datalayer in owner_layers},
+            {public_layer.id, private_layer.id},
         )
 
-    def test_serializes_datalayers_as_dictionary(self):
+    def test_serializes_datalayers_as_list(self):
         dataset = DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
         datalayer = DataLayerFactory.create(
             dataset=dataset,
@@ -576,9 +581,10 @@ class AdvancedStandLevelConstraintModuleTest(TestCase):
         self.assertIs(
             self.module.get_serializer_class(), AdvancedStandLevelConstraintSerializer
         )
+        self.assertIsInstance(serializer.data["options"]["datalayers"], list)
         self.assertEqual(
-            serializer.data["options"]["datalayers"][str(datalayer.id)]["id"],
-            datalayer.id,
+            [item["id"] for item in serializer.data["options"]["datalayers"]],
+            [datalayer.id],
         )
 
     def test_capabilities_include_scenario_but_not_planning_area(self):

@@ -102,7 +102,7 @@ class FundingReportModuleSerializer(BaseModuleSerializer):
 
 
 class AdvancedStandLevelConstraintOptionsSerializer(BaseModuleOptionsSerializer):
-    datalayers = serializers.DictField(child=BrowseDataLayerSerializer())
+    datalayers = serializers.ListField(child=BrowseDataLayerSerializer())
 
 
 class AdvancedStandLevelConstraintSerializer(BaseModuleSerializer):
