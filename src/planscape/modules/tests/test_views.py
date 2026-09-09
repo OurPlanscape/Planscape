@@ -1,7 +1,7 @@
 
 from unittest import mock
 
-from datasets.models import DataLayerType, VisibilityOptions
+from datasets.models import DataLayerType, PreferredDisplayType, VisibilityOptions
 from datasets.tests.factories import DatasetFactory, DataLayerFactory
 from django.test import TestCase
 from django.urls import reverse
@@ -78,7 +78,10 @@ class ModuleAPITests(TestCase):
         self.assertIn(pk, str(resp.data["detail"]))
 
     def test_retrieve_advanced_stand_level_constraint_datalayers(self):
-        dataset = DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
+        dataset = DatasetFactory.create(
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        )
         datalayer = DataLayerFactory.create(
             dataset=dataset,
             type=DataLayerType.RASTER,
@@ -98,6 +101,13 @@ class ModuleAPITests(TestCase):
         self.assertEqual(
             [item["id"] for item in response.data["options"]["datalayers"]],
             [datalayer.id],
+        )
+        self.assertEqual(
+            [
+                item["id"]
+                for item in response.data["options"]["datasets"]["main_datasets"]
+            ],
+            [dataset.id],
         )
 
     def test_advanced_stand_level_constraint_details_filters_by_geometry(self):
