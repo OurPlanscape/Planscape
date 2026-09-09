@@ -1,6 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
 import {
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  Optional,
+  SkipSelf,
+} from '@angular/core';
+import {
+  ControlContainer,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
@@ -10,15 +18,15 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { SectionComponent, StepDirective } from '@styleguide';
-import { NgxMaskModule } from 'ngx-mask';
-import { Constraint, ScenarioDraftConfiguration } from '@types';
-import { NewScenarioState } from '../new-scenario.state';
-import { debounceTime, map, switchMap } from 'rxjs';
-import { distinctUntilChanged, filter, take } from 'rxjs/operators';
+import { FeatureService } from '@app/features/feature.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
-import { FeatureService } from '@app/features/feature.service';
+import { SectionComponent, StepDirective } from '@styleguide';
+import { Constraint, ScenarioDraftConfiguration } from '@types';
+import { NgxMaskModule } from 'ngx-mask';
+import { debounceTime, map, switchMap } from 'rxjs';
+import { distinctUntilChanged, filter, take } from 'rxjs/operators';
+import { NewScenarioState } from '../new-scenario.state';
 
 @UntilDestroy()
 @Component({
@@ -42,8 +50,10 @@ import { FeatureService } from '@app/features/feature.service';
 })
 export class StandLevelConstraintsComponent
   extends StepDirective<ScenarioDraftConfiguration>
-  implements OnInit
+  implements OnInit, OnDestroy
 {
+  @Input() keyName = 'standLevelConstraints';
+
   form = new FormGroup({
     max_slope: new FormControl<number | null>(null, [
       Validators.min(0),
@@ -58,7 +68,8 @@ export class StandLevelConstraintsComponent
   constructor(
     private newScenarioState: NewScenarioState,
     private forsysService: ForsysService,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    @Optional() @SkipSelf() private parentContainer: ControlContainer
   ) {
     super();
   }
@@ -68,6 +79,13 @@ export class StandLevelConstraintsComponent
   }
 
   ngOnInit(): void {
+    // 1. Auto-attach to parent form if wrapped in a parent <form> or [formGroup]
+    if (this.parentContainer?.control) {
+      const parentGroup = this.parentContainer.control as FormGroup;
+      parentGroup.addControl(this.keyName, this.form);
+    }
+
+    // 2. Value changes sync to state
     this.forsysService.forsysData$
       .pipe(
         take(1),
@@ -105,7 +123,6 @@ export class StandLevelConstraintsComponent
       )
       .subscribe();
 
-    // Reading the config from the initial scenario config...?
     this.newScenarioState.scenarioConfig$
       .pipe(
         untilDestroyed(this),
@@ -136,6 +153,13 @@ export class StandLevelConstraintsComponent
         )
       )
       .subscribe((config) => {});
+  }
+
+  // Detach form control if component unmounts
+  ngOnDestroy(): void {
+    if (this.parentContainer?.control) {
+      (this.parentContainer.control as FormGroup).removeControl(this.keyName);
+    }
   }
 
   get isAdvSLCEnabled() {

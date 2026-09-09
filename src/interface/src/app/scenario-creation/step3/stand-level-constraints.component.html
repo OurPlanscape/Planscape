@@ -1,4 +1,3 @@
-<!-- Stand levels constraints -->
 <sg-section
   [headline]="
     isAdvSLCEnabled
@@ -18,23 +17,20 @@ They help ensure that only feasible and operationally suitable areas are targete
     Set the conditions that must be met for ForSys to select stands for
     treatment.
   </p>
-
-  <form
+  <div
     [formGroup]="form"
-    class="constraints-form"
     [ngClass]="{
       'constraints-form': !isAdvSLCEnabled,
       'apply-constraints-form': isAdvSLCEnabled,
     }">
     <div class="field-area">
-      <label for="max_slope" class="input-label">Max Slope</label>
       <div class="flex">
         <mat-form-field
           class="stand-level-input"
           appearance="outline"
           floatLabel="always">
+          <mat-label>Max Slope</mat-label>
           <input
-            id="max_slope"
             class="step3-input"
             formControlName="max_slope"
             placeholder="Enter Value"
@@ -42,46 +38,37 @@ They help ensure that only feasible and operationally suitable areas are targete
             max="100"
             matInput
             type="number" />
-          <span class="legend">%</span>
-          <mat-error
-            *ngIf="
-              form.get('max_slope')?.touched &&
-              form.get('max_slope')?.hasError('max')
-            ">
+          <span matSuffix class="legend">%</span>
+          <mat-error *ngIf="form.get('max_slope')?.hasError('max')">
             Slope cannot exceed 100
           </mat-error>
         </mat-form-field>
       </div>
     </div>
+
     <div class="field-area">
-      <label for="min_distance_from_road" class="input-label">
-        Max Distance From Roads</label
-      >
       <div class="flex">
         <mat-form-field
           class="stand-level-input"
           appearance="outline"
           floatLabel="always">
+          <mat-label>Max Distance From Roads</mat-label>
           <input
-            id="min_distance_from_road"
             class="step3-input"
             formControlName="min_distance_from_road"
             placeholder="Enter Value"
             matInput
-            type="text"
+            type="number"
             mask="separator"
             thousandSeparator=","
             [value]="" />
-          <span class="legend">yds</span>
+          <span matSuffix class="legend">yds</span>
           <mat-error
-            *ngIf="
-              form.get('min_distance_from_road')?.touched &&
-              form.get('min_distance_from_road')?.hasError('max')
-            ">
+            *ngIf="form.get('min_distance_from_road')?.hasError('max')">
             Max Distance From Roads cannot exceed 100,000 yards
           </mat-error>
         </mat-form-field>
       </div>
     </div>
-  </form>
+  </div>
 </sg-section>
