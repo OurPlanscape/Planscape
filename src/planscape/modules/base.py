@@ -1,7 +1,13 @@
 import json
 from typing import Any, Dict, List, Optional, Type, Union
 
-from datasets.models import DataLayer, DataLayerType, Dataset, PreferredDisplayType
+from datasets.models import (
+    DataLayer,
+    DataLayerStatus,
+    DataLayerType,
+    Dataset,
+    PreferredDisplayType,
+)
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q, QuerySet
@@ -14,6 +20,7 @@ from planning.models import (
 )
 
 from modules.serializers import (
+    AdvancedStandLevelConstraintSerializer,
     BaseModuleSerializer,
     ForsysModuleSerializer,
     FundingReportModuleSerializer,
@@ -302,6 +309,9 @@ class AdvancedStandLevelConstraintModule(BaseModule):
     def _can_run_scenario(self, runnable: Scenario) -> bool:
         return True
 
+    def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
+        return AdvancedStandLevelConstraintSerializer
+
     def get_datasets(
         self,
         geometry: Optional[GEOSGeometry] = None,
@@ -309,6 +319,28 @@ class AdvancedStandLevelConstraintModule(BaseModule):
         **kwargs,
     ) -> QuerySet[Dataset]:
         return Dataset.objects.none()
+
+    def get_datalayers(
+        self,
+        geometry: Optional[GEOSGeometry] = None,
+        user: Optional[User] = None,
+    ) -> Dict[str, Any]:
+        queryset = (
+            DataLayer.objects.filter(
+                status=DataLayerStatus.READY,
+                type=DataLayerType.RASTER,
+            )
+            .accessible_by(user)
+            .by_meta_module(self.name)
+            .select_related("organization", "dataset", "category")
+            .prefetch_related("styles")
+            .distinct()
+        )
+
+        if geometry is not None:
+            queryset = queryset.filter(outline__intersects=geometry)
+
+        return {str(datalayer.id): datalayer for datalayer in queryset}
 
 
 def get_module(module_name: str) -> BaseModule:

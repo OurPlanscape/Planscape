@@ -1,6 +1,8 @@
 
 from unittest import mock
 
+from datasets.models import DataLayerType, VisibilityOptions
+from datasets.tests.factories import DatasetFactory, DataLayerFactory
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -74,3 +76,61 @@ class ModuleAPITests(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
         self.assertIn("detail", resp.data)
         self.assertIn(pk, str(resp.data["detail"]))
+
+    def test_retrieve_advanced_stand_level_constraint_datalayers(self):
+        dataset = DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
+        datalayer = DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            metadata={
+                "modules": {"advanced_stand_level_constraint": {"enabled": True}}
+            },
+        )
+        url = reverse(
+            "api:modules:modules-detail",
+            kwargs={"pk": "advanced_stand_level_constraint"},
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data["options"]["datalayers"][str(datalayer.id)]["id"],
+            datalayer.id,
+        )
+
+    def test_advanced_stand_level_constraint_details_filters_by_geometry(self):
+        dataset = DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
+        metadata = {
+            "modules": {"advanced_stand_level_constraint": {"enabled": True}}
+        }
+        included = DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            outline="MULTIPOLYGON(((0 0, 2 0, 2 2, 0 2, 0 0)))",
+            metadata=metadata,
+        )
+        excluded = DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            outline="MULTIPOLYGON(((3 3, 4 3, 4 4, 3 4, 3 3)))",
+            metadata=metadata,
+        )
+        url = reverse(
+            "api:modules:modules-details",
+            kwargs={"pk": "advanced_stand_level_constraint"},
+        )
+        geometry = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]]],
+        }
+
+        response = self.client.post(url, data={"geometry": geometry}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            set(response.data["options"]["datalayers"]), {str(included.id)}
+        )
+        self.assertNotIn(
+            str(excluded.id), response.data["options"]["datalayers"]
+        )
