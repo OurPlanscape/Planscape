@@ -94,9 +94,10 @@ class ModuleAPITests(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsInstance(response.data["options"]["datalayers"], list)
         self.assertEqual(
-            response.data["options"]["datalayers"][str(datalayer.id)]["id"],
-            datalayer.id,
+            [item["id"] for item in response.data["options"]["datalayers"]],
+            [datalayer.id],
         )
 
     def test_advanced_stand_level_constraint_details_filters_by_geometry(self):
@@ -129,8 +130,10 @@ class ModuleAPITests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
-            set(response.data["options"]["datalayers"]), {str(included.id)}
+            {item["id"] for item in response.data["options"]["datalayers"]},
+            {included.id},
         )
         self.assertNotIn(
-            str(excluded.id), response.data["options"]["datalayers"]
+            excluded.id,
+            {item["id"] for item in response.data["options"]["datalayers"]},
         )

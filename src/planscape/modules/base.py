@@ -54,7 +54,7 @@ class BaseModule:
 
     def get_datalayers(
         self, geometry: Optional[GEOSGeometry] = None, user: Optional[User] = None
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, Any] | List[Any]:
         return {}
 
     def get_datasets(
@@ -324,7 +324,7 @@ class AdvancedStandLevelConstraintModule(BaseModule):
         self,
         geometry: Optional[GEOSGeometry] = None,
         user: Optional[User] = None,
-    ) -> Dict[str, Any]:
+    ) -> List[Any]:
         queryset = (
             DataLayer.objects.filter(
                 status=DataLayerStatus.READY,
@@ -340,7 +340,7 @@ class AdvancedStandLevelConstraintModule(BaseModule):
         if geometry is not None:
             queryset = queryset.filter(outline__intersects=geometry)
 
-        return {str(datalayer.id): datalayer for datalayer in queryset}
+        return list(queryset.all())
 
 
 def get_module(module_name: str) -> BaseModule:
