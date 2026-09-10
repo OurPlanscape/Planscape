@@ -54,11 +54,7 @@
 
         <!-- TODO : just showing step earlier for faster debugging purposes -->
         <sg-step>
-          <app-stand-level-constraints></app-stand-level-constraints>
-          <app-adv-stand-level-constraints
-            *appFeatureFlag="
-              'ADV_STAND_LEVEL_CONSTRAINTS'
-            "></app-adv-stand-level-constraints>
+          <app-constraints-step></app-constraints-step>
         </sg-step>
 
         <sg-step *ngIf="subUnitsPrioritized && (hasParent$ | async) === false">

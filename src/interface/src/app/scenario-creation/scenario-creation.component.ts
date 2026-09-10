@@ -77,6 +77,7 @@ import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { IncludeAreasSelectorComponent } from './include-areas-selector/include-areas-selector.component';
 import { CreateScenarioError } from '@app/services/errors';
 import { AdvStandLevelConstraintsComponent } from './step3/adv-stand-level-constraints/adv-stand-level-constraints.component';
+import { ConstraintsStepComponent } from './constraints-step/constraints-step.component';
 
 @UntilDestroy()
 @Component({
@@ -104,6 +105,7 @@ import { AdvStandLevelConstraintsComponent } from './step3/adv-stand-level-const
     AdvStandLevelConstraintsComponent,
     AsyncPipe,
     CdkStepperModule,
+    ConstraintsStepComponent,
     CustomCobenefitsComponent,
     CustomPriorityObjectivesComponent,
     ExcludeAreasSelectorComponent,
