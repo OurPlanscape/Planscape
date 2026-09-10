@@ -75,18 +75,18 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
   );
   readonly data = inject(MAT_DIALOG_DATA);
   public constraintOperators = CONSTRAINT_OPERATORS;
-
+  editMode = false;
   dataLayerName = this.data?.dataLayerName;
 
   form = new FormGroup(
     {
-      constraintOperator: new FormControl<CONSTRAINT_OPERATOR | null>('eq', {
+      constraintOperator: new FormControl<CONSTRAINT_OPERATOR | null>(this.data.operator ?? 'eq', {
         nonNullable: false,
       }),
-      constraintValueOne: new FormControl<number | null>(null, [
+      constraintValueOne: new FormControl<number | null>(this.data.valueOne ?? null, [
         Validators.required,
       ]),
-      constraintValueTwo: new FormControl<number | null>(null),
+      constraintValueTwo: new FormControl<number | null>(this.data.valueTwo ?? null),
     },
     { validators: [betweenValidator] }
   );
@@ -99,6 +99,11 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (this.data.mode === 'EDIT') {
+      console.log('we are in edit mode!');
+      this.editMode = true;
+    }
+
     this.form.get('constraintOperator')?.valueChanges.subscribe((operator) => {
       const valTwoControl = this.form.get('constraintValueTwo');
 
@@ -110,6 +115,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
         valTwoControl?.setValue(null);
         valTwoControl?.markAsUntouched();
       }
+
     });
   }
 
@@ -137,8 +143,13 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
         (constraintSelection.name = `${this.data.dataLayer.name}: ${formVal.constraintValueOne}-${formVal.constraintValueTwo}`),
           (constraintSelection.value2 = formVal.constraintValueTwo);
       }
-      this.dialogRef.close(constraintSelection);
+      this.dialogRef.close({ action: 'SAVE', payload: constraintSelection });
     }
+  }
+
+  handleRemove() {
+    console.log('we want to delete', this.data.dataLayer);
+      this.dialogRef.close({ action: 'DELETE', payload: this.data.dataLayer });
   }
 
   cancel() {

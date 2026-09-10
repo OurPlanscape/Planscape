@@ -2,10 +2,12 @@
   title="Stand-level Constraints Configuration"
   [showClose]="true"
   primaryButtonText="Apply"
-  [hasSecondaryButton]="false"
+  [hasSecondaryButton]="editMode ?? false"
+  secondaryButtonText="Delete"
   [hasPrimarySpinner]="true"
   (clickedClose)="cancel()"
   (clickedPrimary)="handleApply()"
+  (clickedSecondary)="handleRemove()"
   [primaryButtonDisabled]="form.invalid">
   <div modalBodyContent>
     <sg-modal-info

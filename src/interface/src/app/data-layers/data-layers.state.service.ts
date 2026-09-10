@@ -46,6 +46,8 @@ export class DataLayersStateService {
     tap(() => queueMicrotask(() => this.loadingSubject.next(false)))
   );
 
+  private selectionMode : 'SELECT' | 'THROW_EVENT' = 'SELECT'; // TODO: This is a PoC for handling clicks
+
   private _selectedDataSet$ = new BehaviorSubject<BaseDataSet | null>(null);
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
@@ -316,7 +318,17 @@ export class DataLayersStateService {
   }
 
   // Adding or removing an item to the selected list
-  toggleLayerAdition(layer: DataLayer) {
+  handleLayerClick(layer: DataLayer) {
+
+    if (this.selectionMode === 'SELECT') {
+      this.toggleLayer(layer);
+    }else {
+      // just throw an event?
+    }
+
+  }
+
+  toggleLayer(layer: DataLayer) {
     if (this.isSelectedLayer(layer)) {
       this.removeSelectedLayer(layer);
     } else if (

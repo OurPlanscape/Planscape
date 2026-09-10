@@ -83,36 +83,86 @@ export class AdvStandLevelConstraintsComponent {
     this.selectedConstraints$.next(current);
   }
 
-  handleSelectedLayer(dl: DataLayer | NamedConstraint) {
-    const dialogRef = this.dialog.open(AdvStandLevelConstraintsModalComponent, {
-      maxWidth: '560px',
-      data: {
-        dataLayerName: dl.name,
-        dataLayer: dl,
-      },
-    });
+  removeSelectionById(id: number) {
+    console.log('id to remove:', id);
+    const currentSelections = this.selectedConstraints$.value;
+    console.log('current seelctions before:', currentSelections);
+    const updatedItems = currentSelections.filter(item => item.datalayer !== id);
+    console.log('current seelctions after:', updatedItems);
+    this.selectedConstraints$.next(updatedItems);
+  }
 
-    dialogRef
-      .afterClosed()
-      .pipe(take(1))
-      .subscribe((confirmed) => {
-        if (confirmed) {
-          this.handleConstraintAdded(confirmed);
-        }
+  handleSelectedLayer(dl: DataLayer) {
+
+    console.log('clicked this:', dl);
+    // CHECK if the layer is in our current constraint list.
+    const currentSelections = this.selectedConstraints$.value;
+    if (currentSelections.some(curSel => curSel.datalayer === dl.id)) {
+      // then just remove it...
+      this.removeSelectionById(dl.id);
+    } else {
+
+      const dialogRef = this.dialog.open(AdvStandLevelConstraintsModalComponent, {
+        maxWidth: '560px',
+        data: {
+          dataLayerName: dl.name,
+          dataLayer: dl,
+        },
       });
+
+      dialogRef
+        .afterClosed()
+        .pipe(take(1))
+        .subscribe((closeResult) => {
+          if (closeResult.action === 'SAVE') {
+            this.handleConstraintAdded(closeResult.payload);
+          } else if (closeResult.action === 'DELETE') {
+            console.log('we want to delete the thing?:', closeResult);
+          this.removeSelectionById(closeResult.payload)
+          }
+        });
+    }
   }
 
   toggleLayersSection() {
     this.showLayersPanel = !this.showLayersPanel;
   }
 
-  handleConstraintClicked(e: NamedConstraint) {
+
+  handleConstraintChipClicked(e: NamedConstraint) {
     // TODO:
     // get the known layers by Id
     // mark item as selected in chip selector
     // open constraint dialog (and close current if open)
+    console.log('here, we open the dialog, complete with the data');
 
-    console.log('clicked this:', e);
-    this.handleSelectedLayer(e);
+
+    // TODO: we need to convert these types, so we can fill elements of the dialot
+    // but we should consolidate this 
+
+    const dialogRef = this.dialog.open(AdvStandLevelConstraintsModalComponent, {
+      maxWidth: '560px',
+      data: {
+        mode: 'EDIT',
+        dataLayerName: e.name,
+        dataLayer: e,
+        operator: e.operator,
+        valueOne: e.value,
+        valueTwo: e.value2
+      },
+    });
+
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((closeResult) => {
+        if (closeResult.action === 'SAVE') {
+          this.handleConstraintAdded(closeResult.payload);
+        } else if (closeResult.action === 'DELETE') {
+          console.log('we want to delete the thing????:', closeResult.payload);
+          console.log('this should be the layerId, right?:', closeResult.payload.datalayer);
+          this.removeSelectionById(closeResult.payload.datalayer)
+        }
+      });
   }
 }
