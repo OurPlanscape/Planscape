@@ -15,12 +15,17 @@ import { NewScenarioState } from '../new-scenario.state';
 import { map, Observable, take } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
 import { ModuleService } from '@app/services/module.service';
+import { NamedConstraint } from '../step3/adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
 
 const MAX_SELECTABLE_LAYERS = Number.POSITIVE_INFINITY;
+
 interface ConstraintsParentForm {
   standLevelConstraints?: FormGroup<{
     max_slope: FormControl<number | null>;
     min_distance_from_road: FormControl<number | null>;
+  }>;
+  advStandLevelConstraints?: FormGroup<{
+    constraints: FormControl<NamedConstraint[] | null>;
   }>;
 }
 @Component({
@@ -72,7 +77,8 @@ export class ConstraintsStepComponent
 
     // TypeScript now knows standLevelConstraints exists!
     const standLevelConstraints = formValues.standLevelConstraints;
-    console.log('are standconstraints a thing?', standLevelConstraints);
+    // const advStandLevelConstraints = formValues.advStandLevelConstraints;
+
     return {
       max_slope: standLevelConstraints?.max_slope ?? null,
       min_distance_from_road:

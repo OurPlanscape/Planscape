@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import {
+  Component,
+  Host,
+  Input,
+  OnDestroy,
+  OnInit,
+  SkipSelf,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,11 +20,12 @@ import { MAP_MODULE_NAME } from '@app/services/map-module.token';
 import { DataLayer } from '@app/types';
 import { SectionComponent } from '@styleguide';
 import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
-import { BehaviorSubject, switchMap, take } from 'rxjs';
+import { BehaviorSubject, Subject, switchMap, take, takeUntil } from 'rxjs';
 import {
   AdvStandLevelConstraintsModalComponent,
   NamedConstraint,
 } from '../adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
+import { ControlContainer, FormControl, FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'app-adv-stand-level-constraints',
@@ -39,18 +47,26 @@ import {
   templateUrl: './adv-stand-level-constraints.component.html',
   styleUrl: './adv-stand-level-constraints.component.scss',
 })
-export class AdvStandLevelConstraintsComponent {
+export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
   selectedConstraints$ = new BehaviorSubject<NamedConstraint[]>([]);
+  private readonly destroy$ = new Subject<void>();
 
   showLayersPanel = false;
 
   @Input() constraintLayers: DataLayer[] | null = [];
+  @Input() keyName = 'advStandLevelConstraints';
+
+  // 1. Single FormControl holding the array
+  readonly form = new FormGroup({
+    constraints: new FormControl<NamedConstraint[]>([], { nonNullable: true }),
+  });
 
   constructor(
     private dialog: MatDialog,
     private mapModuleService: MapModuleService,
     private scenarioState: ScenarioState,
-    private planState: PlanState
+    private planState: PlanState,
+    @Host() @SkipSelf() private parentContainer: ControlContainer
   ) {
     this.scenarioState.currentScenario$
       .pipe(
@@ -59,6 +75,27 @@ export class AdvStandLevelConstraintsComponent {
         switchMap((plan) => this.mapModuleService.loadMapModule(plan.geometry))
       )
       .subscribe();
+  }
+
+  ngOnInit(): void {
+    // Directly attach to the parent form
+    this.parentFormGroup.addControl(this.keyName, this.form);
+    this.selectedConstraints$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((constraints) => {
+        this.form.controls.constraints.setValue(constraints);
+      });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up parent form and RxJS subscriptions
+    this.parentFormGroup.removeControl(this.keyName);
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private get parentFormGroup(): FormGroup {
+    return this.parentContainer?.control as FormGroup;
   }
 
   public handleConstraintAdded(constraint: NamedConstraint): void {
@@ -92,8 +129,26 @@ export class AdvStandLevelConstraintsComponent {
       });
   }
 
+  public handleConstraintRemoved(constraintName: string): void {
+    const current = this.selectedConstraints$.value.filter(
+      (c) => c.name !== constraintName
+    );
+    this.selectedConstraints$.next(current);
+  }
+
   toggleLayersSection() {
     this.showLayersPanel = !this.showLayersPanel;
+  }
+
+  addConstraint(newConstraint: NamedConstraint): void {
+    const current = this.form.controls.constraints.value;
+    this.form.controls.constraints.setValue([...current, newConstraint]);
+  }
+
+  removeConstraint(index: number): void {
+    const current = [...this.form.controls.constraints.value];
+    current.splice(index, 1);
+    this.form.controls.constraints.setValue(current);
   }
 
   handleConstraintClicked(e: NamedConstraint) {
