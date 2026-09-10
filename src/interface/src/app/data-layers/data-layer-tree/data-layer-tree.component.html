@@ -36,7 +36,7 @@
               !isDatalayerSelected(node.item) &&
               (isUnselectable(node.item) || (isSelectionCompleted$ | async))
             "
-            (change)="toggleDataLayerSelection(node.item)"></mat-checkbox>
+            (click)="toggleDataLayerSelection($event, node.item)"></mat-checkbox>
         </span>
         <sg-toggle
           class="toggle"

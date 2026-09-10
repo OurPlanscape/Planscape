@@ -19,12 +19,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { ModuleService } from '@app/services/module.service';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { MAX_SELECTED_DATALAYERS } from '@app/data-layers/data-layers/max-selected-datalayers.token';
+import { SELECTION_MODE } from '@app/data-layers/data-layers/selection-mode.token';
 
 @Component({
   selector: 'app-adv-stand-level-constraints',
   standalone: true,
   providers: [
     DataLayersStateService,
+    { provide: SELECTION_MODE, useValue: 'MANUAL' },
     { provide: MAX_SELECTED_DATALAYERS, useValue: Number.POSITIVE_INFINITY }, // TODO: should have a no-limit option -- 0 or null?
     MapModuleService,
     { provide: MAP_MODULE_NAME, useValue: 'advanced_stand_level_constraint' },

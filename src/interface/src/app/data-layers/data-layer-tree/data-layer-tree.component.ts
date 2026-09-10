@@ -162,8 +162,9 @@ export class DataLayerTreeComponent {
     return '';
   }
 
-  toggleDataLayerSelection(dl: DataLayer) {
-    console.log('we are toggling the layer:', dl);
+  toggleDataLayerSelection(event: Event, dl: DataLayer) {
+    event.preventDefault();
+    console.log('we clicked this layer:', dl);
     this.dataLayersStateService.handleLayerClick(dl);
     this.layerSelected.emit(dl);
   }
