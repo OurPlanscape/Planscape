@@ -35,8 +35,7 @@ import { MapBaseLayersComponent } from '@maplibre-map/map-base-layers/map-base-l
 import { ApiModule, BaseLayer, Scenario, SubUnits } from '@types';
 import { SubUnitToggleComponent } from '@maplibre-map/sub-unit-toggle/sub-unit-toggle.component';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
-import { ScenarioStandsComponent } from '../scenario-stands/scenario-stands.component';
-import { PlanningAreaStandsComponent } from '../planning-area-stands/planning-area-stands.component';
+import { StandsComponent } from '../stands/stands.component';
 import { TreatedStandsToggleComponent } from '../treated-stands-toggle/treated-stands-toggle.component';
 import { TreatedStandsComponent } from '../treated-stands/treated-stands.component';
 
@@ -59,11 +58,10 @@ import { TreatedStandsComponent } from '../treated-stands/treated-stands.compone
     DataLayerNameComponent,
     ScenarioLegendComponent,
     FeaturesModule,
-    ScenarioStandsComponent,
+    StandsComponent,
     MatProgressSpinnerModule,
     MapBaseLayersComponent,
     SubUnitToggleComponent,
-    PlanningAreaStandsComponent,
     TreatedStandsToggleComponent,
     TreatedStandsComponent,
   ],
@@ -120,12 +118,6 @@ export class ScenarioMapComponent implements OnDestroy {
 
   hasParent$ = this.scenarioState.currentScenario$.pipe(
     map((scenario) => !!scenario?.parent)
-  );
-
-  showStandsWithIncludes$ = this.newScenarioState.currentStep$.pipe(
-    map((step) => {
-      return step?.withIncludes;
-    })
   );
 
   showOpacitySlider$ = combineLatest([
