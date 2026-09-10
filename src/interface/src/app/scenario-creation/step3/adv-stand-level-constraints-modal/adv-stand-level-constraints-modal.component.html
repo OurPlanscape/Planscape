@@ -4,6 +4,7 @@
   primaryButtonText="Apply"
   [hasSecondaryButton]="editMode ?? false"
   secondaryButtonText="Delete"
+  secondaryButtonVariant="negative"
   [hasPrimarySpinner]="true"
   (clickedClose)="cancel()"
   (clickedPrimary)="handleApply()"
