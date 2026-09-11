@@ -11,9 +11,8 @@ ARG UID=1000
 ARG GID=1000
 
 RUN apt-get update && \
-    apt-get -y install --no-install-recommends \
+    apt-get -y install \
     g++ binutils \
-    curl ca-certificates gnupg \
     openssh-client \
     libc6-dev libsqlite3-dev \
     libpng-dev libtiff-dev libjpeg-dev \
@@ -22,14 +21,7 @@ RUN apt-get update && \
     libgit2-dev libharfbuzz-dev libfribidi-dev libudunits2-dev \
     libcurl4-openssl-dev libssl-dev \
     postgresql-client \
-    python3-pip && \
-    curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
-      gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg && \
-    printf "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main\n" \
-      > /etc/apt/sources.list.d/google-cloud-sdk.list && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends google-cloud-cli && \
-    rm -rf /var/lib/apt/lists/*
+    python3-pip
 
 RUN groupadd -g ${GID} app && useradd -m -u ${UID} -g ${GID} app \
     && mkdir -p /opt/virtualenvs /app \
