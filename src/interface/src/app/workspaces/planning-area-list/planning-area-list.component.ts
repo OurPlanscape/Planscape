@@ -25,7 +25,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PlanningAreaEmptyStateComponent } from '../planning-area-empty-state/planning-area-empty-state.component';
 import { PlanningAreaCreationModalComponent } from '../planning-area-creation-modal/planning-area-creation-modal.component';
 import { MatDialog } from '@angular/material/dialog';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
+import { catchError, EMPTY, exhaustMap, interval } from 'rxjs';
 
+@UntilDestroy()
 @Component({
   selector: 'app-planning-area-list',
   standalone: true,
@@ -102,6 +106,22 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.dataSource.loadData();
     this.mapConfigState.setShowMapControls(false);
+    this.pollForChanges();
+  }
+
+  private pollForChanges() {
+    interval(POLLING_INTERVAL)
+      .pipe(
+        // refresh in the background; ignore ticks while a refresh is in flight
+        exhaustMap(() =>
+          this.dataSource.refresh().pipe(
+            // keep the poller alive on errors
+            catchError(() => EMPTY)
+          )
+        ),
+        untilDestroyed(this)
+      )
+      .subscribe();
   }
 
   onMapError(event: ErrorEvent & EventData) {
@@ -160,6 +180,10 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
 
   reload() {
     this.dataSource.loadData();
+  }
+
+  trackById(_index: number, planningArea: PreviewPlan) {
+    return planningArea.id;
   }
 
   handlePlanningAreaClick(planningArea: PreviewPlan) {
