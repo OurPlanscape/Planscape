@@ -47,15 +47,23 @@ export class AdvStandLevelConstraintsComponent {
 
   showLayersPanel = false;
 
+  knownLayers: DataLayer[] = []; // TODO: PoC, don't rely on this
+
   constraintLayers$: Observable<DataLayer[]> = this.moduleService
     .getModule<
       ApiModule<AdvStandLevelConstraintData>
     >('advanced_stand_level_constraint')
     .pipe(
       map((data: ApiModule<AdvStandLevelConstraintData>) => {
+        this.knownLayers = data.options.datalayers;
         return data.options.datalayers;
       })
     );
+
+  getFullLayerById(id: number): DataLayer | null {
+    const foundLayer = this.knownLayers.find((layer) => layer.id === id);
+    return foundLayer ?? null;
+  }
 
   constructor(
     private dialog: MatDialog,
@@ -63,7 +71,7 @@ export class AdvStandLevelConstraintsComponent {
     private mapModuleService: MapModuleService,
     private scenarioState: ScenarioState,
     private planState: PlanState,
-    // private dataLayerState: DataLayersStateService
+    private dataLayerState: DataLayersStateService
   ) {
     this.scenarioState.currentScenario$
       .pipe(
@@ -73,10 +81,6 @@ export class AdvStandLevelConstraintsComponent {
       )
       .subscribe();
   }
-
-  // private constraintToLayer(constraint: NamedConstraint) : DataLayer {
-  //   return {}
-  // }
 
   public handleConstraintAdded(constraint: NamedConstraint): void {
     const current = [...this.selectedConstraints$.value];
@@ -88,35 +92,53 @@ export class AdvStandLevelConstraintsComponent {
       current[existingIndex] = constraint;
     }
     this.selectedConstraints$.next(current);
-    // this.dataLayerState.addSelectedLayer({ })
+    const layerToAdd = this.getFullLayerById(constraint.datalayer);
+    if (layerToAdd) {
+      this.dataLayerState.addSelectedLayer(layerToAdd);
+    }
+  }
+
+  public handleUpdateConstraint(constraint: NamedConstraint) {
+    const current = this.selectedConstraints$.value;
+    const exists = current.some((c) => c.datalayer === constraint.datalayer);
+    if (exists) {
+      const updated = current.map((c) =>
+        c.datalayer === constraint.datalayer ? { ...c, ...constraint } : c
+      );
+      this.selectedConstraints$.next(updated);
+    }
   }
 
   removeSelectionById(id: number) {
-    console.log('id to remove:', id);
     const currentSelections = this.selectedConstraints$.value;
-    console.log('current seelctions before:', currentSelections);
-    const updatedItems = currentSelections.filter(item => item.datalayer !== id);
-    console.log('current seelctions after:', updatedItems);
+    const updatedItems = currentSelections.filter(
+      (item) => item.datalayer !== id
+    );
     this.selectedConstraints$.next(updatedItems);
+
+    const removeLayer = this.getFullLayerById(id);
+    if (removeLayer) {
+      this.dataLayerState.removeSelectedLayer(removeLayer);
+    }
   }
 
   handleSelectedLayer(dl: DataLayer) {
-
-    console.log('clicked this:', dl);
-    // CHECK if the layer is in our current constraint list.
+    // Check if the layer is in our current constraint list.
     const currentSelections = this.selectedConstraints$.value;
-    if (currentSelections.some(curSel => curSel.datalayer === dl.id)) {
+    if (currentSelections.some((curSel) => curSel.datalayer === dl.id)) {
       // then just remove it...
       this.removeSelectionById(dl.id);
     } else {
-
-      const dialogRef = this.dialog.open(AdvStandLevelConstraintsModalComponent, {
-        maxWidth: '560px',
-        data: {
-          dataLayerName: dl.name,
-          dataLayer: dl,
-        },
-      });
+      const dialogRef = this.dialog.open(
+        AdvStandLevelConstraintsModalComponent,
+        {
+          maxWidth: '560px',
+          data: {
+            dataLayerName: dl.name,
+            dataLayer: dl,
+          },
+        }
+      );
 
       dialogRef
         .afterClosed()
@@ -125,10 +147,7 @@ export class AdvStandLevelConstraintsComponent {
           if (closeResult.action === 'SAVE') {
             this.handleConstraintAdded(closeResult.payload);
           } else if (closeResult.action === 'DELETE') {
-            console.log('we want to delete the thing?:', closeResult);
-            this.removeSelectionById(closeResult.payload)
-            //TODO: send this back to the datalayerstate
-            // this.dataLayerState.updateSelectedLayers()
+            this.removeSelectionById(closeResult.payload);
           }
         });
     }
@@ -138,27 +157,27 @@ export class AdvStandLevelConstraintsComponent {
     this.showLayersPanel = !this.showLayersPanel;
   }
 
-
   handleConstraintChipClicked(e: NamedConstraint) {
     // TODO:
     // get the known layers by Id
     // mark item as selected in chip selector
     // open constraint dialog (and close current if open)
-    console.log('here, we open the dialog, complete with the data');
-
 
     // TODO: we need to convert these types, so we can fill elements of the dialot
-    // but we should consolidate this 
-
+    // but we should consolidate this
+    const layerRecord = this.getFullLayerById(e.datalayer);
+    if (!layerRecord) {
+      return;
+    }
     const dialogRef = this.dialog.open(AdvStandLevelConstraintsModalComponent, {
       maxWidth: '560px',
       data: {
         mode: 'EDIT',
-        dataLayerName: e.name,
-        dataLayer: e,
+        dataLayerName: layerRecord.name,
+        dataLayer: layerRecord,
         operator: e.operator,
         valueOne: e.value,
-        valueTwo: e.value2
+        valueTwo: e.value2,
       },
     });
 
@@ -167,11 +186,10 @@ export class AdvStandLevelConstraintsComponent {
       .pipe(take(1))
       .subscribe((closeResult) => {
         if (closeResult.action === 'SAVE') {
-          this.handleConstraintAdded(closeResult.payload);
+          //          this.handleConstraintAdded(closeResult.payload);
+          this.handleUpdateConstraint(closeResult.payload);
         } else if (closeResult.action === 'DELETE') {
-          console.log('we want to delete the thing????:', closeResult.payload);
-          console.log('this should be the layerId, right?:', closeResult.payload.datalayer);
-          this.removeSelectionById(closeResult.payload.datalayer)
+          this.removeSelectionById(closeResult.payload.id);
         }
       });
   }

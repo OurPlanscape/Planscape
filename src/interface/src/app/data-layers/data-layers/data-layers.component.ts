@@ -134,7 +134,6 @@ export class DataLayersComponent {
   }
 
   handleLayerSelection(dl: DataLayer) {
-    console.log('layer was selected and we are handling it:', dl);
     this.layerSelected.emit(dl);
   }
 

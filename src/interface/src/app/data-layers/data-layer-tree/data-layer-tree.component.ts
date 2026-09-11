@@ -23,7 +23,10 @@ import { DataLayerTooltipComponent } from '@data-layers/data-layer-tooltip/data-
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { unselectableReason } from '@app/shared';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import {
+  MAT_CHECKBOX_DEFAULT_OPTIONS,
+  MatCheckboxModule,
+} from '@angular/material/checkbox';
 
 @UntilDestroy()
 @Component({
@@ -47,6 +50,12 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
   ],
   templateUrl: './data-layer-tree.component.html',
   styleUrl: './data-layer-tree.component.scss',
+  providers: [
+    {
+      provide: MAT_CHECKBOX_DEFAULT_OPTIONS,
+      useValue: { clickAction: 'noop' },
+    },
+  ],
 })
 export class DataLayerTreeComponent {
   @Input() displayAddButton = false;
@@ -162,9 +171,7 @@ export class DataLayerTreeComponent {
     return '';
   }
 
-  toggleDataLayerSelection(event: Event, dl: DataLayer) {
-    event.preventDefault();
-    console.log('we clicked this layer:', dl);
+  toggleDataLayerSelection(dl: DataLayer) {
     this.dataLayersStateService.handleLayerClick(dl);
     this.layerSelected.emit(dl);
   }

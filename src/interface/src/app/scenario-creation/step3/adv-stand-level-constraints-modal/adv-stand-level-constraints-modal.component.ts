@@ -80,13 +80,19 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
 
   form = new FormGroup(
     {
-      constraintOperator: new FormControl<CONSTRAINT_OPERATOR | null>(this.data.operator ?? 'eq', {
-        nonNullable: false,
-      }),
-      constraintValueOne: new FormControl<number | null>(this.data.valueOne ?? null, [
-        Validators.required,
-      ]),
-      constraintValueTwo: new FormControl<number | null>(this.data.valueTwo ?? null),
+      constraintOperator: new FormControl<CONSTRAINT_OPERATOR | null>(
+        this.data.operator ?? 'eq',
+        {
+          nonNullable: false,
+        }
+      ),
+      constraintValueOne: new FormControl<number | null>(
+        this.data.valueOne ?? null,
+        [Validators.required]
+      ),
+      constraintValueTwo: new FormControl<number | null>(
+        this.data.valueTwo ?? null
+      ),
     },
     { validators: [betweenValidator] }
   );
@@ -100,7 +106,6 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
 
   ngOnInit() {
     if (this.data.mode === 'EDIT') {
-      console.log('we are in edit mode!');
       this.editMode = true;
     }
 
@@ -115,7 +120,6 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
         valTwoControl?.setValue(null);
         valTwoControl?.markAsUntouched();
       }
-
     });
   }
 
@@ -128,12 +132,14 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
     if (this.form.valid) {
       const formVal = this.form.value;
       const operator = formVal.constraintOperator ?? 'eq';
+
       const constraintSelection: NamedConstraint = {
         name: `${this.data.dataLayer.name}: ${this.getOperatorDisplayText(operator)} ${formVal.constraintValueOne}`,
         datalayer: this.data.dataLayer.id,
         operator,
         value: formVal.constraintValueOne ?? 0,
       };
+
       // if we have a 'btw' (Between) operator, we set different data
       if (
         operator === 'btw' &&
@@ -148,8 +154,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
   }
 
   handleRemove() {
-    console.log('we want to delete', this.data.dataLayer);
-      this.dialogRef.close({ action: 'DELETE', payload: this.data.dataLayer });
+    this.dialogRef.close({ action: 'DELETE', payload: this.data.dataLayer });
   }
 
   cancel() {

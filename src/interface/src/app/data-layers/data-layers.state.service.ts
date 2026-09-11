@@ -31,7 +31,6 @@ import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token
 import { SNACK_ERROR_CONFIG, UnselectableType } from '@app/shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SELECTION_MODE } from './data-layers/selection-mode.token';
-import { Data } from '@angular/router';
 
 export interface unselectableLayer {
   id: number;
@@ -47,7 +46,6 @@ export class DataLayersStateService {
     map((mapData) => mapData.main_datasets),
     tap(() => queueMicrotask(() => this.loadingSubject.next(false)))
   );
-
 
   private _selectedDataSet$ = new BehaviorSubject<BaseDataSet | null>(null);
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
@@ -198,7 +196,7 @@ export class DataLayersStateService {
     private readonly sendGeometry: boolean,
     private planState: PlanState,
     private matSnackBar: MatSnackBar
-  ) { }
+  ) {}
 
   selectDataSet(dataset: BaseDataSet) {
     this._isBrowsing$.next(true);
@@ -285,7 +283,6 @@ export class DataLayersStateService {
 
   // Checking if the layer is already in the selected list
   isSelectedLayer(layer: DataLayer) {
-    console.log('its selected?:', layer);
     return this._selectedDataLayers$.value.some((l) => l.id === layer.id);
   }
 
@@ -299,7 +296,8 @@ export class DataLayersStateService {
 
   //explicitly set a lyer to the selected list
   addSelectedLayer(layer: DataLayer) {
-    const updatedSelectedDatalayers: DataLayer[] = this._selectedDataLayers$.value;
+    const updatedSelectedDatalayers: DataLayer[] =
+      this._selectedDataLayers$.value;
     updatedSelectedDatalayers.push(layer);
     this._selectedDataLayers$.next(updatedSelectedDatalayers);
   }
@@ -330,19 +328,13 @@ export class DataLayersStateService {
 
   // Adding or removing an item to the selected list
   handleLayerClick(layer: DataLayer) {
-
-    console.log('what is the selection mode now?', this.selectionMode);
+    // if this is automatic, we toggle, otherwise we ignore...
     if (this.selectionMode === 'AUTOMATIC') {
       this.toggleLayer(layer);
-    } else {
-      // just throw an event?
-      console.log('here, we dont toggle anything:', layer);
     }
-
   }
 
   toggleLayer(layer: DataLayer) {
-    console.log('someone called toggled layer with', layer);
     if (this.isSelectedLayer(layer)) {
       this.removeSelectedLayer(layer);
     } else if (
@@ -358,7 +350,6 @@ export class DataLayersStateService {
 
   // Setting the list of selected list
   updateSelectedLayers(layers: DataLayer[]) {
-    console.log('updating selected layers?', layers);
     this._selectedDataLayers$.next(layers);
   }
 
