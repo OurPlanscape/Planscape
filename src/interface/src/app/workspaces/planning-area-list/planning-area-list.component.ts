@@ -151,7 +151,9 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   }
 
   drawPlanningArea() {
-    // TODO: Navigate to explore and open drawing mode
+    this.router.navigate(['/map-viewer/workspace', this.workspaceId], {
+      state: { drawPlanningArea: true },
+    });
   }
 
   ngOnDestroy(): void {

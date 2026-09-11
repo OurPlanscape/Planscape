@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
@@ -37,6 +37,7 @@ export class WorkspaceDashboardComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private workspaceState = inject(WorkspaceState);
   private workspaceActionsService = inject(WorkspaceActionsService);
+  private router: Router = inject(Router);
 
   workspaceId = this.route.snapshot.data['workspaceId'];
 
@@ -59,5 +60,9 @@ export class WorkspaceDashboardComponent implements OnInit {
       label: 'Home ',
       backUrl: 'home',
     });
+  }
+
+  handleNavigation() {
+    this.router.navigate(['/map-viewer/workspace', this.workspaceId]);
   }
 }

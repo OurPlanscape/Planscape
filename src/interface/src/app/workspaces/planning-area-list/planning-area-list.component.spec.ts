@@ -214,6 +214,18 @@ describe('PlanningAreaListComponent', () => {
     });
   });
 
+  describe('drawPlanningArea', () => {
+    it('navigates to the workspace map viewer', () => {
+      const navigateSpy = spyOn(component.router, 'navigate');
+
+      component.drawPlanningArea();
+
+      expect(navigateSpy).toHaveBeenCalledWith(['/map-viewer/workspace', 1], {
+        state: { drawPlanningArea: true },
+      });
+    });
+  });
+
   describe('ngOnDestroy', () => {
     it('destroys the data source', () => {
       component.ngOnDestroy();
