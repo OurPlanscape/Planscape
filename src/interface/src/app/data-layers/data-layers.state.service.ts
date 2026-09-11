@@ -31,6 +31,7 @@ import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token
 import { SNACK_ERROR_CONFIG, UnselectableType } from '@app/shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SELECTION_MODE } from './data-layers/selection-mode.token';
+import { Data } from '@angular/router';
 
 export interface unselectableLayer {
   id: number;
@@ -293,6 +294,13 @@ export class DataLayersStateService {
     const updatedSelectedDatalayers = this._selectedDataLayers$.value.filter(
       (l) => l.id !== layer.id
     );
+    this._selectedDataLayers$.next(updatedSelectedDatalayers);
+  }
+
+  //explicitly set a lyer to the selected list
+  addSelectedLayer(layer: DataLayer) {
+    const updatedSelectedDatalayers: DataLayer[] = this._selectedDataLayers$.value;
+    updatedSelectedDatalayers.push(layer);
     this._selectedDataLayers$.next(updatedSelectedDatalayers);
   }
 

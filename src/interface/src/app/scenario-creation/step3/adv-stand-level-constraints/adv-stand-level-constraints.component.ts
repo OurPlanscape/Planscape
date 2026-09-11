@@ -62,7 +62,8 @@ export class AdvStandLevelConstraintsComponent {
     private moduleService: ModuleService,
     private mapModuleService: MapModuleService,
     private scenarioState: ScenarioState,
-    private planState: PlanState
+    private planState: PlanState,
+    // private dataLayerState: DataLayersStateService
   ) {
     this.scenarioState.currentScenario$
       .pipe(
@@ -72,6 +73,10 @@ export class AdvStandLevelConstraintsComponent {
       )
       .subscribe();
   }
+
+  // private constraintToLayer(constraint: NamedConstraint) : DataLayer {
+  //   return {}
+  // }
 
   public handleConstraintAdded(constraint: NamedConstraint): void {
     const current = [...this.selectedConstraints$.value];
@@ -83,6 +88,7 @@ export class AdvStandLevelConstraintsComponent {
       current[existingIndex] = constraint;
     }
     this.selectedConstraints$.next(current);
+    // this.dataLayerState.addSelectedLayer({ })
   }
 
   removeSelectionById(id: number) {
@@ -120,7 +126,9 @@ export class AdvStandLevelConstraintsComponent {
             this.handleConstraintAdded(closeResult.payload);
           } else if (closeResult.action === 'DELETE') {
             console.log('we want to delete the thing?:', closeResult);
-          this.removeSelectionById(closeResult.payload)
+            this.removeSelectionById(closeResult.payload)
+            //TODO: send this back to the datalayerstate
+            // this.dataLayerState.updateSelectedLayers()
           }
         });
     }
