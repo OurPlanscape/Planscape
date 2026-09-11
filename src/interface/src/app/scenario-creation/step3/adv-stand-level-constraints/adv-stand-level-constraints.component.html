@@ -14,6 +14,8 @@
     <sg-chip-selector
       [items]="(selectedConstraints$ | async) ?? []"
       (itemClicked)="handleConstraintChipClicked($event)"
+      [hoverable]="true"
+      [selectedItem]="activeConstraint$ | async"
       [showClose]="false"
       [showEdit]="true"></sg-chip-selector>
   </div>

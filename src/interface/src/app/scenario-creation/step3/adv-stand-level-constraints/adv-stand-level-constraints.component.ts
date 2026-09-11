@@ -47,6 +47,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 export class AdvStandLevelConstraintsComponent {
   selectedConstraints$ = new BehaviorSubject<NamedConstraint[]>([]);
 
+  activeConstraint$ = new BehaviorSubject<NamedConstraint | null>(null);
+
   showLayersPanel = false;
 
   knownLayers: DataLayer[] = []; // TODO: PoC, don't rely on this
@@ -166,6 +168,8 @@ export class AdvStandLevelConstraintsComponent {
   }
 
   handleConstraintChipClicked(e: NamedConstraint) {
+    this.activeConstraint$.next(e);
+
     const layerRecord = this.getFullLayerById(e.datalayer);
     if (!layerRecord) {
       return;
@@ -186,6 +190,7 @@ export class AdvStandLevelConstraintsComponent {
       .afterClosed()
       .pipe(take(1))
       .subscribe((closeResult) => {
+        this.activeConstraint$.next(null);
         if (closeResult.action === 'SAVE') {
           this.handleUpdateConstraint(closeResult.payload);
         } else if (closeResult.action === 'DELETE') {
