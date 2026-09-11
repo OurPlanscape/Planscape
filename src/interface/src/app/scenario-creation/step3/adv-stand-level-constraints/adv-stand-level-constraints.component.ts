@@ -8,7 +8,16 @@ import {
   AdvStandLevelConstraintsModalComponent,
   NamedConstraint,
 } from '../adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
-import { BehaviorSubject, map, Observable, switchMap, take } from 'rxjs';
+import {
+  BehaviorSubject,
+  map,
+  Observable,
+  shareReplay,
+  startWith,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import { MapModuleService } from '@app/services/map-module.service';
 import { ApiModule, DataLayer, AdvStandLevelConstraintData } from '@app/types';
 import { MAP_MODULE_NAME } from '@app/services/map-module.token';
@@ -51,22 +60,29 @@ export class AdvStandLevelConstraintsComponent {
 
   showLayersPanel = false;
 
-  knownLayers: DataLayer[] = []; // TODO: PoC, don't rely on this
+  private knownLayers: DataLayer[] = [];
 
-  constraintLayers$: Observable<DataLayer[]> = this.moduleService
+  readonly constraintLayers$: Observable<DataLayer[]> = this.moduleService
     .getModule<
       ApiModule<AdvStandLevelConstraintData>
     >('advanced_stand_level_constraint')
     .pipe(
-      map((data: ApiModule<AdvStandLevelConstraintData>) => {
-        this.knownLayers = data.options.datalayers;
-        return data.options.datalayers;
-      })
+      map((data) => data.options.datalayers),
+      tap((layers) => {
+        this.knownLayers = layers;
+      }),
+      shareReplay(1)
     );
 
+  // loading state derived from constraintLayers$
+  readonly layersLoaded$: Observable<boolean> = this.constraintLayers$.pipe(
+    map(() => true),
+    startWith(false)
+  );
+
+  // Synchronous lookup for UI event handlers
   getFullLayerById(id: number): DataLayer | null {
-    const foundLayer = this.knownLayers.find((layer) => layer.id === id);
-    return foundLayer ?? null;
+    return this.knownLayers.find((layer) => layer.id === id) ?? null;
   }
 
   constructor(

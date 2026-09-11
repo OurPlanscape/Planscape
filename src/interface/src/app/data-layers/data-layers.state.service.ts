@@ -299,7 +299,7 @@ export class DataLayersStateService {
     this._selectedDataLayers$.next(updatedSelectedDatalayers);
   }
 
-  //explicitly set a lyer to the selected list
+  //explicitly set a layer to the selected list
   addSelectedLayer(layer: DataLayer) {
     const updatedSelectedDatalayers: DataLayer[] =
       this._selectedDataLayers$.value;
@@ -333,11 +333,11 @@ export class DataLayersStateService {
 
   // Adding or removing an item to the selected list
   handleLayerClick(layer: DataLayer) {
-    // if this is automatic, we toggle, otherwise we ignore...
+    // if this is automatic, we go ahead and 'automatically' toggle...
     if (this.selectionMode === 'AUTOMATIC') {
       this.toggleLayer(layer);
     } else {
-      //throw an event, to be handled by any subscriber
+      // otherwise we throw an event, and let the subscriber 'manually' select
       this.layerClicked.next(layer);
     }
   }
