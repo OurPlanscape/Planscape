@@ -1,7 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AdvStandLevelConstraintsModalComponent } from './adv-stand-level-constraints-modal.component';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('AdvStandLevelConstraintsModalComponent', () => {
@@ -20,10 +24,17 @@ describe('AdvStandLevelConstraintsModalComponent', () => {
         BrowserAnimationsModule,
       ],
       providers: [
+        {
+          provide: MatDialog,
+          useValue: AdvStandLevelConstraintsModalComponent,
+        },
         { provide: MatDialogRef, useValue: dialogRefSpy },
         {
           provide: MAT_DIALOG_DATA,
-          useValue: { dataLayerName: 'Test Layer Alpha' },
+          useValue: {
+            dataLayerName: 'Test Layer Alpha',
+            dataLayer: { id: 'layer-1', name: 'Test Layer Alpha' },
+          },
         },
       ],
     }).compileComponents();
@@ -93,9 +104,14 @@ describe('AdvStandLevelConstraintsModalComponent', () => {
     component.handleApply();
 
     expect(dialogRefSpy.close).toHaveBeenCalledWith({
-      operator: 'btw',
-      value: 10,
-      value2: 50,
+      action: 'SAVE',
+      payload: Object({
+        name: 'Test Layer Alpha: 10-50',
+        datalayer: 'layer-1',
+        operator: 'btw',
+        value: 10,
+        value2: 50,
+      }),
     });
   });
 
@@ -108,8 +124,13 @@ describe('AdvStandLevelConstraintsModalComponent', () => {
     component.handleApply();
 
     expect(dialogRefSpy.close).toHaveBeenCalledWith({
-      operator: 'gte',
-      value: 25,
+      action: 'SAVE',
+      payload: Object({
+        name: 'Test Layer Alpha: ≥ 25',
+        datalayer: 'layer-1',
+        operator: 'gte',
+        value: 25,
+      }),
     });
   });
 });

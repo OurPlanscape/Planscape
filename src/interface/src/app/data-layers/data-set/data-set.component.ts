@@ -104,7 +104,6 @@ export class DataSetComponent {
   }
 
   toggleDataLayerSelection(dl: DataLayer) {
-    console.log('we are toggling the layer via data set:', dl);
     this.dataLayersStateService.handleLayerClick(dl);
     this.layerSelected.emit(dl);
   }

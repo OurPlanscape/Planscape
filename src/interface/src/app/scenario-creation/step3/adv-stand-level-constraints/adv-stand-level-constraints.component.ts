@@ -27,7 +27,7 @@ import { SELECTION_MODE } from '@app/data-layers/data-layers/selection-mode.toke
   providers: [
     DataLayersStateService,
     { provide: SELECTION_MODE, useValue: 'MANUAL' },
-    { provide: MAX_SELECTED_DATALAYERS, useValue: Number.POSITIVE_INFINITY }, // TODO: should have a no-limit option -- 0 or null?
+    { provide: MAX_SELECTED_DATALAYERS, useValue: Number.POSITIVE_INFINITY },
     MapModuleService,
     { provide: MAP_MODULE_NAME, useValue: 'advanced_stand_level_constraint' },
   ],
@@ -158,13 +158,6 @@ export class AdvStandLevelConstraintsComponent {
   }
 
   handleConstraintChipClicked(e: NamedConstraint) {
-    // TODO:
-    // get the known layers by Id
-    // mark item as selected in chip selector
-    // open constraint dialog (and close current if open)
-
-    // TODO: we need to convert these types, so we can fill elements of the dialot
-    // but we should consolidate this
     const layerRecord = this.getFullLayerById(e.datalayer);
     if (!layerRecord) {
       return;
@@ -186,7 +179,6 @@ export class AdvStandLevelConstraintsComponent {
       .pipe(take(1))
       .subscribe((closeResult) => {
         if (closeResult.action === 'SAVE') {
-          //          this.handleConstraintAdded(closeResult.payload);
           this.handleUpdateConstraint(closeResult.payload);
         } else if (closeResult.action === 'DELETE') {
           this.removeSelectionById(closeResult.payload.id);

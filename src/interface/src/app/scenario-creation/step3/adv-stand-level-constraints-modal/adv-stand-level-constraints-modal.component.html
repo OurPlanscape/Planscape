@@ -34,7 +34,10 @@
               formControlName="constraintOperator">
               @for (op of constraintOperators; track op.value) {
                 <mat-option class="nav-page-item" [value]="op.value">
-                  {{ op.label }} ({{ op.symbol }})
+                  {{ op.label }}
+                  @if (op.symbol) {
+                    ({{ op.symbol }})
+                  }
                 </mat-option>
               }
             </mat-select>

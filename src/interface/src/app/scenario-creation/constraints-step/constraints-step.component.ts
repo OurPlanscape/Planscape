@@ -71,7 +71,6 @@ export class ConstraintsStepComponent
   getData(): Partial<ScenarioDraftConfiguration> {
     const formValues = this.form.getRawValue();
 
-    // TypeScript now knows standLevelConstraints exists!
     const standLevelConstraints = formValues.standLevelConstraints;
     // const advStandLevelConstraints = formValues.advStandLevelConstraints;
 

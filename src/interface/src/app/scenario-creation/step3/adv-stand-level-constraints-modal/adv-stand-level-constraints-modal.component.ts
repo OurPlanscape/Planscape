@@ -125,7 +125,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
 
   private getOperatorDisplayText(operator: CONSTRAINT_OPERATOR): string {
     const def = CONSTRAINT_OPERATOR_MAP.get(operator);
-    return def ? def.symbol : operator;
+    return def?.symbol ? def.symbol : operator;
   }
 
   handleApply() {
