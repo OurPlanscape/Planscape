@@ -23,6 +23,7 @@ from planning.models import (
     Scenario,
     ScenarioPlanningApproach,
     ScenarioResult,
+    ScenarioResultErrorCode,
     ScenarioType,
     SharedLink,
     TreatmentGoal,
@@ -39,6 +40,14 @@ from planning.services import (
     get_min_project_area,
     union_geojson,
 )
+
+
+class ScenarioResultErrorSerializer(serializers.Serializer):
+    error_code = serializers.ChoiceField(
+        choices=ScenarioResultErrorCode.choices,
+        help_text="Scenario result error code.",
+    )
+    description = serializers.CharField(help_text="Human-readable error description.")
 
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
@@ -319,6 +328,7 @@ class PlanningAreaNoteListSerializer(serializers.ModelSerializer):
 
 class ScenarioResultSerializer(serializers.ModelSerializer):
     result = serializers.SerializerMethodField()
+    errors = ScenarioResultErrorSerializer(many=True, allow_null=True, required=False)
 
     class Meta:
         fields = (
@@ -330,6 +340,7 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
             "status",
             "result",
             "run_details",
+            "errors",
         )
         model = ScenarioResult
 
