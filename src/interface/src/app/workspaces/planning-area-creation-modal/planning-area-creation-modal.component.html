@@ -1,0 +1,50 @@
+<sg-modal
+  title="Upload planning area"
+  primaryButtonText="Done"
+  [showClose]="true"
+  [primaryButtonDisabled]="submitting || planningAreaForm.invalid"
+  [hasPrimarySpinner]="true"
+  [hasSecondaryButton]="false"
+  [isInSpinState]="submitting"
+  (clickedPrimary)="submit()"
+  (clickedClose)="handleClose()">
+  <div modalBodyContent>
+    <sg-modal-info
+      leadingIcon="error"
+      infoType="error"
+      *ngIf="uploadFormError"
+      [message]="uploadFormError"></sg-modal-info>
+    <form
+      [formGroup]="planningAreaForm"
+      (ngSubmit)="submit()"
+      class="modal-form">
+      <div class="form-line">
+        <p>
+          A planning area is the outermost boundary used for planning
+          activities. It defines the geographic scope within which analyses and
+          decision-making occur.
+        </p>
+
+        <sg-input-field
+          class="form-field"
+          size="full"
+          label="Planning area name">
+          <input
+            id="planningName"
+            sgInput
+            cdkFocusInitial
+            required="true"
+            labe
+            formControlName="name" />
+        </sg-input-field>
+
+        <sg-file-upload
+          sgInput
+          fieldLabel="Upload planning area"
+          [uploadStatus]="planningAreaForm.get('file')?.value || 'default'"
+          (fileEvent)="handleFileEvent($event)"
+          supportedFileInfo=".zip shapefile" />
+      </div>
+    </form>
+  </div>
+</sg-modal>

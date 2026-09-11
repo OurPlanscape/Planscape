@@ -25,7 +25,6 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   public searchTerm = this.queryParamsService.getInitialFilterParam();
   public pages$ = this._pages$.asObservable();
   public data$ = this._dataStream.asObservable();
-
   /**
    * Emits `true` if loading the first time or applying filters (where number of results change)
    * `false` when done loading.
@@ -77,7 +76,8 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
 
   constructor(
     private planService: PlanService,
-    private queryParamsService: QueryParamsService
+    private queryParamsService: QueryParamsService,
+    private workspaceId?: number // TODO: Once WORKSPACES be released this will be required
   ) {
     super();
   }
@@ -111,6 +111,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
       ...this.getSortOptions(),
       ...this.searchOptions(),
       ...this.getCreatorFilters(),
+      ...this.getWorkspaceFilter(),
     };
     // update filter status when loading data
     this._hasFilters$.next(
@@ -124,6 +125,15 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
       this._loading.next(false);
       this._initialLoad$.next(false);
     });
+  }
+
+  private getWorkspaceFilter() {
+    if (this.workspaceId === undefined) {
+      return {};
+    }
+    return {
+      workspace: this.workspaceId,
+    };
   }
 
   changeSort(sortOptions: Sort) {

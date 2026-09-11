@@ -4,7 +4,7 @@
   </div>
 </ng-container>
 <ng-template #loaded>
-  <div class="content" *ngIf="planningAreas$ | async as planningAreas">
+  <div class="content" *ngIf="(planningAreas$ | async) ?? [] as planningAreas">
     <ng-container *ngIf="planningAreas.length > 0; else noResults">
       <div class="planning-header">
         <h4>Planning Areas</h4>
@@ -95,7 +95,8 @@
     </ng-container>
     <ng-template #noResults>
       <div class="empty-state">
-        <app-planning-area-empty-state></app-planning-area-empty-state>
+        <app-planning-area-empty-state
+          (reload)="reload()"></app-planning-area-empty-state>
       </div>
     </ng-template>
   </div>

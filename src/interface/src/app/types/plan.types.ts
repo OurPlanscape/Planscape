@@ -30,6 +30,7 @@ export type PreviewPlan = Omit<Plan, 'geometry' | 'area_m2'>;
 export interface CreatePlanPayload {
   geometry: Geometry;
   name: string;
+  workspace?: number; // TODO: Remove optional when WORKSPACES be released
 }
 
 export interface BackendProjectArea {

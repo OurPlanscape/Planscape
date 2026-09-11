@@ -1,6 +1,8 @@
 <div class="field-label-box" *ngIf="fieldLabel">
-  <span class="field-label"> {{ fieldLabel }}</span>
-  <span class="required-label" *ngIf="required">required</span>
+  <span class="field-label">
+    {{ fieldLabel
+    }}<span class="required-label" *ngIf="required"> *</span></span
+  >
 </div>
 <div class="input-container">
   <div *ngIf="!file" class="placeholder-label">{{ placeholder }}</div>
