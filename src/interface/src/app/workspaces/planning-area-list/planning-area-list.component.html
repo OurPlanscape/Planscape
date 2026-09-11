@@ -48,7 +48,8 @@
         </mat-menu>
       </div>
       <ng-container *ngIf="baseLayerUrl$ | async as baseLayerUrl">
-        <ng-container *ngFor="let planning of planningAreas">
+        <ng-container
+          *ngFor="let planning of planningAreas; trackBy: trackById">
           <sg-planning-area-card
             *ngIf="planning"
             [planningArea]="planning"
