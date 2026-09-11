@@ -43,9 +43,21 @@ export class ExploreModesToggleComponent {
     private dialog: MatDialog,
     private drawService: DrawService,
     private router: Router
-  ) {}
+  ) {
+    this.checkForDrawPlanningArea();
+  }
 
   showUploadForm = false;
+
+  private checkForDrawPlanningArea() {
+    // set from the planning area list empty state Draw buttons
+    const { drawPlanningArea, ...rest } = history.state ?? {};
+    if (drawPlanningArea) {
+      this.handleDrawingButton();
+      // Clear so it won't persist on refresh/back
+      history.replaceState(rest, document.title);
+    }
+  }
 
   handleDrawingButton() {
     // first, ensure we're only on single map view
