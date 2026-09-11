@@ -50,7 +50,6 @@ export class DataSetComponent {
   @Input() displayAddButton = false;
 
   @Output() selectDataset = new EventEmitter<void>();
-  @Output() layerSelected = new EventEmitter<DataLayer>();
 
   loadingDataLayer$ = this.dataLayersStateService.loadingLayer$;
 
@@ -105,6 +104,5 @@ export class DataSetComponent {
 
   toggleDataLayerSelection(dl: DataLayer) {
     this.dataLayersStateService.handleLayerClick(dl);
-    this.layerSelected.emit(dl);
   }
 }

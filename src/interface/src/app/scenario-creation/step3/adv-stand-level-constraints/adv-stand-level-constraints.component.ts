@@ -20,7 +20,9 @@ import { ModuleService } from '@app/services/module.service';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { MAX_SELECTED_DATALAYERS } from '@app/data-layers/data-layers/max-selected-datalayers.token';
 import { SELECTION_MODE } from '@app/data-layers/data-layers/selection-mode.token';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-adv-stand-level-constraints',
   standalone: true,
@@ -80,6 +82,12 @@ export class AdvStandLevelConstraintsComponent {
         switchMap((plan) => this.mapModuleService.loadMapModule(plan.geometry))
       )
       .subscribe();
+
+    this.dataLayerState.layerClicked$
+      .pipe(untilDestroyed(this))
+      .subscribe((layer) => {
+        this.handleSelectedLayer(layer);
+      });
   }
 
   public handleConstraintAdded(constraint: NamedConstraint): void {

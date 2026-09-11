@@ -1,32 +1,25 @@
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  Output,
-  ViewChild,
-} from '@angular/core';
-import { AsyncPipe, NgClass, NgIf } from '@angular/common';
-import { ButtonComponent, ToggleComponent } from '@styleguide';
-import { MatTreeModule } from '@angular/material/tree';
-import { map, shareReplay, switchMap } from 'rxjs';
-import { DataLayersStateService } from '../data-layers.state.service';
 import { NestedTreeControl } from '@angular/cdk/tree';
-import { TreeNode } from '@data-layers/data-layers/tree-node';
-import { DataLayer } from '@types';
-import { MatRadioModule } from '@angular/material/radio';
+import { AsyncPipe, NgClass, NgIf } from '@angular/common';
+import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatMenuModule } from '@angular/material/menu';
-import { DataLayerTooltipComponent } from '@data-layers/data-layer-tooltip/data-layer-tooltip.component';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { unselectableReason } from '@app/shared';
 import {
   MAT_CHECKBOX_DEFAULT_OPTIONS,
   MatCheckboxModule,
 } from '@angular/material/checkbox';
+import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTreeModule } from '@angular/material/tree';
+import { unselectableReason } from '@app/shared';
+import { DataLayerTooltipComponent } from '@data-layers/data-layer-tooltip/data-layer-tooltip.component';
+import { TreeNode } from '@data-layers/data-layers/tree-node';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { ButtonComponent, ToggleComponent } from '@styleguide';
+import { DataLayer } from '@types';
+import { map, shareReplay, switchMap } from 'rxjs';
+import { DataLayersStateService } from '../data-layers.state.service';
 
 @UntilDestroy()
 @Component({
@@ -59,7 +52,6 @@ import {
 })
 export class DataLayerTreeComponent {
   @Input() displayAddButton = false;
-  @Output() layerSelected = new EventEmitter<DataLayer>();
 
   constructor(private dataLayersStateService: DataLayersStateService) {
     this.dataLayersStateService.paths$
@@ -173,7 +165,6 @@ export class DataLayerTreeComponent {
 
   toggleDataLayerSelection(dl: DataLayer) {
     this.dataLayersStateService.handleLayerClick(dl);
-    this.layerSelected.emit(dl);
   }
 
   hasLeafChildren(node: any): boolean {

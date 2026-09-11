@@ -9,6 +9,7 @@ import {
   of,
   shareReplay,
   startWith,
+  Subject,
   switchMap,
   tap,
 } from 'rxjs';
@@ -62,6 +63,10 @@ export class DataLayersStateService {
   private _unSelectableDataLayerIds$ = new BehaviorSubject<
     unselectableLayer[] | []
   >([]);
+
+  private layerClicked = new Subject<DataLayer>();
+  public layerClicked$: Observable<DataLayer> =
+    this.layerClicked.asObservable();
 
   // Selected datalayers count
   selectedLayersCount$ = this.selectedDataLayers$.pipe(
@@ -331,6 +336,9 @@ export class DataLayersStateService {
     // if this is automatic, we toggle, otherwise we ignore...
     if (this.selectionMode === 'AUTOMATIC') {
       this.toggleLayer(layer);
+    } else {
+      //throw an event, to be handled by any subscriber
+      this.layerClicked.next(layer);
     }
   }
 
