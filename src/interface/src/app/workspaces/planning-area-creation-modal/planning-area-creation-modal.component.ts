@@ -8,7 +8,6 @@ import {
 } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { DrawService } from '@app/maplibre-map/draw.service';
-import { InvalidCoordinatesError } from '@app/services/errors';
 import {
   FileUploadFieldComponent,
   InputDirective,
@@ -17,12 +16,12 @@ import {
   ModalInfoComponent,
 } from '@styleguide';
 import * as Sentry from '@sentry/browser';
-import * as shp from 'shpjs';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { PlanService } from '@app/services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@app/shared';
 import { ActivatedRoute } from '@angular/router';
+import { ShapefileParserService } from '@app/services/shapefile-parser.service';
 
 @Component({
   selector: 'app-planning-area-creation-modal',
@@ -61,6 +60,7 @@ export class PlanningAreaCreationModalComponent {
   geometry: any = null;
 
   private route: ActivatedRoute = inject(ActivatedRoute);
+  private shapefileParser = inject(ShapefileParserService);
 
   workspaceId = this.route.snapshot.data['workspaceId'];
 
@@ -83,7 +83,8 @@ export class PlanningAreaCreationModalComponent {
   }
 
   submit() {
-    if (this.planningAreaForm.valid) {
+    if (this.planningAreaForm.valid && !this.submitting) {
+      this.submitting = true;
       this.uploadFormError = null;
       this.createPlan();
     }
@@ -124,72 +125,16 @@ export class PlanningAreaCreationModalComponent {
   }
 
   async convertToGeoJson(file: File) {
-    const reader = new FileReader();
-    const fileAsArrayBuffer: ArrayBuffer = await new Promise((resolve) => {
-      reader.onload = () => {
-        resolve(reader.result as ArrayBuffer);
-      };
-      reader.readAsArrayBuffer(file);
-    });
     try {
-      const geojson = (await shp.parseZip(
-        fileAsArrayBuffer
-      )) as GeoJSON.GeoJSON;
-      if (geojson.type == 'FeatureCollection') {
-        if (geojson.features.length < 1) {
-          throw new InvalidCoordinatesError(
-            'Invalid Shapefile: No features were detected in this uploaded shapefile.'
-          );
-        }
-        // cycle through features to find invalid ones...
-        geojson.features.map((feature, index) => {
-          const geom = feature.geometry;
+      const buffer = await this.shapefileParser.readFileAsArrayBuffer(file);
+      const geojson = await this.shapefileParser.parseAndValidate(buffer);
 
-          if (geom.type === 'LineString' || geom.type === 'Point') {
-            throw new InvalidCoordinatesError(
-              `Invalid Shapefile: Element at index: ${index} is a ${geom.type}.`
-            );
-          }
-
-          if (geom.type !== 'GeometryCollection') {
-            if (!geom.coordinates || geom.coordinates.length === 0) {
-              throw new InvalidCoordinatesError(
-                `Invalid Shapefile: Geometry coordinates at feature ${index} are empty.`
-              );
-            }
-          } else {
-            if (geom.geometries.length === 0) {
-              throw new InvalidCoordinatesError(
-                `Invalid Shapefile: GeometryCollection at index ${index} is empty.`
-              );
-            }
-          }
-        });
-
-        this.geometry = geojson;
-        this.uploadFormError = null;
-        this.planningAreaForm.get('file')?.setValue('uploaded');
-      } else if (Array.isArray(geojson)) {
-        this.uploadFormError =
-          'The upload contains multiple shapefiles and could not be processed.';
-        this.planningAreaForm.get('file')?.setValue('failed');
-      } else {
-        //unknown failure
-        this.uploadFormError = 'The file cannot be converted to GeoJSON.';
-        this.planningAreaForm.get('file')?.setValue('failed');
-      }
+      this.geometry = geojson;
+      this.uploadFormError = null;
+      this.planningAreaForm.get('file')?.setValue('uploaded');
     } catch (e) {
       this.planningAreaForm.get('file')?.setValue('failed');
-      if (e instanceof InvalidCoordinatesError) {
-        // Note: here we only display a generic form error, until further discussion w/ Product
-        //  but Sentry should catch the detailed message
-        this.uploadFormError =
-          'The upload contains features with invalid coordinates.';
-      } else {
-        this.uploadFormError =
-          'The zip file does not appear to contain a valid shapefile.';
-      }
-
+      this.uploadFormError = this.shapefileParser.getUserFacingErrorMessage(e);
       Sentry.captureException(e);
     }
   }

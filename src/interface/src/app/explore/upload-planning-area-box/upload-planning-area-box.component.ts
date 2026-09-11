@@ -1,7 +1,6 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import * as shp from 'shpjs';
 import {
   FormBuilder,
   FormGroup,
@@ -11,8 +10,8 @@ import {
 } from '@angular/forms';
 import { DrawService } from '@maplibre-map/draw.service';
 import { FileUploadFieldComponent, ModalInfoComponent } from '@styleguide';
-import { InvalidCoordinatesError } from '@services/errors';
 import * as Sentry from '@sentry/browser';
+import { ShapefileParserService } from '@app/services/shapefile-parser.service';
 
 @Component({
   selector: 'app-upload-planning-area-box',
@@ -38,6 +37,8 @@ export class UploadPlanningAreaBoxComponent {
   uploadFormError?: string | null = null;
   @Output() uploadedShape = new EventEmitter();
 
+  private shapefileParser = inject(ShapefileParserService);
+
   constructor(
     private fb: FormBuilder,
     private drawService: DrawService
@@ -60,71 +61,16 @@ export class UploadPlanningAreaBoxComponent {
   }
 
   async convertToGeoJson(file: File) {
-    const reader = new FileReader();
-    const fileAsArrayBuffer: ArrayBuffer = await new Promise((resolve) => {
-      reader.onload = () => {
-        resolve(reader.result as ArrayBuffer);
-      };
-      reader.readAsArrayBuffer(file);
-    });
     try {
-      const geojson = (await shp.parseZip(
-        fileAsArrayBuffer
-      )) as GeoJSON.GeoJSON;
-      if (geojson.type == 'FeatureCollection') {
-        if (geojson.features.length < 1) {
-          throw new InvalidCoordinatesError(
-            'Invalid Shapefile: No features were detected in this uploaded shapefile.'
-          );
-        }
-        // cycle through features to find invalid ones...
-        geojson.features.map((feature, index) => {
-          const geom = feature.geometry;
+      const buffer = await this.shapefileParser.readFileAsArrayBuffer(file);
+      const geojson = await this.shapefileParser.parseAndValidate(buffer);
 
-          if (geom.type === 'LineString' || geom.type === 'Point') {
-            throw new InvalidCoordinatesError(
-              `Invalid Shapefile: Element at index: ${index} is a ${geom.type}.`
-            );
-          }
-
-          if (geom.type !== 'GeometryCollection') {
-            if (!geom.coordinates || geom.coordinates.length === 0) {
-              throw new InvalidCoordinatesError(
-                `Invalid Shapefile: Geometry coordinates at feature ${index} are empty.`
-              );
-            }
-          } else {
-            if (geom.geometries.length === 0) {
-              throw new InvalidCoordinatesError(
-                `Invalid Shapefile: GeometryCollection at index ${index} is empty.`
-              );
-            }
-          }
-        });
-
-        this.drawService.addUploadedFeatures(geojson);
-        this.uploadElementStatus = 'uploaded';
-        this.uploadedShape.emit();
-      } else if (Array.isArray(geojson)) {
-        this.uploadElementStatus = 'failed';
-        this.uploadFormError =
-          'The upload contains multiple shapefiles and could not be processed.';
-      } else {
-        //unknown failure
-        this.uploadElementStatus = 'failed';
-        this.uploadFormError = 'The file cannot be converted to GeoJSON.';
-      }
+      this.drawService.addUploadedFeatures(geojson);
+      this.uploadElementStatus = 'uploaded';
+      this.uploadedShape.emit();
     } catch (e) {
       this.uploadElementStatus = 'failed';
-      if (e instanceof InvalidCoordinatesError) {
-        // Note: here we only display a generic form error, until further discussion w/ Product
-        //  but Sentry should catch the detailed message
-        this.uploadFormError =
-          'The upload contains features with invalid coordinates.';
-      } else {
-        this.uploadFormError =
-          'The zip file does not appear to contain a valid shapefile.';
-      }
+      this.uploadFormError = this.shapefileParser.getUserFacingErrorMessage(e);
       Sentry.captureException(e);
     }
   }
