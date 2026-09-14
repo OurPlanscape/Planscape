@@ -34,8 +34,7 @@ def send_workspace_invitation(
         if role == "owner":
             role_article = "an"
 
-        # the frontend accepts the pending invite here, then opens the workspace
-        accept_invite_path = f"workspace/{workspace.pk}/accept"
+        workspace_path = f"workspace/{workspace.pk}"
         context = {
             "inviter": access.invited_by,
             "role_article": role_article,
@@ -44,10 +43,10 @@ def send_workspace_invitation(
             "message": message,
             "frontend_url": get_frontend_url("home"),
             "frontend_assets": get_frontend_url("assets"),
-            "workspace_link": get_frontend_url(accept_invite_path),
+            "workspace_link": get_frontend_url(workspace_path),
             "create_account_link": get_frontend_url(
                 "signup",
-                query_params={"redirect": accept_invite_path},
+                query_params={"redirect": workspace_path},
             ),
         }
 

@@ -2,6 +2,7 @@ import logging
 from typing import Tuple
 
 from actstream import action
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.db import transaction
 from planscape.analytics import track_event
@@ -17,6 +18,7 @@ from workspaces.permissions import WorkspacePermission
 from workspaces.tasks import send_workspace_invitation
 
 logger = logging.getLogger(__name__)
+User = get_user_model()
 
 
 @transaction.atomic()
@@ -87,9 +89,9 @@ def invite_member(
     role: str,
     message: str = "",
 ) -> UserAccessWorkspace:
-    """Invites a user to a workspace by email. The invite is always created as
-    pending (user=None) - even if the email already belongs to a registered
-    user - and must be accepted via `accept_invite`."""
+    """Invites a user to a workspace by email. Registered users get access right
+    away. Emails without an account stay pending (user=None) until accepted via
+    `accept_invite`."""
     if not WorkspacePermission.can_manage_members(inviter, workspace):
         raise PermissionDenied(
             "You do not have permission to invite members to this workspace."
@@ -101,11 +103,12 @@ def invite_member(
             {"email": "This user is already a member of the workspace."}
         )
 
+    invitee = User.objects.filter(email__iexact=email).first()
     access, _created = UserAccessWorkspace.objects.update_or_create(
         email=email,
         workspace=workspace,
         user=None,
-        defaults={"role": role, "invited_by": inviter},
+        defaults={"role": role, "invited_by": inviter, "user": invitee},
     )
 
     send_workspace_invitation.delay(access.pk, message)

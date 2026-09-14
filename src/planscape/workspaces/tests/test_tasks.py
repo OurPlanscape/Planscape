@@ -19,17 +19,17 @@ class SendWorkspaceInvitationTest(TestCase):
             invited_by=self.owner,
         )
 
-    def test_links_open_the_accept_invite_page(self):
+    def test_links_open_the_workspace(self):
         send_workspace_invitation(self.invite.pk, "Welcome aboard")
 
         self.assertEqual(len(mail.outbox), 1)
         email = mail.outbox[0]
         html, _mimetype = email.alternatives[0]
-        accept_invite_path = f"workspace/{self.workspace.pk}/accept"
-        workspace_link = get_frontend_url(accept_invite_path)
+        workspace_path = f"workspace/{self.workspace.pk}"
+        workspace_link = get_frontend_url(workspace_path)
         create_account_link = get_frontend_url(
             "signup",
-            query_params={"redirect": accept_invite_path},
+            query_params={"redirect": workspace_path},
         )
         for content in (email.body, html):
             self.assertIn(workspace_link, content)

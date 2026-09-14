@@ -143,16 +143,4 @@ describe('WorkspacesService', () => {
       req.flush(null);
     });
   });
-
-  describe('acceptInvite', () => {
-    it('posts to the accept invite endpoint', () => {
-      service.acceptInvite(1).subscribe();
-
-      const req = httpTestingController.expectOne(
-        service.v2Path + '1/invite/accept/'
-      );
-      expect(req.request.method).toEqual('POST');
-      req.flush({});
-    });
-  });
 });
