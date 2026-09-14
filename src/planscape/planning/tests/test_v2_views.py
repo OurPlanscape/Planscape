@@ -6,13 +6,13 @@ from collaboration.tests.factories import UserObjectRoleFactory
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.urls import reverse
-from impacts.permissions import (
+from rest_framework import status
+from rest_framework.test import APITestCase, APITransactionTestCase
+from workspaces.access import (
     COLLABORATOR_PERMISSIONS,
     OWNER_PERMISSIONS,
     VIEWER_PERMISSIONS,
 )
-from rest_framework import status
-from rest_framework.test import APITestCase, APITransactionTestCase
 
 from planning.models import (
     PlanningArea,

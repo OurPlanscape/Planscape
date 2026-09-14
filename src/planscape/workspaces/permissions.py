@@ -1,31 +1,9 @@
-from typing import Optional
-
 from collaboration.permissions import CheckPermissionMixin
 from django.contrib.auth.models import AbstractUser
 from planscape.permissions import PlanscapePermission
 
-from workspaces.models import UserAccessWorkspace, Workspace, WorkspaceRole
-
-
-def get_workspace_role(
-    user: AbstractUser,
-    workspace: Workspace,
-) -> Optional[str]:
-    """
-    Returns the role the user holds in the workspace, or None.
-    The creator is always treated as an owner, even if the access row is gone.
-    """
-    if not user or not user.is_authenticated:
-        return None
-
-    if workspace.created_by_id and workspace.created_by_id == user.pk:
-        return WorkspaceRole.OWNER
-
-    access = UserAccessWorkspace.objects.filter(
-        user=user,
-        workspace=workspace,
-    ).first()
-    return access.role if access else None
+from workspaces.access import get_workspace_role
+from workspaces.models import Workspace, WorkspaceRole
 
 
 VIEWER_PERMISSIONS = [

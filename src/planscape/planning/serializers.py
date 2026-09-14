@@ -2,7 +2,7 @@ import json
 from typing import List, Optional  # noqa
 
 import markdown
-from collaboration.services import get_permissions, get_role
+from workspaces.access import get_planning_area_permissions, get_planning_area_role
 from datasets.models import DataLayer, DataLayerStatus, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
@@ -89,11 +89,11 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
 
     def get_role(self, instance):
         user = self.context["request"].user or self.request.user
-        return get_role(user, instance)
+        return get_planning_area_role(user, instance) or False
 
     def get_permissions(self, instance):
         user = self.context["request"].user or self.request.user
-        return list(get_permissions(user, instance))
+        return get_planning_area_permissions(user, instance)
 
     class Meta:
         fields = (
