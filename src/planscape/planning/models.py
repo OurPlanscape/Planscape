@@ -48,10 +48,14 @@ class PlanningAreaManager(AliveObjectsManager):
         ids = (
             qs.filter(
                 Q(user=user)
+                | Q(workspace__user_access__user=user)
+                | Q(workspace__created_by=user)
+                # planning areas outside workspaces still use planning-area sharing
                 | Q(
+                    workspace__isnull=True,
                     pk__in=UserObjectRole.objects.filter(
                         collaborator_id=user, content_type_id=content_type_pk
-                    ).values_list("object_pk", flat=True)
+                    ).values_list("object_pk", flat=True),
                 )
             )
             .values_list("id", flat=True)

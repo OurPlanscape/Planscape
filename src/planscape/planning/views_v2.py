@@ -170,7 +170,9 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        qs = PlanningArea.objects.list_for_api(user=user).select_related("user")
+        qs = PlanningArea.objects.list_for_api(user=user).select_related(
+            "user", "workspace"
+        )
         return qs
 
     def perform_update(self, serializer):
