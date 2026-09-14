@@ -99,6 +99,16 @@ const routes: Routes = [
           ).then((m) => m.WorkspaceDashboardComponent),
       },
       {
+        // Same plan pages as `plan/:planId`, reached from a workspace.
+        path: 'workspace/:workspaceId/plan',
+        canMatch: [createFeatureMatchGuard('WORKSPACES')],
+        resolve: {
+          workspaceId: workspaceLoaderResolver,
+        },
+        loadChildren: () =>
+          import('@plan/plan.module').then((m) => m.PlanModule),
+      },
+      {
         path: 'signup',
         title: 'Signup',
         resolve: { redirectUrl: redirectResolver },

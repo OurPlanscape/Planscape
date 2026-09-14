@@ -53,7 +53,7 @@
           <sg-planning-area-card
             *ngIf="planning"
             [planningArea]="planning"
-            [link]="['/plan', planning.id]"
+            [link]="['/workspace', workspaceId, 'plan', planning.id]"
             (afterDelete)="reload()"
             (afterRename)="reload()">
             <div mapSlot class="map">
