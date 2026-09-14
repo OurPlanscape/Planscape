@@ -117,7 +117,9 @@ class TreatmentGoalFactory(factory.django.DjangoModelFactory):
     description = factory.Faker("text")
     active = True
     priorities = ["foo", "bar", "baz"]
-    category = factory.fuzzy.FuzzyChoice(TreatmentGoalCategory.values)
+    category = factory.SubFactory(
+        "planning.tests.factories.TreatmentGoalCategoryFactory"
+    )
     created_by = factory.SubFactory(UserFactory)
     group = factory.fuzzy.FuzzyChoice(TreatmentGoalGroup.values)
 
@@ -152,6 +154,14 @@ class TreatmentGoalFactory(factory.django.DjangoModelFactory):
                 datalayer=datalayer,
                 usage_type=TreatmentGoalUsageType.PRIORITY,
             )
+
+
+class TreatmentGoalCategoryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = TreatmentGoalCategory
+        django_get_or_create = ("name",)
+
+    name = factory.Iterator(["Fire Dynamics", "Biodiversity", "Carbon/Biomass"])
 
 
 class TreatmentGoalUsesDataLayerFactory(factory.django.DjangoModelFactory):
@@ -199,7 +209,6 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
         if extracted:
             ScenarioResultFactory(scenario=self)
 
-
     @factory.post_generation
     def with_priorities(self, create, extracted, **kwargs):
         if not create:
@@ -210,8 +219,8 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
             for datalayer in extracted:
                 priorities.append(
                     {
-                        "datalayer": datalayer.pk, 
-                        "name": datalayer.name, 
+                        "datalayer": datalayer.pk,
+                        "name": datalayer.name,
                         "weight": 1,
                     }
                 )
@@ -219,7 +228,6 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
             configuration = {"priorities": priorities}
             merged_config = {**(self.configuration or {}), **configuration}
             self.configuration = merged_config
-    
 
     @factory.post_generation
     def with_cobenefits(self, create, extracted, **kwargs):

@@ -7,17 +7,20 @@ def noop(apps, schema_editor):
 
 
 def set_none(apps, schema_editor):
-    from planning.models import TreatmentGoal
+    TreatmentGoal = apps.get_model("planning", "TreatmentGoal")
 
     TreatmentGoal.objects.update(geometry=None)
 
 
 def set_geometry(apps, schema_editor):
-    from planning.models import TreatmentGoal
+    TreatmentGoal = apps.get_model("planning", "TreatmentGoal")
 
     for t in TreatmentGoal.objects.filter(active=True):
-        t.geometry = t.get_coverage()
-        t.save()
+        active_datalayers = t.datalayers.filter(
+            used_by_treatment_goals__deleted_at__isnull=True
+        )
+        t.geometry = active_datalayers.geometric_intersection(geometry_field="outline")
+        t.save(update_fields=["geometry"])
 
 
 class Migration(migrations.Migration):
