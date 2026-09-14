@@ -28,6 +28,7 @@ describe('StandsComponent', () => {
 
   const scenarioId = 1;
   const planId = '4150';
+  const defaultSourceName = MARTIN_SOURCES.scenarioStands.sources.stands;
 
   beforeEach(async () => {
     currentStep$ = new BehaviorSubject<any>(null);
@@ -123,71 +124,41 @@ describe('StandsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('sourceName', () => {
-    it('should use scenario stands source by default', () => {
-      expect(component.sourceName).toBe(
-        MARTIN_SOURCES.scenarioStands.sources.stands
+  describe('sourceName$', () => {
+    it('should use scenario stands source by default', async () => {
+      expect(await firstValueFrom(component.sourceName$)).toBe(
+        defaultSourceName
       );
     });
 
-    it('should use stands by project areas when hasParent is true and withIncludes is false', () => {
+    it('should use stands by project areas when hasParent is true and withIncludes is false', async () => {
       component.hasParent = true;
 
-      expect(component.sourceName).toBe(
+      expect(await firstValueFrom(component.sourceName$)).toBe(
         MARTIN_SOURCES.standsByProjectAreas.sources.stands
       );
     });
 
-    it('should use standsWithIncludes when withIncludes is true and hasParent is false', () => {
+    it('should use standsWithIncludes when withIncludes is true and hasParent is false', async () => {
       currentStep$.next({
         withIncludes: true,
       });
 
-      expect(component.sourceName).toBe(
+      expect(await firstValueFrom(component.sourceName$)).toBe(
         MARTIN_SOURCES.scenarioStands.sources.standsWithIncludes
       );
     });
 
-    it('should use treatable stands by project areas when withIncludes and hasParent are true', () => {
+    it('should use treatable stands by project areas when withIncludes and hasParent are true', async () => {
       component.hasParent = true;
 
       currentStep$.next({
         withIncludes: true,
       });
 
-      expect(component.sourceName).toBe(
+      expect(await firstValueFrom(component.sourceName$)).toBe(
         MARTIN_SOURCES.treatableStandsByProjectAreas.sources.stands
       );
-    });
-  });
-
-  describe('planId', () => {
-    it('should return route planId when hasParent is false and withIncludes is false', () => {
-      expect(component.planId).toBe(planId);
-    });
-
-    it('should return undefined when hasParent is true and withIncludes is false', () => {
-      component.hasParent = true;
-
-      expect(component.planId).toBeUndefined();
-    });
-
-    it('should return undefined when withIncludes is true and hasParent is false', () => {
-      currentStep$.next({
-        withIncludes: true,
-      });
-
-      expect(component.planId).toBeUndefined();
-    });
-
-    it('should return route planId when withIncludes and hasParent are true', () => {
-      component.hasParent = true;
-
-      currentStep$.next({
-        withIncludes: true,
-      });
-
-      expect(component.planId).toBe(planId);
     });
   });
 
@@ -407,7 +378,7 @@ describe('StandsComponent', () => {
       expect(sourceDataListener).toBeDefined();
 
       sourceDataListener!({
-        sourceId: component.sourceName,
+        sourceId: defaultSourceName,
         isSourceLoaded: true,
         type: 'sourcedata',
         sourceDataType: undefined,
@@ -442,7 +413,7 @@ describe('StandsComponent', () => {
       newScenarioStateMock.setBaseStandsLoaded.calls.reset();
 
       sourceDataListener!({
-        sourceId: component.sourceName,
+        sourceId: defaultSourceName,
         isSourceLoaded: false,
         type: 'sourcedata',
         sourceDataType: undefined,
@@ -458,8 +429,8 @@ describe('StandsComponent', () => {
 
       expect(mapLibreMapMock.setFeatureState).toHaveBeenCalledWith(
         {
-          source: component.sourceName,
-          sourceLayer: component.sourceName,
+          source: defaultSourceName,
+          sourceLayer: defaultSourceName,
           id: 10,
         },
         {
@@ -469,8 +440,8 @@ describe('StandsComponent', () => {
 
       expect(mapLibreMapMock.setFeatureState).toHaveBeenCalledWith(
         {
-          source: component.sourceName,
-          sourceLayer: component.sourceName,
+          source: defaultSourceName,
+          sourceLayer: defaultSourceName,
           id: 20,
         },
         {
@@ -484,8 +455,8 @@ describe('StandsComponent', () => {
 
       expect(mapLibreMapMock.setFeatureState).toHaveBeenCalledWith(
         {
-          source: component.sourceName,
-          sourceLayer: component.sourceName,
+          source: defaultSourceName,
+          sourceLayer: defaultSourceName,
           id: 30,
         },
         {
@@ -495,8 +466,8 @@ describe('StandsComponent', () => {
 
       expect(mapLibreMapMock.setFeatureState).toHaveBeenCalledWith(
         {
-          source: component.sourceName,
-          sourceLayer: component.sourceName,
+          source: defaultSourceName,
+          sourceLayer: defaultSourceName,
           id: 40,
         },
         {
@@ -515,8 +486,8 @@ describe('StandsComponent', () => {
 
       expect(mapLibreMapMock.removeFeatureState).toHaveBeenCalledWith(
         {
-          source: component.sourceName,
-          sourceLayer: component.sourceName,
+          source: defaultSourceName,
+          sourceLayer: defaultSourceName,
           id: 10,
         },
         'excluded'
@@ -524,8 +495,8 @@ describe('StandsComponent', () => {
 
       expect(mapLibreMapMock.removeFeatureState).toHaveBeenCalledWith(
         {
-          source: component.sourceName,
-          sourceLayer: component.sourceName,
+          source: defaultSourceName,
+          sourceLayer: defaultSourceName,
           id: 20,
         },
         'excluded'
@@ -533,8 +504,8 @@ describe('StandsComponent', () => {
 
       expect(mapLibreMapMock.setFeatureState).toHaveBeenCalledWith(
         {
-          source: component.sourceName,
-          sourceLayer: component.sourceName,
+          source: defaultSourceName,
+          sourceLayer: defaultSourceName,
           id: 30,
         },
         {
@@ -554,8 +525,8 @@ describe('StandsComponent', () => {
 
       expect(mapLibreMapMock.removeFeatureState).toHaveBeenCalledWith(
         {
-          source: component.sourceName,
-          sourceLayer: component.sourceName,
+          source: defaultSourceName,
+          sourceLayer: defaultSourceName,
           id: 10,
         },
         'constrained'
@@ -563,8 +534,8 @@ describe('StandsComponent', () => {
 
       expect(mapLibreMapMock.removeFeatureState).toHaveBeenCalledWith(
         {
-          source: component.sourceName,
-          sourceLayer: component.sourceName,
+          source: defaultSourceName,
+          sourceLayer: defaultSourceName,
           id: 20,
         },
         'constrained'
@@ -596,8 +567,8 @@ describe('StandsComponent', () => {
 
       expect(mapLibreMapMock.setFeatureState).toHaveBeenCalledWith(
         {
-          source: component.sourceName,
-          sourceLayer: component.sourceName,
+          source: defaultSourceName,
+          sourceLayer: defaultSourceName,
           id: 10,
         },
         {
@@ -607,8 +578,8 @@ describe('StandsComponent', () => {
 
       expect(mapLibreMapMock.setFeatureState).toHaveBeenCalledWith(
         {
-          source: component.sourceName,
-          sourceLayer: component.sourceName,
+          source: defaultSourceName,
+          sourceLayer: defaultSourceName,
           id: 20,
         },
         {
