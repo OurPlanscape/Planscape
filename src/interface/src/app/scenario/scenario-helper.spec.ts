@@ -20,8 +20,7 @@ describe('getGroupedGoals', () => {
     name: overrides.name ?? 'Goal',
     description: overrides.description ?? '',
     priorities: overrides.priorities ?? [],
-    category: overrides.category ?? 'CAT_KEY',
-    category_text: overrides.category_text ?? 'Category Label',
+    category: overrides.category ?? 'Category Label',
     group: overrides.group ?? 'GRP_KEY',
     group_text: overrides.group_text ?? 'Group Label',
   });
@@ -31,14 +30,13 @@ describe('getGroupedGoals', () => {
     expect(result).toEqual({});
   });
 
-  it('should group by group_text and then by category_text', () => {
+  it('should group by group_text and then by category', () => {
     const g1 = makeGoal({
       id: 1,
       name: 'G1',
       group: 'CALIFORNIA_PLANNING_METRICS',
       group_text: 'California Planning Metrics',
-      category: 'FIRE_DYNAMICS',
-      category_text: 'Fire Dynamics',
+      category: 'Fire Dynamics',
     });
 
     const g2 = makeGoal({
@@ -46,8 +44,7 @@ describe('getGroupedGoals', () => {
       name: 'G2',
       group: 'CALIFORNIA_PLANNING_METRICS',
       group_text: 'California Planning Metrics',
-      category: 'FIRE_DYNAMICS',
-      category_text: 'Fire Dynamics',
+      category: 'Fire Dynamics',
     });
 
     const g3 = makeGoal({
@@ -55,8 +52,7 @@ describe('getGroupedGoals', () => {
       name: 'G3',
       group: 'CALIFORNIA_PLANNING_METRICS',
       group_text: 'California Planning Metrics',
-      category: 'OTHER_CAT',
-      category_text: 'Other Category',
+      category: 'Other Category',
     });
 
     const g4 = makeGoal({
@@ -64,8 +60,7 @@ describe('getGroupedGoals', () => {
       name: 'G4',
       group: 'ANOTHER_GROUP',
       group_text: 'Another Group',
-      category: 'FIRE_DYNAMICS',
-      category_text: 'Fire Dynamics',
+      category: 'Fire Dynamics',
     });
 
     const result = getGroupedGoals([g1, g2, g3, g4]);
@@ -94,17 +89,17 @@ describe('getGroupedGoals', () => {
     const a = makeGoal({
       id: 10,
       group_text: 'Group A',
-      category_text: 'Cat 1',
+      category: 'Cat 1',
     });
     const b = makeGoal({
       id: 11,
       group_text: 'Group A',
-      category_text: 'Cat 2',
+      category: 'Cat 2',
     });
     const c = makeGoal({
       id: 12,
       group_text: 'Group A',
-      category_text: 'Cat 1',
+      category: 'Cat 1',
     });
 
     const result = getGroupedGoals([a, b, c]);
@@ -113,12 +108,11 @@ describe('getGroupedGoals', () => {
     expect(result['Group A']['Cat 2']).toEqual([b]);
   });
 
-  it('uses the *_text labels as keys (not the raw keys)', () => {
+  it('uses group_text and category as grouping labels', () => {
     const goal = makeGoal({
       group: 'GRP_RAW',
       group_text: 'Group Pretty',
-      category: 'CAT_RAW',
-      category_text: 'Category Pretty',
+      category: 'Category Pretty',
     });
 
     const result = getGroupedGoals([goal]);
