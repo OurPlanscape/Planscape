@@ -4,7 +4,9 @@ import {
   map,
   Observable,
   shareReplay,
+  Subject,
   switchMap,
+  takeUntil,
   tap,
 } from 'rxjs';
 import { PreviewPlan } from '@types';
@@ -19,6 +21,8 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   private _hasFilters$ = new BehaviorSubject(false);
   private _initialLoad$ = new BehaviorSubject(true);
   private _pages$ = new BehaviorSubject(0);
+  // emits to cancel an in-flight fetch so a stale response can't overwrite newer data
+  private _cancelFetch$ = new Subject<void>();
 
   public sortOptions: Sort = this.queryParamsService.getInitialSortParams();
   public pageOptions = this.queryParamsService.getInitialPageParams();
@@ -106,6 +110,42 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   }
 
   loadData() {
+    // update filter status when loading data
+    this._hasFilters$.next(
+      !!this.searchTerm || this.selectedCreatorsIds.value.length > 0
+    );
+
+    this._loading.next(true);
+    this._cancelFetch$.next();
+    this.fetchData().subscribe((data) => {
+      this.setPages(data.count);
+      this.setData(data.results);
+      this._loading.next(false);
+      this._initialLoad$.next(false);
+    });
+  }
+
+  /**
+   * Fetches data with the current params without emitting on `loading$`,
+   * and only updates the data if it changed, so the list is not re-rendered
+   * on every poll.
+   */
+  refresh() {
+    return this.fetchData().pipe(
+      tap((data) => {
+        this.setPages(data.count);
+        if (this.listsDiffer(this._dataStream.value, data.results)) {
+          this.setData(data.results);
+        }
+      })
+    );
+  }
+
+  private listsDiffer(listA: PreviewPlan[], listB: PreviewPlan[]) {
+    return JSON.stringify(listA) !== JSON.stringify(listB);
+  }
+
+  private fetchData() {
     const params = {
       ...this.getPageOptions(),
       ...this.getSortOptions(),
@@ -113,18 +153,9 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
       ...this.getCreatorFilters(),
       ...this.getWorkspaceFilter(),
     };
-    // update filter status when loading data
-    this._hasFilters$.next(
-      !!this.searchTerm || this.selectedCreatorsIds.value.length > 0
-    );
-
-    this._loading.next(true);
-    this.planService.getPlanPreviews(params).subscribe((data) => {
-      this.setPages(data.count);
-      this.setData(data.results);
-      this._loading.next(false);
-      this._initialLoad$.next(false);
-    });
+    return this.planService
+      .getPlanPreviews(params)
+      .pipe(takeUntil(this._cancelFetch$));
   }
 
   private getWorkspaceFilter() {
