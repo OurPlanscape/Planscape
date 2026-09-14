@@ -3,7 +3,22 @@ from typing import Any, Dict
 from django.contrib import admin
 
 from planning.forms import TreatmentGoalAdminForm, TreatmentGoalUsesDataLayerAdminForm
-from planning.models import TreatmentGoal, TreatmentGoalUsesDataLayer
+from planning.models import (
+    TreatmentGoal,
+    TreatmentGoalCategory,
+    TreatmentGoalUsesDataLayer,
+)
+
+
+class TreatmentGoalCategoryAdmin(admin.ModelAdmin):
+    """
+    Admin interface for TreatmentGoalCategory model.
+    """
+
+    list_display = ("id", "name")
+    list_display_links = ("id", "name")
+    search_fields = ["name"]
+    ordering = ["name"]
 
 
 class TreatmentGoalUsesDataLayerInline(admin.TabularInline):
@@ -21,9 +36,9 @@ class TreatmentGoalAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "category", "group", "active")
     list_display_links = ("id", "name")
     form = TreatmentGoalAdminForm
-    search_fields = ["name"]
+    search_fields = ["name", "category__name"]
     list_filter = ["active", "category", "group"]
-    ordering = ["name"]
+    ordering = ["category__name", "name"]
     raw_id_fields = ["created_by"]
     inlines = [
         TreatmentGoalUsesDataLayerInline,
@@ -78,6 +93,7 @@ class TreatmentGoalUsesDataLayerAdmin(admin.ModelAdmin):
         return False
 
 
+admin.site.register(TreatmentGoalCategory, TreatmentGoalCategoryAdmin)
 admin.site.register(TreatmentGoal, TreatmentGoalAdmin)
 admin.site.register(
     TreatmentGoalUsesDataLayer,
