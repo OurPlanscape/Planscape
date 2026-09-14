@@ -20,7 +20,11 @@ from datasets.models import (
     DataLayerHasStyle,
     Style,
 )
-from planning.models import TreatmentGoal, TreatmentGoalUsesDataLayer
+from planning.models import (
+    TreatmentGoal,
+    TreatmentGoalCategory,
+    TreatmentGoalUsesDataLayer,
+)
 from stands.models import StandMetric
 from organizations.models import Organization
 
@@ -188,6 +192,13 @@ class Command(BaseCommand):
                 # Other tables deletion by `created_at`
                 count = TreatmentGoal.objects.filter(created_at__gte=last_restore_date).delete()
                 self.stdout.write(f"Deleted {count[1]} entry(ies) related to TreatmentGoal created after last restore.")
+
+                count = TreatmentGoalCategory.objects.filter(
+                    created_at__gte=last_restore_date
+                ).delete()
+                self.stdout.write(
+                    f"Deleted {count[1]} entry(ies) related to TreatmentGoalCategory created after last restore."
+                )
 
                 count = Category.objects.filter(created_at__gte=last_restore_date).delete()
                 self.stdout.write(f"Deleted {count[1]} entry(ies) related to Category(s) created after last restore.")
