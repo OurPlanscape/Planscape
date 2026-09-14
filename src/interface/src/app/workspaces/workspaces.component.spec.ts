@@ -1,4 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  discardPeriodicTasks,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -9,6 +15,7 @@ import { WorkspacesComponent } from '@app/workspaces/workspaces.component';
 import { WorkspaceActionsService } from '@app/workspaces/workspace-actions.service';
 import { ListWorkspacesOptions, WorkspacesService } from '@services';
 import { SNACK_ERROR_CONFIG } from '@shared';
+import { POLLING_INTERVAL } from '@plan/plan-helpers';
 import { Workspace } from '@types';
 
 describe('WorkspacesComponent', () => {
@@ -360,6 +367,81 @@ describe('WorkspacesComponent', () => {
         jasmine.objectContaining({ offset: 0 })
       );
     });
+  });
+
+  describe('polling', () => {
+    it('picks up new workspaces without a spinner', fakeAsync(() => {
+      setup();
+      const spy = workspacesService.listWorkspaces as jasmine.Spy;
+      spy.calls.reset();
+      spy.and.returnValue(
+        of({ count: 2, results: [workspace, otherWorkspace] })
+      );
+
+      tick(POLLING_INTERVAL);
+      fixture.detectChanges();
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(
+        fixture.nativeElement.querySelectorAll('sg-workspace-card').length
+      ).toBe(2);
+      expect(fixture.nativeElement.querySelector('mat-spinner')).toBeNull();
+
+      discardPeriodicTasks();
+    }));
+
+    it('keeps the empty state steady while polling', fakeAsync(() => {
+      setup(of({ count: 0, results: [] }));
+
+      tick(POLLING_INTERVAL);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain(
+        'Workspace: A shared space for smarter planning'
+      );
+      expect(fixture.nativeElement.querySelector('mat-spinner')).toBeNull();
+
+      discardPeriodicTasks();
+    }));
+
+    it('keeps polling after a failed poll, without toasting', fakeAsync(() => {
+      setup();
+      const toast = spyOn(snackbar, 'open');
+      const spy = workspacesService.listWorkspaces as jasmine.Spy;
+      spy.and.returnValue(throwError(() => new Error('nope')));
+
+      tick(POLLING_INTERVAL);
+
+      expect(toast).not.toHaveBeenCalled();
+
+      spy.and.returnValue(
+        of({ count: 2, results: [workspace, otherWorkspace] })
+      );
+      tick(POLLING_INTERVAL);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('Southern Sierra');
+
+      discardPeriodicTasks();
+    }));
+
+    it('drops a poll response once a user request starts', fakeAsync(() => {
+      setup();
+      const spy = workspacesService.listWorkspaces as jasmine.Spy;
+      const poll = new Subject<any>();
+      spy.and.returnValue(poll);
+      tick(POLLING_INTERVAL);
+
+      spy.and.returnValue(of({ count: 1, results: [otherWorkspace] }));
+      fixture.componentInstance.retry();
+      poll.next({ count: 1, results: [workspace] });
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('Southern Sierra');
+      expect(fixture.nativeElement.textContent).not.toContain('Wildfire North');
+
+      discardPeriodicTasks();
+    }));
   });
 
   describe('while a request is in flight', () => {
