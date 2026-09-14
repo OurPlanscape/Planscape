@@ -5,7 +5,7 @@ import { UploadPlanningAreaBoxComponent } from '@app/explore/upload-planning-are
 import { DrawService } from '@app/maplibre-map/draw.service';
 import { ButtonComponent } from '@styleguide';
 import { PlanningAreaCreationModalComponent } from '../planning-area-creation-modal/planning-area-creation-modal.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-planning-area-empty-state',
@@ -20,9 +20,12 @@ export class PlanningAreaEmptyStateComponent {
   showUploadForm = false;
   private dialog = inject(MatDialog);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   workspaceId = this.route.snapshot.data['workspaceId'];
   handleDraw() {
-    // TODO: Will be covered as part of PLAN-3858
+    this.router.navigate(['/map-viewer/workspace', this.workspaceId], {
+      state: { drawPlanningArea: true },
+    });
   }
   handleUpload() {
     this.dialog
