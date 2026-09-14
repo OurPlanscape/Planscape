@@ -18,6 +18,8 @@ from planning.tests.factories import (
 )
 from planscape.tests.factories import UserFactory
 from rest_framework.test import APITestCase
+from workspaces.models import UserAccessWorkspace, WorkspaceRole
+from workspaces.tests.factories import PlanningWorkspaceFactory
 
 from users.models import UserProfile
 
@@ -47,6 +49,32 @@ class CreateUserTest(APITestCase):
             mail.outbox[0].subject, "[Planscape] Please Confirm Your Email Address"
         )
         self.assertIn("Team Planscape", mail.outbox[0].body)
+
+    def test_create_user_accepts_pending_workspace_invites(self):
+        owner = UserFactory.create()
+        workspace = PlanningWorkspaceFactory.create(created_by=owner)
+        invite = UserAccessWorkspace.objects.create(
+            workspace=workspace,
+            email="invited@test.com",
+            role=WorkspaceRole.VIEWER,
+            invited_by=owner,
+        )
+        payload = json.dumps(
+            {
+                "email": "invited@test.com",
+                "password1": "ComplexPassword123",
+                "password2": "ComplexPassword123",
+                "first_name": "Invited",
+                "last_name": "User",
+            }
+        )
+        response = self.client.post(
+            reverse("rest_register"), payload, content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        invite.refresh_from_db()
+        self.assertEqual(invite.user, User.objects.get(email="invited@test.com"))
 
     @patch("users.tasks.send_welcome_email.delay")
     def test_create_user_queues_welcome_email(self, mock_send_welcome_email):

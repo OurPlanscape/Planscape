@@ -149,6 +149,16 @@ def accept_invite(user: AbstractUser, workspace: Workspace) -> UserAccessWorkspa
     return access
 
 
+def accept_pending_invites(user: AbstractUser) -> list[UserAccessWorkspace]:
+    """Accepts every pending invite sent to the user's email, for accounts
+    created after they were invited."""
+    pending = UserAccessWorkspace.objects.filter(
+        user__isnull=True,
+        email__iexact=user.email,
+    ).select_related("workspace")
+    return [accept_invite(user=user, workspace=access.workspace) for access in pending]
+
+
 def update_member_role(
     actor: AbstractUser,
     workspace: Workspace,
