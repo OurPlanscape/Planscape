@@ -21,7 +21,7 @@ export function getGroupedGoals(
   return goals.reduce<Record<string, Record<string, ScenarioGoal[]>>>(
     (acc, goal) => {
       const groupLabel = goal.group_text;
-      const categoryLabel = goal.category_text;
+      const categoryLabel = goal.category;
 
       // Grouping by groupLabel
       if (!acc[groupLabel]) {
