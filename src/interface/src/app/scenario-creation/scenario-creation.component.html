@@ -46,21 +46,7 @@
             [isChildScenario]="
               (hasParent$ | async) ?? false
             "></app-step1-with-overview>
-          <app-adv-stand-level-constraints
-            *appFeatureFlag="
-              'ADV_STAND_LEVEL_CONSTRAINTS'
-            "></app-adv-stand-level-constraints>
         </sg-step>
-
-        <!-- TODO : just showing step earlier for faster debugging purposes -->
-        <sg-step>
-          <app-stand-level-constraints></app-stand-level-constraints>
-          <app-adv-stand-level-constraints
-            *appFeatureFlag="
-              'ADV_STAND_LEVEL_CONSTRAINTS'
-            "></app-adv-stand-level-constraints>
-        </sg-step>
-
         <sg-step *ngIf="subUnitsPrioritized && (hasParent$ | async) === false">
           <app-sub-unit-selector></app-sub-unit-selector>
         </sg-step>
