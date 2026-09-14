@@ -20,10 +20,16 @@ export class CardLinkComponent {
   @Input() label: string | null = null;
   @Input() subLabel: string | null = null;
   @Input() height: 'tall' | 'normal' = 'normal';
+  @Input() collapseContentOnSmall = true;
   @Output() navigate = new EventEmitter();
 
   @HostBinding('class.tall')
   get isTall() {
     return this.height === 'tall';
+  }
+
+  @HostBinding('class.collapseHeight')
+  get shouldCollapseContentOnSmall() {
+    return this.collapseContentOnSmall;
   }
 }

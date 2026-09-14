@@ -55,6 +55,13 @@
 
   box-sizing: border-box;
   overflow-y: auto;
+
+  // The page scrolls on small, so the list grows instead of scrolling inside a
+  // zero-basis flex item that collapses in an auto-height card.
+  @include on-small() {
+    flex: 0 0 auto;
+    overflow-y: visible;
+  }
 }
 
 .loading-row {
