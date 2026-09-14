@@ -34,19 +34,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FrontendConstants } from '@map/map.constants';
 
 /**
-  Replaces ScenarioStandsComponent + PlanningAreaStandsComponent.
-  
-  Previously, two different components were swapped using *ngIf/else based on
-  showStandsWithIncludes$, which caused a full destroy + create cycle
-  (and sometimes a DOUBLE one, due to a race condition between
-  showScenarioStands$ and showStandsWithIncludes$, since they are
-  independent streams).
- 
-  Now, there is a single instance that remains mounted and reacts internally
-  to currentStep$ (the single source of truth) to determine the sourceName/tilesUrl.
-  When switching steps, the tileset legitimately changes (so it still needs to
-  reload once, which is unavoidable), but the component is no longer
-  destroyed/recreated, and the map listeners are no longer re-registered.
+  reacts internally to currentStep$ (the single source of truth) to determine the sourceName/tilesUrl.
  */
 @UntilDestroy()
 @Component({
@@ -334,11 +322,7 @@ export class StandsComponent implements OnInit, AfterViewInit, OnDestroy {
         { source: this.sourceName, sourceLayer: this.sourceName, id },
         key
       );
-    } catch {
-      // Same as setFeatureState — remove is best-effort, so there's no need to
-      // retry aggressively: if the ID no longer exists in the new source,
-      // there's nothing to remove.
-    }
+    } catch {}
   }
 
   trackBySourceName(_index: number, sourceName: string): string {
