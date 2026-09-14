@@ -92,6 +92,15 @@ export class WorkspacesService {
     );
   }
 
+  /** Turns the requester's pending invite into a membership. */
+  acceptInvite(id: number): Observable<WorkspaceMember> {
+    return this.http.post<WorkspaceMember>(
+      `${this.v2Path}${id}/invite/accept/`,
+      {},
+      { withCredentials: true }
+    );
+  }
+
   updateMemberRole(
     id: number,
     userId: number,

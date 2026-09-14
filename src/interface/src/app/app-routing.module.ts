@@ -99,6 +99,17 @@ const routes: Routes = [
           ).then((m) => m.WorkspaceDashboardComponent),
       },
       {
+        // Workspace invite emails link here
+        path: 'workspace/:workspaceId/accept',
+        title: 'Workspace',
+        canMatch: [createFeatureMatchGuard('WORKSPACES')],
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import(
+            '@app/workspaces/accept-workspace-invite/accept-workspace-invite.component'
+          ).then((m) => m.AcceptWorkspaceInviteComponent),
+      },
+      {
         path: 'signup',
         title: 'Signup',
         resolve: { redirectUrl: redirectResolver },
