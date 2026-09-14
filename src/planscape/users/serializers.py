@@ -16,6 +16,7 @@ from rest_framework.relations import PrimaryKeyRelatedField
 from planning.models import Scenario, ProjectArea, PlanningArea
 from impacts.models import TreatmentPlan
 from collaboration.permissions import ScenarioPermission, PlanningAreaPermission
+from workspaces.services import accept_pending_invites
 
 from users.forms import CustomAllAuthPasswordResetForm
 
@@ -33,6 +34,7 @@ class NameRegistrationSerializer(RegisterSerializer):
         user.save(update_fields=["first_name", "last_name"])
 
         link_invites(user)
+        accept_pending_invites(user)
 
 
 class UserSerializer(serializers.ModelSerializer):
