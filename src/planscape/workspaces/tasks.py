@@ -34,6 +34,7 @@ def send_workspace_invitation(
         if role == "owner":
             role_article = "an"
 
+        workspace_path = f"workspace/{workspace.pk}"
         context = {
             "inviter": access.invited_by,
             "role_article": role_article,
@@ -42,10 +43,10 @@ def send_workspace_invitation(
             "message": message,
             "frontend_url": get_frontend_url("home"),
             "frontend_assets": get_frontend_url("assets"),
-            "workspace_link": get_frontend_url(f"workspaces/{workspace.pk}"),
+            "workspace_link": get_frontend_url(workspace_path),
             "create_account_link": get_frontend_url(
                 "signup",
-                query_params={"redirect": f"workspaces/{workspace.pk}"},
+                query_params={"redirect": workspace_path},
             ),
         }
 

@@ -19,23 +19,30 @@
     height: 360px;
   }
 
-  @include on-vert-small-min-med-width() {
-    height: 56px;
-    &.tall {
+  &.collapseHeight {
+    @include on-vert-small-min-med-width() {
       height: 56px;
+      &.tall {
+        height: 56px;
+      }
+    }
+
+    mgl-map {
+      @include on-vert-small-min-med-width() {
+        display: none;
+      }
     }
   }
+
+
 }
 
+// this doesnt belong here
 mgl-map {
   height: 100%;
   width: 100%;
   overflow: hidden;
   border-radius: 8px;
-
-  @include on-vert-small-min-med-width() {
-    display: none;
-  }
 }
 
 .overlay-navigation {
@@ -48,9 +55,9 @@ mgl-map {
   color: black;
   border-radius: 0 0 8px 8px;
   background: linear-gradient(
-    193deg,
-    rgba(6, 75, 186, 0) -134.4%,
-    $color-standard-blue 97.6%
+      193deg,
+      rgba(6, 75, 186, 0) -134.4%,
+      $color-standard-blue 97.6%
   );
   display: flex;
   padding: 16px;
@@ -59,9 +66,9 @@ mgl-map {
 
   &:hover {
     background: linear-gradient(
-      193deg,
-      rgba(6, 75, 186, 0) -244.4%,
-      $color-standard-blue 67.6%
+        193deg,
+        rgba(6, 75, 186, 0) -244.4%,
+        $color-standard-blue 67.6%
     );
     cursor: pointer;
   }
