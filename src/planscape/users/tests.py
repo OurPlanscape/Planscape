@@ -203,6 +203,8 @@ class PasswordResetTest(TestCase):
             },
         )
         self.user = User.objects.filter(email="testuser@test.com").get()
+        # drop the signup confirmation email
+        mail.outbox = []
 
     def test_reset_link(self):
         self.client.post(
@@ -332,6 +334,8 @@ class PasswordChangeTest(TestCase):
         email = EmailAddress.objects.filter(email="testuser@test.com").get()
         email.verified = True
         email.save()
+        # drop the signup confirmation email
+        mail.outbox = []
 
     def test_password_change_confirmation_email(self):
         # Must do a full login.

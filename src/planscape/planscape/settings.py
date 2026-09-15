@@ -284,6 +284,9 @@ ACCOUNT_USERNAME_REQUIRED = False
 LOGOUT_ON_PASSWORD_CHANGE = False
 ACCOUNT_ADAPTER = "users.allauth_adapter.CustomAllauthAdapter"
 PASSWORD_RESET_TIMEOUT = 1800  # 30 minutes.
+if TESTING_MODE:
+    # the cooldown lives in the shared cache, so it leaks between tests
+    ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN = 0
 
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="no-reply@planscape.org")
 EMAIL_BACKEND = config(
