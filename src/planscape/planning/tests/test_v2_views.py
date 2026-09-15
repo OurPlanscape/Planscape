@@ -1114,7 +1114,8 @@ class CreateScenariosFromUpload(APITestCase):
             "detail": "Validation error.",
             "errors": {
                 "global": [
-                    "None of the uploaded project areas overlap the selected planning area."
+                    "Upload was unsuccessful. The uploaded geometry is not within the "
+                    "selected planning area."
                 ]
             },
         }

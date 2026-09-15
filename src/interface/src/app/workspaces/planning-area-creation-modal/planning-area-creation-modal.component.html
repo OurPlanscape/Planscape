@@ -9,11 +9,6 @@
   (clickedPrimary)="submit()"
   (clickedClose)="handleClose()">
   <div modalBodyContent>
-    <sg-modal-info
-      leadingIcon="error"
-      infoType="error"
-      *ngIf="uploadFormError"
-      [message]="uploadFormError"></sg-modal-info>
     <form
       [formGroup]="planningAreaForm"
       (ngSubmit)="submit()"
@@ -24,6 +19,12 @@
           activities. It defines the geographic scope within which analyses and
           decision-making occur.
         </p>
+
+        <sg-modal-info
+          leadingIcon="error"
+          infoType="error"
+          *ngIf="uploadFormError"
+          [message]="uploadFormError"></sg-modal-info>
 
         <sg-input-field
           class="form-field"
