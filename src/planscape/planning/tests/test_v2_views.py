@@ -13,6 +13,7 @@ from workspaces.access import (
     OWNER_PERMISSIONS,
     VIEWER_PERMISSIONS,
 )
+from workspaces.tests.factories import PlanningWorkspaceFactory
 
 from planning.models import (
     PlanningArea,
@@ -650,6 +651,46 @@ class CreatePlanningAreaTest(APITestCase):
         data = response.json()
         self.assertIsNotNone(data.get("id"))
 
+    def test_create_with_name_taken_in_workspace_returns_400(self):
+        workspace = PlanningWorkspaceFactory.create(created_by=self.user)
+        PlanningAreaFactory.create(
+            name=self.valid_data["name"],
+            region_name=RegionChoices.CENTRAL_COAST,
+            workspace=workspace,
+        )
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:planningareas-list"),
+            {**self.valid_data, "workspace": workspace.pk},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(1, PlanningArea.objects.count())
+
+    def test_create_with_name_taken_in_other_workspace(self):
+        PlanningAreaFactory.create(
+            name=self.valid_data["name"],
+            workspace=PlanningWorkspaceFactory.create(created_by=self.user),
+        )
+        workspace = PlanningWorkspaceFactory.create(created_by=self.user)
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:planningareas-list"),
+            {**self.valid_data, "workspace": workspace.pk},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_without_workspace_allows_taken_name(self):
+        PlanningAreaFactory.create(user=self.user, name=self.valid_data["name"])
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:planningareas-list"),
+            self.valid_data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
 
 class CreatePlanningAreaNoRegionV2Test(APITestCase):
     def setUp(self):
@@ -858,9 +899,13 @@ class UpdatePlanningAreaTest(APITestCase):
         self.assertEqual(self.planning_area.name, "Editable Area")
 
     def test_rename_to_taken_name_fails(self):
+        workspace = PlanningWorkspaceFactory.create(created_by=self.creator)
+        self.planning_area.workspace = workspace
+        self.planning_area.save(update_fields=["workspace"])
         PlanningAreaFactory.create(
             user=self.creator,
             name="Another Area",
+            workspace=workspace,
         )
         payload = {"name": "Another Area"}
         self.client.force_authenticate(self.creator)
@@ -872,6 +917,37 @@ class UpdatePlanningAreaTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.planning_area.refresh_from_db()
         self.assertEqual(self.planning_area.name, "Editable Area")
+
+    def test_rename_to_name_taken_in_other_workspace(self):
+        workspace = PlanningWorkspaceFactory.create(created_by=self.creator)
+        self.planning_area.workspace = workspace
+        self.planning_area.save(update_fields=["workspace"])
+        PlanningAreaFactory.create(
+            user=self.creator,
+            name="Another Area",
+            workspace=PlanningWorkspaceFactory.create(created_by=self.creator),
+        )
+        self.client.force_authenticate(self.creator)
+        response = self.client.patch(
+            self.url,
+            {"name": "Another Area"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Another Area")
+
+    def test_rename_without_workspace_allows_taken_name(self):
+        PlanningAreaFactory.create(user=self.creator, name="Another Area")
+        self.client.force_authenticate(self.creator)
+        response = self.client.patch(
+            self.url,
+            {"name": "Another Area"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Another Area")
 
     def test_rename_to_same_name(self):
         payload = {"name": "Editable Area"}
