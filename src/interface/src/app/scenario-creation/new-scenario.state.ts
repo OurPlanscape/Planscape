@@ -189,9 +189,8 @@ export class NewScenarioState {
         subUnits,
         includedAreas,
       ]) => {
-        // Inside the project fn so it runs after switchMap cancels the previous inner (and its
-        // finalize fires) — a tap() before switchMap would be overridden by that finalize.
-        this.setLoading(true);
+        this.setAvailableStandsLoading(true);
+
         return this.scenarioService
           .getExcludedStands(
             this.scenarioId,
@@ -206,7 +205,7 @@ export class NewScenarioState {
               this.showMapError();
               return EMPTY;
             }),
-            finalize(() => this.setLoading(false))
+            finalize(() => this.setAvailableStandsLoading(false))
           );
       }
     ),
@@ -245,8 +244,19 @@ export class NewScenarioState {
     map((c) => c.unavailable.by_thresholds)
   );
 
-  private _loading$ = new BehaviorSubject(false);
-  public loading$ = this._loading$.asObservable();
+  private _availableStandsLoading$ = new BehaviorSubject(false);
+  private _baseStandsLoading$ = new BehaviorSubject(false);
+
+  public loading$ = combineLatest([
+    this._availableStandsLoading$,
+    this._baseStandsLoading$,
+  ]).pipe(
+    map(
+      ([availableStandsLoading, baseStandsLoading]) =>
+        availableStandsLoading || baseStandsLoading
+    ),
+    distinctUntilChanged()
+  );
 
   private _draftFinished$ = new BehaviorSubject(false);
 
@@ -277,8 +287,16 @@ export class NewScenarioState {
     return this._draftFinished$.value === true;
   }
 
-  setLoading(isLoading: boolean) {
-    this._loading$.next(isLoading);
+  setAvailableStandsLoading(isLoading: boolean): void {
+    this._availableStandsLoading$.next(isLoading);
+  }
+
+  setBaseStandsLoading(isLoading: boolean): void {
+    this._baseStandsLoading$.next(isLoading);
+  }
+
+  setLoading(isLoading: boolean): void {
+    this._availableStandsLoading$.next(isLoading);
   }
 
   setExcludedAreas(value: number[]) {
