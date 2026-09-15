@@ -705,17 +705,20 @@ class TxPrescriptionListTest(APITestCase):
 
 
 class TxPrescriptionBatchDeleteTest(APITestCase):
-    def setUp(self):
-        self.tx_plan = TreatmentPlanFactory.create()
-        self.alt_tx_plan = TreatmentPlanFactory.create()
-        self.client.force_authenticate(user=self.tx_plan.scenario.user)
-        self.txrx_owned_list = TreatmentPrescriptionFactory.create_batch(
-            10, treatment_plan=self.tx_plan
+    @classmethod
+    def setUpTestData(cls):
+        cls.tx_plan = TreatmentPlanFactory.create()
+        cls.alt_tx_plan = TreatmentPlanFactory.create()
+        cls.txrx_owned_list = TreatmentPrescriptionFactory.create_batch(
+            10, treatment_plan=cls.tx_plan
         )
         # plans for a different user
-        self.txrx_other_list = TreatmentPrescriptionFactory.create_batch(
-            10, treatment_plan=self.alt_tx_plan
+        cls.txrx_other_list = TreatmentPrescriptionFactory.create_batch(
+            10, treatment_plan=cls.alt_tx_plan
         )
+
+    def setUp(self):
+        self.client.force_authenticate(user=self.tx_plan.scenario.user)
 
     def test_batch_delete_tx_rx(self):
         payload = {"stand_ids": [txrx.stand_id for txrx in self.txrx_owned_list]}

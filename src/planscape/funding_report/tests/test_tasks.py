@@ -2,7 +2,7 @@ from datetime import timedelta
 from unittest import mock
 
 from datasets.models import DataLayerType
-from datasets.tests.factories import DataLayerFactory
+from datasets.tests.factories import DataLayerFactory, DatasetFactory
 from django.conf import settings
 from django.test import TestCase, override_settings
 from django.utils import timezone
@@ -35,21 +35,24 @@ from funding_report.tasks import (
 
 
 class FundingOpportunityReportTaskTest(TestCase):
-    def setUp(self):
-        self.user = UserFactory.create()
-        self.planning_area = PlanningAreaFactory.create(user=self.user)
-        self.scenario = ScenarioFactory.create(
-            user=self.user,
-            planning_area=self.planning_area,
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory.create()
+        cls.planning_area = PlanningAreaFactory.create(user=cls.user)
+        cls.scenario = ScenarioFactory.create(
+            user=cls.user,
+            planning_area=cls.planning_area,
         )
-        self.project_area = ProjectAreaFactory.create(scenario=self.scenario)
-        self.report = FundingOpportunityReport.objects.create(
-            scenario=self.scenario,
-            created_by=self.user,
+        cls.project_area = ProjectAreaFactory.create(scenario=cls.scenario)
+        cls.report = FundingOpportunityReport.objects.create(
+            scenario=cls.scenario,
+            created_by=cls.user,
         )
+        cls.dataset = DatasetFactory.create()
 
     def create_datalayer(self, metric, year, baseline):
         return DataLayerFactory.create(
+            dataset=self.dataset,
             name=f"{'Baseline' if baseline else 'Legalmax'} {year} {metric.value}",
             type=DataLayerType.RASTER,
             url="s3://bucket/fake.tif",
