@@ -150,7 +150,7 @@ class Command(BaseCommand):
         )
         try:
             # Sync buckets
-            subprocess.call(
+            subprocess.run(
                 [
                     "gcloud",
                     "storage",
@@ -159,7 +159,8 @@ class Command(BaseCommand):
                     f"gs://planscape-datastore-{source_env}/datalayers",
                     f"gs://planscape-datastore-{settings.ENV}/datalayers",
                     "--recursive",
-                ]
+                ],
+                check=True,
             )
 
             batch_size = options.get("batch_size", 500)
@@ -256,3 +257,4 @@ class Command(BaseCommand):
             current_run.finished_at = timezone.now()
             current_run.status = RestoreBackTrackStatus.FAILED
             current_run.save()
+            raise
