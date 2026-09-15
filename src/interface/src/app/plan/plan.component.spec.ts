@@ -20,6 +20,8 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MockDeclaration } from 'ng-mocks';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { BreadcrumbService } from '@services/breadcrumb.service';
+import { PlanState } from './plan.state';
 
 describe('PlanComponent', () => {
   let router: Router;
@@ -156,7 +158,7 @@ describe('PlanComponent', () => {
 
     component.backToOverview();
 
-    expect(navSpy).toHaveBeenCalledOnceWith(['plan', fakePlan.id.toString()]);
+    expect(navSpy).toHaveBeenCalledOnceWith([`/plan/${fakePlan.id}`]);
   });
 
   // --- constructor behavior (checkForInProgressModal) ---
@@ -220,6 +222,37 @@ describe('PlanComponent', () => {
 
     expect(showSpy).not.toHaveBeenCalled();
     expect(replaceSpy).not.toHaveBeenCalled();
+  });
+
+  describe('breadcrumb', () => {
+    let updateSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      (TestBed.inject(PlanState) as any).currentPlan$ = of(fakePlan);
+      updateSpy = spyOn(TestBed.inject(BreadcrumbService), 'updateBreadCrumb');
+    });
+
+    it('points back home outside a workspace', () => {
+      create();
+
+      expect(updateSpy).toHaveBeenCalledWith({
+        label: 'Home',
+        backUrl: '/home',
+      });
+    });
+
+    it('points back to the workspace when nested under one', () => {
+      (TestBed.inject(ActivatedRoute).snapshot as any).pathFromRoot = [
+        { paramMap: convertToParamMap({ workspaceId: '7' }) },
+      ];
+
+      create();
+
+      expect(updateSpy).toHaveBeenCalledWith({
+        label: 'Workspace',
+        backUrl: '/workspace/7',
+      });
+    });
   });
 
   it('does nothing when getCurrentNavigation() is null', () => {

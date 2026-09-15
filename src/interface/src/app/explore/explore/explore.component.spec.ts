@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatTabsModule } from '@angular/material/tabs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { PlanState } from '@app/plan/plan.state';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
@@ -116,5 +116,17 @@ describe('ExploreComponent', () => {
     const config = lastBreadcrumbConfig();
     expect(config.label).toEqual('New Plan');
     expect(config.backUrl).toEqual('/');
+  });
+
+  it('points "New Plan" back to the workspace in the workspace map viewer', () => {
+    delete mockRouteSnapshotData.planId;
+    delete mockRouteSnapshotData.scenarioId;
+    currentPlanId$.next(null);
+    (TestBed.inject(ActivatedRoute).snapshot as any).pathFromRoot = [
+      { paramMap: convertToParamMap({ workspaceId: '7' }) },
+    ];
+    setupComponent();
+
+    expect(lastBreadcrumbConfig().backUrl).toEqual('/workspace/7');
   });
 });
