@@ -7,7 +7,7 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase, APITransactionTestCase
+from rest_framework.test import APITestCase
 from workspaces.access import (
     COLLABORATOR_PERMISSIONS,
     OWNER_PERMISSIONS,
@@ -136,7 +136,7 @@ class CreatorsTest(APITestCase):
         self.assertEqual(set(creator_names), {"user a", "user b", "user e"})
 
 
-class GetPlanningAreaTest(APITransactionTestCase):
+class GetPlanningAreaTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create(username="testuser")
 

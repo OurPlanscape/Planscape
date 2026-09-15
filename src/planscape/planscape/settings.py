@@ -22,7 +22,7 @@ except FileNotFoundError:
     config = Config(RepositoryEmpty())
 django_stubs_ext.monkeypatch()
 
-TESTING_MODE = "test" in sys.argv
+TESTING_MODE = "test" in sys.argv or "pytest" in sys.modules
 LOGLEVEL = config("LOGLEVEL", default="INFO", cast=str)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -350,6 +350,7 @@ LOGGING = {
             "level": LOGLEVEL,
             "formatter": "verbose",
             "class": "logging.StreamHandler",
+            "filters": ["testing"],
         },
     },
     "root": {

@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.urls import reverse
 from modules.base import compute_scenario_capabilities
 from rest_framework import status
-from rest_framework.test import APITestCase, APITransactionTestCase
+from rest_framework.test import APITestCase
 
 from planning.models import (
     Scenario,
@@ -31,7 +31,7 @@ from planning.tests.factories import (
 )
 
 
-class CreateScenarioTest(APITransactionTestCase):
+class CreateScenarioTest(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.planning_area = PlanningAreaFactory(user=self.user)
@@ -64,11 +64,12 @@ class CreateScenarioTest(APITransactionTestCase):
             "configuration": configuration,
         }
         self.client.force_authenticate(self.user)
-        response = self.client.post(
-            reverse("api:planning:scenarios-list"),
-            payload,
-            format="json",
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(
+                reverse("api:planning:scenarios-list"),
+                payload,
+                format="json",
+            )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNotNone(response.json().get("id"))
