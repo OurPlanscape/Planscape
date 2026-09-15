@@ -39,11 +39,14 @@ class DatasetAdmin(admin.ModelAdmin):
         "visibility",
         "organization",
         "selection_type",
+        "created_at",
+        "updated_at",
     )
     list_display_links = (
         "id",
         "name",
     )
+    readonly_fields = ("created_at", "updated_at")
 
     def get_changeform_initial_data(self, request) -> Dict[str, Any]:
         return {"created_by": request.user}
@@ -82,6 +85,8 @@ class DataLayerAdmin(admin.ModelAdmin):
         "dataset",
         "category",
         "organization",
+        "created_at",
+        "updated_at",
     )
     list_display_links = (
         "id",
@@ -103,6 +108,8 @@ class DataLayerAdmin(admin.ModelAdmin):
         "table",
         "public_url",
         "deleted_at",
+        "created_at",
+        "updated_at",
     ]
     inlines = [DataLayerHasStyleAdmin]
     actions = [
