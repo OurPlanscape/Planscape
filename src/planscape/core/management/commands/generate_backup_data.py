@@ -71,6 +71,7 @@ class Command(BaseCommand):
                     "datasets.Style",
                     "datasets.DataLayer",
                     "datasets.DataLayerHasStyle",
+                    "planning.TreatmentGoalCategory",
                     "planning.TreatmentGoal",
                     "planning.TreatmentGoalUsesDataLayer",
                     "--indent",

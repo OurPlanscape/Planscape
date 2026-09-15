@@ -963,8 +963,8 @@ class TreatmentGoalViewSet(
     filterset_class = TreatmentGoalFilter
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [TrackedFilterBackend, OrderingFilter]
-    ordering_fields = ["category", "name"]
-    ordering = ["category", "name"]
+    ordering_fields = ["category__name", "name"]
+    ordering = ["category__name", "name"]
 
     def get_queryset(self):
         user = self.request.user if self.request else None
