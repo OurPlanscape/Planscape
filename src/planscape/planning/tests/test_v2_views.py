@@ -6,13 +6,13 @@ from collaboration.tests.factories import UserObjectRoleFactory
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.urls import reverse
-from impacts.permissions import (
+from rest_framework import status
+from rest_framework.test import APITestCase, APITransactionTestCase
+from workspaces.access import (
     COLLABORATOR_PERMISSIONS,
     OWNER_PERMISSIONS,
     VIEWER_PERMISSIONS,
 )
-from rest_framework import status
-from rest_framework.test import APITestCase, APITransactionTestCase
 
 from planning.models import (
     PlanningArea,
@@ -1114,7 +1114,8 @@ class CreateScenariosFromUpload(APITestCase):
             "detail": "Validation error.",
             "errors": {
                 "global": [
-                    "None of the uploaded project areas overlap the selected planning area."
+                    "Upload was unsuccessful. The uploaded geometry is not within the "
+                    "selected planning area."
                 ]
             },
         }

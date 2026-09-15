@@ -17,12 +17,11 @@
   </sg-modal-info>
   <div modalBodyContent>
     <form [formGroup]="uploadProjectsForm!" class="upload-scenario-form">
-      <app-form-message
-        [messageType]="FormMessageType.ERROR"
+      <sg-modal-info
+        leadingIcon="error"
+        infoType="error"
         *ngIf="uploadFormError"
-        title="Upload was unsuccessful"
-        message="{{ uploadFormError }}">
-      </app-form-message>
+        [message]="uploadFormError"></sg-modal-info>
 
       <div class="field-row">
         <div class="field-label-required">

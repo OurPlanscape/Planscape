@@ -2,7 +2,7 @@ import json
 from typing import List, Optional  # noqa
 
 import markdown
-from collaboration.services import get_permissions, get_role
+from workspaces.access import get_planning_area_permissions, get_planning_area_role
 from datasets.models import DataLayer, DataLayerStatus, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
@@ -23,6 +23,7 @@ from planning.models import (
     Scenario,
     ScenarioPlanningApproach,
     ScenarioResult,
+    ScenarioResultErrorCode,
     ScenarioType,
     SharedLink,
     TreatmentGoal,
@@ -39,6 +40,14 @@ from planning.services import (
     get_min_project_area,
     union_geojson,
 )
+
+
+class ScenarioResultErrorSerializer(serializers.Serializer):
+    error_code = serializers.ChoiceField(
+        choices=ScenarioResultErrorCode.choices,
+        help_text="Scenario result error code.",
+    )
+    description = serializers.CharField(help_text="Human-readable error description.")
 
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
@@ -89,11 +98,11 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
 
     def get_role(self, instance):
         user = self.context["request"].user or self.request.user
-        return get_role(user, instance)
+        return get_planning_area_role(user, instance) or False
 
     def get_permissions(self, instance):
         user = self.context["request"].user or self.request.user
-        return list(get_permissions(user, instance))
+        return get_planning_area_permissions(user, instance)
 
     class Meta:
         fields = (
@@ -319,6 +328,7 @@ class PlanningAreaNoteListSerializer(serializers.ModelSerializer):
 
 class ScenarioResultSerializer(serializers.ModelSerializer):
     result = serializers.SerializerMethodField()
+    errors = ScenarioResultErrorSerializer(many=True, allow_null=True, required=False)
 
     class Meta:
         fields = (
@@ -330,6 +340,7 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
             "status",
             "result",
             "run_details",
+            "errors",
         )
         model = ScenarioResult
 

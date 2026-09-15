@@ -960,7 +960,8 @@ class CreateScenarioFromUploadTest(TestCase):
         }
         with self.assertRaisesMessage(
             ValueError,
-            "None of the uploaded project areas overlap the selected planning area.",
+            "Upload was unsuccessful. The uploaded geometry is not within the "
+            "selected planning area.",
         ):
             self._upload(outside_geometry)
 

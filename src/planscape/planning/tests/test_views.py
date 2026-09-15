@@ -3,13 +3,13 @@ import json
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
-from impacts.permissions import (
+from planscape.tests.factories import UserFactory
+from rest_framework.test import APITestCase
+from workspaces.access import (
     COLLABORATOR_PERMISSIONS,
     OWNER_PERMISSIONS,
     VIEWER_PERMISSIONS,
 )
-from planscape.tests.factories import UserFactory
-from rest_framework.test import APITestCase
 
 from planning.models import PlanningAreaNote
 from planning.tests.factories import PlanningAreaFactory, ScenarioFactory

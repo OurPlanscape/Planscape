@@ -500,7 +500,8 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
     ]
     if not project_areas:
         raise ValueError(
-            "None of the uploaded project areas overlap the selected planning area."
+            "Upload was unsuccessful. The uploaded geometry is not within the "
+            "selected planning area."
         )
     result = {
         "type": "FeatureCollection",
