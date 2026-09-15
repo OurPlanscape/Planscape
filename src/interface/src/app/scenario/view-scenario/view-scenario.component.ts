@@ -130,7 +130,7 @@ export class ViewScenarioComponent {
         untilDestroyed(this),
         switchMap((s) => {
           // On specific scenario
-          let scenarioBackUrl = getPlanPath(this.planId);
+          let scenarioBackUrl = getPlanPath(this.planId, this.route.snapshot);
           if (s.parent) {
             scenarioBackUrl += `/scenario/${s.parent}/dashboard`;
           } else {
@@ -191,7 +191,7 @@ export class ViewScenarioComponent {
   }
 
   goToPlan() {
-    this.router.navigate(['/plan', this.planId]);
+    this.router.navigate([getPlanPath(this.planId, this.route.snapshot)]);
   }
 
   private shouldPoll(scenario: Scenario) {

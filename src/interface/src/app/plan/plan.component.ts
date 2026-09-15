@@ -17,6 +17,8 @@ import { PlanState } from './plan.state';
 import { ScenarioState } from '@scenario/scenario.state';
 import { canAddScenario } from './permissions';
 import {
+  getPlanPath,
+  getWorkspaceId,
   planningAreaMetricsAreReady,
   planningAreaMetricsFailed,
   POLLING_INTERVAL,
@@ -69,11 +71,12 @@ export class PlanComponent implements OnInit {
         next: (plan) => {
           this.loadingPlan = false;
 
-          // Setting up breadcrumbs
-          this.breadcrumbService.updateBreadCrumb({
-            label: 'Home',
-            backUrl: '/home',
-          });
+          const workspaceId = getWorkspaceId(this.route.snapshot);
+          this.breadcrumbService.updateBreadCrumb(
+            workspaceId
+              ? { label: 'Workspace', backUrl: `/workspace/${workspaceId}` }
+              : { label: 'Home', backUrl: '/home' }
+          );
         },
         error: () => {
           this.planNotFound = true;
@@ -89,7 +92,7 @@ export class PlanComponent implements OnInit {
   }
 
   backToOverview() {
-    this.router.navigate(['plan', this.planId]);
+    this.router.navigate([getPlanPath(this.planId!, this.route.snapshot)]);
   }
 
   //notes handling functions
