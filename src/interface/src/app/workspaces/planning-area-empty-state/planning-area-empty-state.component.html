@@ -12,7 +12,7 @@
   </p>
 </div>
 
-<div class="action-row">
+<div class="action-row" *ngIf="canAddPlanningArea$ | async">
   <button sg-button (click)="handleDraw()">Draw Planning Area</button>
 
   <button sg-button variant="primary" (click)="handleUpload()">

@@ -34,7 +34,7 @@ type Story = StoryObj<PlanningAreaCardComponent>;
 
 export const Default: Story = {
   args: {
-    planningArea: planning,
+    planningArea: { ...planning, permissions: ['change_planning_area'] },
   },
   render: (args) => ({
     props: args,

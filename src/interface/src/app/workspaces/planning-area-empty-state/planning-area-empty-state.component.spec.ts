@@ -1,19 +1,32 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PlanningAreaEmptyStateComponent } from './planning-area-empty-state.component';
-import { PlanningAreaCreationModalComponent } from '../planning-area-creation-modal/planning-area-creation-modal.component';
-import { MockDeclaration } from 'ng-mocks';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MatDialogModule } from '@angular/material/dialog';
+import { BehaviorSubject } from 'rxjs';
+import { Workspace } from '@types';
+import { WorkspaceState } from '../workspace.state';
 
 describe('PlanningAreaEmptyStateComponent', () => {
   let component: PlanningAreaEmptyStateComponent;
   let fixture: ComponentFixture<PlanningAreaEmptyStateComponent>;
+  let currentWorkspace$: BehaviorSubject<Workspace>;
+
+  const workspaceWith = (permissions: string[]) =>
+    ({ permissions }) as unknown as Workspace;
 
   beforeEach(async () => {
+    currentWorkspace$ = new BehaviorSubject(
+      workspaceWith(['add_planningarea'])
+    );
+
     await TestBed.configureTestingModule({
-      imports: [PlanningAreaEmptyStateComponent],
-      declarations: [MockDeclaration(PlanningAreaCreationModalComponent)],
+      imports: [PlanningAreaEmptyStateComponent, MatDialogModule],
       providers: [
+        {
+          provide: WorkspaceState,
+          useValue: { currentWorkspace$ },
+        },
         {
           provide: ActivatedRoute,
           useValue: {
@@ -34,6 +47,17 @@ describe('PlanningAreaEmptyStateComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('shows the add actions when the workspace grants the permission', () => {
+    expect(fixture.nativeElement.querySelector('.action-row')).not.toBeNull();
+  });
+
+  it('hides the add actions when the workspace does not grant them', () => {
+    currentWorkspace$.next(workspaceWith(['view_workspace']));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.action-row')).toBeNull();
   });
 
   describe('handleDraw', () => {
