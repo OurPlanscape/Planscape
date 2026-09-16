@@ -105,7 +105,6 @@ class DataLayerAdminForm(forms.ModelForm):
         self.fields["info"].disabled = True
         self.fields["category"].required = False
         self.fields["metadata"].required = False
-
         if self.instance and self.instance.pk:
             self.fields["geometry"].widget.geometry_url = reverse(
                 "admin:datasets_datalayer_geometry_preview",
@@ -122,7 +121,6 @@ class DataLayerAdminForm(forms.ModelForm):
                 "dataset",
                 "category",
                 "name",
-                "table",
                 "info",
                 "metadata",
                 "geometry_shapefile_zip",
@@ -160,7 +158,6 @@ class DataLayerAdminForm(forms.ModelForm):
             "dataset",
             "category",
             "name",
-            "table",
             "info",
             "metadata",
         )
