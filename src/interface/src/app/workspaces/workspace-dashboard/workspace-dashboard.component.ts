@@ -58,7 +58,7 @@ export class WorkspaceDashboardComponent implements OnInit {
   ngOnInit(): void {
     this.breadcrumbService.updateBreadCrumb({
       label: 'Home ',
-      backUrl: 'home',
+      backUrl: '/home',
     });
   }
 

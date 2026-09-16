@@ -235,12 +235,19 @@ export class ScenariosListComponent implements OnInit {
       );
 
     if (this.mode === 'project-area') {
-      const base = ['/plan', this.plan!.id, 'scenario', clickedScenario.id];
+      const base = [
+        getPlanPath(this.plan!.id, this.route.snapshot),
+        'scenario',
+        clickedScenario.id,
+      ];
       // Note that these child scenarios should not navigate to a dashboard on completion
       this.router.navigate(isFinished ? [...base] : base);
       this.breadcrumbService.updateBreadCrumb({
         label: 'Project Area Dashboard',
-        backUrl: getPlanPath(clickedScenario.planning_area),
+        backUrl: getPlanPath(
+          clickedScenario.planning_area,
+          this.route.snapshot
+        ),
       });
     } else {
       const base = ['scenario', clickedScenario.id];
@@ -249,7 +256,10 @@ export class ScenariosListComponent implements OnInit {
       });
       this.breadcrumbService.updateBreadCrumb({
         label: 'Planning Area Overview',
-        backUrl: getPlanPath(clickedScenario.planning_area),
+        backUrl: getPlanPath(
+          clickedScenario.planning_area,
+          this.route.snapshot
+        ),
       });
     }
   }

@@ -85,7 +85,7 @@ export class ScenarioDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const planPath = getPlanPath(this.planId);
+    const planPath = getPlanPath(this.planId, this.route.snapshot);
     this.currentScenario$.pipe(take(1)).subscribe((scenario) => {
       const breadcrumb = scenario?.parent
         ? {

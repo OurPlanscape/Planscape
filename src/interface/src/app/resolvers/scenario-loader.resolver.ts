@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { ActivatedRouteSnapshot, ResolveFn, Router } from '@angular/router';
 import { ScenarioState } from '@scenario/scenario.state';
+import { getPlanPath } from '@plan/plan-helpers';
 
 export const scenarioLoaderResolver: ResolveFn<number | null> = (
   route: ActivatedRouteSnapshot
@@ -13,7 +14,7 @@ export const scenarioLoaderResolver: ResolveFn<number | null> = (
 
   if (!scenarioIdParam || !scenarioId) {
     scenarioState.resetScenarioId();
-    router.navigate(['/plan', planId]);
+    router.navigate([getPlanPath(planId, route)]);
     return null;
   }
 
