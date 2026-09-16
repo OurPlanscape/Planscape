@@ -13,3 +13,4 @@ export * from './user.types';
 export * from './workspace.types';
 export * from './scenario.draft.types';
 export * from './funding-report';
+export * from './websocket.types';
