@@ -20,6 +20,7 @@ from django.db.models.expressions import RawSQL
 from fiona.crs import from_epsg
 from gis.core import get_storage_session
 from impacts.calculator import truncate_result
+from impacts.events import publish_treatment_plan_event
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -80,6 +81,9 @@ def create_treatment_plan(
         },
     )
     actstream_action.send(created_by, verb="created", action_object=treatment_plan)
+    publish_treatment_plan_event(
+        "impacts.treatment_plan.created", treatment_plan, actor=created_by
+    )
     return treatment_plan
 
 
@@ -177,6 +181,12 @@ def clone_treatment_plan(
         verb="cloned",
         action_object=cloned_plan,
         target=treatment_plan,
+    )
+    publish_treatment_plan_event(
+        "impacts.treatment_plan.created",
+        cloned_plan,
+        actor=user,
+        cloned_from=treatment_plan.pk,
     )
 
     return (cloned_plan, cloned_prescriptions)

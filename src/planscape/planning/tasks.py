@@ -28,6 +28,7 @@ from stands.services import (
 from utils.cli_utils import call_forsys
 from utils.frontend import get_frontend_url
 
+from planning.events import publish_planning_area_event, publish_scenario_event
 from planning.models import (
     GeoPackageStatus,
     PlanningArea,
@@ -92,7 +93,7 @@ def async_create_stands(planning_area_id: int, stand_size: StandSizeChoices) -> 
 @app.task()
 def async_forsys_run(scenario_id: int) -> None:
     try:
-        scenario = Scenario.objects.get(id=scenario_id)
+        scenario = Scenario.objects.select_related("planning_area").get(id=scenario_id)
     except Scenario.DoesNotExist:
         log.warning(f"Scenario with {scenario_id} does not exist.")
         raise
@@ -101,6 +102,7 @@ def async_forsys_run(scenario_id: int) -> None:
 
         scenario.result_status = ScenarioResultStatus.RUNNING
         scenario.save(update_fields=["result_status", "updated_at"])
+        publish_scenario_event("planning.scenario.status_changed", scenario)
 
         call_forsys(scenario.pk)
 
@@ -123,6 +125,7 @@ def async_forsys_run(scenario_id: int) -> None:
             "Running forsys for scenario %s timed-out. Might be too big.",
             scenario_id,
         )
+        publish_scenario_event("planning.scenario.status_changed", scenario)
 
     except ForsysException:
         scenario.result_status = ScenarioResultStatus.PANIC
@@ -143,6 +146,7 @@ def async_forsys_run(scenario_id: int) -> None:
             "A panic error happened while trying to call forsys for %s",
             scenario_id,
         )
+        publish_scenario_event("planning.scenario.status_changed", scenario)
 
 
 @app.task()
@@ -181,6 +185,9 @@ def async_set_planning_area_status(
                     planning_area_id,
                     status,
                     update_fields,
+                )
+                publish_planning_area_event(
+                    "planning.planning_area.map_status_changed", planning_area
                 )
             else:
                 log.info(
@@ -436,7 +443,7 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
 @app.task()
 def async_mark_scenario_panic(scenario_id: int) -> None:
     try:
-        scenario = Scenario.objects.get(pk=scenario_id)
+        scenario = Scenario.objects.select_related("planning_area").get(pk=scenario_id)
         scenario.result_status = ScenarioResultStatus.PANIC
         if hasattr(scenario, "results"):
             scenario.results.status = ScenarioResultStatus.PANIC
@@ -452,6 +459,7 @@ def async_mark_scenario_panic(scenario_id: int) -> None:
             scenario.results.save()
         scenario.save(update_fields=["result_status", "updated_at"])
         log.info("Scenario %s marked as PANIC due to workflow error.", scenario_id)
+        publish_scenario_event("planning.scenario.status_changed", scenario)
     except Scenario.DoesNotExist:
         log.exception("Scenario %s does not exist (mark PANIC).", scenario_id)
 
@@ -469,7 +477,7 @@ def trigger_scenario_post_processing():
 
 @app.task()
 def async_scenario_post_processing(scenario_id):
-    scenario = Scenario.objects.get(pk=scenario_id)
+    scenario = Scenario.objects.select_related("planning_area").get(pk=scenario_id)
 
     try:
         if scenario.result_status == ScenarioResultStatus.SUCCESS:
@@ -480,6 +488,7 @@ def async_scenario_post_processing(scenario_id):
         scenario.post_process_status = ScenarioPostProcessingStatus.SUCCESS
 
     scenario.save(update_fields=["post_process_status"])
+    publish_scenario_event("planning.scenario.status_changed", scenario)
 
 
 @app.task()

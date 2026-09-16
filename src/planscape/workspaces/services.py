@@ -8,6 +8,7 @@ from django.db import transaction
 from planscape.analytics import track_event
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
+from workspaces.events import publish_member_event, publish_workspace_deleted
 from workspaces.models import (
     UserAccessWorkspace,
     Workspace,
@@ -64,6 +65,8 @@ def delete_workspace(
         )
 
     action.send(user, verb="deleted", action_object=workspace)
+    # Published before the soft delete so every connected client still gets it.
+    publish_workspace_deleted(workspace, actor=user)
     # Planning areas outlive the workspace. The delete below is a soft delete,
     # so on_delete=SET_NULL never fires and we have to detach them by hand to
     # avoid leaving live planning areas pointing at a dead workspace.
@@ -113,6 +116,15 @@ def invite_member(
 
     send_workspace_invitation.delay(access.pk, message)
 
+    if invitee is not None:
+        publish_member_event(
+            "workspace.member.added",
+            workspace,
+            user_id=invitee.pk,
+            role=role,
+            actor=inviter,
+        )
+
     track_event(
         name="workspace.member.invited",
         properties={
@@ -140,6 +152,13 @@ def accept_invite(user: AbstractUser, workspace: Workspace) -> UserAccessWorkspa
 
     access.user = user
     access.save()
+    publish_member_event(
+        "workspace.member.added",
+        workspace,
+        user_id=user.pk,
+        role=access.role,
+        actor=user,
+    )
 
     track_event(
         name="workspace.member.invite_accepted",
@@ -179,6 +198,13 @@ def update_member_role(
 
     access.role = role
     access.save()
+    publish_member_event(
+        "workspace.member.role_changed",
+        workspace,
+        user_id=int(target_user_id),
+        role=role,
+        actor=actor,
+    )
 
     track_event(
         name="workspace.member.role_changed",
@@ -216,6 +242,12 @@ def remove_member(
         raise NotFound("This user is not a member of the workspace.")
 
     access.delete()
+    publish_member_event(
+        "workspace.member.left" if is_self else "workspace.member.removed",
+        workspace,
+        user_id=int(target_user_id),
+        actor=actor,
+    )
 
     track_event(
         name="workspace.member.left" if is_self else "workspace.member.removed",

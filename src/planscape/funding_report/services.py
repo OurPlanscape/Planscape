@@ -37,6 +37,7 @@ from rasterio.mask import mask
 from shapely.geometry import Polygon, shape
 from utils.geometry import to_multi
 
+from funding_report.events import publish_report_event
 from funding_report.models import (
     BIOMASS_VARIABLE,
     FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
@@ -1511,6 +1512,11 @@ def export_funding_report_to_geopackage(
     try:
         report.geopackage_status = GeoPackageStatus.PROCESSING
         report.save(update_fields=["geopackage_status", "updated_at"])
+        publish_report_event(
+            "funding_report.report.geopackage_status_changed",
+            report,
+            geopackage_url=report.geopackage_url,
+        )
 
         temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
         if not temp_folder.exists():
@@ -1545,10 +1551,20 @@ def export_funding_report_to_geopackage(
         report.geopackage_url = geopackage_path
         report.geopackage_status = GeoPackageStatus.SUCCEEDED
         report.save(update_fields=["geopackage_url", "geopackage_status", "updated_at"])
+        publish_report_event(
+            "funding_report.report.geopackage_status_changed",
+            report,
+            geopackage_url=report.geopackage_url,
+        )
         return geopackage_path
     except Exception:
         log.exception("Failed to export funding report %s to geopackage.", report.pk)
         report.geopackage_url = None
         report.geopackage_status = GeoPackageStatus.FAILED
         report.save(update_fields=["geopackage_url", "geopackage_status", "updated_at"])
+        publish_report_event(
+            "funding_report.report.geopackage_status_changed",
+            report,
+            geopackage_url=report.geopackage_url,
+        )
         return None

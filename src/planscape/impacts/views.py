@@ -2,6 +2,7 @@ import logging
 
 from django.http import FileResponse
 from drf_spectacular.utils import OpenApiTypes, extend_schema, extend_schema_view
+from impacts.events import publish_treatment_plan_event
 from impacts.filters import TreatmentPlanFilterSet, TreatmentPlanNoteFilterSet
 from impacts.models import (
     TreatmentPlan,
@@ -113,6 +114,12 @@ class TreatmentPlanViewSet(
             "created_by",
         )
         return qs
+
+    def perform_destroy(self, instance):
+        publish_treatment_plan_event(
+            "impacts.treatment_plan.deleted", instance, actor=self.request.user
+        )
+        super().perform_destroy(instance)
 
     def get_serializer_class(self):
         try:

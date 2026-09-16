@@ -113,3 +113,36 @@ execution on GCP web console.
 ```bash
 make cloud-run-execute-frontend-job ENV=<environment>
 ```
+
+## WebSockets
+
+The backend serves WebSockets from the same Cloud Run service as HTTP
+(`bin/run_gunicorn.sh` runs gunicorn with uvicorn workers). The gateway
+proxies `/planscape-backend/ws/` with the `Upgrade` headers and a one hour
+read timeout. The Cloud Run services themselves need matching settings in the
+`infrastructure` repository (`terraform/app/variables.tf`):
+
+* `planscape_backend_timeout` and `planscape_gateway_timeout`: Cloud Run
+  closes every socket at the request timeout, so raise them from `120s` to
+  `3600s`. Clients reconnect after that.
+* `planscape_backend_max_instance_request_concurrency`: every open socket
+  holds one request slot for its lifetime. With the default of `2` a third
+  browser tab starts a new backend instance; under ASGI one instance handles
+  many concurrent requests, so a value around `80` is appropriate. Instances
+  with open sockets do not scale to zero.
+* Optional: `PLANSCAPE_WEBSOCKET_ALLOWED_ORIGINS` (defaults to
+  `PLANSCAPE_CORS_ALLOWED_ORIGINS`, which already contains the site origin)
+  and `CHANNEL_LAYER_REDIS_URL` (defaults to `REDIS_URL`; a separate Valkey db
+  keeps channel keys out of the cache).
+
+Until those are applied the endpoint answers but sockets are cut every two
+minutes.
+
+Under ASGI, Django runs each request on its own short-lived thread, so
+`PLANSCAPE_DATABASE_CONN_MAX_AGE` no longer reuses connections across
+requests. Measure connection churn after the switch; the follow-up is
+psycopg 3 with Django's built-in connection pool.
+
+The legacy VM deployment (`bin/run_server.sh`, uWSGI behind nginx with
+`uwsgi_pass`) has no WebSocket endpoint: uWSGI cannot serve ASGI. Everything
+else keeps working there as plain WSGI.

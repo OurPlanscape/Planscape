@@ -57,6 +57,7 @@ from stands.models import Stand, StandMetric, StandSizeChoices, area_from_size
 from stands.services import get_datalayer_metric, get_stand_grid_key_search_precision
 from utils.geometry import to_multi
 
+from planning.events import publish_planning_area_event, publish_scenario_event
 from planning.geometry import (
     coerce_geojson,
     coerce_geometry,
@@ -156,6 +157,9 @@ def create_planning_area(
         planning_area.map_status = PlanningAreaMapStatus.OVERSIZE
         planning_area.save(update_fields=["map_status"])
         action.send(user, verb="created", action_object=planning_area)
+        publish_planning_area_event(
+            "planning.planning_area.created", planning_area, actor=user
+        )
         track_event(
             name="planning.planning_area.created",
             properties={"region": region_name, "email": user.email if user else None},
@@ -197,6 +201,9 @@ def create_planning_area(
         user_id=user.pk,
     )
     action.send(user, verb="created", action_object=planning_area)
+    publish_planning_area_event(
+        "planning.planning_area.created", planning_area, actor=user
+    )
     transaction.on_commit(lambda: stands_workflow.apply_async())
     return planning_area
 
@@ -216,6 +223,9 @@ def delete_planning_area(
     right_now = now()
     action.send(user, verb="deleted", action_object=planning_area)
     planning_area.delete()
+    publish_planning_area_event(
+        "planning.planning_area.deleted", planning_area, actor=user
+    )
     Scenario.objects.filter(planning_area__pk=planning_area.pk).update(
         deleted_at=right_now
     )
@@ -345,6 +355,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         action_object=scenario,
         target=scenario.planning_area,
     )
+    publish_scenario_event("planning.scenario.created", scenario, actor=user)
     if (
         scenario.treatment_goal is not None
     ):  # scenarios in 'draft' wont have a treatment_goal
@@ -486,6 +497,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
             target=scenario.planning_area,
         )
     )
+    publish_scenario_event("planning.scenario.created", scenario, actor=user)
     project_areas = [
         project_area
         for project_area in (
@@ -555,6 +567,7 @@ def delete_scenario(
     planning_area: PlanningArea = scenario.planning_area
 
     scenario.delete()
+    publish_scenario_event("planning.scenario.deleted", scenario, actor=user)
 
     planning_area.updated_at = right_now
     planning_area.save(update_fields=["updated_at"])
@@ -1090,6 +1103,7 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
     action.send(
         user, verb="triggered", action_object=scenario, target=scenario.planning_area
     )
+    publish_scenario_event("planning.scenario.status_changed", scenario, actor=user)
 
     transaction.on_commit(
         lambda: prepare_scenarios_for_forsys_and_run.delay(scenario_id=scenario.pk)
@@ -1798,6 +1812,11 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
 
         scenario.geopackage_status = GeoPackageStatus.PROCESSING
         scenario.save(update_fields=["geopackage_status", "updated_at"])
+        publish_scenario_event(
+            "planning.scenario.geopackage_status_changed",
+            scenario,
+            geopackage_url=scenario.geopackage_url,
+        )
 
         export_planning_area_to_geopackage(scenario.planning_area, temp_file)
         if feature_enabled("ADD_INCLUDES"):
@@ -1851,6 +1870,11 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
         scenario.save(
             update_fields=["geopackage_url", "geopackage_status", "updated_at"]
         )
+        publish_scenario_event(
+            "planning.scenario.geopackage_status_changed",
+            scenario,
+            geopackage_url=scenario.geopackage_url,
+        )
 
         return str(geopackage_path)
     except Exception:
@@ -1859,6 +1883,11 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
         scenario.geopackage_status = GeoPackageStatus.FAILED
         scenario.save(
             update_fields=["geopackage_url", "geopackage_status", "updated_at"]
+        )
+        publish_scenario_event(
+            "planning.scenario.geopackage_status_changed",
+            scenario,
+            geopackage_url=scenario.geopackage_url,
         )
 
 
@@ -1881,6 +1910,7 @@ def toggle_scenario_status(scenario: Scenario, user: User) -> Scenario:
     scenario.save(update_fields=["status"])
 
     action.send(user, verb=verb, action_object=scenario)
+    publish_scenario_event("planning.scenario.status_changed", scenario, actor=user)
     track_event(
         name="planning.scenario.status_toggled",
         properties={

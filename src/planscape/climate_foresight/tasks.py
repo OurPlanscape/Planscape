@@ -7,6 +7,10 @@ from django.db import transaction
 from planning.models import GeoPackageStatus
 from planscape.celery import app
 
+from climate_foresight.events import (
+    publish_input_datalayer_event,
+    publish_run_event,
+)
 from climate_foresight.landscape import rollup_landscape
 from climate_foresight.models import (
     ClimateForesightLandscapeRollup,
@@ -69,6 +73,7 @@ def calculate_climate_foresight_layer_statistics(input_datalayer_id: int) -> Non
         with transaction.atomic():
             input_dl.statistics = {"original": result["statistics"]}
             input_dl.save()
+            publish_input_datalayer_event(input_dl)
 
         stats = result["statistics"]
         log.info(
@@ -154,6 +159,7 @@ def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> Optional
         with transaction.atomic():
             input_dl.status = InputDataLayerStatus.RUNNING
             input_dl.save()
+            publish_input_datalayer_event(input_dl)
 
         # check if a normalized datalayer already exists with this name (could be from a previous failed processing)
         normalized_layer_name = (
@@ -173,6 +179,7 @@ def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> Optional
             input_dl.normalized_datalayer = existing_normalized
             input_dl.status = InputDataLayerStatus.COMPLETED
             input_dl.save()
+            publish_input_datalayer_event(input_dl)
             return existing_normalized.id
 
         planning_area_geometry = input_dl.run.planning_area.geometry
@@ -210,6 +217,7 @@ def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> Optional
             input_dl.status = InputDataLayerStatus.COMPLETED
 
             input_dl.save()
+            publish_input_datalayer_event(input_dl)
 
         log.info(
             f"Successfully normalized input layer {input_dl.id}. "
@@ -231,6 +239,7 @@ def normalize_climate_foresight_input_layer(input_datalayer_id: int) -> Optional
             )
             input_dl.status = InputDataLayerStatus.FAILED
             input_dl.save()
+            publish_input_datalayer_event(input_dl)
         except Exception:
             pass
 
@@ -658,11 +667,14 @@ def mark_run_complete(run_id: int) -> None:
     Args:
         run_id: ID of the ClimateForesightRun to make complete
     """
-    run = ClimateForesightRun.objects.select_related("promote_analysis").get(pk=run_id)
+    run = ClimateForesightRun.objects.select_related(
+        "promote_analysis", "planning_area"
+    ).get(pk=run_id)
 
     with transaction.atomic():
         run.status = ClimateForesightRunStatus.DONE
         run.save()
+        publish_run_event("climate_foresight.run.status_changed", run)
 
         promote = run.promote_analysis
         if promote.geopackage_status in (GeoPackageStatus.PENDING, None):
@@ -686,9 +698,10 @@ def async_mark_run_failed(run_id: int) -> None:
         run_id: ID of the ClimateForesightRun to mark failed
     """
     try:
-        run = ClimateForesightRun.objects.get(pk=run_id)
+        run = ClimateForesightRun.objects.select_related("planning_area").get(pk=run_id)
         run.status = ClimateForesightRunStatus.FAILED
         run.save()
+        publish_run_event("climate_foresight.run.status_changed", run)
         log.error(f"Run {run_id} marked as FAILED due to workflow error")
     except ClimateForesightRun.DoesNotExist:
         log.error(f"Run {run_id} does not exist (mark FAILED)")

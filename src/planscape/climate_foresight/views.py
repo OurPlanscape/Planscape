@@ -14,6 +14,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
+from climate_foresight.events import publish_run_event
 from climate_foresight.filters import (
     ClimateForesightPillarFilterSet,
     ClimateForesightRunFilterSet,
@@ -91,6 +92,7 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Set the user when creating a new run."""
         run = serializer.save(created_by=self.request.user)
+        publish_run_event("climate_foresight.run.created", run, actor=self.request.user)
         track_event(
             name="climate_foresight.run.created",
             properties={
@@ -109,6 +111,9 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
                 "email": self.request.user.email if self.request.user else None,
             },
             user_id=self.request.user.pk,
+        )
+        publish_run_event(
+            "climate_foresight.run.deleted", instance, actor=self.request.user
         )
         super().perform_destroy(instance)
 
@@ -311,6 +316,7 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
                 datalayer=input_layer.datalayer,
             )
 
+        publish_run_event("climate_foresight.run.created", new_run, actor=request.user)
         track_event(
             name="climate_foresight.run.copied",
             properties={

@@ -9,6 +9,7 @@ from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
+from funding_report.events import publish_report_event
 from funding_report.models import (
     FundingOpportunityReport,
     FundingOpportunityReportInvite,
@@ -532,6 +533,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             report=report,
             user=request.user,
             email=request.user.email or "",
+        )
+        publish_report_event(
+            "funding_report.report.created", report, actor=request.user
         )
 
         run_funding_opportunity_report.delay(report.pk)

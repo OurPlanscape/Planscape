@@ -68,6 +68,10 @@ dependencies = [
     "opentelemetry-sdk>=1.39.1",
     "opentelemetry-instrumentation>=0.60b1",
     "mixpanel>=5.0.0",
+    "channels>=4.3,<5",
+    "channels-redis>=4.3,<5",
+    "uvicorn[standard]>=0.36,<1",
+    "uvicorn-worker>=0.4,<1",
 ]
 
 [tool.isort]
