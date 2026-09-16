@@ -43,14 +43,11 @@ export class WebSocketService {
   }
 
   /**
-   * Opens the connection. Does nothing if one is already open or opening.
+   * Opens the connection. Does nothing if one is already open or opening,
+   * or while no endpoint is configured.
    */
   connect(url = environment.websocket_endpoint): void {
-    if (this.socket$) {
-      return;
-    }
-    if (!url) {
-      this.logError(new Error('WebSocket endpoint is not configured'));
+    if (this.socket$ || !url) {
       return;
     }
 

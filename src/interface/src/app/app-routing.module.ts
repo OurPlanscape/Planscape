@@ -223,6 +223,7 @@ const routes: Routes = [
           ),
         resolve: {
           planInit: planResetResolver,
+          workspaceId: workspaceLoaderResolver,
         },
       },
       {

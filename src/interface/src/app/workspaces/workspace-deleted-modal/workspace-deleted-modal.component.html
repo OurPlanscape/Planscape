@@ -1,0 +1,16 @@
+<sg-modal
+  [title]="data.workspaceName + ' is no longer available'"
+  [shortHeader]="false"
+  [showBorders]="false"
+  [showClose]="false"
+  [hasSecondaryButton]="false"
+  primaryButtonText="Return To Home"
+  (clickedPrimary)="returnToHome()">
+  <div modalBodyContent class="modal-body-content">
+    <p>
+      This workspace has been deleted by its owner and its content cannot be
+      recovered. If you believe this happened by mistake, please reach out
+      directly to the workspace owner.
+    </p>
+  </div>
+</sg-modal>

@@ -110,7 +110,7 @@ describe('WebSocketService', () => {
 
       expect(FakeWebSocket.instances.length).toBe(0);
       expect(service.status).toBe('disconnected');
-      expect(logErrorSpy).toHaveBeenCalled();
+      expect(logErrorSpy).not.toHaveBeenCalled();
     });
 
     it('can reconnect after disconnecting', () => {
