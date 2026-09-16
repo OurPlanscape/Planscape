@@ -27,7 +27,8 @@ import { PlanningAreaCreationModalComponent } from '../planning-area-creation-mo
 import { MatDialog } from '@angular/material/dialog';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
-import { catchError, EMPTY, exhaustMap, interval } from 'rxjs';
+import { catchError, EMPTY, exhaustMap, interval, map } from 'rxjs';
+import { WorkspaceState } from '../workspace.state';
 
 @UntilDestroy()
 @Component({
@@ -86,6 +87,7 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   public router = inject(Router);
   private route = inject(ActivatedRoute);
   private dialog = inject(MatDialog);
+  private workspaceState = inject(WorkspaceState);
 
   planningAreas$ = this.dataSource.data();
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
@@ -102,6 +104,10 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   loading$ = this.dataSource.loading$;
 
   workspaceId = this.route.snapshot.data['workspaceId'];
+
+  canAddPlanningArea$ = this.workspaceState.currentWorkspace$.pipe(
+    map((workspace) => workspace.permissions.includes('add_planningarea'))
+  );
 
   ngOnInit(): void {
     this.dataSource.loadData();

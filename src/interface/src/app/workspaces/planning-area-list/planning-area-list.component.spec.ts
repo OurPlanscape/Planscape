@@ -15,6 +15,8 @@ import { MockProviders } from 'ng-mocks';
 import { MapService } from '@maplibre/ngx-maplibre-gl';
 import { ActivatedRoute, Router } from '@angular/router';
 import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
+import { WorkspaceState } from '../workspace.state';
+import { Workspace } from '@types';
 
 describe('PlanningAreaListComponent', () => {
   let component: PlanningAreaListComponent;
@@ -24,6 +26,10 @@ describe('PlanningAreaListComponent', () => {
   let mapConfigStateMock: jasmine.SpyObj<MapConfigState>;
   let newScenarioStateMock: jasmine.SpyObj<NewScenarioState>;
   let authServiceMock: jasmine.SpyObj<AuthService>;
+  let currentWorkspace$: BehaviorSubject<Workspace>;
+
+  const workspaceWith = (permissions: string[]) =>
+    ({ permissions }) as unknown as Workspace;
 
   const planningAreas$ = of([]);
   const pages$ = of(3);
@@ -75,6 +81,10 @@ describe('PlanningAreaListComponent', () => {
 
     authServiceMock.getAuthCookie.and.returnValue('cookie');
 
+    currentWorkspace$ = new BehaviorSubject(
+      workspaceWith(['add_planningarea'])
+    );
+
     await TestBed.configureTestingModule({
       imports: [PlanningAreaListComponent],
     })
@@ -97,6 +107,10 @@ describe('PlanningAreaListComponent', () => {
             {
               provide: AuthService,
               useValue: authServiceMock,
+            },
+            {
+              provide: WorkspaceState,
+              useValue: { currentWorkspace$ },
             },
             {
               provide: ActivatedRoute,
@@ -285,6 +299,24 @@ describe('PlanningAreaListComponent', () => {
       component.ngOnDestroy();
 
       expect(dataSourceMock.destroy).toHaveBeenCalled();
+    });
+  });
+
+  describe('canAddPlanningArea$', () => {
+    it('emits true when the workspace grants add_planningarea', (done) => {
+      component.canAddPlanningArea$.subscribe((canAdd) => {
+        expect(canAdd).toBeTrue();
+        done();
+      });
+    });
+
+    it('emits false when the workspace does not grant it', (done) => {
+      currentWorkspace$.next(workspaceWith(['view_workspace']));
+
+      component.canAddPlanningArea$.subscribe((canAdd) => {
+        expect(canAdd).toBeFalse();
+        done();
+      });
     });
   });
 });
