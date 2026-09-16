@@ -160,10 +160,10 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
             )
         ]
         constraints = [
+            # NULL workspaces are distinct, so areas outside a workspace can repeat names
             models.UniqueConstraint(
                 fields=[
-                    "user",
-                    "region_name",
+                    "workspace",
                     "name",
                 ],
                 name="unique_planning_area",

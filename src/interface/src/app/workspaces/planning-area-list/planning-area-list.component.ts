@@ -195,7 +195,12 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   }
 
   handlePlanningAreaClick(planningArea: PreviewPlan) {
-    this.router.navigate(['plan', planningArea.id]);
+    this.router.navigate([
+      '/workspace',
+      this.workspaceId,
+      'plan',
+      planningArea.id,
+    ]);
     return;
   }
 }

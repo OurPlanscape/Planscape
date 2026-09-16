@@ -151,12 +151,14 @@ class CreatePlanningAreaSerializer(serializers.ModelSerializer):
         return workspace
 
     def validate(self, attrs):
-        region_val = attrs.get("region_name")
-        if PlanningArea.objects.filter(
-            user=attrs["user"],
-            name=attrs["name"],
-            region_name=region_val,
-        ).exists():
+        workspace = attrs.get("workspace")
+        if (
+            workspace is not None
+            and PlanningArea.objects.filter(
+                workspace=workspace,
+                name=attrs["name"],
+            ).exists()
+        ):
             raise serializers.ValidationError(
                 {"name": "A planning area with this name already exists."}
             )
@@ -209,8 +211,9 @@ class UpdatePlanningAreaSerializer(serializers.ModelSerializer):
             )
         instance = self.instance
         if (
-            PlanningArea.objects.filter(
-                user=instance.user,
+            instance.workspace_id is not None
+            and PlanningArea.objects.filter(
+                workspace_id=instance.workspace_id,
                 name=attrs["name"],
             )
             .exclude(id=instance.pk)

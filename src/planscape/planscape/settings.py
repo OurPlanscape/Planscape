@@ -131,6 +131,9 @@ PLANSCAPE_DATABASE_PASSWORD = config("PLANSCAPE_DATABASE_PASSWORD", default="pas
 PLANSCAPE_DATABASE_USER = config("PLANSCAPE_DATABASE_USER", default="planscape")
 PLANSCAPE_DATABASE_NAME = config("PLANSCAPE_DATABASE_NAME", default="planscape")
 PLANSCAPE_DATABASE_PORT = config("PLANSCAPE_PORT", default=5432)
+PLANSCAPE_DATABASE_CONN_MAX_AGE = config(
+    "PLANSCAPE_DATABASE_CONN_MAX_AGE", default=60, cast=int
+)
 
 DATABASES = {
     "default": {
@@ -140,12 +143,14 @@ DATABASES = {
         "USER": PLANSCAPE_DATABASE_USER,
         "PASSWORD": PLANSCAPE_DATABASE_PASSWORD,
         "PORT": PLANSCAPE_DATABASE_PORT,
+        "CONN_MAX_AGE": PLANSCAPE_DATABASE_CONN_MAX_AGE,
+        "CONN_HEALTH_CHECKS": True,
         "TEST": {
             "NAME": "auto_test",
         },
     }
 }
-CONN_MAX_AGE = 60
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -284,6 +289,9 @@ ACCOUNT_USERNAME_REQUIRED = False
 LOGOUT_ON_PASSWORD_CHANGE = False
 ACCOUNT_ADAPTER = "users.allauth_adapter.CustomAllauthAdapter"
 PASSWORD_RESET_TIMEOUT = 1800  # 30 minutes.
+if TESTING_MODE:
+    # the cooldown lives in the shared cache, so it leaks between tests
+    ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN = 0
 
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="no-reply@planscape.org")
 EMAIL_BACKEND = config(
@@ -330,6 +338,9 @@ CACHES = {
         "TIMEOUT": None,
     }
 }
+
+# How long (in seconds) an allowed Martin tile authorization is cached per user.
+MARTIN_AUTH_CACHE_TIMEOUT = config("MARTIN_AUTH_CACHE_TIMEOUT", default=300, cast=int)
 
 LOGGING = {
     "version": 1,

@@ -276,7 +276,7 @@ export class ScenarioCreationComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe((scenario) => {
         // Setting up the breadcrumb
-        let scenarioBackUrl = getPlanPath(this.planId);
+        let scenarioBackUrl = getPlanPath(this.planId, this.route.snapshot);
         // for child scenarios, we want to go to the parent dashboard, instead
         if (scenario.parent) {
           scenarioBackUrl += `/scenario/${scenario.parent}/dashboard`;
@@ -410,23 +410,21 @@ export class ScenarioCreationComponent implements OnInit {
           }
           // After initiating a run of the scenario...
 
+          const planPath = getPlanPath(
+            result.planning_area,
+            this.route.snapshot
+          );
           // for scenarios with a parent id, we navigate to the parent scenario dashboard
           if (result.parent) {
             this.router.navigate(
-              [
-                'plan',
-                result.planning_area,
-                'scenario',
-                result.parent,
-                'dashboard',
-              ],
+              [planPath, 'scenario', result.parent, 'dashboard'],
               {
                 state: { showInProgressModal: true }, // this is passed to the switcher component
               }
             );
           } else {
             // all other scenarios will be directed to the planning area
-            this.router.navigate(['plan', result.planning_area], {
+            this.router.navigate([planPath], {
               state: { showInProgressModal: true },
             });
           }
