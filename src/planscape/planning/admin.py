@@ -34,6 +34,12 @@ class TreatmentGoalAdmin(admin.ModelAdmin):
 
     def save_form(self, request, form, change):
         instance = form.instance
+        uploaded_geometry = getattr(form, "uploaded_shapefile_geometry", None)
+        if uploaded_geometry:
+            instance.geometry = uploaded_geometry
+            form.instance = instance
+            return super().save_form(request, form, change)
+
         try:
             db_instance = TreatmentGoal.objects.get(pk=instance.pk)
             instance.geometry = db_instance.geometry
