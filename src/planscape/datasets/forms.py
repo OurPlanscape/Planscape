@@ -8,6 +8,10 @@ from django_json_widget.widgets import JSONEditorWidget
 from treebeard.forms import movenodeform_factory
 
 from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Style
+from datasets.shapefile_geometry import (
+    ShapefileGeometryError,
+    geometry_from_uploaded_shapefile_zip,
+)
 from datasets.widgets import ReadOnlyOSMGeometryWidget
 
 
@@ -79,6 +83,11 @@ class CategoryAdminForm(movenodeform_factory(Category)):
 
 
 class DataLayerAdminForm(forms.ModelForm):
+    geometry_shapefile_zip = forms.FileField(
+        required=False,
+        label="Geometry shapefile zip",
+        help_text="Upload a zipped polygon shapefile to update geometry and outline only.",
+    )
     geometry = forms.CharField(
         required=False,
         disabled=True,
@@ -116,10 +125,25 @@ class DataLayerAdminForm(forms.ModelForm):
                 "table",
                 "info",
                 "metadata",
+                "geometry_shapefile_zip",
                 "geometry",
                 "outline",
             ]
         )
+
+    def clean_geometry_shapefile_zip(self):
+        uploaded_file = self.cleaned_data.get("geometry_shapefile_zip")
+        self.uploaded_shapefile_geometry = None
+        if not uploaded_file:
+            return uploaded_file
+
+        try:
+            self.uploaded_shapefile_geometry = geometry_from_uploaded_shapefile_zip(
+                uploaded_file
+            )
+        except ShapefileGeometryError as exc:
+            raise forms.ValidationError(str(exc)) from exc
+        return uploaded_file
 
     def save(self, commit=True):
         invalidate_model(DataLayer)

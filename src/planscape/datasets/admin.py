@@ -123,6 +123,13 @@ class DataLayerAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).defer("geometry", "outline")
 
+    def save_model(self, request, obj, form, change):
+        uploaded_geometry = getattr(form, "uploaded_shapefile_geometry", None)
+        if uploaded_geometry:
+            obj.geometry = uploaded_geometry.envelope
+            obj.outline = uploaded_geometry
+        return super().save_model(request, obj, form, change)
+
     def get_urls(self):
         return [
             path(
