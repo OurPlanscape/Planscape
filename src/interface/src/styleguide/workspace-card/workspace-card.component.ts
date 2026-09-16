@@ -48,6 +48,10 @@ export class WorkspaceCardComponent {
     return this.planningAreasCount === 1 ? 'Planning Area' : 'Planning Areas';
   }
 
+  get hasActions(): boolean {
+    return this.userCanRename || this.userCanShare || this.userCanDelete;
+  }
+
   /** The menu sits inside the card's link, so its clicks must not navigate. */
   handleMenuClick(event: Event) {
     event.preventDefault();

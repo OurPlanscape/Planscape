@@ -60,6 +60,16 @@ export class PlanningAreaMenuComponent {
     return canViewCollaborators(this.plan);
   }
 
+  get hasActions(): boolean {
+    return (
+      this.showOpen ||
+      this.showViewMap ||
+      (this.showRename && this.canEditPlanName) ||
+      (this.showShare && this.shareEnabled) ||
+      (this.showDelete && this.canDeletePlanningArea)
+    );
+  }
+
   stopClickEvent(event: MouseEvent) {
     event.stopPropagation();
     return false;
