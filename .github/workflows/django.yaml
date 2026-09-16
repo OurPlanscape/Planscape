@@ -8,7 +8,7 @@ on:
 
 jobs:
   lint:
-    runs-on: frizzle
+    runs-on: [self-hosted, Linux, X64]
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/ruff-action@v3
@@ -17,7 +17,7 @@ jobs:
           version: "0.14.10"
 
   build:
-    runs-on: frizzle
+    runs-on: [self-hosted, Linux, X64]
     needs: lint
     strategy:
       max-parallel: 4
