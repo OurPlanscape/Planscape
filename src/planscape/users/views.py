@@ -7,6 +7,7 @@ from dj_rest_auth.jwt_auth import JWTCookieAuthentication
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils.encoding import force_str
 from rest_framework import status
@@ -225,6 +226,22 @@ PRIVATE_LAYERS = (
     "sub_units_by_scenario",
 )
 
+MARTIN_AUTH_CACHE_KEY_PREFIX = "martin_auth"
+
+
+def get_martin_auth_cache_key(user_id: int, query_params: dict, fields) -> str:
+    """
+    Builds a cache key from the user and the query params that affect
+    authorization, so every tile and layer of the same resource shares the
+    same entry.
+    """
+    params = "&".join(
+        f"{name}={query_params[name]}"
+        for name in sorted(fields)
+        if name in query_params
+    )
+    return f"{MARTIN_AUTH_CACHE_KEY_PREFIX}:{user_id}:{params}"
+
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -274,6 +291,13 @@ def validate_martin_request(request: Request) -> Response:
         data=original_query_params, context={"user": request.user}
     )
 
+    # Only allowed results are cached, so newly granted access works right away.
+    cache_key = get_martin_auth_cache_key(
+        request.user.pk, original_query_params, serializer.fields.keys()
+    )
+    if cache.get(cache_key):
+        return Response({"valid": True})
+
     if not serializer.is_valid():
         logger.warning("Invalid Martin request parameters: %s", serializer.errors)
         return Response(
@@ -281,4 +305,5 @@ def validate_martin_request(request: Request) -> Response:
             status=status.HTTP_403_FORBIDDEN,
         )
 
+    cache.set(cache_key, True, timeout=settings.MARTIN_AUTH_CACHE_TIMEOUT)
     return Response({"valid": True})
