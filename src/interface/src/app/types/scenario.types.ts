@@ -15,6 +15,25 @@ export type ScenarioResultStatus =
   | 'TIMED_OUT'
   | 'DRAFT'; // Creating a scenario but not completed the steps yet.
 
+// these mirror the known error codes supported on the BE
+export type ScenarioResultErrorCode =
+  | 'TIME_OUT'
+  | 'GENERIC_PANIC'
+  | 'STAND_METRIC_FAILURE'
+  | 'UNKNOWN_ERROR'
+  | 'STAND_DATA_ERROR'
+  | 'PROJECT_DATA_ERROR'
+  | 'FORSYS_PREPARATION_ERROR'
+  | 'FORSYS_EXECUTION_ERROR'
+  | 'FORSYS_EMPTY_RESULT'
+  | 'RESULT_PROCESSING_ERROR'
+  | 'PROJECT_AREA_UPDATE_ERROR'
+  | 'NO_AVAILABLE_STANDS';
+export interface ScenarioResultError {
+  error_code: ScenarioResultErrorCode;
+  description: string;
+}
+
 export type GeoPackageStatus =
   | 'PENDING'
   | 'PROCESSING'
@@ -105,6 +124,7 @@ export interface ScenarioResult {
     features: FeatureCollection[]; // TODO this is actually Features[]
     type: string;
   };
+  errors?: ScenarioResultError[];
 }
 
 // Base draft/wizard shape (legacy flat config fields) used by FE draft types.
