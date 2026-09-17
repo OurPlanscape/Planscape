@@ -30,7 +30,7 @@ describe('getGroupedGoals', () => {
     expect(result).toEqual({});
   });
 
-  it('should group by group_text and then by category', () => {
+  it('should group by category only', () => {
     const g1 = makeGoal({
       id: 1,
       name: 'G1',
@@ -65,24 +65,9 @@ describe('getGroupedGoals', () => {
 
     const result = getGroupedGoals([g1, g2, g3, g4]);
 
-    expect(Object.keys(result)).toEqual([
-      'California Planning Metrics',
-      'Another Group',
-    ]);
-
-    expect(Object.keys(result['California Planning Metrics'])).toEqual([
-      'Fire Dynamics',
-      'Other Category',
-    ]);
-
-    expect(result['California Planning Metrics']['Fire Dynamics']).toEqual([
-      g1,
-      g2,
-    ]);
-    expect(result['California Planning Metrics']['Other Category']).toEqual([
-      g3,
-    ]);
-    expect(result['Another Group']['Fire Dynamics']).toEqual([g4]);
+    expect(Object.keys(result)).toEqual(['Fire Dynamics', 'Other Category']);
+    expect(result['Fire Dynamics']).toEqual([g1, g2, g4]);
+    expect(result['Other Category']).toEqual([g3]);
   });
 
   it('should not overwrite categories and should append items to the correct bucket', () => {
@@ -104,11 +89,11 @@ describe('getGroupedGoals', () => {
 
     const result = getGroupedGoals([a, b, c]);
 
-    expect(result['Group A']['Cat 1']).toEqual([a, c]);
-    expect(result['Group A']['Cat 2']).toEqual([b]);
+    expect(result['Cat 1']).toEqual([a, c]);
+    expect(result['Cat 2']).toEqual([b]);
   });
 
-  it('uses group_text and category as grouping labels', () => {
+  it('uses category as the grouping label', () => {
     const goal = makeGoal({
       group: 'GRP_RAW',
       group_text: 'Group Pretty',
@@ -117,8 +102,8 @@ describe('getGroupedGoals', () => {
 
     const result = getGroupedGoals([goal]);
 
-    expect(result['Group Pretty']).toBeDefined();
-    expect(result['Group Pretty']['Category Pretty']).toEqual([goal]);
+    expect(result['Group Pretty']).toBeUndefined();
+    expect(result['Category Pretty']).toEqual([goal]);
   });
 });
 
