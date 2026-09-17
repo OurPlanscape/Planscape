@@ -53,11 +53,20 @@ describe('PlanningAreaEmptyStateComponent', () => {
     expect(fixture.nativeElement.querySelector('.action-row')).not.toBeNull();
   });
 
-  it('hides the add actions when the workspace does not grant them', () => {
+  it('shows the awaiting message instead of the add actions when the workspace does not grant them', () => {
     currentWorkspace$.next(workspaceWith(['view_workspace']));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('.action-row')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain(
+      'Awaiting planning areas'
+    );
+  });
+
+  it('does not show the awaiting message when the workspace grants the permission', () => {
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Awaiting planning areas'
+    );
   });
 
   describe('handleDraw', () => {
