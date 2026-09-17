@@ -27,7 +27,7 @@ def seed_and_backfill_categories(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("planning", "0094_scenarioresult_errors"),
+        ("planning", "0095_planningarea_unique_name_per_workspace"),
     ]
 
     operations = [
