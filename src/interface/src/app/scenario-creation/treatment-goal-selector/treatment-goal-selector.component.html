@@ -31,39 +31,27 @@ Click on a Treatment Goal option to see full scenario details.">
 
       <ng-container
         *ngIf="categorizedStatewideGoals$ | async as categorizedScenarioGoals">
-        <!-- Displaying groups -->
         <div
-          *ngFor="let goalGroup of categorizedScenarioGoals | keyvalue"
+          *ngFor="
+            let goalCategory of categorizedScenarioGoals | keyvalue: reverseAlpha
+          "
           class="goal-control-container">
           <mat-expansion-panel expanded="true" [togglePosition]="'before'">
             <mat-expansion-panel-header class="goal-panel-header">
-              {{ goalGroup.key }}
+              {{ goalCategory.key }}
             </mat-expansion-panel-header>
 
-            <!-- Displaying categories -->
+            <!-- Treatment goals -->
             <div
-              class="goal-control-container"
-              *ngFor="
-                let goalCategory of goalGroup.value | keyvalue: reverseAlpha
-              ">
-              <mat-expansion-panel expanded="true" [togglePosition]="'before'">
-                <mat-expansion-panel-header class="goal-panel-header">
-                  {{ goalCategory.key }}
-                </mat-expansion-panel-header>
+              *ngFor="let goal of goalCategory.value"
+              class="layer-control-container">
+              <mat-radio-button [value]="goal.id">
+                {{ goal.name }}
+              </mat-radio-button>
 
-                <!-- Treatment goals -->
-                <div
-                  *ngFor="let goal of goalCategory.value"
-                  class="layer-control-container">
-                  <mat-radio-button [value]="goal.id">
-                    {{ goal.name }}
-                  </mat-radio-button>
-
-                  <sg-popover
-                    *ngIf="goal.description"
-                    [content]="goal.description"></sg-popover>
-                </div>
-              </mat-expansion-panel>
+              <sg-popover
+                *ngIf="goal.description"
+                [content]="goal.description"></sg-popover>
             </div>
           </mat-expansion-panel>
         </div>
