@@ -1,10 +1,10 @@
 <ng-container *ngIf="displayScenarioConfigOverlay$ | async">
   <div class="header">
-    <h3>Configurations</h3>
+    <h4>Configurations</h4>
   </div>
   <div class="content" *ngIf="currentScenario$ | async as scenario">
     <dl>
-      <dt>Stand Size:</dt>
+      <dt>Stand Size</dt>
       <dd *ngIf="scenario.configuration?.stand_size as stand_size">
         {{
           standSizeOptions[stand_size].label +
@@ -14,14 +14,14 @@
         }}
       </dd>
       <ng-container *ngIf="scenario.planning_approach">
-        <dt>Planning Approach:</dt>
+        <dt>Planning Approach</dt>
         <dd>
           {{ planningApproachLabels[scenario.planning_approach] }}
         </dd>
       </ng-container>
 
       <ng-container *ngIf="configuration?.sub_units_layer">
-        <dt>Subunit:</dt>
+        <dt>Subunit</dt>
         <mat-spinner
           diameter="20"
           *ngIf="(subUnitLayerName$ | async) === null"></mat-spinner>
@@ -31,13 +31,13 @@
       </ng-container>
 
       <ng-container *ngIf="(isCustomScenario$ | async) === false">
-        <dt>Goal:</dt>
+        <dt>Goal</dt>
         <dd>
           {{ scenarioGoal$ | async }}
         </dd>
       </ng-container>
       <ng-container *ngIf="isCustomScenario$ | async">
-        <dt>Priority Objectives:</dt>
+        <dt>Priority Objectives</dt>
         <dd>
           <mat-spinner
             diameter="20"
@@ -50,7 +50,7 @@
           </div>
         </dd>
 
-        <dt>Co-Benefits:</dt>
+        <dt>Co-Benefits</dt>
         <dd>
           <mat-spinner
             diameter="20"
@@ -58,7 +58,7 @@
           {{ cobenefits$ | async }}
         </dd>
       </ng-container>
-      <dt>Included Areas:</dt>
+      <dt>Included Areas</dt>
       <dd>
         <ng-container
           *ngIf="
@@ -72,11 +72,11 @@
           <mat-spinner diameter="20"></mat-spinner>
         </ng-template>
       </dd>
-      <dt>Excluded Areas:</dt>
+      <dt>Excluded Areas</dt>
       <dd>
         {{ selectedExcludedAreas$ | async }}
       </dd>
-      <dt>Stand Level Constraints:</dt>
+      <dt>Stand-Level Constraints</dt>
       <dd *ngFor="let c of configuration?.constraints">
         <div *ngIf="c.datalayer === slopeId">
           Slope less or equal than (<=) {{ c.value }} %
@@ -87,7 +87,7 @@
         </div>
       </dd>
       <dd *ngIf="configuration?.constraints?.length === 0">--</dd>
-      <dt>Treatment Target:</dt>
+      <dt>Treatment Target</dt>
       <dd
         *ngIf="
           configuration &&

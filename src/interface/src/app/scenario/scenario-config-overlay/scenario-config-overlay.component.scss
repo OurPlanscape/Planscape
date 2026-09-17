@@ -11,7 +11,8 @@
     align-items: center;
     border-bottom: 1px solid $color-soft-gray;
 
-    h3 {
+    h4 {
+      @include h4();
       margin: 0;
     }
   }
@@ -27,7 +28,7 @@
     }
 
     dt {
-      @include standard-input-label();
+      @include small-input-label();
       color: $color-text-gray;
     }
 
@@ -36,7 +37,7 @@
     }
 
     dd {
-      @include standard-input-label();
+      @include small-input-label();
       font-weight: 600;
       margin: 0;
 
