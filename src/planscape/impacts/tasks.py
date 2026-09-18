@@ -12,6 +12,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from rasterio.errors import RasterioIOError
 
+from impacts.events import publish_treatment_plan_event
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -143,14 +144,19 @@ def async_set_status(
     with transaction.atomic():
         user = User.objects.get(pk=user_id)
         try:
-            treatment_plan = TreatmentPlan.objects.select_for_update().get(
-                pk=treatment_plan_pk
+            treatment_plan = (
+                TreatmentPlan.objects.select_for_update(of=("self",))
+                .select_related("scenario__planning_area")
+                .get(pk=treatment_plan_pk)
             )
             treatment_plan.status = status
             attr = "started_at" if start else "finished_at"
             setattr(treatment_plan, attr, timezone.now())
             treatment_plan.save()
             log.info(f"Treatment plan {treatment_plan_pk} changed status to {status}.")
+            publish_treatment_plan_event(
+                "impacts.treatment_plan.status_changed", treatment_plan, actor=user
+            )
             track_event(
                 name="impacts.treatment_plan.status_changed",
                 properties={

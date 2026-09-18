@@ -29,6 +29,7 @@ from rasterio.features import geometry_mask
 from rasterio.warp import Resampling, reproject
 from scipy.optimize import minimize
 
+from climate_foresight.events import publish_run_event
 from climate_foresight.normalize import (
     calculate_outliers,
     s_shaped_membership,
@@ -1195,6 +1196,11 @@ def export_geopackage(run_id: int, regenerate: bool = False) -> str:
     try:
         promote.geopackage_status = GeoPackageStatus.PROCESSING
         promote.save(update_fields=["geopackage_status"])
+        publish_run_event(
+            "climate_foresight.run.geopackage_status_changed",
+            run,
+            geopackage_status=promote.geopackage_status,
+        )
 
         temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
         if not temp_folder.exists():
@@ -1326,6 +1332,11 @@ def export_geopackage(run_id: int, regenerate: bool = False) -> str:
         promote.geopackage_url = geopackage_path
         promote.geopackage_status = GeoPackageStatus.SUCCEEDED
         promote.save(update_fields=["geopackage_url", "geopackage_status"])
+        publish_run_event(
+            "climate_foresight.run.geopackage_status_changed",
+            run,
+            geopackage_status=promote.geopackage_status,
+        )
 
         log.info(
             f"Successfully uploaded geopackage for run {run_id} to {geopackage_path}"
@@ -1337,6 +1348,11 @@ def export_geopackage(run_id: int, regenerate: bool = False) -> str:
         promote.geopackage_url = None
         promote.geopackage_status = GeoPackageStatus.FAILED
         promote.save(update_fields=["geopackage_url", "geopackage_status"])
+        publish_run_event(
+            "climate_foresight.run.geopackage_status_changed",
+            run,
+            geopackage_status=promote.geopackage_status,
+        )
         raise
     finally:
         if temp_dir is not None:

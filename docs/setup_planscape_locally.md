@@ -536,3 +536,83 @@ Build at: 2022-09-30T14:29:12.454Z - Hash: 4158b2a1e75c035d - Time: 3248 ms
 ```
 
 Navigate to localhost:4200 in your browser. You should see the Planscape application.
+
+## WebSockets (realtime events)
+
+The backend pushes "something changed" events over a WebSocket, one connection
+per workspace. HTTP and WebSockets are served by the same ASGI process
+(`bin/run_gunicorn.sh`: gunicorn with uvicorn workers on Cloud Run, plain
+`uvicorn --reload` locally). `python manage.py runserver` is WSGI-only and does
+not serve WebSockets; use `make docker-run` or the script instead.
+
+### Client contract
+
+- URL: `ws(s)://<host>/planscape-backend/ws/workspaces/<workspace_id>/`
+- Auth: the `my-app-auth` JWT cookie (sent automatically on a same-site
+  handshake) or an `Authorization: Bearer <jwt>` header. The request `Origin`
+  must be listed in `PLANSCAPE_WEBSOCKET_ALLOWED_ORIGINS` (defaults to
+  `PLANSCAPE_CORS_ALLOWED_ORIGINS`); otherwise the handshake is refused.
+- The server always accepts the socket and then either sends
+  `{"type": "realtime.connected", "workspace_id": <id>, "role": "<OWNER|COLLABORATOR|VIEWER>"}`
+  or closes it with an application code:
+  `4401` not authenticated (refresh the token and reconnect),
+  `4403` not a member (also sent later if your membership is revoked or the
+  workspace is deleted), `4404` no such workspace.
+- Every frame after that is an event envelope. All events for the workspace
+  arrive on this single connection:
+
+  ```json
+  {
+    "type": "planning.scenario.status_changed",
+    "workspace_id": 12,
+    "object": {"kind": "scenario", "id": 5, "planning_area_id": 3},
+    "data": {"status": "ACTIVE", "result_status": "RUNNING", "post_process_status": "PENDING", "geopackage_status": "PENDING"},
+    "actor_id": 7,
+    "timestamp": "2026-09-16T12:00:00+00:00"
+  }
+  ```
+
+  Payloads carry ids and status fields only; fetch the object through the REST
+  API when you need more.
+- Keepalive: send `{"type": "ping"}` roughly every 30 seconds and expect
+  `{"type": "pong"}`. Anything else sent by the client is ignored.
+- Events are not replayed. Cloud Run drops sockets at its request timeout (up
+  to 60 minutes), so reconnect with backoff and refetch on every
+  `realtime.connected`.
+
+### Event types
+
+| type | object.kind | data |
+|---|---|---|
+| `workspace.workspace.deleted` | `workspace` | `workspace_id` |
+| `workspace.member.added`, `workspace.member.role_changed` | `workspace` | `user_id`, `role` |
+| `workspace.member.removed`, `workspace.member.left` | `workspace` | `user_id` |
+| `planning.planning_area.created`, `.deleted`, `.map_status_changed` | `planning_area` | `map_status`, `stands_ready_at`, `metrics_ready_at` |
+| `planning.scenario.created`, `.deleted`, `.status_changed` | `scenario` (`planning_area_id`) | `status`, `result_status`, `post_process_status`, `geopackage_status` |
+| `planning.scenario.geopackage_status_changed` | `scenario` | the above plus `geopackage_url` |
+| `impacts.treatment_plan.created`, `.deleted`, `.status_changed` | `treatment_plan` (`scenario_id`, `planning_area_id`) | `status` (`cloned_from` on clones) |
+| `climate_foresight.run.created`, `.deleted`, `.status_changed` | `climate_foresight_run` (`planning_area_id`) | `status` |
+| `climate_foresight.run.geopackage_status_changed` | `climate_foresight_run` | `status`, `geopackage_status` |
+| `climate_foresight.input_datalayer.updated` | `climate_foresight_input_datalayer` (`run_id`, `planning_area_id`) | `status`, `has_statistics` |
+| `funding_report.report.created`, `.status_changed`, `.geopackage_status_changed` | `funding_report` (`scenario_id`, `planning_area_id`) | `status`, `geopackage_status` (`geopackage_url` on geopackage events) |
+
+Only objects that belong to a workspace produce events; legacy planning areas
+without a workspace are silent.
+
+### Trying it locally
+
+```bash
+# token = value of the my-app-auth cookie after logging in
+websocat -H 'Origin: http://localhost:4200' -H "Cookie: my-app-auth=$TOKEN" \
+  ws://localhost:8000/planscape-backend/ws/workspaces/<id>/
+# through the gateway
+websocat -H 'Origin: http://localhost:8080' -H "Cookie: my-app-auth=$TOKEN" \
+  ws://localhost:8080/planscape-backend/ws/workspaces/<id>/
+```
+
+To publish from another process (this is the path Celery workers use):
+
+```bash
+make docker-shell
+uv run python manage.py shell -c "from realtime.events import publish_workspace_event; publish_workspace_event(<id>, 'test.ping', obj={'kind': 'test', 'id': 1})"
+```

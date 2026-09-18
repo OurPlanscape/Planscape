@@ -54,6 +54,7 @@ PLANSCAPE_APPS = [
     "modules",
     "organizations",
     "planning",
+    "realtime",
     "restrictions",
     "stands",
     "users",
@@ -64,6 +65,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    "channels",
     "corsheaders",
     "dj_rest_auth",
     "dj_rest_auth.registration",
@@ -125,6 +127,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "planscape.wsgi.application"
+ASGI_APPLICATION = "planscape.asgi.application"
 
 PLANSCAPE_DATABASE_HOST = config("PLANSCAPE_DATABASE_HOST", default="localhost")
 PLANSCAPE_DATABASE_PASSWORD = config("PLANSCAPE_DATABASE_PASSWORD", default="pass")
@@ -369,6 +372,34 @@ CACHES = {
 
 # How long (in seconds) an allowed Martin tile authorization is cached per user.
 MARTIN_AUTH_CACHE_TIMEOUT = config("MARTIN_AUTH_CACHE_TIMEOUT", default=300, cast=int)
+
+# Channels (WebSockets). The channel layer is what lets Celery workers publish
+# events that the web process fans out to connected clients.
+CHANNEL_LAYER_REDIS_URL = config("CHANNEL_LAYER_REDIS_URL", default=REDIS_URL)
+if TESTING_MODE:
+    CHANNEL_LAYERS = {
+        "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"},
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [CHANNEL_LAYER_REDIS_URL],
+                "capacity": 500,
+                "expiry": 60,
+            },
+        }
+    }
+
+# Origins allowed to open a WebSocket. The browser sends the JWT cookie along
+# with the handshake, so this is the CSRF check for WebSockets.
+WEBSOCKET_ALLOWED_ORIGINS = str(
+    config(
+        "PLANSCAPE_WEBSOCKET_ALLOWED_ORIGINS",
+        default=",".join(CORS_ALLOWED_ORIGINS),
+    )
+).split(",")
 
 LOGGING = {
     "version": 1,

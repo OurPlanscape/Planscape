@@ -14,6 +14,11 @@ from planning.models import ProjectArea
 from planscape.celery import app
 from utils.frontend import get_frontend_url
 
+from funding_report.events import (
+    STATUS_CHANGED_EVENT,
+    publish_report_event,
+    publish_report_status_by_id,
+)
 from funding_report.models import (
     AET_IMPROVEMENT_DEFAULT_PERCENTAGE,
     FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
@@ -67,7 +72,9 @@ def send_funding_opportunity_report_shared_link(
         "SCENARIO_NAME": scenario_name,
         "LOGO_URL": get_frontend_url("assets/svg/planscape-color-logo.svg"),
         # TODO: replace placeholder
-        "RESULTS_PREVIEW_URL": get_frontend_url("assets/png/funding-opportunity-report-sharing-email-thumb.png"),
+        "RESULTS_PREVIEW_URL": get_frontend_url(
+            "assets/png/funding-opportunity-report-sharing-email-thumb.png"
+        ),
     }
     subject = f"[Planscape] Funding opportunity report shared from {inviter_name}"
     txt = render_to_string(
@@ -96,9 +103,13 @@ def send_funding_opportunity_report_shared_link(
         raise
     except Exception:
         if self.request.retries >= self.max_retries:
-            log.exception("Unexpected failure sending funding report shared link email.")
+            log.exception(
+                "Unexpected failure sending funding report shared link email."
+            )
         else:
-            log.warning("Unexpected failure sending funding report shared link email. Retrying.")
+            log.warning(
+                "Unexpected failure sending funding report shared link email. Retrying."
+            )
         raise
 
 
@@ -110,6 +121,7 @@ def async_set_status(
     FundingOpportunityReport.objects.filter(pk=funding_opportunity_report_id).update(
         status=status
     )
+    publish_report_status_by_id(funding_opportunity_report_id, status)
 
 
 @app.task()
@@ -422,6 +434,7 @@ def async_finalize_funding_report_results(
     FundingOpportunityReport.objects.filter(pk=funding_opportunity_report_id).update(
         **update_fields
     )
+    publish_report_status_by_id(funding_opportunity_report_id, final_status)
 
     if final_status == FundingOpportunityReportStatus.SUCCESS:
         async_generate_funding_report_geopackage.delay(funding_opportunity_report_id)
@@ -432,8 +445,10 @@ def async_finalize_funding_report_results(
 def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
     with transaction.atomic():
         try:
-            report = FundingOpportunityReport.objects.select_for_update().get(
-                pk=funding_opportunity_report_id
+            report = (
+                FundingOpportunityReport.objects.select_for_update(of=("self",))
+                .select_related("scenario__planning_area")
+                .get(pk=funding_opportunity_report_id)
             )
         except FundingOpportunityReport.DoesNotExist:
             log.warning(
@@ -452,17 +467,19 @@ def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
             return
         report.status = FundingOpportunityReportStatus.RUNNING
         report.save(update_fields=["status", "updated_at"])
+        publish_report_event(STATUS_CHANGED_EVENT, report)
         project_area_ids = list(
             report.scenario.project_areas.values_list("id", flat=True)
         )
 
     try:
-        if not project_area_ids or not treatment_layer_has_valid_data(
-            report.scenario
-        ):
+        if not project_area_ids or not treatment_layer_has_valid_data(report.scenario):
             FundingOpportunityReport.objects.filter(
                 pk=funding_opportunity_report_id
             ).update(status=FundingOpportunityReportStatus.EMPTY)
+            publish_report_status_by_id(
+                funding_opportunity_report_id, FundingOpportunityReportStatus.EMPTY
+            )
             return
 
         datalayer_lookup = build_datalayer_lookup()
