@@ -35,7 +35,7 @@ export interface ScenarioDraftConfiguration extends ScenarioConfigPayload {
   sub_units_layer?: number;
   sub_units_fixed_target?: boolean;
   sub_units_target_value?: number;
-  adv_constraints?: NamedConstraint[];
+  adv_constraints: NamedConstraint[];
 }
 
 export interface SubUnitsDetail {

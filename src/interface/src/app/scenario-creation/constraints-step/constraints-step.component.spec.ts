@@ -8,10 +8,9 @@ describe('ConstraintsStepComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ConstraintsStepComponent]
-    })
-    .compileComponents();
-    
+      imports: [ConstraintsStepComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ConstraintsStepComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

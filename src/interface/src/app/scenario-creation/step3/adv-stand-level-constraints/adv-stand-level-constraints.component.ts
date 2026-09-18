@@ -110,7 +110,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     private scenarioState: ScenarioState,
     private planState: PlanState,
     private dataLayerState: DataLayersStateService,
-    @Host() @SkipSelf() private parentContainer: ControlContainer,
+    @Host() @SkipSelf() private parentContainer: ControlContainer
   ) {
     this.scenarioState.currentScenario$
       .pipe(
@@ -241,10 +241,10 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     this.form.controls.constraints.setValue(current);
   }
 
-    // TODO:
-    // get the known layers by Id
-    // mark item as selected in chip selector
-    // open constraint dialog (and close current if open)
+  // TODO:
+  // get the known layers by Id
+  // mark item as selected in chip selector
+  // open constraint dialog (and close current if open)
   handleConstraintChipClicked(e: NamedConstraint) {
     this.activeConstraint$.next(e);
 

@@ -48,7 +48,17 @@ export class ConstraintsStepComponent
   extends StepDirective<ScenarioDraftConfiguration>
   implements OnInit
 {
-  readonly form = new FormGroup<ConstraintsParentForm>({});
+  readonly form = new FormGroup<ConstraintsParentForm>({
+    standLevelConstraints: new FormGroup({
+      max_slope: new FormControl<number | null>(null),
+      min_distance_from_road: new FormControl<number | null>(null),
+    }),
+    advStandLevelConstraints: new FormGroup({
+      constraints: new FormControl<NamedConstraint[] | null>([], {
+        nonNullable: true,
+      }),
+    }),
+  });
 
   constraintLayers$: Observable<DataLayer[]> = this.moduleService
     .getModule<
@@ -61,7 +71,7 @@ export class ConstraintsStepComponent
     );
 
   ngOnInit(): void {
-    console.log('i am not empty, compiler');
+    //
   }
 
   constructor(
@@ -77,8 +87,8 @@ export class ConstraintsStepComponent
 
     // TypeScript now knows standLevelConstraints exists!
     const standLevelConstraints = formValues.standLevelConstraints;
-const advStandLevelConstraints: NamedConstraint[] = 
-  formValues.advStandLevelConstraints?.constraints ?? [];
+    const advStandLevelConstraints: NamedConstraint[] =
+      formValues.advStandLevelConstraints?.constraints ?? [];
 
     const formData = {
       max_slope: standLevelConstraints?.max_slope ?? null,
@@ -89,7 +99,6 @@ const advStandLevelConstraints: NamedConstraint[] =
 
     console.log('here is the form data:', formData);
     return formData;
-
   }
 
   override beforeStepLoad() {

@@ -1,10 +1,11 @@
 <div [formGroup]="form">
   <app-stand-level-constraints
+    formGroupName="standLevelConstraints"
     keyName="standLevelConstraints"></app-stand-level-constraints>
+
   <app-adv-stand-level-constraints
+    formGroupName="advStandLevelConstraints"
     [constraintLayers]="constraintLayers$ | async"
-    keyName="advStandLevelConstraints"
-    *appFeatureFlag="
-      'ADV_STAND_LEVEL_CONSTRAINTS'
-    "></app-adv-stand-level-constraints>
+    keyName="advStandLevelConstraints">
+  </app-adv-stand-level-constraints>
 </div>

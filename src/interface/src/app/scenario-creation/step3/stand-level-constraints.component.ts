@@ -83,7 +83,6 @@ export class StandLevelConstraintsComponent
     if (this.parentContainer?.control) {
       const parentGroup = this.parentContainer.control as FormGroup;
       parentGroup.addControl(this.keyName, this.form);
-      console.log('we have a parent group: ', parentGroup);
     }
     this.forsysService.forsysData$
       .pipe(
