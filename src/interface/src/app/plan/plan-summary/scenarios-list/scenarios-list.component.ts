@@ -99,7 +99,7 @@ export class ScenariosListComponent implements OnInit {
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
     private planState: PlanState
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     if (this.mode === 'project-area' && this.projectAreaId == null) {
@@ -155,13 +155,13 @@ export class ScenariosListComponent implements OnInit {
     const request$ =
       this.mode === 'project-area'
         ? this.scenarioService.getProjectAreaChildScenarios(
-          this.projectAreaId!,
-          this.sortSelection
-        )
+            this.projectAreaId!,
+            this.sortSelection
+          )
         : this.scenarioService.getScenariosForPlan(
-          this.planId!,
-          this.sortSelection
-        );
+            this.planId!,
+            this.sortSelection
+          );
 
     return request$.pipe(
       take(1),
@@ -228,9 +228,7 @@ export class ScenariosListComponent implements OnInit {
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
-
-    const wasSuccessful =
-      clickedScenario.scenario_result?.status === 'SUCCESS';
+    const wasSuccessful = clickedScenario.scenario_result?.status === 'SUCCESS';
 
     const hasFailed =
       clickedScenario.scenario_result &&
@@ -238,8 +236,7 @@ export class ScenariosListComponent implements OnInit {
         clickedScenario.scenario_result.status
       );
 
-    const isFinished =
-      hasFailed || wasSuccessful;
+    const isFinished = hasFailed || wasSuccessful;
 
     if (this.mode === 'project-area') {
       const base = [
@@ -266,19 +263,6 @@ export class ScenariosListComponent implements OnInit {
       if (wasSuccessful) {
         this.breadcrumbService.updateBreadCrumb({
           label: 'Planning Area Overview',
-          backUrl: getPlanPath(
-            clickedScenario.planning_area,
-            this.route.snapshot
-          ),
-        });
-      }
-      else if (hasFailed) {
-        console.log('set failed breadcrumb to backurl',getPlanPath(
-            clickedScenario.planning_area,
-            this.route.snapshot
-          ),);
-        this.breadcrumbService.updateBreadCrumb({
-          label: 'what',
           backUrl: getPlanPath(
             clickedScenario.planning_area,
             this.route.snapshot
