@@ -141,6 +141,7 @@ export class ExploreModesToggleComponent {
       .subscribe((confirms: boolean) => {
         if (confirms) {
           this.drawService.clearFeatures();
+          this.drawService.stop();
           this.mapConfigState.enterViewMode();
         }
       });

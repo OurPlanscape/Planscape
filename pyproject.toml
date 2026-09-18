@@ -128,7 +128,7 @@ exclude = 'migrations'
 line-length = 88
 
 [tool.pytest.ini_options]
-addopts = "--envfile .test.env --no-header --disable-warnings -rf --durations=5 -n 4 --dist=loadscope --no-loadscope-reorder"
+addopts = "--envfile .test.env --no-header --disable-warnings -rf --durations=5 -n 8 --dist=loadscope --no-loadscope-reorder"
 DJANGO_SETTINGS_MODULE = "planscape.settings"
 python_files = "tests.py test_*.py tests_*.py *_tests.py"
 
