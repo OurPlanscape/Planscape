@@ -27,7 +27,6 @@ from planning.models import (
     ScenarioType,
     SharedLink,
     TreatmentGoal,
-    TreatmentGoalCategory,
     TreatmentGoalGroup,
     TreatmentGoalUsageType,
     TreatmentGoalUsesDataLayer,
@@ -865,8 +864,8 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
     description = serializers.SerializerMethodField(
         help_text="Description of the Treatment Goal on HTML format.",
     )
-    category_text = serializers.SerializerMethodField(
-        help_text="Text format of Treatment Goal Category.",
+    category = serializers.SerializerMethodField(
+        help_text="Name of the Treatment Goal Category.",
     )
     group_text = serializers.SerializerMethodField(
         read_only=True,
@@ -883,7 +882,6 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "category",
-            "category_text",
             "group",
             "group_text",
             "usage_types",
@@ -894,10 +892,9 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
             return markdown.markdown(instance.description)
         return None
 
-    def get_category_text(self, instance):
+    def get_category(self, instance):
         if instance.category:
-            category = TreatmentGoalCategory(instance.category)
-            return category.label
+            return instance.category.name
         return None
 
     def get_group_text(self, instance):
@@ -908,9 +905,18 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
 
 
 class TreatmentGoalSimpleSerializer(serializers.ModelSerializer):
+    category = serializers.SerializerMethodField(
+        help_text="Name of the Treatment Goal Category.",
+    )
+
     class Meta:
         model = TreatmentGoal
-        fields = ("id", "name")
+        fields = ("id", "name", "category")
+
+    def get_category(self, instance):
+        if instance.category:
+            return instance.category.name
+        return None
 
 
 class ListScenarioSerializer(serializers.ModelSerializer):

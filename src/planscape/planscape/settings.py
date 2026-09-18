@@ -137,6 +137,18 @@ PLANSCAPE_DATABASE_PORT = config("PLANSCAPE_PORT", default=5432)
 PLANSCAPE_DATABASE_CONN_MAX_AGE = config(
     "PLANSCAPE_DATABASE_CONN_MAX_AGE", default=60, cast=int
 )
+PLANSCAPE_DATABASE_POOL_ENABLED = config(
+    "PLANSCAPE_DATABASE_POOL_ENABLED", default=False, cast=bool
+)
+PLANSCAPE_DATABASE_POOL_MIN_SIZE = config(
+    "PLANSCAPE_DATABASE_POOL_MIN_SIZE", default=1, cast=int
+)
+PLANSCAPE_DATABASE_POOL_MAX_SIZE = config(
+    "PLANSCAPE_DATABASE_POOL_MAX_SIZE", default=4, cast=int
+)
+PLANSCAPE_DATABASE_POOL_TIMEOUT = config(
+    "PLANSCAPE_DATABASE_POOL_TIMEOUT", default=30, cast=int
+)
 
 DATABASES = {
     "default": {
@@ -146,8 +158,24 @@ DATABASES = {
         "USER": PLANSCAPE_DATABASE_USER,
         "PASSWORD": PLANSCAPE_DATABASE_PASSWORD,
         "PORT": PLANSCAPE_DATABASE_PORT,
-        "CONN_MAX_AGE": PLANSCAPE_DATABASE_CONN_MAX_AGE,
+        # Pooling and CONN_MAX_AGE are mutually exclusive in Django.
+        "CONN_MAX_AGE": (
+            0
+            if PLANSCAPE_DATABASE_POOL_ENABLED
+            else PLANSCAPE_DATABASE_CONN_MAX_AGE
+        ),
         "CONN_HEALTH_CHECKS": True,
+        "OPTIONS": (
+            {
+                "pool": {
+                    "min_size": PLANSCAPE_DATABASE_POOL_MIN_SIZE,
+                    "max_size": PLANSCAPE_DATABASE_POOL_MAX_SIZE,
+                    "timeout": PLANSCAPE_DATABASE_POOL_TIMEOUT,
+                }
+            }
+            if PLANSCAPE_DATABASE_POOL_ENABLED
+            else {}
+        ),
         "TEST": {
             "NAME": "auto_test",
         },
