@@ -145,7 +145,7 @@ def async_set_status(
     this is used as a callback in celery canvas.
     """
     with transaction.atomic():
-        user = User.objects.get(pk=user_id)
+        user = User.objects.filter(pk=user_id).first()
         try:
             treatment_plan = TreatmentPlan.objects.select_for_update().get(
                 pk=treatment_plan_pk
@@ -226,7 +226,6 @@ def async_calculate_persist_impacts_treatment_plan(
             start=False,
             user_id=user_id,
         ),
-        async_send_email_process_finished.si(treatment_plan_pk=treatment_plan_pk),
     ).on_error(
         async_set_status.si(
             treatment_plan_pk=treatment_plan_pk,
@@ -234,6 +233,16 @@ def async_calculate_persist_impacts_treatment_plan(
             start=False,
             user_id=user_id,
         )
+    )
+    # Attach the completion email as an on-success callback rather than a
+    # chain member: `.on_error()`'s errback is propagated to every task in
+    # the chain body, but `.link()` only propagates to the chain's last
+    # task — so email failures/retries can never flip TreatmentPlan.status
+    # back to FAILURE after it has correctly been set to SUCCESS.
+    # Must be a standalone statement: `Signature.link()` returns the linked
+    # signature, not `self`, so it cannot be tail-chained onto `callback =`.
+    callback.link(
+        async_send_email_process_finished.si(treatment_plan_pk=treatment_plan_pk)
     )
     tasks = [
         async_calculate_impacts_for_variable_action_year.si(
