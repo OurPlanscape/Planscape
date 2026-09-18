@@ -2,6 +2,7 @@ import json
 import random
 import shutil
 from pathlib import Path
+from unittest import mock
 
 from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
@@ -13,6 +14,7 @@ from planning.tests.factories import (
     ProjectAreaFactory,
     ScenarioFactory,
 )
+from planning.models import GeoPackageStatus
 from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
 from stands.calculator import calculate_delta
 from stands.tests.factories import StandFactory
@@ -34,6 +36,7 @@ from impacts.services import (
     classify_rate_of_spread,
     clone_treatment_plan,
     create_treatment_plan,
+    export_and_upload_geopackage,
     export_geopackage,
     fetch_treatment_plan_data,
     generate_impact_results_data_to_plot,
@@ -872,3 +875,50 @@ class ExportShapefileTest(TestCase):
 
     def tearDown(self):
         shutil.rmtree("/tmp/planscape-test-output", ignore_errors=True)
+
+
+class ExportAndUploadGeopackageTest(TestCase):
+    @mock.patch("impacts.services.upload_file_via_cli")
+    @mock.patch("impacts.services.export_geopackage")
+    def test_export_and_upload_persists_url_and_status(
+        self, mock_export_geopackage, mock_upload_file
+    ):
+        treatment_plan = TreatmentPlanFactory.create()
+        output_path = Path("/tmp/planscape-test-output/geopackages/test.gpkg.zip")
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.touch()
+        mock_export_geopackage.return_value = str(output_path)
+
+        with self.settings(
+            GCS_MEDIA_BUCKET="test-bucket",
+            GEOPACKAGES_FOLDER="geopackages",
+        ):
+            geopackage_url = export_and_upload_geopackage(treatment_plan)
+
+        treatment_plan.refresh_from_db()
+        expected_url = (
+            f"gs://test-bucket/geopackages/"
+            f"treatment_plan_{treatment_plan.uuid}.gpkg.zip"
+        )
+        self.assertEqual(geopackage_url, expected_url)
+        self.assertEqual(treatment_plan.geopackage_url, expected_url)
+        self.assertEqual(treatment_plan.geopackage_status, GeoPackageStatus.SUCCEEDED)
+        mock_upload_file.assert_called_once_with(
+            object_name=f"geopackages/treatment_plan_{treatment_plan.uuid}.gpkg.zip",
+            input_file=str(output_path),
+            bucket_name="test-bucket",
+        )
+
+    @mock.patch("impacts.services.export_geopackage", side_effect=ValueError("boom"))
+    def test_export_and_upload_marks_failed_and_reraises(self, mock_export_geopackage):
+        treatment_plan = TreatmentPlanFactory.create(
+            geopackage_url="gs://test-bucket/old.gpkg.zip",
+            geopackage_status=GeoPackageStatus.SUCCEEDED,
+        )
+
+        with self.assertRaises(ValueError):
+            export_and_upload_geopackage(treatment_plan)
+
+        treatment_plan.refresh_from_db()
+        self.assertIsNone(treatment_plan.geopackage_url)
+        self.assertEqual(treatment_plan.geopackage_status, GeoPackageStatus.FAILED)

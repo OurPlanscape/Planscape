@@ -9,6 +9,7 @@ import fiona
 import rasterio
 from actstream import action as actstream_action
 from core.flags import feature_enabled
+from core.gcs import upload_file_via_cli
 from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
@@ -34,7 +35,7 @@ from impacts.models import (
     TTreatmentPlanCloneResult,
     get_prescription_type,
 )
-from planning.models import PlanningArea, ProjectArea, Scenario
+from planning.models import GeoPackageStatus, PlanningArea, ProjectArea, Scenario
 from stands.models import (
     STAND_AREA_ACRES,
     Stand,
@@ -71,6 +72,7 @@ def create_treatment_plan(
         status=TreatmentPlanStatus.PENDING,
         name=name,
         stand_size=stand_size or scenario.get_stand_size(),
+        geopackage_status=GeoPackageStatus.PENDING,
     )
     track_event(
         name="impacts.treatment_plan.create",
@@ -157,6 +159,7 @@ def clone_treatment_plan(
         status=TreatmentPlanStatus.PENDING,
         name=get_cloned_name(treatment_plan.name),
         stand_size=treatment_plan.stand_size,
+        geopackage_status=GeoPackageStatus.PENDING,
     )
 
     cloned_prescriptions = list(
@@ -1060,3 +1063,40 @@ def export_geopackage(treatment_plan: TreatmentPlan) -> str:
                 }
             )
     return str(fiona_path)
+
+
+def export_and_upload_geopackage(treatment_plan: TreatmentPlan) -> str:
+    treatment_plan.geopackage_status = GeoPackageStatus.PROCESSING
+    treatment_plan.save(update_fields=["geopackage_status", "updated_at"])
+
+    try:
+        local_path = export_geopackage(treatment_plan)
+        object_name = (
+            f"{settings.GEOPACKAGES_FOLDER}/"
+            f"treatment_plan_{treatment_plan.uuid}.gpkg.zip"
+        )
+        geopackage_path = f"gs://{settings.GCS_MEDIA_BUCKET}/{object_name}"
+        upload_file_via_cli(
+            object_name=object_name,
+            input_file=local_path,
+            bucket_name=settings.GCS_MEDIA_BUCKET,
+        )
+    except Exception:
+        log.exception(
+            "Failed to export treatment plan %s to geopackage.",
+            treatment_plan.pk,
+        )
+        treatment_plan.geopackage_url = None
+        treatment_plan.geopackage_status = GeoPackageStatus.FAILED
+        treatment_plan.save(
+            update_fields=["geopackage_url", "geopackage_status", "updated_at"]
+        )
+        raise
+
+    treatment_plan.geopackage_url = geopackage_path
+    treatment_plan.geopackage_status = GeoPackageStatus.SUCCEEDED
+    treatment_plan.save(
+        update_fields=["geopackage_url", "geopackage_status", "updated_at"]
+    )
+    Path(local_path).unlink(missing_ok=True)
+    return geopackage_path

@@ -15,7 +15,7 @@ from django.contrib.gis.db import models
 from django.contrib.gis.db.models import Union as UnionOp
 from django.db.models import QuerySet
 from django_stubs_ext.db.models import TypedModelMeta
-from planning.models import ProjectArea, Scenario
+from planning.models import GeoPackageStatus, ProjectArea, Scenario
 from stands.models import Stand, StandSizeChoices
 from typing_extensions import Self
 
@@ -77,6 +77,18 @@ class TreatmentPlan(
     started_at = models.DateTimeField(null=True)
 
     finished_at = models.DateTimeField(null=True)
+
+    geopackage_status = models.CharField(
+        max_length=32,
+        choices=GeoPackageStatus.choices,
+        null=True,
+        help_text="Result status of the generation of a geopackage.",
+    )
+
+    geopackage_url = models.URLField(
+        null=True,
+        help_text="Geopackage URL of the Treatment Plan.",
+    )
 
     objects = TreatmentPlanManager()
 

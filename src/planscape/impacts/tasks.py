@@ -22,9 +22,11 @@ from impacts.models import (
 from impacts.services import (
     calculate_impacts,
     calculate_impacts_for_untreated_stands,
+    export_and_upload_geopackage,
     get_calculation_matrix,
     get_calculation_matrix_wo_action,
 )
+from planning.models import GeoPackageStatus
 from planscape.celery import app
 from planscape.analytics import track_event
 
@@ -171,6 +173,20 @@ def async_set_status(
 
 
 @app.task()
+def async_generate_treatment_plan_geopackage(treatment_plan_pk: int) -> str | None:
+    try:
+        treatment_plan = TreatmentPlan.objects.get(pk=treatment_plan_pk)
+    except TreatmentPlan.DoesNotExist:
+        log.warning(
+            "TreatmentPlan with pk %s does not exist or was deleted. Cannot generate geopackage.",
+            treatment_plan_pk,
+        )
+        return None
+
+    return export_and_upload_geopackage(treatment_plan)
+
+
+@app.task()
 def async_calculate_persist_impacts_treatment_plan(
     treatment_plan_pk: int,
     user_id: int,
@@ -193,6 +209,9 @@ def async_calculate_persist_impacts_treatment_plan(
         years=AVAILABLE_YEARS,
     )
     callback = chain(
+        async_generate_treatment_plan_geopackage.si(
+            treatment_plan_pk=treatment_plan_pk,
+        ),
         async_set_status.si(
             treatment_plan_pk=treatment_plan_pk,
             status=TreatmentPlanStatus.SUCCESS,
@@ -226,6 +245,11 @@ def async_calculate_persist_impacts_treatment_plan(
         for variable, year in untreated_stands_matrix
     ]
     log.info(f"Firing {len(tasks)} tasks to calculate impacts!")
+    TreatmentPlan.objects.filter(pk=treatment_plan_pk).update(
+        geopackage_url=None,
+        geopackage_status=GeoPackageStatus.PENDING,
+        updated_at=timezone.now(),
+    )
     chord(tasks)(callback)
     track_event(
         name="impacts.treatment_plan.run",
@@ -239,7 +263,7 @@ def async_calculate_persist_impacts_treatment_plan(
 
 
 @app.task(
-    bind=True, 
+    bind=True,
     autoretry_for=(Exception, smtplib.SMTPDataError),
     retry_backoff=True,
     retry_jitter=True,

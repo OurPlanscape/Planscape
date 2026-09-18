@@ -141,7 +141,7 @@ export class TreatmentsService {
 
   getStandResult(treatmentPlanId: number, standId: number) {
     return this.http.get<Record<MetricId, MetricResult>[]>(
-      `${this.baseUrl}${treatmentPlanId}/stand-treatment-results/`,
+      this.baseUrl + treatmentPlanId + '/stand-treatment-results/',
       {
         withCredentials: true,
         params: {
@@ -152,7 +152,7 @@ export class TreatmentsService {
   }
 
   downloadTreatment(treatmentPlanId: number) {
-    return this.http.get(`${this.baseUrl}${treatmentPlanId}/download/`, {
+    return this.http.get(this.baseUrl + treatmentPlanId + '/download/', {
       withCredentials: true,
       responseType: 'blob',
     });
