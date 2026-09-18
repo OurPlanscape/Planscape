@@ -2,11 +2,9 @@
   <ng-container *ngIf="scenarioState === 'FAILURE'; else generic">
     <h4>
       <mat-icon class="material-symbols-filled warning">warning</mat-icon>
-      No optimal project areas for treatment were found
+      Forsys couldn’t find enough eligible areas for treatment
     </h4>
     <p>
-      Planscape couldn't find enough treatable area to create project areas.
-      <br />
       Review your scenario configurations and try adjusting the following:
     </p>
 
@@ -44,9 +42,6 @@
   </ng-template>
 
   <div class="actions" *ngIf="variant === 'default'">
-    <a (click)="goBack.emit()" data-id="downloadCsv" sg-button variant="ghost">
-      Return to Plan Overview
-    </a>
     <button
       (click)="tryAgain.emit()"
       class="white-spinner"
