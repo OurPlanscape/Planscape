@@ -1,6 +1,7 @@
 import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 import { UploadPlanningAreaBoxComponent } from '@app/explore/upload-planning-area-box/upload-planning-area-box.component';
 import { DrawService } from '@app/maplibre-map/draw.service';
 import { ButtonComponent } from '@styleguide';
@@ -12,7 +13,13 @@ import { WorkspaceState } from '../workspace.state';
 @Component({
   selector: 'app-planning-area-empty-state',
   standalone: true,
-  imports: [AsyncPipe, NgIf, ButtonComponent, UploadPlanningAreaBoxComponent],
+  imports: [
+    AsyncPipe,
+    NgIf,
+    ButtonComponent,
+    MatIconModule,
+    UploadPlanningAreaBoxComponent,
+  ],
   templateUrl: './planning-area-empty-state.component.html',
   styleUrl: './planning-area-empty-state.component.scss',
   providers: [DrawService],

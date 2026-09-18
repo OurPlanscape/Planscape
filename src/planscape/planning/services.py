@@ -1609,10 +1609,13 @@ def export_scenario_sub_units_outputs_to_geopackage(
 ) -> None:
     geojson = get_flatten_geojson(scenario)
 
-    # rename proj_id to subunit_id on schema
+    is_child_scenario = is_project_areas_child(scenario)
+    
     schema_geojson = copy.deepcopy(geojson)
-    proj_id = schema_geojson["features"][0]["properties"].pop("proj_id")
-    proj_id = schema_geojson["features"][0]["properties"]["subunit_id"] = proj_id
+    if not is_child_scenario:
+        # rename proj_id to subunit_id on schema
+        proj_id = schema_geojson["features"][0]["properties"].pop("proj_id")
+        proj_id = schema_geojson["features"][0]["properties"]["subunit_id"] = proj_id
 
     weighting_data = get_weighing_from_input(stand_inputs)
 
@@ -1625,7 +1628,7 @@ def export_scenario_sub_units_outputs_to_geopackage(
     project_areas = None
     sub_units = None
 
-    if is_project_areas_child(scenario):
+    if is_child_scenario:
         project_areas = scenario.parent.project_areas.all()
     else:
         sub_units_layer_id = scenario.configuration.get("sub_units_layer")
@@ -1647,9 +1650,13 @@ def export_scenario_sub_units_outputs_to_geopackage(
                 allow_unsupported_drivers=True,
             ) as out:
                 for feature in geojson.get("features", []):
-                    # rename proj_id to subunit_id on features
-                    proj_id = feature["properties"].pop("proj_id")
-                    feature["properties"]["subunit_id"] = proj_id
+                    if is_child_scenario:
+                        proj_id = feature["properties"].get("proj_id")
+                    else:
+                        # rename proj_id to subunit_id on features
+                        proj_id = feature["properties"].pop("proj_id")
+                        feature["properties"]["subunit_id"] = proj_id
+
                     feature["properties"] = {**feature["properties"], **weighting_data}
                     if project_areas is not None:
                         source_area = project_areas.get(pk=proj_id)
