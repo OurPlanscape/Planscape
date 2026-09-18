@@ -1,3 +1,4 @@
+import { NamedConstraint } from '@app/scenario-creation/step3/adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
 import {
   PLANNING_APPROACH,
   ScenarioConfigPayload,
@@ -34,6 +35,7 @@ export interface ScenarioDraftConfiguration extends ScenarioConfigPayload {
   sub_units_layer?: number;
   sub_units_fixed_target?: boolean;
   sub_units_target_value?: number;
+  adv_constraints?: NamedConstraint[];
 }
 
 export interface SubUnitsDetail {

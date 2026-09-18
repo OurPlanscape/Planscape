@@ -77,13 +77,19 @@ export class ConstraintsStepComponent
 
     // TypeScript now knows standLevelConstraints exists!
     const standLevelConstraints = formValues.standLevelConstraints;
-    // const advStandLevelConstraints = formValues.advStandLevelConstraints;
+const advStandLevelConstraints: NamedConstraint[] = 
+  formValues.advStandLevelConstraints?.constraints ?? [];
 
-    return {
+    const formData = {
       max_slope: standLevelConstraints?.max_slope ?? null,
       min_distance_from_road:
         standLevelConstraints?.min_distance_from_road ?? null,
+      adv_constraints: advStandLevelConstraints ?? [],
     };
+
+    console.log('here is the form data:', formData);
+    return formData;
+
   }
 
   override beforeStepLoad() {
