@@ -138,6 +138,8 @@ def async_set_status(
     status: TreatmentPlanStatus = TreatmentPlanStatus.FAILURE,
     start: bool = False,
     user_id: Optional[int] = None,
+    *args, 
+    **kwargs,
 ) -> Tuple[bool, int]:
     """sets the status of a treatment plan async.
     this is used as a callback in celery canvas.
@@ -182,8 +184,14 @@ def async_generate_treatment_plan_geopackage(treatment_plan_pk: int) -> str | No
             treatment_plan_pk,
         )
         return None
-
-    return export_and_upload_geopackage(treatment_plan)
+    try:
+        return export_and_upload_geopackage(treatment_plan)
+    except Exception:
+        log.error(
+            "Failed to generate Treatment Plan Geopackage", 
+            extra={"treatment_plan_pk": treatment_plan_pk}
+        )
+        return None
 
 
 @app.task()
