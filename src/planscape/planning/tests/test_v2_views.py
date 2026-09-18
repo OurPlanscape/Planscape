@@ -7,12 +7,13 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase, APITransactionTestCase
+from rest_framework.test import APITestCase
 from workspaces.access import (
     COLLABORATOR_PERMISSIONS,
     OWNER_PERMISSIONS,
     VIEWER_PERMISSIONS,
 )
+from workspaces.tests.factories import PlanningWorkspaceFactory
 
 from planning.models import (
     PlanningArea,
@@ -136,7 +137,7 @@ class CreatorsTest(APITestCase):
         self.assertEqual(set(creator_names), {"user a", "user b", "user e"})
 
 
-class GetPlanningAreaTest(APITransactionTestCase):
+class GetPlanningAreaTest(APITestCase):
     def setUp(self):
         self.user = UserFactory.create(username="testuser")
 
@@ -650,6 +651,46 @@ class CreatePlanningAreaTest(APITestCase):
         data = response.json()
         self.assertIsNotNone(data.get("id"))
 
+    def test_create_with_name_taken_in_workspace_returns_400(self):
+        workspace = PlanningWorkspaceFactory.create(created_by=self.user)
+        PlanningAreaFactory.create(
+            name=self.valid_data["name"],
+            region_name=RegionChoices.CENTRAL_COAST,
+            workspace=workspace,
+        )
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:planningareas-list"),
+            {**self.valid_data, "workspace": workspace.pk},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(1, PlanningArea.objects.count())
+
+    def test_create_with_name_taken_in_other_workspace(self):
+        PlanningAreaFactory.create(
+            name=self.valid_data["name"],
+            workspace=PlanningWorkspaceFactory.create(created_by=self.user),
+        )
+        workspace = PlanningWorkspaceFactory.create(created_by=self.user)
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:planningareas-list"),
+            {**self.valid_data, "workspace": workspace.pk},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_without_workspace_allows_taken_name(self):
+        PlanningAreaFactory.create(user=self.user, name=self.valid_data["name"])
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:planningareas-list"),
+            self.valid_data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
 
 class CreatePlanningAreaNoRegionV2Test(APITestCase):
     def setUp(self):
@@ -858,9 +899,13 @@ class UpdatePlanningAreaTest(APITestCase):
         self.assertEqual(self.planning_area.name, "Editable Area")
 
     def test_rename_to_taken_name_fails(self):
+        workspace = PlanningWorkspaceFactory.create(created_by=self.creator)
+        self.planning_area.workspace = workspace
+        self.planning_area.save(update_fields=["workspace"])
         PlanningAreaFactory.create(
             user=self.creator,
             name="Another Area",
+            workspace=workspace,
         )
         payload = {"name": "Another Area"}
         self.client.force_authenticate(self.creator)
@@ -872,6 +917,37 @@ class UpdatePlanningAreaTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.planning_area.refresh_from_db()
         self.assertEqual(self.planning_area.name, "Editable Area")
+
+    def test_rename_to_name_taken_in_other_workspace(self):
+        workspace = PlanningWorkspaceFactory.create(created_by=self.creator)
+        self.planning_area.workspace = workspace
+        self.planning_area.save(update_fields=["workspace"])
+        PlanningAreaFactory.create(
+            user=self.creator,
+            name="Another Area",
+            workspace=PlanningWorkspaceFactory.create(created_by=self.creator),
+        )
+        self.client.force_authenticate(self.creator)
+        response = self.client.patch(
+            self.url,
+            {"name": "Another Area"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Another Area")
+
+    def test_rename_without_workspace_allows_taken_name(self):
+        PlanningAreaFactory.create(user=self.creator, name="Another Area")
+        self.client.force_authenticate(self.creator)
+        response = self.client.patch(
+            self.url,
+            {"name": "Another Area"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.planning_area.refresh_from_db()
+        self.assertEqual(self.planning_area.name, "Another Area")
 
     def test_rename_to_same_name(self):
         payload = {"name": "Editable Area"}
@@ -1276,11 +1352,14 @@ class TreatmentGoalViewSetTest(APITestCase):
         ca_group = TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS
 
         TreatmentGoal.objects.all().delete()  # cleanup any existing records added on migrations
+        biodiversity_category, _created = TreatmentGoalCategory.objects.get_or_create(
+            name="Biodiversity"
+        )
 
         self.first_treatment_goal = TreatmentGoalFactory.create(
             name="First",
             description=self.markdown_description,
-            category=TreatmentGoalCategory.BIODIVERSITY,
+            category=biodiversity_category,
             geometry=MultiPolygon([self.poly1.intersection(self.poly2)]),
             group=ca_group,
         )
@@ -1318,13 +1397,8 @@ class TreatmentGoalViewSetTest(APITestCase):
         self.assertEqual(first_treatment_goal["name"], self.first_treatment_goal.name)
         self.assertEqual(first_treatment_goal["id"], self.first_treatment_goal.id)
         self.assertEqual(first_treatment_goal["description"], self.html_description)
-        self.assertEqual(
-            first_treatment_goal["category"], self.first_treatment_goal.category
-        )
-        self.assertEqual(
-            first_treatment_goal["category_text"],
-            self.first_treatment_goal.category.label,
-        )
+        self.assertEqual(first_treatment_goal["category"], "Biodiversity")
+        self.assertNotIn("category_text", first_treatment_goal)
         self.assertEqual(first_treatment_goal["group"], self.first_treatment_goal.group)
         self.assertEqual(
             first_treatment_goal["group_text"],
@@ -1363,15 +1437,31 @@ class TreatmentGoalViewSetTest(APITestCase):
         self.assertEqual(treatment_goal["name"], self.first_treatment_goal.name)
         self.assertEqual(treatment_goal["id"], self.first_treatment_goal.id)
         self.assertEqual(treatment_goal["description"], self.html_description)
-        self.assertEqual(treatment_goal["category"], self.first_treatment_goal.category)
-        self.assertEqual(
-            treatment_goal["category_text"], self.first_treatment_goal.category.label
-        )
+        self.assertEqual(treatment_goal["category"], "Biodiversity")
+        self.assertNotIn("category_text", treatment_goal)
         self.assertEqual(treatment_goal["group"], self.first_treatment_goal.group)
         self.assertEqual(
             treatment_goal["group_text"],
             TreatmentGoalGroup(self.first_treatment_goal.group).label,
         )
+
+    def test_detail_treatment_goal_with_null_category(self):
+        treatment_goal = TreatmentGoalFactory.create(
+            category=None,
+            geometry=self.mpoly3,
+            group=TreatmentGoalGroup.CALIFORNIA_PLANNING_METRICS,
+        )
+        self.client.force_authenticate(self.user)
+        response = self.client.get(
+            reverse(
+                "api:planning:treatment-goals-detail",
+                args=[treatment_goal.id],
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsNone(response.json()["category"])
 
     def test_detail_inactive_treatment_goal(self):
         self.client.force_authenticate(self.user)

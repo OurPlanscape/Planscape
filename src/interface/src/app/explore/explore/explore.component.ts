@@ -26,7 +26,7 @@ import { DrawService } from '@maplibre-map/draw.service';
 import { HttpClientModule } from '@angular/common/http';
 import { MapConfigService } from '@maplibre-map/map-config.service';
 import { PlanState } from '@plan/plan.state';
-import { getPlanPath } from '@plan/plan-helpers';
+import { getPlanPath, getWorkspaceId } from '@plan/plan-helpers';
 
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FrontendConstants } from '@map/map.constants';
@@ -136,16 +136,18 @@ export class ExploreComponent implements OnDestroy, OnInit {
         })
       )
       .subscribe(({ plan, scenario }) => {
+        const route = this.route.snapshot;
+        const workspaceId = getWorkspaceId(route);
         let label = 'New Plan';
-        let backUrl = '/';
+        let backUrl = workspaceId ? `/workspace/${workspaceId}` : '/';
         // If we have a scenarioId (from the route) AND plan and scenario
         if (scenarioId && plan && scenario) {
           label = 'Map Viewer: ' + scenario.name;
-          backUrl += getPlanPath(plan.id) + `/scenario/${scenarioId}/dashboard`;
+          backUrl = `${getPlanPath(plan.id, route)}/scenario/${scenarioId}/dashboard`;
           // otherwise, just route back to the planning area
         } else if (plan) {
           label = 'Map Viewer: ' + plan.name;
-          backUrl = getPlanPath(plan.id);
+          backUrl = getPlanPath(plan.id, route);
         }
 
         this.breadcrumbService.updateBreadCrumb({

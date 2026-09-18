@@ -30,6 +30,7 @@ import {
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { getPlanPath } from '@plan/plan-helpers';
 
 @Component({
   selector: 'app-scenario-setup-modal',
@@ -153,7 +154,7 @@ export class ScenarioSetupModalComponent implements OnInit {
     newScenario: Scenario
   ): Observable<void> {
     let newPayload = this.buildClonedPayload(oldScenario, newScenario);
-    const redirectUrl = `/plan/${newScenario.planning_area}/scenario/${newScenario.id}`;
+    const redirectUrl = `${this.planPath(newScenario.planning_area)}/scenario/${newScenario.id}`;
 
     if (
       !newPayload.configuration ||
@@ -167,7 +168,9 @@ export class ScenarioSetupModalComponent implements OnInit {
       .patchScenarioConfig(newScenario.id!, newPayload)
       .pipe(
         tap((result) =>
-          this.reloadTo(`/plan/${result.planning_area}/scenario/${result.id}`)
+          this.reloadTo(
+            `${this.planPath(result.planning_area)}/scenario/${result.id}`
+          )
         ),
         map(() => void 0)
       );
@@ -210,6 +213,11 @@ export class ScenarioSetupModalComponent implements OnInit {
     await this.router.navigateByUrl(url);
   }
 
+  // Dialogs only see the root route, so read the workspace off the router state.
+  private planPath(planId: number) {
+    return getPlanPath(planId, this.router.routerState.snapshot.root);
+  }
+
   private createScenario(name: string) {
     if (!this.data.planId) {
       this.dialogRef.close();
@@ -230,7 +238,11 @@ export class ScenarioSetupModalComponent implements OnInit {
             return this.handleClone(scenario, newScenario);
           }
           if (!fromClone && newScenario.id) {
-            this.router.navigate(['plan', planId, 'scenario', newScenario.id]);
+            this.router.navigate([
+              this.planPath(planId),
+              'scenario',
+              newScenario.id,
+            ]);
           }
           return EMPTY;
         })

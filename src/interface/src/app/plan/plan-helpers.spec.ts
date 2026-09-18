@@ -1,5 +1,14 @@
+import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
+  ActivatedRouteSnapshot,
+  convertToParamMap,
+  provideRouter,
+  Router,
+} from '@angular/router';
+import { RouterTestingHarness } from '@angular/router/testing';
+import {
+  getPlanPath,
   getColorForProjectPosition,
   isValidTotalArea,
   processCumulativeAttainment,
@@ -9,6 +18,72 @@ import {
 import { Feature, Polygon, MultiPolygon } from 'geojson';
 import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
 import { GeoJSONStoreFeatures } from 'terra-draw';
+
+describe('getPlanPath', () => {
+  function routeWithParams(...params: Record<string, string>[]) {
+    return {
+      pathFromRoot: params.map((p) => ({ paramMap: convertToParamMap(p) })),
+    } as unknown as ActivatedRouteSnapshot;
+  }
+
+  it('returns the bare plan path without a route', () => {
+    expect(getPlanPath(3)).toBe('/plan/3');
+  });
+
+  it('returns the bare plan path outside a workspace', () => {
+    expect(getPlanPath(3, routeWithParams({}, { planId: '3' }))).toBe(
+      '/plan/3'
+    );
+  });
+
+  it('keeps the workspace prefix from an ancestor route', () => {
+    const route = routeWithParams({}, { workspaceId: '7' }, { planId: '3' });
+    expect(getPlanPath(3, route)).toBe('/workspace/7/plan/3');
+  });
+});
+
+describe('getPlanPath with real router state', () => {
+  @Component({ standalone: true, template: '' })
+  class BlankComponent {}
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([
+          {
+            path: 'workspace/:workspaceId',
+            children: [{ path: 'plan/:planId', component: BlankComponent }],
+          },
+          { path: 'plan/:planId', component: BlankComponent },
+        ]),
+      ],
+    });
+  });
+
+  async function snapshotsFor(url: string) {
+    await RouterTestingHarness.create(url);
+    const root = TestBed.inject(Router).routerState.snapshot.root;
+    let leaf = root;
+    while (leaf.firstChild) {
+      leaf = leaf.firstChild;
+    }
+    return { root, leaf };
+  }
+
+  it('keeps the workspace from the page route and from the router root', async () => {
+    const { root, leaf } = await snapshotsFor('/workspace/7/plan/3');
+
+    expect(getPlanPath(3, leaf)).toBe('/workspace/7/plan/3');
+    expect(getPlanPath(3, root)).toBe('/workspace/7/plan/3');
+  });
+
+  it('stays on the plain plan path outside a workspace', async () => {
+    const { root, leaf } = await snapshotsFor('/plan/3');
+
+    expect(getPlanPath(3, leaf)).toBe('/plan/3');
+    expect(getPlanPath(3, root)).toBe('/plan/3');
+  });
+});
 
 interface MockFeature {
   properties: {

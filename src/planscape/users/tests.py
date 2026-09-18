@@ -7,6 +7,7 @@ from allauth.account.models import EmailAddress
 from collaboration.models import Permissions, Role
 from django.contrib.auth.models import User
 from django.core import mail
+from django.core.cache import cache
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -203,6 +204,8 @@ class PasswordResetTest(TestCase):
             },
         )
         self.user = User.objects.filter(email="testuser@test.com").get()
+        # drop the signup confirmation email
+        mail.outbox = []
 
     def test_reset_link(self):
         self.client.post(
@@ -332,6 +335,8 @@ class PasswordChangeTest(TestCase):
         email = EmailAddress.objects.filter(email="testuser@test.com").get()
         email.verified = True
         email.save()
+        # drop the signup confirmation email
+        mail.outbox = []
 
     def test_password_change_confirmation_email(self):
         # Must do a full login.
@@ -498,8 +503,18 @@ class LoginWithoutEmailVerificationTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
+TEST_CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "users-tests",
+    }
+}
+
+
+@override_settings(CACHES=TEST_CACHES)
 class ValidateMartinRequestTestCase(APITestCase):
     def setUp(self):
+        cache.clear()
         Permissions.objects.get_or_create(role=Role.OWNER, permission="view_scenario")
         Permissions.objects.get_or_create(
             role=Role.COLLABORATOR, permission="view_scenario"
@@ -698,6 +713,96 @@ class ValidateMartinRequestTestCase(APITestCase):
             f"planning_area_id={self.planning_area.pk}&stand_size=SMALL"
         )
         response = self.client.get(self.url, headers={"X_ORIGINAL_URI": martins_path})
+        self.assertEqual(response.status_code, 403)
+
+    def test_allowed_result_is_cached_across_tiles(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.get(
+            self.url,
+            headers={
+                "X_ORIGINAL_URI": f"/tiles/project_areas_by_scenario/8/40/96?scenario_id={self.scenario.pk}"
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+
+        with patch("users.serializers.ScenarioPermission.can_view") as can_view:
+            response = self.client.get(
+                self.url,
+                headers={
+                    "X_ORIGINAL_URI": f"/tiles/project_areas_by_scenario/8/41/96?scenario_id={self.scenario.pk}"
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"valid": True})
+        can_view.assert_not_called()
+
+    def test_denied_result_is_not_cached(self):
+        another_user = UserFactory.create()
+        self.client.force_authenticate(another_user)
+        martins_path = (
+            f"/tiles/project_areas_by_scenario?scenario_id={self.scenario.pk}"
+        )
+        response = self.client.get(self.url, headers={"X_ORIGINAL_URI": martins_path})
+        self.assertEqual(response.status_code, 403)
+
+        with patch(
+            "users.serializers.ScenarioPermission.can_view", return_value=True
+        ) as can_view:
+            response = self.client.get(
+                self.url, headers={"X_ORIGINAL_URI": martins_path}
+            )
+
+        self.assertEqual(response.status_code, 200)
+        can_view.assert_called_once()
+
+    def test_cached_result_is_per_user(self):
+        martins_path = (
+            f"/tiles/project_areas_by_scenario?scenario_id={self.scenario.pk}"
+        )
+        self.client.force_authenticate(self.owner)
+        response = self.client.get(self.url, headers={"X_ORIGINAL_URI": martins_path})
+        self.assertEqual(response.status_code, 200)
+
+        another_user = UserFactory.create()
+        self.client.force_authenticate(another_user)
+        response = self.client.get(self.url, headers={"X_ORIGINAL_URI": martins_path})
+        self.assertEqual(response.status_code, 403)
+
+    def test_cached_result_is_per_resource(self):
+        other_scenario = ScenarioFactory.create()
+        self.client.force_authenticate(self.owner)
+        response = self.client.get(
+            self.url,
+            headers={
+                "X_ORIGINAL_URI": f"/tiles/project_areas_by_scenario?scenario_id={self.scenario.pk}"
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(
+            self.url,
+            headers={
+                "X_ORIGINAL_URI": f"/tiles/project_areas_by_scenario?scenario_id={other_scenario.pk}"
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_cached_result_without_resource_params_does_not_allow_resources(self):
+        another_user = UserFactory.create()
+        self.client.force_authenticate(another_user)
+        response = self.client.get(
+            self.url,
+            headers={"X_ORIGINAL_URI": "/tiles/stands_by_scenario?stand_size=SMALL"},
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(
+            self.url,
+            headers={
+                "X_ORIGINAL_URI": f"/tiles/stands_by_scenario?scenario_id={self.scenario.pk}&stand_size=SMALL"
+            },
+        )
         self.assertEqual(response.status_code, 403)
 
     def test_unauthenticated_user(self):

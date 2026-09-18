@@ -43,6 +43,7 @@ jobs:
             mixpanel_enabled: false,
             google_analytics_id: '',
             debug_layers: false,
+            websocket_endpoint: '',
             sentry: {
               dsn_url: '',
               enable_extra_error_data: false,

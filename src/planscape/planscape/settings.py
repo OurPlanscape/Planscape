@@ -22,7 +22,7 @@ except FileNotFoundError:
     config = Config(RepositoryEmpty())
 django_stubs_ext.monkeypatch()
 
-TESTING_MODE = "test" in sys.argv
+TESTING_MODE = "test" in sys.argv or "pytest" in sys.modules
 LOGLEVEL = config("LOGLEVEL", default="INFO", cast=str)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -131,6 +131,21 @@ PLANSCAPE_DATABASE_PASSWORD = config("PLANSCAPE_DATABASE_PASSWORD", default="pas
 PLANSCAPE_DATABASE_USER = config("PLANSCAPE_DATABASE_USER", default="planscape")
 PLANSCAPE_DATABASE_NAME = config("PLANSCAPE_DATABASE_NAME", default="planscape")
 PLANSCAPE_DATABASE_PORT = config("PLANSCAPE_PORT", default=5432)
+PLANSCAPE_DATABASE_CONN_MAX_AGE = config(
+    "PLANSCAPE_DATABASE_CONN_MAX_AGE", default=60, cast=int
+)
+PLANSCAPE_DATABASE_POOL_ENABLED = config(
+    "PLANSCAPE_DATABASE_POOL_ENABLED", default=False, cast=bool
+)
+PLANSCAPE_DATABASE_POOL_MIN_SIZE = config(
+    "PLANSCAPE_DATABASE_POOL_MIN_SIZE", default=1, cast=int
+)
+PLANSCAPE_DATABASE_POOL_MAX_SIZE = config(
+    "PLANSCAPE_DATABASE_POOL_MAX_SIZE", default=4, cast=int
+)
+PLANSCAPE_DATABASE_POOL_TIMEOUT = config(
+    "PLANSCAPE_DATABASE_POOL_TIMEOUT", default=30, cast=int
+)
 
 DATABASES = {
     "default": {
@@ -140,12 +155,30 @@ DATABASES = {
         "USER": PLANSCAPE_DATABASE_USER,
         "PASSWORD": PLANSCAPE_DATABASE_PASSWORD,
         "PORT": PLANSCAPE_DATABASE_PORT,
+        # Pooling and CONN_MAX_AGE are mutually exclusive in Django.
+        "CONN_MAX_AGE": (
+            0
+            if PLANSCAPE_DATABASE_POOL_ENABLED
+            else PLANSCAPE_DATABASE_CONN_MAX_AGE
+        ),
+        "CONN_HEALTH_CHECKS": True,
+        "OPTIONS": (
+            {
+                "pool": {
+                    "min_size": PLANSCAPE_DATABASE_POOL_MIN_SIZE,
+                    "max_size": PLANSCAPE_DATABASE_POOL_MAX_SIZE,
+                    "timeout": PLANSCAPE_DATABASE_POOL_TIMEOUT,
+                }
+            }
+            if PLANSCAPE_DATABASE_POOL_ENABLED
+            else {}
+        ),
         "TEST": {
             "NAME": "auto_test",
         },
     }
 }
-CONN_MAX_AGE = 60
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -284,6 +317,9 @@ ACCOUNT_USERNAME_REQUIRED = False
 LOGOUT_ON_PASSWORD_CHANGE = False
 ACCOUNT_ADAPTER = "users.allauth_adapter.CustomAllauthAdapter"
 PASSWORD_RESET_TIMEOUT = 1800  # 30 minutes.
+if TESTING_MODE:
+    # the cooldown lives in the shared cache, so it leaks between tests
+    ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN = 0
 
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="no-reply@planscape.org")
 EMAIL_BACKEND = config(
@@ -331,6 +367,9 @@ CACHES = {
     }
 }
 
+# How long (in seconds) an allowed Martin tile authorization is cached per user.
+MARTIN_AUTH_CACHE_TIMEOUT = config("MARTIN_AUTH_CACHE_TIMEOUT", default=300, cast=int)
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -350,6 +389,7 @@ LOGGING = {
             "level": LOGLEVEL,
             "formatter": "verbose",
             "class": "logging.StreamHandler",
+            "filters": ["testing"],
         },
     },
     "root": {

@@ -39,11 +39,14 @@ class DatasetAdmin(admin.ModelAdmin):
         "visibility",
         "organization",
         "selection_type",
+        "created_at",
+        "updated_at",
     )
     list_display_links = (
         "id",
         "name",
     )
+    readonly_fields = ("created_at", "updated_at")
 
     def get_changeform_initial_data(self, request) -> Dict[str, Any]:
         return {"created_by": request.user}
@@ -82,6 +85,8 @@ class DataLayerAdmin(admin.ModelAdmin):
         "dataset",
         "category",
         "organization",
+        "created_at",
+        "updated_at",
     )
     list_display_links = (
         "id",
@@ -103,6 +108,8 @@ class DataLayerAdmin(admin.ModelAdmin):
         "table",
         "public_url",
         "deleted_at",
+        "created_at",
+        "updated_at",
     ]
     inlines = [DataLayerHasStyleAdmin]
     actions = [
@@ -115,6 +122,13 @@ class DataLayerAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).defer("geometry", "outline")
+
+    def save_model(self, request, obj, form, change):
+        uploaded_geometry = getattr(form, "uploaded_shapefile_geometry", None)
+        if uploaded_geometry:
+            obj.geometry = uploaded_geometry.envelope
+            obj.outline = uploaded_geometry
+        return super().save_model(request, obj, form, change)
 
     def get_urls(self):
         return [

@@ -27,7 +27,6 @@ from planning.models import (
     ScenarioType,
     SharedLink,
     TreatmentGoal,
-    TreatmentGoalCategory,
     TreatmentGoalGroup,
     TreatmentGoalUsageType,
     TreatmentGoalUsesDataLayer,
@@ -151,12 +150,14 @@ class CreatePlanningAreaSerializer(serializers.ModelSerializer):
         return workspace
 
     def validate(self, attrs):
-        region_val = attrs.get("region_name")
-        if PlanningArea.objects.filter(
-            user=attrs["user"],
-            name=attrs["name"],
-            region_name=region_val,
-        ).exists():
+        workspace = attrs.get("workspace")
+        if (
+            workspace is not None
+            and PlanningArea.objects.filter(
+                workspace=workspace,
+                name=attrs["name"],
+            ).exists()
+        ):
             raise serializers.ValidationError(
                 {"name": "A planning area with this name already exists."}
             )
@@ -209,8 +210,9 @@ class UpdatePlanningAreaSerializer(serializers.ModelSerializer):
             )
         instance = self.instance
         if (
-            PlanningArea.objects.filter(
-                user=instance.user,
+            instance.workspace_id is not None
+            and PlanningArea.objects.filter(
+                workspace_id=instance.workspace_id,
                 name=attrs["name"],
             )
             .exclude(id=instance.pk)
@@ -862,8 +864,8 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
     description = serializers.SerializerMethodField(
         help_text="Description of the Treatment Goal on HTML format.",
     )
-    category_text = serializers.SerializerMethodField(
-        help_text="Text format of Treatment Goal Category.",
+    category = serializers.SerializerMethodField(
+        help_text="Name of the Treatment Goal Category.",
     )
     group_text = serializers.SerializerMethodField(
         read_only=True,
@@ -880,7 +882,6 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "category",
-            "category_text",
             "group",
             "group_text",
             "usage_types",
@@ -891,10 +892,9 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
             return markdown.markdown(instance.description)
         return None
 
-    def get_category_text(self, instance):
+    def get_category(self, instance):
         if instance.category:
-            category = TreatmentGoalCategory(instance.category)
-            return category.label
+            return instance.category.name
         return None
 
     def get_group_text(self, instance):
@@ -905,9 +905,18 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
 
 
 class TreatmentGoalSimpleSerializer(serializers.ModelSerializer):
+    category = serializers.SerializerMethodField(
+        help_text="Name of the Treatment Goal Category.",
+    )
+
     class Meta:
         model = TreatmentGoal
-        fields = ("id", "name")
+        fields = ("id", "name", "category")
+
+    def get_category(self, instance):
+        if instance.category:
+            return instance.category.name
+        return None
 
 
 class ListScenarioSerializer(serializers.ModelSerializer):

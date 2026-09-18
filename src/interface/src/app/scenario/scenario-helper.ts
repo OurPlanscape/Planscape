@@ -17,28 +17,17 @@ import {
  */
 export function getGroupedGoals(
   goals: ScenarioGoal[]
-): Record<string, Record<string, ScenarioGoal[]>> {
-  return goals.reduce<Record<string, Record<string, ScenarioGoal[]>>>(
-    (acc, goal) => {
-      const groupLabel = goal.group_text;
-      const categoryLabel = goal.category_text;
+): Record<string, ScenarioGoal[]> {
+  return goals.reduce<Record<string, ScenarioGoal[]>>((acc, goal) => {
+    const categoryLabel = goal.category;
 
-      // Grouping by groupLabel
-      if (!acc[groupLabel]) {
-        acc[groupLabel] = {};
-      }
+    if (!acc[categoryLabel]) {
+      acc[categoryLabel] = [];
+    }
 
-      // Nesting categories to groups
-      if (!acc[groupLabel][categoryLabel]) {
-        acc[groupLabel][categoryLabel] = [];
-      }
-
-      // Adding the treatment goals
-      acc[groupLabel][categoryLabel].push(goal);
-      return acc;
-    },
-    {}
-  );
+    acc[categoryLabel].push(goal);
+    return acc;
+  }, {});
 }
 
 /***
