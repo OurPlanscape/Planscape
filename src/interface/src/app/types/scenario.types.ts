@@ -15,7 +15,10 @@ export type ScenarioResultStatus =
   | 'TIMED_OUT'
   | 'DRAFT'; // Creating a scenario but not completed the steps yet.
 
-export const USER_REVISABLE_ERRORS = ['NO_AVAILABLE_RESULT'] as const;
+export const USER_REVISABLE_ERRORS = [
+  'NO_AVAILABLE_RESULT',
+  'FORSYS_EMPTY_RESULT',
+] as const;
 
 export const SYSTEM_ERRORS = [
   'TIME_OUT',
@@ -23,6 +26,9 @@ export const SYSTEM_ERRORS = [
   'STAND_METRIC_FAILURE',
   'UNKNOWN_ERROR',
   'STAND_DATA_ERROR',
+  'PROJECT_DATA_ERROR',
+  'FORSYS_PREPARATION_ERROR',
+  'FORSYS_EXECUTION_ERROR',
   'RESULT_PROCESSING_ERROR',
   'PROJECT_AREA_UPDATE_ERROR',
 ] as const;
