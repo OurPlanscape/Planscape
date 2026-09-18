@@ -2,10 +2,13 @@
   title="Stand-level Constraints Configuration"
   [showClose]="true"
   primaryButtonText="Apply"
-  [hasSecondaryButton]="false"
+  [hasSecondaryButton]="editMode"
+  secondaryButtonText="Delete"
+  secondaryButtonVariant="negative"
   [hasPrimarySpinner]="true"
   (clickedClose)="cancel()"
   (clickedPrimary)="handleApply()"
+  (clickedSecondary)="handleRemove()"
   [primaryButtonDisabled]="form.invalid">
   <div modalBodyContent>
     <sg-modal-info
@@ -31,7 +34,10 @@
               formControlName="constraintOperator">
               @for (op of constraintOperators; track op.value) {
                 <mat-option class="nav-page-item" [value]="op.value">
-                  {{ op.label }} ({{ op.symbol }})
+                  {{ op.label }}
+                  @if (op.symbol) {
+                    ({{ op.symbol }})
+                  }
                 </mat-option>
               }
             </mat-select>

@@ -11,8 +11,11 @@
       {{ (selectedConstraints$ | async)?.length || 0 }} Applied (No Limit)
     </div>
     <sg-chip-selector
+      *ngIf="layersLoaded$ | async"
       [items]="(selectedConstraints$ | async) ?? []"
-      (itemClicked)="handleConstraintClicked($event)"
+      (itemClicked)="handleConstraintChipClicked($event)"
+      [hoverable]="true"
+      [selectedItem]="activeConstraint$ | async"
       [showClose]="false"
       [showEdit]="true"></sg-chip-selector>
   </div>
@@ -31,9 +34,9 @@
     </mat-expansion-panel-header>
 
     <app-data-layers
+      *ngIf="layersLoaded$ | async"
       [useClearFooter]="false"
-      [displayAddButton]="true"
-      (layerSelected)="handleSelectedLayer($event)"></app-data-layers>
+      [displayAddButton]="true"></app-data-layers>
   </mat-expansion-panel>
 </sg-section>
 

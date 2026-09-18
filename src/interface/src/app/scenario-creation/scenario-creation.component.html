@@ -46,23 +46,18 @@
             [isChildScenario]="
               (hasParent$ | async) ?? false
             "></app-step1-with-overview>
-          <app-adv-stand-level-constraints
-            *appFeatureFlag="
-              'ADV_STAND_LEVEL_CONSTRAINTS'
-            "></app-adv-stand-level-constraints>
         </sg-step>
-
         <!-- TODO : just showing step earlier for faster debugging purposes -->
         <sg-step>
           <app-constraints-step></app-constraints-step>
         </sg-step>
-
-        <sg-step *ngIf="subUnitsPrioritized && (hasParent$ | async) === false">
+                <sg-step *ngIf="subUnitsPrioritized && (hasParent$ | async) === false">
           <app-sub-unit-selector></app-sub-unit-selector>
         </sg-step>
-        <sg-step>
+
+                <sg-step>
           <app-treatment-goal-step></app-treatment-goal-step>
-        </sg-step>
+        </sg-step>Merge branch 'adv-slc-panels' into wrap-constraints-step
         <sg-step>
           <app-include-areas-selector></app-include-areas-selector>
         </sg-step>
@@ -92,8 +87,13 @@
               (hasParent$ | async) ?? false
             "></app-step1-with-overview>
         </sg-step>
+         
         <sg-step *ngIf="subUnitsPrioritized && (hasParent$ | async) === false">
           <app-sub-unit-selector></app-sub-unit-selector>
+        </sg-step>
+               <!-- TODO : just showing step earlier for faster debugging purposes -->
+        <sg-step *appFeatureFlag="'ADV_STAND_LEVEL_CONSTRAINTS'" >
+          <app-constraints-step></app-constraints-step>
         </sg-step>
         <sg-step>
           <app-custom-priority-objectives></app-custom-priority-objectives>

@@ -75,18 +75,24 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
   );
   readonly data = inject(MAT_DIALOG_DATA);
   public constraintOperators = CONSTRAINT_OPERATORS;
-
+  editMode = false;
   dataLayerName = this.data?.dataLayerName;
 
   form = new FormGroup(
     {
-      constraintOperator: new FormControl<CONSTRAINT_OPERATOR | null>('eq', {
-        nonNullable: false,
-      }),
-      constraintValueOne: new FormControl<number | null>(null, [
-        Validators.required,
-      ]),
-      constraintValueTwo: new FormControl<number | null>(null),
+      constraintOperator: new FormControl<CONSTRAINT_OPERATOR | null>(
+        this.data.operator ?? 'eq',
+        {
+          nonNullable: false,
+        }
+      ),
+      constraintValueOne: new FormControl<number | null>(
+        this.data.valueOne ?? null,
+        [Validators.required]
+      ),
+      constraintValueTwo: new FormControl<number | null>(
+        this.data.valueTwo ?? null
+      ),
     },
     { validators: [betweenValidator] }
   );
@@ -99,6 +105,10 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (this.data.mode === 'EDIT') {
+      this.editMode = true;
+    }
+
     this.form.get('constraintOperator')?.valueChanges.subscribe((operator) => {
       const valTwoControl = this.form.get('constraintValueTwo');
 
@@ -115,19 +125,21 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
 
   private getOperatorDisplayText(operator: CONSTRAINT_OPERATOR): string {
     const def = CONSTRAINT_OPERATOR_MAP.get(operator);
-    return def ? def.symbol : operator;
+    return def?.symbol ? def.symbol : operator;
   }
 
   handleApply() {
     if (this.form.valid) {
       const formVal = this.form.value;
       const operator = formVal.constraintOperator ?? 'eq';
+
       const constraintSelection: NamedConstraint = {
         name: `${this.data.dataLayer.name}: ${this.getOperatorDisplayText(operator)} ${formVal.constraintValueOne}`,
         datalayer: this.data.dataLayer.id,
         operator,
         value: formVal.constraintValueOne ?? 0,
       };
+
       // if we have a 'btw' (Between) operator, we set different data
       if (
         operator === 'btw' &&
@@ -137,8 +149,12 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
         (constraintSelection.name = `${this.data.dataLayer.name}: ${formVal.constraintValueOne}-${formVal.constraintValueTwo}`),
           (constraintSelection.value2 = formVal.constraintValueTwo);
       }
-      this.dialogRef.close(constraintSelection);
+      this.dialogRef.close({ action: 'SAVE', payload: constraintSelection });
     }
+  }
+
+  handleRemove() {
+    this.dialogRef.close({ action: 'DELETE', payload: this.data.dataLayer });
   }
 
   cancel() {

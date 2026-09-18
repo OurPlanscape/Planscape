@@ -189,14 +189,14 @@ export type CONSTRAINT_OPERATOR =
 export interface Constraint {
   datalayer: number;
   operator: CONSTRAINT_OPERATOR;
-  value: number; // be supports string
-  value2?: number; // be supports string //TODO: rename?
+  value: number; // note: BE supports string
+  value2?: number; // note: BE supports string
 }
 
 export interface OperatorDefinition {
   value: CONSTRAINT_OPERATOR;
   label: string;
-  symbol: string;
+  symbol?: string;
 }
 
 export const CONSTRAINT_OPERATORS: OperatorDefinition[] = [
@@ -206,7 +206,7 @@ export const CONSTRAINT_OPERATORS: OperatorDefinition[] = [
   { value: 'gte', label: 'Greater than or equal to', symbol: '≥' },
   { value: 'lt', label: 'Less than', symbol: '<' },
   { value: 'lte', label: 'Less than or equal to', symbol: '≤' },
-  { value: 'btw', label: 'Between', symbol: 'Between' },
+  { value: 'btw', label: 'Between' },
 ];
 
 export const CONSTRAINT_OPERATOR_MAP = new Map<
