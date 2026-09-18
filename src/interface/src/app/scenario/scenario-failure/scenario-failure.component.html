@@ -1,14 +1,10 @@
 <section [class.dashboard]="variant === 'dashboard'">
-  <ng-container *ngIf="scenarioState === 'FAILURE'; else generic">
+  <ng-container *ngIf="isRevisable; else generic">
     <h4>
       <mat-icon class="material-symbols-filled warning">warning</mat-icon>
-      No optimal project areas for treatment were found
+      Forsys couldn’t find enough eligible areas for treatment
     </h4>
-    <p>
-      Planscape couldn't find enough treatable area to create project areas.
-      <br />
-      Review your scenario configurations and try adjusting the following:
-    </p>
+    <p>Review your scenario configurations and try adjusting the following:</p>
 
     <ul>
       <li>
@@ -33,6 +29,16 @@
       You can copy your scenario and edit it with these adjustments in mind,
       then run the scenario again.
     </p>
+    <div class="actions" *ngIf="variant === 'default'">
+      <button
+        (click)="tryAgain.emit()"
+        class="copy-button white-spinner"
+        sg-button
+        [loading]="loadingCopyDialog"
+        variant="primary">
+        Copy Scenario & Edit
+      </button>
+    </div>
   </ng-container>
 
   <ng-template #generic>
@@ -41,19 +47,11 @@
       There was an error generating your scenario
     </h4>
     <p>Sorry, we were unable to generate your scenario. Please try again.</p>
-  </ng-template>
 
-  <div class="actions" *ngIf="variant === 'default'">
-    <a (click)="goBack.emit()" data-id="downloadCsv" sg-button variant="ghost">
-      Return to Plan Overview
-    </a>
-    <button
-      (click)="tryAgain.emit()"
-      class="white-spinner"
-      sg-button
-      [loading]="loadingCopyDialog"
-      variant="primary">
-      Copy Scenario & Edit
-    </button>
-  </div>
+    <div class="actions" *ngIf="variant === 'default'">
+      <button sg-button (click)="submitFeedback()" variant="primary">
+        Submit Feedback
+      </button>
+    </div>
+  </ng-template>
 </section>

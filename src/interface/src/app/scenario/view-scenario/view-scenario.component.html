@@ -1,5 +1,6 @@
 <ng-container *ngIf="scenario$ | async as scenario">
   <mat-tab-group
+    *ngIf="!scenarioHasFailed(scenario)"
     mat-stretch-tabs="false"
     mat-align-tabs="start"
     class="scenario-tabs"
@@ -18,14 +19,6 @@
           [usageTypes]="scenario.usage_types || null"
           [scenarioId]="scenarioId!">
         </app-scenario-results>
-        <app-scenario-failure
-          *ngIf="scenarioHasFailed(scenario)"
-          (tryAgain)="handleTryAgain(scenario)"
-          (goBack)="goToPlan()"
-          [loadingCopyDialog]="isLoadingDialog"
-          [scenarioName]="scenario.name"
-          [scenarioId]="scenarioId!"
-          [scenarioState]="scenarioStatus(scenario)"></app-scenario-failure>
       </div>
     </mat-tab>
     <mat-tab label="Data Layers">
@@ -35,6 +28,18 @@
       <app-base-layers class="white-background"></app-base-layers>
     </mat-tab>
   </mat-tab-group>
+
+  <app-scenario-failure
+    class="failure-notice"
+    *ngIf="scenarioHasFailed(scenario)"
+    (tryAgain)="handleTryAgain(scenario)"
+    (goBack)="goToPlan()"
+    [loadingCopyDialog]="isLoadingDialog"
+    [scenarioName]="scenario.name"
+    [scenarioId]="scenarioId!"
+    [scenarioErrorCodes]="scenarioErrors(scenario)"
+    [scenarioState]="scenarioStatus(scenario)"></app-scenario-failure>
+
   <app-scenario-download-footer
     [scenarioId]="scenarioId || undefined"
     [scenarioName]="scenario.name"
