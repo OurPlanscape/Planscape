@@ -1,7 +1,9 @@
 import logging
 
+from django.conf import settings
 from django.http import FileResponse
 from drf_spectacular.utils import OpenApiTypes, extend_schema, extend_schema_view
+from google.cloud import storage
 from impacts.filters import TreatmentPlanFilterSet, TreatmentPlanNoteFilterSet
 from impacts.models import (
     TreatmentPlan,
@@ -35,13 +37,13 @@ from impacts.serializers import (
 from impacts.services import (
     clone_treatment_plan,
     create_treatment_plan,
-    export_geopackage,
     generate_impact_results_data_to_plot,
     generate_summary,
     get_treatment_results_table_data,
     upsert_treatment_prescriptions,
 )
 from impacts.tasks import async_calculate_persist_impacts_treatment_plan
+from planning.models import GeoPackageStatus
 from rest_framework import mixins, response, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
@@ -169,16 +171,46 @@ class TreatmentPlanViewSet(
         )
 
     @extend_schema(
-        description="exports a treatment plan in a zipped shapefile format.",
+        description="Downloads a generated Treatment Plan geopackage.",
         responses={
             200: OpenApiTypes.BINARY,
+            400: BaseErrorMessageSerializer,
             404: BaseErrorMessageSerializer,
+            409: BaseErrorMessageSerializer,
         },
     )
     @action(detail=True, methods=["get"], filterset_class=None)
     def download(self, request, pk=None):
         treatment_plan = self.get_object()
-        output_path = export_geopackage(treatment_plan)
+        if (
+            treatment_plan.geopackage_status != GeoPackageStatus.SUCCEEDED
+            or not treatment_plan.geopackage_url
+        ):
+            return Response(
+                {"detail": "Treatment Plan geopackage is not ready."},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        blob_name = treatment_plan.geopackage_url.replace(
+            f"gs://{settings.GCS_MEDIA_BUCKET}/", ""
+        )
+        if blob_name == treatment_plan.geopackage_url:
+            return Response(
+                {"detail": "Treatment Plan geopackage URL is invalid."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        blob = storage.Client().bucket(settings.GCS_MEDIA_BUCKET).get_blob(blob_name)
+        if not blob:
+            log.error(
+                "Treatment Plan geopackage not found: %s",
+                treatment_plan.geopackage_url,
+            )
+            return Response(
+                {"detail": "Treatment Plan geopackage file was not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
         track_event(
             name="impacts.treatment_plan.downloaded",
             properties={
@@ -188,8 +220,9 @@ class TreatmentPlanViewSet(
             user_id=request.user.pk,
         )
         return FileResponse(
-            open(output_path, "rb"),
+            blob.open("rb"),
             as_attachment=True,
+            filename=f"treatment_plan_{treatment_plan.uuid}.gpkg.zip",
         )
 
     @extend_schema(
@@ -230,7 +263,16 @@ class TreatmentPlanViewSet(
         # to a service method, that changes the status to queued
         # and queues the execution
         treatment_plan.status = TreatmentPlanStatus.QUEUED
-        treatment_plan.save()
+        treatment_plan.geopackage_url = None
+        treatment_plan.geopackage_status = GeoPackageStatus.PENDING
+        treatment_plan.save(
+            update_fields=[
+                "status",
+                "geopackage_url",
+                "geopackage_status",
+                "updated_at",
+            ]
+        )
 
         async_calculate_persist_impacts_treatment_plan.delay(
             treatment_plan_pk=treatment_plan.pk,
