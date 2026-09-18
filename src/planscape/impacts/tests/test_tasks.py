@@ -109,7 +109,8 @@ class AsyncTreatmentPlanGeopackageTest(TestCase):
         ]
         mock_email_si.return_value = "send-email"
         callback = mock.Mock()
-        callback.on_error.return_value = "callback-with-error-handler"
+        callback_with_error_handler = mock.Mock()
+        callback.on_error.return_value = callback_with_error_handler
         mock_chain.return_value = callback
         chord_runner = mock.Mock()
         mock_chord.return_value = chord_runner
@@ -122,7 +123,6 @@ class AsyncTreatmentPlanGeopackageTest(TestCase):
         mock_chain.assert_called_once_with(
             "generate-geopackage",
             "success-status",
-            "send-email",
         )
         mock_generate_si.assert_called_once_with(treatment_plan_pk=treatment_plan.pk)
         mock_set_status_si.assert_any_call(
@@ -131,8 +131,10 @@ class AsyncTreatmentPlanGeopackageTest(TestCase):
             start=False,
             user_id=treatment_plan.created_by.pk,
         )
+        mock_email_si.assert_called_once_with(treatment_plan_pk=treatment_plan.pk)
         callback.on_error.assert_called_once_with("failure-status")
-        chord_runner.assert_called_once_with("callback-with-error-handler")
+        callback_with_error_handler.link.assert_called_once_with("send-email")
+        chord_runner.assert_called_once_with(callback_with_error_handler)
         treatment_plan.refresh_from_db()
         self.assertIsNone(treatment_plan.geopackage_url)
         self.assertEqual(treatment_plan.geopackage_status, GeoPackageStatus.PENDING)
