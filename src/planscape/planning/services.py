@@ -354,7 +354,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
                 "origin": scenario.origin,
                 "treatment_goal_id": treatment_goal.pk if treatment_goal else None,
                 "treatment_goal_category": (
-                    treatment_goal.category if treatment_goal else None
+                    treatment_goal.category.name if treatment_goal and treatment_goal.category else None
                 ),
                 "treatment_goal_name": treatment_goal.name if treatment_goal else None,
                 "email": user.email if user else None,
@@ -1080,7 +1080,9 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
         properties={
             "origin": scenario.origin,
             "treatment_goal_id": tx_goal.pk if tx_goal else None,
-            "treatment_goal_category": (tx_goal.category if tx_goal else None),
+            "treatment_goal_category": (
+                tx_goal.category.name if tx_goal and tx_goal.category else None
+            ),
             "treatment_goal_name": (tx_goal.name if tx_goal else None),
             "email": user.email if user else None,
         },
