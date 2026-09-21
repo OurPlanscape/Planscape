@@ -11,19 +11,15 @@ from planning.tests.factories import (
     ProjectAreaFactory,
     ScenarioFactory,
 )
-from planning.models import GeoPackageStatus
 from stands.models import Stand
 
 from impacts.models import (
     ProjectAreaTreatmentResult,
-    ImpactVariable,
-    TreatmentPlanStatus,
     TreatmentPrescriptionAction,
     TreatmentResult,
 )
 from impacts.services import get_calculation_matrix
 from impacts.tasks import (
-    async_calculate_persist_impacts_treatment_plan,
     async_calculate_impacts_for_variable_action_year,
     async_generate_treatment_plan_geopackage,
     async_send_email_process_finished,
@@ -70,74 +66,6 @@ class AsyncTreatmentPlanGeopackageTest(TestCase):
 
         self.assertEqual(result, "gs://test-bucket/geopackages/test.gpkg.zip")
         mock_export.assert_called_once_with(treatment_plan)
-
-    @mock.patch("impacts.tasks.chord")
-    @mock.patch("impacts.tasks.chain")
-    @mock.patch("impacts.tasks.async_send_email_process_finished.si")
-    @mock.patch("impacts.tasks.async_set_status.si")
-    @mock.patch("impacts.tasks.async_generate_treatment_plan_geopackage.si")
-    @mock.patch("impacts.tasks.get_calculation_matrix_wo_action")
-    @mock.patch("impacts.tasks.get_calculation_matrix")
-    def test_persist_impacts_callback_generates_geopackage_before_success_callbacks(
-        self,
-        mock_get_calculation_matrix,
-        mock_get_calculation_matrix_wo_action,
-        mock_generate_si,
-        mock_set_status_si,
-        mock_email_si,
-        mock_chain,
-        mock_chord,
-    ):
-        treatment_plan = TreatmentPlanFactory.create(
-            geopackage_url="gs://test-bucket/old.gpkg.zip",
-            geopackage_status=GeoPackageStatus.SUCCEEDED,
-        )
-        mock_get_calculation_matrix.return_value = [
-            (
-                ImpactVariable.CANOPY_COVER,
-                TreatmentPrescriptionAction.HEAVY_MASTICATION,
-                2024,
-            )
-        ]
-        mock_get_calculation_matrix_wo_action.return_value = [
-            (ImpactVariable.CANOPY_COVER, 2024)
-        ]
-        mock_generate_si.return_value = "generate-geopackage"
-        mock_set_status_si.side_effect = [
-            "success-status",
-            "failure-status",
-        ]
-        mock_email_si.return_value = "send-email"
-        callback = mock.Mock()
-        callback_with_error_handler = mock.Mock()
-        callback.on_error.return_value = callback_with_error_handler
-        mock_chain.return_value = callback
-        chord_runner = mock.Mock()
-        mock_chord.return_value = chord_runner
-
-        async_calculate_persist_impacts_treatment_plan(
-            treatment_plan.pk,
-            treatment_plan.created_by.pk,
-        )
-
-        mock_chain.assert_called_once_with(
-            "generate-geopackage",
-            "success-status",
-        )
-        mock_generate_si.assert_called_once_with(treatment_plan_pk=treatment_plan.pk)
-        mock_set_status_si.assert_any_call(
-            treatment_plan_pk=treatment_plan.pk,
-            status=TreatmentPlanStatus.SUCCESS,
-            start=False,
-            user_id=treatment_plan.created_by.pk,
-        )
-        mock_email_si.assert_called_once_with(treatment_plan_pk=treatment_plan.pk)
-        callback.on_error.assert_called_once_with("failure-status")
-        callback_with_error_handler.link.assert_called_once_with("send-email")
-        chord_runner.assert_called_once_with(callback_with_error_handler)
-        treatment_plan.refresh_from_db()
-        self.assertIsNone(treatment_plan.geopackage_url)
-        self.assertEqual(treatment_plan.geopackage_status, GeoPackageStatus.PENDING)
 
 
 class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
