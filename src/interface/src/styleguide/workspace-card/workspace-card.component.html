@@ -6,41 +6,43 @@
   <div class="title-row">
     <mat-icon class="material-symbols-outlined workspace-icon">folder</mat-icon>
 
-    <button
-      [matMenuTriggerFor]="menu"
-      aria-label="More workspace options"
-      class="more-menu-button"
-      (click)="handleMenuClick($event)"
-      mat-icon-button
-      matTooltip="More actions">
-      <mat-icon>more_vert</mat-icon>
-    </button>
-    <mat-menu #menu="matMenu" class="workspace-more-menu">
+    <ng-container *ngIf="hasActions">
       <button
-        mat-menu-item
-        class="action-button"
-        *ngIf="userCanRename"
-        (click)="rename.emit()">
-        <mat-icon class="material-symbols-outlined">edit</mat-icon>
-        <span>Rename</span>
+        [matMenuTriggerFor]="menu"
+        aria-label="More workspace options"
+        class="more-menu-button"
+        (click)="handleMenuClick($event)"
+        mat-icon-button
+        matTooltip="More actions">
+        <mat-icon>more_vert</mat-icon>
       </button>
-      <button
-        mat-menu-item
-        class="action-button"
-        *ngIf="userCanShare"
-        (click)="share.emit()">
-        <mat-icon class="material-symbols-outlined">share</mat-icon>
-        <span>Share</span>
-      </button>
-      <button
-        mat-menu-item
-        class="action-button delete"
-        *ngIf="userCanDelete"
-        (click)="delete.emit()">
-        <mat-icon class="material-symbols-outlined">delete</mat-icon>
-        <span>Delete</span>
-      </button>
-    </mat-menu>
+      <mat-menu #menu="matMenu" class="workspace-more-menu">
+        <button
+          mat-menu-item
+          class="action-button"
+          *ngIf="userCanRename"
+          (click)="rename.emit()">
+          <mat-icon class="material-symbols-outlined">edit</mat-icon>
+          <span>Rename</span>
+        </button>
+        <button
+          mat-menu-item
+          class="action-button"
+          *ngIf="userCanShare"
+          (click)="share.emit()">
+          <mat-icon class="material-symbols-outlined">share</mat-icon>
+          <span>Share</span>
+        </button>
+        <button
+          mat-menu-item
+          class="action-button delete"
+          *ngIf="userCanDelete"
+          (click)="delete.emit()">
+          <mat-icon class="material-symbols-outlined">delete</mat-icon>
+          <span>Delete</span>
+        </button>
+      </mat-menu>
+    </ng-container>
   </div>
 
   <div class="workspace-name">{{ name }}</div>

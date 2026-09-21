@@ -8,7 +8,7 @@ on:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: frizzle-hosted
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/ruff-action@v3
@@ -17,7 +17,7 @@ jobs:
           version: "0.14.10"
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: frizzle-hosted
     needs: lint
     strategy:
       max-parallel: 4
@@ -51,7 +51,7 @@ jobs:
       - name: Update Apt Cache
         run: sudo apt-get update
       - name: Install Apt Dependencies
-        run: sudo apt-get install libcurl4-openssl-dev libssl-dev gcc gdal-bin libgdal-dev r-base-core -y
+        run: sudo apt-get install libcurl4-openssl-dev libssl-dev gcc gdal-bin libgdal-dev r-base-core postgresql-client -y
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -68,7 +68,7 @@ jobs:
         id: cache
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('uv.lock') }}
 
       - name: Cache is healthy?
         if: steps.cache.outputs.cache-hit == 'true'
@@ -96,4 +96,4 @@ jobs:
           echo CELERY_BROKER_URL="$CELERY_BROKER_URL" >> .env
           echo CACHEOPS_REDIS="$CACHEOPS_REDIS" >> .env
           cd src/planscape
-          uv run python manage.py test . --parallel 4
+          uv run pytest

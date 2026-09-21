@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.urls import reverse
 from modules.base import compute_scenario_capabilities
 from rest_framework import status
-from rest_framework.test import APITestCase, APITransactionTestCase
+from rest_framework.test import APITestCase
 
 from planning.models import (
     Scenario,
@@ -31,7 +31,7 @@ from planning.tests.factories import (
 )
 
 
-class CreateScenarioTest(APITransactionTestCase):
+class CreateScenarioTest(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.planning_area = PlanningAreaFactory(user=self.user)
@@ -64,11 +64,12 @@ class CreateScenarioTest(APITransactionTestCase):
             "configuration": configuration,
         }
         self.client.force_authenticate(self.user)
-        response = self.client.post(
-            reverse("api:planning:scenarios-list"),
-            payload,
-            format="json",
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(
+                reverse("api:planning:scenarios-list"),
+                payload,
+                format="json",
+            )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNotNone(response.json().get("id"))
@@ -1486,6 +1487,10 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(config8.get("stand_size"), "SMALL")
         self.assertEqual(response8.data["treatment_goal"]["id"], new_goal.pk)
         self.assertEqual(response8.data["treatment_goal"]["name"], new_goal.name)
+        self.assertEqual(
+            response8.data["treatment_goal"]["category"],
+            new_goal.category.name,
+        )
 
     @mock.patch(
         "planning.serializers.calculate_scenario_treatable_area",
@@ -1553,7 +1558,6 @@ class PatchScenarioConfigurationTest(APITestCase):
     def test_patch_scenario_with_includes_empty_list(
         self, calculate_scenario_treatable_area_mock
     ):
-
         payload = {
             "configuration": {
                 "included_areas": [],
@@ -2286,13 +2290,14 @@ class ScenarioCapabilitiesViewTest(APITestCase):
         caps = resp.data.get("capabilities")
         self.assertIsInstance(caps, list)
         self.assertSetEqual(
-            set(caps), 
+            set(caps),
             {
-                "MAP", 
-                "FORSYS", 
-                "PRIORITIZE_SUB_UNITS", 
+                "MAP",
+                "FORSYS",
+                "PRIORITIZE_SUB_UNITS",
                 "ADVANCED_STAND_LEVEL_CONSTRAINT",
-        })
+            },
+        )
 
 
 class CreateScenarioForDraftsTest(APITestCase):

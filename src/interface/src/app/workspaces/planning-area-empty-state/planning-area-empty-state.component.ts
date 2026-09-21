@@ -1,16 +1,25 @@
-import { NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 import { UploadPlanningAreaBoxComponent } from '@app/explore/upload-planning-area-box/upload-planning-area-box.component';
 import { DrawService } from '@app/maplibre-map/draw.service';
 import { ButtonComponent } from '@styleguide';
 import { PlanningAreaCreationModalComponent } from '../planning-area-creation-modal/planning-area-creation-modal.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { map } from 'rxjs';
+import { WorkspaceState } from '../workspace.state';
 
 @Component({
   selector: 'app-planning-area-empty-state',
   standalone: true,
-  imports: [NgIf, ButtonComponent, UploadPlanningAreaBoxComponent],
+  imports: [
+    AsyncPipe,
+    NgIf,
+    ButtonComponent,
+    MatIconModule,
+    UploadPlanningAreaBoxComponent,
+  ],
   templateUrl: './planning-area-empty-state.component.html',
   styleUrl: './planning-area-empty-state.component.scss',
   providers: [DrawService],
@@ -21,7 +30,12 @@ export class PlanningAreaEmptyStateComponent {
   private dialog = inject(MatDialog);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private workspaceState = inject(WorkspaceState);
   workspaceId = this.route.snapshot.data['workspaceId'];
+
+  canAddPlanningArea$ = this.workspaceState.currentWorkspace$.pipe(
+    map((workspace) => workspace.permissions.includes('add_planningarea'))
+  );
   handleDraw() {
     this.router.navigate(['/map-viewer/workspace', this.workspaceId], {
       state: { drawPlanningArea: true },

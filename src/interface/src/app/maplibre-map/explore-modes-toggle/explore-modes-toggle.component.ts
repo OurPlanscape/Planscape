@@ -14,6 +14,7 @@ import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/con
 import { BlockDialogComponent } from '@standalone/block-dialog/block-dialog.component';
 import { ButtonComponent } from '@styleguide';
 import { MatMenuModule } from '@angular/material/menu';
+import { getPlanPath } from '@plan/plan-helpers';
 
 @Component({
   selector: 'app-explore-modes-selection-toggle',
@@ -110,7 +111,9 @@ export class ExploreModesToggleComponent {
         .afterClosed()
         .subscribe((id) => {
           if (id) {
-            this.router.navigate(['plan', id]);
+            this.router.navigate([
+              getPlanPath(id, this.router.routerState.snapshot.root),
+            ]);
           }
         });
     }
@@ -138,6 +141,7 @@ export class ExploreModesToggleComponent {
       .subscribe((confirms: boolean) => {
         if (confirms) {
           this.drawService.clearFeatures();
+          this.drawService.stop();
           this.mapConfigState.enterViewMode();
         }
       });

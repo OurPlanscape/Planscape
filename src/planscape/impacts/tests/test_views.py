@@ -1,3 +1,4 @@
+import io
 import json
 from unittest import mock
 from urllib.parse import urlencode
@@ -15,6 +16,7 @@ from planning.tests.factories import (
     ProjectAreaFactory,
     ScenarioFactory,
 )
+from planning.models import GeoPackageStatus
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from stands.models import StandSizeChoices
@@ -206,6 +208,85 @@ class TxPlanViewSetTest(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
         self.assertTrue(async_task.called)
+
+    @mock.patch("impacts.views.track_event")
+    @mock.patch("impacts.views.storage.Client")
+    @mock.patch("impacts.services.export_geopackage")
+    def test_download_streams_stored_geopackage(
+        self, mock_export_geopackage, mock_storage_client, mock_track_event
+    ):
+        self.client.force_authenticate(user=self.scenario.user)
+        tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
+            geopackage_status=GeoPackageStatus.SUCCEEDED,
+            geopackage_url="gs://test-bucket/geopackages/treatment_plan.gpkg.zip",
+        )
+        blob = mock.Mock()
+        blob.open.return_value = io.BytesIO(b"stored geopackage")
+        mock_storage_client.return_value.bucket.return_value.get_blob.return_value = (
+            blob
+        )
+
+        with self.settings(GCS_MEDIA_BUCKET="test-bucket"):
+            response = self.client.get(
+                reverse("api:impacts:tx-plans-download", kwargs={"pk": tx_plan.pk})
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(b"".join(response.streaming_content), b"stored geopackage")
+        mock_export_geopackage.assert_not_called()
+        mock_storage_client.return_value.bucket.assert_called_once_with("test-bucket")
+        mock_storage_client.return_value.bucket.return_value.get_blob.assert_called_once_with(
+            "geopackages/treatment_plan.gpkg.zip"
+        )
+        mock_track_event.assert_called_once()
+
+    @mock.patch("impacts.views.track_event")
+    @mock.patch("impacts.services.export_geopackage")
+    def test_download_returns_409_when_geopackage_not_ready(
+        self, mock_export_geopackage, mock_track_event
+    ):
+        self.client.force_authenticate(user=self.scenario.user)
+        tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
+            geopackage_status=GeoPackageStatus.PENDING,
+            geopackage_url=None,
+        )
+
+        response = self.client.get(
+            reverse("api:impacts:tx-plans-download", kwargs={"pk": tx_plan.pk})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+        self.assertEqual(
+            response.json(),
+            {"detail": "Treatment Plan geopackage is not ready."},
+        )
+        mock_export_geopackage.assert_not_called()
+        mock_track_event.assert_not_called()
+
+    @mock.patch("impacts.views.track_event")
+    @mock.patch("impacts.views.storage.Client")
+    def test_download_returns_404_when_stored_geopackage_missing(
+        self, mock_storage_client, mock_track_event
+    ):
+        self.client.force_authenticate(user=self.scenario.user)
+        tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
+            geopackage_status=GeoPackageStatus.SUCCEEDED,
+            geopackage_url="gs://test-bucket/geopackages/missing.gpkg.zip",
+        )
+        mock_storage_client.return_value.bucket.return_value.get_blob.return_value = (
+            None
+        )
+
+        with self.settings(GCS_MEDIA_BUCKET="test-bucket"):
+            response = self.client.get(
+                reverse("api:impacts:tx-plans-download", kwargs={"pk": tx_plan.pk})
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        mock_track_event.assert_not_called()
 
     def test_get_tx_plan(self):
         self.client.force_authenticate(user=self.scenario.user)
@@ -705,17 +786,20 @@ class TxPrescriptionListTest(APITestCase):
 
 
 class TxPrescriptionBatchDeleteTest(APITestCase):
-    def setUp(self):
-        self.tx_plan = TreatmentPlanFactory.create()
-        self.alt_tx_plan = TreatmentPlanFactory.create()
-        self.client.force_authenticate(user=self.tx_plan.scenario.user)
-        self.txrx_owned_list = TreatmentPrescriptionFactory.create_batch(
-            10, treatment_plan=self.tx_plan
+    @classmethod
+    def setUpTestData(cls):
+        cls.tx_plan = TreatmentPlanFactory.create()
+        cls.alt_tx_plan = TreatmentPlanFactory.create()
+        cls.txrx_owned_list = TreatmentPrescriptionFactory.create_batch(
+            10, treatment_plan=cls.tx_plan
         )
         # plans for a different user
-        self.txrx_other_list = TreatmentPrescriptionFactory.create_batch(
-            10, treatment_plan=self.alt_tx_plan
+        cls.txrx_other_list = TreatmentPrescriptionFactory.create_batch(
+            10, treatment_plan=cls.alt_tx_plan
         )
+
+    def setUp(self):
+        self.client.force_authenticate(user=self.tx_plan.scenario.user)
 
     def test_batch_delete_tx_rx(self):
         payload = {"stand_ids": [txrx.stand_id for txrx in self.txrx_owned_list]}

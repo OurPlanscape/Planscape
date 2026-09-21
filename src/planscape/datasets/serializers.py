@@ -573,9 +573,9 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
         return get_default_raster_style(**stats)
 
     def get_styles(self, instance) -> Collection[Dict[str, Any]]:
-        if instance.styles.all().exists():
-            style = instance.styles.all().first()
-            return [get_raster_style(datalayer=instance, style=style)]
+        styles = list(instance.styles.all())
+        if styles:
+            return [get_raster_style(datalayer=instance, style=styles[0])]
 
         match instance.type:
             case DataLayerType.RASTER:

@@ -31,6 +31,7 @@ import { SNACK_ERROR_CONFIG } from '@shared';
 import { ForsysService } from '@services/forsys.service';
 import { ScenarioStepConfig } from '@scenario/scenario.constants';
 import { arrayHasChanged } from '@app/scenario/scenario-helper';
+import { getPlanPath } from '@plan/plan-helpers';
 
 export interface PriorityWithLayer {
   layer: DataLayer;
@@ -349,6 +350,6 @@ export class NewScenarioState {
       }
     );
     this.setDraftFinished(true);
-    this.router.navigate(['/plan', this.planId]);
+    this.router.navigate([getPlanPath(this.planId, this.route.snapshot)]);
   }
 }

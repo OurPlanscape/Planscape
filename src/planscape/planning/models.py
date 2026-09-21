@@ -160,10 +160,10 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
             )
         ]
         constraints = [
+            # NULL workspaces are distinct, so areas outside a workspace can repeat names
             models.UniqueConstraint(
                 fields=[
-                    "user",
-                    "region_name",
+                    "workspace",
                     "name",
                 ],
                 name="unique_planning_area",
@@ -277,10 +277,20 @@ class ScenarioVersion(models.TextChoices):
     V3 = "V3", "Version 3"
 
 
-class TreatmentGoalCategory(models.TextChoices):
-    FIRE_DYNAMICS = "FIRE_DYNAMICS", "Fire Dynamics"
-    BIODIVERSITY = "BIODIVERSITY", "Biodiversity"
-    CARBON_BIOMASS = "CARBON_BIOMASS", "Carbon/Biomass"
+class TreatmentGoalCategory(CreatedAtMixin, UpdatedAtMixin, models.Model):
+    id: int
+    name = models.CharField(
+        max_length=120,
+        unique=True,
+        help_text="Name of the Treatment Goal category.",
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta(TypedModelMeta):
+        ordering = ["name"]
+        verbose_name_plural = "Treatment Goal Categories"
 
 
 class TreatmentGoalGroup(models.TextChoices):
@@ -331,9 +341,11 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
     active = models.BooleanField(
         default=True, help_text="Treatment Goal active status."
     )
-    category = models.CharField(
-        max_length=32,
-        choices=TreatmentGoalCategory.choices,
+    category_id: int
+    category = models.ForeignKey(
+        TreatmentGoalCategory,
+        related_name="treatment_goals",
+        on_delete=models.RESTRICT,
         help_text="Treatment Goal category.",
         null=True,
     )
