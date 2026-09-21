@@ -30,6 +30,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { filter, startWith } from 'rxjs/operators';
 import { FeaturesModule } from '@app/features/features.module';
+import { PlanState } from '@app/plan/plan.state';
 
 @UntilDestroy()
 @Component({
@@ -51,11 +52,14 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
   private scenarioState = inject(ScenarioState);
   private forsysService = inject(ForsysService);
   private dataLayersService = inject(DataLayersService);
+  private planState = inject(PlanState);
 
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
   currentScenario$ = this.scenarioState.currentScenario$;
   excludedAreas$ = this.forsysService.excludedAreas$;
   includedAreas$ = this.forsysService.includedAreas$;
+
+  planningArea$ = this.planState.currentPlan$;
 
   configuration: ScenarioV3Config | null = null;
   slopeId: number | null = null;
@@ -97,10 +101,10 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
         .map((id) => includedAreas.find((a) => a.id === id)?.name)
         .filter((v): v is string => !!v);
 
-      return labels.length ? labels.join(', ') : '--';
+      return labels;
     }),
     startWith(null),
-    catchError(() => of('--'))
+    catchError(() => of([]))
   );
 
   selectedExcludedAreas$ = combineLatest([
@@ -116,10 +120,10 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
       const labels = ids
         .map((id) => excludedAreas.find((a) => a.id === id)?.name)
         .filter((v): v is string => !!v);
-      return labels.length ? labels.join(', ') : '--';
+      return labels.length ? labels : [];
     }),
     catchError(() => {
-      return '--';
+      return [];
     })
   );
 

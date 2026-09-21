@@ -13,29 +13,19 @@
             ' acres)'
         }}
       </dd>
-      <ng-container *ngIf="scenario.planning_approach">
-        <dt>Planning Approach</dt>
-        <dd>
-          {{ planningApproachLabels[scenario.planning_approach] }}
-        </dd>
-      </ng-container>
-
-      <ng-container *ngIf="configuration?.sub_units_layer">
-        <dt>Subunit</dt>
-        <mat-spinner
-          diameter="20"
-          *ngIf="(subUnitLayerName$ | async) === null"></mat-spinner>
-        <dd>
-          {{ subUnitLayerName$ | async }}
-        </dd>
-      </ng-container>
-
-      <ng-container *ngIf="(isCustomScenario$ | async) === false">
-        <dt>Goal</dt>
-        <dd>
-          {{ scenarioGoal$ | async }}
-        </dd>
-      </ng-container>
+      <dt>Planning Area</dt>
+      <dd *ngIf="planningArea$ | async as planningArea">
+        
+          <mat-spinner
+            diameter="20"
+            *ngIf="planningArea === null"></mat-spinner>
+          {{ planningArea.name }}
+        
+      </dd>
+      <dt>Treatment Goal</dt>
+      <dd>
+        TODO: Treatment Goal
+      </dd>
       <ng-container *ngIf="isCustomScenario$ | async">
         <dt>Priority Objectives</dt>
         <dd>
@@ -58,24 +48,6 @@
           {{ cobenefits$ | async }}
         </dd>
       </ng-container>
-      <dt>Included Areas</dt>
-      <dd>
-        <ng-container
-          *ngIf="
-            selectedIncludedAreas$ | async as selectedIncludedAreas;
-            else loading
-          ">
-          {{ selectedIncludedAreas }}
-        </ng-container>
-
-        <ng-template #loading>
-          <mat-spinner diameter="20"></mat-spinner>
-        </ng-template>
-      </dd>
-      <dt>Excluded Areas</dt>
-      <dd>
-        {{ selectedExcludedAreas$ | async }}
-      </dd>
       <dt>Stand-Level Constraints</dt>
       <dd *ngFor="let c of configuration?.constraints">
         <div *ngIf="c.datalayer === slopeId">
@@ -86,7 +58,33 @@
           {{ c.value | number: '1.0-2' }} yds
         </div>
       </dd>
-      <dd *ngIf="configuration?.constraints?.length === 0">--</dd>
+       <dt>Advanced Stand-Level Constraints</dt>
+      <dd *ngFor="let c of configuration?.constraints">
+        
+      </dd>
+      
+      
+      <dt>Included Areas</dt>
+        <ng-container
+          *ngIf="
+            selectedIncludedAreas$ | async as selectedIncludedAreas;
+            else loading
+          ">
+          <dd>
+            <ul class="list-element">
+            <li *ngFor="let includedArea of selectedIncludedAreas$ | async">{{ includedArea}}</li>
+</ul></dd>
+          </ng-container>
+
+        <ng-template #loading>
+          <mat-spinner diameter="20"></mat-spinner>
+        </ng-template>
+      
+      <dt>Excluded Areas</dt>
+      <dd>
+        {{ selectedExcludedAreas$ | async }}
+      </dd>
+      
       <dt>Treatment Target</dt>
       <dd
         *ngIf="
@@ -110,6 +108,32 @@
         </span>
       </dd>
     </dl>
+
+      <dd *ngIf="configuration?.constraints?.length === 0">--</dd>
+      <ng-container *ngIf="scenario.planning_approach">
+        <dt>Planning Approach</dt>
+        <dd>
+          {{ planningApproachLabels[scenario.planning_approach] }}
+        </dd>
+      </ng-container>
+
+      <ng-container *ngIf="configuration?.sub_units_layer">
+        <dt>Subunit</dt>
+        <mat-spinner
+          diameter="20"
+          *ngIf="(subUnitLayerName$ | async) === null"></mat-spinner>
+        <dd>
+          {{ subUnitLayerName$ | async }}
+        </dd>
+      </ng-container>
+
+      <ng-container *ngIf="(isCustomScenario$ | async) === false">
+        <dt>Goal</dt>
+        <dd>
+          {{ scenarioGoal$ | async }}
+        </dd>
+      </ng-container>
+      
   </div>
   <div class="footer">
     <button
