@@ -975,45 +975,81 @@ def get_treatment_result_value(
             return truncate_result(treatment_result.delta * 100)
 
 
-def fetch_treatment_plan_data(
+def iter_treatment_plan_data_batches(
     treatment_plan: TreatmentPlan,
-) -> Collection[Dict[str, Any]]:
+    batch_size: int = 100,
+) -> Iterable[Collection[Dict[str, Any]]]:
+    if batch_size < 1:
+        raise ValueError("batch_size must be greater than zero")
+
     scenario = treatment_plan.scenario
     planning_area = scenario.planning_area
     stand_size = treatment_plan.get_stand_size()
 
-    results = (
-        TreatmentResult.objects.filter(treatment_plan=treatment_plan)
-        .order_by("stand", "variable", "year")
-        .select_related("stand", "treatment_plan__scenario")
+    stand_ids = (
+        TreatmentResult.objects.filter(
+            treatment_plan=treatment_plan,
+            stand_id__isnull=False,
+        )
         .exclude(variable=ImpactVariable.FIRE_BEHAVIOR_FUEL_MODEL)
+        .order_by("stand_id")
+        .values_list("stand_id", flat=True)
+        .distinct()
     )
-    treatment_results_data = {r.stand_id: r for r in results}
-    result_data = defaultdict(dict)
-    stands = Stand.objects.filter(id__in=[r.stand_id for r in results])
-    for result in results:
-        field_name = f"{result.variable}_{result.year}"
-        result_data[result.stand_id][field_name] = get_treatment_result_value(result)
-        result_data[result.stand_id]["action"] = treatment_results_data[
-            result.stand_id
-        ].action
-        forested_rate = treatment_results_data[result.stand_id].forested_rate
-        if forested_rate:
-            forested_rate = truncate_result(forested_rate * 100)
-        result_data[result.stand_id]["forested_pct"] = forested_rate
-        result_data[result.stand_id]["type"] = result.get_display_type()
 
-    return list(
-        map(
-            lambda stand: tretment_result_to_json(
+    last_stand_id = None
+    while True:
+        batch_query = stand_ids
+        if last_stand_id is not None:
+            batch_query = batch_query.filter(stand_id__gt=last_stand_id)
+        batch_stand_ids = list(batch_query[:batch_size])
+        if not batch_stand_ids:
+            break
+
+        results = (
+            TreatmentResult.objects.filter(
+                treatment_plan=treatment_plan,
+                stand_id__in=batch_stand_ids,
+            )
+            .order_by("stand", "variable", "year")
+            .select_related("stand", "treatment_plan__scenario")
+            .exclude(variable=ImpactVariable.FIRE_BEHAVIOR_FUEL_MODEL)
+        )
+        treatment_results_data = {r.stand_id: r for r in results}
+        result_data = defaultdict(dict)
+        for result in results:
+            field_name = f"{result.variable}_{result.year}"
+            result_data[result.stand_id][field_name] = get_treatment_result_value(
+                result
+            )
+            result_data[result.stand_id]["action"] = treatment_results_data[
+                result.stand_id
+            ].action
+            forested_rate = treatment_results_data[result.stand_id].forested_rate
+            if forested_rate:
+                forested_rate = truncate_result(forested_rate * 100)
+            result_data[result.stand_id]["forested_pct"] = forested_rate
+            result_data[result.stand_id]["type"] = result.get_display_type()
+
+        stands = Stand.objects.filter(id__in=batch_stand_ids).order_by("id")
+        yield [
+            tretment_result_to_json(
                 stand,
                 result_data[stand.id],
                 scenario,
                 planning_area,
                 stand_size=stand_size,
-            ),
-            stands,
-        )
+            )
+            for stand in stands
+        ]
+        last_stand_id = batch_stand_ids[-1]
+
+
+def fetch_treatment_plan_data(
+    treatment_plan: TreatmentPlan,
+) -> Collection[Dict[str, Any]]:
+    return list(
+        itertools.chain.from_iterable(iter_treatment_plan_data_batches(treatment_plan))
     )
 
 
@@ -1035,7 +1071,6 @@ def match_schema(record: Dict[str, Any], schema: Dict[str, Any]):
 def export_geopackage(treatment_plan: TreatmentPlan) -> str:
     bare_export_path = get_export_path(treatment_plan)
     fiona_path = f"{str(bare_export_path)}.zip"
-    data = fetch_treatment_plan_data(treatment_plan)
     treatment_result_schema = get_treament_result_schema()
     Path(fiona_path).unlink(missing_ok=True)
     if not bare_export_path.parent.exists():
@@ -1050,18 +1085,19 @@ def export_geopackage(treatment_plan: TreatmentPlan) -> str:
         schema=treatment_result_schema,
         allow_unsupported_drivers=True,
     ) as out:
-        for record in data:
-            record = match_schema(record, treatment_result_schema)
-            out.write(
-                {
-                    "id": record.pop("id", None),
-                    "geometry": record.pop("geometry", None),
-                    "properties": {
-                        key: value
-                        for key, value in record.get("properties", {}).items()
-                    },
-                }
-            )
+        for batch in iter_treatment_plan_data_batches(treatment_plan):
+            for record in batch:
+                record = match_schema(record, treatment_result_schema)
+                out.write(
+                    {
+                        "id": record.pop("id", None),
+                        "geometry": record.pop("geometry", None),
+                        "properties": {
+                            key: value
+                            for key, value in record.get("properties", {}).items()
+                        },
+                    }
+                )
     return str(fiona_path)
 
 
