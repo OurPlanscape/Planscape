@@ -43,6 +43,7 @@ from impacts.services import (
     generate_summary,
     get_calculation_matrix,
     get_calculation_matrix_wo_action,
+    iter_treatment_plan_data_batches,
     itertools,
     upsert_treatment_prescriptions,
 )
@@ -819,7 +820,7 @@ class ClassificationFunctionsTest(TestCase):
 
 
 class FetchTreatmentPlanDataTest(TestCase):
-    def test_fetch_treatment_plan_data_returns_results(self):
+    def create_treatment_plan_results(self):
         treatment_plan = TreatmentPlanFactory.create()
         _ = ProjectAreaFactory.create(scenario=treatment_plan.scenario)
         variables = [ImpactVariable.CANOPY_BASE_HEIGHT, ImpactVariable.CANOPY_COVER]
@@ -837,12 +838,32 @@ class FetchTreatmentPlanDataTest(TestCase):
                 delta=random.randrange(0, 100),
                 stand=stand,
             )
+        return treatment_plan, stand1, stand2
 
+    def test_fetch_treatment_plan_data_returns_results(self):
+        treatment_plan, stand1, stand2 = self.create_treatment_plan_results()
         data = fetch_treatment_plan_data(treatment_plan)
+
         self.assertEqual(len(data), 2)
         stand_ids = [x.get("properties", {}).get("stand_id") for x in data]
         self.assertIn(stand1.pk, stand_ids)
         self.assertIn(stand2.pk, stand_ids)
+
+    def test_iter_treatment_plan_data_batches_returns_results_in_batches(self):
+        treatment_plan, stand1, stand2 = self.create_treatment_plan_results()
+
+        batches = list(
+            iter_treatment_plan_data_batches(treatment_plan, batch_size=1)
+        )
+
+        self.assertEqual(len(batches), 2)
+        self.assertEqual([len(batch) for batch in batches], [1, 1])
+        stand_ids = [
+            record.get("properties", {}).get("stand_id")
+            for batch in batches
+            for record in batch
+        ]
+        self.assertEqual(stand_ids, [stand1.pk, stand2.pk])
 
 
 @override_settings(
@@ -872,6 +893,14 @@ class ExportShapefileTest(TestCase):
         shapefile = export_geopackage(treatment_plan)
         path = Path(shapefile)
         self.assertTrue(path.exists())
+
+    @mock.patch("impacts.services.fetch_treatment_plan_data")
+    def test_export_does_not_fetch_all_treatment_plan_data(self, mock_fetch_data):
+        treatment_plan = TreatmentPlanFactory.create()
+
+        export_geopackage(treatment_plan)
+
+        mock_fetch_data.assert_not_called()
 
     def tearDown(self):
         shutil.rmtree("/tmp/planscape-test-output", ignore_errors=True)
