@@ -138,8 +138,6 @@ def async_set_status(
     status: TreatmentPlanStatus = TreatmentPlanStatus.FAILURE,
     start: bool = False,
     user_id: Optional[int] = None,
-    *args, 
-    **kwargs,
 ) -> Tuple[bool, int]:
     """sets the status of a treatment plan async.
     this is used as a callback in celery canvas.
@@ -164,6 +162,7 @@ def async_set_status(
                 },
                 user_id=user_id,
             )
+            async_generate_treatment_plan_geopackage.delay(treatment_plan_pk)
         except TreatmentPlan.DoesNotExist:
             log.warning(
                 "TreatmentPlan with pk %s does not exist or was deleted. Cannot set status.",
@@ -217,15 +216,15 @@ def async_calculate_persist_impacts_treatment_plan(
         years=AVAILABLE_YEARS,
     )
     callback = chain(
-        async_generate_treatment_plan_geopackage.si(
-            treatment_plan_pk=treatment_plan_pk,
-        ),
         async_set_status.si(
             treatment_plan_pk=treatment_plan_pk,
             status=TreatmentPlanStatus.SUCCESS,
             start=False,
             user_id=user_id,
         ),
+        async_send_email_process_finished.si(
+            treatment_plan_pk=treatment_plan_pk
+        )
     ).on_error(
         async_set_status.si(
             treatment_plan_pk=treatment_plan_pk,
@@ -233,16 +232,6 @@ def async_calculate_persist_impacts_treatment_plan(
             start=False,
             user_id=user_id,
         )
-    )
-    # Attach the completion email as an on-success callback rather than a
-    # chain member: `.on_error()`'s errback is propagated to every task in
-    # the chain body, but `.link()` only propagates to the chain's last
-    # task — so email failures/retries can never flip TreatmentPlan.status
-    # back to FAILURE after it has correctly been set to SUCCESS.
-    # Must be a standalone statement: `Signature.link()` returns the linked
-    # signature, not `self`, so it cannot be tail-chained onto `callback =`.
-    callback.link(
-        async_send_email_process_finished.si(treatment_plan_pk=treatment_plan_pk)
     )
     tasks = [
         async_calculate_impacts_for_variable_action_year.si(
