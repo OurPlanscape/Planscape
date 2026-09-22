@@ -73,8 +73,8 @@
           </ng-container>
         </ng-container>
 
-        <dt *ngIf="standardConstraints.length">Stand-Level Constraints</dt>
         <ng-container *ngIf="standardConstraints.length">
+          <dt>Stand-Level Constraints</dt>
           <dd *ngFor="let c of standardConstraints">
             <ul class="list-element">
               <li *ngIf="c.datalayer === slopeId">
