@@ -9,15 +9,19 @@ import {
   catchError,
   combineLatest,
   map,
+  Observable,
   of,
   shareReplay,
-  switchMap
+  switchMap,
 } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
 import {
+  AdvStandLevelConstraintData,
+  ApiModule,
   DataLayer,
   PLANNING_APPROACH_LABELS,
+  Scenario,
   ScenarioPriority,
   ScenarioV3Config,
 } from '@types';
@@ -28,9 +32,10 @@ import {
 import { DataLayersService } from '@services';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-import { combineLatestWith, filter, startWith } from 'rxjs/operators';
+import { combineLatestWith, filter, startWith, tap } from 'rxjs/operators';
 import { FeaturesModule } from '@app/features/features.module';
 import { PlanState } from '@app/plan/plan.state';
+import { ModuleService } from '@app/services/module.service';
 
 @UntilDestroy()
 @Component({
@@ -53,6 +58,7 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
   private forsysService = inject(ForsysService);
   private dataLayersService = inject(DataLayersService);
   private planState = inject(PlanState);
+  private moduleService = inject(ModuleService);
 
   displayScenarioConfigOverlay$ = this.scenarioState.displayConfigOverlay$;
   currentScenario$ = this.scenarioState.currentScenario$;
@@ -142,9 +148,9 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
         config?.priorities && config.priorities.length > 0
           ? config.priorities
           : (config?.priority_objectives ?? []).map((datalayer) => ({
-            datalayer,
-            weight: 1,
-          }));
+              datalayer,
+              weight: 1,
+            }));
       return this.dataLayersService
         .getDataLayersByIds(priorities.map((p) => p.datalayer))
         .pipe(
@@ -162,37 +168,93 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
     shareReplay(1)
   );
 
-
   cobenefits$ = this.currentScenario$.pipe(
-    switchMap((s) =>
-      this.dataLayersService.getDataLayersByIds(s.configuration?.cobenefits ?? [])
-    ),
-    map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
+    filter((s): s is Scenario => !!s),
+    switchMap((s) => {
+      const ids = s.configuration?.cobenefits ?? [];
+      if (ids.length === 0) {
+        return of([]);
+      }
+      return this.dataLayersService.getDataLayersByIds(ids).pipe(
+        map((d: DataLayer[]) => (d ?? []).map((dl) => dl.name)),
+        catchError(() => of(null))
+      );
+    }),
     shareReplay(1)
   );
 
   subUnitLayerName$ = this.currentScenario$.pipe(
     map((s) => s.configuration?.sub_units_layer),
-    filter((id): id is number => id !== undefined),
-    switchMap((id) => this.dataLayersService.getDataLayersByIds([id])),
-    map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
+    switchMap((id) =>
+      id === undefined
+        ? of([])
+        : this.dataLayersService.getDataLayersByIds([id]).pipe(
+            map((d: DataLayer[]) => d.map((dl) => dl.name)),
+            catchError(() => of(null))
+          )
+    ),
     shareReplay(1)
   );
 
+  get standardConstraints() {
+    return (this.configuration?.constraints ?? []).filter(
+      (c) =>
+        c.datalayer === this.slopeId || c.datalayer === this.distanceToRoadsId
+    );
+  }
 
-  // The single public global loader
+  // This calls the module service to collect the known Adv SLC layers
+  advStandLevelConstraintLayers$: Observable<DataLayer[]> = this.moduleService
+    .getModule<
+      ApiModule<AdvStandLevelConstraintData>
+    >('advanced_stand_level_constraint')
+    .pipe(
+      map((data) => data.options.datalayers),
+      tap((layers) => {
+        return layers;
+      }),
+      shareReplay(1)
+    );
+
+  // compare the constraints
+  selectedAdvStandLevelConstraints$ = combineLatest([
+    this.currentScenario$,
+    this.advStandLevelConstraintLayers$,
+  ]).pipe(
+    untilDestroyed(this),
+    map(([scenario, advSLCLayers]) => {
+      const config = scenario.configuration as ScenarioV3Config;
+      const constraints = config.constraints ?? [];
+      const selectedConstraints = constraints
+        .map((c) => advSLCLayers.find((a) => a.id === c.datalayer))
+        .map((c) => c?.name)
+        .filter((v): v is string => !!v);
+      return selectedConstraints.length ? selectedConstraints : [];
+    }),
+    catchError(() => {
+      return [];
+    })
+  );
+
+  // Global loader, waits until we have results from several BE calls
   public globalLoading$ = this.selectedIncludedAreas$.pipe(
     combineLatestWith(
       this.cobenefits$,
       this.planningArea$,
       this.priorityObjectives$,
+      this.advStandLevelConstraintLayers$
     ),
-    map(([areas, cobenefits, pa, priorities]) => {
-      return areas === null || cobenefits === null || pa === null || priorities === null;
+    map(([areas, cobenefits, pa, priorities, advSLCLayers]) => {
+      return (
+        areas === null ||
+        cobenefits === null ||
+        pa === null ||
+        priorities === null ||
+        advSLCLayers === null
+      );
     }),
     startWith(true)
   );
-
 
   close() {
     this.scenarioState.setDisplayOverlay(false);

@@ -75,7 +75,7 @@
 
 // This is safe because .scenario-config-overlay is a class we added to the menu panel
 ::ng-deep .scenario-config-overlay {
-  min-width: 400px;
+  min-width: 460px;
   overflow: hidden;
 
   .mat-mdc-menu-content {
