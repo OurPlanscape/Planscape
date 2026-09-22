@@ -1,6 +1,5 @@
 import io
 import json
-import tempfile
 from unittest import mock
 from urllib.parse import urlencode
 
@@ -1262,29 +1261,36 @@ class TxPlanDownloadGeopackageTest(APITestCase):
         )
         self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
         self.tx_plan = TreatmentPlanFactory.create(
-            scenario=self.scenario, created_by=self.owner
+            scenario=self.scenario,
+            created_by=self.owner,
+            geopackage_status=GeoPackageStatus.SUCCEEDED,
+            geopackage_url="gs://test-bucket/geopackages/treatment_plan.gpkg.zip",
         )
         self.url = reverse("api:impacts:tx-plans-download", args=[self.tx_plan.pk])
         self.client.force_authenticate(user=self.owner)
 
-    @mock.patch("impacts.views.export_geopackage")
+    @mock.patch("impacts.views.storage.Client")
     @mock.patch("impacts.views.track_event")
-    def test_download_tracks_as_ready(self, mock_track_event, mock_export):
-        with tempfile.NamedTemporaryFile(suffix=".gpkg") as tmp_file:
-            mock_export.return_value = tmp_file.name
+    def test_download_tracks_as_ready(self, mock_track_event, mock_storage_client):
+        blob = mock.Mock()
+        blob.open.return_value = io.BytesIO(b"stored geopackage")
+        mock_storage_client.return_value.bucket.return_value.get_blob.return_value = (
+            blob
+        )
 
+        with self.settings(GCS_MEDIA_BUCKET="test-bucket"):
             response = self.client.get(self.url)
 
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-            mock_track_event.assert_called_once_with(
-                name="impacts.treatment_plan.geopackage_downloaded",
-                properties={
-                    "treatment_plan_id": self.tx_plan.pk,
-                    "status": "ready",
-                    "email": self.owner.email,
-                },
-                user_id=self.owner.pk,
-            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        mock_track_event.assert_called_once_with(
+            name="impacts.treatment_plan.geopackage_downloaded",
+            properties={
+                "treatment_plan_id": self.tx_plan.pk,
+                "status": "ready",
+                "email": self.owner.email,
+            },
+            user_id=self.owner.pk,
+        )
 
     def test_download_requires_authentication(self):
         self.client.force_authenticate(user=None)
