@@ -1348,9 +1348,12 @@ class FundingReportDownloadGeopackageTest(APITestCase):
         )
         self.assertEqual(kwargs["properties"]["report_id"], report.pk)
         self.assertEqual(kwargs["properties"]["scenario_id"], self.scenario.pk)
+        self.assertEqual(kwargs["properties"]["status"], "ready")
 
     @mock.patch("planning.views_v2.track_event")
-    def test_download_returns_processing_status(self, mock_track_event):
+    def test_download_returns_processing_status_without_tracking(
+        self, mock_track_event
+    ):
         self._create_report(geopackage_status=GeoPackageStatus.PROCESSING)
         self.client.force_authenticate(self.user)
 
@@ -1362,7 +1365,24 @@ class FundingReportDownloadGeopackageTest(APITestCase):
 
     @mock.patch("planning.views_v2.async_generate_funding_report_geopackage")
     @mock.patch("planning.views_v2.track_event")
-    def test_download_triggers_generation_when_pending(
+    def test_download_returns_pending_status_without_retriggering(
+        self, mock_track_event, mock_task
+    ):
+        # Already queued by a previous ask - a client polling for status
+        # shouldn't re-track the ask or re-queue generation.
+        self._create_report(geopackage_status=GeoPackageStatus.PENDING)
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "pending")
+        mock_task.delay.assert_not_called()
+        mock_track_event.assert_not_called()
+
+    @mock.patch("planning.views_v2.async_generate_funding_report_geopackage")
+    @mock.patch("planning.views_v2.track_event")
+    def test_download_triggers_generation_and_tracks_as_generating(
         self, mock_track_event, mock_task
     ):
         report = self._create_report(geopackage_status=None)
@@ -1373,7 +1393,12 @@ class FundingReportDownloadGeopackageTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["status"], "pending")
         mock_task.delay.assert_called_once_with(report.pk)
-        mock_track_event.assert_not_called()
+        mock_track_event.assert_called_once()
+        _, kwargs = mock_track_event.call_args
+        self.assertEqual(
+            kwargs["name"], "planning.funding_report.geopackage_downloaded"
+        )
+        self.assertEqual(kwargs["properties"]["status"], "generating")
 
         report.refresh_from_db()
         self.assertEqual(report.geopackage_status, GeoPackageStatus.PENDING)
@@ -1424,13 +1449,14 @@ class PublicFundingOpportunityReportGeopackageDownloadTest(APITestCase):
                 "shared_link_uuid": str(self.shared_link.uuid),
                 "report_id": self.report.pk,
                 "scenario_id": self.report.scenario_id,
+                "status": "ready",
                 "authenticated": False,
             },
             user_id=None,
         )
 
     @mock.patch("funding_report.views.track_event")
-    def test_download_returns_processing_status_without_tracking(
+    def test_download_returns_processing_status_and_tracks_as_generating(
         self, mock_track_event
     ):
         self.report.geopackage_status = GeoPackageStatus.PROCESSING
@@ -1440,17 +1466,37 @@ class PublicFundingOpportunityReportGeopackageDownloadTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["status"], "processing")
-        mock_track_event.assert_not_called()
+        mock_track_event.assert_called_once_with(
+            name="funding_report.shared_link.geopackage_downloaded",
+            properties={
+                "shared_link_uuid": str(self.shared_link.uuid),
+                "report_id": self.report.pk,
+                "scenario_id": self.report.scenario_id,
+                "status": "generating",
+                "authenticated": False,
+            },
+            user_id=None,
+        )
 
     @mock.patch("funding_report.views.track_event")
-    def test_download_returns_pending_status_without_tracking(
+    def test_download_returns_pending_status_and_tracks_as_not_ready(
         self, mock_track_event
     ):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json()["status"], "pending")
-        mock_track_event.assert_not_called()
+        mock_track_event.assert_called_once_with(
+            name="funding_report.shared_link.geopackage_downloaded",
+            properties={
+                "shared_link_uuid": str(self.shared_link.uuid),
+                "report_id": self.report.pk,
+                "scenario_id": self.report.scenario_id,
+                "status": "not_ready",
+                "authenticated": False,
+            },
+            user_id=None,
+        )
 
     def test_returns_404_for_unknown_uuid(self):
         url = reverse(

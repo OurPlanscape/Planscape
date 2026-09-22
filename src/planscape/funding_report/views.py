@@ -112,21 +112,25 @@ def public_funding_opportunity_report_geopackage_download(request, shared_link_u
         deleted_at__isnull=True,
     )
     report = shared_link.report
+    is_authenticated = request.user.is_authenticated
+
+    def _track(ask_status: str) -> None:
+        track_event(
+            name="funding_report.shared_link.geopackage_downloaded",
+            properties={
+                "shared_link_uuid": str(shared_link.uuid),
+                "report_id": report.pk,
+                "scenario_id": report.scenario_id,
+                "status": ask_status,
+                "authenticated": is_authenticated,
+            },
+            user_id=request.user.pk if is_authenticated else None,
+        )
 
     if report.geopackage_status == GeoPackageStatus.SUCCEEDED:
         download_url = report.get_geopackage_url()
         if download_url:
-            is_authenticated = request.user.is_authenticated
-            track_event(
-                name="funding_report.shared_link.geopackage_downloaded",
-                properties={
-                    "shared_link_uuid": str(shared_link.uuid),
-                    "report_id": report.pk,
-                    "scenario_id": report.scenario_id,
-                    "authenticated": is_authenticated,
-                },
-                user_id=request.user.pk if is_authenticated else None,
-            )
+            _track("ready")
             return Response({"status": "ready", "download_url": download_url})
         return Response(
             {"status": "error", "message": "Download URL generation failed"},
@@ -134,6 +138,7 @@ def public_funding_opportunity_report_geopackage_download(request, shared_link_u
         )
 
     if report.geopackage_status == GeoPackageStatus.PROCESSING:
+        _track("generating")
         return Response(
             {
                 "status": "processing",
@@ -141,6 +146,10 @@ def public_funding_opportunity_report_geopackage_download(request, shared_link_u
             }
         )
 
+    # None, PENDING or FAILED: this endpoint never triggers generation (it's
+    # AllowAny, so an anonymous caller shouldn't be able to kick off compute),
+    # but the ask itself is still worth knowing about.
+    _track("not_ready")
     return Response(
         {
             "status": "pending",

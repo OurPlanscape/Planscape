@@ -1,5 +1,6 @@
 import io
 import json
+import tempfile
 from unittest import mock
 from urllib.parse import urlencode
 
@@ -1251,3 +1252,41 @@ class TxPlanNoteTest(APITestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class TxPlanDownloadGeopackageTest(APITestCase):
+    def setUp(self):
+        self.owner = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner, owners=[self.owner]
+        )
+        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
+        self.tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario, created_by=self.owner
+        )
+        self.url = reverse("api:impacts:tx-plans-download", args=[self.tx_plan.pk])
+        self.client.force_authenticate(user=self.owner)
+
+    @mock.patch("impacts.views.export_geopackage")
+    @mock.patch("impacts.views.track_event")
+    def test_download_tracks_as_ready(self, mock_track_event, mock_export):
+        with tempfile.NamedTemporaryFile(suffix=".gpkg") as tmp_file:
+            mock_export.return_value = tmp_file.name
+
+            response = self.client.get(self.url)
+
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            mock_track_event.assert_called_once_with(
+                name="impacts.treatment_plan.geopackage_downloaded",
+                properties={
+                    "treatment_plan_id": self.tx_plan.pk,
+                    "status": "ready",
+                    "email": self.owner.email,
+                },
+                user_id=self.owner.pk,
+            )
+
+    def test_download_requires_authentication(self):
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

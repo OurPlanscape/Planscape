@@ -212,9 +212,10 @@ class TreatmentPlanViewSet(
             )
 
         track_event(
-            name="impacts.treatment_plan.downloaded",
+            name="impacts.treatment_plan.geopackage_downloaded",
             properties={
                 "treatment_plan_id": treatment_plan.pk,
+                "status": "ready",
                 "email": request.user.email if request.user else None,
             },
             user_id=request.user.pk,
