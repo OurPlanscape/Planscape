@@ -6,7 +6,7 @@ from collaboration.models import Permissions, Role
 from collaboration.tests.factories import UserObjectRoleFactory
 from django.conf import settings
 from django.urls import reverse
-from planning.models import ScenarioPlanningApproach
+from planning.models import GeoPackageStatus, ScenarioPlanningApproach
 from planning.services import get_acreage
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -1296,3 +1296,175 @@ class FlameLengthReductionTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("detail", response.json())
+
+
+class FundingReportDownloadGeopackageTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+        )
+        self.url = reverse(
+            "api:planning:scenarios-funding-report-download-geopackage",
+            args=[self.scenario.pk],
+        )
+
+    def _create_report(self, geopackage_status=None, geopackage_url=None):
+        return FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.user,
+            status=FundingOpportunityReportStatus.SUCCESS,
+            geopackage_status=geopackage_status,
+            geopackage_url=geopackage_url,
+        )
+
+    @mock.patch("planning.views_v2.track_event")
+    @mock.patch(
+        "funding_report.models.create_gcs_download_url",
+        return_value="http://example.com/download",
+    )
+    def test_download_returns_url_when_succeeded(
+        self, mock_create_download_url, mock_track_event
+    ):
+        report = self._create_report(
+            geopackage_status=GeoPackageStatus.SUCCEEDED,
+            geopackage_url="gs://bucket/path/to/geopackage.gpkg",
+        )
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["status"], "ready")
+        self.assertEqual(data["download_url"], "http://example.com/download")
+
+        mock_track_event.assert_called_once()
+        _, kwargs = mock_track_event.call_args
+        self.assertEqual(
+            kwargs["name"], "planning.funding_report.geopackage_downloaded"
+        )
+        self.assertEqual(kwargs["properties"]["report_id"], report.pk)
+        self.assertEqual(kwargs["properties"]["scenario_id"], self.scenario.pk)
+
+    @mock.patch("planning.views_v2.track_event")
+    def test_download_returns_processing_status(self, mock_track_event):
+        self._create_report(geopackage_status=GeoPackageStatus.PROCESSING)
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "processing")
+        mock_track_event.assert_not_called()
+
+    @mock.patch("planning.views_v2.async_generate_funding_report_geopackage")
+    @mock.patch("planning.views_v2.track_event")
+    def test_download_triggers_generation_when_pending(
+        self, mock_track_event, mock_task
+    ):
+        report = self._create_report(geopackage_status=None)
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "pending")
+        mock_task.delay.assert_called_once_with(report.pk)
+        mock_track_event.assert_not_called()
+
+        report.refresh_from_db()
+        self.assertEqual(report.geopackage_status, GeoPackageStatus.PENDING)
+
+    def test_download_with_no_report_returns_404(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_download_requires_authentication(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class PublicFundingOpportunityReportGeopackageDownloadTest(APITestCase):
+    def setUp(self):
+        self.report = FundingOpportunityReportFactory()
+        self.shared_link = FundingOpportunityReportSharedLinkFactory(
+            report=self.report,
+        )
+        self.url = reverse(
+            "api:funding_report:public-funding-opportunity-report-geopackage-download",
+            args=[self.shared_link.uuid],
+        )
+
+    @mock.patch("funding_report.views.track_event")
+    @mock.patch(
+        "funding_report.models.create_gcs_download_url",
+        return_value="http://example.com/download",
+    )
+    def test_download_returns_url_and_tracks_when_succeeded(
+        self, mock_create_download_url, mock_track_event
+    ):
+        self.report.geopackage_status = GeoPackageStatus.SUCCEEDED
+        self.report.geopackage_url = "gs://bucket/path/to/geopackage.gpkg"
+        self.report.save(update_fields=["geopackage_status", "geopackage_url"])
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["status"], "ready")
+        self.assertEqual(data["download_url"], "http://example.com/download")
+
+        mock_track_event.assert_called_once_with(
+            name="funding_report.shared_link.geopackage_downloaded",
+            properties={
+                "shared_link_uuid": str(self.shared_link.uuid),
+                "report_id": self.report.pk,
+                "scenario_id": self.report.scenario_id,
+                "authenticated": False,
+            },
+            user_id=None,
+        )
+
+    @mock.patch("funding_report.views.track_event")
+    def test_download_returns_processing_status_without_tracking(
+        self, mock_track_event
+    ):
+        self.report.geopackage_status = GeoPackageStatus.PROCESSING
+        self.report.save(update_fields=["geopackage_status"])
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "processing")
+        mock_track_event.assert_not_called()
+
+    @mock.patch("funding_report.views.track_event")
+    def test_download_returns_pending_status_without_tracking(
+        self, mock_track_event
+    ):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "pending")
+        mock_track_event.assert_not_called()
+
+    def test_returns_404_for_unknown_uuid(self):
+        url = reverse(
+            "api:funding_report:public-funding-opportunity-report-geopackage-download",
+            args=[uuid4()],
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_returns_404_for_deleted_shared_link(self):
+        self.shared_link.delete()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
