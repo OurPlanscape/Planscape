@@ -26,6 +26,17 @@ export class InvalidCoordinatesError extends Error {
   }
 }
 
+export class MultipleShapefilesError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
+export class UnknownShapefileError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 /**
  * Backend validation errors come back as
  * `{ detail: 'Validation error.', errors: { name: ['...'] } }`.

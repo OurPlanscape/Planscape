@@ -131,6 +131,7 @@ export class CreatePlanDialogComponent implements OnInit {
         .createPlan({
           name: name,
           geometry: geometry,
+          workspace: this.data.workspaceId,
         })
         .subscribe({
           next: (result) => {

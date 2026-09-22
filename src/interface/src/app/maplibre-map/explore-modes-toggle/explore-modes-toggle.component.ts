@@ -7,13 +7,14 @@ import { MapConfigState } from '../map-config.state';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { DrawService } from '../draw.service';
 import { MatDialog } from '@angular/material/dialog';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { UploadPlanningAreaBoxComponent } from '@explore/upload-planning-area-box/upload-planning-area-box.component';
 import { CreatePlanDialogComponent } from '@explore/create-plan-dialog/create-plan-dialog.component';
 import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
 import { BlockDialogComponent } from '@standalone/block-dialog/block-dialog.component';
 import { ButtonComponent } from '@styleguide';
 import { MatMenuModule } from '@angular/material/menu';
+import { getPlanPath } from '@plan/plan-helpers';
 
 @Component({
   selector: 'app-explore-modes-selection-toggle',
@@ -42,10 +43,23 @@ export class ExploreModesToggleComponent {
     private multiMapConfigState: MultiMapConfigState,
     private dialog: MatDialog,
     private drawService: DrawService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    this.checkForDrawPlanningArea();
+  }
 
   showUploadForm = false;
+
+  private checkForDrawPlanningArea() {
+    // set from the planning area list empty state Draw buttons
+    const { drawPlanningArea, ...rest } = history.state ?? {};
+    if (drawPlanningArea) {
+      this.handleDrawingButton();
+      // Clear so it won't persist on refresh/back
+      history.replaceState(rest, document.title);
+    }
+  }
 
   handleDrawingButton() {
     // first, ensure we're only on single map view
@@ -98,7 +112,9 @@ export class ExploreModesToggleComponent {
         .afterClosed()
         .subscribe((id) => {
           if (id) {
-            this.router.navigate(['plan', id]);
+            this.router.navigate([
+              getPlanPath(id, this.router.routerState.snapshot.root),
+            ]);
           }
         });
     }
@@ -109,6 +125,7 @@ export class ExploreModesToggleComponent {
       maxWidth: '560px',
       data: {
         drawService: this.drawService,
+        workspaceId: this.route.snapshot.data['workspaceId'] ?? undefined,
       },
     });
   }
@@ -126,6 +143,7 @@ export class ExploreModesToggleComponent {
       .subscribe((confirms: boolean) => {
         if (confirms) {
           this.drawService.clearFeatures();
+          this.drawService.stop();
           this.mapConfigState.enterViewMode();
         }
       });

@@ -21,6 +21,7 @@ from impacts.models import (
 from impacts.services import get_calculation_matrix
 from impacts.tasks import (
     async_calculate_impacts_for_variable_action_year,
+    async_generate_treatment_plan_geopackage,
     async_send_email_process_finished,
 )
 from impacts.tests.factories import TreatmentPlanFactory, TreatmentPrescriptionFactory
@@ -53,6 +54,18 @@ class AsyncSendEmailProcessFinishedTest(TestCase):
             treatment_plan_pk=self.treatment_plan.pk,
         )
         self.assertFalse(send_email_mock.called)
+
+
+class AsyncTreatmentPlanGeopackageTest(TestCase):
+    @mock.patch("impacts.tasks.export_and_upload_geopackage")
+    def test_async_generate_treatment_plan_geopackage(self, mock_export):
+        treatment_plan = TreatmentPlanFactory.create()
+        mock_export.return_value = "gs://test-bucket/geopackages/test.gpkg.zip"
+
+        result = async_generate_treatment_plan_geopackage(treatment_plan.pk)
+
+        self.assertEqual(result, "gs://test-bucket/geopackages/test.gpkg.zip")
+        mock_export.assert_called_once_with(treatment_plan)
 
 
 class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):

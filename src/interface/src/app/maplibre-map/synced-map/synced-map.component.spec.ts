@@ -68,6 +68,27 @@ describe('SyncedMapComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  describe('mapLoaded', () => {
+    it('enables polygon drawing when already in draw mode', () => {
+      const mapInteractionMode$ = TestBed.inject(MapConfigState)
+        .mapInteractionMode$ as BehaviorSubject<MapInteractionMode>;
+      mapInteractionMode$.next('draw');
+      const enableSpy = spyOn(component, 'enablePolygonDrawingMode');
+
+      component.mapLoaded({} as any);
+
+      expect(enableSpy).toHaveBeenCalled();
+    });
+
+    it('does not enable polygon drawing in view mode', () => {
+      const enableSpy = spyOn(component, 'enablePolygonDrawingMode');
+
+      component.mapLoaded({} as any);
+
+      expect(enableSpy).not.toHaveBeenCalled();
+    });
+  });
+
   it('should have isSelected$ as TRUE if map is selected', async () => {
     component.mapNumber = 3;
     fixture.detectChanges();

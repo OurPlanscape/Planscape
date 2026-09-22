@@ -1,21 +1,39 @@
-<img
-  class="image"
-  src="assets/svg/planning_area_placeholder.svg"
-  alt="empty planning area" />
+<ng-container *ngIf="canAddPlanningArea$ | async; else awaiting">
+  <img
+    class="image"
+    src="assets/svg/planning_area_placeholder.svg"
+    alt="empty planning area" />
 
-<div class="text-content">
-  <h4 class="title">Start by Adding a Planning Area</h4>
-  <p class="subtitle">
-    A planning area is the outermost boundary used for planning activities. It
-    defines the geographic scope within which analyses and decision-making
-    occur.
-  </p>
-</div>
+  <div class="text-content">
+    <h4 class="title">Start by Adding a Planning Area</h4>
+    <p class="subtitle">
+      A planning area is the outermost boundary used for planning activities. It
+      defines the geographic scope within which analyses and decision-making
+      occur.
+    </p>
+  </div>
 
-<div class="action-row">
-  <button sg-button (click)="handleDraw()">Draw Planning Area</button>
+  <div class="action-row">
+    <button sg-button (click)="handleDraw()">Draw Planning Area</button>
 
-  <button sg-button variant="primary" (click)="handleUpload()">
-    Upload Planning Area
-  </button>
-</div>
+    <button sg-button variant="primary" (click)="handleUpload()">
+      Upload Planning Area
+    </button>
+  </div>
+</ng-container>
+
+<ng-template #awaiting>
+  <div class="awaiting-block">
+    <div class="icon-row">
+      <mat-icon class="material-symbols-outlined search-icon">
+        document_search
+      </mat-icon>
+    </div>
+    <div class="title">Awaiting planning areas</div>
+    <div class="awaiting-blurb">
+      Once an Owner or Collaborator adds a planning area, it will be available
+      to view. To create planning areas, please contact the workspace owner to
+      request Collaborator permissions.
+    </div>
+  </div>
+</ng-template>

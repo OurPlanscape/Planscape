@@ -478,6 +478,23 @@ class InviteWorkspaceMemberTest(APITestCase):
         send_invitation.assert_called_once()
 
     @patch("workspaces.services.send_workspace_invitation.delay")
+    def test_inviting_a_registered_user_grants_access(self, send_invitation):
+        invitee = UserFactory.create(email="invitee@example.com")
+        self.client.force_authenticate(user=self.owner)
+        response = self._invite(email="Invitee@example.com")
+
+        self.assertEqual(response.status_code, 201, response.json())
+        access = UserAccessWorkspace.objects.get(
+            workspace=self.workspace, email="invitee@example.com"
+        )
+        self.assertEqual(access.user, invitee)
+        send_invitation.assert_called_once()
+
+        self.client.force_authenticate(user=invitee)
+        response = self.client.get(reverse(DETAIL_URL, kwargs={"pk": self.workspace.pk}))
+        self.assertEqual(response.status_code, 200)
+
+    @patch("workspaces.services.send_workspace_invitation.delay")
     def test_collaborator_cannot_invite(self, send_invitation):
         self.client.force_authenticate(user=self.collaborator)
         response = self._invite()

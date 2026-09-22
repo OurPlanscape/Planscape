@@ -21,9 +21,16 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatMenuModule } from '@angular/material/menu';
 import { PreviewPlan } from '@app/types';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PlanningAreaEmptyStateComponent } from '../planning-area-empty-state/planning-area-empty-state.component';
+import { PlanningAreaCreationModalComponent } from '../planning-area-creation-modal/planning-area-creation-modal.component';
+import { MatDialog } from '@angular/material/dialog';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
+import { catchError, EMPTY, exhaustMap, interval, map } from 'rxjs';
+import { WorkspaceState } from '../workspace.state';
 
+@UntilDestroy()
 @Component({
   selector: 'app-planning-area-list',
   standalone: true,
@@ -55,11 +62,17 @@ import { PlanningAreaEmptyStateComponent } from '../planning-area-empty-state/pl
       provide: PlanningAreasDataSource,
       useFactory: (
         planService: PlanService,
-        queryParamsService: QueryParamsService
+        queryParamsService: QueryParamsService,
+        route: ActivatedRoute
       ) => {
-        return new PlanningAreasDataSource(planService, queryParamsService);
+        const workspaceId = route.snapshot.data['workspaceId'];
+        return new PlanningAreasDataSource(
+          planService,
+          queryParamsService,
+          workspaceId
+        );
       },
-      deps: [PlanService, QueryParamsService],
+      deps: [PlanService, QueryParamsService, ActivatedRoute],
     },
   ],
   templateUrl: './planning-area-list.component.html',
@@ -72,6 +85,9 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   public authService = inject(AuthService);
   public newScenarioState = inject(NewScenarioState);
   public router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private dialog = inject(MatDialog);
+  private workspaceState = inject(WorkspaceState);
 
   planningAreas$ = this.dataSource.data();
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
@@ -87,9 +103,31 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
 
   loading$ = this.dataSource.loading$;
 
+  workspaceId = this.route.snapshot.data['workspaceId'];
+
+  canAddPlanningArea$ = this.workspaceState.currentWorkspace$.pipe(
+    map((workspace) => workspace.permissions.includes('add_planningarea'))
+  );
+
   ngOnInit(): void {
     this.dataSource.loadData();
     this.mapConfigState.setShowMapControls(false);
+    this.pollForChanges();
+  }
+
+  private pollForChanges() {
+    interval(POLLING_INTERVAL)
+      .pipe(
+        // refresh in the background; ignore ticks while a refresh is in flight
+        exhaustMap(() =>
+          this.dataSource.refresh().pipe(
+            // keep the poller alive on errors
+            catchError(() => EMPTY)
+          )
+        ),
+        untilDestroyed(this)
+      )
+      .subscribe();
   }
 
   onMapError(event: ErrorEvent & EventData) {
@@ -124,11 +162,24 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   }
 
   uploadPlanningArea() {
-    // TODO: Open upload modal planning area
+    this.dialog
+      .open(PlanningAreaCreationModalComponent, {
+        data: {
+          workspaceId: this.workspaceId,
+        },
+      })
+      .afterClosed()
+      .subscribe((reload) => {
+        if (reload === true) {
+          this.reload();
+        }
+      });
   }
 
   drawPlanningArea() {
-    // TODO: Navigate to explore and open drawing mode
+    this.router.navigate(['/map-viewer/workspace', this.workspaceId], {
+      state: { drawPlanningArea: true },
+    });
   }
 
   ngOnDestroy(): void {
@@ -139,8 +190,17 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
     this.dataSource.loadData();
   }
 
+  trackById(_index: number, planningArea: PreviewPlan) {
+    return planningArea.id;
+  }
+
   handlePlanningAreaClick(planningArea: PreviewPlan) {
-    this.router.navigate(['plan', planningArea.id]);
+    this.router.navigate([
+      '/workspace',
+      this.workspaceId,
+      'plan',
+      planningArea.id,
+    ]);
     return;
   }
 }

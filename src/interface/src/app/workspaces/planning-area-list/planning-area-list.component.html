@@ -4,7 +4,7 @@
   </div>
 </ng-container>
 <ng-template #loaded>
-  <div class="content" *ngIf="planningAreas$ | async as planningAreas">
+  <div class="content" *ngIf="(planningAreas$ | async) ?? [] as planningAreas">
     <ng-container *ngIf="planningAreas.length > 0; else noResults">
       <div class="planning-header">
         <h4>Planning Areas</h4>
@@ -23,36 +23,39 @@
           </mat-icon>
           <span>Date Created</span>
         </button>
-        <button
-          sg-button
-          class="selection-button"
-          icon="add"
-          variant="primary"
-          [matMenuTriggerFor]="menu"
-          #trigger="matMenuTrigger">
-          Planning Area
+        <ng-container *ngIf="canAddPlanningArea$ | async">
+          <button
+            sg-button
+            class="selection-button"
+            icon="add"
+            variant="primary"
+            [matMenuTriggerFor]="menu"
+            #trigger="matMenuTrigger">
+            Planning Area
 
-          <mat-icon class="material-symbols-outlined new-planning-down"
-            >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
-          </mat-icon>
-        </button>
-        <mat-menu #menu="matMenu" class="planning-area-options-menu">
-          <button mat-menu-item (click)="uploadPlanningArea()">
-            <mat-icon class="material-symbols-outlined">upload_file</mat-icon>
-            Upload
+            <mat-icon class="material-symbols-outlined new-planning-down"
+              >{{ trigger.menuOpen ? 'arrow_drop_up' : 'arrow_drop_down' }}
+            </mat-icon>
           </button>
-          <button mat-menu-item (click)="drawPlanningArea()">
-            <mat-icon class="material-symbols-outlined">draw</mat-icon>
-            Draw
-          </button>
-        </mat-menu>
+          <mat-menu #menu="matMenu" class="planning-area-options-menu">
+            <button mat-menu-item (click)="uploadPlanningArea()">
+              <mat-icon class="material-symbols-outlined">upload_file</mat-icon>
+              Upload
+            </button>
+            <button mat-menu-item (click)="drawPlanningArea()">
+              <mat-icon class="material-symbols-outlined">draw</mat-icon>
+              Draw
+            </button>
+          </mat-menu>
+        </ng-container>
       </div>
       <ng-container *ngIf="baseLayerUrl$ | async as baseLayerUrl">
-        <ng-container *ngFor="let planning of planningAreas">
+        <ng-container
+          *ngFor="let planning of planningAreas; trackBy: trackById">
           <sg-planning-area-card
             *ngIf="planning"
             [planningArea]="planning"
-            [link]="['/plan', planning.id]"
+            [link]="['/workspace', workspaceId, 'plan', planning.id]"
             (afterDelete)="reload()"
             (afterRename)="reload()">
             <div mapSlot class="map">
@@ -95,7 +98,8 @@
     </ng-container>
     <ng-template #noResults>
       <div class="empty-state">
-        <app-planning-area-empty-state></app-planning-area-empty-state>
+        <app-planning-area-empty-state
+          (reload)="reload()"></app-planning-area-empty-state>
       </div>
     </ng-template>
   </div>

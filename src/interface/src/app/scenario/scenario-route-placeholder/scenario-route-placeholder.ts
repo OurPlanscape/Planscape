@@ -17,7 +17,7 @@ import { ResourceUnavailableComponent } from '@shared/resource-unavailable/resou
 import { UploadedScenarioViewComponent } from '@scenario/uploaded-scenario-view/uploaded-scenario-view.component';
 import { ViewScenarioComponent } from '@scenario/view-scenario/view-scenario.component';
 import { ScenarioCreationComponent } from '@scenario-creation/scenario-creation.component';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '@services';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { CanComponentDeactivate } from '@services/can-deactivate.guard';
@@ -26,6 +26,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
 import { exitModalData } from '../scenario.constants';
 import { isScenarioPending } from '../scenario-helper';
+import { getPlanPath } from '@plan/plan-helpers';
 import { ScenarioComponent } from '../scenario.component';
 import { ScenarioDashboardComponent } from '../scenario-dashboard/scenario-dashboard.component';
 
@@ -59,6 +60,7 @@ export class ScenarioRoutePlaceholderComponent
   constructor(
     private authService: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
     private dialog: MatDialog,
     private scenarioState: ScenarioState,
     private newScenarioState: NewScenarioState
@@ -93,7 +95,9 @@ export class ScenarioRoutePlaceholderComponent
 
       // if scenario is pending redirect the user
       if (isScenarioPending(scenario)) {
-        this.router.navigate(['/plan', scenario?.planning_area]);
+        this.router.navigate([
+          getPlanPath(scenario.planning_area, this.route.snapshot),
+        ]);
         return false;
       }
 
@@ -105,7 +109,9 @@ export class ScenarioRoutePlaceholderComponent
       // If it is a draft and the creator is not the same as the user logged in we redirect to planning areas
       const sameCreator = user?.id === scenario?.user;
       if (!(sameCreator && this.isDraft)) {
-        this.router.navigate(['/plan', scenario?.planning_area]);
+        this.router.navigate([
+          getPlanPath(scenario.planning_area, this.route.snapshot),
+        ]);
         return false;
       }
       return sameCreator && this.isDraft;
