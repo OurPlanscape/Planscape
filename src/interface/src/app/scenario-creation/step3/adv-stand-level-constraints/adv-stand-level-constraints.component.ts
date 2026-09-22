@@ -158,6 +158,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
       current[existingIndex] = constraint;
     }
     this.selectedConstraints$.next(current);
+
     const layerToAdd = this.getFullLayerById(constraint.datalayer);
     if (layerToAdd) {
       this.dataLayerState.addSelectedLayer(layerToAdd);
@@ -230,21 +231,6 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     this.showLayersPanel = !this.showLayersPanel;
   }
 
-  addConstraint(newConstraint: NamedConstraint): void {
-    const current = this.form.controls.constraints.value;
-    this.form.controls.constraints.setValue([...current, newConstraint]);
-  }
-
-  removeConstraint(index: number): void {
-    const current = [...this.form.controls.constraints.value];
-    current.splice(index, 1);
-    this.form.controls.constraints.setValue(current);
-  }
-
-  // TODO:
-  // get the known layers by Id
-  // mark item as selected in chip selector
-  // open constraint dialog (and close current if open)
   handleConstraintChipClicked(e: NamedConstraint) {
     this.activeConstraint$.next(e);
 

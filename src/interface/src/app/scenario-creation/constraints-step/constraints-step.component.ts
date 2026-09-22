@@ -3,6 +3,7 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {
   AdvStandLevelConstraintData,
   ApiModule,
+  Constraint,
   DataLayer,
   ScenarioDraftConfiguration,
 } from '@app/types';
@@ -12,10 +13,11 @@ import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints
 import { FeaturesModule } from '@app/features/features.module';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { NewScenarioState } from '../new-scenario.state';
-import { map, Observable, take } from 'rxjs';
-import { AsyncPipe } from '@angular/common';
+import { catchError, combineLatest, map, Observable, of, shareReplay, take, tap } from 'rxjs';
+import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { ModuleService } from '@app/services/module.service';
 import { NamedConstraint } from '../step3/adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 const MAX_SELECTABLE_LAYERS = Number.POSITIVE_INFINITY;
 
@@ -28,6 +30,7 @@ interface ConstraintsParentForm {
     constraints: FormControl<NamedConstraint[] | null>;
   }>;
 }
+@UntilDestroy()
 @Component({
   selector: 'app-constraints-step',
   standalone: true,
@@ -35,6 +38,8 @@ interface ConstraintsParentForm {
     AdvStandLevelConstraintsComponent,
     AsyncPipe,
     FeaturesModule,
+    NgIf,
+    NgFor,
     ReactiveFormsModule,
     StandLevelConstraintsComponent,
   ],
@@ -46,18 +51,14 @@ interface ConstraintsParentForm {
 })
 export class ConstraintsStepComponent
   extends StepDirective<ScenarioDraftConfiguration>
-  implements OnInit
-{
+  implements OnInit {
   readonly form = new FormGroup<ConstraintsParentForm>({
     standLevelConstraints: new FormGroup({
       max_slope: new FormControl<number | null>(null),
       min_distance_from_road: new FormControl<number | null>(null),
-    }),
-    advStandLevelConstraints: new FormGroup({
-      constraints: new FormControl<NamedConstraint[] | null>([], {
-        nonNullable: true,
-      }),
-    }),
+    })
+    // Note, the child form adds the advStandLevelConstraints dynamically,
+    //  since we're honoring ADV_STAND_LEVEL_CONSTRAINTS flag as an option.
   });
 
   constraintLayers$: Observable<DataLayer[]> = this.moduleService
@@ -74,6 +75,49 @@ export class ConstraintsStepComponent
     //
   }
 
+  // TODO: maybe move this and selectedAdvStandLevelConstraints to the child...?
+  // This calls the module service to collect the known Adv SLC layers
+  advStandLevelConstraintLayers$: Observable<DataLayer[]> = this.moduleService
+    .getModule<
+      ApiModule<AdvStandLevelConstraintData>
+    >('advanced_stand_level_constraint')
+    .pipe(
+      map((data) => data.options.datalayers),
+      tap((layers) => {
+        return layers;
+      }),
+      shareReplay(1)
+    );
+
+  // from all of the many constraints[] that may exist, we filter out
+  // just the constraints that match the known Adv Stand Level Constraint layers
+  selectedAdvStandLevelConstraints$ = combineLatest([
+    this.newScenarioState.scenarioConfig$,
+    this.advStandLevelConstraintLayers$,
+  ]).pipe(
+    untilDestroyed(this),
+    map(([config, advSLCLayers]) => {
+      const constraints = config.constraints;
+      if (constraints) {
+        const namedConstraints: NamedConstraint[] = constraints
+          .map((constraint: Constraint) => {
+            const layer = advSLCLayers.find((l: DataLayer) => l.id === constraint.datalayer);
+            return {
+              ...constraint,
+              name: layer ? layer.name : 'Unknown Layer', // Fallback name if missing
+            };
+          });
+        return namedConstraints.length ? namedConstraints : [];
+      } else {
+        return [];
+      }
+    }),
+    catchError(() => {
+      return of([]);    
+    })
+  );
+
+
   constructor(
     private moduleService: ModuleService,
     private dataLayersStateService: DataLayersStateService,
@@ -84,6 +128,7 @@ export class ConstraintsStepComponent
 
   getData(): Partial<ScenarioDraftConfiguration> {
     const formValues = this.form.getRawValue();
+    console.log('here are the form values:', formValues);
 
     // TypeScript now knows standLevelConstraints exists!
     const standLevelConstraints = formValues.standLevelConstraints;
@@ -96,7 +141,7 @@ export class ConstraintsStepComponent
         standLevelConstraints?.min_distance_from_road ?? null,
       adv_constraints: advStandLevelConstraints ?? [],
     };
-
+    // TODO: in the getData call, map the draftconfig to the PATCH call
     console.log('here is the form data:', formData);
     return formData;
   }
@@ -120,5 +165,5 @@ export class ConstraintsStepComponent
     this.mapConfigToUI();
   }
 
-  mapConfigToUI() {}
+  mapConfigToUI() { }
 }
