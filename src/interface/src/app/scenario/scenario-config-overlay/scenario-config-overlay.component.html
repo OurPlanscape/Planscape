@@ -8,15 +8,24 @@
   <ng-container *ngIf="(globalLoading$ | async) === false">
     <div class="content" *ngIf="currentScenario$ | async as scenario">
       <dl>
-        <dt>Stand Size</dt>
-        <dd *ngIf="scenario.configuration?.stand_size as stand_size">
-          {{
-            standSizeOptions[stand_size].label +
-              ' (' +
-              standSizeOptions[stand_size].acres +
-              ' acres)'
-          }}
-        </dd>
+        <ng-container *ngIf="scenario.planning_approach">
+          <dt>Planning Approach</dt>
+          <dd>
+            {{ planningApproachLabels[scenario.planning_approach] }}
+          </dd>
+        </ng-container>
+
+        <ng-container *ngIf="scenario.configuration.stand_size as stand_size">
+          <dt>Stand Size</dt>
+          <dd>
+            {{
+              standSizeOptions[stand_size].label +
+                ' (' +
+                standSizeOptions[stand_size].acres +
+                ' acres)'
+            }}
+          </dd>
+        </ng-container>
 
         <ng-container *ngIf="planningArea$ | async as planningArea">
           <dt>Planning Area</dt>
@@ -32,9 +41,6 @@
 
         <ng-container *ngIf="configuration?.sub_units_layer">
           <dt>Subunit</dt>
-          <mat-spinner
-            diameter="20"
-            *ngIf="(subUnitLayerName$ | async) === null"></mat-spinner>
           <dd>
             {{ subUnitLayerName$ | async }}
           </dd>
@@ -43,23 +49,27 @@
         <ng-container *ngIf="priorityObjectives$ | async as priorityObjectives">
           <ng-container *ngIf="priorityObjectives.length > 0">
             <dt>Priority Objectives</dt>
-            <ul class="list-element">
-              <li *ngFor="let p of priorityObjectives; let count = count">
-                {{ p.name }}
-                <span *ngIf="count > 1" class="priority-weight">
-                  ({{ p.weight }}x)
-                </span>
-              </li>
-            </ul>
+            <dd>
+              <ul class="list-element">
+                <li *ngFor="let p of priorityObjectives; let count = count">
+                  {{ p.name }}
+                  <span *ngIf="count > 1" class="priority-weight">
+                    ({{ p.weight }}x)
+                  </span>
+                </li>
+              </ul>
+            </dd>
           </ng-container>
         </ng-container>
 
         <ng-container *ngIf="cobenefits$ | async as cobenefits">
           <ng-container *ngIf="cobenefits.length > 0">
             <dt>Co-Benefits</dt>
-            <ul class="list-element">
-              <li *ngFor="let c of cobenefits">{{ c }}</li>
-            </ul>
+            <dd>
+              <ul class="list-element">
+                <li *ngFor="let c of cobenefits">{{ c }}</li>
+              </ul>
+            </dd>
           </ng-container>
         </ng-container>
 
@@ -116,40 +126,36 @@
           </ng-container>
         </ng-container>
 
-        <dt>Treatment Target</dt>
-        <dd
-          *ngIf="
-            configuration &&
-            (scenarioHasPlanningApproachSubUnits$ | async) === false
-          ">
-          {{ configuration.targets.max_project_count | number: '1.0-2' }}
-          project areas of
-          {{ configuration.targets.max_area | number: '1.0-2' }} acres &#64; ${{
-            configuration.targets.estimated_cost | number: '1.0-2'
-          }}
-          / acre
-        </dd>
-        <dd
-          *ngIf="
-            configuration && (scenarioHasPlanningApproachSubUnits$ | async)
-          ">
-          Targeted area within each subunit:
-          <span *ngIf="configuration.targets.sub_units_fixed_target">
-            {{ configuration.targets.sub_units_target_value | number: '1.0-2' }}
-            Acres
-          </span>
-          <span *ngIf="!configuration.targets.sub_units_fixed_target"
-            >{{ configuration.targets.sub_units_target_value }}%
-          </span>
-        </dd>
+        <ng-container *ngIf="configuration">
+          <dt>Treatment Target</dt>
+          <dd
+            *ngIf="
+              configuration &&
+              (scenarioHasPlanningApproachSubUnits$ | async) === false
+            ">
+            {{ configuration.targets.max_project_count | number: '1.0-2' }}
+            project areas of
+            {{ configuration.targets.max_area | number: '1.0-2' }} acres &#64;
+            ${{ configuration.targets.estimated_cost | number: '1.0-2' }}
+            / acre
+          </dd>
+          <dd
+            *ngIf="
+              configuration && (scenarioHasPlanningApproachSubUnits$ | async)
+            ">
+            Targeted area within each subunit:
+            <span *ngIf="configuration.targets.sub_units_fixed_target">
+              {{
+                configuration.targets.sub_units_target_value | number: '1.0-2'
+              }}
+              Acres
+            </span>
+            <span *ngIf="!configuration.targets.sub_units_fixed_target"
+              >{{ configuration.targets.sub_units_target_value }}%
+            </span>
+          </dd>
+        </ng-container>
       </dl>
-
-      <ng-container *ngIf="scenario.planning_approach">
-        <dt>Planning Approach</dt>
-        <dd>
-          {{ planningApproachLabels[scenario.planning_approach] }}
-        </dd>
-      </ng-container>
     </div>
   </ng-container>
   <div class="footer">

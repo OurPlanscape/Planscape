@@ -242,15 +242,17 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
       this.cobenefits$,
       this.planningArea$,
       this.priorityObjectives$,
-      this.advStandLevelConstraintLayers$
+      this.advStandLevelConstraintLayers$,
+      this.subUnitLayerName$
     ),
-    map(([areas, cobenefits, pa, priorities, advSLCLayers]) => {
+    map(([areas, cobenefits, pa, priorities, advSLCLayers, subUnit]) => {
       return (
         areas === null ||
         cobenefits === null ||
         pa === null ||
         priorities === null ||
-        advSLCLayers === null
+        advSLCLayers === null ||
+        subUnit === null
       );
     }),
     startWith(true)
