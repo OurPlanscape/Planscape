@@ -3,8 +3,10 @@ import {
   Component,
   Host,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
+  SimpleChanges,
   SkipSelf,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
@@ -63,7 +65,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   templateUrl: './adv-stand-level-constraints.component.html',
   styleUrl: './adv-stand-level-constraints.component.scss',
 })
-export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
+export class AdvStandLevelConstraintsComponent implements OnChanges, OnInit, OnDestroy {
   selectedConstraints$ = new BehaviorSubject<NamedConstraint[]>([]);
   private readonly destroy$ = new Subject<void>();
 
@@ -73,6 +75,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
 
   @Input() constraintLayers: DataLayer[] | null = [];
   @Input() keyName = 'advStandLevelConstraints';
+  @Input() namedConstraints: NamedConstraint[] = [];
 
   // 1. Single FormControl holding the array
   readonly form = new FormGroup({
@@ -112,6 +115,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     private dataLayerState: DataLayersStateService,
     @Host() @SkipSelf() private parentContainer: ControlContainer
   ) {
+
     this.scenarioState.currentScenario$
       .pipe(
         take(1),
@@ -127,9 +131,18 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
       });
   }
 
+  // TODO: this may not be the right approach
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['namedConstraints'] && changes['namedConstraints'].currentValue) {
+      const incoming = changes['namedConstraints'].currentValue;
+      this.selectedConstraints$.next(incoming);
+    }
+  }
+
   ngOnInit(): void {
     // Directly attach to the parent form
     this.parentFormGroup.addControl(this.keyName, this.form);
+
     this.selectedConstraints$
       .pipe(takeUntil(this.destroy$))
       .subscribe((constraints) => {

@@ -14,6 +14,7 @@
   <app-adv-stand-level-constraints
     formGroupName="advStandLevelConstraints"
     [constraintLayers]="constraintLayers$ | async"
-    keyName="advStandLevelConstraints">
+    keyName="advStandLevelConstraints"
+    [namedConstraints]="(selectedAdvStandLevelConstraints$ | async) ?? []">
   </app-adv-stand-level-constraints>
 </div>
