@@ -2,6 +2,10 @@
   <div class="header">
     <h4>Configurations</h4>
   </div>
+  <div *ngIf="globalLoading$ | async" class="content global-spinner">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div> 
+  <ng-container *ngIf="(globalLoading$ | async) === false" >
   <div class="content" *ngIf="currentScenario$ | async as scenario">
     <dl>
       <dt>Stand Size</dt>
@@ -48,16 +52,27 @@
           {{ cobenefits$ | async }}
         </dd>
       </ng-container>
+
+
       <dt>Stand-Level Constraints</dt>
+      <mat-spinner
+            diameter="20"
+            *ngIf="configuration?.constraints === null"></mat-spinner>
+   
       <dd *ngFor="let c of configuration?.constraints">
-        <div *ngIf="c.datalayer === slopeId">
+             
+        <ul class="list-element">
+        <li *ngIf="c.datalayer === slopeId">
           Slope less or equal than (<=) {{ c.value }} %
-        </div>
-        <div *ngIf="c.datalayer === distanceToRoadsId">
+        </li>
+        <li *ngIf="c.datalayer === distanceToRoadsId">
           Distance from roads is less than (<)
           {{ c.value | number: '1.0-2' }} yds
-        </div>
+        </li>
+        </ul>
       </dd>
+
+
        <dt>Advanced Stand-Level Constraints</dt>
       <dd *ngFor="let c of configuration?.constraints">
         
@@ -135,6 +150,7 @@
       </ng-container>
       
   </div>
+  </ng-container>
   <div class="footer">
     <button
       sg-button

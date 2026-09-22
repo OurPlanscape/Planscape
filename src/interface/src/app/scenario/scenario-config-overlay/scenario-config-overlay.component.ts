@@ -11,7 +11,7 @@ import {
   map,
   of,
   shareReplay,
-  switchMap,
+  switchMap
 } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ForsysService } from '@services/forsys.service';
@@ -28,7 +28,7 @@ import {
 import { DataLayersService } from '@services';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-import { filter, startWith } from 'rxjs/operators';
+import { combineLatestWith, filter, startWith } from 'rxjs/operators';
 import { FeaturesModule } from '@app/features/features.module';
 import { PlanState } from '@app/plan/plan.state';
 
@@ -142,9 +142,9 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
         config?.priorities && config.priorities.length > 0
           ? config.priorities
           : (config?.priority_objectives ?? []).map((datalayer) => ({
-              datalayer,
-              weight: 1,
-            }));
+            datalayer,
+            weight: 1,
+          }));
       return this.dataLayersService
         .getDataLayersByIds(priorities.map((p) => p.datalayer))
         .pipe(
@@ -162,11 +162,10 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
     shareReplay(1)
   );
 
+
   cobenefits$ = this.currentScenario$.pipe(
     switchMap((s) =>
-      this.dataLayersService.getDataLayersByIds(
-        s.configuration?.cobenefits ?? []
-      )
+      this.dataLayersService.getDataLayersByIds(s.configuration?.cobenefits ?? [])
     ),
     map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
     shareReplay(1)
@@ -179,6 +178,21 @@ export class ScenarioConfigOverlayComponent implements OnDestroy {
     map((d: DataLayer[]) => d.map((dl) => dl.name).join(', ')),
     shareReplay(1)
   );
+
+
+  // The single public global loader
+  public globalLoading$ = this.selectedIncludedAreas$.pipe(
+    combineLatestWith(
+      this.cobenefits$,
+      this.planningArea$,
+      this.priorityObjectives$,
+    ),
+    map(([areas, cobenefits, pa, priorities]) => {
+      return areas === null || cobenefits === null || pa === null || priorities === null;
+    }),
+    startWith(true)
+  );
+
 
   close() {
     this.scenarioState.setDisplayOverlay(false);

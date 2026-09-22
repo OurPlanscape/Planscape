@@ -23,6 +23,15 @@
     overflow-y: auto;
     max-height: 60vh;
 
+    &.global-spinner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 50vh;
+    }
+
+
     dl {
       margin: 0;
     }
