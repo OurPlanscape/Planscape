@@ -1,6 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { importProvidersFrom } from '@angular/core';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { PlanningAreaCardComponent } from './planning-area-card.component';
 import { PreviewPlan } from '@app/types';
@@ -22,7 +26,13 @@ const meta: Meta<PlanningAreaCardComponent> = {
   component: PlanningAreaCardComponent,
   decorators: [
     applicationConfig({
-      providers: [provideAnimations()],
+      // the card links to the planning area and its menu calls the API
+      providers: [
+        provideAnimations(),
+        provideRouter([]),
+        provideHttpClient(),
+        importProvidersFrom(MatSnackBarModule),
+      ],
     }),
   ],
   tags: ['autodocs'],
