@@ -1,9 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {
   AdvStandLevelConstraintData,
   ApiModule,
-  Constraint,
   DataLayer,
   ScenarioDraftConfiguration,
 } from '@app/types';
@@ -13,21 +12,11 @@ import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints
 import { FeaturesModule } from '@app/features/features.module';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { NewScenarioState } from '../new-scenario.state';
-import {
-  catchError,
-  combineLatest,
-  map,
-  Observable,
-  of,
-  shareReplay,
-  take,
-  tap,
-} from 'rxjs';
+import { map, Observable, take } from 'rxjs';
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { ModuleService } from '@app/services/module.service';
 import { NamedConstraint } from '../step3/adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { getOperatorDisplayText } from '@app/scenario/scenario-helper';
+import { UntilDestroy } from '@ngneat/until-destroy';
 
 const MAX_SELECTABLE_LAYERS = Number.POSITIVE_INFINITY;
 
@@ -63,6 +52,9 @@ export class ConstraintsStepComponent
   extends StepDirective<ScenarioDraftConfiguration>
   implements OnInit
 {
+  @ViewChild('advConstraintsComponent')
+  advConstraintsComponent!: AdvStandLevelConstraintsComponent;
+
   readonly form = new FormGroup<ConstraintsParentForm>({
     standLevelConstraints: new FormGroup({
       max_slope: new FormControl<number | null>(null),
@@ -86,68 +78,6 @@ export class ConstraintsStepComponent
     //
   }
 
-  // TODO: maybe move this and selectedAdvStandLevelConstraints to the child...?
-  // This calls the module service to collect the known Adv SLC layers
-  advStandLevelConstraintLayers$: Observable<DataLayer[]> = this.moduleService
-    .getModule<
-      ApiModule<AdvStandLevelConstraintData>
-    >('advanced_stand_level_constraint')
-    .pipe(
-      map((data) => data.options.datalayers),
-      tap((layers) => {
-        return layers;
-      }),
-      shareReplay(1)
-    );
-
-  // from all of the many constraints[] that may exist, we filter out
-  // just the constraints that match the known Adv Stand Level Constraint layers
-
-  // TODO: move this to child component?
-  selectedAdvStandLevelConstraints$ = combineLatest([
-    this.newScenarioState.scenarioConfig$,
-    this.advStandLevelConstraintLayers$,
-  ]).pipe(
-    untilDestroyed(this),
-    map(([config, advSLCLayers]) => {
-      const constraints = config.constraints;
-      if (constraints) {
-        const namedConstraints: NamedConstraint[] = constraints.map(
-          (constraint: Constraint) => {
-            const layer = advSLCLayers.find(
-              (l: DataLayer) => l.id === constraint.datalayer
-            );
-            // TODO: make a consistent helper function for this
-            let constraintName = `${layer ? layer.name : 'Unknown Layer'}: ${getOperatorDisplayText(constraint.operator)} ${constraint.value}`;
-            if (constraint.operator === 'btw') {
-              let dashedValue = constraint.value;
-              if (dashedValue.includes(',')) {
-                // guard against values being out of numeric order
-                const [num1, num2] = constraint.value.split(',').map(Number);
-                dashedValue = `${Math.min(num1, num2)}-${Math.max(num1, num2)}`;
-              }
-              constraintName = `${layer ? layer.name : 'Unknown Layer'}: ${dashedValue}`;
-            }
-            if (layer) {
-              console.log('adding ', layer, 'as selected');
-              this.dataLayersStateService.addSelectedLayer(layer);
-            }
-            return {
-              ...constraint,
-              name: constraintName, // Fallback name if missing
-            };
-          }
-        );
-        return namedConstraints.length ? namedConstraints : [];
-      } else {
-        return [];
-      }
-    }),
-    catchError(() => {
-      return of([]);
-    })
-  );
-
   constructor(
     private moduleService: ModuleService,
     private dataLayersStateService: DataLayersStateService,
@@ -158,7 +88,7 @@ export class ConstraintsStepComponent
 
   getData(): Partial<ScenarioDraftConfiguration> {
     const formValues = this.form.getRawValue();
-
+    console.log('the current formvalues are:', formValues);
     // TypeScript now knows standLevelConstraints exists!
     const standLevelConstraints = formValues.standLevelConstraints;
     const advStandLevelConstraints: NamedConstraint[] =
@@ -174,12 +104,15 @@ export class ConstraintsStepComponent
   }
 
   override beforeStepLoad() {
+    console.log('here, we call before step load again');
     this.dataLayersStateService.updateSelectedLayers([]);
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
     // ensure that priority_objective layers are unselectable
     this.dataLayersStateService.clearUnselectableLayers();
     this.newScenarioState.scenarioConfig$.pipe(take(1)).subscribe((config) => {
       const draft = config as Partial<ScenarioDraftConfiguration>;
+
+      console.log('this is what draft is now:', draft);
       const priorityIds = (draft.priorities ?? []).map((p) => p.datalayer);
       if (priorityIds && priorityIds.length > 0) {
         this.dataLayersStateService.setUnselectableLayers(
@@ -189,13 +122,11 @@ export class ConstraintsStepComponent
       }
     });
     // send this to the children? or just send the values down as observables?
-    this.mapConfigToUI();
+    this.advConstraintsComponent.mapConfigToUI();
   }
 
   override beforeStepExit() {
     this.dataLayersStateService.resetAll();
     this.dataLayersStateService.updateSelectedLayers([]);
   }
-
-  mapConfigToUI() {}
 }

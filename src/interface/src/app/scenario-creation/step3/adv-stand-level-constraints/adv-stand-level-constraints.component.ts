@@ -3,10 +3,8 @@ import {
   Component,
   Host,
   Input,
-  OnChanges,
   OnDestroy,
   OnInit,
-  SimpleChanges,
   SkipSelf,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
@@ -28,8 +26,11 @@ import {
 import { ControlContainer, FormControl, FormGroup } from '@angular/forms';
 import {
   BehaviorSubject,
+  combineLatest,
+  // catchError,
   map,
   Observable,
+  // of,
   shareReplay,
   startWith,
   Subject,
@@ -38,10 +39,17 @@ import {
   takeUntil,
   tap,
 } from 'rxjs';
-import { ApiModule, DataLayer, AdvStandLevelConstraintData } from '@app/types';
+import {
+  ApiModule,
+  DataLayer,
+  AdvStandLevelConstraintData,
+  Constraint,
+} from '@app/types';
 import { ModuleService } from '@app/services/module.service';
 import { SELECTION_MODE } from '@app/data-layers/data-layers/selection-mode.token';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
+import { getOperatorDisplayText } from '@app/scenario/scenario-helper';
 
 @UntilDestroy()
 @Component({
@@ -65,25 +73,13 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   templateUrl: './adv-stand-level-constraints.component.html',
   styleUrl: './adv-stand-level-constraints.component.scss',
 })
-export class AdvStandLevelConstraintsComponent
-  implements OnChanges, OnInit, OnDestroy
-{
+export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
   selectedConstraints$ = new BehaviorSubject<NamedConstraint[]>([]);
   private readonly destroy$ = new Subject<void>();
 
   activeConstraint$ = new BehaviorSubject<NamedConstraint | null>(null);
 
   showLayersPanel = false;
-
-  @Input() constraintLayers: DataLayer[] | null = [];
-  @Input() keyName = 'advStandLevelConstraints';
-  @Input() namedConstraints: NamedConstraint[] = [];
-
-  // 1. Single FormControl holding the array
-  readonly form = new FormGroup({
-    constraints: new FormControl<NamedConstraint[]>([], { nonNullable: true }),
-  });
-  private knownLayers: DataLayer[] = [];
 
   readonly constraintLayers$: Observable<DataLayer[]> = this.moduleService
     .getModule<
@@ -93,9 +89,19 @@ export class AdvStandLevelConstraintsComponent
       map((data) => data.options.datalayers),
       tap((layers) => {
         this.knownLayers = layers;
+        return layers;
       }),
       shareReplay(1)
     );
+
+  @Input() constraintLayers: DataLayer[] | null = [];
+  @Input() keyName = 'advStandLevelConstraints';
+
+  // single FormControl holding the constraints array
+  readonly form = new FormGroup({
+    constraints: new FormControl<NamedConstraint[]>([], { nonNullable: true }),
+  });
+  private knownLayers: DataLayer[] = [];
 
   // loading state derived from constraintLayers$
   readonly layersLoaded$: Observable<boolean> = this.constraintLayers$.pipe(
@@ -108,11 +114,55 @@ export class AdvStandLevelConstraintsComponent
     return this.knownLayers.find((layer) => layer.id === id) ?? null;
   }
 
+  // update UI of this component when the step loads,
+  // not eagerly on onInit
+  mapConfigToUI() {
+    // here, we filter out layers from constraintLayers to find
+    // just the configured constraints that match the known Adv Stand Level Constraint layers
+    combineLatest([
+      this.newScenarioState.scenarioConfig$.pipe(take(1)),
+      this.constraintLayers$.pipe(take(1)),
+    ]).subscribe(([config, layers]) => {
+      const constraints = config?.constraints;
+      console.log('what is the config constraints now?', constraints);
+
+      if (!constraints) {
+        this.selectedConstraints$.next([]);
+        return;
+      }
+
+      const namedConstraints: NamedConstraint[] = constraints.map(
+        (constraint: Constraint) => {
+          const layer = layers.find(
+            (l: DataLayer) => l.id === constraint.datalayer
+          );
+
+          //TODO: decompose this
+          let constraintName = `${layer ? layer.name : 'Unknown Layer'}: ${getOperatorDisplayText(constraint.operator)} ${constraint.value}`;
+
+          if (constraint.operator === 'btw' && constraint.value.includes(',')) {
+            const [num1, num2] = constraint.value.split(',').map(Number);
+            constraintName = `${layer ? layer.name : 'Unknown Layer'}: ${Math.min(num1, num2)}-${Math.max(num1, num2)}`;
+          }
+
+          if (layer) {
+            this.dataLayerState.addSelectedLayer(layer);
+          }
+
+          return { ...constraint, name: constraintName };
+        }
+      );
+
+      this.selectedConstraints$.next(namedConstraints);
+    });
+  }
+
   constructor(
     private dialog: MatDialog,
     private mapModuleService: MapModuleService,
     private moduleService: ModuleService,
     private scenarioState: ScenarioState,
+    private newScenarioState: NewScenarioState,
     private planState: PlanState,
     private dataLayerState: DataLayersStateService,
     @Host() @SkipSelf() private parentContainer: ControlContainer
@@ -132,25 +182,15 @@ export class AdvStandLevelConstraintsComponent
       });
   }
 
-  // TODO: this may not be the right approach
-  ngOnChanges(changes: SimpleChanges): void {
-    if (
-      changes['namedConstraints'] &&
-      changes['namedConstraints'].currentValue
-    ) {
-      const incoming = changes['namedConstraints'].currentValue;
-      this.selectedConstraints$.next(incoming);
-      this.form.controls.constraints.setValue(incoming);
-    }
-  }
-
   ngOnInit(): void {
     // Directly attach to the parent form
     this.parentFormGroup.addControl(this.keyName, this.form);
 
+    // keep form control in sync with selectedConstraints$
     this.selectedConstraints$
       .pipe(takeUntil(this.destroy$))
       .subscribe((constraints) => {
+        console.log('constrainsts have changed', constraints);
         this.form.controls.constraints.setValue(constraints);
       });
   }

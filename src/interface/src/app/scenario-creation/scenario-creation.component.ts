@@ -329,6 +329,7 @@ export class ScenarioCreationComponent implements OnInit {
           return of(false);
         }
         this.config = { ...this.config, ...data };
+        console.log('here is the config we are setting:', this.config);
         this.newScenarioState.setScenarioConfig(this.config);
         return this.savePatch(data).pipe(catchError(() => of(false)));
       }),
