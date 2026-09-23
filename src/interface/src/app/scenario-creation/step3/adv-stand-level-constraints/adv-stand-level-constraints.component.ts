@@ -27,10 +27,8 @@ import { ControlContainer, FormControl, FormGroup } from '@angular/forms';
 import {
   BehaviorSubject,
   combineLatest,
-  // catchError,
   map,
   Observable,
-  // of,
   shareReplay,
   startWith,
   Subject,
@@ -134,11 +132,10 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     // just the configured constraints that match the known Adv Stand Level Constraint layers
     combineLatest([
       //TODO: are we getting draft separately from the config?
-      this.newScenarioState.scenarioConfig$.pipe(take(1)),
+      this.newScenarioState.advStandLevelConstraints$,
       this.constraintLayers$.pipe(take(1)),
-    ]).subscribe(([config, layers]) => {
-      const constraints = config?.constraints;
-      console.log('what is the config constraints now?', constraints);
+    ]).subscribe(([constraints, layers]) => {
+      console.log('what is the draft constraints now?', constraints);
 
       if (!constraints) {
         this.selectedConstraints$.next([]);

@@ -83,14 +83,26 @@ export class NewScenarioState {
       ids.length === 0
         ? of<DataLayer[]>([])
         : this.dataLayersService.getDataLayersByIds(ids).pipe(
-            map((layers) => layers ?? ([] as DataLayer[])),
-            catchError((error) => {
-              console.error('Error fetching data layers:', error);
-              return of<DataLayer[]>([]);
-            })
-          )
+          map((layers) => layers ?? ([] as DataLayer[])),
+          catchError((error) => {
+            console.error('Error fetching data layers:', error);
+            return of<DataLayer[]>([]);
+          })
+        )
     ),
     shareReplay(1)
+  );
+
+  // TODO: actually, do this instead for the advSLCConstraints
+  public advStandLevelConstraints$ = this.scenarioConfig$.pipe(
+    map((config) => {
+      const draft = config as Partial<ScenarioDraftConfiguration>;
+      if (draft.adv_constraints && draft.adv_constraints.length > 0) {
+        return draft.adv_constraints;
+      } else {
+        return [];
+      }
+    }), shareReplay(1)
   );
 
   public prioritiesDetails$ = this.scenarioConfig$.pipe(
@@ -141,12 +153,12 @@ export class NewScenarioState {
       ids.length === 0
         ? of<DataLayer[]>([])
         : this.dataLayersService.getDataLayersByIds(ids).pipe(
-            map((layers) => layers ?? ([] as DataLayer[])),
-            catchError((error) => {
-              console.error('Error fetching data layers:', error);
-              return of<DataLayer[]>([]);
-            })
-          )
+          map((layers) => layers ?? ([] as DataLayer[])),
+          catchError((error) => {
+            console.error('Error fetching data layers:', error);
+            return of<DataLayer[]>([]);
+          })
+        )
     ),
     shareReplay(1)
   );
@@ -219,8 +231,8 @@ export class NewScenarioState {
       step === null
         ? of(true)
         : this.availableStands$.pipe(
-            map((s) => (Math.floor(s?.summary?.treatable_area) ?? 0) > 0)
-          )
+          map((s) => (Math.floor(s?.summary?.treatable_area) ?? 0) > 0)
+        )
     ),
     distinctUntilChanged(),
     shareReplay(1)

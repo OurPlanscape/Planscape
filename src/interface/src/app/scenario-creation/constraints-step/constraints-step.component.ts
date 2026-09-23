@@ -97,18 +97,8 @@ export class ConstraintsStepComponent extends StepDirective<ScenarioDraftConfigu
     // ensure that priority_objective layers are unselectable
     this.dataLayersStateService.clearUnselectableLayers();
     this.newScenarioState.scenarioConfig$.pipe(take(1)).subscribe((config) => {
-      const draft = config as Partial<ScenarioDraftConfiguration>;
-
-      console.log('this is what draft is now:', draft);
-      const priorityIds = (draft.priorities ?? []).map((p) => p.datalayer);
-      if (priorityIds && priorityIds.length > 0) {
-        this.dataLayersStateService.setUnselectableLayers(
-          priorityIds,
-          'PRIORITY_OBJECTIVE'
-        );
-      }
     });
-    // send this to the children? or just send the values down as observables?
+    // trigger child component refresh
     this.advConstraintsComponent.mapConfigToUI();
   }
 
