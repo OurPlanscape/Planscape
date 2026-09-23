@@ -1,10 +1,10 @@
 <div class="upload-form-heading">Upload Area</div>
-<sg-modal-info
-  leadingIcon="error"
-  infoType="error"
-  *ngIf="uploadFormError"
-  [message]="uploadFormError"></sg-modal-info>
 <div class="upload-form-body">
+  <sg-modal-info
+    leadingIcon="error"
+    infoType="error"
+    *ngIf="uploadFormError"
+    [message]="uploadFormError"></sg-modal-info>
   <div class="upload-form-title">Upload a planning area</div>
   <form [formGroup]="uploadPlanningAreaForm!" class="upload-scenario-form">
     <sg-file-upload

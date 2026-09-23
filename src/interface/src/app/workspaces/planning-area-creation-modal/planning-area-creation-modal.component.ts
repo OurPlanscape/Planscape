@@ -20,7 +20,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { PlanService } from '@app/services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@app/shared';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { getPlanPath } from '@app/plan/plan-helpers';
 import { ShapefileParserService } from '@app/services/shapefile-parser.service';
 
 @Component({
@@ -60,6 +61,7 @@ export class PlanningAreaCreationModalComponent {
   geometry: any = null;
 
   private route: ActivatedRoute = inject(ActivatedRoute);
+  private router: Router = inject(Router);
   private shapefileParser = inject(ShapefileParserService);
 
   workspaceId = this.route.snapshot.data['workspaceId'];
@@ -103,9 +105,10 @@ export class PlanningAreaCreationModalComponent {
           workspace: this.data.workspaceId,
         })
         .subscribe({
-          next: () => {
-            this.dialogRef.close(true);
+          next: (plan) => {
+            this.dialogRef.close(plan.id);
             this.submitting = false;
+            this.goToPlanningArea(plan.id);
           },
           error: (e) => {
             // Planning area name already exist
@@ -122,6 +125,14 @@ export class PlanningAreaCreationModalComponent {
           },
         });
     }
+  }
+
+  // Same destination as the draw flow, so both end on the dashboard
+  private goToPlanningArea(planId: number) {
+    this.router.navigate(
+      [getPlanPath(planId, this.router.routerState.snapshot.root)],
+      { state: { planningAreaCreated: 'uploaded' } }
+    );
   }
 
   async convertToGeoJson(file: File) {

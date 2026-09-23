@@ -31,6 +31,17 @@ from modules.serializers import (
 RunnableItem = Union[PlanningArea, Scenario]
 
 
+def with_datalayer_option_relations(
+    queryset: QuerySet[DataLayer],
+) -> QuerySet[DataLayer]:
+    return queryset.select_related(
+        "organization",
+        "dataset",
+        "dataset__organization",
+        "category",
+    ).prefetch_related("styles")
+
+
 class BaseModule:
     name = "BASE"
 
@@ -112,11 +123,15 @@ class ForsysModule(BaseModule):
 
     def _get_options(self, **kwargs):
         options = super()._get_options(**kwargs)
-        inclusions = DataLayer.objects.all().by_meta_capability(
-            TreatmentGoalUsageType.INCLUSION_ZONE
+        inclusions = with_datalayer_option_relations(
+            DataLayer.objects.all().by_meta_capability(
+                TreatmentGoalUsageType.INCLUSION_ZONE
+            )
         )
-        exclusions = DataLayer.objects.all().by_meta_capability(
-            TreatmentGoalUsageType.EXCLUSION_ZONE
+        exclusions = with_datalayer_option_relations(
+            DataLayer.objects.all().by_meta_capability(
+                TreatmentGoalUsageType.EXCLUSION_ZONE
+            )
         )
         slope = DataLayer.objects.all().by_meta_name("slope")
         distance_from_roads = DataLayer.objects.all().by_meta_name(
@@ -291,7 +306,7 @@ class PrioritizeSubUnitsModule(BaseModule):
     def _get_options(self, **kwargs):
         user = kwargs.get("user")
         options = super()._get_options(**kwargs)
-        sub_units_layers = (
+        sub_units_layers = with_datalayer_option_relations(
             DataLayer.objects.all()
             .accessible_by(user)
             .by_meta_module(self.name)
@@ -350,10 +365,8 @@ class AdvancedStandLevelConstraintModule(BaseModule):
         geometry: Optional[GEOSGeometry] = None,
         user: Optional[User] = None,
     ) -> List[DataLayer]:
-        queryset = (
+        queryset = with_datalayer_option_relations(
             self._get_datalayers_queryset(geometry=geometry, user=user)
-            .select_related("organization", "dataset", "category")
-            .prefetch_related("styles")
         )
         return list(queryset)
 
@@ -387,5 +400,5 @@ MODULE_HANDLERS = {
     "climate_foresight": ClimateForesightModule(),
     "prioritize_sub_units": PrioritizeSubUnitsModule(),
     "funding_report": FundingReportModule(),
-    "advanced_stand_level_constraint": AdvancedStandLevelConstraintModule()
+    "advanced_stand_level_constraint": AdvancedStandLevelConstraintModule(),
 }

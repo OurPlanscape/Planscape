@@ -8,7 +8,7 @@ import {
   tick,
 } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { BehaviorSubject, of, Subject } from 'rxjs';
 import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { POLLING_INTERVAL } from '@plan/plan-helpers';
@@ -398,8 +398,23 @@ describe('ScenariosListComponent should support various modes', () => {
       component.navigateToScenario(scenario);
 
       expect(routerSpy.navigate).toHaveBeenCalledWith([
-        '/plan',
-        mockPlan$.value.id,
+        `/plan/${mockPlan$.value.id}`,
+        'scenario',
+        scenario.id,
+      ]);
+    });
+
+    it('keeps the workspace prefix when nested under a workspace', () => {
+      (TestBed.inject(ActivatedRoute).snapshot as any).pathFromRoot = [
+        { paramMap: convertToParamMap({ workspaceId: '7' }) },
+      ];
+      fixture.detectChanges();
+      const scenario = { ...makeScenario(1), planning_area: 1 } as ScenarioRow;
+
+      component.navigateToScenario(scenario);
+
+      expect(routerSpy.navigate).toHaveBeenCalledWith([
+        `/workspace/7/plan/${mockPlan$.value.id}`,
         'scenario',
         scenario.id,
       ]);
@@ -415,8 +430,7 @@ describe('ScenariosListComponent should support various modes', () => {
       component.navigateToScenario(scenario);
 
       expect(routerSpy.navigate).toHaveBeenCalledWith([
-        '/plan',
-        mockPlan$.value.id,
+        `/plan/${mockPlan$.value.id}`,
         'scenario',
         scenario.id,
       ]);

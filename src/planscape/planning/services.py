@@ -354,7 +354,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
                 "origin": scenario.origin,
                 "treatment_goal_id": treatment_goal.pk if treatment_goal else None,
                 "treatment_goal_category": (
-                    treatment_goal.category if treatment_goal else None
+                    treatment_goal.category.name if treatment_goal and treatment_goal.category else None
                 ),
                 "treatment_goal_name": treatment_goal.name if treatment_goal else None,
                 "email": user.email if user else None,
@@ -500,7 +500,8 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
     ]
     if not project_areas:
         raise ValueError(
-            "None of the uploaded project areas overlap the selected planning area."
+            "Upload was unsuccessful. The uploaded geometry is not within the "
+            "selected planning area."
         )
     result = {
         "type": "FeatureCollection",
@@ -1079,7 +1080,9 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
         properties={
             "origin": scenario.origin,
             "treatment_goal_id": tx_goal.pk if tx_goal else None,
-            "treatment_goal_category": (tx_goal.category if tx_goal else None),
+            "treatment_goal_category": (
+                tx_goal.category.name if tx_goal and tx_goal.category else None
+            ),
             "treatment_goal_name": (tx_goal.name if tx_goal else None),
             "email": user.email if user else None,
         },
@@ -1247,7 +1250,10 @@ def _get_datalayers_id_lookup_table(scenario):
 
 
 def _get_sub_units_lookup_table(scenario: Scenario) -> dict[int, Any] | None:
-    if scenario.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
+    if (
+        scenario.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        and not is_project_areas_child(scenario)
+    ):
         return None
     geojson = get_flatten_geojson(scenario)
     ret = {}
@@ -1342,8 +1348,12 @@ def export_scenario_stand_outputs_to_geopackage(
     scenario_outputs = {}
     dl_lookup = _get_datalayers_id_lookup_table(scenario)
     stand_size = scenario.get_stand_size()
+    is_sub_units = (
+        scenario.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        and not is_project_areas_child(scenario)
+    )
 
-    sub_units_lookup_table = _get_sub_units_lookup_table(scenario=scenario)
+    sub_units_lookup_table = _get_sub_units_lookup_table(scenario=scenario) if is_sub_units else None
 
     with open(stnd_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
@@ -1356,13 +1366,16 @@ def export_scenario_stand_outputs_to_geopackage(
                     case "DoTreat", "selected":
                         properties[key] = bool(int(value))
                     case "sub_unit_id":
-                        properties[key] = int(value)
-                        if sub_units_lookup_table:
-                            properties["treatment_rank"] = (
-                                sub_units_lookup_table.get(int(value), {})
-                                .get("properties", {})
-                                .get("treatment_rank")
-                            )
+                        if is_sub_units:
+                            properties[key] = int(value)
+                            if sub_units_lookup_table:
+                                properties["treatment_rank"] = (
+                                    sub_units_lookup_table.get(int(value), {})
+                                    .get("properties", {})
+                                    .get("treatment_rank")
+                                )
+                        else:
+                            properties["proj_id"] = int(value)
                     case _:
                         try:
                             f = float(value)
@@ -1608,10 +1621,13 @@ def export_scenario_sub_units_outputs_to_geopackage(
 ) -> None:
     geojson = get_flatten_geojson(scenario)
 
-    # rename proj_id to subunit_id on schema
+    is_child_scenario = is_project_areas_child(scenario)
+    
     schema_geojson = copy.deepcopy(geojson)
-    proj_id = schema_geojson["features"][0]["properties"].pop("proj_id")
-    proj_id = schema_geojson["features"][0]["properties"]["subunit_id"] = proj_id
+    if not is_child_scenario:
+        # rename proj_id to subunit_id on schema
+        proj_id = schema_geojson["features"][0]["properties"].pop("proj_id")
+        proj_id = schema_geojson["features"][0]["properties"]["subunit_id"] = proj_id
 
     weighting_data = get_weighing_from_input(stand_inputs)
 
@@ -1624,7 +1640,7 @@ def export_scenario_sub_units_outputs_to_geopackage(
     project_areas = None
     sub_units = None
 
-    if is_project_areas_child(scenario):
+    if is_child_scenario:
         project_areas = scenario.parent.project_areas.all()
     else:
         sub_units_layer_id = scenario.configuration.get("sub_units_layer")
@@ -1646,9 +1662,13 @@ def export_scenario_sub_units_outputs_to_geopackage(
                 allow_unsupported_drivers=True,
             ) as out:
                 for feature in geojson.get("features", []):
-                    # rename proj_id to subunit_id on features
-                    proj_id = feature["properties"].pop("proj_id")
-                    feature["properties"]["subunit_id"] = proj_id
+                    if is_child_scenario:
+                        proj_id = feature["properties"].get("proj_id")
+                    else:
+                        # rename proj_id to subunit_id on features
+                        proj_id = feature["properties"].pop("proj_id")
+                        feature["properties"]["subunit_id"] = proj_id
+
                     feature["properties"] = {**feature["properties"], **weighting_data}
                     if project_areas is not None:
                         source_area = project_areas.get(pk=proj_id)

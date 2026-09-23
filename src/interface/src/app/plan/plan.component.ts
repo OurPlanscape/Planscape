@@ -17,6 +17,9 @@ import { PlanState } from './plan.state';
 import { ScenarioState } from '@scenario/scenario.state';
 import { canAddScenario } from './permissions';
 import {
+  getPlanPath,
+  getWorkspaceId,
+  PlanningAreaCreationOrigin,
   planningAreaMetricsAreReady,
   planningAreaMetricsFailed,
   POLLING_INTERVAL,
@@ -69,11 +72,12 @@ export class PlanComponent implements OnInit {
         next: (plan) => {
           this.loadingPlan = false;
 
-          // Setting up breadcrumbs
-          this.breadcrumbService.updateBreadCrumb({
-            label: 'Home',
-            backUrl: '/home',
-          });
+          const workspaceId = getWorkspaceId(this.route.snapshot);
+          this.breadcrumbService.updateBreadCrumb(
+            workspaceId
+              ? { label: 'Workspace', backUrl: `/workspace/${workspaceId}` }
+              : { label: 'Home', backUrl: '/home' }
+          );
         },
         error: () => {
           this.planNotFound = true;
@@ -81,6 +85,7 @@ export class PlanComponent implements OnInit {
       });
 
     this.checkForInProgressModal();
+    this.checkForPlanningAreaCreatedModal();
   }
 
   ngOnInit() {
@@ -89,7 +94,7 @@ export class PlanComponent implements OnInit {
   }
 
   backToOverview() {
-    this.router.navigate(['plan', this.planId]);
+    this.router.navigate([getPlanPath(this.planId!, this.route.snapshot)]);
   }
 
   //notes handling functions
@@ -174,15 +179,43 @@ export class PlanComponent implements OnInit {
   }
 
   private checkForInProgressModal() {
-    const nav = this.router.getCurrentNavigation();
-    let flag = nav?.extras.state?.['showInProgressModal'];
-
-    if (flag) {
+    if (this.consumeNavState('showInProgressModal')) {
       this.showInProgressModal();
-      // Clear so it won't persist on refresh/back
-      const { showInProgressModal, ...rest } = history.state ?? {};
+    }
+  }
+
+  private checkForPlanningAreaCreatedModal() {
+    const origin: PlanningAreaCreationOrigin | undefined = this.consumeNavState(
+      'planningAreaCreated'
+    );
+
+    if (origin) {
+      this.showPlanningAreaCreatedModal(origin);
+    }
+  }
+
+  // Reads a one time navigation flag, clearing it so it won't persist on refresh/back
+  private consumeNavState(key: string) {
+    const value = this.router.getCurrentNavigation()?.extras.state?.[key];
+
+    if (value) {
+      const { [key]: _, ...rest } = history.state ?? {};
       history.replaceState(rest, document.title);
     }
+    return value;
+  }
+
+  private showPlanningAreaCreatedModal(origin: PlanningAreaCreationOrigin) {
+    this.dialog.open(SuccessDialogComponent, {
+      data: {
+        headline:
+          origin === 'uploaded'
+            ? 'Your Planning Area Has Been Uploaded Successfully'
+            : 'Your Planning Area Has Been Created Successfully',
+        message:
+          'Welcome to your Planning Area Overview, where you can add project areas, run planning area tools, and manage data.',
+      },
+    });
   }
 
   private showInProgressModal() {

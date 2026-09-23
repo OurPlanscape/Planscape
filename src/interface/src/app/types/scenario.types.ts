@@ -171,7 +171,6 @@ export interface ScenarioGoal {
   description: string;
   priorities: string[];
   category: string;
-  category_text: string;
   group: string;
   group_text: string;
 }

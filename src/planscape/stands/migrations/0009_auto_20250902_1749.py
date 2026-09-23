@@ -1,6 +1,10 @@
+import logging
+
 from django.contrib.gis.db.models.functions import Centroid, GeoHash, Transform
 from django.db import migrations
 from django.db.models import F
+
+logger = logging.getLogger(__name__)
 
 DROP_INDEX = """
 DROP INDEX CONCURRENTLY IF EXISTS
@@ -37,9 +41,9 @@ def forwards(apps, schema_editor):
 
         total += len(batch_pks)
         last_pk = batch_pks[-1]
-        print(f"[grid_key] updated so far: {total}")
+        logger.info(f"[grid_key] updated so far: {total}")
 
-    print(f"[grid_key] done. total updated: {total}")
+    logger.info(f"[grid_key] done. total updated: {total}")
 
 
 class Migration(migrations.Migration):

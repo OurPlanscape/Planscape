@@ -29,6 +29,45 @@ import {
 import { TreatmentEffectsHomeComponent } from './treatments/treatment-effects-home/treatment-effects-home.component';
 import { workspaceLoaderResolver } from './resolvers/workspace-loader.resolver';
 
+const planRoutes: Routes = [
+  {
+    path: 'plan',
+
+    loadChildren: () => import('@plan/plan.module').then((m) => m.PlanModule),
+  },
+  {
+    path: 'plan/:planId/scenario',
+    resolve: {
+      planId: planLoaderResolver,
+    },
+
+    loadChildren: () =>
+      import('@scenario/scenario.module').then((m) => m.ScenarioModule),
+  },
+  {
+    path: 'plan/:planId/scenario/:scenarioId/treatment',
+    pathMatch: 'full',
+    canActivate: [AuthGuard],
+    resolve: {
+      planInit: planLoaderResolver,
+      scenarioInit: scenarioLoaderResolver,
+    },
+    component: TreatmentEffectsHomeComponent,
+  },
+  {
+    // follow the route structure of plan, but without nesting modules and components
+    path: 'plan/:planId/scenario/:scenarioId/treatment/:treatmentId',
+    canActivate: [AuthGuard],
+    resolve: {
+      planInit: planLoaderResolver,
+      treatmentId: numberResolver('treatmentId', ''),
+      scenarioInit: scenarioLoaderResolver,
+    },
+    loadChildren: () =>
+      import('@treatments/treatments.module').then((m) => m.TreatmentsModule),
+  },
+];
+
 const routes: Routes = [
   {
     path: '',
@@ -97,6 +136,15 @@ const routes: Routes = [
           import(
             '@app/workspaces/workspace-dashboard/workspace-dashboard.component'
           ).then((m) => m.WorkspaceDashboardComponent),
+      },
+      {
+        // The same plan, scenario and treatment pages, reached from a workspace.
+        path: 'workspace/:workspaceId',
+        canMatch: [createFeatureMatchGuard('WORKSPACES')],
+        resolve: {
+          workspaceId: workspaceLoaderResolver,
+        },
+        children: planRoutes,
       },
       {
         path: 'signup',
@@ -175,6 +223,7 @@ const routes: Routes = [
           ),
         resolve: {
           planInit: planResetResolver,
+          workspaceId: workspaceLoaderResolver,
         },
       },
       {
@@ -211,45 +260,7 @@ const routes: Routes = [
           externalUrl: 'https://www.forsysplanning.org/',
         },
       },
-      {
-        path: 'plan',
-
-        loadChildren: () =>
-          import('@plan/plan.module').then((m) => m.PlanModule),
-      },
-      {
-        path: 'plan/:planId/scenario',
-        resolve: {
-          planId: planLoaderResolver,
-        },
-
-        loadChildren: () =>
-          import('@scenario/scenario.module').then((m) => m.ScenarioModule),
-      },
-      {
-        path: 'plan/:planId/scenario/:scenarioId/treatment',
-        pathMatch: 'full',
-        canActivate: [AuthGuard],
-        resolve: {
-          planInit: planLoaderResolver,
-          scenarioInit: scenarioLoaderResolver,
-        },
-        component: TreatmentEffectsHomeComponent,
-      },
-      {
-        // follow the route structure of plan, but without nesting modules and components
-        path: 'plan/:planId/scenario/:scenarioId/treatment/:treatmentId',
-        canActivate: [AuthGuard],
-        resolve: {
-          planInit: planLoaderResolver,
-          treatmentId: numberResolver('treatmentId', ''),
-          scenarioInit: scenarioLoaderResolver,
-        },
-        loadChildren: () =>
-          import('@treatments/treatments.module').then(
-            (m) => m.TreatmentsModule
-          ),
-      },
+      ...planRoutes,
       {
         path: 'funding-report/:id',
         title: 'Funding Opportunity Report',
