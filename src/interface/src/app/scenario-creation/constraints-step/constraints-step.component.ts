@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {
   AdvStandLevelConstraintData,
@@ -48,20 +48,12 @@ interface ConstraintsParentForm {
     { provide: StepDirective, useExisting: ConstraintsStepComponent },
   ],
 })
-export class ConstraintsStepComponent
-  extends StepDirective<ScenarioDraftConfiguration>
-  implements OnInit
-{
+export class ConstraintsStepComponent extends StepDirective<ScenarioDraftConfiguration> {
   @ViewChild('advConstraintsComponent')
   advConstraintsComponent!: AdvStandLevelConstraintsComponent;
 
   readonly form = new FormGroup<ConstraintsParentForm>({
-    standLevelConstraints: new FormGroup({
-      max_slope: new FormControl<number | null>(null),
-      min_distance_from_road: new FormControl<number | null>(null),
-    }),
-    // Note, the child form adds the advStandLevelConstraints dynamically,
-    //  since we're honoring ADV_STAND_LEVEL_CONSTRAINTS flag as an option.
+    // Note, the child forms add the other fields dynamically
   });
 
   constraintLayers$: Observable<DataLayer[]> = this.moduleService
@@ -73,10 +65,6 @@ export class ConstraintsStepComponent
         return data.options.datalayers;
       })
     );
-
-  ngOnInit(): void {
-    //
-  }
 
   constructor(
     private moduleService: ModuleService,
@@ -104,7 +92,6 @@ export class ConstraintsStepComponent
   }
 
   override beforeStepLoad() {
-    console.log('here, we call before step load again');
     this.dataLayersStateService.updateSelectedLayers([]);
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
     // ensure that priority_objective layers are unselectable

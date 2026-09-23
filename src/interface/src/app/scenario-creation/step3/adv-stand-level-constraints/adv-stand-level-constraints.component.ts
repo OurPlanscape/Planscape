@@ -114,12 +114,26 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     return this.knownLayers.find((layer) => layer.id === id) ?? null;
   }
 
+  // TODO: move to a helper?
+  private getConstraintDisplayName(
+    constraint: Constraint,
+    layer: DataLayer | undefined
+  ): string {
+    const layerName = layer ? layer.name : 'Unknown Layer';
+    if (constraint.operator === 'btw' && constraint.value.includes(',')) {
+      const [num1, num2] = constraint.value.split(',').map(Number);
+      return `${layerName}: ${Math.min(num1, num2)}-${Math.max(num1, num2)}`;
+    }
+    return `${layerName}: ${getOperatorDisplayText(constraint.operator)} ${constraint.value}`;
+  }
+
   // update UI of this component when the step loads,
   // not eagerly on onInit
   mapConfigToUI() {
     // here, we filter out layers from constraintLayers to find
     // just the configured constraints that match the known Adv Stand Level Constraint layers
     combineLatest([
+      //TODO: are we getting draft separately from the config?
       this.newScenarioState.scenarioConfig$.pipe(take(1)),
       this.constraintLayers$.pipe(take(1)),
     ]).subscribe(([config, layers]) => {
@@ -130,29 +144,26 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
         this.selectedConstraints$.next([]);
         return;
       }
-
-      const namedConstraints: NamedConstraint[] = constraints.map(
-        (constraint: Constraint) => {
+      // only collect constraints where we find a match in the subset of Adv Constraint Layers
+      const namedConstraints: NamedConstraint[] = constraints.reduce(
+        (acc: NamedConstraint[], constraint: Constraint) => {
           const layer = layers.find(
             (l: DataLayer) => l.id === constraint.datalayer
           );
 
-          //TODO: decompose this
-          let constraintName = `${layer ? layer.name : 'Unknown Layer'}: ${getOperatorDisplayText(constraint.operator)} ${constraint.value}`;
-
-          if (constraint.operator === 'btw' && constraint.value.includes(',')) {
-            const [num1, num2] = constraint.value.split(',').map(Number);
-            constraintName = `${layer ? layer.name : 'Unknown Layer'}: ${Math.min(num1, num2)}-${Math.max(num1, num2)}`;
-          }
-
           if (layer) {
             this.dataLayerState.addSelectedLayer(layer);
+
+            acc.push({
+              ...constraint,
+              name: this.getConstraintDisplayName(constraint, layer),
+            });
           }
 
-          return { ...constraint, name: constraintName };
-        }
+          return acc;
+        },
+        []
       );
-
       this.selectedConstraints$.next(namedConstraints);
     });
   }
@@ -190,7 +201,6 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     this.selectedConstraints$
       .pipe(takeUntil(this.destroy$))
       .subscribe((constraints) => {
-        console.log('constrainsts have changed', constraints);
         this.form.controls.constraints.setValue(constraints);
       });
   }
