@@ -49,41 +49,43 @@
           </mat-menu>
         </ng-container>
       </div>
-      <ng-container *ngIf="baseLayerUrl$ | async as baseLayerUrl">
-        <ng-container
-          *ngFor="let planning of planningAreas; trackBy: trackById">
-          <sg-planning-area-card
-            *ngIf="planning"
-            [planningArea]="planning"
-            [link]="['/workspace', workspaceId, 'plan', planning.id]"
-            (afterDelete)="reload()"
-            (afterRename)="reload()">
-            <div mapSlot class="map">
-              <mgl-map
-                [style]="baseLayerUrl"
-                [transformRequest]="transformRequest"
-                [maxZoom]="maxZoom"
-                [minZoom]="minZoom"
-                [fitBounds]="planning.bbox"
-                [dragRotate]="false"
-                [dragPan]="false"
-                [scrollZoom]="false"
-                [doubleClickZoom]="false"
-                [touchZoomRotate]="false"
-                [keyboard]="false"
-                [attributionControl]="false"
-                [fitBoundsOptions]="{
-                  padding: 8,
-                }"
-                (mapError)="onMapError($event)">
-                <app-planning-area-layer
-                  mapSlot
-                  [planId]="planning.id"></app-planning-area-layer>
-              </mgl-map>
-            </div>
-          </sg-planning-area-card>
+      <div class="planning-list">
+        <ng-container *ngIf="baseLayerUrl$ | async as baseLayerUrl">
+          <ng-container
+            *ngFor="let planning of planningAreas; trackBy: trackById">
+            <sg-planning-area-card
+              *ngIf="planning"
+              [planningArea]="planning"
+              [link]="['/workspace', workspaceId, 'plan', planning.id]"
+              (afterDelete)="reload()"
+              (afterRename)="reload()">
+              <div mapSlot class="map">
+                <mgl-map
+                  [style]="baseLayerUrl"
+                  [transformRequest]="transformRequest"
+                  [maxZoom]="maxZoom"
+                  [minZoom]="minZoom"
+                  [fitBounds]="planning.bbox"
+                  [dragRotate]="false"
+                  [dragPan]="false"
+                  [scrollZoom]="false"
+                  [doubleClickZoom]="false"
+                  [touchZoomRotate]="false"
+                  [keyboard]="false"
+                  [attributionControl]="false"
+                  [fitBoundsOptions]="{
+                    padding: 8,
+                  }"
+                  (mapError)="onMapError($event)">
+                  <app-planning-area-layer
+                    mapSlot
+                    [planId]="planning.id"></app-planning-area-layer>
+                </mgl-map>
+              </div>
+            </sg-planning-area-card>
+          </ng-container>
         </ng-container>
-      </ng-container>
+      </div>
       <div class="planning-footer">
         <ng-container *ngIf="pages$ | async as pages">
           <sg-paginator
