@@ -3,14 +3,6 @@
     formGroupName="standLevelConstraints"
     keyName="standLevelConstraints"></app-stand-level-constraints>
 
-<!-- TODO: just debugging here -->
-  <div *ngIf="selectedAdvStandLevelConstraints$ | async as advSLCLayers">
-    <div *ngFor="let layer of advSLCLayers">
-      {{layer.name }} {{ layer.operator }} {{ layer.value }}
-    </div> 
-
-  </div>
-
   <app-adv-stand-level-constraints
     formGroupName="advStandLevelConstraints"
     [constraintLayers]="constraintLayers$ | async"

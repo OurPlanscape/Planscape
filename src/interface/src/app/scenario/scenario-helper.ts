@@ -2,6 +2,8 @@ import { isNumber } from '@turf/helpers';
 import {
   Capabilities,
   Constraint,
+  CONSTRAINT_OPERATOR,
+  CONSTRAINT_OPERATOR_MAP,
   PLANNING_APPROACH,
   Scenario,
   SCENARIO_TYPE,
@@ -128,14 +130,13 @@ export function convertOldConfigurationToV3Payload(
   }
   // Map the adv stand level constraints to constraints array
   if (formData.adv_constraints) {
-    formData.adv_constraints.map((c => {
+    formData.adv_constraints.map((c) => {
       constraints.push({
         datalayer: c.datalayer,
         operator: c.operator,
         value: c.value,
-        value2: c.value2
-    })
-    }))
+      });
+    });
   }
 
   if (constraints.length > 0) {
@@ -272,4 +273,9 @@ export function arrayHasChanged(source: number[], compare: number[]): boolean {
     source.some((item, index) => item !== compare[index]);
 
   return hasChanged;
+}
+
+export function getOperatorDisplayText(operator: CONSTRAINT_OPERATOR): string {
+  const def = CONSTRAINT_OPERATOR_MAP.get(operator);
+  return def?.symbol ? def.symbol : operator;
 }

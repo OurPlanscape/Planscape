@@ -65,7 +65,9 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   templateUrl: './adv-stand-level-constraints.component.html',
   styleUrl: './adv-stand-level-constraints.component.scss',
 })
-export class AdvStandLevelConstraintsComponent implements OnChanges, OnInit, OnDestroy {
+export class AdvStandLevelConstraintsComponent
+  implements OnChanges, OnInit, OnDestroy
+{
   selectedConstraints$ = new BehaviorSubject<NamedConstraint[]>([]);
   private readonly destroy$ = new Subject<void>();
 
@@ -115,7 +117,6 @@ export class AdvStandLevelConstraintsComponent implements OnChanges, OnInit, OnD
     private dataLayerState: DataLayersStateService,
     @Host() @SkipSelf() private parentContainer: ControlContainer
   ) {
-
     this.scenarioState.currentScenario$
       .pipe(
         take(1),
@@ -133,9 +134,13 @@ export class AdvStandLevelConstraintsComponent implements OnChanges, OnInit, OnD
 
   // TODO: this may not be the right approach
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['namedConstraints'] && changes['namedConstraints'].currentValue) {
+    if (
+      changes['namedConstraints'] &&
+      changes['namedConstraints'].currentValue
+    ) {
       const incoming = changes['namedConstraints'].currentValue;
       this.selectedConstraints$.next(incoming);
+      this.form.controls.constraints.setValue(incoming);
     }
   }
 
