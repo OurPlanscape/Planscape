@@ -17,7 +17,7 @@
   flex-shrink: 0;
 
   width: 100%;
-  padding: 16px;
+  padding: 0;
   gap: 8px;
 
   box-sizing: border-box;
@@ -31,6 +31,9 @@
     font-size: 18px;
     font-weight: 600;
   }
+
+  padding: 0;
+  margin-bottom: 8px;
 
   @include on-small() {
     flex-direction: column-reverse;
@@ -54,10 +57,25 @@
   gap: 16px;
 
   box-sizing: border-box;
-  overflow-y: auto;
 
   // The page scrolls on small, so the list grows instead of scrolling inside a
   // zero-basis flex item that collapses in an auto-height card.
+  @include on-small() {
+    flex: 0 0 auto;
+  }
+}
+
+// Scrolls between the fixed header and footer.
+.planning-list {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+
+  min-height: 0;
+  gap: 16px;
+
+  overflow-y: auto;
+
   @include on-small() {
     flex: 0 0 auto;
     overflow-y: visible;
@@ -85,8 +103,9 @@
 }
 
 .map {
-  width: 80px;
-  height: 80px;
+  // 84px + the card's 16px vertical padding is the 116px card height in the design
+  width: 84px;
+  height: 84px;
   flex-shrink: 0;
 
   border-radius: 8px;
