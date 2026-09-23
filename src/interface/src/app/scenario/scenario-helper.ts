@@ -117,7 +117,7 @@ export function convertOldConfigurationToV3Payload(
     constraints.push({
       datalayer: roadLayerId,
       operator: 'lte',
-      value: formData.min_distance_from_road,
+      value: String(formData.min_distance_from_road),
     });
   }
   const slopeId = thresholdIds.get('slope');
@@ -125,7 +125,7 @@ export function convertOldConfigurationToV3Payload(
     constraints.push({
       datalayer: slopeId,
       operator: 'lt',
-      value: formData.max_slope,
+      value: String(formData.max_slope),
     });
   }
   // Map the adv stand level constraints to constraints array

@@ -137,7 +137,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
         name: `${this.data.dataLayer.name}: ${this.getOperatorDisplayText(operator)} ${formVal.constraintValueOne}`,
         datalayer: this.data.dataLayer.id,
         operator,
-        value: formVal.constraintValueOne ?? 0,
+        value: `${formVal.constraintValueOne ?? 0}`,
       };
 
       // if we have a 'btw' (Between) operator, we set different data
@@ -147,7 +147,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
         formVal.constraintValueTwo !== undefined
       ) {
         (constraintSelection.name = `${this.data.dataLayer.name}: ${formVal.constraintValueOne}-${formVal.constraintValueTwo}`),
-          (constraintSelection.value2 = formVal.constraintValueTwo);
+          (constraintSelection.value = `${formVal.constraintValueOne},${formVal.constraintValueTwo}`);
       }
       this.dialogRef.close({ action: 'SAVE', payload: constraintSelection });
     }

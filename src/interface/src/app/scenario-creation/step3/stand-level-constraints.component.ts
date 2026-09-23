@@ -133,7 +133,7 @@ export class StandLevelConstraintsComponent
                 (c) => c.datalayer === data.thresholds.slope.id
               );
               if (slope) {
-                this.form.get('max_slope')?.setValue(slope.value);
+                this.form.get('max_slope')?.setValue(Number(slope.value));
               }
 
               const distance = config.constraints?.find(
@@ -142,7 +142,7 @@ export class StandLevelConstraintsComponent
               if (distance) {
                 this.form
                   .get('min_distance_from_road')
-                  ?.setValue(distance.value);
+                  ?.setValue(Number(distance.value));
               }
 
               return config;
