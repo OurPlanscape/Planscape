@@ -112,9 +112,10 @@ export class ExploreModesToggleComponent {
         .afterClosed()
         .subscribe((id) => {
           if (id) {
-            this.router.navigate([
-              getPlanPath(id, this.router.routerState.snapshot.root),
-            ]);
+            this.router.navigate(
+              [getPlanPath(id, this.router.routerState.snapshot.root)],
+              { state: { planningAreaCreated: 'drawn' } }
+            );
           }
         });
     }
