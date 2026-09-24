@@ -10,6 +10,7 @@ from datasets.models import (
     DataLayer,
     Dataset,
     VisibilityOptions,
+    get_dataset_ids_intersecting,
     validate_dataset_modules,
 )
 from datasets.tests.factories import DataLayerFactory, DatasetFactory
@@ -179,6 +180,48 @@ class DatasetByOutlineIntersectsTest(TestCase):
         result = Dataset.objects.all().by_outline_intersects(self.geometry)
 
         self.assertFalse(result.exists())
+
+
+class GetDatasetIdsIntersectingTest(TestCase):
+    def setUp(self):
+        self.geometry = GEOSGeometry(
+            "MULTIPOLYGON(((0 0, 1 0, 1 1, 0 1, 0 0)))", srid=4269
+        )
+        self.inside = GEOSGeometry(
+            "MULTIPOLYGON(((0.5 0.5, 2 0.5, 2 2, 0.5 2, 0.5 0.5)))", srid=4269
+        )
+
+    def test_reuses_cached_result_for_same_geometry(self):
+        dataset = DatasetFactory.create()
+        DataLayerFactory.create(dataset=dataset, outline=self.inside)
+
+        self.assertEqual(get_dataset_ids_intersecting(self.geometry), [dataset.id])
+        # Only the fingerprint query runs; the intersection comes from the cache.
+        with self.assertNumQueries(1):
+            self.assertEqual(
+                get_dataset_ids_intersecting(self.geometry), [dataset.id]
+            )
+
+    def test_new_datalayer_invalidates_cached_result(self):
+        first = DatasetFactory.create()
+        DataLayerFactory.create(dataset=first, outline=self.inside)
+        self.assertEqual(get_dataset_ids_intersecting(self.geometry), [first.id])
+
+        second = DatasetFactory.create()
+        DataLayerFactory.create(dataset=second, outline=self.inside)
+
+        self.assertCountEqual(
+            get_dataset_ids_intersecting(self.geometry), [first.id, second.id]
+        )
+
+    def test_deleted_datalayer_invalidates_cached_result(self):
+        dataset = DatasetFactory.create()
+        datalayer = DataLayerFactory.create(dataset=dataset, outline=self.inside)
+        self.assertEqual(get_dataset_ids_intersecting(self.geometry), [dataset.id])
+
+        datalayer.delete()
+
+        self.assertEqual(get_dataset_ids_intersecting(self.geometry), [])
 
 
 class DatasetAccessibleByTest(TestCase):

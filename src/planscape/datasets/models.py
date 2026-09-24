@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 from uuid import uuid4
@@ -19,7 +20,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator, URLValidator
-from django.db.models import Exists, Manager, OuterRef, Q
+from django.db.models import Count, Manager, Max, Q
 from django_stubs_ext.db.models import TypedModelMeta
 from organizations.models import Organization
 from treebeard.mp_tree import MP_Node
@@ -59,14 +60,7 @@ class PreferredDisplayType(models.TextChoices):
 
 class DatasetQuerySet(models.QuerySet):
     def by_outline_intersects(self, geometry: GEOSGeometry) -> models.QuerySet:
-        # EXISTS instead of a join so the database can stop at the first
-        # intersecting datalayer of each dataset, instead of testing every
-        # (possibly very detailed) outline and deduplicating afterwards.
-        intersecting_datalayers = DataLayer.objects.filter(
-            dataset=OuterRef("pk"),
-            outline__intersects=geometry,
-        )
-        return self.all().filter(Exists(intersecting_datalayers))
+        return self.all().filter(pk__in=get_dataset_ids_intersecting(geometry))
 
     def accessible_by(self, user) -> models.QuerySet:
         q = Q(visibility=VisibilityOptions.PUBLIC)
@@ -598,6 +592,39 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
                 name="datalayer_unique_constraint",
             )
         ]
+
+
+def get_dataset_ids_intersecting(geometry: GEOSGeometry) -> List[int]:
+    """
+    IDs of datasets with at least one datalayer whose outline intersects
+    `geometry`. Testing detailed outlines is expensive, so the result is cached
+    by the geometry's EWKT plus a fingerprint of the datalayers table: any
+    datalayer save or delete changes the fingerprint, invalidating the cache.
+    """
+    fingerprint = DataLayer.objects.aggregate(
+        count=Count("id"),
+        last_updated_at=Max("updated_at"),
+    )
+    return _get_dataset_ids_intersecting(
+        str(geometry),
+        fingerprint["count"],
+        fingerprint["last_updated_at"],
+    )
+
+
+@cached(timeout=settings.MODULE_DATASETS_TTL)
+def _get_dataset_ids_intersecting(
+    geometry_ewkt: str,
+    # Not used in the body: only part of the cache key.
+    datalayer_count: int,
+    datalayer_last_updated_at: Optional[datetime],
+) -> List[int]:
+    return list(
+        DataLayer.objects.filter(outline__intersects=GEOSGeometry(geometry_ewkt))
+        .order_by()
+        .values_list("dataset_id", flat=True)
+        .distinct()
+    )
 
 
 class DataLayerHasStyle(
