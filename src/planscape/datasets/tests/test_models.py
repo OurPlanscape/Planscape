@@ -2,9 +2,17 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from modules.base import MODULE_HANDLERS
+from planscape.tests.factories import UserFactory
+from workspaces.tests.factories import WorkspaceFactory
 
-from datasets.models import DataLayer, validate_dataset_modules
-from datasets.tests.factories import DataLayerFactory
+from datasets.models import (
+    Category,
+    DataLayer,
+    Dataset,
+    VisibilityOptions,
+    validate_dataset_modules,
+)
+from datasets.tests.factories import DataLayerFactory, DatasetFactory
 
 
 class GeometricIntersectionTest(TestCase):
@@ -129,3 +137,85 @@ class DataLayerModelTest(TestCase):
         datalayer = DataLayerFactory.create(metadata={})
 
         self.assertFalse(datalayer.has_module("forsys"))
+
+
+class DatasetByOutlineIntersectsTest(TestCase):
+    def setUp(self):
+        self.geometry = GEOSGeometry(
+            "MULTIPOLYGON(((0 0, 1 0, 1 1, 0 1, 0 0)))", srid=4269
+        )
+        self.inside = GEOSGeometry(
+            "MULTIPOLYGON(((0.5 0.5, 2 0.5, 2 2, 0.5 2, 0.5 0.5)))", srid=4269
+        )
+        self.outside = GEOSGeometry(
+            "MULTIPOLYGON(((5 5, 6 5, 6 6, 5 6, 5 5)))", srid=4269
+        )
+
+    def test_returns_dataset_once_when_many_datalayers_intersect(self):
+        dataset = DatasetFactory.create()
+        for i in range(3):
+            DataLayerFactory.create(
+                dataset=dataset, name=f"layer {i}", outline=self.inside
+            )
+
+        result = list(Dataset.objects.all().by_outline_intersects(self.geometry))
+
+        self.assertEqual(result, [dataset])
+
+    def test_excludes_dataset_without_intersecting_datalayers(self):
+        dataset = DatasetFactory.create()
+        DataLayerFactory.create(dataset=dataset, outline=self.outside)
+        DataLayerFactory.create(dataset=dataset, name="no outline", outline=None)
+
+        result = Dataset.objects.all().by_outline_intersects(self.geometry)
+
+        self.assertFalse(result.exists())
+
+    def test_ignores_deleted_datalayers(self):
+        dataset = DatasetFactory.create()
+        datalayer = DataLayerFactory.create(dataset=dataset, outline=self.inside)
+        datalayer.delete()
+
+        result = Dataset.objects.all().by_outline_intersects(self.geometry)
+
+        self.assertFalse(result.exists())
+
+
+class DatasetAccessibleByTest(TestCase):
+    def test_workspace_members_see_dataset_once(self):
+        owner = UserFactory.create()
+        viewer = UserFactory.create()
+        outsider = UserFactory.create()
+        workspace = WorkspaceFactory.create(
+            owner=owner,
+            collaborators=[UserFactory.create()],
+            viewers=[viewer],
+        )
+        dataset = DatasetFactory.create(
+            visibility=VisibilityOptions.PRIVATE,
+            workspace=workspace,
+        )
+
+        self.assertEqual(list(Dataset.objects.all().accessible_by(owner)), [dataset])
+        self.assertEqual(list(Dataset.objects.all().accessible_by(viewer)), [dataset])
+        self.assertFalse(Dataset.objects.all().accessible_by(outsider).exists())
+
+
+class CategoryFullPathTest(TestCase):
+    def test_returns_ancestors_and_own_name(self):
+        dataset = DatasetFactory.create()
+        root = Category.add_root(
+            organization=dataset.organization,
+            created_by=dataset.created_by,
+            dataset=dataset,
+            name="Root",
+        )
+        child = root.add_child(
+            organization=dataset.organization,
+            created_by=dataset.created_by,
+            dataset=dataset,
+            name="Child",
+        )
+
+        self.assertEqual(root._get_full_path(), ["Root"])
+        self.assertEqual(child._get_full_path(), ["Root", "Child"])

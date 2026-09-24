@@ -89,22 +89,24 @@ class BaseModule:
             .distinct()
         )
 
-    def _get_main_datasets(self, **kwargs):
-        return self.get_datasets(**kwargs).filter(
-            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
-        )
-
-    def _get_base_datasets(self, **kwargs):
-        return self.get_datasets(**kwargs).filter(
-            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
-        )
-
     def _get_options(self, **kwargs) -> Dict[str, Any]:
+        # Single query for both lists: filtering by geometry is expensive.
+        datasets = list(self.get_datasets(**kwargs))
         return {
             "datalayers": self.get_datalayers(**kwargs),
             "datasets": {
-                "main_datasets": self._get_main_datasets(**kwargs),
-                "base_datasets": self._get_base_datasets(**kwargs),
+                "main_datasets": [
+                    dataset
+                    for dataset in datasets
+                    if dataset.preferred_display_type
+                    == PreferredDisplayType.MAIN_DATALAYERS
+                ],
+                "base_datasets": [
+                    dataset
+                    for dataset in datasets
+                    if dataset.preferred_display_type
+                    == PreferredDisplayType.BASE_DATALAYERS
+                ],
             },
         }
 
