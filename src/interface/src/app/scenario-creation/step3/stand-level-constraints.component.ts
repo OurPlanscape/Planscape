@@ -113,6 +113,7 @@ export class StandLevelConstraintsComponent
                     value: data.min_distance_from_road,
                   });
                 }
+                console.log('here we are setting the constraints:', constraints);
                 this.newScenarioState.setConstraints(constraints);
               }
             })

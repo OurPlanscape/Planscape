@@ -202,6 +202,9 @@ export class NewScenarioState {
         subUnits,
         includedAreas,
       ]) => {
+
+        // TODO: make sure we are not sending adv SLC constraints in the getExcludedStands call
+
         // Inside the project fn so it runs after switchMap cancels the previous inner (and its
         // finalize fires) — a tap() before switchMap would be overridden by that finalize.
         this.setLoading(true);
@@ -321,6 +324,7 @@ export class NewScenarioState {
   }
 
   setConstraints(constraints: Constraint[]) {
+    console.log('here are the constraints we want to set:', constraints);
     this._constraints$.next(constraints);
   }
 

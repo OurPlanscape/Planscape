@@ -178,6 +178,7 @@ export class ScenarioService {
     subUnitsLayer?: number,
     includes?: number[]
   ) {
+    console.log('we are calling getExcluded Stands with constraints', constraints);
     const url =
       environment.backend_endpoint +
       `/v2/scenarios/${scenarioId}/available_stands/`;
