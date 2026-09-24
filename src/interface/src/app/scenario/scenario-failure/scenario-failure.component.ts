@@ -6,6 +6,7 @@ import {
   FormMessageType,
   ScenarioResultError,
   ScenarioResultStatus,
+  SYSTEM_ERRORS_SET,
   USER_REVISABLE_ERRORS_SET,
 } from '@types';
 import { FeaturesModule } from '@features/features.module';
@@ -31,6 +32,12 @@ export class ScenarioFailureComponent {
   get isRevisable() {
     return this.scenarioErrorCodes.some((e) =>
       USER_REVISABLE_ERRORS_SET.has(e.error_code)
+    );
+  }
+
+  get isSystemError() {
+    return this.scenarioErrorCodes.some((e) =>
+      SYSTEM_ERRORS_SET.has(e.error_code)
     );
   }
 

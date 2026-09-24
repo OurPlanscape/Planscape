@@ -1,5 +1,5 @@
 <section [class.dashboard]="variant === 'dashboard'">
-  <ng-container *ngIf="isRevisable; else generic">
+  <ng-container *ngIf="!isSystemError; else systemError">
     <h4>
       <mat-icon class="material-symbols-filled warning">warning</mat-icon>
       Forsys couldn’t find enough eligible areas for treatment
@@ -41,7 +41,7 @@
     </div>
   </ng-container>
 
-  <ng-template #generic>
+  <ng-template #systemError>
     <h4>
       <mat-icon class="material-symbols-filled error">error</mat-icon>
       There was an error generating your scenario
