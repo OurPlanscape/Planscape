@@ -1,6 +1,6 @@
 import logging
 import smtplib
-from typing import Optional, Tuple
+from typing import Iterable, Optional, Tuple
 from urllib.parse import urljoin
 
 from celery import chain, chord
@@ -22,6 +22,7 @@ from impacts.models import (
 from impacts.services import (
     calculate_impacts,
     calculate_impacts_for_untreated_stands,
+    calculate_project_area_impacts,
     export_and_upload_geopackage,
     get_calculation_matrix,
     get_calculation_matrix_wo_action,
@@ -43,6 +44,7 @@ def async_calculate_impacts_for_variable_action_year(
     variable: ImpactVariable,
     action: TreatmentPrescriptionAction,
     year: int,
+    stand_ids: list[int],
 ) -> None:
     """Calculates impacts for the variable, action year triple.
 
@@ -54,8 +56,9 @@ def async_calculate_impacts_for_variable_action_year(
     :type action: TreatmentPrescriptionAction
     :param year: _description_
     :type year: int
-    :return: _description_
-    :rtype: List[int]
+    :param stand_ids: Stand IDs in this task's batch
+    :type stand_ids: list[int]
+    :return: None
     """
     log.info(f"Getting already calculated impacts for {variable}")
     try:
@@ -63,7 +66,12 @@ def async_calculate_impacts_for_variable_action_year(
             pk=treatment_plan_pk
         )
         calculate_impacts(
-            treatment_plan=treatment_plan, variable=variable, action=action, year=year
+            treatment_plan=treatment_plan,
+            variable=variable,
+            action=action,
+            year=year,
+            stand_ids=stand_ids,
+            calculate_project_area_results=False,
         )
     except TreatmentPlan.DoesNotExist:
         log.warning(
@@ -92,6 +100,7 @@ def async_calculate_impacts_for_non_treated_stands_action_year(
     treatment_plan_pk: int,
     variable: ImpactVariable,
     year: int,
+    stand_ids: list[int],
 ) -> None:
     """Calculate impacts for non-treated stands for the variable, year pair.
 
@@ -101,6 +110,8 @@ def async_calculate_impacts_for_non_treated_stands_action_year(
     :type variable: ImpactVariable
     :param year: Year of calculation
     :type year: int
+    :param stand_ids: Stand IDs in this task's batch
+    :type stand_ids: list[int]
     :return: None
     """
     log.info(f"Calculating baseline metrics for {variable} on non-treated stands")
@@ -112,6 +123,7 @@ def async_calculate_impacts_for_non_treated_stands_action_year(
             treatment_plan=treatment_plan,
             variable=variable,
             year=year,
+            stand_ids=stand_ids,
         )
     except TreatmentPlan.DoesNotExist:
         log.warning(
@@ -133,6 +145,32 @@ def async_calculate_impacts_for_non_treated_stands_action_year(
 
 
 @app.task()
+def async_calculate_project_area_impacts(treatment_plan_pk: int) -> None:
+    try:
+        treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
+            pk=treatment_plan_pk
+        )
+        calculate_project_area_impacts(treatment_plan)
+    except TreatmentPlan.DoesNotExist:
+        log.warning(
+            "TreatmentPlan with pk %s does not exist or was deleted. "
+            "Cannot calculate project area impacts.",
+            treatment_plan_pk,
+        )
+
+
+def batch_stand_ids(stand_ids: Iterable[int], batch_size: int) -> list[list[int]]:
+    if batch_size < 1:
+        raise ValueError("IMPACTS_STAND_BATCH_SIZE must be greater than zero")
+
+    stand_ids = list(stand_ids)
+    return [
+        stand_ids[index : index + batch_size]
+        for index in range(0, len(stand_ids), batch_size)
+    ]
+
+
+@app.task()
 def async_set_status(
     treatment_plan_pk: int,
     status: TreatmentPlanStatus = TreatmentPlanStatus.FAILURE,
@@ -143,7 +181,7 @@ def async_set_status(
     this is used as a callback in celery canvas.
     """
     with transaction.atomic():
-        user = User.objects.get(pk=user_id)
+        user = User.objects.filter(pk=user_id).first()
         try:
             treatment_plan = TreatmentPlan.objects.select_for_update().get(
                 pk=treatment_plan_pk
@@ -162,6 +200,7 @@ def async_set_status(
                 },
                 user_id=user_id,
             )
+            async_generate_treatment_plan_geopackage.delay(treatment_plan_pk)
         except TreatmentPlan.DoesNotExist:
             log.warning(
                 "TreatmentPlan with pk %s does not exist or was deleted. Cannot set status.",
@@ -182,8 +221,14 @@ def async_generate_treatment_plan_geopackage(treatment_plan_pk: int) -> str | No
             treatment_plan_pk,
         )
         return None
-
-    return export_and_upload_geopackage(treatment_plan)
+    try:
+        return export_and_upload_geopackage(treatment_plan)
+    except Exception:
+        log.error(
+            "Failed to generate Treatment Plan Geopackage",
+            extra={"treatment_plan_pk": treatment_plan_pk},
+        )
+        return None
 
 
 @app.task()
@@ -208,10 +253,19 @@ def async_calculate_persist_impacts_treatment_plan(
     untreated_stands_matrix = get_calculation_matrix_wo_action(
         years=AVAILABLE_YEARS,
     )
-    callback = chain(
-        async_generate_treatment_plan_geopackage.si(
-            treatment_plan_pk=treatment_plan_pk,
-        ),
+    stand_ids = (
+        treatment_plan.get_project_areas_stands()
+        .order_by("id")
+        .values_list("id", flat=True)
+    )
+    stand_batches = batch_stand_ids(stand_ids, settings.IMPACTS_STAND_BATCH_SIZE)
+    failure_callback = async_set_status.si(
+        treatment_plan_pk=treatment_plan_pk,
+        status=TreatmentPlanStatus.FAILURE,
+        start=False,
+        user_id=user_id,
+    )
+    completion_callback = chain(
         async_set_status.si(
             treatment_plan_pk=treatment_plan_pk,
             status=TreatmentPlanStatus.SUCCESS,
@@ -219,30 +273,33 @@ def async_calculate_persist_impacts_treatment_plan(
             user_id=user_id,
         ),
         async_send_email_process_finished.si(treatment_plan_pk=treatment_plan_pk),
-    ).on_error(
-        async_set_status.si(
+    ).on_error(failure_callback)
+    callback = chain(
+        async_calculate_project_area_impacts.si(
             treatment_plan_pk=treatment_plan_pk,
-            status=TreatmentPlanStatus.FAILURE,
-            start=False,
-            user_id=user_id,
-        )
-    )
+        ),
+        completion_callback,
+    ).on_error(failure_callback)
     tasks = [
         async_calculate_impacts_for_variable_action_year.si(
             treatment_plan_pk=treatment_plan_pk,
             variable=variable,
             action=action,
             year=year,
+            stand_ids=stand_batch,
         )
         for variable, action, year in calculation_matrix
+        for stand_batch in stand_batches
     ]
     tasks += [
         async_calculate_impacts_for_non_treated_stands_action_year.si(
             treatment_plan_pk=treatment_plan_pk,
             variable=variable,
             year=year,
+            stand_ids=stand_batch,
         )
         for variable, year in untreated_stands_matrix
+        for stand_batch in stand_batches
     ]
     log.info(f"Firing {len(tasks)} tasks to calculate impacts!")
     TreatmentPlan.objects.filter(pk=treatment_plan_pk).update(
@@ -250,7 +307,10 @@ def async_calculate_persist_impacts_treatment_plan(
         geopackage_status=GeoPackageStatus.PENDING,
         updated_at=timezone.now(),
     )
-    chord(tasks)(callback)
+    if tasks:
+        chord(tasks)(callback)
+    else:
+        completion_callback.delay()
     track_event(
         name="impacts.treatment_plan.run",
         properties={

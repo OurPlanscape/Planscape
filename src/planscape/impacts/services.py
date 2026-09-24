@@ -425,6 +425,8 @@ def calculate_impacts(
     variable: ImpactVariable,
     action: TreatmentPrescriptionAction,
     year: int,
+    stand_ids: Optional[Collection[int]] = None,
+    calculate_project_area_results: bool = True,
 ) -> Tuple[List[TreatmentResult], List[ProjectAreaTreatmentResult]]:
     if year not in AVAILABLE_YEARS:
         raise ValueError(f"Year {year} not supported")
@@ -437,7 +439,12 @@ def calculate_impacts(
         "treatment_plan",
         "project_area",
     )
-    stand_ids = prescriptions.values_list("stand_id", flat=True)
+    if stand_ids is not None:
+        prescriptions = prescriptions.filter(stand_id__in=stand_ids)
+    prescription_stand_ids = list(prescriptions.values_list("stand_id", flat=True))
+    if not prescription_stand_ids and not calculate_project_area_results:
+        return ([], [])
+
     stand_size = treatment_plan.get_stand_size()
     baseline_layer = ImpactVariable.get_datalayer(
         impact_variable=variable,
@@ -446,7 +453,7 @@ def calculate_impacts(
     )
 
     missing_stand_ids = get_missing_stand_ids_for_datalayer_from_stand_list(
-        stand_ids=stand_ids, datalayer=baseline_layer
+        stand_ids=prescription_stand_ids, datalayer=baseline_layer
     )
     if len(missing_stand_ids) > 0:
         if feature_enabled("API_ZONAL_STATS"):
@@ -465,7 +472,7 @@ def calculate_impacts(
                     datalayer=baseline_layer,
                 )
     baseline_metrics = StandMetric.objects.filter(
-        stand_id__in=stand_ids,
+        stand_id__in=prescription_stand_ids,
         datalayer=baseline_layer,
     )
 
@@ -476,7 +483,7 @@ def calculate_impacts(
     )
 
     missing_stand_ids = get_missing_stand_ids_for_datalayer_from_stand_list(
-        stand_ids=stand_ids, datalayer=action_layer
+        stand_ids=prescription_stand_ids, datalayer=action_layer
     )
     if len(missing_stand_ids) > 0:
         if feature_enabled("API_ZONAL_STATS"):
@@ -495,7 +502,7 @@ def calculate_impacts(
                     datalayer=action_layer,
                 )
     action_metrics = StandMetric.objects.filter(
-        stand_id__in=stand_ids,
+        stand_id__in=prescription_stand_ids,
         datalayer=action_layer,
     )
 
@@ -510,29 +517,31 @@ def calculate_impacts(
         stand_size=stand_size,
     )
 
-    project_area_deltas = []
-    for project_area in treatment_plan.scenario.project_areas.all():
-        project_area_deltas.extend(
-            calculate_project_area_deltas(
-                project_area=project_area,
-                baseline_dict=baseline_dict,
-                action_dict=action_dict,
-                action=action,
-                stand_size=stand_size,
+    project_area_results = []
+    if calculate_project_area_results:
+        project_area_deltas = []
+        for project_area in treatment_plan.scenario.project_areas.all():
+            project_area_deltas.extend(
+                calculate_project_area_deltas(
+                    project_area=project_area,
+                    baseline_dict=baseline_dict,
+                    action_dict=action_dict,
+                    action=action,
+                    stand_size=stand_size,
+                )
+            )
+
+        project_area_results = list(
+            map(
+                lambda x: to_project_area_result(
+                    treatment_plan,
+                    variable,
+                    year,
+                    result=x,
+                ),
+                project_area_deltas,
             )
         )
-
-    project_area_results = list(
-        map(
-            lambda x: to_project_area_result(
-                treatment_plan,
-                variable,
-                year,
-                result=x,
-            ),
-            project_area_deltas,
-        )
-    )
 
     treatment_results = list(
         map(
@@ -596,6 +605,7 @@ def calculate_impacts_for_untreated_stands(
     treatment_plan: TreatmentPlan,
     variable: ImpactVariable,
     year: int,
+    stand_ids: Optional[Collection[int]] = None,
 ) -> List[TreatmentResult]:
     stand_size = treatment_plan.get_stand_size()
     prescriptions = treatment_plan.tx_prescriptions.select_related(
@@ -605,11 +615,16 @@ def calculate_impacts_for_untreated_stands(
         "project_area",
     )
     treated_stand_ids = prescriptions.values_list("stand_id", flat=True)
-    untreated_stand_ids = (
+    stands = (
         treatment_plan.get_project_areas_stands()
-        .exclude(id__in=treated_stand_ids)
-        .values_list("id", flat=True)
+        if stand_ids is None
+        else Stand.objects.filter(id__in=stand_ids)
     )
+    untreated_stand_ids = list(
+        stands.exclude(id__in=treated_stand_ids).values_list("id", flat=True)
+    )
+    if not untreated_stand_ids:
+        return []
 
     baseline_layer = ImpactVariable.get_datalayer(
         impact_variable=variable,
@@ -617,7 +632,7 @@ def calculate_impacts_for_untreated_stands(
         year=year,
     )
     missing_stand_ids = get_missing_stand_ids_for_datalayer_from_stand_list(
-        stand_ids=list(untreated_stand_ids), datalayer=baseline_layer
+        stand_ids=untreated_stand_ids, datalayer=baseline_layer
     )
     if len(missing_stand_ids) > 0:
         if feature_enabled("API_ZONAL_STATS"):
@@ -667,6 +682,70 @@ def calculate_impacts_for_untreated_stands(
     )
 
     return treatment_results
+
+
+def calculate_project_area_impacts(
+    treatment_plan: TreatmentPlan,
+) -> List[ProjectAreaTreatmentResult]:
+    """Rebuild project-area aggregates after all stand batches complete."""
+    project_area_results = []
+    stand_size = treatment_plan.get_stand_size()
+
+    for variable, action, year in get_calculation_matrix(
+        treatment_plan=treatment_plan,
+        years=AVAILABLE_YEARS,
+    ):
+        baseline_layer = ImpactVariable.get_datalayer(
+            impact_variable=variable,
+            action=None,
+            year=year,
+        )
+        action_layer = ImpactVariable.get_datalayer(
+            impact_variable=variable,
+            action=action,
+            year=year,
+        )
+        for project_area in treatment_plan.scenario.project_areas.all():
+            project_area_stands = project_area.get_stands(
+                stand_size=stand_size
+            ).values_list("id", flat=True)
+            prescribed_stands = treatment_plan.tx_prescriptions.filter(
+                action=action,
+                stand_id__in=project_area_stands,
+            ).values_list("stand_id", flat=True)
+            baseline = (
+                StandMetric.objects.filter(
+                    stand_id__in=prescribed_stands,
+                    datalayer=baseline_layer,
+                ).aggregate(value=Sum("avg"))["value"]
+                or 0
+            )
+            action_aggregates = StandMetric.objects.filter(
+                stand_id__in=prescribed_stands,
+                datalayer=action_layer,
+            ).aggregate(
+                value=Sum("avg"),
+                stand_count=Count("id"),
+            )
+            value = action_aggregates["value"] or 0
+            project_area_results.append(
+                to_project_area_result(
+                    treatment_plan=treatment_plan,
+                    variable=variable,
+                    year=year,
+                    result={
+                        "project_area_id": project_area.id,
+                        "aggregation": ImpactVariableAggregation.MEAN,
+                        "baseline": baseline,
+                        "value": value,
+                        "delta": calculate_delta(value, baseline),
+                        "action": action,
+                        "stand_count": action_aggregates["stand_count"],
+                    },
+                )
+            )
+
+    return project_area_results
 
 
 def get_calculation_matrix(
@@ -975,45 +1054,81 @@ def get_treatment_result_value(
             return truncate_result(treatment_result.delta * 100)
 
 
-def fetch_treatment_plan_data(
+def iter_treatment_plan_data_batches(
     treatment_plan: TreatmentPlan,
-) -> Collection[Dict[str, Any]]:
+    batch_size: int = 100,
+) -> Iterable[Collection[Dict[str, Any]]]:
+    if batch_size < 1:
+        raise ValueError("batch_size must be greater than zero")
+
     scenario = treatment_plan.scenario
     planning_area = scenario.planning_area
     stand_size = treatment_plan.get_stand_size()
 
-    results = (
-        TreatmentResult.objects.filter(treatment_plan=treatment_plan)
-        .order_by("stand", "variable", "year")
-        .select_related("stand", "treatment_plan__scenario")
+    stand_ids = (
+        TreatmentResult.objects.filter(
+            treatment_plan=treatment_plan,
+            stand_id__isnull=False,
+        )
         .exclude(variable=ImpactVariable.FIRE_BEHAVIOR_FUEL_MODEL)
+        .order_by("stand_id")
+        .values_list("stand_id", flat=True)
+        .distinct()
     )
-    treatment_results_data = {r.stand_id: r for r in results}
-    result_data = defaultdict(dict)
-    stands = Stand.objects.filter(id__in=[r.stand_id for r in results])
-    for result in results:
-        field_name = f"{result.variable}_{result.year}"
-        result_data[result.stand_id][field_name] = get_treatment_result_value(result)
-        result_data[result.stand_id]["action"] = treatment_results_data[
-            result.stand_id
-        ].action
-        forested_rate = treatment_results_data[result.stand_id].forested_rate
-        if forested_rate:
-            forested_rate = truncate_result(forested_rate * 100)
-        result_data[result.stand_id]["forested_pct"] = forested_rate
-        result_data[result.stand_id]["type"] = result.get_display_type()
 
-    return list(
-        map(
-            lambda stand: tretment_result_to_json(
+    last_stand_id = None
+    while True:
+        batch_query = stand_ids
+        if last_stand_id is not None:
+            batch_query = batch_query.filter(stand_id__gt=last_stand_id)
+        batch_stand_ids = list(batch_query[:batch_size])
+        if not batch_stand_ids:
+            break
+
+        results = (
+            TreatmentResult.objects.filter(
+                treatment_plan=treatment_plan,
+                stand_id__in=batch_stand_ids,
+            )
+            .order_by("stand", "variable", "year")
+            .select_related("stand", "treatment_plan__scenario")
+            .exclude(variable=ImpactVariable.FIRE_BEHAVIOR_FUEL_MODEL)
+        )
+        treatment_results_data = {r.stand_id: r for r in results}
+        result_data = defaultdict(dict)
+        for result in results:
+            field_name = f"{result.variable}_{result.year}"
+            result_data[result.stand_id][field_name] = get_treatment_result_value(
+                result
+            )
+            result_data[result.stand_id]["action"] = treatment_results_data[
+                result.stand_id
+            ].action
+            forested_rate = treatment_results_data[result.stand_id].forested_rate
+            if forested_rate:
+                forested_rate = truncate_result(forested_rate * 100)
+            result_data[result.stand_id]["forested_pct"] = forested_rate
+            result_data[result.stand_id]["type"] = result.get_display_type()
+
+        stands = Stand.objects.filter(id__in=batch_stand_ids).order_by("id")
+        yield [
+            tretment_result_to_json(
                 stand,
                 result_data[stand.id],
                 scenario,
                 planning_area,
                 stand_size=stand_size,
-            ),
-            stands,
-        )
+            )
+            for stand in stands
+        ]
+        last_stand_id = batch_stand_ids[-1]
+
+
+def fetch_treatment_plan_data(
+    treatment_plan: TreatmentPlan,
+) -> Collection[Dict[str, Any]]:
+    return list(
+        itertools.chain.from_iterable(iter_treatment_plan_data_batches(treatment_plan))
     )
 
 
@@ -1035,7 +1150,6 @@ def match_schema(record: Dict[str, Any], schema: Dict[str, Any]):
 def export_geopackage(treatment_plan: TreatmentPlan) -> str:
     bare_export_path = get_export_path(treatment_plan)
     fiona_path = f"{str(bare_export_path)}.zip"
-    data = fetch_treatment_plan_data(treatment_plan)
     treatment_result_schema = get_treament_result_schema()
     Path(fiona_path).unlink(missing_ok=True)
     if not bare_export_path.parent.exists():
@@ -1050,18 +1164,19 @@ def export_geopackage(treatment_plan: TreatmentPlan) -> str:
         schema=treatment_result_schema,
         allow_unsupported_drivers=True,
     ) as out:
-        for record in data:
-            record = match_schema(record, treatment_result_schema)
-            out.write(
-                {
-                    "id": record.pop("id", None),
-                    "geometry": record.pop("geometry", None),
-                    "properties": {
-                        key: value
-                        for key, value in record.get("properties", {}).items()
-                    },
-                }
-            )
+        for batch in iter_treatment_plan_data_batches(treatment_plan):
+            for record in batch:
+                record = match_schema(record, treatment_result_schema)
+                out.write(
+                    {
+                        "id": record.pop("id", None),
+                        "geometry": record.pop("geometry", None),
+                        "properties": {
+                            key: value
+                            for key, value in record.get("properties", {}).items()
+                        },
+                    }
+                )
     return str(fiona_path)
 
 

@@ -354,7 +354,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
                 "origin": scenario.origin,
                 "treatment_goal_id": treatment_goal.pk if treatment_goal else None,
                 "treatment_goal_category": (
-                    treatment_goal.category if treatment_goal else None
+                    treatment_goal.category.name if treatment_goal and treatment_goal.category else None
                 ),
                 "treatment_goal_name": treatment_goal.name if treatment_goal else None,
                 "email": user.email if user else None,
@@ -1080,7 +1080,9 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
         properties={
             "origin": scenario.origin,
             "treatment_goal_id": tx_goal.pk if tx_goal else None,
-            "treatment_goal_category": (tx_goal.category if tx_goal else None),
+            "treatment_goal_category": (
+                tx_goal.category.name if tx_goal and tx_goal.category else None
+            ),
             "treatment_goal_name": (tx_goal.name if tx_goal else None),
             "email": user.email if user else None,
         },
@@ -1248,7 +1250,10 @@ def _get_datalayers_id_lookup_table(scenario):
 
 
 def _get_sub_units_lookup_table(scenario: Scenario) -> dict[int, Any] | None:
-    if scenario.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
+    if (
+        scenario.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        and not is_project_areas_child(scenario)
+    ):
         return None
     geojson = get_flatten_geojson(scenario)
     ret = {}
@@ -1343,8 +1348,12 @@ def export_scenario_stand_outputs_to_geopackage(
     scenario_outputs = {}
     dl_lookup = _get_datalayers_id_lookup_table(scenario)
     stand_size = scenario.get_stand_size()
+    is_sub_units = (
+        scenario.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        and not is_project_areas_child(scenario)
+    )
 
-    sub_units_lookup_table = _get_sub_units_lookup_table(scenario=scenario)
+    sub_units_lookup_table = _get_sub_units_lookup_table(scenario=scenario) if is_sub_units else None
 
     with open(stnd_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
@@ -1357,13 +1366,16 @@ def export_scenario_stand_outputs_to_geopackage(
                     case "DoTreat", "selected":
                         properties[key] = bool(int(value))
                     case "sub_unit_id":
-                        properties[key] = int(value)
-                        if sub_units_lookup_table:
-                            properties["treatment_rank"] = (
-                                sub_units_lookup_table.get(int(value), {})
-                                .get("properties", {})
-                                .get("treatment_rank")
-                            )
+                        if is_sub_units:
+                            properties[key] = int(value)
+                            if sub_units_lookup_table:
+                                properties["treatment_rank"] = (
+                                    sub_units_lookup_table.get(int(value), {})
+                                    .get("properties", {})
+                                    .get("treatment_rank")
+                                )
+                        else:
+                            properties["proj_id"] = int(value)
                     case _:
                         try:
                             f = float(value)
