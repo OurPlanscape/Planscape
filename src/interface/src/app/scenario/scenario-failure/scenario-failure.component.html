@@ -1,5 +1,5 @@
 <section [class.dashboard]="variant === 'dashboard'">
-  <ng-container *ngIf="!isSystemError; else systemError">
+  <ng-container *ngIf="!isSystemError && !isPanic; else systemError">
     <h4>
       <mat-icon class="material-symbols-filled warning">warning</mat-icon>
       Forsys couldn’t find enough eligible areas for treatment

@@ -22,12 +22,16 @@ import { FEEDBACK_URL } from '@app/shared';
 export class ScenarioFailureComponent {
   @Input() scenarioName = '';
   @Input() scenarioId: number | undefined = undefined;
-  @Input() scenarioState: ScenarioResultStatus = 'FAILURE';
+  @Input() scenarioResultStatus: ScenarioResultStatus = 'FAILURE';
   @Input() scenarioErrorCodes: ScenarioResultError[] = [];
   @Input() loadingCopyDialog = false;
   @Input() variant: 'default' | 'dashboard' = 'default';
   @Output() goBack = new EventEmitter();
   @Output() tryAgain = new EventEmitter();
+
+  get isPanic() {
+    return this.scenarioResultStatus === 'PANIC';
+  }
 
   get isRevisable() {
     return this.scenarioErrorCodes.some((e) =>
