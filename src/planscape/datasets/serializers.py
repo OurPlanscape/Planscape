@@ -142,7 +142,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
 
     def get_path(self, instance) -> Collection[str]:
         if instance.category:
-            return instance.category._get_full_path(instance.category.pk)
+            return instance.category._get_full_path()
         return []
 
     class Meta:
@@ -593,7 +593,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
 
     def get_path(self, instance) -> Collection[str]:
         if instance.category:
-            return instance.category._get_full_path(instance.category.pk)
+            return instance.category._get_full_path()
 
         return []
 

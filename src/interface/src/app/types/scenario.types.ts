@@ -15,6 +15,42 @@ export type ScenarioResultStatus =
   | 'TIMED_OUT'
   | 'DRAFT'; // Creating a scenario but not completed the steps yet.
 
+export const USER_REVISABLE_ERRORS = [
+  'NO_AVAILABLE_RESULT',
+  'FORSYS_EMPTY_RESULT',
+] as const;
+
+export const SYSTEM_ERRORS = [
+  'TIME_OUT',
+  'GENERIC_PANIC',
+  'STAND_METRIC_FAILURE',
+  'UNKNOWN_ERROR',
+  'STAND_DATA_ERROR',
+  'PROJECT_DATA_ERROR',
+  'FORSYS_PREPARATION_ERROR',
+  'FORSYS_EXECUTION_ERROR',
+  'RESULT_PROCESSING_ERROR',
+  'PROJECT_AREA_UPDATE_ERROR',
+] as const;
+
+// Clean and readable type definition
+export type ScenarioResultErrorCode =
+  | (typeof USER_REVISABLE_ERRORS)[number]
+  | (typeof SYSTEM_ERRORS)[number];
+
+export interface ScenarioResultError {
+  error_code: ScenarioResultErrorCode;
+  description: string;
+}
+
+// Runtime lookup sets (derived from the arrays)
+export const USER_REVISABLE_ERRORS_SET = new Set<ScenarioResultErrorCode>(
+  USER_REVISABLE_ERRORS
+);
+export const SYSTEM_ERRORS_SET = new Set<ScenarioResultErrorCode>(
+  SYSTEM_ERRORS
+);
+
 export type GeoPackageStatus =
   | 'PENDING'
   | 'PROCESSING'
@@ -105,6 +141,7 @@ export interface ScenarioResult {
     features: FeatureCollection[]; // TODO this is actually Features[]
     type: string;
   };
+  errors?: ScenarioResultError[];
 }
 
 // Base draft/wizard shape (legacy flat config fields) used by FE draft types.

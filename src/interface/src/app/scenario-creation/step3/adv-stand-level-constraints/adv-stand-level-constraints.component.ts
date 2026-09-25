@@ -223,7 +223,6 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
       current[existingIndex] = constraint;
     }
     this.selectedConstraints$.next(current);
-
     const layerToAdd = this.getFullLayerById(constraint.datalayer);
     if (layerToAdd) {
       this.dataLayerState.addSelectedLayer(layerToAdd);

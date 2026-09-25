@@ -6,8 +6,33 @@ on:
   pull_request:
     branches: ["main"]
 
+env:
+  PYTHON_VERSION: 3.10.8
+
 jobs:
+  # Only runs on PRs. On push (or if this job fails) the output is empty,
+  # so the jobs below fall through and run.
+  changes:
+    if: github.event_name == 'pull_request'
+    runs-on: frizzle-hosted
+    permissions:
+      pull-requests: read
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'src/planscape/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
+              - '.github/workflows/django.yaml'
+
   lint:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' }}
     runs-on: frizzle-hosted
     steps:
       - uses: actions/checkout@v4
@@ -17,12 +42,12 @@ jobs:
           version: "0.14.10"
 
   build:
+    # Name must match the required status check on main. Kept explicit
+    # (no matrix) so it is still reported when the job is skipped.
+    name: build (3.10.8)
     runs-on: frizzle-hosted
-    needs: lint
-    strategy:
-      max-parallel: 4
-      matrix:
-        python-version: [3.10.8]
+    needs: [changes, lint]
+    if: ${{ !cancelled() && needs.lint.result == 'success' }}
 
     services:
       redis:
@@ -53,22 +78,22 @@ jobs:
       - name: Install Apt Dependencies
         run: sudo apt-get install libcurl4-openssl-dev libssl-dev gcc gdal-bin libgdal-dev r-base-core postgresql-client -y
       - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ env.PYTHON_VERSION }}
       - name: Install UV
         uses: astral-sh/setup-uv@v6
         with:
           version: latest
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Configure cache
         uses: actions/cache@v3
         id: cache
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('uv.lock') }}
+          key: venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
 
       - name: Cache is healthy?
         if: steps.cache.outputs.cache-hit == 'true'
