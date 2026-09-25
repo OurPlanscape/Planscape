@@ -31,6 +31,7 @@ const meta: Meta<DetailsCardComponent> = {
     }),
   ],
   args: {
+    titleLabel: '',
     cardTitle: 'Plan Details',
     subtitle: 'Forest Restoration Plan',
     details: mockDetails,
@@ -42,6 +43,17 @@ export default meta;
 type Story = StoryObj<DetailsCardComponent>;
 
 export const Default: Story = {};
+
+export const WithTitleLabel: Story = {
+  args: {
+    titleLabel: 'Workspace',
+    cardTitle: "John's Project",
+    subtitle: '',
+    details: [],
+    creator: 'John Snow',
+    created_at: '2026-09-16T12:09:36Z',
+  },
+};
 
 export const ManyItems: Story = {
   args: {
