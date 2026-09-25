@@ -112,7 +112,6 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     return this.knownLayers.find((layer) => layer.id === id) ?? null;
   }
 
-  // TODO: move to a helper?
   private getConstraintDisplayName(
     constraint: Constraint,
     layer: DataLayer | undefined
@@ -125,8 +124,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     return `${layerName}: ${getOperatorDisplayText(constraint.operator)} ${constraint.value}`;
   }
 
-  // update UI of this component when the step loads,
-  // not eagerly on onInit
+  // update UI of this component when the step loads, not eagerly on step construction
   mapConfigToUI() {
     // here, we filter out layers from constraintLayers to find
     // just the configured constraints that match the known Adv Stand Level Constraint layers

@@ -29,7 +29,7 @@ class TestHostComponent {
   form = new FormGroup({
     advStandLevelConstraints: new FormGroup({}),
   });
-  constraintLayers = []; // adjust to whatever shape the component expects
+  constraintLayers = [];
 }
 
 describe('AdvStandLevelConstraintsComponent', () => {

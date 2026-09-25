@@ -79,7 +79,7 @@ export class StandLevelConstraintsComponent
   }
 
   ngOnInit(): void {
-    // 1. Auto-attach to parent form if wrapped in a parent <form> or [formGroup]
+    // attach to parent form if wrapped in a parent <form> or [formGroup]
     if (this.parentContainer?.control) {
       const parentGroup = this.parentContainer.control as FormGroup;
       parentGroup.addControl(this.keyName, this.form);

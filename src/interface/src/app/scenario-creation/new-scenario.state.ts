@@ -93,7 +93,6 @@ export class NewScenarioState {
     shareReplay(1)
   );
 
-  // TODO: actually, do this instead for the advSLCConstraints
   public advStandLevelConstraints$ = this.scenarioConfig$.pipe(
     map((config) => {
       const draft = config as Partial<ScenarioDraftConfiguration>;
