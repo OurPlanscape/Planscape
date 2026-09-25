@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 
-export type CardLinkHeight = 'normal' | 'tall' | 'xxl';
+export type CardLinkHeight = 'normal' | 'tall' | 'extra-tall';
 
 @Component({
   selector: 'sg-card-link',
@@ -32,7 +32,7 @@ export class CardLinkComponent {
 
   @HostBinding('class.xxl')
   get isXxl() {
-    return this.height === 'xxl';
+    return this.height === 'extra-tall';
   }
 
   @HostBinding('class.collapseHeight')

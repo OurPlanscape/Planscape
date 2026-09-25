@@ -17,7 +17,7 @@ const meta: Meta<CardLinkComponent> = {
     },
     height: {
       control: 'select',
-      options: ['normal', 'tall', 'xxl'],
+      options: ['normal', 'tall', 'extra-tall'],
     },
     navigate: {
       action: 'navigate',

@@ -19,7 +19,7 @@
     height: 360px;
   }
 
-  &.xxl {
+  &.extra-tall {
     height: 400px;
     min-height: 200px;
     max-height: 100%;
@@ -30,7 +30,7 @@
     @include on-vert-small-min-med-width() {
       height: 56px;
       &.tall,
-      &.xxl {
+      &.extra-tall {
         height: 56px;
         min-height: 0;
       }
@@ -44,7 +44,6 @@
   }
 }
 
-// this doesnt belong here
 mgl-map {
   height: 100%;
   width: 100%;
