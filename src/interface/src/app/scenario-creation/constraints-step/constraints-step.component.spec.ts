@@ -27,7 +27,7 @@ describe('ConstraintsStepComponent', () => {
         MatDialogModule,
         MatSnackBarModule,
         NgxMaskModule.forRoot(),
-        NoopAnimationsModule
+        NoopAnimationsModule,
       ],
       providers: [
         MockProvider(DataLayersStateService, {
@@ -102,7 +102,9 @@ describe('ConstraintsStepComponent', () => {
 
       component.beforeStepLoad();
 
-      expect(dataLayersStateService.updateSelectedLayers).toHaveBeenCalledWith([]);
+      expect(dataLayersStateService.updateSelectedLayers).toHaveBeenCalledWith(
+        []
+      );
       expect(dataLayersStateService.setMaxSelectedLayers).toHaveBeenCalledWith(
         Number.POSITIVE_INFINITY
       );
@@ -114,7 +116,9 @@ describe('ConstraintsStepComponent', () => {
 
       component.beforeStepLoad();
 
-      expect(component.advConstraintsComponent.mapConfigToUI).toHaveBeenCalled();
+      expect(
+        component.advConstraintsComponent.mapConfigToUI
+      ).toHaveBeenCalled();
     });
   });
 
@@ -123,7 +127,9 @@ describe('ConstraintsStepComponent', () => {
       component.beforeStepExit();
 
       expect(dataLayersStateService.resetAll).toHaveBeenCalled();
-      expect(dataLayersStateService.updateSelectedLayers).toHaveBeenCalledWith([]);
+      expect(dataLayersStateService.updateSelectedLayers).toHaveBeenCalledWith(
+        []
+      );
     });
   });
 

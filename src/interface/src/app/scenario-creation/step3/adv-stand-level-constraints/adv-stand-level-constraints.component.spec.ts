@@ -20,8 +20,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
       <app-adv-stand-level-constraints
         formGroupName="advStandLevelConstraints"
         [constraintLayers]="constraintLayers"
-        keyName="advStandLevelConstraints"
-      ></app-adv-stand-level-constraints>
+        keyName="advStandLevelConstraints"></app-adv-stand-level-constraints>
     </form>
   `,
 })
@@ -38,9 +37,17 @@ describe('AdvStandLevelConstraintsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, TestHostComponent, HttpClientTestingModule, MatSnackBarModule],
+      imports: [
+        NoopAnimationsModule,
+        TestHostComponent,
+        HttpClientTestingModule,
+        MatSnackBarModule,
+      ],
       providers: [
-        { provide: MatDialog, useValue: AdvStandLevelConstraintsModalComponent },
+        {
+          provide: MatDialog,
+          useValue: AdvStandLevelConstraintsModalComponent,
+        },
         MockProvider(NewScenarioState, {
           constraints$: of([]),
         }),

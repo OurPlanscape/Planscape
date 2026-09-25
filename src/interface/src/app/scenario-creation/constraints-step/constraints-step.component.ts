@@ -96,7 +96,7 @@ export class ConstraintsStepComponent extends StepDirective<ScenarioDraftConfigu
     this.newScenarioState.scenarioConfig$
       .pipe(take(1))
       .subscribe((config) => {});
-      
+
     // trigger child component refresh
     this.advConstraintsComponent.mapConfigToUI();
   }

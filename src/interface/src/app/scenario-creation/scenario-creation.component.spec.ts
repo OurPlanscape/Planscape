@@ -94,7 +94,9 @@ describe('ScenarioCreationComponent', () => {
   }
 
   function standLevelConstraintsEl() {
-    return fixture.debugElement.query(By.directive(StandLevelConstraintsComponent));
+    return fixture.debugElement.query(
+      By.directive(StandLevelConstraintsComponent)
+    );
   }
 
   function constraintsStepEl() {
@@ -110,7 +112,6 @@ describe('ScenarioCreationComponent', () => {
   });
 
   describe('ADV_STAND_LEVEL_CONSTRAINTS feature flag', () => {
-
     it('shows StandLevelConstraintsComponent when the flag is not set', () => {
       // const featureService = TestBed.inject(FeatureService);
       // console.log('isFeatureEnabled result:', featureService.isFeatureEnabled('ADV_STAND_LEVEL_CONSTRAINTS'));
