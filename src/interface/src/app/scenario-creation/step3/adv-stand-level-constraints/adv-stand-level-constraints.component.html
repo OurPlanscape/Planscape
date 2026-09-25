@@ -1,0 +1,59 @@
+<sg-section
+  *ngIf="constraintLayers$ | async as layers"
+  headline="Advanced Stand-Level Constraints (OPTIONAL)"
+  class="adv-stand-level-constraints"
+  [tooltipTemplate]="tooltipContent">
+  <div class="padded-section">
+    <p class="stand-label">
+      Choose from any data layers in Planscape to define eligible stands for
+      treatment.
+    </p>
+    <div class="num-constraints-line">
+      {{ (selectedConstraints$ | async)?.length || 0 }} Applied (No Limit)
+    </div>
+    <sg-chip-selector
+      *ngIf="layersLoaded$ | async"
+      [items]="(selectedConstraints$ | async) ?? []"
+      (itemClicked)="handleConstraintChipClicked($event)"
+      [hoverable]="true"
+      [selectedItem]="activeConstraint$ | async"
+      [showClose]="false"
+      [showEdit]="true"></sg-chip-selector>
+  </div>
+  <mat-expansion-panel
+    class="datalayers-section"
+    (opened)="toggleLayersSection()"
+    (closed)="toggleLayersSection()"
+    [hideToggle]="true">
+    <mat-expansion-panel-header class="datalayers-header">
+      <div class="header-content">
+        <span>Advanced Stand-Level Constraints</span>
+        <mat-icon>{{
+          showLayersPanel ? 'expand_less' : 'expand_more'
+        }}</mat-icon>
+      </div>
+    </mat-expansion-panel-header>
+
+    <app-data-layers
+      *ngIf="layersLoaded$ | async"
+      [useClearFooter]="false"
+      [displayAddButton]="true"></app-data-layers>
+  </mat-expansion-panel>
+</sg-section>
+
+<ng-template #tooltipContent>
+  <b>What are Advanced Stand-Level Constraints?</b>
+  <p>
+    Advanced stand-level constraints let you define conditions that stands must
+    meet to be eligible for treatment using available data layers.
+  </p>
+  <p>
+    For continuous variables, you can set thresholds (e.g., Probability of High
+    Severity Fire > 0) to focus on higher-value stands.
+  </p>
+  <p>
+    For categorical variables, you must use the raster values that represent
+    each class. For example, if Owl Habitat is coded as 1 = habitat and 0 =
+    non-habitat, you would set Owl Habitat = 0 to avoid treating habitat areas.
+  </p>
+</ng-template>
