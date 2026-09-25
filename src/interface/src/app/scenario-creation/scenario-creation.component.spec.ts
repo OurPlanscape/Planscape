@@ -92,8 +92,6 @@ describe('ScenarioCreationComponent', () => {
     fixture.detectChanges();
   }
 
-
-
   beforeEach(async () => {
     await setUpComponent();
   });
@@ -101,7 +99,6 @@ describe('ScenarioCreationComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-
 
   describe('Step Calculation Logic', () => {
     let scenarioConfigSubject: BehaviorSubject<ScenarioV3Config>;
