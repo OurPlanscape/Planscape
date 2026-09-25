@@ -1,9 +1,16 @@
+from unittest import mock
+
+from planning.models import GeoPackageStatus
 from planning.tests.factories import PlanningAreaFactory
 from planscape.tests.factories import UserFactory
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from climate_foresight.models import ClimateForesightRun
+from climate_foresight.models import (
+    ClimateForesightPromote,
+    ClimateForesightRun,
+    ClimateForesightRunStatus,
+)
 from climate_foresight.tests.factories import (
     ClimateForesightPillarFactory,
     ClimateForesightRunFactory,
@@ -454,3 +461,104 @@ class ClimateForesightPillarViewSetTest(APITestCase):
         response = self.client.get(self.base_url, {"run": other_user_run.id})
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class ClimateForesightRunDownloadTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.run = ClimateForesightRunFactory.create(
+            planning_area=self.planning_area,
+            created_by=self.user,
+            status=ClimateForesightRunStatus.DONE,
+        )
+        self.url = f"/planscape-backend/v2/climate-foresight-runs/{self.run.pk}/download/"
+        self.client.force_authenticate(user=self.user)
+
+    @mock.patch("climate_foresight.models.create_gcs_download_url")
+    @mock.patch("climate_foresight.views.track_event")
+    def test_download_returns_url_and_tracks_as_ready(
+        self, mock_track_event, mock_create_download_url
+    ):
+        mock_create_download_url.return_value = "http://example.com/download"
+        ClimateForesightPromote.objects.create(
+            run=self.run,
+            geopackage_status=GeoPackageStatus.SUCCEEDED,
+            geopackage_url="gs://bucket/path/to/geopackage.gpkg",
+        )
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["status"], "ready")
+        self.assertEqual(data["download_url"], "http://example.com/download")
+
+        mock_track_event.assert_called_once_with(
+            name="climate_foresight.run.geopackage_downloaded",
+            properties={
+                "run_id": self.run.pk,
+                "status": "ready",
+                "email": self.user.email,
+            },
+            user_id=self.user.pk,
+        )
+
+    @mock.patch("climate_foresight.views.async_generate_climate_foresight_geopackage")
+    @mock.patch("climate_foresight.views.track_event")
+    def test_download_triggers_generation_and_tracks_as_generating(
+        self, mock_track_event, mock_task
+    ):
+        promote = ClimateForesightPromote.objects.create(run=self.run)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "pending")
+        mock_task.delay.assert_called_once_with(self.run.pk)
+        mock_track_event.assert_called_once_with(
+            name="climate_foresight.run.geopackage_downloaded",
+            properties={
+                "run_id": self.run.pk,
+                "status": "generating",
+                "email": self.user.email,
+            },
+            user_id=self.user.pk,
+        )
+
+        promote.refresh_from_db()
+        self.assertEqual(promote.geopackage_status, GeoPackageStatus.PENDING)
+
+    @mock.patch("climate_foresight.views.async_generate_climate_foresight_geopackage")
+    @mock.patch("climate_foresight.views.track_event")
+    def test_download_returns_processing_without_tracking(
+        self, mock_track_event, mock_task
+    ):
+        ClimateForesightPromote.objects.create(
+            run=self.run, geopackage_status=GeoPackageStatus.PROCESSING
+        )
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "processing")
+        mock_task.delay.assert_not_called()
+        mock_track_event.assert_not_called()
+
+    @mock.patch("climate_foresight.views.async_generate_climate_foresight_geopackage")
+    @mock.patch("climate_foresight.views.track_event")
+    def test_download_returns_pending_without_retriggering(
+        self, mock_track_event, mock_task
+    ):
+        # Already queued by a previous ask - a client polling for status
+        # shouldn't re-track the ask or re-queue generation.
+        ClimateForesightPromote.objects.create(
+            run=self.run, geopackage_status=GeoPackageStatus.PENDING
+        )
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "pending")
+        mock_task.delay.assert_not_called()
+        mock_track_event.assert_not_called()

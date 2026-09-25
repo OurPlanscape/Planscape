@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 from uuid import uuid4
@@ -19,7 +20,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator, URLValidator
-from django.db.models import Manager, Q
+from django.db.models import Count, Manager, Max, Q
 from django_stubs_ext.db.models import TypedModelMeta
 from organizations.models import Organization
 from treebeard.mp_tree import MP_Node
@@ -59,13 +60,19 @@ class PreferredDisplayType(models.TextChoices):
 
 class DatasetQuerySet(models.QuerySet):
     def by_outline_intersects(self, geometry: GEOSGeometry) -> models.QuerySet:
-        return self.all().filter(datalayers__outline__intersects=geometry)
-    
+        return self.all().filter(pk__in=get_dataset_ids_intersecting(geometry))
+
     def accessible_by(self, user) -> models.QuerySet:
         q = Q(visibility=VisibilityOptions.PUBLIC)
         if user and user.is_authenticated:
             q |= Q(created_by=user)
-            q |= Q(workspace__user_access__user=user)
+            # Subquery instead of a join, so rows aren't multiplied by the
+            # number of users with access to the workspace.
+            q |= Q(
+                pk__in=self.model.objects.filter(
+                    workspace__user_access__user=user
+                ).values("pk")
+            )
             if user.is_staff or user.is_superuser:
                 q |= Q(visibility=VisibilityOptions.PRIVATE)
         return self.filter(q).distinct()
@@ -201,11 +208,9 @@ class Category(CreatedAtMixin, UpdatedAtMixin, MP_Node):
     )
 
     @cached(timeout=settings.CATEGORY_PATH_TTL)
-    def _get_full_path(self, id: int) -> List[str]:
-        category = self._meta.model.objects.get(pk=id)
-        ancestors = list([c.name for c in category.get_ancestors()])
-        names = [*ancestors, category.name]
-        return names
+    def _get_full_path(self) -> List[str]:
+        ancestors = [c.name for c in self.get_ancestors()]
+        return [*ancestors, self.name]
 
     def __str__(self) -> str:
         return self.name
@@ -587,6 +592,39 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
                 name="datalayer_unique_constraint",
             )
         ]
+
+
+def get_dataset_ids_intersecting(geometry: GEOSGeometry) -> List[int]:
+    """
+    IDs of datasets with at least one datalayer whose outline intersects
+    `geometry`. Testing detailed outlines is expensive, so the result is cached
+    by the geometry's EWKT plus a fingerprint of the datalayers table: any
+    datalayer save or delete changes the fingerprint, invalidating the cache.
+    """
+    fingerprint = DataLayer.objects.aggregate(
+        count=Count("id"),
+        last_updated_at=Max("updated_at"),
+    )
+    return _get_dataset_ids_intersecting(
+        str(geometry),
+        fingerprint["count"],
+        fingerprint["last_updated_at"],
+    )
+
+
+@cached(timeout=settings.MODULE_DATASETS_TTL)
+def _get_dataset_ids_intersecting(
+    geometry_ewkt: str,
+    # Not used in the body: only part of the cache key.
+    datalayer_count: int,
+    datalayer_last_updated_at: Optional[datetime],
+) -> List[int]:
+    return list(
+        DataLayer.objects.filter(outline__intersects=GEOSGeometry(geometry_ewkt))
+        .order_by()
+        .values_list("dataset_id", flat=True)
+        .distinct()
+    )
 
 
 class DataLayerHasStyle(

@@ -12,6 +12,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from planning.models import (
+    GeoPackageStatus,
     Scenario,
     ScenarioCapability,
     ScenarioPlanningApproach,
@@ -1321,7 +1322,7 @@ class PatchScenarioConfigurationTest(APITestCase):
                 {
                     "datalayer": btw_datalayer.pk,
                     "operator": "btw",
-                    "value": "10.0,20.0",
+                    "value": "10,20",
                 },
             ],
         )
@@ -2848,3 +2849,124 @@ class SubUnitsDetailsTest(APITestCase):
             None,
             None,
         )
+
+
+class DownloadGeopackageTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning_area, user=self.user
+        )
+        self.url = reverse(
+            "api:planning:scenarios-download-geopackage", args=[self.scenario.pk]
+        )
+
+    @mock.patch("planning.views_v2.track_event")
+    @mock.patch(
+        "planning.models.create_download_url",
+        return_value="http://example.com/download",
+    )
+    def test_download_returns_url_when_succeeded(
+        self, mock_create_download_url, mock_track_event
+    ):
+        self.scenario.geopackage_status = GeoPackageStatus.SUCCEEDED
+        self.scenario.geopackage_url = "gs://bucket/path/to/geopackage.gpkg"
+        self.scenario.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["status"], "ready")
+        self.assertEqual(data["download_url"], "http://example.com/download")
+
+        mock_track_event.assert_called_once()
+        _, kwargs = mock_track_event.call_args
+        self.assertEqual(kwargs["name"], "planning.scenario.geopackage_downloaded")
+        self.assertEqual(kwargs["properties"]["scenario_id"], self.scenario.pk)
+        self.assertEqual(kwargs["properties"]["status"], "ready")
+        self.assertEqual(kwargs["user_id"], self.user.pk)
+
+    @mock.patch("planning.views_v2.track_event")
+    def test_download_returns_processing_status_without_tracking(
+        self, mock_track_event
+    ):
+        self.scenario.geopackage_status = GeoPackageStatus.PROCESSING
+        self.scenario.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "processing")
+        mock_track_event.assert_not_called()
+
+    @mock.patch("planning.views_v2.async_generate_scenario_geopackage")
+    @mock.patch("planning.views_v2.track_event")
+    def test_download_returns_pending_status_without_retriggering(
+        self, mock_track_event, mock_task
+    ):
+        # Already queued by a previous ask - a client polling for status
+        # shouldn't re-track the ask or re-queue generation.
+        self.scenario.geopackage_status = GeoPackageStatus.PENDING
+        self.scenario.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "pending")
+        mock_task.delay.assert_not_called()
+        mock_track_event.assert_not_called()
+
+    @mock.patch("planning.views_v2.async_generate_scenario_geopackage")
+    @mock.patch("planning.views_v2.track_event")
+    def test_download_triggers_generation_and_tracks_as_generating(
+        self, mock_track_event, mock_task
+    ):
+        self.scenario.geopackage_status = None
+        self.scenario.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "pending")
+        mock_task.delay.assert_called_once_with(self.scenario.pk, regenerate=False)
+        mock_track_event.assert_called_once()
+        _, kwargs = mock_track_event.call_args
+        self.assertEqual(kwargs["name"], "planning.scenario.geopackage_downloaded")
+        self.assertEqual(kwargs["properties"]["status"], "generating")
+
+        self.scenario.refresh_from_db()
+        self.assertEqual(self.scenario.geopackage_status, GeoPackageStatus.PENDING)
+
+    @mock.patch("planning.views_v2.async_generate_scenario_geopackage")
+    @mock.patch("planning.views_v2.track_event")
+    def test_download_retries_failed_generation_with_regenerate(
+        self, mock_track_event, mock_task
+    ):
+        # `async_generate_scenario_geopackage` only proceeds for PENDING
+        # scenarios unless `regenerate=True` is passed, so a FAILED retry
+        # must force it - otherwise the task silently no-ops.
+        self.scenario.geopackage_status = GeoPackageStatus.FAILED
+        self.scenario.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "pending")
+        mock_task.delay.assert_called_once_with(self.scenario.pk, regenerate=True)
+        mock_track_event.assert_called_once()
+        _, kwargs = mock_track_event.call_args
+        self.assertEqual(kwargs["properties"]["status"], "generating")
+
+        self.scenario.refresh_from_db()
+        self.assertEqual(self.scenario.geopackage_status, GeoPackageStatus.PENDING)
+
+    def test_download_requires_authentication(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

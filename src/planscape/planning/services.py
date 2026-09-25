@@ -737,7 +737,7 @@ def _get_operation(operator: str, value: str) -> str:
             values = value.strip().replace(" ", "").split(",", maxsplit=1)
             values.sort()
             min_value, max_value = values
-            return f"value >= {float(min_value)} & value <= {float(max_value)}"
+            return f"value >= {min_value} & value <= {max_value}"
         case _:
             # normal cases
             # constraints datalayers from scenario configuration
@@ -1250,7 +1250,10 @@ def _get_datalayers_id_lookup_table(scenario):
 
 
 def _get_sub_units_lookup_table(scenario: Scenario) -> dict[int, Any] | None:
-    if scenario.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
+    if (
+        scenario.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        and not is_project_areas_child(scenario)
+    ):
         return None
     geojson = get_flatten_geojson(scenario)
     ret = {}
@@ -1345,8 +1348,12 @@ def export_scenario_stand_outputs_to_geopackage(
     scenario_outputs = {}
     dl_lookup = _get_datalayers_id_lookup_table(scenario)
     stand_size = scenario.get_stand_size()
+    is_sub_units = (
+        scenario.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        and not is_project_areas_child(scenario)
+    )
 
-    sub_units_lookup_table = _get_sub_units_lookup_table(scenario=scenario)
+    sub_units_lookup_table = _get_sub_units_lookup_table(scenario=scenario) if is_sub_units else None
 
     with open(stnd_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
@@ -1359,13 +1366,16 @@ def export_scenario_stand_outputs_to_geopackage(
                     case "DoTreat", "selected":
                         properties[key] = bool(int(value))
                     case "sub_unit_id":
-                        properties[key] = int(value)
-                        if sub_units_lookup_table:
-                            properties["treatment_rank"] = (
-                                sub_units_lookup_table.get(int(value), {})
-                                .get("properties", {})
-                                .get("treatment_rank")
-                            )
+                        if is_sub_units:
+                            properties[key] = int(value)
+                            if sub_units_lookup_table:
+                                properties["treatment_rank"] = (
+                                    sub_units_lookup_table.get(int(value), {})
+                                    .get("properties", {})
+                                    .get("treatment_rank")
+                                )
+                        else:
+                            properties["proj_id"] = int(value)
                     case _:
                         try:
                             f = float(value)
