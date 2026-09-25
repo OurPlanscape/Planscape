@@ -1,4 +1,5 @@
 <div class="heading">
+  <div class="title-label" *ngIf="titleLabel">{{ titleLabel }}</div>
   <div class="title" *ngIf="cardTitle">
     {{ cardTitle }}
     <div class="share-button" *ngIf="canShare">
