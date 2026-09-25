@@ -7,7 +7,7 @@ import { ScenarioState } from '../scenario.state';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { getSafeFileName } from '@app/shared/files';
-import { SNACK_ERROR_CONFIG } from '@app/shared';
+import { FEEDBACK_URL, SNACK_ERROR_CONFIG } from '@app/shared';
 import { GeopackageFailureModalComponent } from '../geopackage-failure-modal/geopackage-failure-modal.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { LegacyScenarioConfigOverlayComponent } from '../legacy-scenario-config-overlay/legacy-scenario-config-overlay.component';
@@ -102,6 +102,6 @@ export class ScenarioDashboardFooterComponent {
   }
 
   handleFeedback() {
-    window.open('https://www.planscape.org/contact-us/', '_blank');
+    window.open(FEEDBACK_URL, '_blank');
   }
 }
