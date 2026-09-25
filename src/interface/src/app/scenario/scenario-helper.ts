@@ -2,6 +2,8 @@ import { isNumber } from '@turf/helpers';
 import {
   Capabilities,
   Constraint,
+  CONSTRAINT_OPERATOR,
+  CONSTRAINT_OPERATOR_MAP,
   PLANNING_APPROACH,
   Scenario,
   SCENARIO_TYPE,
@@ -115,7 +117,7 @@ export function convertOldConfigurationToV3Payload(
     constraints.push({
       datalayer: roadLayerId,
       operator: 'lte',
-      value: formData.min_distance_from_road,
+      value: String(formData.min_distance_from_road),
     });
   }
   const slopeId = thresholdIds.get('slope');
@@ -123,7 +125,17 @@ export function convertOldConfigurationToV3Payload(
     constraints.push({
       datalayer: slopeId,
       operator: 'lt',
-      value: formData.max_slope,
+      value: String(formData.max_slope),
+    });
+  }
+  // Map the adv stand level constraints to constraints array
+  if (formData.adv_constraints) {
+    formData.adv_constraints.map((c) => {
+      constraints.push({
+        datalayer: c.datalayer,
+        operator: c.operator,
+        value: c.value,
+      });
     });
   }
 
@@ -261,4 +273,9 @@ export function arrayHasChanged(source: number[], compare: number[]): boolean {
     source.some((item, index) => item !== compare[index]);
 
   return hasChanged;
+}
+
+export function getOperatorDisplayText(operator: CONSTRAINT_OPERATOR): string {
+  const def = CONSTRAINT_OPERATOR_MAP.get(operator);
+  return def?.symbol ? def.symbol : operator;
 }
