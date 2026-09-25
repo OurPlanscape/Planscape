@@ -61,6 +61,10 @@
         </sg-step>
         <sg-step>
           <app-stand-level-constraints></app-stand-level-constraints>
+          <app-adv-stand-level-constraints
+            *appFeatureFlag="
+              'ADV_STAND_LEVEL_CONSTRAINTS'
+            "></app-adv-stand-level-constraints>
         </sg-step>
         <sg-step>
           <app-treatment-target

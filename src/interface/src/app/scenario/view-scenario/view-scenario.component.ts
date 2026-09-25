@@ -131,12 +131,13 @@ export class ViewScenarioComponent {
         switchMap((s) => {
           // On specific scenario
           let scenarioBackUrl = getPlanPath(this.planId, this.route.snapshot);
-          if (s.parent) {
-            scenarioBackUrl += `/scenario/${s.parent}/dashboard`;
-          } else {
-            scenarioBackUrl += `/scenario/${s.id}/dashboard`;
-          }
+          const status = s.scenario_result?.status;
 
+          // Only modify the URL if it's NOT a failure or panic
+          if (status !== 'FAILURE' && status !== 'PANIC') {
+            const targetId = s.parent || s.id;
+            scenarioBackUrl += `/scenario/${targetId}/dashboard`;
+          }
           this.breadcrumbService.updateBreadCrumb({
             label: s.name,
             backUrl: scenarioBackUrl,
@@ -227,6 +228,10 @@ export class ViewScenarioComponent {
 
   scenarioStatus(scenario: Scenario) {
     return scenario.scenario_result?.status || 'PENDING';
+  }
+
+  scenarioErrors(scenario: Scenario) {
+    return scenario.scenario_result?.errors || [];
   }
 
   scenarioCanHaveTreatmentPlans(s: Scenario) {

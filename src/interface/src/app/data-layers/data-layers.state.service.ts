@@ -9,6 +9,7 @@ import {
   of,
   shareReplay,
   startWith,
+  Subject,
   switchMap,
   tap,
 } from 'rxjs';
@@ -30,6 +31,7 @@ import { PlanState } from '@plan/plan.state';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import { SNACK_ERROR_CONFIG, UnselectableType } from '@app/shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { SELECTION_MODE } from './data-layers/selection-mode.token';
 
 export interface unselectableLayer {
   id: number;
@@ -61,6 +63,10 @@ export class DataLayersStateService {
   private _unSelectableDataLayerIds$ = new BehaviorSubject<
     unselectableLayer[] | []
   >([]);
+
+  private layerClicked = new Subject<DataLayer>();
+  public layerClicked$: Observable<DataLayer> =
+    this.layerClicked.asObservable();
 
   // Selected datalayers count
   selectedLayersCount$ = this.selectedDataLayers$.pipe(
@@ -189,6 +195,8 @@ export class DataLayersStateService {
     private mapModuleService: MapModuleService,
     @Inject(MAX_SELECTED_DATALAYERS)
     private maxSelectedDatalayers: number,
+    @Inject(SELECTION_MODE)
+    private selectionMode: 'AUTOMATIC' | 'MANUAL',
     @Inject(USE_GEOMETRY)
     private readonly sendGeometry: boolean,
     private planState: PlanState,
@@ -291,6 +299,14 @@ export class DataLayersStateService {
     this._selectedDataLayers$.next(updatedSelectedDatalayers);
   }
 
+  //explicitly set a layer to the selected list
+  addSelectedLayer(layer: DataLayer) {
+    const updatedSelectedDatalayers: DataLayer[] =
+      this._selectedDataLayers$.value;
+    updatedSelectedDatalayers.push(layer);
+    this._selectedDataLayers$.next(updatedSelectedDatalayers);
+  }
+
   //manage collection of layers that can't be selected
   setUnselectableLayers(layerIds: number[], reason: UnselectableType) {
     const unselectableLayers = layerIds.map((layerId) => {
@@ -316,7 +332,17 @@ export class DataLayersStateService {
   }
 
   // Adding or removing an item to the selected list
-  toggleLayerAdition(layer: DataLayer) {
+  handleLayerClick(layer: DataLayer) {
+    // if this is automatic, we go ahead and 'automatically' toggle...
+    if (this.selectionMode === 'AUTOMATIC') {
+      this.toggleLayer(layer);
+    } else {
+      // otherwise we throw an event, and let the subscriber 'manually' select
+      this.layerClicked.next(layer);
+    }
+  }
+
+  toggleLayer(layer: DataLayer) {
     if (this.isSelectedLayer(layer)) {
       this.removeSelectedLayer(layer);
     } else if (
