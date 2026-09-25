@@ -24,7 +24,8 @@
       <sg-card-link
         label="Map Viewer"
         subLabel="View & upload data"
-        height="normal"
+        height="extra-tall"
+        [collapseContentOnSmall]="true"
         (navigate)="handleNavigation()"
         [collapseContentOnSmall]="false">
         <img
