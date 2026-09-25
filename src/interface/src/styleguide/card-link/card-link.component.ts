@@ -30,8 +30,8 @@ export class CardLinkComponent {
     return this.height === 'tall';
   }
 
-  @HostBinding('class.xxl')
-  get isXxl() {
+  @HostBinding('class.extra-tall')
+  get isExtraTall() {
     return this.height === 'extra-tall';
   }
 
