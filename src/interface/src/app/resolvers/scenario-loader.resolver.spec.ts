@@ -62,7 +62,7 @@ describe('scenarioLoaderResolver', () => {
 
     expect(mockScenarioState.setScenarioId).not.toHaveBeenCalled();
     expect(mockScenarioState.resetScenarioId).toHaveBeenCalled();
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/plan', '42']);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/plan/42']);
     expect(result).toBeNull();
   });
 
@@ -75,7 +75,20 @@ describe('scenarioLoaderResolver', () => {
 
     expect(mockScenarioState.setScenarioId).not.toHaveBeenCalled();
     expect(mockScenarioState.resetScenarioId).toHaveBeenCalled();
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/plan', '42']);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/plan/42']);
     expect(result).toBeNull();
+  });
+
+  it('keeps the workspace prefix when navigating back to the plan', () => {
+    const route = {
+      paramMap: convertToParamMap({ planId: '42' }),
+      pathFromRoot: [{ paramMap: convertToParamMap({ workspaceId: '7' }) }],
+    } as any as ActivatedRouteSnapshot;
+
+    TestBed.runInInjectionContext(() =>
+      scenarioLoaderResolver(route, dummyState)
+    );
+
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/workspace/7/plan/42']);
   });
 });

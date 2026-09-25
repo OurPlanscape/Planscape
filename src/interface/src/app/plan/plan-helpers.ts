@@ -1,3 +1,4 @@
+import { ActivatedRouteSnapshot } from '@angular/router';
 import { Plan, ScenarioResult } from '@types';
 import {
   ProjectAreaReport,
@@ -133,8 +134,27 @@ export function getColorForProjectPosition(rank: number) {
   return PROJECT_AREA_COLORS[(rank - 1) % PROJECT_AREA_COLORS.length];
 }
 
-export function getPlanPath(planId: number) {
-  return '/plan/' + planId;
+/** Looks up and down the route tree, so the router's root snapshot works too. */
+export function getWorkspaceId(route?: ActivatedRouteSnapshot): string | null {
+  const routes = [...(route?.pathFromRoot ?? [])];
+  for (let child = route?.firstChild; child; child = child.firstChild) {
+    routes.push(child);
+  }
+  const match = routes.find((r) => r.paramMap.has('workspaceId'));
+  return match?.paramMap.get('workspaceId') ?? null;
+}
+
+// How the planning area the user just landed on was created
+export type PlanningAreaCreationOrigin = 'uploaded' | 'drawn';
+
+/** Pass the route so pages under `/workspace/:workspaceId` keep the prefix. */
+export function getPlanPath(
+  planId: number | string,
+  route?: ActivatedRouteSnapshot
+) {
+  const workspaceId = getWorkspaceId(route);
+  const prefix = workspaceId ? `/workspace/${workspaceId}` : '';
+  return `${prefix}/plan/${planId}`;
 }
 
 export function isValidTotalArea(area: number) {

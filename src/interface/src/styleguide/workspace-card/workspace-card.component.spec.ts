@@ -153,6 +153,7 @@ describe('WorkspaceCardComponent', () => {
   });
 
   it('does not navigate when the menu button is clicked', () => {
+    component.userCanRename = true;
     fixture.detectChanges();
 
     const event = new MouseEvent('click', { bubbles: true, cancelable: true });
@@ -163,12 +164,23 @@ describe('WorkspaceCardComponent', () => {
     expect(event.defaultPrevented).toBe(true);
   });
 
-  it('only shows menu actions the user is allowed to perform', () => {
+  it('hides the menu button when the user has no actions', () => {
     fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.more-menu-button')).toBeNull();
+  });
+
+  it('only shows menu actions the user is allowed to perform', () => {
+    component.userCanShare = true;
+    fixture.detectChanges();
+
     fixture.nativeElement.querySelector('.more-menu-button').click();
     fixture.detectChanges();
 
-    expect(document.querySelectorAll('.action-button').length).toBe(0);
+    const labels = Array.from(
+      document.querySelectorAll('.action-button .mat-mdc-menu-item-text')
+    ).map((el) => el.textContent?.trim());
+    expect(labels).toEqual(['Share']);
   });
 
   it('shows rename, share and delete when permitted', () => {

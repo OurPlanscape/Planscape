@@ -33,7 +33,10 @@ class TreatmentPrescriptionFactory(factory.django.DjangoModelFactory):
 
     uuid = factory.Faker("uuid4")
     treatment_plan = factory.SubFactory(TreatmentPlanFactory)
-    project_area = factory.SubFactory(ProjectAreaFactory)
+    project_area = factory.SubFactory(
+        ProjectAreaFactory,
+        scenario=factory.SelfAttribute("..treatment_plan.scenario"),
+    )
     stand = factory.SubFactory(StandFactory, size=StandSizeChoices.LARGE)
     action = factory.Iterator([i for i in TreatmentPrescriptionAction])
     type = factory.LazyAttribute(lambda obj: get_prescription_type(obj.action))

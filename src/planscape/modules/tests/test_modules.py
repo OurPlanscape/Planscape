@@ -2,7 +2,12 @@ import json
 
 from typing import Any, Dict
 
-from datasets.models import DataLayerType, PreferredDisplayType, VisibilityOptions
+from datasets.models import (
+    DataLayerStatus,
+    DataLayerType,
+    PreferredDisplayType,
+    VisibilityOptions,
+)
 from datasets.tests.factories import DatasetFactory, DataLayerFactory
 from django.conf import settings
 from django.test import TestCase
@@ -15,7 +20,10 @@ from modules.base import (
     compute_scenario_capabilities,
     get_module,
 )
-from modules.serializers import FundingReportModuleSerializer
+from modules.serializers import (
+    AdvancedStandLevelConstraintSerializer,
+    FundingReportModuleSerializer,
+)
 
 from planscape.tests.factories import UserFactory
 from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
@@ -413,18 +421,15 @@ class AdvancedStandLevelConstraintModuleTest(TestCase):
     def setUp(self):
         self.planning_area = PlanningAreaFactory.create()
         self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
+        self.module = get_module("advanced_stand_level_constraint")
         return super().setUp()
 
     def test_get_module_returns_advanced_stand_level_constraint_module(self):
-        module = get_module("advanced_stand_level_constraint")
-
-        self.assertEqual(module.name, "advanced_stand_level_constraint")
+        self.assertEqual(self.module.name, "advanced_stand_level_constraint")
 
     def test_can_run_scenario_but_not_planning_area(self):
-        module = get_module("advanced_stand_level_constraint")
-
-        self.assertFalse(module.can_run(self.planning_area))
-        self.assertTrue(module.can_run(self.scenario))
+        self.assertFalse(self.module.can_run(self.planning_area))
+        self.assertTrue(self.module.can_run(self.scenario))
 
     def test_returns_empty_dataset_options(self):
         DatasetFactory.create(
@@ -440,12 +445,230 @@ class AdvancedStandLevelConstraintModuleTest(TestCase):
             modules=["advanced_stand_level_constraint"],
         )
 
-        module = get_module("advanced_stand_level_constraint")
-        configuration = module.get_configuration()
+        configuration = self.module.get_configuration()
         datasets = configuration["options"]["datasets"]
 
         self.assertEqual(len(datasets["main_datasets"]), 0)
         self.assertEqual(len(datasets["base_datasets"]), 0)
+
+    def test_returns_datasets_containing_eligible_datalayers(self):
+        main_dataset = DatasetFactory.create(
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        )
+        base_dataset = DatasetFactory.create(
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
+        )
+        ineligible_dataset = DatasetFactory.create(
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        )
+        enabled_metadata = {
+            "modules": {"advanced_stand_level_constraint": {"enabled": True}}
+        }
+        DataLayerFactory.create_batch(
+            2,
+            dataset=main_dataset,
+            type=DataLayerType.RASTER,
+            metadata=enabled_metadata,
+        )
+        DataLayerFactory.create(
+            dataset=base_dataset,
+            type=DataLayerType.RASTER,
+            metadata={"modules": {"advanced_stand_level_constraint": {}}},
+        )
+        DataLayerFactory.create(
+            dataset=ineligible_dataset,
+            type=DataLayerType.RASTER,
+            metadata={
+                "modules": {"advanced_stand_level_constraint": {"enabled": False}}
+            },
+        )
+        DataLayerFactory.create(
+            dataset=ineligible_dataset,
+            type=DataLayerType.VECTOR,
+            metadata=enabled_metadata,
+        )
+        DataLayerFactory.create(
+            dataset=ineligible_dataset,
+            type=DataLayerType.RASTER,
+            status=DataLayerStatus.PENDING,
+            metadata=enabled_metadata,
+        )
+
+        datasets = self.module.get_configuration()["options"]["datasets"]
+
+        self.assertEqual(
+            [dataset.id for dataset in datasets["main_datasets"]],
+            [main_dataset.id],
+        )
+        self.assertEqual(
+            [dataset.id for dataset in datasets["base_datasets"]],
+            [base_dataset.id],
+        )
+
+    def test_returns_only_eligible_datalayers(self):
+        dataset = DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
+        enabled = DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            metadata={
+                "modules": {"advanced_stand_level_constraint": {"enabled": True}}
+            },
+        )
+        implicitly_enabled = DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            metadata={"modules": {"advanced_stand_level_constraint": {}}},
+        )
+        DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            metadata={
+                "modules": {"advanced_stand_level_constraint": {"enabled": False}}
+            },
+        )
+        DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            metadata={"modules": {"other": {"enabled": True}}},
+        )
+        DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.VECTOR,
+            metadata={
+                "modules": {"advanced_stand_level_constraint": {"enabled": True}}
+            },
+        )
+        DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            status=DataLayerStatus.PENDING,
+            metadata={
+                "modules": {"advanced_stand_level_constraint": {"enabled": True}}
+            },
+        )
+
+        datalayers = self.module.get_configuration()["options"]["datalayers"]
+
+        self.assertEqual(
+            {datalayer.id for datalayer in datalayers},
+            {enabled.id, implicitly_enabled.id},
+        )
+
+    def test_filters_datalayers_by_outline(self):
+        included_dataset = DatasetFactory.create(
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        )
+        excluded_dataset = DatasetFactory.create(
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        )
+        metadata = {
+            "modules": {"advanced_stand_level_constraint": {"enabled": True}}
+        }
+        included = DataLayerFactory.create(
+            dataset=included_dataset,
+            type=DataLayerType.RASTER,
+            outline=GEOSGeometry(
+                "MULTIPOLYGON(((0 0, 2 0, 2 2, 0 2, 0 0)))",
+                srid=settings.DEFAULT_CRS,
+            ),
+            metadata=metadata,
+        )
+        DataLayerFactory.create(
+            dataset=excluded_dataset,
+            type=DataLayerType.RASTER,
+            outline=GEOSGeometry(
+                "MULTIPOLYGON(((3 3, 4 3, 4 4, 3 4, 3 3)))",
+                srid=settings.DEFAULT_CRS,
+            ),
+            metadata=metadata,
+        )
+        geometry = GEOSGeometry(
+            "MULTIPOLYGON(((1 1, 2 1, 2 2, 1 2, 1 1)))",
+            srid=settings.DEFAULT_CRS,
+        )
+
+        options = self.module.get_configuration(geometry=geometry)["options"]
+        datalayers = options["datalayers"]
+
+        self.assertEqual([datalayer.id for datalayer in datalayers], [included.id])
+        self.assertEqual(
+            [dataset.id for dataset in options["datasets"]["main_datasets"]],
+            [included_dataset.id],
+        )
+
+    def test_filters_datalayers_by_dataset_access(self):
+        public_dataset = DatasetFactory.create(
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        )
+        private_dataset = DatasetFactory.create(
+            visibility=VisibilityOptions.PRIVATE,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        )
+        metadata = {
+            "modules": {"advanced_stand_level_constraint": {"enabled": True}}
+        }
+        public_layer = DataLayerFactory.create(
+            dataset=public_dataset,
+            type=DataLayerType.RASTER,
+            metadata=metadata,
+        )
+        private_layer = DataLayerFactory.create(
+            dataset=private_dataset,
+            type=DataLayerType.RASTER,
+            metadata=metadata,
+        )
+
+        anonymous_options = self.module.get_configuration()["options"]
+        owner_options = self.module.get_configuration(user=private_dataset.created_by)[
+            "options"
+        ]
+        anonymous_layers = anonymous_options["datalayers"]
+        owner_layers = owner_options["datalayers"]
+
+        self.assertEqual(
+            {datalayer.id for datalayer in anonymous_layers}, {public_layer.id}
+        )
+        self.assertEqual(
+            {datalayer.id for datalayer in owner_layers},
+            {public_layer.id, private_layer.id},
+        )
+        self.assertEqual(
+            {dataset.id for dataset in anonymous_options["datasets"]["main_datasets"]},
+            {public_dataset.id},
+        )
+        self.assertEqual(
+            {dataset.id for dataset in owner_options["datasets"]["main_datasets"]},
+            {public_dataset.id, private_dataset.id},
+        )
+
+    def test_serializes_datalayers_as_list(self):
+        dataset = DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
+        datalayer = DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            metadata={
+                "modules": {"advanced_stand_level_constraint": {"enabled": True}}
+            },
+        )
+
+        serializer = self.module.get_serializer_class()(
+            instance=self.module.get_configuration()
+        )
+
+        self.assertIs(
+            self.module.get_serializer_class(), AdvancedStandLevelConstraintSerializer
+        )
+        self.assertIsInstance(serializer.data["options"]["datalayers"], list)
+        self.assertEqual(
+            [item["id"] for item in serializer.data["options"]["datalayers"]],
+            [datalayer.id],
+        )
 
     def test_capabilities_include_scenario_but_not_planning_area(self):
         scenario_capabilities = compute_scenario_capabilities(self.scenario)

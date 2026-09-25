@@ -228,29 +228,47 @@ export class ScenariosListComponent implements OnInit {
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
-    const isFinished =
+    const wasSuccessful = clickedScenario.scenario_result?.status === 'SUCCESS';
+
+    const hasFailed =
       clickedScenario.scenario_result &&
       ['FAILURE', 'PANIC', 'SUCCESS'].includes(
         clickedScenario.scenario_result.status
       );
 
+    const isFinished = hasFailed || wasSuccessful;
+
     if (this.mode === 'project-area') {
-      const base = ['/plan', this.plan!.id, 'scenario', clickedScenario.id];
+      const base = [
+        getPlanPath(this.plan!.id, this.route.snapshot),
+        'scenario',
+        clickedScenario.id,
+      ];
       // Note that these child scenarios should not navigate to a dashboard on completion
       this.router.navigate(isFinished ? [...base] : base);
       this.breadcrumbService.updateBreadCrumb({
         label: 'Project Area Dashboard',
-        backUrl: getPlanPath(clickedScenario.planning_area),
+        backUrl: getPlanPath(
+          clickedScenario.planning_area,
+          this.route.snapshot
+        ),
       });
     } else {
       const base = ['scenario', clickedScenario.id];
-      this.router.navigate(isFinished ? [...base, 'dashboard'] : base, {
+
+      // Only navigate to 'dashboard' if it's successful (DONE), otherwise use base
+      this.router.navigate(wasSuccessful ? [...base, 'dashboard'] : base, {
         relativeTo: this.route,
       });
-      this.breadcrumbService.updateBreadCrumb({
-        label: 'Planning Area Overview',
-        backUrl: getPlanPath(clickedScenario.planning_area),
-      });
+      if (wasSuccessful) {
+        this.breadcrumbService.updateBreadCrumb({
+          label: 'Planning Area Overview',
+          backUrl: getPlanPath(
+            clickedScenario.planning_area,
+            this.route.snapshot
+          ),
+        });
+      }
     }
   }
 

@@ -48,10 +48,14 @@ class PlanningAreaManager(AliveObjectsManager):
         ids = (
             qs.filter(
                 Q(user=user)
+                | Q(workspace__user_access__user=user)
+                | Q(workspace__created_by=user)
+                # planning areas outside workspaces still use planning-area sharing
                 | Q(
+                    workspace__isnull=True,
                     pk__in=UserObjectRole.objects.filter(
                         collaborator_id=user, content_type_id=content_type_pk
-                    ).values_list("object_pk", flat=True)
+                    ).values_list("object_pk", flat=True),
                 )
             )
             .values_list("id", flat=True)
@@ -156,10 +160,10 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
             )
         ]
         constraints = [
+            # NULL workspaces are distinct, so areas outside a workspace can repeat names
             models.UniqueConstraint(
                 fields=[
-                    "user",
-                    "region_name",
+                    "workspace",
                     "name",
                 ],
                 name="unique_planning_area",
@@ -212,6 +216,22 @@ class ScenarioResultStatus(models.TextChoices):
     DRAFT = "DRAFT", "Draft"
 
 
+class ScenarioResultErrorCode(models.TextChoices):
+    TIME_OUT = "TIME_OUT", "Time Out"
+    GENERIC_PANIC = "GENERIC_PANIC", "Generic Panic"
+    NO_AVAILABLE_STANDS = "NO_AVAILABLE_STANDS", "No Available Stands"
+    STAND_METRIC_FAILURE = "STAND_METRIC_FAILURE", "Stand Metric Failure"
+    UNKNOWN_ERROR = "UNKNOWN_ERROR", "Unknown Error"
+    SCENARIO_LOAD_ERROR = "SCENARIO_LOAD_ERROR", "Scenario Load Error"
+    STAND_DATA_ERROR = "STAND_DATA_ERROR", "Stand Data Error"
+    PROJECT_DATA_ERROR = "PROJECT_DATA_ERROR", "Project Data Error"
+    FORSYS_PREPARATION_ERROR = "FORSYS_PREPARATION_ERROR", "Forsys Preparation Error"
+    FORSYS_EXECUTION_ERROR = "FORSYS_EXECUTION_ERROR", "Forsys Execution Error"
+    FORSYS_EMPTY_RESULT = "FORSYS_EMPTY_RESULT", "Forsys Empty Result"
+    RESULT_PROCESSING_ERROR = "RESULT_PROCESSING_ERROR", "Result Processing Error"
+    PROJECT_AREA_UPDATE_ERROR = "PROJECT_AREA_UPDATE_ERROR", "Project Area Update Error"
+
+
 class ScenarioPostProcessingStatus(models.TextChoices):
     PENDING = "PENDING", "Pending"
     RUNNING = "RUNNING", "Running"
@@ -257,10 +277,20 @@ class ScenarioVersion(models.TextChoices):
     V3 = "V3", "Version 3"
 
 
-class TreatmentGoalCategory(models.TextChoices):
-    FIRE_DYNAMICS = "FIRE_DYNAMICS", "Fire Dynamics"
-    BIODIVERSITY = "BIODIVERSITY", "Biodiversity"
-    CARBON_BIOMASS = "CARBON_BIOMASS", "Carbon/Biomass"
+class TreatmentGoalCategory(CreatedAtMixin, UpdatedAtMixin, models.Model):
+    id: int
+    name = models.CharField(
+        max_length=120,
+        unique=True,
+        help_text="Name of the Treatment Goal category.",
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta(TypedModelMeta):
+        ordering = ["name"]
+        verbose_name_plural = "Treatment Goal Categories"
 
 
 class TreatmentGoalGroup(models.TextChoices):
@@ -311,9 +341,11 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
     active = models.BooleanField(
         default=True, help_text="Treatment Goal active status."
     )
-    category = models.CharField(
-        max_length=32,
-        choices=TreatmentGoalCategory.choices,
+    category_id: int
+    category = models.ForeignKey(
+        TreatmentGoalCategory,
+        related_name="treatment_goals",
+        on_delete=models.RESTRICT,
         help_text="Treatment Goal category.",
         null=True,
     )
@@ -690,6 +722,8 @@ class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Mode
     result = models.JSONField(null=True, encoder=DjangoJSONEncoder)
 
     run_details = models.JSONField(null=True)
+
+    errors = models.JSONField(null=True, encoder=DjangoJSONEncoder)
 
     started_at = models.DateTimeField(
         null=True, help_text="Start of the Forsys run, in UTC timezone."

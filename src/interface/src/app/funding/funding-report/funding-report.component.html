@@ -286,20 +286,24 @@
           <tbody>
             <tr>
               <th scope="row">Merchantable Volume (bf)</th>
-              <td>{{ biomass.merchantable_hardwood_bf | number: '1.0-1' }}</td>
-              <td>{{ biomass.merchantable_softwood_bf | number: '1.0-1' }}</td>
-              <td>{{ biomass.merchantable_mixed_bf | number: '1.0-1' }}</td>
+              <td>
+                {{ biomass.merchantable_hardwood_bf | abbreviatedNumber }}
+              </td>
+              <td>
+                {{ biomass.merchantable_softwood_bf | abbreviatedNumber }}
+              </td>
+              <td>{{ biomass.merchantable_mixed_bf | abbreviatedNumber }}</td>
             </tr>
             <tr>
               <th scope="row">Non-Merchantable Volume (ft³)</th>
               <td>
-                {{ biomass.non_merchantable_hardwood_cuft | number: '1.0-1' }}
+                {{ biomass.non_merchantable_hardwood_cuft | abbreviatedNumber }}
               </td>
               <td>
-                {{ biomass.non_merchantable_softwood_cuft | number: '1.0-1' }}
+                {{ biomass.non_merchantable_softwood_cuft | abbreviatedNumber }}
               </td>
               <td>
-                {{ biomass.non_merchantable_mixed_cuft | number: '1.0-1' }}
+                {{ biomass.non_merchantable_mixed_cuft | abbreviatedNumber }}
               </td>
             </tr>
           </tbody>

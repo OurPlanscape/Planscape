@@ -2,7 +2,7 @@ import json
 from typing import List, Optional  # noqa
 
 import markdown
-from collaboration.services import get_permissions, get_role
+from workspaces.access import get_planning_area_permissions, get_planning_area_role
 from datasets.models import DataLayer, DataLayerStatus, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
@@ -23,10 +23,10 @@ from planning.models import (
     Scenario,
     ScenarioPlanningApproach,
     ScenarioResult,
+    ScenarioResultErrorCode,
     ScenarioType,
     SharedLink,
     TreatmentGoal,
-    TreatmentGoalCategory,
     TreatmentGoalGroup,
     TreatmentGoalUsageType,
     TreatmentGoalUsesDataLayer,
@@ -39,6 +39,14 @@ from planning.services import (
     get_min_project_area,
     union_geojson,
 )
+
+
+class ScenarioResultErrorSerializer(serializers.Serializer):
+    error_code = serializers.ChoiceField(
+        choices=ScenarioResultErrorCode.choices,
+        help_text="Scenario result error code.",
+    )
+    description = serializers.CharField(help_text="Human-readable error description.")
 
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
@@ -89,11 +97,11 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
 
     def get_role(self, instance):
         user = self.context["request"].user or self.request.user
-        return get_role(user, instance)
+        return get_planning_area_role(user, instance) or False
 
     def get_permissions(self, instance):
         user = self.context["request"].user or self.request.user
-        return list(get_permissions(user, instance))
+        return get_planning_area_permissions(user, instance)
 
     class Meta:
         fields = (
@@ -142,12 +150,14 @@ class CreatePlanningAreaSerializer(serializers.ModelSerializer):
         return workspace
 
     def validate(self, attrs):
-        region_val = attrs.get("region_name")
-        if PlanningArea.objects.filter(
-            user=attrs["user"],
-            name=attrs["name"],
-            region_name=region_val,
-        ).exists():
+        workspace = attrs.get("workspace")
+        if (
+            workspace is not None
+            and PlanningArea.objects.filter(
+                workspace=workspace,
+                name=attrs["name"],
+            ).exists()
+        ):
             raise serializers.ValidationError(
                 {"name": "A planning area with this name already exists."}
             )
@@ -200,8 +210,9 @@ class UpdatePlanningAreaSerializer(serializers.ModelSerializer):
             )
         instance = self.instance
         if (
-            PlanningArea.objects.filter(
-                user=instance.user,
+            instance.workspace_id is not None
+            and PlanningArea.objects.filter(
+                workspace_id=instance.workspace_id,
                 name=attrs["name"],
             )
             .exclude(id=instance.pk)
@@ -319,6 +330,7 @@ class PlanningAreaNoteListSerializer(serializers.ModelSerializer):
 
 class ScenarioResultSerializer(serializers.ModelSerializer):
     result = serializers.SerializerMethodField()
+    errors = ScenarioResultErrorSerializer(many=True, allow_null=True, required=False)
 
     class Meta:
         fields = (
@@ -330,6 +342,7 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
             "status",
             "result",
             "run_details",
+            "errors",
         )
         model = ScenarioResult
 
@@ -564,8 +577,8 @@ class ConstraintSerializer(serializers.Serializer):
             values.sort()
             min_value, max_value = values
             try:
-                min_value = float(min_value)
-                max_value = float(max_value)
+                float(min_value)
+                float(max_value)
                 return f"{min_value},{max_value}"
             except ValueError:
                 raise serializers.ValidationError("Invalid constraint value(s)")
@@ -851,8 +864,8 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
     description = serializers.SerializerMethodField(
         help_text="Description of the Treatment Goal on HTML format.",
     )
-    category_text = serializers.SerializerMethodField(
-        help_text="Text format of Treatment Goal Category.",
+    category = serializers.SerializerMethodField(
+        help_text="Name of the Treatment Goal Category.",
     )
     group_text = serializers.SerializerMethodField(
         read_only=True,
@@ -869,7 +882,6 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "category",
-            "category_text",
             "group",
             "group_text",
             "usage_types",
@@ -880,10 +892,9 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
             return markdown.markdown(instance.description)
         return None
 
-    def get_category_text(self, instance):
+    def get_category(self, instance):
         if instance.category:
-            category = TreatmentGoalCategory(instance.category)
-            return category.label
+            return instance.category.name
         return None
 
     def get_group_text(self, instance):
@@ -894,9 +905,18 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
 
 
 class TreatmentGoalSimpleSerializer(serializers.ModelSerializer):
+    category = serializers.SerializerMethodField(
+        help_text="Name of the Treatment Goal Category.",
+    )
+
     class Meta:
         model = TreatmentGoal
-        fields = ("id", "name")
+        fields = ("id", "name", "category")
+
+    def get_category(self, instance):
+        if instance.category:
+            return instance.category.name
+        return None
 
 
 class ListScenarioSerializer(serializers.ModelSerializer):

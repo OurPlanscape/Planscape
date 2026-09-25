@@ -155,3 +155,4 @@ export const TREATMENT_EFFECTS_URL =
   'https://support.planscape.org/support/solutions/articles/32000036426-treatment-effects-overview';
 export const FUNDING_REPORT_INFO_URL =
   'https://support.planscape.org/support/solutions/folders/32000037369';
+export const FEEDBACK_URL = 'https://www.planscape.org/contact-us/';

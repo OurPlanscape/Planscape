@@ -2,6 +2,7 @@ import json
 import random
 import shutil
 from pathlib import Path
+from unittest import mock
 
 from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
@@ -13,6 +14,7 @@ from planning.tests.factories import (
     ProjectAreaFactory,
     ScenarioFactory,
 )
+from planning.models import GeoPackageStatus
 from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
 from stands.calculator import calculate_delta
 from stands.tests.factories import StandFactory
@@ -21,6 +23,7 @@ from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
     ImpactVariableAggregation,
+    ProjectAreaTreatmentResult,
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
@@ -30,16 +33,19 @@ from impacts.models import (
 from impacts.services import (
     calculate_impacts,
     calculate_impacts_for_untreated_stands,
+    calculate_project_area_impacts,
     classify_flame_length,
     classify_rate_of_spread,
     clone_treatment_plan,
     create_treatment_plan,
+    export_and_upload_geopackage,
     export_geopackage,
     fetch_treatment_plan_data,
     generate_impact_results_data_to_plot,
     generate_summary,
     get_calculation_matrix,
     get_calculation_matrix_wo_action,
+    iter_treatment_plan_data_batches,
     itertools,
     upsert_treatment_prescriptions,
 )
@@ -517,6 +523,80 @@ class CalculateImpactsTest(TestCase):
         with self.assertRaises(ValueError):
             calculate_impacts(self.plan, variable, action, 1)
 
+    def test_calculate_impacts_processes_only_the_requested_batch(self):
+        variable = ImpactVariable.CANOPY_BASE_HEIGHT
+        action = TreatmentPrescriptionAction.HEAVY_MASTICATION
+        baseline_metadata = {
+            "modules": {
+                "impacts": {
+                    "year": 2024,
+                    "variable": str(variable).upper(),
+                    "action": None,
+                    "baseline": True,
+                }
+            }
+        }
+        action_metadata = {
+            "modules": {
+                "impacts": {
+                    "year": 2024,
+                    "variable": str(variable).upper(),
+                    "action": TreatmentPrescriptionAction.get_file_mapping(action),
+                    "baseline": False,
+                }
+            }
+        }
+        DataLayerFactory.create(
+            name="baseline",
+            url="impacts/tests/test_data/test_raster.tif",
+            metadata=baseline_metadata,
+            type=DataLayerType.RASTER,
+        )
+        DataLayerFactory.create(
+            name="action",
+            url="impacts/tests/test_data/test_raster.tif",
+            metadata=action_metadata,
+            type=DataLayerType.RASTER,
+        )
+        first_batch = [stand.id for stand in self.stands[:2]]
+        second_batch = [stand.id for stand in self.stands[2:]]
+
+        calculate_impacts(
+            self.plan,
+            variable,
+            action,
+            2024,
+            stand_ids=first_batch,
+            calculate_project_area_results=False,
+        )
+        self.assertCountEqual(
+            TreatmentResult.objects.values_list("stand_id", flat=True), first_batch
+        )
+        self.assertFalse(ProjectAreaTreatmentResult.objects.exists())
+
+        calculate_impacts(
+            self.plan,
+            variable,
+            action,
+            2024,
+            stand_ids=second_batch,
+            calculate_project_area_results=False,
+        )
+        with mock.patch(
+            "impacts.services.get_calculation_matrix",
+            return_value=[(variable, action, 2024)],
+        ):
+            calculate_project_area_impacts(self.plan)
+
+        self.assertEqual(TreatmentResult.objects.count(), len(self.stands))
+        project_area_result = ProjectAreaTreatmentResult.objects.get(
+            project_area=self.project_area,
+            variable=variable,
+            action=action,
+            year=2024,
+        )
+        self.assertEqual(project_area_result.stand_count, len(self.stands))
+
     def test_calculate_delta(self):
         values_bases_expected_results = [
             # non-burnable
@@ -618,6 +698,21 @@ class CalculateImpactsForUntreatedStandsTest(TestCase):
             self.assertEqual(treatment_result.value, treatment_result.baseline)
             self.assertEqual(treatment_result.delta, 0)
             self.assertIsNotNone(treatment_result.forested_rate)
+
+    def test_calculate_impacts_for_untreated_stands_respects_batch(self):
+        batch = [self.treated_stands[0].id, self.stands[-1].id]
+
+        calculate_impacts_for_untreated_stands(
+            self.plan,
+            ImpactVariable.CANOPY_BASE_HEIGHT,
+            year=AVAILABLE_YEARS[0],
+            stand_ids=batch,
+        )
+
+        self.assertCountEqual(
+            TreatmentResult.objects.values_list("stand_id", flat=True),
+            [self.stands[-1].id],
+        )
 
 
 class ImpactResultsDataPlotTest(TestCase):
@@ -816,7 +911,7 @@ class ClassificationFunctionsTest(TestCase):
 
 
 class FetchTreatmentPlanDataTest(TestCase):
-    def test_fetch_treatment_plan_data_returns_results(self):
+    def create_treatment_plan_results(self):
         treatment_plan = TreatmentPlanFactory.create()
         _ = ProjectAreaFactory.create(scenario=treatment_plan.scenario)
         variables = [ImpactVariable.CANOPY_BASE_HEIGHT, ImpactVariable.CANOPY_COVER]
@@ -834,12 +929,32 @@ class FetchTreatmentPlanDataTest(TestCase):
                 delta=random.randrange(0, 100),
                 stand=stand,
             )
+        return treatment_plan, stand1, stand2
 
+    def test_fetch_treatment_plan_data_returns_results(self):
+        treatment_plan, stand1, stand2 = self.create_treatment_plan_results()
         data = fetch_treatment_plan_data(treatment_plan)
+
         self.assertEqual(len(data), 2)
         stand_ids = [x.get("properties", {}).get("stand_id") for x in data]
         self.assertIn(stand1.pk, stand_ids)
         self.assertIn(stand2.pk, stand_ids)
+
+    def test_iter_treatment_plan_data_batches_returns_results_in_batches(self):
+        treatment_plan, stand1, stand2 = self.create_treatment_plan_results()
+
+        batches = list(
+            iter_treatment_plan_data_batches(treatment_plan, batch_size=1)
+        )
+
+        self.assertEqual(len(batches), 2)
+        self.assertEqual([len(batch) for batch in batches], [1, 1])
+        stand_ids = [
+            record.get("properties", {}).get("stand_id")
+            for batch in batches
+            for record in batch
+        ]
+        self.assertEqual(stand_ids, [stand1.pk, stand2.pk])
 
 
 @override_settings(
@@ -870,5 +985,60 @@ class ExportShapefileTest(TestCase):
         path = Path(shapefile)
         self.assertTrue(path.exists())
 
+    @mock.patch("impacts.services.fetch_treatment_plan_data")
+    def test_export_does_not_fetch_all_treatment_plan_data(self, mock_fetch_data):
+        treatment_plan = TreatmentPlanFactory.create()
+
+        export_geopackage(treatment_plan)
+
+        mock_fetch_data.assert_not_called()
+
     def tearDown(self):
         shutil.rmtree("/tmp/planscape-test-output", ignore_errors=True)
+
+
+class ExportAndUploadGeopackageTest(TestCase):
+    @mock.patch("impacts.services.upload_file_via_cli")
+    @mock.patch("impacts.services.export_geopackage")
+    def test_export_and_upload_persists_url_and_status(
+        self, mock_export_geopackage, mock_upload_file
+    ):
+        treatment_plan = TreatmentPlanFactory.create()
+        output_path = Path("/tmp/planscape-test-output/geopackages/test.gpkg.zip")
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.touch()
+        mock_export_geopackage.return_value = str(output_path)
+
+        with self.settings(
+            GCS_MEDIA_BUCKET="test-bucket",
+            GEOPACKAGES_FOLDER="geopackages",
+        ):
+            geopackage_url = export_and_upload_geopackage(treatment_plan)
+
+        treatment_plan.refresh_from_db()
+        expected_url = (
+            f"gs://test-bucket/geopackages/"
+            f"treatment_plan_{treatment_plan.uuid}.gpkg.zip"
+        )
+        self.assertEqual(geopackage_url, expected_url)
+        self.assertEqual(treatment_plan.geopackage_url, expected_url)
+        self.assertEqual(treatment_plan.geopackage_status, GeoPackageStatus.SUCCEEDED)
+        mock_upload_file.assert_called_once_with(
+            object_name=f"geopackages/treatment_plan_{treatment_plan.uuid}.gpkg.zip",
+            input_file=str(output_path),
+            bucket_name="test-bucket",
+        )
+
+    @mock.patch("impacts.services.export_geopackage", side_effect=ValueError("boom"))
+    def test_export_and_upload_marks_failed_and_reraises(self, mock_export_geopackage):
+        treatment_plan = TreatmentPlanFactory.create(
+            geopackage_url="gs://test-bucket/old.gpkg.zip",
+            geopackage_status=GeoPackageStatus.SUCCEEDED,
+        )
+
+        with self.assertRaises(ValueError):
+            export_and_upload_geopackage(treatment_plan)
+
+        treatment_plan.refresh_from_db()
+        self.assertIsNone(treatment_plan.geopackage_url)
+        self.assertEqual(treatment_plan.geopackage_status, GeoPackageStatus.FAILED)

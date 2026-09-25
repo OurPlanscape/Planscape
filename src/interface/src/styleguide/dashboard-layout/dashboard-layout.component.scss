@@ -101,9 +101,18 @@ $layout-max-width: 1600px;
       padding: 16px 16px 8px 16px;
     }
 
+    // The layout itself scrolls on small, so the right column and its card grow
+    // with their content instead of being their own (collapsing) scroll area.
     .layout-column:last-child {
+      display: block;
+      overflow: visible;
       padding: 8px 16px 16px 16px;
       min-width: 0;
+    }
+
+    .layout-card {
+      display: block;
+      overflow: visible;
     }
   }
 }

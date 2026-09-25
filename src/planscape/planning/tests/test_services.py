@@ -38,6 +38,7 @@ from planning.services import (
     export_planning_area_to_geopackage,
     export_scenario_inputs_to_geopackage,
     export_scenario_stand_outputs_to_geopackage,
+    export_scenario_sub_units_outputs_to_geopackage,
     export_to_geopackage,
     export_to_shapefile,
     get_acreage,
@@ -154,7 +155,7 @@ class BuildRunConfigurationTest(TestCase):
         self.assertEqual(datalayers[dne_datalayer.pk]["threshold"], "value != 10")
         self.assertEqual(
             datalayers[btw_datalayer.pk]["threshold"],
-            "value >= 10.0 & value <= 20.0",
+            "value >= 10 & value <= 20",
         )
         self.assertEqual(
             datalayers[dne_datalayer.pk]["usage_type"],
@@ -201,7 +202,7 @@ class BuildRunConfigurationTest(TestCase):
         self.assertEqual(datalayers[priority.pk]["threshold"], "value != 10")
         self.assertEqual(
             datalayers[cobenefit.pk]["threshold"],
-            "value >= 10.0 & value <= 20.0",
+            "value >= 10 & value <= 20",
         )
         self.assertEqual(
             datalayers[priority.pk]["usage_type"],
@@ -718,6 +719,116 @@ class TestExportToGeopackage(TestCase):
             feature = next(iter(src))
             self.assertEqual(feature["properties"]["name"], self.planning.name)
 
+    @mock.patch("planning.services.model_from_fiona", autospec=True)
+    def test_export_sub_units_outputs_renames_proj_id_for_regular_scenario(
+        self,
+        model_from_fiona_mock,
+    ):
+        source_area = SimpleNamespace(geometry=self.planning.geometry)
+        sub_units = mock.Mock()
+        sub_units.filter.return_value = sub_units
+        sub_units.get.return_value = source_area
+        model_from_fiona_mock.return_value.objects = sub_units
+        sub_units_layer = DataLayerFactory.create(type=DataLayerType.VECTOR)
+        self.preset_scenario.configuration = {"sub_units_layer": sub_units_layer.pk}
+        self.preset_scenario.save(update_fields=["configuration"])
+        project_area = self.preset_scenario.project_areas.get()
+        project_area.data = {**project_area.data, "proj_id": 1}
+        project_area.save(update_fields=["data"])
+
+        stand_inputs = export_scenario_inputs_to_geopackage(
+            self.preset_scenario,
+            self.preset_scenario_output_path,
+        )
+        export_scenario_sub_units_outputs_to_geopackage(
+            self.preset_scenario,
+            self.preset_scenario_output_path,
+            stand_inputs,
+        )
+
+        with fiona.open(
+            self.preset_scenario_output_path, layer="subunits_outputs"
+        ) as src:
+            field_names = list(src.schema["properties"].keys())
+            feature = next(iter(src))
+            properties = feature["properties"]
+
+        self.assertIn("subunit_id", field_names)
+        self.assertNotIn("proj_id", field_names)
+        self.assertIn("subunit_id", properties)
+        self.assertNotIn("proj_id", properties)
+
+    def test_export_sub_units_outputs_preserves_proj_id_for_project_area_child(
+        self,
+    ):
+        parent = ScenarioFactory.create(
+            planning_area=self.planning,
+            user=self.user,
+            type=ScenarioType.PROJECT_AREAS,
+        )
+        parent_project_area = ProjectAreaFactory.create(
+            scenario=parent,
+            geometry=self.planning.geometry,
+            created_by=self.user,
+        )
+        child = ScenarioFactory.create(
+            planning_area=self.planning,
+            user=self.user,
+            parent=parent,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+            treatable_area=self.planning.geometry,
+        )
+        ProjectAreaFactory.create(
+            scenario=child,
+            geometry=self.planning.geometry,
+            data={"proj_id": parent_project_area.pk},
+            created_by=self.user,
+        )
+        child_forsys_folder = child.get_forsys_folder()
+        child_forsys_folder.mkdir(parents=True, exist_ok=True)
+        with open(child_forsys_folder / "inputs.csv", "w") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(
+                [
+                    ["WKT", "stand_id", "area_acres", "priority"],
+                    [
+                        "POLYGON ((-2226358.53928425 1950498.20568641,-2225919.84794646 1949738.37000051,-2225042.46527088 1949738.37000052,-2224603.77393309 1950498.20568641,-2225042.46527088 1951258.0413723,-2225919.84794646 1951258.0413723,-2226358.53928425 1950498.20568641))",
+                        self.stand.pk,
+                        494.193231034226,
+                        0,
+                    ],
+                ]
+            )
+        result = ScenarioResultFactory.create(
+            scenario=child,
+            status=ScenarioResultStatus.SUCCESS,
+        )
+        result.result["features"] = result.result["features"][:1]
+        result.result["features"][0]["properties"]["proj_id"] = parent_project_area.pk
+        result.save(update_fields=["result"])
+        child_output_path = Path("child_scenario_test_planning_area.gpkg")
+        self.addCleanup(child_output_path.unlink, missing_ok=True)
+
+        stand_inputs = export_scenario_inputs_to_geopackage(
+            child,
+            child_output_path,
+        )
+        export_scenario_sub_units_outputs_to_geopackage(
+            child,
+            child_output_path,
+            stand_inputs,
+        )
+
+        with fiona.open(child_output_path, layer="subunits_outputs") as src:
+            field_names = list(src.schema["properties"].keys())
+            feature = next(iter(src))
+            properties = feature["properties"]
+
+        self.assertIn("proj_id", field_names)
+        self.assertNotIn("subunit_id", field_names)
+        self.assertIn("proj_id", properties)
+        self.assertNotIn("subunit_id", properties)
+
     def test_export_stand_outputs_schema_field_names_are_sanitized_preset_scenario_preset_scenario(
         self,
     ):
@@ -960,7 +1071,8 @@ class CreateScenarioFromUploadTest(TestCase):
         }
         with self.assertRaisesMessage(
             ValueError,
-            "None of the uploaded project areas overlap the selected planning area.",
+            "Upload was unsuccessful. The uploaded geometry is not within the "
+            "selected planning area.",
         ):
             self._upload(outside_geometry)
 

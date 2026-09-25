@@ -1,18 +1,58 @@
-import { Component } from '@angular/core';
+import { AsyncPipe, NgIf } from '@angular/common';
+import { Component, EventEmitter, inject, Output } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { UploadPlanningAreaBoxComponent } from '@app/explore/upload-planning-area-box/upload-planning-area-box.component';
+import { DrawService } from '@app/maplibre-map/draw.service';
 import { ButtonComponent } from '@styleguide';
+import { PlanningAreaCreationModalComponent } from '../planning-area-creation-modal/planning-area-creation-modal.component';
+import { ActivatedRoute, Router } from '@angular/router';
+import { map } from 'rxjs';
+import { WorkspaceState } from '../workspace.state';
 
 @Component({
   selector: 'app-planning-area-empty-state',
   standalone: true,
-  imports: [ButtonComponent],
+  imports: [
+    AsyncPipe,
+    NgIf,
+    ButtonComponent,
+    MatIconModule,
+    UploadPlanningAreaBoxComponent,
+  ],
   templateUrl: './planning-area-empty-state.component.html',
   styleUrl: './planning-area-empty-state.component.scss',
+  providers: [DrawService],
 })
 export class PlanningAreaEmptyStateComponent {
+  @Output() reload = new EventEmitter();
+  showUploadForm = false;
+  private dialog = inject(MatDialog);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private workspaceState = inject(WorkspaceState);
+  workspaceId = this.route.snapshot.data['workspaceId'];
+
+  canAddPlanningArea$ = this.workspaceState.currentWorkspace$.pipe(
+    map((workspace) => workspace.permissions.includes('add_planningarea'))
+  );
   handleDraw() {
-    // TODO: Will be covered as part of PLAN-3858
+    this.router.navigate(['/map-viewer/workspace', this.workspaceId], {
+      state: { drawPlanningArea: true },
+    });
   }
   handleUpload() {
-    // TODO: Will be covered as part of PLAN-3857
+    this.dialog
+      .open(PlanningAreaCreationModalComponent, {
+        data: {
+          workspaceId: this.workspaceId,
+        },
+      })
+      .afterClosed()
+      .subscribe((reload) => {
+        if (reload === true) {
+          this.reload.emit();
+        }
+      });
   }
 }

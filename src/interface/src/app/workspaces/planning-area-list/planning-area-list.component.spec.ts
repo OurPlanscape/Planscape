@@ -1,13 +1,22 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  discardPeriodicTasks,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import { PlanningAreaListComponent } from './planning-area-list.component';
 import { PlanningAreasDataSource } from '@app/standalone/planning-areas/planning-areas.datasource';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { AuthService } from '@app/services';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, of, Subject } from 'rxjs';
 import { MockProviders } from 'ng-mocks';
 import { MapService } from '@maplibre/ngx-maplibre-gl';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
+import { WorkspaceState } from '../workspace.state';
+import { Workspace } from '@types';
 
 describe('PlanningAreaListComponent', () => {
   let component: PlanningAreaListComponent;
@@ -17,6 +26,10 @@ describe('PlanningAreaListComponent', () => {
   let mapConfigStateMock: jasmine.SpyObj<MapConfigState>;
   let newScenarioStateMock: jasmine.SpyObj<NewScenarioState>;
   let authServiceMock: jasmine.SpyObj<AuthService>;
+  let currentWorkspace$: BehaviorSubject<Workspace>;
+
+  const workspaceWith = (permissions: string[]) =>
+    ({ permissions }) as unknown as Workspace;
 
   const planningAreas$ = of([]);
   const pages$ = of(3);
@@ -34,6 +47,7 @@ describe('PlanningAreaListComponent', () => {
         'goToPage',
         'changePageSize',
         'destroy',
+        'refresh',
       ],
       {
         pageOptions: {
@@ -46,6 +60,7 @@ describe('PlanningAreaListComponent', () => {
     );
 
     dataSourceMock.data.and.returnValue(planningAreas$);
+    dataSourceMock.refresh.and.returnValue(of({ count: 0, results: [] }));
 
     mapConfigStateMock = jasmine.createSpyObj<MapConfigState>(
       'MapConfigState',
@@ -65,6 +80,10 @@ describe('PlanningAreaListComponent', () => {
     ]);
 
     authServiceMock.getAuthCookie.and.returnValue('cookie');
+
+    currentWorkspace$ = new BehaviorSubject(
+      workspaceWith(['add_planningarea'])
+    );
 
     await TestBed.configureTestingModule({
       imports: [PlanningAreaListComponent],
@@ -88,6 +107,20 @@ describe('PlanningAreaListComponent', () => {
             {
               provide: AuthService,
               useValue: authServiceMock,
+            },
+            {
+              provide: WorkspaceState,
+              useValue: { currentWorkspace$ },
+            },
+            {
+              provide: ActivatedRoute,
+              useValue: {
+                snapshot: {
+                  data: {
+                    workspaceId: 1,
+                  },
+                },
+              },
             },
           ],
         },
@@ -114,6 +147,51 @@ describe('PlanningAreaListComponent', () => {
 
       expect(mapConfigStateMock.setShowMapControls).toHaveBeenCalledWith(false);
     });
+  });
+
+  describe('polling', () => {
+    it('refreshes the data source every POLLING_INTERVAL', fakeAsync(() => {
+      component.ngOnInit();
+
+      tick(POLLING_INTERVAL - 1);
+      expect(dataSourceMock.refresh).not.toHaveBeenCalled();
+
+      tick(1);
+      expect(dataSourceMock.refresh.calls.count()).toBe(1);
+
+      tick(POLLING_INTERVAL);
+      expect(dataSourceMock.refresh.calls.count()).toBe(2);
+
+      discardPeriodicTasks();
+    }));
+
+    it('skips poll ticks while a refresh is in flight', fakeAsync(() => {
+      const longRefresh$ = new Subject<any>();
+      dataSourceMock.refresh.and.returnValue(longRefresh$);
+      component.ngOnInit();
+
+      tick(POLLING_INTERVAL);
+      expect(dataSourceMock.refresh.calls.count()).toBe(1);
+
+      tick(POLLING_INTERVAL);
+      expect(dataSourceMock.refresh.calls.count()).toBe(1);
+
+      longRefresh$.complete();
+      tick(POLLING_INTERVAL);
+      expect(dataSourceMock.refresh.calls.count()).toBe(2);
+
+      discardPeriodicTasks();
+    }));
+
+    it('stops polling when the component is destroyed', fakeAsync(() => {
+      component.ngOnInit();
+      tick(POLLING_INTERVAL);
+      expect(dataSourceMock.refresh.calls.count()).toBe(1);
+
+      fixture.destroy();
+      tick(POLLING_INTERVAL);
+      expect(dataSourceMock.refresh.calls.count()).toBe(1);
+    }));
   });
 
   describe('search', () => {
@@ -204,11 +282,41 @@ describe('PlanningAreaListComponent', () => {
     });
   });
 
+  describe('drawPlanningArea', () => {
+    it('navigates to the workspace map viewer', () => {
+      const navigateSpy = spyOn(component.router, 'navigate');
+
+      component.drawPlanningArea();
+
+      expect(navigateSpy).toHaveBeenCalledWith(['/map-viewer/workspace', 1], {
+        state: { drawPlanningArea: true },
+      });
+    });
+  });
+
   describe('ngOnDestroy', () => {
     it('destroys the data source', () => {
       component.ngOnDestroy();
 
       expect(dataSourceMock.destroy).toHaveBeenCalled();
+    });
+  });
+
+  describe('canAddPlanningArea$', () => {
+    it('emits true when the workspace grants add_planningarea', (done) => {
+      component.canAddPlanningArea$.subscribe((canAdd) => {
+        expect(canAdd).toBeTrue();
+        done();
+      });
+    });
+
+    it('emits false when the workspace does not grant it', (done) => {
+      currentWorkspace$.next(workspaceWith(['view_workspace']));
+
+      component.canAddPlanningArea$.subscribe((canAdd) => {
+        expect(canAdd).toBeFalse();
+        done();
+      });
     });
   });
 });

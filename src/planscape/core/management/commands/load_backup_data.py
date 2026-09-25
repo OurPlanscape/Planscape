@@ -20,7 +20,11 @@ from datasets.models import (
     DataLayerHasStyle,
     Style,
 )
-from planning.models import TreatmentGoal, TreatmentGoalUsesDataLayer
+from planning.models import (
+    TreatmentGoal,
+    TreatmentGoalCategory,
+    TreatmentGoalUsesDataLayer,
+)
 from stands.models import StandMetric
 from organizations.models import Organization
 
@@ -150,7 +154,7 @@ class Command(BaseCommand):
         )
         try:
             # Sync buckets
-            subprocess.call(
+            subprocess.run(
                 [
                     "gcloud",
                     "storage",
@@ -159,13 +163,14 @@ class Command(BaseCommand):
                     f"gs://planscape-datastore-{source_env}/datalayers",
                     f"gs://planscape-datastore-{settings.ENV}/datalayers",
                     "--recursive",
-                ]
+                ],
+                check=True,
             )
 
             batch_size = options.get("batch_size", 500)
             with transaction.atomic():
 
-                datalayers = DataLayer.objects.filter(created_at__gte=last_restore_date)
+                datalayers = DataLayer.dead_or_alive.filter(created_at__gte=last_restore_date)
 
                 # Stand metrics batch deletion
                 stand_metrics = StandMetric.objects.filter(datalayer__in=datalayers)
@@ -178,7 +183,7 @@ class Command(BaseCommand):
 
 
                 # N-N relational tables deletion by `updated_at`
-                count = TreatmentGoalUsesDataLayer.objects.filter(updated_at__gte=last_restore_date).delete()
+                count = TreatmentGoalUsesDataLayer.dead_or_alive.filter(updated_at__gte=last_restore_date).delete()
                 self.stdout.write(f"Deleted {count[1]} entry(ies) related to TreatmentGoalUsesDataLayer updated after last restore.")
 
                 count = DataLayerHasStyle.objects.filter(updated_at__gte=last_restore_date).delete()
@@ -186,22 +191,29 @@ class Command(BaseCommand):
 
 
                 # Other tables deletion by `created_at`
-                count = TreatmentGoal.objects.filter(created_at__gte=last_restore_date).delete()
+                count = TreatmentGoal.dead_or_alive.filter(created_at__gte=last_restore_date).delete()
                 self.stdout.write(f"Deleted {count[1]} entry(ies) related to TreatmentGoal created after last restore.")
+
+                count = TreatmentGoalCategory.objects.filter(
+                    created_at__gte=last_restore_date
+                ).delete()
+                self.stdout.write(
+                    f"Deleted {count[1]} entry(ies) related to TreatmentGoalCategory created after last restore."
+                )
 
                 count = Category.objects.filter(created_at__gte=last_restore_date).delete()
                 self.stdout.write(f"Deleted {count[1]} entry(ies) related to Category(s) created after last restore.")
 
-                count = Style.objects.filter(created_at__gte=last_restore_date).delete()
+                count = Style.dead_or_alive.filter(created_at__gte=last_restore_date).delete()
                 self.stdout.write(f"Deleted {count[1]} entry(ies) related to Style(s) created after last restore.")
 
                 count = datalayers.delete()
                 self.stdout.write(f"Deleted {count[1]} entry(ies) related to DataLayer(s) created after last restore.")
 
-                count = Dataset.objects.filter(created_at__gte=last_restore_date).delete()
+                count = Dataset.dead_or_alive.filter(created_at__gte=last_restore_date).delete()
                 self.stdout.write(f"Deleted {count[1]} entry(ies) related to Dataset(s) created after last restore.")
 
-                count = Organization.objects.filter(created_at__gte=last_restore_date).delete()
+                count = Organization.dead_or_alive.filter(created_at__gte=last_restore_date).delete()
                 self.stdout.write(f"Deleted {count[1]} entry(ies) related to Organization(s) created after last restore.")
 
             # Copy to tmp folder and rename all `url` fields
@@ -256,3 +268,4 @@ class Command(BaseCommand):
             current_run.finished_at = timezone.now()
             current_run.status = RestoreBackTrackStatus.FAILED
             current_run.save()
+            raise

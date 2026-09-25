@@ -1,7 +1,13 @@
 import json
 from typing import Any, Dict, List, Optional, Type, Union
 
-from datasets.models import DataLayer, DataLayerType, Dataset, PreferredDisplayType
+from datasets.models import (
+    DataLayer,
+    DataLayerStatus,
+    DataLayerType,
+    Dataset,
+    PreferredDisplayType,
+)
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q, QuerySet
@@ -14,6 +20,7 @@ from planning.models import (
 )
 
 from modules.serializers import (
+    AdvancedStandLevelConstraintSerializer,
     BaseModuleSerializer,
     ForsysModuleSerializer,
     FundingReportModuleSerializer,
@@ -22,6 +29,17 @@ from modules.serializers import (
 )
 
 RunnableItem = Union[PlanningArea, Scenario]
+
+
+def with_datalayer_option_relations(
+    queryset: QuerySet[DataLayer],
+) -> QuerySet[DataLayer]:
+    return queryset.select_related(
+        "organization",
+        "dataset",
+        "dataset__organization",
+        "category",
+    ).prefetch_related("styles")
 
 
 class BaseModule:
@@ -47,7 +65,7 @@ class BaseModule:
 
     def get_datalayers(
         self, geometry: Optional[GEOSGeometry] = None, user: Optional[User] = None
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, Any] | List[Any]:
         return {}
 
     def get_datasets(
@@ -71,22 +89,24 @@ class BaseModule:
             .distinct()
         )
 
-    def _get_main_datasets(self, **kwargs):
-        return self.get_datasets(**kwargs).filter(
-            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
-        )
-
-    def _get_base_datasets(self, **kwargs):
-        return self.get_datasets(**kwargs).filter(
-            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
-        )
-
     def _get_options(self, **kwargs) -> Dict[str, Any]:
+        # Single query for both lists: filtering by geometry is expensive.
+        datasets = list(self.get_datasets(**kwargs))
         return {
             "datalayers": self.get_datalayers(**kwargs),
             "datasets": {
-                "main_datasets": self._get_main_datasets(**kwargs),
-                "base_datasets": self._get_base_datasets(**kwargs),
+                "main_datasets": [
+                    dataset
+                    for dataset in datasets
+                    if dataset.preferred_display_type
+                    == PreferredDisplayType.MAIN_DATALAYERS
+                ],
+                "base_datasets": [
+                    dataset
+                    for dataset in datasets
+                    if dataset.preferred_display_type
+                    == PreferredDisplayType.BASE_DATALAYERS
+                ],
             },
         }
 
@@ -105,11 +125,15 @@ class ForsysModule(BaseModule):
 
     def _get_options(self, **kwargs):
         options = super()._get_options(**kwargs)
-        inclusions = DataLayer.objects.all().by_meta_capability(
-            TreatmentGoalUsageType.INCLUSION_ZONE
+        inclusions = with_datalayer_option_relations(
+            DataLayer.objects.all().by_meta_capability(
+                TreatmentGoalUsageType.INCLUSION_ZONE
+            )
         )
-        exclusions = DataLayer.objects.all().by_meta_capability(
-            TreatmentGoalUsageType.EXCLUSION_ZONE
+        exclusions = with_datalayer_option_relations(
+            DataLayer.objects.all().by_meta_capability(
+                TreatmentGoalUsageType.EXCLUSION_ZONE
+            )
         )
         slope = DataLayer.objects.all().by_meta_name("slope")
         distance_from_roads = DataLayer.objects.all().by_meta_name(
@@ -284,7 +308,7 @@ class PrioritizeSubUnitsModule(BaseModule):
     def _get_options(self, **kwargs):
         user = kwargs.get("user")
         options = super()._get_options(**kwargs)
-        sub_units_layers = (
+        sub_units_layers = with_datalayer_option_relations(
             DataLayer.objects.all()
             .accessible_by(user)
             .by_meta_module(self.name)
@@ -302,13 +326,51 @@ class AdvancedStandLevelConstraintModule(BaseModule):
     def _can_run_scenario(self, runnable: Scenario) -> bool:
         return True
 
+    def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
+        return AdvancedStandLevelConstraintSerializer
+
+    def _get_datalayers_queryset(
+        self,
+        geometry: Optional[GEOSGeometry] = None,
+        user: Optional[User] = None,
+    ) -> QuerySet[DataLayer]:
+        queryset = (
+            DataLayer.objects.filter(
+                status=DataLayerStatus.READY,
+                type=DataLayerType.RASTER,
+            )
+            .accessible_by(user)
+            .by_meta_module(self.name)
+            .distinct()
+        )
+
+        if geometry is not None:
+            queryset = queryset.filter(outline__intersects=geometry)
+
+        return queryset
+
     def get_datasets(
         self,
         geometry: Optional[GEOSGeometry] = None,
         user: Optional[User] = None,
         **kwargs,
     ) -> QuerySet[Dataset]:
-        return Dataset.objects.none()
+        datalayers = self._get_datalayers_queryset(geometry=geometry, user=user)
+        return (
+            Dataset.objects.filter(datalayers__in=datalayers)
+            .select_related("organization")
+            .distinct()
+        )
+
+    def get_datalayers(
+        self,
+        geometry: Optional[GEOSGeometry] = None,
+        user: Optional[User] = None,
+    ) -> List[DataLayer]:
+        queryset = with_datalayer_option_relations(
+            self._get_datalayers_queryset(geometry=geometry, user=user)
+        )
+        return list(queryset)
 
 
 def get_module(module_name: str) -> BaseModule:
@@ -340,5 +402,5 @@ MODULE_HANDLERS = {
     "climate_foresight": ClimateForesightModule(),
     "prioritize_sub_units": PrioritizeSubUnitsModule(),
     "funding_report": FundingReportModule(),
-    "advanced_stand_level_constraint": AdvancedStandLevelConstraintModule()
+    "advanced_stand_level_constraint": AdvancedStandLevelConstraintModule(),
 }

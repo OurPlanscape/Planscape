@@ -29,6 +29,7 @@ import { ActivatedRoute } from '@angular/router';
 import { getPrescriptionsFromSummary } from './prescriptions';
 import { DirectImpactsStateService } from './direct-impacts.state.service';
 import { BreadCrumb } from '@app/services/breadcrumb.service';
+import { getPlanPath } from '@plan/plan-helpers';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -100,10 +101,12 @@ export class TreatmentsState {
         return null;
       }
 
+      const scenarioPath = `${getPlanPath(summary.planning_area_id, this.route.snapshot)}/scenario/${summary.scenario_id}`;
+
       if (projectArea) {
         // if we are currently viewing a Project Area
         navStateObject.label = `Project Area:  ${projectArea.project_area_name}`;
-        navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`;
+        navStateObject.backUrl = `${scenarioPath}/treatment/${summary.treatment_plan_id}`;
       } else if (
         !!treatmentPlan &&
         !!treatmentPlan.name &&
@@ -111,7 +114,7 @@ export class TreatmentsState {
       ) {
         // if we are currently viewing Treatment Impacts results
         navStateObject.label = `Treatment Effects Analysis: ${treatmentPlan.name}`;
-        navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}/treatment/`;
+        navStateObject.backUrl = `${scenarioPath}/treatment/`;
         navStateObject.icon = 'close';
         navStateObject.blackText = true;
       } else if (
@@ -121,7 +124,7 @@ export class TreatmentsState {
         treatmentPlan.status !== 'SUCCESS'
       ) {
         navStateObject.label = `Treatment Effects: ${treatmentPlan.name}`;
-        navStateObject.backUrl = `/plan/${summary.planning_area_id}/scenario/${summary.scenario_id}/treatment`;
+        navStateObject.backUrl = `${scenarioPath}/treatment`;
         navStateObject.icon = 'close';
         navStateObject.blackText = true;
       }
