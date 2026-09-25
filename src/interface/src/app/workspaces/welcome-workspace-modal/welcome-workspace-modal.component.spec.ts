@@ -33,7 +33,9 @@ describe('WelcomeWorkspaceModalComponent', () => {
     expect(text).toContain(
       'Upload or draw a planning area to run scenarios and analyses'
     );
-    expect(text).toContain('View, organize, and upload data in the Map Viewer');
+    expect(text).toContain(
+      'View, organize, and upload data in the Map Viewer (upload data coming soon!)'
+    );
     expect(text).toContain('Invite colleagues with the Share feature');
   });
 
