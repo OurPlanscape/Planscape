@@ -131,12 +131,9 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     // here, we filter out layers from constraintLayers to find
     // just the configured constraints that match the known Adv Stand Level Constraint layers
     combineLatest([
-      //TODO: are we getting draft separately from the config?
       this.newScenarioState.advStandLevelConstraints$,
       this.constraintLayers$.pipe(take(1)),
     ]).subscribe(([constraints, layers]) => {
-      console.log('what is the draft constraints now?', constraints);
-
       if (!constraints) {
         this.selectedConstraints$.next([]);
         return;

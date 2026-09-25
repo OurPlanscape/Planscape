@@ -83,12 +83,12 @@ export class NewScenarioState {
       ids.length === 0
         ? of<DataLayer[]>([])
         : this.dataLayersService.getDataLayersByIds(ids).pipe(
-          map((layers) => layers ?? ([] as DataLayer[])),
-          catchError((error) => {
-            console.error('Error fetching data layers:', error);
-            return of<DataLayer[]>([]);
-          })
-        )
+            map((layers) => layers ?? ([] as DataLayer[])),
+            catchError((error) => {
+              console.error('Error fetching data layers:', error);
+              return of<DataLayer[]>([]);
+            })
+          )
     ),
     shareReplay(1)
   );
@@ -102,7 +102,8 @@ export class NewScenarioState {
       } else {
         return [];
       }
-    }), shareReplay(1)
+    }),
+    shareReplay(1)
   );
 
   public prioritiesDetails$ = this.scenarioConfig$.pipe(
@@ -153,12 +154,12 @@ export class NewScenarioState {
       ids.length === 0
         ? of<DataLayer[]>([])
         : this.dataLayersService.getDataLayersByIds(ids).pipe(
-          map((layers) => layers ?? ([] as DataLayer[])),
-          catchError((error) => {
-            console.error('Error fetching data layers:', error);
-            return of<DataLayer[]>([]);
-          })
-        )
+            map((layers) => layers ?? ([] as DataLayer[])),
+            catchError((error) => {
+              console.error('Error fetching data layers:', error);
+              return of<DataLayer[]>([]);
+            })
+          )
     ),
     shareReplay(1)
   );
@@ -202,7 +203,6 @@ export class NewScenarioState {
         subUnits,
         includedAreas,
       ]) => {
-
         // TODO: make sure we are not sending adv SLC constraints in the getExcludedStands call
 
         // Inside the project fn so it runs after switchMap cancels the previous inner (and its
@@ -234,8 +234,8 @@ export class NewScenarioState {
       step === null
         ? of(true)
         : this.availableStands$.pipe(
-          map((s) => (Math.floor(s?.summary?.treatable_area) ?? 0) > 0)
-        )
+            map((s) => (Math.floor(s?.summary?.treatable_area) ?? 0) > 0)
+          )
     ),
     distinctUntilChanged(),
     shareReplay(1)
@@ -324,7 +324,6 @@ export class NewScenarioState {
   }
 
   setConstraints(constraints: Constraint[]) {
-    console.log('here are the constraints we want to set:', constraints);
     this._constraints$.next(constraints);
   }
 

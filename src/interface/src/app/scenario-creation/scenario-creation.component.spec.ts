@@ -20,24 +20,30 @@ import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overvi
 import { MOCK_SCENARIO } from '@services/mocks';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { SUB_UNITS_STEP } from '@app/scenario/scenario.constants';
+import { overrideFeatureFlags } from '@features/testing';
+import { ConstraintsStepComponent } from './constraints-step/constraints-step.component';
+import { FeaturesModule } from '@app/features/features.module';
+import { By } from '@angular/platform-browser';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
   let fixture: ComponentFixture<ScenarioCreationComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
+  function setUpComponent(flags: string[] = []) {
+    TestBed.configureTestingModule({
       imports: [
         HttpClientTestingModule,
         ScenarioCreationComponent,
         NgxMaskModule.forRoot(),
         NoopAnimationsModule,
         MatSnackBarModule,
+        FeaturesModule,
         MockModule(SharedModule),
         MockComponents(
           Step1WithOverviewComponent,
           DataLayersComponent,
           StandLevelConstraintsComponent,
+          ConstraintsStepComponent,
           TreatmentTargetComponent,
           BaseLayersComponent
         ),
@@ -61,12 +67,22 @@ describe('ScenarioCreationComponent', () => {
           priorityObjectivesDetails$: of([]),
         }),
       ],
-    }).compileComponents();
+    });
+    overrideFeatureFlags(...flags);
 
     fixture = TestBed.createComponent(ScenarioCreationComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  });
+  }
+
+
+  function standLevelConstraintsEl() {
+    return fixture.debugElement.query(By.directive(StandLevelConstraintsComponent));
+  }
+
+  function constraintsStepEl() {
+    return fixture.debugElement.query(By.directive(ConstraintsStepComponent));
+  }
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -236,6 +252,24 @@ describe('ScenarioCreationComponent', () => {
 
         expect(component.steps.length).toBeGreaterThan(0);
       });
+    });
+  });
+
+  describe('ADV_STAND_LEVEL_CONSTRAINTS feature flag', () => {
+    it('shows StandLevelConstraintsComponent when the flag is not set', () => {
+      expect(standLevelConstraintsEl()).not.toBeNull();
+    });
+
+    it('hides ConstraintsStepComponent when the flag is not set', () => {
+      expect(constraintsStepEl()).toBeNull();
+    });
+
+    it('shows ConstraintsStepComponent and hides StandLevelConstraintsComponent when the flag is enabled', () => {
+      TestBed.resetTestingModule();
+      setUpComponent(['ADV_STAND_LEVEL_CONSTRAINTS']);
+
+      expect(constraintsStepEl()).not.toBeNull();
+      expect(standLevelConstraintsEl()).toBeNull();
     });
   });
 });

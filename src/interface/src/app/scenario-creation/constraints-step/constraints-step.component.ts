@@ -76,8 +76,6 @@ export class ConstraintsStepComponent extends StepDirective<ScenarioDraftConfigu
 
   getData(): Partial<ScenarioDraftConfiguration> {
     const formValues = this.form.getRawValue();
-    console.log('the current formvalues are:', formValues);
-    // TypeScript now knows standLevelConstraints exists!
     const standLevelConstraints = formValues.standLevelConstraints;
     const advStandLevelConstraints: NamedConstraint[] =
       formValues.advStandLevelConstraints?.constraints ?? [];
@@ -94,10 +92,11 @@ export class ConstraintsStepComponent extends StepDirective<ScenarioDraftConfigu
   override beforeStepLoad() {
     this.dataLayersStateService.updateSelectedLayers([]);
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
-    // ensure that priority_objective layers are unselectable
     this.dataLayersStateService.clearUnselectableLayers();
-    this.newScenarioState.scenarioConfig$.pipe(take(1)).subscribe((config) => {
-    });
+    this.newScenarioState.scenarioConfig$
+      .pipe(take(1))
+      .subscribe((config) => {});
+      
     // trigger child component refresh
     this.advConstraintsComponent.mapConfigToUI();
   }
