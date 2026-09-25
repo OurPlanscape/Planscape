@@ -202,7 +202,8 @@ export class NewScenarioState {
         subUnits,
         includedAreas,
       ]) => {
-        // TODO: make sure we are not sending adv SLC constraints in the getExcludedStands call
+        // NOTE: for the foreseeable future,
+        //  we should not be sending adv constraints via the available_stands call
 
         // Inside the project fn so it runs after switchMap cancels the previous inner (and its
         // finalize fires) — a tap() before switchMap would be overridden by that finalize.

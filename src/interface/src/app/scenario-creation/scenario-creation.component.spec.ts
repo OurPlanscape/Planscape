@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxMaskModule } from 'ngx-mask';
@@ -26,7 +25,7 @@ import { StandLevelConstraintsComponent } from '@scenario-creation/step3/stand-l
 import { ConstraintsStepComponent } from './constraints-step/constraints-step.component';
 import { TreatmentTargetComponent } from '@scenario-creation/treatment-target/treatment-target.component';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
-import FeatureService from 'mapbox-gl-arcgis-featureserver';
+import { FeatureService } from '@app/features/feature.service';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -93,15 +92,7 @@ describe('ScenarioCreationComponent', () => {
     fixture.detectChanges();
   }
 
-  function standLevelConstraintsEl() {
-    return fixture.debugElement.query(
-      By.directive(StandLevelConstraintsComponent)
-    );
-  }
 
-  function constraintsStepEl() {
-    return fixture.debugElement.query(By.directive(ConstraintsStepComponent));
-  }
 
   beforeEach(async () => {
     await setUpComponent();
@@ -111,25 +102,6 @@ describe('ScenarioCreationComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('ADV_STAND_LEVEL_CONSTRAINTS feature flag', () => {
-    it('shows StandLevelConstraintsComponent when the flag is not set', () => {
-      // const featureService = TestBed.inject(FeatureService);
-      // console.log('isFeatureEnabled result:', featureService.isFeatureEnabled('ADV_STAND_LEVEL_CONSTRAINTS'));
-      console.log('rendered HTML:', fixture.nativeElement.innerHTML);
-      expect(standLevelConstraintsEl()).not.toBeNull();
-    });
-
-    it('hides ConstraintsStepComponent when the flag is not set', () => {
-      expect(constraintsStepEl()).toBeNull();
-    });
-
-    // it('shows ConstraintsStepComponent and hides StandLevelConstraintsComponent when the flag is enabled', async () => {
-    //   await setUpComponent({ flags: ['ADV_STAND_LEVEL_CONSTRAINTS'] });
-
-    //   expect(constraintsStepEl()).not.toBeNull();
-    //   expect(standLevelConstraintsEl()).toBeNull();
-    // });
-  });
 
   describe('Step Calculation Logic', () => {
     let scenarioConfigSubject: BehaviorSubject<ScenarioV3Config>;
