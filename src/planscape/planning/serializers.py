@@ -577,8 +577,8 @@ class ConstraintSerializer(serializers.Serializer):
             values.sort()
             min_value, max_value = values
             try:
-                min_value = float(min_value)
-                max_value = float(max_value)
+                float(min_value)
+                float(max_value)
                 return f"{min_value},{max_value}"
             except ValueError:
                 raise serializers.ValidationError("Invalid constraint value(s)")
