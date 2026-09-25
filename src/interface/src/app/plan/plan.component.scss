@@ -89,6 +89,9 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  // bounds the column so the map viewer can shrink instead of forcing its
+  // full height on short screens
+  height: 100%;
 }
 
 .scenario-list-content {
