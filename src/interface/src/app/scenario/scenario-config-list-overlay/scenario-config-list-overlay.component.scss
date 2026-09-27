@@ -11,7 +11,8 @@
     align-items: center;
     border-bottom: 1px solid $color-soft-gray;
 
-    h3 {
+    h4 {
+      @include h4();
       margin: 0;
     }
   }
@@ -22,12 +23,21 @@
     overflow-y: auto;
     max-height: 60vh;
 
+    &.global-spinner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 50vh;
+    }
+
+
     dl {
       margin: 0;
     }
 
     dt {
-      @include standard-input-label();
+      @include small-input-label();
       color: $color-text-gray;
     }
 
@@ -36,13 +46,18 @@
     }
 
     dd {
-      @include standard-input-label();
+      @include small-input-label();
       font-weight: 600;
       margin: 0;
 
       span {
         white-space: nowrap;
       }
+    }
+
+    .list-element {
+      padding-left: 16px;
+      margin: 0;
     }
 
     .priority-weight {
@@ -60,7 +75,7 @@
 
 // This is safe because .scenario-config-overlay is a class we added to the menu panel
 ::ng-deep .scenario-config-overlay {
-  min-width: 400px;
+  min-width: 460px;
   overflow: hidden;
 
   .mat-mdc-menu-content {
