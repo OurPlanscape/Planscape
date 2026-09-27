@@ -149,9 +149,9 @@ export class ScenarioConfigListOverlayComponent implements OnDestroy {
         config?.priorities && config.priorities.length > 0
           ? config.priorities
           : (config?.priority_objectives ?? []).map((datalayer) => ({
-              datalayer,
-              weight: 1,
-            }));
+            datalayer,
+            weight: 1,
+          }));
       return this.dataLayersService
         .getDataLayersByIds(priorities.map((p) => p.datalayer))
         .pipe(
@@ -190,9 +190,9 @@ export class ScenarioConfigListOverlayComponent implements OnDestroy {
       id === undefined
         ? of([])
         : this.dataLayersService.getDataLayersByIds([id]).pipe(
-            map((d: DataLayer[]) => d.map((dl) => dl.name)),
-            catchError(() => of(null))
-          )
+          map((d: DataLayer[]) => d.map((dl) => dl.name)),
+          catchError(() => of(null))
+        )
     ),
     shareReplay(1)
   );
@@ -228,6 +228,7 @@ export class ScenarioConfigListOverlayComponent implements OnDestroy {
       const constraints = config.constraints ?? [];
 
       const selectedConstraints = constraints
+        .filter((c) => advSLCLayers.some((a) => a.id === c.datalayer))
         .map((c) => {
           const layer = advSLCLayers.find((a) => a.id === c.datalayer);
           return getConstraintDisplayName(c, layer);
