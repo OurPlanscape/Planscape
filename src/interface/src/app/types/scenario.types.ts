@@ -225,8 +225,7 @@ export type CONSTRAINT_OPERATOR =
 export interface Constraint {
   datalayer: number;
   operator: CONSTRAINT_OPERATOR;
-  value: number; // note: BE supports string
-  value2?: number; // note: BE supports string
+  value: string;
 }
 
 export interface OperatorDefinition {

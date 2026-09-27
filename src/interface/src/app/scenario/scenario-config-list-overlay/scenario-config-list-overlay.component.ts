@@ -26,6 +26,7 @@ import {
   ScenarioV3Config,
 } from '@types';
 import {
+  getConstraintDisplayName,
   isCustomScenario,
   isPlanningApproachSubUnits,
 } from '../scenario-helper';
@@ -225,13 +226,14 @@ export class ScenarioConfigListOverlayComponent implements OnDestroy {
     map(([scenario, advSLCLayers]) => {
       const config = scenario.configuration as ScenarioV3Config;
       const constraints = config.constraints ?? [];
-      console.log('config', config);
-      console.log('constraints:', constraints);
-      console.log('advSLCLayers:', advSLCLayers);
+
       const selectedConstraints = constraints
-        .map((c) => advSLCLayers.find((a) => a.id === c.datalayer))
-        .map((c) => c?.name)
+        .map((c) => {
+          const layer = advSLCLayers.find((a) => a.id === c.datalayer);
+          return getConstraintDisplayName(c, layer);
+        })
         .filter((v): v is string => !!v);
+
       return selectedConstraints.length ? selectedConstraints : [];
     }),
     catchError(() => {

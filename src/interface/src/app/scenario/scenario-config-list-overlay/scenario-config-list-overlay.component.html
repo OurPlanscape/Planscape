@@ -75,8 +75,20 @@
 
         <ng-container *ngIf="standardConstraints.length">
           <dt>Stand-Level Constraints</dt>
-          <dd *ngFor="let c of standardConstraints">
-            <ul class="list-element">
+
+          <ul class="list-element">
+            <!-- for legacy / V2 configurations -->
+            <li *ngIf="scenario.version === 'V2' || scenario.version === 'V1'">
+              {{
+                scenario.configuration.max_slope
+                  ? 'Slope less or equal than (<=) ' +
+                    scenario.configuration.max_slope +
+                    '%'
+                  : '--'
+              }}
+            </li>
+
+            <dd *ngFor="let c of standardConstraints">
               <li *ngIf="c.datalayer === slopeId">
                 Slope less or equal than (<=) {{ c.value }} %
               </li>
@@ -84,16 +96,20 @@
                 Distance from roads is less than (<)
                 {{ c.value | number: '1.0-2' }} yds
               </li>
-            </ul>
-          </dd>
+            </dd>
+          </ul>
         </ng-container>
 
         <ng-container
           *ngIf="selectedAdvStandLevelConstraints$ | async as advSLConstraints">
           <ng-container *ngIf="advSLConstraints.length">
             <dt>Advanced Stand-Level Constraints</dt>
-            <dd *ngFor="let aslc of advSLConstraints">
-              {{ aslc }}
+            <dd>
+              <ul class="list-element">
+                <li *ngFor="let aslc of advSLConstraints">
+                  {{ aslc }}
+                </li>
+              </ul>
             </dd>
           </ng-container>
         </ng-container>
@@ -128,6 +144,18 @@
 
         <ng-container *ngIf="configuration">
           <dt>Treatment Target</dt>
+          <ng-container
+            *ngIf="scenario.version === 'V2' || scenario.version === 'V1'">
+            <dd *ngIf="scenario.configuration.max_area">
+              Planning Area Acres
+              {{ scenario.configuration.max_area | number: '1.0-0' }}
+            </dd>
+            <dd *ngIf="scenario.configuration.max_budget">
+              Planning Area Budget ${{
+                scenario.configuration.max_budget | number: '1.0-2'
+              }}
+            </dd>
+          </ng-container>
           <dd
             *ngIf="
               configuration &&
@@ -166,5 +194,5 @@
       (click)="close()">
       Close
     </button>
-  </div> 
+  </div>
 </ng-container>

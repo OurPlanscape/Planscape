@@ -2,6 +2,9 @@ import { isNumber } from '@turf/helpers';
 import {
   Capabilities,
   Constraint,
+  CONSTRAINT_OPERATOR,
+  CONSTRAINT_OPERATOR_MAP,
+  DataLayer,
   PLANNING_APPROACH,
   Scenario,
   SCENARIO_TYPE,
@@ -115,7 +118,7 @@ export function convertOldConfigurationToV3Payload(
     constraints.push({
       datalayer: roadLayerId,
       operator: 'lte',
-      value: formData.min_distance_from_road,
+      value: String(formData.min_distance_from_road),
     });
   }
   const slopeId = thresholdIds.get('slope');
@@ -123,7 +126,7 @@ export function convertOldConfigurationToV3Payload(
     constraints.push({
       datalayer: slopeId,
       operator: 'lt',
-      value: formData.max_slope,
+      value: String(formData.max_slope),
     });
   }
 
@@ -261,4 +264,21 @@ export function arrayHasChanged(source: number[], compare: number[]): boolean {
     source.some((item, index) => item !== compare[index]);
 
   return hasChanged;
+}
+
+export function getConstraintDisplayName(
+  constraint: Constraint,
+  layer: DataLayer | undefined
+): string {
+  const layerName = layer ? layer.name : 'Unknown Layer';
+  if (constraint.operator === 'btw' && constraint.value.includes(',')) {
+    const [num1, num2] = constraint.value.split(',').map(Number);
+    return `${layerName}: ${Math.min(num1, num2)}-${Math.max(num1, num2)}`;
+  }
+  return `${layerName}: ${getOperatorDisplayText(constraint.operator)} ${constraint.value}`;
+}
+
+export function getOperatorDisplayText(operator: CONSTRAINT_OPERATOR): string {
+  const def = CONSTRAINT_OPERATOR_MAP.get(operator);
+  return def?.symbol ? def.symbol : operator;
 }
