@@ -17,7 +17,7 @@ import { baseMapStyles } from '@app/maplibre-map/map-base-layers';
 import { PlanState } from '../plan.state';
 import { map } from 'rxjs';
 import { MapProjectAreasComponent } from '@app/maplibre-map/map-project-areas/map-project-areas.component';
-import { CardLinkComponent } from '@styleguide';
+import { CardLinkComponent, CardLinkHeight } from '@styleguide';
 
 @Component({
   selector: 'app-map-viewer-card',
@@ -38,7 +38,7 @@ import { CardLinkComponent } from '@styleguide';
   styleUrl: './map-viewer-card.component.scss',
 })
 export class MapViewerCardComponent {
-  @Input() height: 'tall' | 'normal' = 'normal';
+  @Input() height: CardLinkHeight = 'normal';
 
   @Input() showProjectAreas: boolean = false;
 
