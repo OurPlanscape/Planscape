@@ -13,6 +13,7 @@
     </div>
     <div left-column class="left-column">
       <sg-details-card
+        titleLabel="Workspace"
         [cardTitle]="workspace.name"
         [creator]="workspace.creator"
         [canShare]="canShare(workspace)"
@@ -23,7 +24,8 @@
       <sg-card-link
         label="Map Viewer"
         subLabel="View & upload data"
-        height="normal"
+        height="extra-tall"
+        [collapseContentOnSmall]="true"
         (navigate)="handleNavigation()"
         [collapseContentOnSmall]="false">
         <img

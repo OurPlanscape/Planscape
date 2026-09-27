@@ -103,6 +103,6 @@ export class DataSetComponent {
   }
 
   toggleDataLayerSelection(dl: DataLayer) {
-    this.dataLayersStateService.toggleLayerAdition(dl);
+    this.dataLayersStateService.handleLayerClick(dl);
   }
 }
