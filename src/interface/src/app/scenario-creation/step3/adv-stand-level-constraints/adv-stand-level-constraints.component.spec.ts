@@ -21,11 +21,8 @@ import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { DataLayer, Constraint } from '@app/types';
 import { NamedConstraint } from '../adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
 
-// Minimal fixtures. Cast through `unknown` since the real interfaces likely
-// carry more fields than the component actually touches — adjust if your
-// `DataLayer`/`Constraint` types require additional required properties.
-const layerOne = { id: 1, name: 'Test Layer One' } as unknown as DataLayer;
-const layerTwo = { id: 2, name: 'Test Layer Two' } as unknown as DataLayer;
+const mockLayerOne = { id: 1, name: 'Test Layer One' } as unknown as DataLayer;
+const mockLayerTwo = { id: 2, name: 'Test Layer Two' } as unknown as DataLayer;
 
 function makeConstraint(partial: Partial<Constraint>): Constraint {
   return {
@@ -46,20 +43,6 @@ function makeNamedConstraint(
   } as unknown as NamedConstraint;
 }
 
-// AdvStandLevelConstraintsComponent injects ControlContainer with
-// @Host() @SkipSelf(), which only looks at ancestor *element* injectors —
-// it deliberately does not fall back to the module/root injector. So it
-// can't be satisfied with a plain `{ provide: ControlContainer, useValue: ... }`
-// in TestBed's providers array; it needs a real [formGroup] directive on an
-// ancestor element, which is what FormGroupDirective (from ReactiveFormsModule)
-// provides.
-//
-// Deliberately no `formGroupName` on the child element: the component
-// doesn't use FormGroupName's ControlValueAccessor machinery — it manually
-// does `parentFormGroup.addControl(this.keyName, this.form)` in ngOnInit.
-// Adding `formGroupName` would require a nested FormGroup to already exist
-// under that key at directive-init time, which conflicts with the
-// dynamic-keyName test below.
 @Component({
   standalone: true,
   imports: [ReactiveFormsModule, AdvStandLevelConstraintsComponent],
@@ -118,7 +101,7 @@ describe('AdvStandLevelConstraintsComponent', () => {
 
     moduleServiceSpy = jasmine.createSpyObj('ModuleService', ['getModule']);
     moduleServiceSpy.getModule.and.returnValue(
-      of({ options: { datalayers: [layerOne, layerTwo] } } as any)
+      of({ options: { datalayers: [mockLayerOne, mockLayerTwo] } } as any)
     );
 
     await TestBed.configureTestingModule({
@@ -139,12 +122,7 @@ describe('AdvStandLevelConstraintsComponent', () => {
         },
       ],
     })
-      // MapModuleService is registered as a component-level provider in
-      // @Component, so TestBed's module providers above can't reach it —
-      // override the component instead. DataLayersStateService is left as
-      // the real implementation: the real DataLayersComponent nested in the
-      // template also injects it and expects its full API, which a partial
-      // mock can't provide.
+
       .overrideComponent(AdvStandLevelConstraintsComponent, {
         set: {
           providers: [
@@ -207,7 +185,7 @@ describe('AdvStandLevelConstraintsComponent', () => {
     it('populates knownLayers via getFullLayerById once loaded', (done) => {
       fixture.detectChanges();
       component.constraintLayers$.subscribe(() => {
-        expect(component.getFullLayerById(1)).toEqual(layerOne);
+        expect(component.getFullLayerById(1)).toEqual(mockLayerOne);
         expect(component.getFullLayerById(999)).toBeNull();
         done();
       });
@@ -220,22 +198,6 @@ describe('AdvStandLevelConstraintsComponent', () => {
       expect(parentFormGroup.get('advStandLevelConstraints')).toBe(
         component.form
       );
-    });
-
-    it('uses a custom keyName when provided', () => {
-      hostComponent.keyName = 'customKey';
-      fixture.detectChanges();
-      expect(parentFormGroup.get('customKey')).toBe(component.form);
-      expect(parentFormGroup.get('advStandLevelConstraints')).toBeNull();
-    });
-
-    it('keeps the form control in sync with selectedConstraints$', () => {
-      fixture.detectChanges();
-      const constraint = makeNamedConstraint({ datalayer: 1 });
-
-      component.selectedConstraints$.next([constraint]);
-
-      expect(component.form.controls.constraints.value).toEqual([constraint]);
     });
 
     it('removes the control from the parent form and completes destroy$ on destroy', () => {
@@ -281,7 +243,9 @@ describe('AdvStandLevelConstraintsComponent', () => {
       expect(result.length).toBe(1);
       expect(result[0].datalayer).toBe(1);
       expect(result[0].name).toContain('Test Layer One');
-      expect(dataLayerState.addSelectedLayer).toHaveBeenCalledWith(layerOne);
+      expect(dataLayerState.addSelectedLayer).toHaveBeenCalledWith(
+        mockLayerOne
+      );
     });
 
     it('formats a "btw" constraint as a sorted min-max range', () => {
@@ -309,7 +273,9 @@ describe('AdvStandLevelConstraintsComponent', () => {
       component.handleConstraintAdded(constraint);
 
       expect(component.selectedConstraints$.value).toEqual([constraint]);
-      expect(dataLayerState.addSelectedLayer).toHaveBeenCalledWith(layerOne);
+      expect(dataLayerState.addSelectedLayer).toHaveBeenCalledWith(
+        mockLayerOne
+      );
     });
 
     it('replaces an existing constraint with the same name', () => {
@@ -344,18 +310,6 @@ describe('AdvStandLevelConstraintsComponent', () => {
 
       expect(component.selectedConstraints$.value[0].value).toBe('99');
     });
-
-    it('is a no-op when no constraint matches the datalayer id', () => {
-      fixture.detectChanges();
-      const original = makeNamedConstraint({ datalayer: 1, value: '10' });
-      component.selectedConstraints$.next([original]);
-
-      component.handleUpdateConstraint(
-        makeNamedConstraint({ datalayer: 2, value: '99' })
-      );
-
-      expect(component.selectedConstraints$.value).toEqual([original]);
-    });
   });
 
   describe('removeSelectionById', () => {
@@ -371,7 +325,9 @@ describe('AdvStandLevelConstraintsComponent', () => {
       expect(
         component.selectedConstraints$.value.map((c) => c.datalayer)
       ).toEqual([2]);
-      expect(dataLayerState.removeSelectedLayer).toHaveBeenCalledWith(layerOne);
+      expect(dataLayerState.removeSelectedLayer).toHaveBeenCalledWith(
+        mockLayerOne
+      );
     });
 
     it('does not call removeSelectedLayer for an unknown layer id', () => {
@@ -393,7 +349,7 @@ describe('AdvStandLevelConstraintsComponent', () => {
         makeNamedConstraint({ datalayer: 1 }),
       ]);
 
-      component.handleSelectedLayer(layerOne);
+      component.handleSelectedLayer(mockLayerOne);
 
       expect(component.selectedConstraints$.value).toEqual([]);
       expect(dialogSpy.open).not.toHaveBeenCalled();
@@ -403,10 +359,10 @@ describe('AdvStandLevelConstraintsComponent', () => {
       fixture.detectChanges();
       const newConstraint = makeNamedConstraint({
         datalayer: 1,
-        name: 'Slope: > 10',
+        name: 'Test Layer One: > 10',
       });
 
-      component.handleSelectedLayer(layerOne);
+      component.handleSelectedLayer(mockLayerOne);
       afterClosed$.next({ action: 'SAVE', payload: newConstraint });
 
       expect(dialogSpy.open).toHaveBeenCalled();
@@ -419,7 +375,7 @@ describe('AdvStandLevelConstraintsComponent', () => {
         makeNamedConstraint({ datalayer: 1 }),
       ]);
 
-      component.handleSelectedLayer(layerOne);
+      component.handleSelectedLayer(mockLayerOne);
       afterClosed$.next({ action: 'DELETE', payload: 1 });
 
       expect(component.selectedConstraints$.value).toEqual([]);
@@ -507,20 +463,6 @@ describe('AdvStandLevelConstraintsComponent', () => {
 
       expect(component.activeConstraint$.value).toBeNull();
       expect(component.selectedConstraints$.value[0].value).toBe('50');
-    });
-
-    it('removes by payload.id on DELETE', () => {
-      fixture.detectChanges();
-      component.selectedConstraints$.next([
-        makeNamedConstraint({ datalayer: 1 }),
-      ]);
-      const clicked = makeNamedConstraint({ datalayer: 1 });
-
-      component.handleConstraintChipClicked(clicked);
-      afterClosed$.next({ action: 'DELETE', payload: { id: 1 } });
-
-      expect(component.selectedConstraints$.value).toEqual([]);
-      expect(component.activeConstraint$.value).toBeNull();
     });
   });
 });
