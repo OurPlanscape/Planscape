@@ -73,24 +73,33 @@
           </ng-container>
         </ng-container>
 
+        <!-- for legacy / V2 configurations -->
+        <ng-container
+          *ngIf="scenario.version === 'V2' || scenario.version === 'V1'">
+          <ng-container *ngIf="scenario.configuration.max_slope">
+            <dt>Stand-Level Constraints</dt>
+            <dd>
+              Slope less than or equal to (<=)
+              {{ scenario.configuration.max_slope }}%
+            </dd>
+          </ng-container>
+          <ng-container *ngIf="scenario.configuration.min_distance_from_road">
+            <dd>
+              Distance from roads is less than (<)
+              {{
+                scenario.configuration.min_distance_from_road | number: '1.0-2'
+              }}
+              yds
+            </dd>
+          </ng-container>
+        </ng-container>
+
         <ng-container *ngIf="standardConstraints.length">
           <dt>Stand-Level Constraints</dt>
-
           <ul class="list-element">
-            <!-- for legacy / V2 configurations -->
-            <li *ngIf="scenario.version === 'V2' || scenario.version === 'V1'">
-              {{
-                scenario.configuration.max_slope
-                  ? 'Slope less or equal than (<=) ' +
-                    scenario.configuration.max_slope +
-                    '%'
-                  : '--'
-              }}
-            </li>
-
             <dd *ngFor="let c of standardConstraints">
               <li *ngIf="c.datalayer === slopeId">
-                Slope less or equal than (<=) {{ c.value }} %
+                Slope less than or equal to (<=) {{ c.value }} %
               </li>
               <li *ngIf="c.datalayer === distanceToRoadsId">
                 Distance from roads is less than (<)
@@ -144,6 +153,8 @@
 
         <ng-container *ngIf="configuration">
           <dt>Treatment Target</dt>
+
+          <!-- For legacy scenario configurations-->
           <ng-container
             *ngIf="scenario.version === 'V2' || scenario.version === 'V1'">
             <dd *ngIf="scenario.configuration.max_area">
@@ -156,6 +167,7 @@
               }}
             </dd>
           </ng-container>
+
           <dd
             *ngIf="
               configuration &&

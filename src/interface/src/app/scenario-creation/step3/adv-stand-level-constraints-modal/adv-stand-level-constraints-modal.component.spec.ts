@@ -109,8 +109,7 @@ describe('AdvStandLevelConstraintsModalComponent', () => {
         name: 'Test Layer Alpha: 10-50',
         datalayer: 'layer-1',
         operator: 'btw',
-        value: 10,
-        value2: 50,
+        value: '10,50',
       }),
     });
   });
@@ -129,7 +128,7 @@ describe('AdvStandLevelConstraintsModalComponent', () => {
         name: 'Test Layer Alpha: ≥ 25',
         datalayer: 'layer-1',
         operator: 'gte',
-        value: 25,
+        value: '25',
       }),
     });
   });
