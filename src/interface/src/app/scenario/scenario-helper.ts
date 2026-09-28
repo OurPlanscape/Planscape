@@ -4,6 +4,7 @@ import {
   Constraint,
   CONSTRAINT_OPERATOR,
   CONSTRAINT_OPERATOR_MAP,
+  DataLayer,
   PLANNING_APPROACH,
   Scenario,
   SCENARIO_TYPE,
@@ -273,6 +274,18 @@ export function arrayHasChanged(source: number[], compare: number[]): boolean {
     source.some((item, index) => item !== compare[index]);
 
   return hasChanged;
+}
+
+export function getConstraintDisplayName(
+  constraint: Constraint,
+  layer: DataLayer | undefined
+): string {
+  const layerName = layer ? layer.name : 'Unknown Layer';
+  if (constraint.operator === 'btw' && constraint.value.includes(',')) {
+    const [num1, num2] = constraint.value.split(',').map(Number);
+    return `${layerName}: ${Math.min(num1, num2)}-${Math.max(num1, num2)}`;
+  }
+  return `${layerName}: ${getOperatorDisplayText(constraint.operator)} ${constraint.value}`;
 }
 
 export function getOperatorDisplayText(operator: CONSTRAINT_OPERATOR): string {

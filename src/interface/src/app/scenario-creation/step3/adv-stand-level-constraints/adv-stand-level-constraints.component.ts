@@ -47,7 +47,7 @@ import { ModuleService } from '@app/services/module.service';
 import { SELECTION_MODE } from '@app/data-layers/data-layers/selection-mode.token';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
-import { getOperatorDisplayText } from '@app/scenario/scenario-helper';
+import { getConstraintDisplayName } from '@app/scenario/scenario-helper';
 
 @UntilDestroy()
 @Component({
@@ -112,18 +112,6 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     return this.knownLayers.find((layer) => layer.id === id) ?? null;
   }
 
-  private getConstraintDisplayName(
-    constraint: Constraint,
-    layer: DataLayer | undefined
-  ): string {
-    const layerName = layer ? layer.name : 'Unknown Layer';
-    if (constraint.operator === 'btw' && constraint.value.includes(',')) {
-      const [num1, num2] = constraint.value.split(',').map(Number);
-      return `${layerName}: ${Math.min(num1, num2)}-${Math.max(num1, num2)}`;
-    }
-    return `${layerName}: ${getOperatorDisplayText(constraint.operator)} ${constraint.value}`;
-  }
-
   // update UI of this component when the step loads, not eagerly on step construction
   mapConfigToUI() {
     // here, we filter out layers from constraintLayers to find
@@ -148,7 +136,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
 
             acc.push({
               ...constraint,
-              name: this.getConstraintDisplayName(constraint, layer),
+              name: getConstraintDisplayName(constraint, layer),
             });
           }
 

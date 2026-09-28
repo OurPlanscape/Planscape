@@ -21,9 +21,6 @@ import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { DataLayer, Constraint } from '@app/types';
 import { NamedConstraint } from '../adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
 
-// Minimal fixtures. Cast through `unknown` since the real interfaces likely
-// carry more fields than the component actually touches — adjust if your
-// `DataLayer`/`Constraint` types require additional required properties.
 const layerOne = { id: 1, name: 'Test Layer One' } as unknown as DataLayer;
 const layerTwo = { id: 2, name: 'Test Layer Two' } as unknown as DataLayer;
 
@@ -46,20 +43,6 @@ function makeNamedConstraint(
   } as unknown as NamedConstraint;
 }
 
-// AdvStandLevelConstraintsComponent injects ControlContainer with
-// @Host() @SkipSelf(), which only looks at ancestor *element* injectors —
-// it deliberately does not fall back to the module/root injector. So it
-// can't be satisfied with a plain `{ provide: ControlContainer, useValue: ... }`
-// in TestBed's providers array; it needs a real [formGroup] directive on an
-// ancestor element, which is what FormGroupDirective (from ReactiveFormsModule)
-// provides.
-//
-// Deliberately no `formGroupName` on the child element: the component
-// doesn't use FormGroupName's ControlValueAccessor machinery — it manually
-// does `parentFormGroup.addControl(this.keyName, this.form)` in ngOnInit.
-// Adding `formGroupName` would require a nested FormGroup to already exist
-// under that key at directive-init time, which conflicts with the
-// dynamic-keyName test below.
 @Component({
   standalone: true,
   imports: [ReactiveFormsModule, AdvStandLevelConstraintsComponent],
