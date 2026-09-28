@@ -39,12 +39,10 @@
       </ng-template>
     </dd>
 
-    <ng-container *ngIf="showAllData">
-      <dt>Vintage</dt>
-      <dd>
-        {{ vintageDate ? (vintageDate | date: 'yyyy') : '--' }}
-      </dd>
-    </ng-container>
+    <dt>Vintage</dt>
+    <dd>
+      {{ vintageDate ? (vintageDate | date: 'yyyy') : '--' }}
+    </dd>
   </dl>
 </div>
 <div class="footer" *ngIf="showAllData">
