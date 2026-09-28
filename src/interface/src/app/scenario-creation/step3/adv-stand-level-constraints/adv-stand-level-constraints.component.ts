@@ -190,6 +190,17 @@ export class AdvStandLevelConstraintsComponent {
     if (!layerRecord) {
       return;
     }
+
+    let valueOne = e.value;
+    let valueTwo = null;
+
+    if (e.value.includes(',')) {
+      const [num1, num2] = e.value.split(',').map(Number);
+      // guard against values being out of numeric order
+      valueOne = String(Math.min(num1, num2));
+      valueTwo = String(Math.max(num1, num2));
+    }
+
     const dialogRef = this.dialog.open(AdvStandLevelConstraintsModalComponent, {
       maxWidth: '560px',
       data: {
@@ -197,8 +208,8 @@ export class AdvStandLevelConstraintsComponent {
         dataLayerName: layerRecord.name,
         dataLayer: layerRecord,
         operator: e.operator,
-        valueOne: e.value,
-        valueTwo: e.value2,
+        valueOne: valueOne,
+        valueTwo: valueTwo,
       },
     });
 
