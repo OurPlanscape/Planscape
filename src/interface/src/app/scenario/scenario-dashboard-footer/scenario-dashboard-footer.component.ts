@@ -14,6 +14,8 @@ import { LegacyScenarioConfigOverlayComponent } from '../legacy-scenario-config-
 import { ScenarioConfigOverlayComponent } from '../scenario-config-overlay/scenario-config-overlay.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GEO_PACKAGE_LABELS } from '../scenario.constants';
+import { FeaturesModule } from '@app/features/features.module';
+import { ScenarioConfigListOverlayComponent } from '../scenario-config-list-overlay/scenario-config-list-overlay.component';
 
 @Component({
   selector: 'app-scenario-dashboard-footer',
@@ -21,9 +23,11 @@ import { GEO_PACKAGE_LABELS } from '../scenario.constants';
   imports: [
     CommonModule,
     ButtonComponent,
+    FeaturesModule,
     MatMenuModule,
     LegacyScenarioConfigOverlayComponent,
     ScenarioConfigOverlayComponent,
+    ScenarioConfigListOverlayComponent,
   ],
   templateUrl: './scenario-dashboard-footer.component.html',
   styleUrl: './scenario-dashboard-footer.component.scss',
