@@ -13,10 +13,10 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { getOperatorDisplayText } from '@app/scenario/scenario-helper';
 import {
   Constraint,
   CONSTRAINT_OPERATOR,
-  CONSTRAINT_OPERATOR_MAP,
   CONSTRAINT_OPERATORS,
 } from '@app/types';
 import {
@@ -123,21 +123,16 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
     });
   }
 
-  private getOperatorDisplayText(operator: CONSTRAINT_OPERATOR): string {
-    const def = CONSTRAINT_OPERATOR_MAP.get(operator);
-    return def?.symbol ? def.symbol : operator;
-  }
-
   handleApply() {
     if (this.form.valid) {
       const formVal = this.form.value;
       const operator = formVal.constraintOperator ?? 'eq';
 
       const constraintSelection: NamedConstraint = {
-        name: `${this.data.dataLayer.name}: ${this.getOperatorDisplayText(operator)} ${formVal.constraintValueOne}`,
+        name: `${this.data.dataLayer.name}: ${getOperatorDisplayText(operator)} ${formVal.constraintValueOne}`,
         datalayer: this.data.dataLayer.id,
         operator,
-        value: String(formVal.constraintValueOne ?? 0),
+        value: `${formVal.constraintValueOne ?? 0}`,
       };
 
       // if we have a 'btw' (Between) operator, we set different data
@@ -147,7 +142,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
         formVal.constraintValueTwo !== undefined
       ) {
         (constraintSelection.name = `${this.data.dataLayer.name}: ${formVal.constraintValueOne}-${formVal.constraintValueTwo}`),
-          (constraintSelection.value += ',' + formVal.constraintValueTwo);
+          (constraintSelection.value = `${formVal.constraintValueOne},${formVal.constraintValueTwo}`);
       }
       this.dialogRef.close({ action: 'SAVE', payload: constraintSelection });
     }

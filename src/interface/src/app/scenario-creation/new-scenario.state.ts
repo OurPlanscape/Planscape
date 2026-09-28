@@ -93,6 +93,18 @@ export class NewScenarioState {
     shareReplay(1)
   );
 
+  public advStandLevelConstraints$ = this.scenarioConfig$.pipe(
+    map((config) => {
+      const draft = config as Partial<ScenarioDraftConfiguration>;
+      if (draft.adv_constraints && draft.adv_constraints.length > 0) {
+        return draft.adv_constraints;
+      } else {
+        return [];
+      }
+    }),
+    shareReplay(1)
+  );
+
   public prioritiesDetails$ = this.scenarioConfig$.pipe(
     map((config) => {
       const draft = config as Partial<ScenarioDraftConfiguration>;
@@ -190,6 +202,9 @@ export class NewScenarioState {
         subUnits,
         includedAreas,
       ]) => {
+        // NOTE: for the foreseeable future,
+        //  we should not be sending adv constraints via the available_stands call
+
         // Inside the project fn so it runs after switchMap cancels the previous inner (and its
         // finalize fires) — a tap() before switchMap would be overridden by that finalize.
         this.setLoading(true);

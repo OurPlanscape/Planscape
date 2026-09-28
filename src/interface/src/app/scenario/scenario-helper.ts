@@ -129,6 +129,16 @@ export function convertOldConfigurationToV3Payload(
       value: String(formData.max_slope),
     });
   }
+  // Map the adv stand level constraints to constraints array
+  if (formData.adv_constraints) {
+    formData.adv_constraints.map((c) => {
+      constraints.push({
+        datalayer: c.datalayer,
+        operator: c.operator,
+        value: c.value,
+      });
+    });
+  }
 
   if (constraints.length > 0) {
     config.constraints = constraints;
