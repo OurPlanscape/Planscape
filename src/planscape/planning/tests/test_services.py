@@ -24,6 +24,7 @@ from stands.tests.factories import StandFactory, StandMetricFactory
 from planning.models import (
     PlanningArea,
     PlanningAreaMapStatus,
+    Scenario,
     ScenarioPlanningApproach,
     ScenarioResultStatus,
     ScenarioType,
@@ -51,6 +52,7 @@ from planning.services import (
     get_max_treatable_area,
     get_max_treatable_stand_count,
     get_schema,
+    get_scenario_configuration_details,
     get_sub_units_details,
     sanitize_shp_field_name,
     trigger_scenario_run,
@@ -2066,3 +2068,76 @@ class CalculateAndUpdateScenarioResult(TestCase):
             self.assertIsNotNone(
                 feature.get("properties", {}).get("pct_treatable_area")
             )
+
+
+class GetScenarioConfigurationDetailsTest(TestCase):
+    def _fetch(self, scenario):
+        return Scenario.objects.select_related("planning_area", "treatment_goal").get(
+            pk=scenario.pk
+        )
+
+    def test_v3_custom_resolves_datalayers_in_a_single_query(self):
+        priority, cobenefit, included, excluded, constraint = (
+            DataLayerFactory.create_batch(5)
+        )
+        scenario = self._fetch(
+            ScenarioFactory(
+                type=ScenarioType.CUSTOM,
+                treatment_goal=None,
+                configuration={
+                    "stand_size": "SMALL",
+                    "targets": {"max_area": 100, "max_project_count": 2},
+                    "priorities": [{"datalayer": priority.pk, "weight": 1}],
+                    "cobenefits": [cobenefit.pk],
+                    "included_areas_ids": [included.pk],
+                    "excluded_areas_ids": [excluded.pk],
+                    "constraints": [
+                        {"datalayer": constraint.pk, "operator": "gt", "value": "0"}
+                    ],
+                },
+            )
+        )
+
+        with self.assertNumQueries(1):
+            details = get_scenario_configuration_details(scenario)
+
+        self.assertEqual(details["priority_objectives"][0]["id"], priority.pk)
+        self.assertEqual(details["cobenefits"][0]["id"], cobenefit.pk)
+        self.assertEqual(details["included_areas"][0]["id"], included.pk)
+        self.assertEqual(details["excluded_areas"][0]["id"], excluded.pk)
+        self.assertEqual(
+            details["advanced_stand_level_constraints"][0]["datalayer"]["id"],
+            constraint.pk,
+        )
+
+    def test_v3_preset_loads_treatment_goal_usages_in_a_single_query(self):
+        goal = TreatmentGoalFactory(with_datalayers=True)
+        included = DataLayerFactory()
+        scenario = self._fetch(
+            ScenarioFactory(
+                treatment_goal=goal,
+                configuration={
+                    "targets": {"max_area": 100, "max_project_count": 2},
+                    "included_areas_ids": [included.pk],
+                },
+            )
+        )
+
+        with self.assertNumQueries(2):
+            details = get_scenario_configuration_details(scenario)
+
+        self.assertEqual(len(details["priority_objectives"]), 1)
+        self.assertEqual(len(details["cobenefits"]), 1)
+        self.assertEqual(len(details["treatment_goal_constraints"]), 1)
+
+    def test_empty_configuration(self):
+        scenario = self._fetch(ScenarioFactory(treatment_goal=None, configuration={}))
+
+        details = get_scenario_configuration_details(scenario)
+
+        self.assertEqual(details["version"], "V2")
+        self.assertIsNone(details["stand_size"])
+        self.assertIsNone(details["planning_approach"])
+        self.assertIsNone(details["treatment_goal"])
+        self.assertEqual(details["excluded_areas"], [])
+        self.assertEqual(details["stand_level_constraints"], [])

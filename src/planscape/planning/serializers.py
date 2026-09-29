@@ -25,6 +25,7 @@ from planning.models import (
     ScenarioResult,
     ScenarioResultErrorCode,
     ScenarioType,
+    ScenarioVersion,
     SharedLink,
     TreatmentGoal,
     TreatmentGoalGroup,
@@ -1163,6 +1164,75 @@ class ScenarioV3Serializer(ListScenarioSerializer, serializers.ModelSerializer):
             "parent",
         )
         model = Scenario
+
+
+class IdNameSerializer(serializers.Serializer):
+    id = serializers.IntegerField(allow_null=True)
+    name = serializers.CharField()
+
+
+class ChoiceDetailsSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    label = serializers.CharField()
+
+
+class StandSizeDetailsSerializer(ChoiceDetailsSerializer):
+    acres = serializers.IntegerField(help_text="Approximate stand area, in acres.")
+
+
+class WeightedDataLayerSerializer(IdNameSerializer):
+    weight = serializers.IntegerField(allow_null=True)
+
+
+class ConstraintDetailsSerializer(serializers.Serializer):
+    datalayer = IdNameSerializer()
+    operator = serializers.ChoiceField(
+        choices=["eq", "dne", "lt", "lte", "gt", "gte", "btw"]
+    )
+    value = serializers.CharField(
+        help_text="Constraint value. For `btw`, a comma separated `min,max` pair."
+    )
+
+
+class TreatmentGoalConstraintDetailsSerializer(serializers.Serializer):
+    datalayer = IdNameSerializer()
+    threshold = serializers.CharField(
+        allow_null=True, help_text="Threshold expression, e.g. `value < 1`."
+    )
+
+
+class TargetsDetailsSerializer(serializers.Serializer):
+    max_area = serializers.FloatField(allow_null=True)
+    max_project_count = serializers.IntegerField(allow_null=True)
+    estimated_cost = serializers.FloatField(allow_null=True)
+    max_budget = serializers.FloatField(
+        allow_null=True, help_text="Only available for legacy (V1/V2) scenarios."
+    )
+    sub_units_fixed_target = serializers.BooleanField(allow_null=True)
+    sub_units_target_value = serializers.FloatField(allow_null=True)
+
+
+class ScenarioConfigurationDetailsSerializer(serializers.Serializer):
+    version = serializers.ChoiceField(choices=ScenarioVersion.choices)
+    type = serializers.ChoiceField(choices=ScenarioType.choices, allow_null=True)
+    planning_area = IdNameSerializer()
+    stand_size = StandSizeDetailsSerializer(allow_null=True)
+    planning_approach = ChoiceDetailsSerializer(allow_null=True)
+    sub_units_layer = IdNameSerializer(allow_null=True)
+    treatment_goal = IdNameSerializer(allow_null=True)
+    priority_objectives = WeightedDataLayerSerializer(many=True)
+    cobenefits = IdNameSerializer(many=True)
+    treatment_goal_constraints = TreatmentGoalConstraintDetailsSerializer(many=True)
+    included_areas = IdNameSerializer(many=True)
+    excluded_areas = IdNameSerializer(
+        many=True,
+        help_text="Legacy (V1) areas stored by name are returned with a null `id`.",
+    )
+    stand_level_constraints = ConstraintDetailsSerializer(
+        many=True, help_text="Slope and distance from roads constraints."
+    )
+    advanced_stand_level_constraints = ConstraintDetailsSerializer(many=True)
+    targets = TargetsDetailsSerializer()
 
 
 class UpsertScenarioV3Serializer(serializers.ModelSerializer):
