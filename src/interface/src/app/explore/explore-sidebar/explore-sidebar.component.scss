@@ -1,0 +1,43 @@
+@import 'variables';
+@import 'colors';
+@import 'mixins';
+
+:host {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  height: 100%;
+  width: $map-sidebar-rail-width;
+  background-color: $color-white;
+}
+
+:host(.expanded) {
+  width: $map-sidebar-width;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  height: $map-nav-bar-height;
+  padding: 0 10px 0 24px;
+
+  h4 {
+    @include standard-label();
+    margin: 0;
+  }
+}
+
+.panel-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}

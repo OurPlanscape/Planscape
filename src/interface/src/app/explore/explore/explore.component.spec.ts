@@ -1,18 +1,25 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatTabsModule } from '@angular/material/tabs';
+import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { PlanState } from '@app/plan/plan.state';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { Plan, Scenario } from '@app/types';
-import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
+import { ExploreSidebarComponent } from '@explore/explore-sidebar/explore-sidebar.component';
+import { LegacySidebarComponent } from '@explore/legacy-sidebar/legacy-sidebar.component';
+import { overrideFeatureFlags } from '@features/testing';
 import { SyncedMapsComponent } from '@maplibre-map/synced-maps/synced-maps.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { ExploreStorageService } from '@services/local-storage.service';
 import { SharedModule } from '@shared';
 import { Geometry } from '@turf/helpers';
-import { MockDeclarations, MockProvider, MockProviders } from 'ng-mocks';
+import {
+  MockComponents,
+  MockDeclarations,
+  MockProvider,
+  MockProviders,
+} from 'ng-mocks';
 import { BehaviorSubject, of } from 'rxjs';
 import { ExploreComponent } from './explore.component';
 
@@ -42,6 +49,7 @@ describe('ExploreComponent', () => {
   };
 
   function setupComponent() {
+    breadcrumbService = TestBed.inject(BreadcrumbService);
     fixture = TestBed.createComponent(ExploreComponent);
     spyOn(breadcrumbService, 'updateBreadCrumb');
     fixture.detectChanges();
@@ -59,12 +67,7 @@ describe('ExploreComponent', () => {
     currentPlanId$ = new BehaviorSubject<number | null>(24);
 
     await TestBed.configureTestingModule({
-      imports: [
-        ExploreComponent,
-        SharedModule,
-        MatTabsModule,
-        BrowserAnimationsModule,
-      ],
+      imports: [ExploreComponent, SharedModule, BrowserAnimationsModule],
       providers: [
         MockProviders(BreadcrumbService, ExploreStorageService),
         MockProvider(PlanState, {
@@ -78,16 +81,40 @@ describe('ExploreComponent', () => {
           snapshot: { data: mockRouteSnapshotData } as any,
         }),
       ],
-      declarations: [
-        MockDeclarations(
-          SyncedMapsComponent,
-          NavBarComponent,
-          BaseLayersComponent
-        ),
-      ],
-    }).compileComponents();
+      declarations: [MockDeclarations(SyncedMapsComponent, NavBarComponent)],
+    })
+      .overrideComponent(ExploreComponent, {
+        remove: { imports: [ExploreSidebarComponent, LegacySidebarComponent] },
+        add: {
+          imports: MockComponents(
+            ExploreSidebarComponent,
+            LegacySidebarComponent
+          ),
+        },
+      })
+      .compileComponents();
+  });
 
-    breadcrumbService = TestBed.inject(BreadcrumbService);
+  it('renders the legacy sidebar when DATA_ORGANIZATION is off', () => {
+    overrideFeatureFlags();
+    setupComponent();
+
+    expect(
+      fixture.debugElement.query(By.css('app-legacy-sidebar'))
+    ).toBeTruthy();
+    expect(
+      fixture.debugElement.query(By.css('app-explore-sidebar'))
+    ).toBeNull();
+  });
+
+  it('renders the icon rail sidebar when DATA_ORGANIZATION is on', () => {
+    overrideFeatureFlags('DATA_ORGANIZATION');
+    setupComponent();
+
+    expect(
+      fixture.debugElement.query(By.css('app-explore-sidebar'))
+    ).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('app-legacy-sidebar'))).toBeNull();
   });
 
   it('should use scenario breadcrumb label and backUrl when scenarioId, plan and scenario exist', () => {

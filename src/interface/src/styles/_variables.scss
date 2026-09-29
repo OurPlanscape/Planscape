@@ -10,6 +10,11 @@ $funding-sidebar-width: 510px;
 $funding-sidebar-xxl-width: 580px;
 $climate-stepper-left-panel-width: 592px;
 $climate-analysis-left-panel-width: 360px;
+
+// map viewer side panel
+$map-sidebar-panel-width: 360px;
+$map-sidebar-rail-width: 64px;
+$map-sidebar-width: $map-sidebar-panel-width + $map-sidebar-rail-width;
 $stepper-bar: 72px;
 
 // planning overview

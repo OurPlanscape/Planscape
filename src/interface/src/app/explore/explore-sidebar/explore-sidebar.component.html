@@ -1,0 +1,21 @@
+<app-sidebar-icon-rail
+  [items]="railItems"
+  [activeId]="expanded ? activeItemId : null"
+  (itemSelected)="selectItem($event)"></app-sidebar-icon-rail>
+
+<div class="panel" *ngIf="expanded">
+  <div class="panel-header">
+    <h4>{{ activeItem?.label }}</h4>
+    <button
+      sg-button
+      variant="icon-only"
+      icon="close_fullscreen"
+      (click)="expandedChange.emit(false)"></button>
+  </div>
+  <div class="panel-content">
+    <app-map-selector
+      *ngIf="selectedTab === SidebarTabs.DATA_LAYERS"></app-map-selector>
+    <app-base-layers
+      *ngIf="selectedTab === SidebarTabs.BASE_LAYERS"></app-base-layers>
+  </div>
+</div>
