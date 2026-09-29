@@ -16,6 +16,7 @@
     <app-map-selector
       *ngIf="selectedTab === SidebarTabs.DATA_LAYERS"></app-map-selector>
     <app-base-layers
+      [showSearch]="true"
       *ngIf="selectedTab === SidebarTabs.BASE_LAYERS"></app-base-layers>
   </div>
 </div>

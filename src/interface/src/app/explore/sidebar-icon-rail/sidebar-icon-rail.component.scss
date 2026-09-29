@@ -8,8 +8,8 @@
   flex: 0 0 $map-sidebar-rail-width;
   width: $map-sidebar-rail-width;
   box-sizing: border-box;
-  padding: 12px 0;
-  gap: 13px;
+  padding: 14px 0;
+  gap: 16px;
   background-color: $color-off-white;
   border-right: 1px solid $color-soft-gray;
 }
@@ -18,8 +18,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   padding: 0;
   border: none;
   border-radius: 8px;
@@ -42,8 +42,8 @@
   }
 
   mat-icon {
-    width: 20px;
-    height: 20px;
-    font-size: 20px;
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
   }
 }

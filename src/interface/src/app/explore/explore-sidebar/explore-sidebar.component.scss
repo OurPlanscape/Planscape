@@ -2,6 +2,9 @@
 @import 'colors';
 @import 'mixins';
 
+$panel-header-height: 64px;
+$panel-side-padding: 16px;
+
 :host {
   position: absolute;
   z-index: 5;
@@ -27,8 +30,8 @@
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
-  height: $map-nav-bar-height;
-  padding: 0 10px 0 24px;
+  height: $panel-header-height;
+  padding: 0 8px 0 16px;
 
   h4 {
     @include standard-label();
@@ -40,4 +43,18 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
+}
+
+// Search spacing for this design only; the legacy sidebar keeps the
+// defaults from data-layers.component.scss. Extra selectors to outrank
+// that component's own :host ::ng-deep rules.
+.panel .panel-content ::ng-deep {
+  .side-search-container {
+    height: auto;
+    padding: 0 $panel-side-padding $panel-side-padding;
+  }
+
+  .search-bar .input-wrapper {
+    height: 50px;
+  }
 }
