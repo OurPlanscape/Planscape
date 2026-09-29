@@ -2475,7 +2475,7 @@ def _get_datalayers_by_id(ids: list[Any]) -> dict[int, DataLayer]:
     return {datalayer.pk: datalayer for datalayer in datalayers}
 
 
-def _get_forsys_name(datalayer: DataLayer) -> str | None:
+def get_forsys_name(datalayer: DataLayer) -> str | None:
     modules = (datalayer.metadata or {}).get("modules") or {}
     return (modules.get("forsys") or {}).get("name")
 
@@ -2618,7 +2618,7 @@ def _get_v3_configuration_details(
             "operator": constraint.get("operator"),
             "value": constraint.get("value"),
         }
-        if _get_forsys_name(datalayer) in STAND_LEVEL_CONSTRAINT_LAYERS:
+        if get_forsys_name(datalayer) in STAND_LEVEL_CONSTRAINT_LAYERS:
             stand_level_constraints.append(item)
         else:
             advanced_stand_level_constraints.append(item)
