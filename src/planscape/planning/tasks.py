@@ -14,7 +14,6 @@ from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils import timezone
 from gis.core import get_storage_session
-from modules.base import ForsysModule
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 from stands.models import Stand, StandSizeChoices
