@@ -19,11 +19,20 @@
     height: 360px;
   }
 
+  &.extra-tall {
+    height: 400px;
+    min-height: 200px;
+    max-height: 100%;
+    flex-shrink: 1;
+  }
+
   &.collapseHeight {
     @include on-vert-small-min-med-width() {
       height: 56px;
-      &.tall {
+      &.tall,
+      &.extra-tall {
         height: 56px;
+        min-height: 0;
       }
     }
 
@@ -33,11 +42,8 @@
       }
     }
   }
-
-
 }
 
-// this doesnt belong here
 mgl-map {
   height: 100%;
   width: 100%;
@@ -55,9 +61,9 @@ mgl-map {
   color: black;
   border-radius: 0 0 8px 8px;
   background: linear-gradient(
-      193deg,
-      rgba(6, 75, 186, 0) -134.4%,
-      $color-standard-blue 97.6%
+    193deg,
+    rgba(6, 75, 186, 0) -134.4%,
+    $color-standard-blue 97.6%
   );
   display: flex;
   padding: 16px;
@@ -66,9 +72,9 @@ mgl-map {
 
   &:hover {
     background: linear-gradient(
-        193deg,
-        rgba(6, 75, 186, 0) -244.4%,
-        $color-standard-blue 67.6%
+      193deg,
+      rgba(6, 75, 186, 0) -244.4%,
+      $color-standard-blue 67.6%
     );
     cursor: pointer;
   }

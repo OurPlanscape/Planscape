@@ -1325,7 +1325,7 @@ class PatchScenarioConfigurationTest(APITestCase):
                 {
                     "datalayer": btw_datalayer.pk,
                     "operator": "btw",
-                    "value": "10.0,20.0",
+                    "value": "10,20",
                 },
             ],
         )

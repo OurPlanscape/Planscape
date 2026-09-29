@@ -18,3 +18,5 @@ The name and value of the flag will be shared by frontend and backend.
 `WORKSPACES`: Enables workspaces
 
 `ADV_STAND_LEVEL_CONSTRAINTS`: Enables Advanced Stand Level Constraints
+
+`DATA_ORGANIZATION`: Enables Data Organization
