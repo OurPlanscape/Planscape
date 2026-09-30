@@ -17,9 +17,11 @@ from planning.models import (
     ScenarioCapability,
     ScenarioPlanningApproach,
     ScenarioResult,
+    ScenarioResultStatus,
     ScenarioType,
     ScenarioVersion,
     TreatmentGoalGroup,
+    TreatmentGoalUsageType,
 )
 from planning.serializers import ListScenarioSerializer, ScenarioV2Serializer
 from planning.tests.factories import (
@@ -28,6 +30,7 @@ from planning.tests.factories import (
     ScenarioFactory,
     ScenarioResultFactory,
     TreatmentGoalFactory,
+    TreatmentGoalUsesDataLayerFactory,
     UserFactory,
 )
 
@@ -2970,3 +2973,432 @@ class DownloadGeopackageTest(APITestCase):
     def test_download_requires_authentication(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class GetScenarioConfigurationTest(APITestCase):
+    def setUp(self):
+        self.creator = UserFactory()
+        self.viewer = UserFactory()
+        self.not_invited = UserFactory()
+        self.planning_area = PlanningAreaFactory(
+            user=self.creator,
+            name="Sierra North",
+            viewers=[self.viewer],
+        )
+
+        self.slope = DataLayerFactory(
+            name="Slope", metadata={"modules": {"forsys": {"name": "slope"}}}
+        )
+        self.roads = DataLayerFactory(
+            name="Distance from roads",
+            metadata={"modules": {"forsys": {"name": "distance_from_roads"}}},
+        )
+        self.whp = DataLayerFactory(name="Wildfire Hazard Potential")
+        self.included_area = DataLayerFactory(name="Included area")
+        self.excluded_area = DataLayerFactory(name="Excluded area")
+        self.priority = DataLayerFactory(name="Priority")
+        self.other_priority = DataLayerFactory(name="Other priority")
+        self.cobenefit = DataLayerFactory(name="Cobenefit")
+
+    def _get(self, scenario, user=None):
+        self.client.force_authenticate(user or self.creator)
+        url = reverse("api:planning:scenarios-get-configuration", args=[scenario.pk])
+        return self.client.get(url)
+
+    def _named(self, instance):
+        return {"id": instance.pk, "name": instance.name}
+
+    def test_v3_preset_scenario(self):
+        goal = TreatmentGoalFactory(name="Reduce wildfire risk")
+        threshold_layer = DataLayerFactory(name="Threshold")
+        TreatmentGoalUsesDataLayerFactory(
+            treatment_goal=goal,
+            datalayer=self.priority,
+            usage_type=TreatmentGoalUsageType.PRIORITY,
+            weight=2,
+        )
+        TreatmentGoalUsesDataLayerFactory(
+            treatment_goal=goal,
+            datalayer=self.cobenefit,
+            usage_type=TreatmentGoalUsageType.SECONDARY_METRIC,
+            weight=None,
+        )
+        TreatmentGoalUsesDataLayerFactory(
+            treatment_goal=goal,
+            datalayer=threshold_layer,
+            usage_type=TreatmentGoalUsageType.THRESHOLD,
+            threshold="value < 1",
+            weight=None,
+        )
+        TreatmentGoalUsesDataLayerFactory(
+            treatment_goal=goal,
+            datalayer=self.other_priority,
+            usage_type=TreatmentGoalUsageType.PRIORITY,
+        ).delete()
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            type=ScenarioType.PRESET,
+            treatment_goal=goal,
+            planning_approach=ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS,
+            configuration={
+                "stand_size": "SMALL",
+                "targets": {
+                    "max_area": 500,
+                    "max_project_count": 5,
+                    "estimated_cost": 2470,
+                },
+                "constraints": [
+                    {"datalayer": self.slope.pk, "operator": "lte", "value": "40"},
+                    {"datalayer": self.roads.pk, "operator": "lte", "value": "100"},
+                    {"datalayer": self.whp.pk, "operator": "gt", "value": "0"},
+                ],
+                "included_areas_ids": [self.included_area.pk],
+                "excluded_areas_ids": [self.excluded_area.pk],
+                "priorities": [],
+                "cobenefits": [],
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.json(),
+            {
+                "version": ScenarioVersion.V3,
+                "type": ScenarioType.PRESET,
+                "planning_area": {
+                    "id": self.planning_area.pk,
+                    "name": "Sierra North",
+                },
+                "stand_size": {"key": "SMALL", "label": "Small", "acres": 10},
+                "planning_approach": {
+                    "key": "OPTIMIZE_PROJECT_AREAS",
+                    "label": "Optimize Project Areas",
+                },
+                "sub_units_layer": None,
+                "treatment_goal": {"id": goal.pk, "name": "Reduce wildfire risk"},
+                "priority_objectives": [{**self._named(self.priority), "weight": 2}],
+                "cobenefits": [self._named(self.cobenefit)],
+                "treatment_goal_constraints": [
+                    {
+                        "datalayer": self._named(threshold_layer),
+                        "threshold": "value < 1",
+                    }
+                ],
+                "included_areas": [self._named(self.included_area)],
+                "excluded_areas": [self._named(self.excluded_area)],
+                "stand_level_constraints": [
+                    {
+                        "datalayer": self._named(self.slope),
+                        "operator": "lte",
+                        "value": "40",
+                    },
+                    {
+                        "datalayer": self._named(self.roads),
+                        "operator": "lte",
+                        "value": "100",
+                    },
+                ],
+                "advanced_stand_level_constraints": [
+                    {
+                        "datalayer": self._named(self.whp),
+                        "operator": "gt",
+                        "value": "0",
+                    }
+                ],
+                "targets": {
+                    "max_area": 500.0,
+                    "max_project_count": 5,
+                    "estimated_cost": 2470.0,
+                    "max_budget": None,
+                    "sub_units_fixed_target": None,
+                    "sub_units_target_value": None,
+                },
+            },
+        )
+
+    def test_v3_custom_scenario(self):
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            type=ScenarioType.CUSTOM,
+            treatment_goal=None,
+            configuration={
+                "stand_size": "MEDIUM",
+                "targets": {"max_area": 100, "max_project_count": 2},
+                "priorities": [
+                    {"datalayer": self.priority.pk, "weight": 2},
+                    {"datalayer": self.other_priority.pk, "weight": 1},
+                ],
+                "cobenefits": [self.cobenefit.pk, 999999],
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["type"], ScenarioType.CUSTOM)
+        self.assertIsNone(data["treatment_goal"])
+        self.assertEqual(
+            data["stand_size"], {"key": "MEDIUM", "label": "Medium", "acres": 100}
+        )
+        self.assertEqual(
+            data["priority_objectives"],
+            [
+                {**self._named(self.priority), "weight": 2},
+                {**self._named(self.other_priority), "weight": 1},
+            ],
+        )
+        self.assertEqual(data["cobenefits"], [self._named(self.cobenefit)])
+        self.assertEqual(data["treatment_goal_constraints"], [])
+        self.assertEqual(data["included_areas"], [])
+        self.assertEqual(data["excluded_areas"], [])
+        self.assertEqual(data["stand_level_constraints"], [])
+        self.assertEqual(data["advanced_stand_level_constraints"], [])
+
+    def test_v3_custom_scenario_with_legacy_priority_objectives(self):
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            type=ScenarioType.CUSTOM,
+            treatment_goal=None,
+            configuration={
+                "targets": {"max_area": 100, "max_project_count": 2},
+                "priority_objectives": [self.priority.pk],
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(
+            data["priority_objectives"],
+            [{**self._named(self.priority), "weight": 1}],
+        )
+        self.assertIsNone(data["stand_size"])
+
+    def test_v3_custom_scenario_ignores_leftover_treatment_goal(self):
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            type=ScenarioType.CUSTOM,
+            treatment_goal=TreatmentGoalFactory(with_datalayers=True),
+            configuration={
+                "targets": {"max_area": 100, "max_project_count": 2},
+                "priorities": [{"datalayer": self.priority.pk, "weight": 1}],
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIsNone(data["treatment_goal"])
+        self.assertEqual(
+            data["priority_objectives"],
+            [{**self._named(self.priority), "weight": 1}],
+        )
+        self.assertEqual(data["cobenefits"], [])
+        self.assertEqual(data["treatment_goal_constraints"], [])
+
+    def test_v3_sub_units_scenario(self):
+        sub_units_layer = DataLayerFactory(name="HUC12")
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+            configuration={
+                "stand_size": "LARGE",
+                "sub_units_layer": sub_units_layer.pk,
+                "targets": {
+                    "max_area": None,
+                    "max_project_count": None,
+                    "estimated_cost": 2470,
+                    "sub_units_fixed_target": False,
+                    "sub_units_target_value": 20,
+                },
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(
+            data["planning_approach"],
+            {"key": "PRIORITIZE_SUB_UNITS", "label": "Prioritize Sub-Units"},
+        )
+        self.assertEqual(data["sub_units_layer"], self._named(sub_units_layer))
+        self.assertEqual(
+            data["targets"],
+            {
+                "max_area": None,
+                "max_project_count": None,
+                "estimated_cost": 2470.0,
+                "max_budget": None,
+                "sub_units_fixed_target": False,
+                "sub_units_target_value": 20.0,
+            },
+        )
+
+    def test_missing_datalayers_are_skipped(self):
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            configuration={
+                "targets": {"max_area": 100, "max_project_count": 2},
+                "included_areas_ids": [self.included_area.pk, 999999],
+                "excluded_areas_ids": [999998],
+                "constraints": [
+                    {"datalayer": 999997, "operator": "gt", "value": "0"},
+                ],
+                "sub_units_layer": 999996,
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["included_areas"], [self._named(self.included_area)])
+        self.assertEqual(data["excluded_areas"], [])
+        self.assertEqual(data["stand_level_constraints"], [])
+        self.assertEqual(data["advanced_stand_level_constraints"], [])
+        self.assertIsNone(data["sub_units_layer"])
+
+    def test_v2_scenario(self):
+        goal = TreatmentGoalFactory(datalayers=[self.priority])
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            treatment_goal=goal,
+            configuration={
+                "stand_size": "LARGE",
+                "estimated_cost": 2470,
+                "max_budget": 100000,
+                "max_area": None,
+                "max_project_count": 5,
+                "max_slope": 30,
+                "min_distance_from_road": 200,
+                "excluded_areas_ids": [self.excluded_area.pk],
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["version"], ScenarioVersion.V2)
+        self.assertEqual(data["treatment_goal"], self._named(goal))
+        self.assertEqual(
+            data["priority_objectives"],
+            [{**self._named(self.priority), "weight": 1}],
+        )
+        self.assertEqual(data["excluded_areas"], [self._named(self.excluded_area)])
+        self.assertEqual(data["included_areas"], [])
+        self.assertEqual(
+            data["stand_level_constraints"],
+            [
+                {
+                    "datalayer": self._named(self.slope),
+                    "operator": "lte",
+                    "value": "30",
+                },
+                {
+                    "datalayer": self._named(self.roads),
+                    "operator": "lte",
+                    "value": "200",
+                },
+            ],
+        )
+        self.assertEqual(
+            data["targets"],
+            {
+                "max_area": None,
+                "max_project_count": 5,
+                "estimated_cost": 2470.0,
+                "max_budget": 100000.0,
+                "sub_units_fixed_target": None,
+                "sub_units_target_value": None,
+            },
+        )
+
+    def test_v1_scenario(self):
+        goal = TreatmentGoalFactory()
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            treatment_goal=None,
+            configuration={
+                "question_id": goal.pk,
+                "stand_size": "MEDIUM",
+                "est_cost": 2000,
+                "max_treatment_area_ratio": 40000,
+                "max_slope": 25,
+                "excluded_areas": ["national_forests", str(self.excluded_area.pk)],
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["version"], ScenarioVersion.V1)
+        self.assertEqual(data["treatment_goal"], self._named(goal))
+        self.assertEqual(
+            data["excluded_areas"],
+            [
+                {"id": None, "name": "national_forests"},
+                self._named(self.excluded_area),
+            ],
+        )
+        self.assertEqual(
+            data["stand_level_constraints"],
+            [
+                {
+                    "datalayer": self._named(self.slope),
+                    "operator": "lte",
+                    "value": "25",
+                }
+            ],
+        )
+        self.assertEqual(data["targets"]["max_area"], 40000.0)
+        self.assertEqual(data["targets"]["estimated_cost"], 2000.0)
+        self.assertIsNone(data["targets"]["max_budget"])
+
+    def test_viewer_can_get_configuration(self):
+        scenario = ScenarioFactory(planning_area=self.planning_area, user=self.creator)
+
+        response = self._get(scenario, user=self.viewer)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_not_invited_cannot_get_configuration(self):
+        scenario = ScenarioFactory(planning_area=self.planning_area, user=self.creator)
+
+        response = self._get(scenario, user=self.not_invited)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_anonymous_cannot_get_configuration(self):
+        scenario = ScenarioFactory(planning_area=self.planning_area, user=self.creator)
+        url = reverse("api:planning:scenarios-get-configuration", args=[scenario.pk])
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_other_users_draft_is_not_found(self):
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            result_status=ScenarioResultStatus.DRAFT,
+        )
+
+        response = self._get(scenario, user=self.viewer)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
