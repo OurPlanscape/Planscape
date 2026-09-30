@@ -250,11 +250,12 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
             return
 
         if extracted:
-            ids = []
-            for datalayer in extracted:
-                ids.append(datalayer.pk)
-
-            configuration = {"constraints": ids}
+            configuration = {
+                "constraints": [
+                    {"datalayer": datalayer.pk, "operator": "gte", "value": "1"} 
+                    for datalayer in extracted
+                ]
+            }
             merged_config = {**(self.configuration or {}), **configuration}
             self.configuration = merged_config
 
