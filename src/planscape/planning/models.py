@@ -398,10 +398,6 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
             ).filter(type=DataLayerType.RASTER)
         )
 
-        for name in ["slope", "distance_from_roads"]:
-            datalayer = DataLayer.objects.all().by_meta_name(name=name)
-            if datalayer:
-                datalayers.append(datalayer)
         return datalayers
 
     def __str__(self):
@@ -668,6 +664,7 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         return signed_url
 
     def get_raster_datalayers(self) -> Collection[DataLayer]:
+        datalayers = []
         if self.type == ScenarioType.CUSTOM:
             priorities = [
                 p.get("datalayer") for p in self.configuration.get("priorities")
@@ -679,14 +676,21 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
             )
             datalayers = list(datalayers)
 
-            for name in ["slope", "distance_from_roads"]:
-                datalayer = DataLayer.objects.all().by_meta_name(name=name)
-                if datalayer:
-                    datalayers.append(datalayer)
-
-            return datalayers
         else:
-            return self.treatment_goal.get_raster_datalayers()  # type: ignore
+            datalayers = list(self.treatment_goal.get_raster_datalayers())  # type: ignore
+
+        constraints = self.configuration.get("constraints", [])
+        if constraints:
+            datalayer_ids = [constraint.get("datalayer") for constraint in constraints]
+            constraints_datalayers = DataLayer.objects.filter(
+                pk__in=datalayer_ids,
+                type=DataLayerType.RASTER,
+            )
+            datalayers.extend(list(constraints_datalayers))
+
+        datalayers = list(set(datalayers)) # remove duplication
+
+        return datalayers
 
     objects = ScenarioManager()
 
