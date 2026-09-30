@@ -70,6 +70,7 @@
     <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
       <app-data-layer-tooltip
         [layer]="layer.data"
+        [searchText]="searchTerm"
         *ngIf="displayTooltipLayer"></app-data-layer-tooltip>
     </mat-menu>
   </div>

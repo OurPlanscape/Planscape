@@ -1,51 +1,134 @@
 <h3 class="header">Layer info</h3>
-<div class="content">
-  <dl>
-    <ng-container *ngIf="showAllData">
-      <dt>Layer Name</dt>
-      <dd>{{ layer.name || '--' }}</dd>
+
+<!-- DATA_ORGANIZATION metadata card -->
+<ng-container *appFeatureFlag="'DATA_ORGANIZATION'">
+  <div class="content">
+    <h4
+      *ngIf="description; else plainName"
+      type="button"
+      class="layer-name-toggle"
+      [attr.aria-expanded]="descriptionExpanded"
+      (click)="toggleDescription($event)">
+      <span
+        class="layer-name"
+        [sgHighlighter]="searchText"
+        [sgHighlighterText]="layer.name || '--'"></span>
+      <mat-icon class="material-symbols-outlined">
+        {{ descriptionExpanded ? 'expand_more' : 'expand_less' }}
+      </mat-icon>
+    </h4>
+
+    <ng-template #plainName>
+      <div
+        class="layer-name"
+        [sgHighlighter]="searchText"
+        [sgHighlighterText]="layer.name || '--'"></div>
+    </ng-template>
+
+    <p
+      class="description"
+      *ngIf="description && descriptionExpanded"
+      [sgHighlighter]="searchText"
+      [sgHighlighterText]="description"></p>
+
+    <dl>
+      <dt>Dataset Name</dt>
+      <dd
+        [sgHighlighter]="searchText"
+        [sgHighlighterText]="datasetName || '--'"></dd>
+
+      <dt>Data Creator</dt>
+      <dd
+        [sgHighlighter]="searchText"
+        [sgHighlighterText]="dataCreator || '--'"></dd>
+
+      <dt>Geographic Coverage</dt>
+      <dd
+        [sgHighlighter]="searchText"
+        [sgHighlighterText]="geographicCoverage || '--'"></dd>
 
       <dt>Value Range</dt>
-      <dd>
-        @if (hasMinMax()) {
-          {{ this.layer.info.stats[0].min | number: '1.0-0' }} -
-          {{ this.layer.info.stats[0].max | number: '1.0-0' }}
-        } @else {
-          --
-        }
-      </dd>
+      <dd>{{ valueRange || '--' }}</dd>
 
       <dt>Units</dt>
+      <dd [sgHighlighter]="searchText" [sgHighlighterText]="getUnits()"></dd>
+
+      <dt>Vintage</dt>
+      <dd>{{ vintageDate ? (vintageDate | date: 'yyyy') : '--' }}</dd>
+    </dl>
+  </div>
+
+  <div class="footer" *ngIf="showAllData">
+    <ng-container *ngTemplateOutlet="downloadAction"></ng-container>
+
+    <a
+      *ngIf="sourceUrl"
+      sg-button
+      variant="primary"
+      icon="open_in_new"
+      class="learn-more-link"
+      [href]="sourceUrl"
+      target="_blank"
+      rel="noopener noreferrer">
+      Learn More
+    </a>
+  </div>
+</ng-container>
+
+<!-- TODO: Remove this block once DATA_ORGANIZATION be released -->
+<ng-container *appFeatureFlag="'DATA_ORGANIZATION'; hide: true">
+  <div class="content">
+    <dl>
+      <ng-container *ngIf="showAllData">
+        <dt>Layer Name</dt>
+        <dd>{{ layer.name || '--' }}</dd>
+
+        <dt>Value Range</dt>
+        <dd>
+          @if (hasMinMax()) {
+            {{ this.layer.info.stats[0].min | number: '1.0-0' }} -
+            {{ this.layer.info.stats[0].max | number: '1.0-0' }}
+          } @else {
+            --
+          }
+        </dd>
+
+        <dt>Units</dt>
+        <dd>
+          {{ getUnits() }}
+        </dd>
+      </ng-container>
+
+      <dt>Source</dt>
+
       <dd>
-        {{ getUnits() }}
+        <div
+          *ngIf="getRichSource() as richSource; else normalSource"
+          [innerHTML]="richSource"></div>
+
+        <ng-template #normalSource>
+          <a
+            *ngIf="getSourceDownload() as source; else noSource"
+            [href]="source.url"
+            target="_blank">
+            {{ source.name }}
+          </a>
+          <ng-template #noSource>--</ng-template>
+        </ng-template>
       </dd>
-    </ng-container>
 
-    <dt>Source</dt>
+      <dt>Vintage</dt>
+      <dd>
+        {{ vintageDate ? (vintageDate | date: 'yyyy') : '--' }}
+      </dd>
+    </dl>
+  </div>
+  <div class="footer" *ngIf="showAllData">
+    <ng-container *ngTemplateOutlet="downloadAction"></ng-container>
+  </div>
+</ng-container>
 
-    <dd>
-      <div
-        *ngIf="getRichSource() as richSource; else normalSource"
-        [innerHTML]="richSource"></div>
-
-      <ng-template #normalSource>
-        <a
-          *ngIf="getSourceDownload() as source; else noSource"
-          [href]="source.url"
-          target="_blank">
-          {{ source.name }}
-        </a>
-        <ng-template #noSource>--</ng-template>
-      </ng-template>
-    </dd>
-
-    <dt>Vintage</dt>
-    <dd>
-      {{ vintageDate ? (vintageDate | date: 'yyyy') : '--' }}
-    </dd>
-  </dl>
-</div>
-<div class="footer" *ngIf="showAllData">
+<ng-template #downloadAction>
   <ng-container *ngIf="downloadState$ | async as downloadState">
     <button
       *ngIf="downloadState.status === 'loading'"
@@ -75,4 +158,4 @@
       Dataset Unavailable
     </button>
   </ng-container>
-</div>
+</ng-template>
