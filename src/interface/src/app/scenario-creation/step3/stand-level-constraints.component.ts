@@ -61,7 +61,7 @@ export class StandLevelConstraintsComponent
     ]),
     min_distance_from_road: new FormControl<number | null>(null, [
       Validators.min(0),
-      Validators.max(100000),
+      Validators.max(100),
     ]),
   });
 
