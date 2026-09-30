@@ -49,7 +49,7 @@ function makeNamedConstraint(
   template: `<form [formGroup]="parentForm">
     <app-adv-stand-level-constraints
       [keyName]="keyName"
-      [constraintLayers]="constraintLayers"></app-adv-stand-level-constraints>
+      ></app-adv-stand-level-constraints>
   </form>`,
 })
 class HostComponent {

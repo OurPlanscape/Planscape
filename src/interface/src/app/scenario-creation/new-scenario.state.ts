@@ -24,7 +24,7 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
-import { distinctUntilChanged } from 'rxjs/operators';
+import { distinctUntilChanged, tap } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
@@ -32,6 +32,7 @@ import { ForsysService } from '@services/forsys.service';
 import { ScenarioStepConfig } from '@scenario/scenario.constants';
 import { arrayHasChanged } from '@app/scenario/scenario-helper';
 import { getPlanPath } from '@plan/plan-helpers';
+import { NamedConstraint } from './step3/adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
 
 export interface PriorityWithLayer {
   layer: DataLayer;
@@ -56,6 +57,9 @@ export class NewScenarioState {
   // max slope and/or distance to roads constraints
   private _constraints$ = new BehaviorSubject<Constraint[]>([]);
   public constraints$ = this._constraints$.asObservable();
+
+  private _advConstraints$ = new BehaviorSubject<NamedConstraint[]>([]);
+  public advConstraints$ = this._advConstraints$.asObservable();
 
   private _currentStep$ = new BehaviorSubject<ScenarioStepConfig | null>(null);
   public currentStep$ = this._currentStep$.asObservable();
@@ -93,16 +97,18 @@ export class NewScenarioState {
     shareReplay(1)
   );
 
-  public advStandLevelConstraints$ = this.scenarioConfig$.pipe(
-    map((config) => {
-      const draft = config as Partial<ScenarioDraftConfiguration>;
-      if (draft.adv_constraints && draft.adv_constraints.length > 0) {
-        return draft.adv_constraints;
-      } else {
-        return [];
-      }
+  public allConstraints$ = this.scenarioConfig$.pipe(
+    map((config: Partial<ScenarioV3Config>) => config?.constraints ?? []),
+    tap((config) => {
+      console.log('config when loading all constraints:', config);
     }),
-    shareReplay(1)
+    distinctUntilChanged(
+      (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
+    ),
+    tap((constraints) =>
+      console.log('Constraints deeply updated:', constraints)
+    ),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   public prioritiesDetails$ = this.scenarioConfig$.pipe(
@@ -144,7 +150,10 @@ export class NewScenarioState {
   );
 
   public coBenefitsDetails$ = this.scenarioConfig$.pipe(
-    map((config: ScenarioConfig) => config.cobenefits),
+    map((config: ScenarioConfig) => {
+      console.log('here is the config when loading cobenefits:', config);
+      return config.cobenefits;
+    }),
     map((ids) => (Array.isArray(ids) && ids.length > 0 ? ids : [])),
     distinctUntilChanged(
       (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
@@ -159,6 +168,18 @@ export class NewScenarioState {
               return of<DataLayer[]>([]);
             })
           )
+    ),
+    shareReplay(1)
+  );
+
+  public advStandLevelConstraints$ = this.scenarioConfig$.pipe(
+    map((config) => {
+      const draft = config as Partial<ScenarioDraftConfiguration>;
+      console.log('do we have adv_constraints? ', draft.adv_constraints);
+      return draft.adv_constraints;
+    }),
+    distinctUntilChanged(
+      (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
     ),
     shareReplay(1)
   );
@@ -315,6 +336,11 @@ export class NewScenarioState {
     this._savingStep$.next(isLoading);
   }
 
+  setAdvConstraints(value: NamedConstraint[]) {
+    // const currentValue = this._advConstraints$.value;
+    this._advConstraints$.next(value);
+  }
+
   setExcludedAreas(value: number[]) {
     const currentValue = this._excludedAreas$.value;
 
@@ -338,6 +364,14 @@ export class NewScenarioState {
     }
     if (config.included_areas) {
       this.setIncludedAreas(config.included_areas);
+    }
+    // TODO: here we should be updating the constraints, I think
+    if (config.adv_constraints) {
+      console.log(
+        'now we are setting the advConstraints observale to:',
+        config.adv_constraints
+      );
+      this.setAdvConstraints(config.adv_constraints);
     }
   }
 

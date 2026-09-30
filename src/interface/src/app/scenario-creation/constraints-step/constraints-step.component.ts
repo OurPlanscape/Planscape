@@ -1,9 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {
-  AdvStandLevelConstraintData,
-  ApiModule,
-  DataLayer,
   ScenarioDraftConfiguration,
 } from '@app/types';
 import { StepDirective } from '@styleguide';
@@ -12,9 +9,8 @@ import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints
 import { FeaturesModule } from '@app/features/features.module';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { NewScenarioState } from '../new-scenario.state';
-import { map, Observable, take } from 'rxjs';
+import {  take } from 'rxjs';
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
-import { ModuleService } from '@app/services/module.service';
 import { NamedConstraint } from '../step3/adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
 import { UntilDestroy } from '@ngneat/until-destroy';
 
@@ -56,18 +52,7 @@ export class ConstraintsStepComponent extends StepDirective<ScenarioDraftConfigu
     // Note, the child forms add the other fields dynamically
   });
 
-  constraintLayers$: Observable<DataLayer[]> = this.moduleService
-    .getModule<
-      ApiModule<AdvStandLevelConstraintData>
-    >('advanced_stand_level_constraint')
-    .pipe(
-      map((data: ApiModule<AdvStandLevelConstraintData>) => {
-        return data.options.datalayers;
-      })
-    );
-
   constructor(
-    private moduleService: ModuleService,
     private dataLayersStateService: DataLayersStateService,
     private newScenarioState: NewScenarioState
   ) {

@@ -76,7 +76,6 @@ import { SubUnitsTreatmentTargetComponent } from './sub-units-treatment-target/s
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { IncludeAreasSelectorComponent } from './include-areas-selector/include-areas-selector.component';
 import { CreateScenarioError } from '@app/services/errors';
-import { AdvStandLevelConstraintsComponent } from './step3/adv-stand-level-constraints/adv-stand-level-constraints.component';
 import { ConstraintsStepComponent } from './constraints-step/constraints-step.component';
 
 @UntilDestroy()
@@ -102,7 +101,6 @@ import { ConstraintsStepComponent } from './constraints-step/constraints-step.co
   ],
   standalone: true,
   imports: [
-    AdvStandLevelConstraintsComponent,
     AsyncPipe,
     CdkStepperModule,
     ConstraintsStepComponent,
@@ -293,6 +291,7 @@ export class ScenarioCreationComponent implements OnInit {
         });
         // Mapping the backend object to the frontend configuration
         const currentConfig = this.convertSavedConfigToNewConfig(scenario);
+        console.log('here is where we load the saved config:', currentConfig);
         this.newScenarioState.setScenarioConfig(currentConfig);
         // Setting the initial state for the configuration (must be before subUnitsPrioritized check)
         this.config = currentConfig;
@@ -328,7 +327,12 @@ export class ScenarioCreationComponent implements OnInit {
           });
           return of(false);
         }
+        console.log('here is the data we are tryign to set:', data);
         this.config = { ...this.config, ...data };
+        console.log(
+          'here in saveStep, we are setting the config again with',
+          this.config
+        );
         this.newScenarioState.setScenarioConfig(this.config);
         return this.savePatch(data).pipe(catchError(() => of(false)));
       }),
@@ -345,7 +349,7 @@ export class ScenarioCreationComponent implements OnInit {
       this.newScenarioState.getDistanceToRoadsId()
     );
     const payload = convertOldConfigurationToV3Payload(data, thresholdsIdMap);
-
+    console.log('the payload is now:', payload);
     return this.scenarioService
       .patchScenarioConfig(this.scenarioId, payload)
       .pipe(

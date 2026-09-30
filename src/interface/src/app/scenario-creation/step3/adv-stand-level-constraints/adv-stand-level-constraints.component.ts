@@ -79,20 +79,21 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
 
   showLayersPanel = false;
 
-  readonly constraintLayers$: Observable<DataLayer[]> = this.moduleService
-    .getModule<
-      ApiModule<AdvStandLevelConstraintData>
-    >('advanced_stand_level_constraint')
-    .pipe(
-      map((data) => data.options.datalayers),
-      tap((layers) => {
-        this.knownLayers = layers;
-        return layers;
-      }),
-      shareReplay(1)
-    );
+  readonly advStandLevelConstraintLayers$: Observable<DataLayer[]> =
+    this.moduleService
+      .getModule<
+        ApiModule<AdvStandLevelConstraintData>
+      >('advanced_stand_level_constraint')
+      .pipe(
+        map((data) => data.options.datalayers),
+        tap((layers) => {
+          this.knownLayers = layers;
+          return layers;
+        }),
+        shareReplay(1)
+      );
 
-  @Input() constraintLayers: DataLayer[] | null = [];
+  @Input() advStandLevelConstraintLayers: DataLayer[] | null = [];
   @Input() keyName = 'advStandLevelConstraints';
 
   // single FormControl holding the constraints array
@@ -101,11 +102,12 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
   });
   private knownLayers: DataLayer[] = [];
 
-  // loading state derived from constraintLayers$
-  readonly layersLoaded$: Observable<boolean> = this.constraintLayers$.pipe(
-    map(() => true),
-    startWith(false)
-  );
+  // loading state derived from advStandLevelConstraintLayers$
+  readonly layersLoaded$: Observable<boolean> =
+    this.advStandLevelConstraintLayers$.pipe(
+      map(() => true),
+      startWith(false)
+    );
 
   // Synchronous lookup for UI event handlers
   getFullLayerById(id: number): DataLayer | null {
@@ -114,12 +116,24 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
 
   // update UI of this component when the step loads, not eagerly on step construction
   mapConfigToUI() {
-    // here, we filter out layers from constraintLayers to find
+    // here, we filter out layers from advStandLevelConstraintLayers to find
     // just the configured constraints that match the known Adv Stand Level Constraint layers
+
+    console.log('we called mapConfigToUI for ADVSLC');
+
+    console.log(
+      ' this.newScenarioState.advConstraints$? ',
+      this.newScenarioState.advConstraints$.pipe()
+    );
+
     combineLatest([
-      this.newScenarioState.advStandLevelConstraints$,
-      this.constraintLayers$.pipe(take(1)),
-    ]).subscribe(([constraints, layers]) => {
+      this.newScenarioState.allConstraints$,
+      this.advStandLevelConstraintLayers$,
+      this.newScenarioState.advConstraints$,
+    ]).subscribe(([constraints, layers, advConstraints]) => {
+      console.log('what is the advConstraints now?', advConstraints);
+      console.log('all the constraints we have:', constraints);
+      console.log('the layers we have:', layers);
       if (!constraints) {
         this.selectedConstraints$.next([]);
         return;
@@ -145,6 +159,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
         []
       );
       this.selectedConstraints$.next(namedConstraints);
+      this.newScenarioState.setAdvConstraints(namedConstraints);
     });
   }
 
