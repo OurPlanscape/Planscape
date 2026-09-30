@@ -65,9 +65,8 @@ export class ScenarioConfigListOverlayComponent implements OnDestroy {
     switchMap((scenario) =>
       combineLatest([
         this.scenarioService.getScenarioConfiguration(scenario.id),
-        this.forsysService.forsysData$,
+        this.forsysService.forsysData$, // we still depend on forsys data to confirm ids of slope, distance
       ]).pipe(
-        // Both observables must emit before map runs, but we only emit config
         map(([config]): ConfigLoadingState => ({ status: 'ready', config })),
         catchError(() => of<ConfigLoadingState>({ status: 'error' })),
         startWith<ConfigLoadingState>({ status: 'loading' })
