@@ -1,3 +1,12 @@
+<div class="side-search-container" *ngIf="showSearch">
+  <sg-search-bar
+    class="search-bar"
+    [debounceInterval]="160"
+    searchPlaceholder="Search in base layers"
+    [showCloseButton]="true"
+    (searchString)="search($event)"
+    (clearSearch)="clearSearch()"></sg-search-bar>
+</div>
 <div class="scrollable">
   <app-base-layers-list
     *ngFor="let baseDataSet of baseDataSets$ | async"
