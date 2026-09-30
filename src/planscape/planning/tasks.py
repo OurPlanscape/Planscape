@@ -14,7 +14,6 @@ from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils import timezone
 from gis.core import get_storage_session
-from modules.base import ForsysModule
 from planscape.celery import app
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 from stands.models import Stand, StandSizeChoices
@@ -46,6 +45,8 @@ from planning.services import (
     export_to_geopackage,
     get_acreage,
     get_available_stand_ids,
+    get_forsys_name,
+    STAND_LEVEL_CONSTRAINT_LAYERS,
 )
 
 log = logging.getLogger(__name__)
@@ -392,11 +393,12 @@ def prepare_scenarios_for_forsys_and_run(scenario_id: int):
         )
         constraints_datalayers = list(constraints_datalayers)
 
-        # Datalayers with module ForsysModule already have all stand metrics calculated
+        # Normal stand-level constraint Datalayers already have all stand metrics calculated
+        # Ignoring them for stand metrics calculation
         constraints_datalayers = [
             constraint
             for constraint in constraints_datalayers
-            if not constraint.has_module(ForsysModule.name)
+            if get_forsys_name(constraint) not in STAND_LEVEL_CONSTRAINT_LAYERS
         ]
 
         datalayers.extend(constraints_datalayers)
