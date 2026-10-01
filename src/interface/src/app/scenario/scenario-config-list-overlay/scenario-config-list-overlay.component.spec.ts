@@ -5,12 +5,20 @@ import { ScenarioConfigListOverlayComponent } from './scenario-config-list-overl
 import { ScenarioState } from '../scenario.state';
 import { ScenarioService } from '@services';
 import { ForsysService } from '@services/forsys.service';
-import { PLANNING_APPROACH, Scenario, SCENARIO_TYPE, ScenarioConfigurationDetails } from '@types';
+import {
+  PLANNING_APPROACH,
+  Scenario,
+  SCENARIO_TYPE,
+  ScenarioConfigurationDetails,
+} from '@types';
 import { MOCK_SCENARIO } from '@app/services/mocks';
 
 const SLOPE_ID = 2814;
 const ROADS_ID = 2815;
-const SUB_UNITS_APPROACH: { key: PLANNING_APPROACH, label: string } = { key: 'PRIORITIZE_SUB_UNITS', label: 'Prioritize Sub-Units' };
+const SUB_UNITS_APPROACH: { key: PLANNING_APPROACH; label: string } = {
+  key: 'PRIORITIZE_SUB_UNITS',
+  label: 'Prioritize Sub-Units',
+};
 
 const makeScenario = (overrides: Partial<Scenario> = {}): Scenario => ({
   ...MOCK_SCENARIO,
@@ -24,7 +32,10 @@ const makeConfig = (
   type: 'PRESET',
   planning_area: { id: 6167, name: 'Example Planning Area' },
   stand_size: { key: 'MEDIUM', label: 'Medium', acres: 100 },
-  planning_approach: { key: 'OPTIMIZE_PROJECT_AREAS', label: 'Optimize Project Areas' },
+  planning_approach: {
+    key: 'OPTIMIZE_PROJECT_AREAS',
+    label: 'Optimize Project Areas',
+  },
   sub_units_layer: null,
   treatment_goal: { id: 1111, name: 'Test Treatment Goal' },
   priority_objectives: [{ id: 999, name: 'Example Objective', weight: 1 }],
@@ -39,11 +50,23 @@ const makeConfig = (
   ],
   excluded_areas: [{ id: 300, name: 'Area to Exclude' }],
   stand_level_constraints: [
-    { datalayer: { id: ROADS_ID, name: 'Distance From Roads - Yards' }, operator: 'lte', value: '1000' },
-    { datalayer: { id: SLOPE_ID, name: 'CONUS Slope Percentage' }, operator: 'lt', value: '99' },
+    {
+      datalayer: { id: ROADS_ID, name: 'Distance From Roads - Yards' },
+      operator: 'lte',
+      value: '1000',
+    },
+    {
+      datalayer: { id: SLOPE_ID, name: 'CONUS Slope Percentage' },
+      operator: 'lt',
+      value: '99',
+    },
   ],
   advanced_stand_level_constraints: [
-    { datalayer: { id: 2827, name: 'Some Adv Constraint Layer' }, operator: 'dne', value: '1000' },
+    {
+      datalayer: { id: 2827, name: 'Some Adv Constraint Layer' },
+      operator: 'dne',
+      value: '1000',
+    },
   ],
   targets: {
     max_area: 1000,
@@ -61,7 +84,8 @@ describe('ScenarioConfigListOverlayComponent', () => {
   let el: HTMLElement;
   let scenarioState: ScenarioState;
   let scenarioService: ScenarioService;
-  let currentScenario$: BehaviorSubject<Scenario> = new BehaviorSubject<Scenario>({ ...MOCK_SCENARIO, id: 42 });
+  let currentScenario$: BehaviorSubject<Scenario> =
+    new BehaviorSubject<Scenario>({ ...MOCK_SCENARIO, id: 42 });
   let displayOverlay$: BehaviorSubject<boolean>;
   let config$: Subject<ScenarioConfigurationDetails>;
 
@@ -69,8 +93,10 @@ describe('ScenarioConfigListOverlayComponent', () => {
     Array.from(el.querySelectorAll('dt')).find(
       (n) => n.textContent?.trim() === label
     ) as HTMLElement | undefined;
-  const dd = (label: string) => dt(label)?.nextElementSibling as HTMLElement | undefined;
-  const text = (label: string) => dd(label)?.textContent?.replace(/\s+/g, ' ').trim();
+  const dd = (label: string) =>
+    dt(label)?.nextElementSibling as HTMLElement | undefined;
+  const text = (label: string) =>
+    dd(label)?.textContent?.replace(/\s+/g, ' ').trim();
   const items = (label: string) =>
     Array.from(dd(label)?.querySelectorAll('li') ?? []).map((li) =>
       li.textContent?.replace(/\s+/g, ' ').trim()
@@ -119,7 +145,6 @@ describe('ScenarioConfigListOverlayComponent', () => {
   });
 
   describe('loading and error states', () => {
-
     it('shows the spinner and no content while loading', () => {
       expect(el.querySelector('mat-spinner')).toBeTruthy();
       expect(el.querySelector('dl')).toBeNull();
@@ -169,7 +194,9 @@ describe('ScenarioConfigListOverlayComponent', () => {
 
     it('renders the subunit layer only when present', () => {
       expect(dt('Subunit')).toBeUndefined();
-      emitConfig(makeConfig({ sub_units_layer: { id: 5, name: 'Some Subunits Layer' } }));
+      emitConfig(
+        makeConfig({ sub_units_layer: { id: 5, name: 'Some Subunits Layer' } })
+      );
       expect(text('Subunit')).toContain('Some Subunits Layer');
     });
 
@@ -238,11 +265,17 @@ describe('ScenarioConfigListOverlayComponent', () => {
       emitConfig(
         makeConfig({
           advanced_stand_level_constraints: [
-            { datalayer: { id: 1, name: 'Layer' }, operator: 'btw', value: '20,10' },
+            {
+              datalayer: { id: 1, name: 'Layer' },
+              operator: 'btw',
+              value: '20,10',
+            },
           ],
         })
       );
-      expect(items('Advanced Stand-Level Constraints')).toEqual(['Layer: 10-20']);
+      expect(items('Advanced Stand-Level Constraints')).toEqual([
+        'Layer: 10-20',
+      ]);
     });
   });
 
@@ -255,20 +288,34 @@ describe('ScenarioConfigListOverlayComponent', () => {
     });
 
     describe('with sub-units', () => {
-      const subUnitConfig = (targets: Partial<ScenarioConfigurationDetails['targets']>) =>
+      const subUnitConfig = (
+        targets: Partial<ScenarioConfigurationDetails['targets']>
+      ) =>
         makeConfig({
           planning_approach: SUB_UNITS_APPROACH,
           targets: { ...makeConfig().targets, ...targets },
         });
 
       it('shows acres when the target is fixed', () => {
-        emitConfig(subUnitConfig({ sub_units_fixed_target: true as any, sub_units_target_value: 250 }));
-        expect(text('Treatment Target')).toContain('Targeted area within each subunit:');
+        emitConfig(
+          subUnitConfig({
+            sub_units_fixed_target: true as any,
+            sub_units_target_value: 250,
+          })
+        );
+        expect(text('Treatment Target')).toContain(
+          'Targeted area within each subunit:'
+        );
         expect(text('Treatment Target')).toContain('250 Acres');
       });
 
       it('shows a percentage when the target is not fixed', () => {
-        emitConfig(subUnitConfig({ sub_units_fixed_target: null, sub_units_target_value: 25 }));
+        emitConfig(
+          subUnitConfig({
+            sub_units_fixed_target: null,
+            sub_units_target_value: 25,
+          })
+        );
         expect(text('Treatment Target')).toContain('25%');
       });
 
@@ -280,7 +327,11 @@ describe('ScenarioConfigListOverlayComponent', () => {
   });
 
   describe('PRESET indent', () => {
-    const indented = ['Priority Objectives', 'Co-Benefits', 'Stand-Level Constraints'];
+    const indented = [
+      'Priority Objectives',
+      'Co-Benefits',
+      'Stand-Level Constraints',
+    ];
     const wrapper = () => el.querySelector('.indented-section');
 
     const emitForType = (type: SCENARIO_TYPE) => {
@@ -305,7 +356,9 @@ describe('ScenarioConfigListOverlayComponent', () => {
     it('keeps other sections outside the wrapper', () => {
       emitForType('PRESET');
       expect(wrapper()!.contains(dt('Included Areas')!)).toBe(false);
-      expect(wrapper()!.contains(dt('Advanced Stand-Level Constraints')!)).toBe(false);
+      expect(wrapper()!.contains(dt('Advanced Stand-Level Constraints')!)).toBe(
+        false
+      );
     });
   });
 
