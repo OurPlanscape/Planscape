@@ -82,3 +82,9 @@
     padding: 0;
   }
 }
+
+.indented-section {
+    margin-top: 16px;
+    border-left: $color-standard-blue solid 2px;
+    padding-left: 14px;
+}
