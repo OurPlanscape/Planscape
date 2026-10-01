@@ -57,6 +57,9 @@ export class NewScenarioState {
   private _constraints$ = new BehaviorSubject<Constraint[]>([]);
   public constraints$ = this._constraints$.asObservable();
 
+  private _advConstraints$ = new BehaviorSubject<Constraint[]>([]);
+  public advConstraints$ = this._advConstraints$.asObservable();
+
   private _currentStep$ = new BehaviorSubject<ScenarioStepConfig | null>(null);
   public currentStep$ = this._currentStep$.asObservable();
 
@@ -90,18 +93,6 @@ export class NewScenarioState {
             })
           )
     ),
-    shareReplay(1)
-  );
-
-  public advStandLevelConstraints$ = this.scenarioConfig$.pipe(
-    map((config) => {
-      const draft = config as Partial<ScenarioDraftConfiguration>;
-      if (draft.adv_constraints && draft.adv_constraints.length > 0) {
-        return draft.adv_constraints;
-      } else {
-        return [];
-      }
-    }),
     shareReplay(1)
   );
 
@@ -315,6 +306,10 @@ export class NewScenarioState {
     this._savingStep$.next(isLoading);
   }
 
+  setAdvConstraints(value: Constraint[]) {
+    this._advConstraints$.next(value);
+  }
+
   setExcludedAreas(value: number[]) {
     const currentValue = this._excludedAreas$.value;
 
@@ -338,6 +333,9 @@ export class NewScenarioState {
     }
     if (config.included_areas) {
       this.setIncludedAreas(config.included_areas);
+    }
+    if (config.adv_constraints) {
+      this.setAdvConstraints(config.adv_constraints);
     }
   }
 
