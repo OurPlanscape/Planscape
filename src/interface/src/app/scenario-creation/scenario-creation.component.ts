@@ -291,7 +291,6 @@ export class ScenarioCreationComponent implements OnInit {
         });
         // Mapping the backend object to the frontend configuration
         const currentConfig = this.convertSavedConfigToNewConfig(scenario);
-        console.log('here is where we load the saved config:', currentConfig);
         this.newScenarioState.setScenarioConfig(currentConfig);
         // Setting the initial state for the configuration (must be before subUnitsPrioritized check)
         this.config = currentConfig;
@@ -304,12 +303,17 @@ export class ScenarioCreationComponent implements OnInit {
         .filter(([, value]) => value != null)
         .map(([key, value]) => [key, value as NonNullable<typeof value>])
     );
+
     // Adding excluded areas and treatment goal
     newState['excluded_areas'] = scenario.configuration.excluded_areas || [];
     newState['included_areas'] = scenario.configuration.included_areas || [];
     newState['treatment_goal'] = scenario.treatment_goal?.id;
     newState['type'] = scenario.type;
     newState['planning_approach'] = scenario.planning_approach;
+
+    // TODO: we want to filter out just the adv_constraints
+    newState['adv_constraints'] = newState['constraints'];
+
     return newState as Partial<ScenarioDraftConfiguration>;
   }
 
@@ -327,12 +331,7 @@ export class ScenarioCreationComponent implements OnInit {
           });
           return of(false);
         }
-        console.log('here is the data we are tryign to set:', data);
         this.config = { ...this.config, ...data };
-        console.log(
-          'here in saveStep, we are setting the config again with',
-          this.config
-        );
         this.newScenarioState.setScenarioConfig(this.config);
         return this.savePatch(data).pipe(catchError(() => of(false)));
       }),
@@ -349,7 +348,6 @@ export class ScenarioCreationComponent implements OnInit {
       this.newScenarioState.getDistanceToRoadsId()
     );
     const payload = convertOldConfigurationToV3Payload(data, thresholdsIdMap);
-    console.log('the payload is now:', payload);
     return this.scenarioService
       .patchScenarioConfig(this.scenarioId, payload)
       .pipe(

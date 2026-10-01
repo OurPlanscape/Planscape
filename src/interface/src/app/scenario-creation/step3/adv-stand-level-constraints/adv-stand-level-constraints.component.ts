@@ -118,22 +118,16 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
   mapConfigToUI() {
     // here, we filter out layers from advStandLevelConstraintLayers to find
     // just the configured constraints that match the known Adv Stand Level Constraint layers
-
-    console.log('we called mapConfigToUI for ADVSLC');
-
-    console.log(
-      ' this.newScenarioState.advConstraints$? ',
-      this.newScenarioState.advConstraints$.pipe()
-    );
+    this.newScenarioState.advConstraints$
+      .pipe(take(1))
+      .subscribe((adv_constraints) => {
+        console.log('advConstraints$ has:', adv_constraints);
+      });
 
     combineLatest([
-      this.newScenarioState.allConstraints$,
-      this.advStandLevelConstraintLayers$,
       this.newScenarioState.advConstraints$,
-    ]).subscribe(([constraints, layers, advConstraints]) => {
-      console.log('what is the advConstraints now?', advConstraints);
-      console.log('all the constraints we have:', constraints);
-      console.log('the layers we have:', layers);
+      this.advStandLevelConstraintLayers$,
+    ]).subscribe(([constraints, layers]) => {
       if (!constraints) {
         this.selectedConstraints$.next([]);
         return;

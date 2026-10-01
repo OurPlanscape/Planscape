@@ -131,10 +131,6 @@ export function convertOldConfigurationToV3Payload(
   }
   // Map the adv stand level constraints to constraints array
   if (formData.adv_constraints) {
-    console.log(
-      'we have adv constraints from the form:',
-      formData.adv_constraints
-    );
     formData.adv_constraints.map((c) => {
       constraints.push({
         datalayer: c.datalayer,
@@ -147,8 +143,6 @@ export function convertOldConfigurationToV3Payload(
   if (constraints.length > 0) {
     config.constraints = structuredClone(constraints);
   }
-
-  console.log('and whatis the config constriants now:', config.constraints);
 
   // Custom Scenarios - priority objectives
   if (formData.priority_objectives) {

@@ -24,7 +24,7 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
-import { distinctUntilChanged, tap } from 'rxjs/operators';
+import { distinctUntilChanged } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
@@ -99,15 +99,11 @@ export class NewScenarioState {
 
   public allConstraints$ = this.scenarioConfig$.pipe(
     map((config: Partial<ScenarioV3Config>) => config?.constraints ?? []),
-    tap((config) => {
-      console.log('config when loading all constraints:', config);
-    }),
+   
     distinctUntilChanged(
       (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
     ),
-    tap((constraints) =>
-      console.log('Constraints deeply updated:', constraints)
-    ),
+   
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
@@ -151,7 +147,6 @@ export class NewScenarioState {
 
   public coBenefitsDetails$ = this.scenarioConfig$.pipe(
     map((config: ScenarioConfig) => {
-      console.log('here is the config when loading cobenefits:', config);
       return config.cobenefits;
     }),
     map((ids) => (Array.isArray(ids) && ids.length > 0 ? ids : [])),
@@ -175,7 +170,6 @@ export class NewScenarioState {
   public advStandLevelConstraints$ = this.scenarioConfig$.pipe(
     map((config) => {
       const draft = config as Partial<ScenarioDraftConfiguration>;
-      console.log('do we have adv_constraints? ', draft.adv_constraints);
       return draft.adv_constraints;
     }),
     distinctUntilChanged(
@@ -367,10 +361,6 @@ export class NewScenarioState {
     }
     // TODO: here we should be updating the constraints, I think
     if (config.adv_constraints) {
-      console.log(
-        'now we are setting the advConstraints observale to:',
-        config.adv_constraints
-      );
       this.setAdvConstraints(config.adv_constraints);
     }
   }
