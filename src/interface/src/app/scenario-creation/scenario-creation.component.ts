@@ -320,8 +320,9 @@ export class ScenarioCreationComponent implements OnInit {
     newState['type'] = scenario.type;
     newState['planning_approach'] = scenario.planning_approach;
 
-    // We have set adv_constraints from the full constraints data,
-    // but remove stand-level constraints
+    // The constraints arrive as one single array, but for the duration of the draft flow,
+    //  we want to keep adv_constraints in a separately updateable collection.
+    // Here, we init that collection, but filter out the other constraints
     newState['adv_constraints'] = this.filterOutStandLevelConstraints(
       newState['constraints']
     );

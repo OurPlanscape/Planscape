@@ -136,9 +136,7 @@ export class NewScenarioState {
   );
 
   public coBenefitsDetails$ = this.scenarioConfig$.pipe(
-    map((config: ScenarioConfig) => {
-      return config.cobenefits;
-    }),
+    map((config: ScenarioConfig) => config.cobenefits),
     map((ids) => (Array.isArray(ids) && ids.length > 0 ? ids : [])),
     distinctUntilChanged(
       (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
