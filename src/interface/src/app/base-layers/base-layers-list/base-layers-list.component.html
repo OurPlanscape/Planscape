@@ -2,9 +2,10 @@
 
 <!--Expansion panel -->
 <div class="list-header" (click)="expandDataSet()" [class.expanded]="expanded">
-  <div class="label">
-    {{ dataSet.name }}
-  </div>
+  <div
+    class="label"
+    [sgHighlighter]="searchTerm"
+    [sgHighlighterText]="dataSet.name"></div>
   <i class="material-symbols-outlined">{{
     expanded ? 'expand_more' : 'chevron_right'
   }}</i>
@@ -22,7 +23,9 @@
         [attr.selected]="allSelectedLayersIds.includes(layer.id) ? '' : null"
         class="data-layer-input"
         (change)="onLayerChange(layer, true)"
-        >{{ layer.name }}
+        ><span
+          [sgHighlighter]="searchTerm"
+          [sgHighlighterText]="layer.name"></span>
         <div class="right-items">
           <mat-spinner
             class="side-spinner"
@@ -66,7 +69,9 @@
       class="data-layer-input"
       [attr.selected]="allSelectedLayersIds.includes(layer.id) ? '' : null"
       (change)="onLayerChange(layer, false)"
-      >{{ layer.name }}
+      ><span
+        [sgHighlighter]="searchTerm"
+        [sgHighlighterText]="layer.name"></span>
       <mat-spinner
         class="side-spinner"
         diameter="20"

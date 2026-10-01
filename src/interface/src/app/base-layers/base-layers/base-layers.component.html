@@ -8,12 +8,33 @@
     (clearSearch)="clearSearch()"></sg-search-bar>
 </div>
 <div class="scrollable">
-  <app-base-layers-list
-    *ngFor="let baseDataSet of baseDataSets$ | async"
-    [dataSet]="baseDataSet"
-    [allSelectedLayersIds]="(selectedLayersId$ | async) || []"
-    [initialExpanded]="(selectedLayersDataSet$ | async) === baseDataSet.id"
-    (layerSelected)="updateSelectedLayer($event)"></app-base-layers-list>
+  <ng-container *ngIf="searchTerm$ | async as searchTerm; else browse">
+    <ng-container *ngIf="searchResults$ | async as groups">
+      <app-base-layers-list
+        *ngFor="let group of groups; trackBy: trackGroup"
+        [dataSet]="group.dataSet"
+        [layers]="group.layers"
+        [searchTerm]="searchTerm"
+        [allSelectedLayersIds]="(selectedLayersId$ | async) || []"
+        [initialExpanded]="true"
+        (layerSelected)="updateSelectedLayer($event)"></app-base-layers-list>
+      <sg-no-results
+        *ngIf="groups.length === 0 && (searching$ | async) === false"
+        [searchString]="searchTerm"></sg-no-results>
+    </ng-container>
+    <mat-spinner
+      *ngIf="searching$ | async"
+      diameter="20"
+      class="loader"></mat-spinner>
+  </ng-container>
+  <ng-template #browse>
+    <app-base-layers-list
+      *ngFor="let baseDataSet of baseDataSets$ | async"
+      [dataSet]="baseDataSet"
+      [allSelectedLayersIds]="(selectedLayersId$ | async) || []"
+      [initialExpanded]="(selectedLayersDataSet$ | async) === baseDataSet.id"
+      (layerSelected)="updateSelectedLayer($event)"></app-base-layers-list>
+  </ng-template>
 </div>
 <div class="footer" *ngIf="selectedLayers$ | async">
   <button sg-button (click)="clearBaseLayer()" class="clear-btn">Clear</button>
