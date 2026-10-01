@@ -33,7 +33,7 @@
         <dd>{{ subUnits.name }}</dd>
       </ng-container>
 
-      <!-- for PRESET scenarios, we want to indent this whole section -->
+      <!-- PRESET scenarios should wrap these details in an indented section -->
       <ng-container
         *ngIf="(isCustomScenario$ | async) === false; else standardLayout">
         <div class="indented-section">
@@ -79,9 +79,6 @@
                   <ng-container *ngSwitchCase="'roads'">
                     Distance from roads is less than (&lt;)
                     {{ item.constraint.value | number: '1.0-2' }} yds
-                  </ng-container>
-                  <ng-container *ngSwitchDefault>
-                    {{ constraintName(item.constraint) }}
                   </ng-container>
                 </li>
               </ul>
