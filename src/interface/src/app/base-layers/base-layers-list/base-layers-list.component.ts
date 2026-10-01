@@ -21,7 +21,11 @@ import { DataLayersService } from '@services';
 import { catchError, map, tap } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
-import { ButtonComponent, ToggleComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  HighlighterDirective,
+  ToggleComponent,
+} from '@styleguide';
 import { DataLayerTooltipComponent } from '@data-layers/data-layer-tooltip/data-layer-tooltip.component';
 import { MatMenuModule } from '@angular/material/menu';
 
@@ -38,6 +42,7 @@ import { MatMenuModule } from '@angular/material/menu';
     ToggleComponent,
     DataLayerTooltipComponent,
     MatMenuModule,
+    HighlighterDirective,
   ],
   templateUrl: './base-layers-list.component.html',
   styleUrl: './base-layers-list.component.scss',
@@ -46,6 +51,9 @@ export class BaseLayersListComponent implements OnChanges, AfterViewInit {
   @Input() dataSet!: MapDataDataSet;
   @Input() allSelectedLayersIds: number[] = [];
   @Input() initialExpanded = false;
+  /** Layers to display as-is (e.g. search results) instead of fetching the dataset's layers. */
+  @Input() layers: BaseLayer[] | null = null;
+  @Input() searchTerm = '';
 
   expanded = false;
 
@@ -76,9 +84,9 @@ export class BaseLayersListComponent implements OnChanges, AfterViewInit {
   ) {}
 
   ngAfterViewInit(): void {
-    if (this.expanded) {
+    if (this.expanded && !this.layers) {
       this.listBaseLayersByDataSet()
-        .pipe(map((c) => c.sort((a, b) => a.name.localeCompare(b.name))))
+        .pipe(map((c) => this.sortByName(c)))
         .subscribe((c) => {
           this.baseLayers = c;
           this.scrollToSelectedItems();
@@ -90,6 +98,10 @@ export class BaseLayersListComponent implements OnChanges, AfterViewInit {
     // only use the very first value from the parent
     if (changes['initialExpanded']?.firstChange) {
       this.expanded = this.initialExpanded;
+    }
+    if (changes['layers'] && this.layers) {
+      this.baseLayers = this.sortByName(this.layers);
+      this.loaded = true;
     }
   }
 
@@ -124,13 +136,17 @@ export class BaseLayersListComponent implements OnChanges, AfterViewInit {
 
   expandDataSet() {
     this.expanded = !this.expanded;
-    if (this.noBaseLayers) {
+    if (this.noBaseLayers && !this.layers) {
       this.listBaseLayersByDataSet()
-        .pipe(map((c) => c.sort((a, b) => a.name.localeCompare(b.name))))
+        .pipe(map((c) => this.sortByName(c)))
         .subscribe((c) => {
           this.baseLayers = c;
         });
     }
+  }
+
+  private sortByName(layers: BaseLayer[]) {
+    return [...layers].sort((a, b) => a.name.localeCompare(b.name));
   }
 
   private listBaseLayersByDataSet() {

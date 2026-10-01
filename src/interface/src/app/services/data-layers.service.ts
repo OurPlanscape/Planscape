@@ -51,7 +51,7 @@ export class DataLayersService {
   search(query: SearchQuery) {
     let body = {
       term: query.term,
-      type: 'RASTER',
+      type: query.type ?? 'RASTER',
       ...(query.module ? { module: query.module } : {}),
       ...(query.geometry ? { geometry: query.geometry } : {}),
     };
