@@ -28,6 +28,7 @@ import { ScenarioService, TreatmentGoalsService } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   BaseLayer,
+  Constraint,
   DataLayer,
   Scenario,
   SCENARIO_TYPE,
@@ -297,6 +298,14 @@ export class ScenarioCreationComponent implements OnInit {
       });
   }
 
+  filterOutStandLevelConstraints(constraints: Constraint[]) {
+    const slopeId = this.newScenarioState.getSlopeId();
+    const distanceToRoadsId = this.newScenarioState.getDistanceToRoadsId();
+    return constraints.filter(
+      (c) => c.datalayer !== slopeId && c.datalayer !== distanceToRoadsId
+    );
+  }
+
   convertSavedConfigToNewConfig(scenario: Scenario): Partial<ScenarioV3Config> {
     const newState = Object.fromEntries(
       Object.entries(scenario.configuration)
@@ -311,8 +320,15 @@ export class ScenarioCreationComponent implements OnInit {
     newState['type'] = scenario.type;
     newState['planning_approach'] = scenario.planning_approach;
 
-    // TODO: we want to filter out just the adv_constraints
-    newState['adv_constraints'] = newState['constraints'];
+    // We have set adv_constraints from the full constraints data,
+    // but remove stand-level constraints
+    newState['adv_constraints'] = this.filterOutStandLevelConstraints(
+      newState['constraints']
+    );
+    console.log(
+      'adv constraints during conversion:',
+      newState['adv_constraints']
+    );
 
     return newState as Partial<ScenarioDraftConfiguration>;
   }
