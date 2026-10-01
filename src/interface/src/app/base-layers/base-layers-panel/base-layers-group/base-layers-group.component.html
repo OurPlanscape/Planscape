@@ -1,0 +1,91 @@
+<button
+  type="button"
+  class="group-header"
+  [class.expanded]="expanded"
+  [attr.aria-expanded]="expanded"
+  (click)="toggle()">
+  <span class="group-icon">
+    <i class="material-symbols-outlined">layers</i>
+  </span>
+  <span
+    class="group-name"
+    [sgHighlighter]="searchTerm"
+    [sgHighlighterText]="dataSet.name"></span>
+  <i class="material-symbols-outlined chevron">{{
+    expanded ? 'expand_less' : 'expand_more'
+  }}</i>
+</button>
+
+<div class="group-content" *ngIf="expanded" #listContent>
+  <mat-spinner diameter="20" *ngIf="!loaded" class="list-spinner"></mat-spinner>
+  <div *ngIf="baseLayers.length === 0 && loaded" class="no-data">
+    No data available
+  </div>
+
+  <ng-container
+    *ngIf="dataSet.selection_type === 'MULTIPLE'; else singleSelect">
+    <mat-checkbox
+      *ngFor="let layer of baseLayers"
+      class="layer-option"
+      [checked]="isSelectedLayer(layer.id)"
+      [attr.selected]="isSelectedLayer(layer.id) ? '' : null"
+      (change)="onLayerChange(layer, true)">
+      <span
+        class="layer-name"
+        [sgHighlighter]="searchTerm"
+        [sgHighlighterText]="layer.name"></span>
+      <span class="right-items">
+        <mat-spinner
+          class="side-spinner"
+          diameter="20"
+          *ngIf="(loadingLayers$ | async)?.includes('source_' + layer.id)">
+        </mat-spinner>
+        <button
+          *ngIf="layer.metadata?.['metadata']"
+          sg-button
+          variant="icon-only"
+          icon="info"
+          class="info-icon"
+          [outlined]="true"
+          [matMenuTriggerFor]="popoverMenu"></button>
+        <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
+          <app-data-layer-tooltip
+            [layer]="layer"
+            [showAllData]="false"></app-data-layer-tooltip>
+        </mat-menu>
+        <span
+          class="base-layer-legend"
+          *ngIf="isSelectedLayer(layer.id)"
+          [style.backgroundColor]="
+            layer.styles[0].data['fill-color'] || BASE_LAYERS_DEFAULT.COLOR
+          "
+          [style.border-color]="
+            layer.styles[0].data['fill-outline-color'] ||
+            BASE_LAYERS_DEFAULT.COLOR
+          "></span>
+      </span>
+    </mat-checkbox>
+  </ng-container>
+
+  <ng-template #singleSelect>
+    <mat-radio-button
+      *ngFor="let layer of baseLayers"
+      class="layer-option"
+      [value]="layer.id"
+      [checked]="isSelectedLayer(layer.id)"
+      [attr.selected]="isSelectedLayer(layer.id) ? '' : null"
+      (change)="onLayerChange(layer, false)">
+      <span
+        class="layer-name"
+        [sgHighlighter]="searchTerm"
+        [sgHighlighterText]="layer.name"></span>
+      <span class="right-items">
+        <mat-spinner
+          class="side-spinner"
+          diameter="20"
+          *ngIf="(loadingLayers$ | async)?.includes('source_' + layer.id)">
+        </mat-spinner>
+      </span>
+    </mat-radio-button>
+  </ng-template>
+</div>
