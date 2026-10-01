@@ -1,425 +1,324 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BehaviorSubject, of } from 'rxjs';
-
+import { MockProvider } from 'ng-mocks';
+import { BehaviorSubject, of, Subject } from 'rxjs';
 import { ScenarioConfigListOverlayComponent } from './scenario-config-list-overlay.component';
 import { ScenarioState } from '../scenario.state';
-import { DataLayersService } from '@services';
+import { ScenarioService } from '@services';
 import { ForsysService } from '@services/forsys.service';
-import { PlanState } from '@app/plan/plan.state';
-import { ModuleService } from '@app/services/module.service';
+import { PLANNING_APPROACH, Scenario, SCENARIO_TYPE, ScenarioConfigurationDetails } from '@types';
+import { MOCK_SCENARIO } from '@app/services/mocks';
 
-const mockScenarioV3 = {
-  planning_approach: null,
+const SLOPE_ID = 2814;
+const ROADS_ID = 2815;
+const SUB_UNITS_APPROACH: { key: PLANNING_APPROACH, label: string } = { key: 'PRIORITIZE_SUB_UNITS', label: 'Prioritize Sub-Units' };
+
+const makeScenario = (overrides: Partial<Scenario> = {}): Scenario => ({
+  ...MOCK_SCENARIO,
+  ...overrides,
+});
+
+const makeConfig = (
+  overrides: Partial<ScenarioConfigurationDetails> = {}
+): ScenarioConfigurationDetails => ({
   version: 'V3',
-  type: 'STANDARD',
-  treatment_goal: { name: 'Sample tx goal' },
-  configuration: {
-    stand_size: 'LARGE',
-    included_areas: [],
-    excluded_areas: [],
-    priorities: [],
-    priority_objectives: [],
-    cobenefits: [],
-    constraints: [],
-    sub_units_layer: undefined,
-    targets: {
-      max_project_count: 5,
-      max_area: 1000,
-      estimated_cost: 250,
-      sub_units_fixed_target: true,
-      sub_units_target_value: 100,
-    },
+  type: 'PRESET',
+  planning_area: { id: 6167, name: 'Example Planning Area' },
+  stand_size: { key: 'MEDIUM', label: 'Medium', acres: 100 },
+  planning_approach: { key: 'OPTIMIZE_PROJECT_AREAS', label: 'Optimize Project Areas' },
+  sub_units_layer: null,
+  treatment_goal: { id: 1111, name: 'Test Treatment Goal' },
+  priority_objectives: [{ id: 999, name: 'Example Objective', weight: 1 }],
+  cobenefits: [
+    { id: 12, name: 'Cobenefit 1' },
+    { id: 13, name: 'Cobenefit 2' },
+  ],
+  treatment_goal_constraints: [],
+  included_areas: [
+    { id: 200, name: 'Included Area 1' },
+    { id: 201, name: 'Included Area 2' },
+  ],
+  excluded_areas: [{ id: 300, name: 'Area to Exclude' }],
+  stand_level_constraints: [
+    { datalayer: { id: ROADS_ID, name: 'Distance From Roads - Yards' }, operator: 'lte', value: '1000' },
+    { datalayer: { id: SLOPE_ID, name: 'CONUS Slope Percentage' }, operator: 'lt', value: '99' },
+  ],
+  advanced_stand_level_constraints: [
+    { datalayer: { id: 2827, name: 'Some Adv Constraint Layer' }, operator: 'dne', value: '1000' },
+  ],
+  targets: {
+    max_area: 1000,
+    max_project_count: 100,
+    estimated_cost: 2470,
+    max_budget: null,
+    sub_units_fixed_target: null,
+    sub_units_target_value: null,
   },
-};
-
-// Legacy have no `priorities` or `constraints` array
-const mockScenarioV2 = {
-  planning_approach: null,
-  version: 'V2',
-  type: 'STANDARD',
-  treatment_goal: { name: 'Legacy Treatment Goal' },
-  configuration: {
-    stand_size: 'LARGE' as const,
-    max_slope: 25,
-    max_area: 5000 as number | null,
-    max_budget: 123456,
-    min_distance_from_road: 150,
-    included_areas: [],
-    excluded_areas: [],
-    priority_objectives: [],
-    cobenefits: [],
-    sub_units_layer: undefined,
-  },
-};
-
-function makeDataLayer(id: number, name: string) {
-  return { id, name } as any;
-}
+  ...overrides,
+});
 
 describe('ScenarioConfigListOverlayComponent', () => {
-  let component: ScenarioConfigListOverlayComponent;
   let fixture: ComponentFixture<ScenarioConfigListOverlayComponent>;
+  let el: HTMLElement;
+  let scenarioState: ScenarioState;
+  let scenarioService: ScenarioService;
+  let currentScenario$: BehaviorSubject<Scenario> = new BehaviorSubject<Scenario>({ ...MOCK_SCENARIO, id: 42 });
+  let displayOverlay$: BehaviorSubject<boolean>;
+  let config$: Subject<ScenarioConfigurationDetails>;
 
-  let currentScenario$: BehaviorSubject<any>;
-  let displayConfigOverlay$: BehaviorSubject<boolean>;
-  let includedAreas$: BehaviorSubject<any[]>;
-  let excludedAreas$: BehaviorSubject<any[]>;
-  let forsysData$: BehaviorSubject<any>;
-  let currentPlan$: BehaviorSubject<any>;
-
-  let scenarioStateSpy: jasmine.SpyObj<ScenarioState>;
-  let forsysServiceSpy: jasmine.SpyObj<ForsysService>;
-  let dataLayersServiceSpy: jasmine.SpyObj<DataLayersService>;
-  let planStateSpy: jasmine.SpyObj<PlanState>;
-  let moduleServiceSpy: jasmine.SpyObj<ModuleService>;
-
-  beforeEach(async () => {
-    currentScenario$ = new BehaviorSubject<any>(mockScenarioV3);
-    displayConfigOverlay$ = new BehaviorSubject<boolean>(true);
-    includedAreas$ = new BehaviorSubject<any[]>([]);
-    excludedAreas$ = new BehaviorSubject<any[]>([]);
-    forsysData$ = new BehaviorSubject<any>({
-      thresholds: {
-        slope: { id: 1 },
-        distance_from_roads: { id: 2 },
-      },
-    });
-    currentPlan$ = new BehaviorSubject<any>({ name: 'Test Plan' });
-
-    scenarioStateSpy = jasmine.createSpyObj(
-      'ScenarioState',
-      ['setDisplayOverlay'],
-      {
-        currentScenario$,
-        displayConfigOverlay$,
-      }
+  const dt = (label: string) =>
+    Array.from(el.querySelectorAll('dt')).find(
+      (n) => n.textContent?.trim() === label
+    ) as HTMLElement | undefined;
+  const dd = (label: string) => dt(label)?.nextElementSibling as HTMLElement | undefined;
+  const text = (label: string) => dd(label)?.textContent?.replace(/\s+/g, ' ').trim();
+  const items = (label: string) =>
+    Array.from(dd(label)?.querySelectorAll('li') ?? []).map((li) =>
+      li.textContent?.replace(/\s+/g, ' ').trim()
     );
 
-    forsysServiceSpy = jasmine.createSpyObj('ForsysService', [], {
-      excludedAreas$,
-      includedAreas$,
-      forsysData$,
-    });
+  const emitConfig = (config = makeConfig()) => {
+    config$.next(config);
+    fixture.detectChanges();
+  };
 
-    dataLayersServiceSpy = jasmine.createSpyObj('DataLayersService', [
-      'getDataLayersByIds',
-    ]);
-    dataLayersServiceSpy.getDataLayersByIds.and.returnValue(of([]));
+  beforeEach(() => {
+    displayOverlay$ = new BehaviorSubject(true);
+    config$ = new Subject();
 
-    planStateSpy = jasmine.createSpyObj('PlanState', [], {
-      currentPlan$,
-    });
-
-    moduleServiceSpy = jasmine.createSpyObj('ModuleService', ['getModule']);
-    moduleServiceSpy.getModule.and.returnValue(
-      of({ options: { datalayers: [] } } as any)
-    );
-
-    await TestBed.configureTestingModule({
+    TestBed.configureTestingModule({
       imports: [ScenarioConfigListOverlayComponent],
       providers: [
-        { provide: ScenarioState, useValue: scenarioStateSpy },
-        { provide: ForsysService, useValue: forsysServiceSpy },
-        { provide: DataLayersService, useValue: dataLayersServiceSpy },
-        { provide: PlanState, useValue: planStateSpy },
-        { provide: ModuleService, useValue: moduleServiceSpy },
+        MockProvider(ScenarioState, {
+          displayConfigOverlay$: displayOverlay$,
+          currentScenario$: currentScenario$,
+        }),
+        MockProvider(ScenarioService),
+        MockProvider(ForsysService, {
+          forsysData$: of({
+            thresholds: {
+              slope: { id: SLOPE_ID },
+              distance_from_roads: { id: ROADS_ID },
+            },
+          }),
+        } as Partial<ForsysService>),
       ],
-    }).compileComponents();
+    });
+
+    scenarioState = TestBed.inject(ScenarioState);
+    scenarioService = TestBed.inject(ScenarioService);
+    spyOn(scenarioState, 'setDisplayOverlay');
+    spyOn(scenarioService, 'getScenarioConfiguration').and.returnValue(config$);
 
     fixture = TestBed.createComponent(ScenarioConfigListOverlayComponent);
-    component = fixture.componentInstance;
-  });
-
-  afterEach(() => {
-    fixture.destroy();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
-  it('should set configuration from the current scenario on init', () => {
+    el = fixture.nativeElement;
     fixture.detectChanges();
-    expect(component.configuration).toEqual(
-      mockScenarioV3.configuration as any
-    );
   });
 
-  it('should use slope and distance-to-roads ids from forsys', () => {
-    fixture.detectChanges();
-    expect(component.slopeId).toBe(1);
-    expect(component.distanceToRoadsId).toBe(2);
+  it('should be created', () => {
+    expect(fixture.componentInstance).toBeTruthy();
   });
 
-  describe('close()', () => {
-    it('should tell ScenarioState to hide the overlay', () => {
+  describe('loading and error states', () => {
+
+    it('shows the spinner and no content while loading', () => {
+      expect(el.querySelector('mat-spinner')).toBeTruthy();
+      expect(el.querySelector('dl')).toBeNull();
+    });
+
+    it('renders content and hides the spinner once loaded', () => {
+      emitConfig();
+      expect(el.querySelector('mat-spinner')).toBeNull();
+      expect(el.querySelector('dl')).toBeTruthy();
+    });
+
+    it('shows an error message when the request fails', () => {
+      config$.error(new Error('boom'));
       fixture.detectChanges();
-      component.close();
-      expect(scenarioStateSpy.setDisplayOverlay).toHaveBeenCalledWith(false);
+      expect(el.textContent).toContain("Couldn't load the configuration.");
+      expect(el.querySelector('mat-spinner')).toBeNull();
+      expect(el.querySelector('dl')).toBeNull();
     });
-  });
 
-  describe('ngOnDestroy()', () => {
-    it('should close the overlay on destroy', () => {
+    it('refetches when the current scenario changes', () => {
+      const newScenario = { ...MOCK_SCENARIO, id: 99 };
+      currentScenario$.next(newScenario);
+      expect(scenarioService.getScenarioConfiguration).toHaveBeenCalledWith(99);
+    });
+
+    it('renders nothing when the overlay is hidden', () => {
+      displayOverlay$.next(false);
       fixture.detectChanges();
-      spyOn(component, 'close');
-      component.ngOnDestroy();
-      expect(component.close).toHaveBeenCalled();
+      expect(el.querySelector('.header')).toBeNull();
     });
   });
 
-  describe('globalLoading$', () => {
-    it('should emit true before any dependent streams have resolved', (done) => {
-      let firstValue: boolean | undefined;
-      const sub = component.globalLoading$.subscribe((v) => {
-        if (firstValue === undefined) firstValue = v;
-      });
-      expect(firstValue).toBeTrue();
-      sub.unsubscribe();
-      done();
+  describe('expected fields', () => {
+    beforeEach(() => emitConfig());
+
+    it('renders approach, stand size, planning area and goal', () => {
+      expect(text('Planning Approach')).toContain('Optimize Project Areas');
+      expect(text('Stand Size')).toContain('Medium (100 acres)');
+      expect(text('Planning Area')).toContain('Example Planning Area');
+      expect(text('Treatment Goal')).toContain('Test Treatment Goal');
     });
 
-    it('should emit false once all dependent streams have data', (done) => {
-      fixture.detectChanges();
-      const values: boolean[] = [];
-      component.globalLoading$.subscribe((v) => {
-        values.push(v);
-        if (v === false) {
-          expect(values).toContain(false);
-          done();
-        }
-      });
+    it('omits Treatment Goal when treatment_goal is null', () => {
+      emitConfig(makeConfig({ treatment_goal: null as any }));
+      expect(dt('Treatment Goal')).toBeUndefined();
     });
-  });
 
-  describe('priorityObjectives$', () => {
-    it('should map priority_objectives (legacy) to a default weight of 1', (done) => {
-      dataLayersServiceSpy.getDataLayersByIds.and.returnValue(
-        of([makeDataLayer(10, 'Habitat Quality')])
+    it('renders the subunit layer only when present', () => {
+      expect(dt('Subunit')).toBeUndefined();
+      emitConfig(makeConfig({ sub_units_layer: { id: 5, name: 'Some Subunits Layer' } }));
+      expect(text('Subunit')).toContain('Some Subunits Layer');
+    });
+
+    it('lists co-benefits and included/excluded areas by name', () => {
+      expect(items('Co-Benefits')).toEqual(['Cobenefit 1', 'Cobenefit 2']);
+      expect(items('Included Areas')).toEqual([
+        'Included Area 1',
+        'Included Area 2',
+      ]);
+      expect(items('Excluded Areas')).toEqual(['Area to Exclude']);
+    });
+
+    it('hides list sections when their arrays are empty', () => {
+      emitConfig(
+        makeConfig({
+          priority_objectives: [],
+          cobenefits: [],
+          included_areas: [],
+          excluded_areas: [],
+          stand_level_constraints: [],
+          advanced_stand_level_constraints: [],
+        })
       );
-      currentScenario$.next({
-        ...mockScenarioV3,
-        configuration: {
-          ...mockScenarioV3.configuration,
-          priorities: [],
-          priority_objectives: [10],
-        },
-      });
-      fixture.detectChanges();
-
-      component.priorityObjectives$.subscribe((result) => {
-        expect(result).toEqual([{ name: 'Habitat Quality', weight: 1 }]);
-        done();
-      });
+      [
+        'Priority Objectives',
+        'Co-Benefits',
+        'Included Areas',
+        'Excluded Areas',
+        'Stand-Level Constraints',
+        'Advanced Stand-Level Constraints',
+      ].forEach((label) => expect(dt(label)).toBeUndefined());
     });
+  });
 
-    it('should prefer weighted `priorities` over `priority_objectives` when present', (done) => {
-      dataLayersServiceSpy.getDataLayersByIds.and.returnValue(
-        of([makeDataLayer(20, 'Some priority layer')])
+  describe('priority objectives', () => {
+    it('shows weights when there are multiple objectives', () => {
+      emitConfig(
+        makeConfig({
+          priority_objectives: [
+            { id: 1, name: 'A', weight: 1 },
+            { id: 2, name: 'B', weight: 3 },
+          ],
+        })
       );
-      currentScenario$.next({
-        ...mockScenarioV3,
-        configuration: {
-          ...mockScenarioV3.configuration,
-          priorities: [{ datalayer: 20, weight: 3 }],
-          priority_objectives: [999],
-        },
-      });
-      fixture.detectChanges();
-
-      component.priorityObjectives$.subscribe((result) => {
-        expect(result).toEqual([{ name: 'Some priority layer', weight: 3 }]);
-        done();
-      });
-    });
-
-    it('should drop priorities whose datalayer name could not be resolved', (done) => {
-      dataLayersServiceSpy.getDataLayersByIds.and.returnValue(of([]));
-      currentScenario$.next({
-        ...mockScenarioV3,
-        configuration: {
-          ...mockScenarioV3.configuration,
-          priorities: [{ datalayer: 999, weight: 1 }],
-        },
-      });
-      fixture.detectChanges();
-
-      component.priorityObjectives$.subscribe((result) => {
-        expect(result).toEqual([]);
-        done();
-      });
+      expect(items('Priority Objectives')).toEqual(['A (1x)', 'B (3x)']);
     });
   });
 
-  describe('cobenefits$', () => {
-    it('should emit an empty array when there are no cobenefit ids', (done) => {
-      fixture.detectChanges();
-      component.cobenefits$.subscribe((result) => {
-        expect(result).toEqual([]);
-        done();
-      });
+  describe('stand-level constraints', () => {
+    beforeEach(() => emitConfig());
+
+    it('renders the hardcoded slope and roads wording', () => {
+      const rows = items('Stand-Level Constraints');
+      expect(rows).toContain('Distance from roads is less than (<) 1,000 yds');
+      expect(rows).toContain('Slope less than or equal to (<=) 99 %');
     });
 
-    it('should resolve cobenefit ids to names', (done) => {
-      dataLayersServiceSpy.getDataLayersByIds.and.returnValue(
-        of([makeDataLayer(5, 'Carbon Sequestration')])
+    it('renders advanced constraints with the generic display name', () => {
+      const [row] = items('Advanced Stand-Level Constraints');
+      expect(row).toContain('Some Adv Constraint Layer:');
+      expect(row).toContain('!=');
+      expect(row).toContain('1000');
+    });
+
+    it('formats "between" constraints as a min-max range', () => {
+      emitConfig(
+        makeConfig({
+          advanced_stand_level_constraints: [
+            { datalayer: { id: 1, name: 'Layer' }, operator: 'btw', value: '20,10' },
+          ],
+        })
       );
-      currentScenario$.next({
-        ...mockScenarioV3,
-        configuration: {
-          ...mockScenarioV3.configuration,
-          cobenefits: [5],
-        },
-      });
-      fixture.detectChanges();
-
-      component.cobenefits$.subscribe((result) => {
-        expect(result).toEqual(['Carbon Sequestration']);
-        done();
-      });
+      expect(items('Advanced Stand-Level Constraints')).toEqual(['Layer: 10-20']);
     });
   });
 
-  describe('selectedIncludedAreas$ / selectedExcludedAreas$', () => {
-    it('should resolve included area ids to names', (done) => {
-      includedAreas$.next([{ id: 1, name: 'Some included area' }]);
-      currentScenario$.next({
-        ...mockScenarioV3,
-        configuration: {
-          ...mockScenarioV3.configuration,
-          included_areas: [1],
-        },
-      });
-      fixture.detectChanges();
-
-      component.selectedIncludedAreas$.subscribe((result) => {
-        if (result && result.length) {
-          expect(result).toEqual(['Some included area']);
-          done();
-        }
-      });
-    });
-
-    it('should resolve excluded area ids to names', (done) => {
-      excludedAreas$.next([{ id: 2, name: 'Some Area to Exclude' }]);
-      currentScenario$.next({
-        ...mockScenarioV3,
-        configuration: {
-          ...mockScenarioV3.configuration,
-          excluded_areas: [2],
-        },
-      });
-      fixture.detectChanges();
-
-      component.selectedExcludedAreas$.subscribe((result) => {
-        expect(result).toEqual(['Some Area to Exclude']);
-        done();
-      });
-    });
-
-    it('should filter out ids that do not match any known area', (done) => {
-      includedAreas$.next([{ id: 1, name: 'Some included area' }]);
-      currentScenario$.next({
-        ...mockScenarioV3,
-        configuration: {
-          ...mockScenarioV3.configuration,
-          included_areas: [1, 42], // 42 has no matching area
-        },
-      });
-      fixture.detectChanges();
-
-      component.selectedIncludedAreas$.subscribe((result) => {
-        if (result && result.length) {
-          expect(result).toEqual(['Some included area']);
-          done();
-        }
-      });
-    });
-  });
-
-  describe('standardConstraints', () => {
-    it('should only include constraints matching slope or distance-to-roads ids', () => {
-      fixture.detectChanges();
-      component.configuration = {
-        ...mockScenarioV3.configuration,
-        constraints: [
-          { datalayer: 1, value: 30 }, // slope
-          { datalayer: 2, value: 100 }, // distance to roads
-          { datalayer: 999, value: 5 }, // unrelated, should be excluded
-        ],
-      } as any;
-
-      expect(component.standardConstraints.length).toBe(2);
-      expect(
-        component.standardConstraints.some((c) => c.datalayer === 999)
-      ).toBeFalse();
-    });
-
-    it('should return an empty array when there is no configuration', () => {
-      component.configuration = null;
-      expect(component.standardConstraints).toEqual([]);
-    });
-  });
-
-  describe('scenarioHasPlanningApproachSubUnits$', () => {
-    it('should be falsy when planning_approach is not a sub-units approach', (done) => {
-      currentScenario$.next({
-        ...mockScenarioV3,
-        planning_approach: null,
-      });
-      fixture.detectChanges();
-
-      component.scenarioHasPlanningApproachSubUnits$.subscribe((result) => {
-        expect(result).toBeFalsy();
-        done();
-      });
-    });
-  });
-
-  describe('legacy V1/V2 scenarios', () => {
-    beforeEach(() => {
-      currentScenario$.next(mockScenarioV2);
-      fixture.detectChanges();
-    });
-
-    it('should still set `configuration` for a V2 record', () => {
-      expect(component.configuration).toEqual(
-        mockScenarioV2.configuration as any
+  describe('treatment target', () => {
+    it('renders project areas, acres and cost per acre by default', () => {
+      emitConfig();
+      expect(text('Treatment Target')).toContain(
+        '100 project areas of 1,000 acres @ $2,470 / acre'
       );
     });
 
-    it('standardConstraints should be empty since V2 has no matching constraint entries', () => {
-      expect(component.standardConstraints).toEqual([]);
-    });
+    describe('with sub-units', () => {
+      const subUnitConfig = (targets: Partial<ScenarioConfigurationDetails['targets']>) =>
+        makeConfig({
+          planning_approach: SUB_UNITS_APPROACH,
+          targets: { ...makeConfig().targets, ...targets },
+        });
 
-    it('should render the legacy slope line from max_slope in the template', () => {
-      const text = fixture.nativeElement.textContent as string;
-      expect(text).toContain('Slope less than or equal to (<=) 25%');
-    });
-
-    it('should render legacy Planning Area Acres / Budget targets instead of the V3 targets line', () => {
-      const text = fixture.nativeElement.textContent as string;
-      expect(text).toContain('Planning Area Acres');
-      expect(text).toContain('5,000');
-      expect(text).toContain('Planning Area Budget');
-      expect(text).toContain('$123,456');
-    });
-
-    it('should not render the V3 "project areas of ... acres @ $... / acre" line', () => {
-      const text = fixture.nativeElement.textContent as string;
-      expect(text).not.toContain('project areas of');
-    });
-
-    it('should render Distance from roads for legacy records', () => {
-      const text = fixture.nativeElement.textContent as string;
-      expect(text).toContain('Distance from roads');
-    });
-
-    it('should still show the treatment goal for non-custom legacy scenarios', (done) => {
-      component.scenarioGoal$.subscribe((goal) => {
-        expect(goal).toBe('Legacy Treatment Goal');
-        done();
+      it('shows acres when the target is fixed', () => {
+        emitConfig(subUnitConfig({ sub_units_fixed_target: true as any, sub_units_target_value: 250 }));
+        expect(text('Treatment Target')).toContain('Targeted area within each subunit:');
+        expect(text('Treatment Target')).toContain('250 Acres');
       });
+
+      it('shows a percentage when the target is not fixed', () => {
+        emitConfig(subUnitConfig({ sub_units_fixed_target: null, sub_units_target_value: 25 }));
+        expect(text('Treatment Target')).toContain('25%');
+      });
+
+      it('does not render the project-area wording', () => {
+        emitConfig(subUnitConfig({}));
+        expect(text('Treatment Target')).not.toContain('project areas');
+      });
+    });
+  });
+
+  describe('PRESET indent', () => {
+    const indented = ['Priority Objectives', 'Co-Benefits', 'Stand-Level Constraints'];
+    const wrapper = () => el.querySelector('.indented-section');
+
+    const emitForType = (type: SCENARIO_TYPE) => {
+      currentScenario$.next(makeScenario({ type } as Partial<Scenario>));
+      emitConfig(makeConfig({ type }));
+    };
+
+    it('wraps the three sections in an indented section for PRESET', () => {
+      emitForType('PRESET');
+      expect(wrapper()).toBeTruthy();
+      indented.forEach((label) =>
+        expect(wrapper()!.contains(dt(label)!)).toBe(true)
+      );
+    });
+
+    it('does not wrap them for custom scenarios', () => {
+      emitForType('CUSTOM');
+      expect(wrapper()).toBeNull();
+      indented.forEach((label) => expect(dt(label)).toBeTruthy()); // still rendered
+    });
+
+    it('keeps other sections outside the wrapper', () => {
+      emitForType('PRESET');
+      expect(wrapper()!.contains(dt('Included Areas')!)).toBe(false);
+      expect(wrapper()!.contains(dt('Advanced Stand-Level Constraints')!)).toBe(false);
+    });
+  });
+
+  describe('closing', () => {
+    it('hides the overlay when Close is clicked', () => {
+      emitConfig();
+      el.querySelector<HTMLButtonElement>('.scenario-config-button')!.click();
+      expect(scenarioState.setDisplayOverlay).toHaveBeenCalledWith(false);
+    });
+
+    it('hides the overlay on destroy', () => {
+      fixture.destroy();
+      expect(scenarioState.setDisplayOverlay).toHaveBeenCalledWith(false);
     });
   });
 });
