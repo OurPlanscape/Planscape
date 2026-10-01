@@ -141,7 +141,8 @@ export function convertOldConfigurationToV3Payload(
   }
 
   if (constraints.length > 0) {
-    config.constraints = structuredClone(constraints);
+    // config.constraints = structuredClone(constraints);
+    config.constraints = constraints;
   }
 
   // Custom Scenarios - priority objectives

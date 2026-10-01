@@ -325,11 +325,6 @@ export class ScenarioCreationComponent implements OnInit {
     newState['adv_constraints'] = this.filterOutStandLevelConstraints(
       newState['constraints']
     );
-    console.log(
-      'adv constraints during conversion:',
-      newState['adv_constraints']
-    );
-
     return newState as Partial<ScenarioDraftConfiguration>;
   }
 

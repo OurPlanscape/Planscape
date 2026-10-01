@@ -1,15 +1,13 @@
 import { Component, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import {
-  ScenarioDraftConfiguration,
-} from '@app/types';
+import { ScenarioDraftConfiguration } from '@app/types';
 import { StepDirective } from '@styleguide';
 import { AdvStandLevelConstraintsComponent } from '../step3/adv-stand-level-constraints/adv-stand-level-constraints.component';
 import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints.component';
 import { FeaturesModule } from '@app/features/features.module';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { NewScenarioState } from '../new-scenario.state';
-import {  take } from 'rxjs';
+import { take } from 'rxjs';
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { NamedConstraint } from '../step3/adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
 import { UntilDestroy } from '@ngneat/until-destroy';

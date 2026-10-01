@@ -93,7 +93,6 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
         shareReplay(1)
       );
 
-  @Input() advStandLevelConstraintLayers: DataLayer[] | null = [];
   @Input() keyName = 'advStandLevelConstraints';
 
   // single FormControl holding the constraints array
@@ -116,14 +115,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
 
   // update UI of this component when the step loads, not eagerly on step construction
   mapConfigToUI() {
-    // here, we filter out layers from advStandLevelConstraintLayers to find
-    // just the configured constraints that match the known Adv Stand Level Constraint layers
-    this.newScenarioState.advConstraints$
-      .pipe(take(1))
-      .subscribe((adv_constraints) => {
-        console.log('advConstraints$ has:', adv_constraints);
-      });
-
+    // here, we reconcile the layer names with the constraints from the configuration
     combineLatest([
       this.newScenarioState.advConstraints$,
       this.advStandLevelConstraintLayers$,
@@ -138,22 +130,18 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
           const layer = layers.find(
             (l: DataLayer) => l.id === constraint.datalayer
           );
-
           if (layer) {
             this.dataLayerState.addSelectedLayer(layer);
-
             acc.push({
               ...constraint,
               name: getConstraintDisplayName(constraint, layer),
             });
           }
-
           return acc;
         },
         []
       );
       this.selectedConstraints$.next(namedConstraints);
-      this.newScenarioState.setAdvConstraints(namedConstraints);
     });
   }
 

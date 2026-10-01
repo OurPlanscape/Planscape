@@ -97,16 +97,6 @@ export class NewScenarioState {
     shareReplay(1)
   );
 
-  public allConstraints$ = this.scenarioConfig$.pipe(
-    map((config: Partial<ScenarioV3Config>) => config?.constraints ?? []),
-   
-    distinctUntilChanged(
-      (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
-    ),
-   
-    shareReplay({ bufferSize: 1, refCount: true })
-  );
-
   public prioritiesDetails$ = this.scenarioConfig$.pipe(
     map((config) => {
       const draft = config as Partial<ScenarioDraftConfiguration>;
@@ -163,17 +153,6 @@ export class NewScenarioState {
               return of<DataLayer[]>([]);
             })
           )
-    ),
-    shareReplay(1)
-  );
-
-  public advStandLevelConstraints$ = this.scenarioConfig$.pipe(
-    map((config) => {
-      const draft = config as Partial<ScenarioDraftConfiguration>;
-      return draft.adv_constraints;
-    }),
-    distinctUntilChanged(
-      (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
     ),
     shareReplay(1)
   );
@@ -331,7 +310,6 @@ export class NewScenarioState {
   }
 
   setAdvConstraints(value: NamedConstraint[]) {
-    // const currentValue = this._advConstraints$.value;
     this._advConstraints$.next(value);
   }
 
@@ -359,7 +337,6 @@ export class NewScenarioState {
     if (config.included_areas) {
       this.setIncludedAreas(config.included_areas);
     }
-    // TODO: here we should be updating the constraints, I think
     if (config.adv_constraints) {
       this.setAdvConstraints(config.adv_constraints);
     }
