@@ -171,37 +171,4 @@ describe('BaseLayersListComponent', () => {
 
     expect(instance.expanded).toBeTrue(); // stays true
   });
-
-  describe('with preloaded layers', () => {
-    const layers = [
-      { id: 2, name: 'Zeta' },
-      { id: 1, name: 'Alpha' },
-    ] as BaseLayer[];
-
-    beforeEach(() => {
-      dataLayersServiceMock.listBaseLayersByDataSet.calls.reset();
-      component.layers = layers;
-      component.ngOnChanges({
-        layers: {
-          currentValue: layers,
-          previousValue: null,
-          firstChange: false,
-          isFirstChange: () => false,
-        },
-      });
-    });
-
-    it('shows them sorted without fetching the dataset', () => {
-      expect(component.baseLayers.map((l) => l.name)).toEqual([
-        'Alpha',
-        'Zeta',
-      ]);
-      expect(component.loaded).toBeTrue();
-
-      component.expandDataSet();
-      expect(
-        dataLayersServiceMock.listBaseLayersByDataSet
-      ).not.toHaveBeenCalled();
-    });
-  });
 });

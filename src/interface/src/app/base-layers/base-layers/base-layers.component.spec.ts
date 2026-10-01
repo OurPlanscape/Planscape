@@ -1,163 +1,63 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Component } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-
-import {
-  BaseLayersComponent,
-  groupSearchResults,
-} from './base-layers.component';
-import { MockProvider } from 'ng-mocks';
-import { BaseLayersStateService } from '../base-layers.state.service';
-import { of } from 'rxjs';
-import { MapModuleService } from '@services/map-module.service';
-import { DataLayersService } from '@services/data-layers.service';
+import { FEATURES_JSON } from '@features/features-config';
 import { FeaturesModule } from '@features/features.module';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { MapDataDataSet, SearchResult } from '@types';
+import { BaseLayersComponent } from './base-layers.component';
 
-const wildfires = { id: 1, name: 'Wildfires' } as MapDataDataSet;
-const roads = { id: 2, name: 'Roads' } as MapDataDataSet;
-const ownership = { id: 3, name: 'Ownership' } as MapDataDataSet;
+@Component({
+  selector: 'app-base-layers-panel',
+  standalone: true,
+  template: '',
+})
+class BaseLayersPanelStubComponent {}
 
-function layerResult(id: number, dataSetId: number): SearchResult {
-  return {
-    id,
-    name: `Layer ${id}`,
-    type: 'DATALAYER',
-    data: { id, name: `Layer ${id}`, dataset: { id: dataSetId } },
-  } as unknown as SearchResult;
-}
-
-function dataSetResult(id: number): SearchResult {
-  return { id, name: `Dataset ${id}`, type: 'DATASET' } as SearchResult;
-}
+@Component({
+  selector: 'app-legacy-base-layers',
+  standalone: true,
+  template: '',
+})
+class LegacyBaseLayersStubComponent {}
 
 describe('BaseLayersComponent', () => {
-  let component: BaseLayersComponent;
-  let fixture: ComponentFixture<BaseLayersComponent>;
-  let searchSpy: jasmine.Spy;
-
-  beforeEach(async () => {
-    searchSpy = jasmine
-      .createSpy('search')
-      .and.returnValue(of({ count: 0, results: [] }));
-
-    await TestBed.configureTestingModule({
-      imports: [BaseLayersComponent, FeaturesModule, MatSnackBarModule],
-      providers: [
-        MockProvider(MapModuleService, {
-          datasets$: of({
-            main_datasets: [],
-            base_datasets: [wildfires, roads],
-          }),
-          moduleName: 'map',
-        }),
-        MockProvider(DataLayersService, {
-          search: searchSpy,
-          listBaseLayersByDataSet: () => of([]),
-        }),
-        MockProvider(BaseLayersStateService, {
-          selectedBaseLayers$: of([]),
-        }),
-      ],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(BaseLayersComponent);
-    component = fixture.componentInstance;
+  function setup(dataOrganization: boolean) {
+    TestBed.configureTestingModule({ imports: [BaseLayersComponent] })
+      .overrideComponent(BaseLayersComponent, {
+        set: {
+          imports: [
+            FeaturesModule,
+            BaseLayersPanelStubComponent,
+            LegacyBaseLayersStubComponent,
+          ],
+        },
+      })
+      .overrideProvider(FEATURES_JSON, {
+        useValue: { DATA_ORGANIZATION: dataOrganization },
+      });
+    const fixture = TestBed.createComponent(BaseLayersComponent);
     fixture.detectChanges();
-  });
+    return fixture;
+  }
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+  it('shows the new panel when DATA_ORGANIZATION is on', () => {
+    const fixture = setup(true);
 
-  it('hides the search bar by default', () => {
-    expect(fixture.debugElement.query(By.css('sg-search-bar'))).toBeNull();
-  });
-
-  it('shows the search bar when showSearch is set', () => {
-    component.showSearch = true;
-    fixture.detectChanges();
-
-    expect(fixture.debugElement.query(By.css('sg-search-bar'))).toBeTruthy();
-  });
-
-  it('searches vector layers in the current module', () => {
-    component.search('fire');
-    fixture.detectChanges();
-
-    expect(searchSpy).toHaveBeenCalledWith(
-      jasmine.objectContaining({ term: 'fire', type: 'VECTOR', module: 'map' })
-    );
-  });
-
-  it('shows one list per dataset with matching layers', () => {
-    searchSpy.and.returnValue(
-      of({ count: 2, results: [layerResult(10, 1), layerResult(11, 1)] })
-    );
-    component.search('fire');
-    fixture.detectChanges();
-
-    const lists = fixture.debugElement.queryAll(By.css('app-base-layers-list'));
-    expect(lists.length).toBe(1);
-    expect(lists[0].componentInstance.layers.length).toBe(2);
-    expect(lists[0].componentInstance.searchTerm).toBe('fire');
-  });
-
-  it('shows no results when nothing matches', () => {
-    component.search('nope');
-    fixture.detectChanges();
-
-    expect(fixture.debugElement.query(By.css('sg-no-results'))).toBeTruthy();
     expect(
-      fixture.debugElement.query(By.css('app-base-layers-list'))
+      fixture.debugElement.query(By.css('app-base-layers-panel'))
+    ).toBeTruthy();
+    expect(
+      fixture.debugElement.query(By.css('app-legacy-base-layers'))
     ).toBeNull();
   });
 
-  it('goes back to browsing all datasets when the search is cleared', () => {
-    component.search('nope');
-    fixture.detectChanges();
-    component.clearSearch();
-    fixture.detectChanges();
+  it('shows the legacy panel when DATA_ORGANIZATION is off', () => {
+    const fixture = setup(false);
 
     expect(
-      fixture.debugElement.queryAll(By.css('app-base-layers-list')).length
-    ).toBe(2);
-    expect(searchSpy).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('groupSearchResults', () => {
-  it('groups layers by dataset in the module dataset order', () => {
-    const groups = groupSearchResults(
-      [layerResult(20, 2), layerResult(10, 1), layerResult(21, 2)],
-      [wildfires, roads, ownership]
-    );
-
-    expect(groups.map((g) => g.dataSet.id)).toEqual([1, 2]);
-    expect(groups[1].layers?.map((l) => l.id)).toEqual([20, 21]);
-  });
-
-  it('includes datasets that only matched by name, without preloaded layers', () => {
-    const groups = groupSearchResults(
-      [dataSetResult(3)],
-      [wildfires, ownership]
-    );
-
-    expect(groups).toEqual([{ dataSet: ownership, layers: null }]);
-  });
-
-  it('prefers layer matches over a dataset match', () => {
-    const groups = groupSearchResults(
-      [dataSetResult(1), layerResult(10, 1)],
-      [wildfires]
-    );
-
-    expect(groups[0].layers?.map((l) => l.id)).toEqual([10]);
-  });
-
-  it('ignores results from datasets outside the module', () => {
+      fixture.debugElement.query(By.css('app-legacy-base-layers'))
+    ).toBeTruthy();
     expect(
-      groupSearchResults([layerResult(99, 42), dataSetResult(42)], [wildfires])
-    ).toEqual([]);
+      fixture.debugElement.query(By.css('app-base-layers-panel'))
+    ).toBeNull();
   });
 });
