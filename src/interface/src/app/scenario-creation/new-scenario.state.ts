@@ -32,7 +32,6 @@ import { ForsysService } from '@services/forsys.service';
 import { ScenarioStepConfig } from '@scenario/scenario.constants';
 import { arrayHasChanged } from '@app/scenario/scenario-helper';
 import { getPlanPath } from '@plan/plan-helpers';
-import { NamedConstraint } from './step3/adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
 
 export interface PriorityWithLayer {
   layer: DataLayer;
@@ -58,7 +57,7 @@ export class NewScenarioState {
   private _constraints$ = new BehaviorSubject<Constraint[]>([]);
   public constraints$ = this._constraints$.asObservable();
 
-  private _advConstraints$ = new BehaviorSubject<NamedConstraint[]>([]);
+  private _advConstraints$ = new BehaviorSubject<Constraint[]>([]);
   public advConstraints$ = this._advConstraints$.asObservable();
 
   private _currentStep$ = new BehaviorSubject<ScenarioStepConfig | null>(null);
@@ -307,7 +306,7 @@ export class NewScenarioState {
     this._savingStep$.next(isLoading);
   }
 
-  setAdvConstraints(value: NamedConstraint[]) {
+  setAdvConstraints(value: Constraint[]) {
     this._advConstraints$.next(value);
   }
 
