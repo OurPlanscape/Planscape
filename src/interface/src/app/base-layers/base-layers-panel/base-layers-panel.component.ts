@@ -6,11 +6,11 @@ import {
   BehaviorSubject,
   catchError,
   combineLatest,
-  finalize,
   map,
   Observable,
   of,
   shareReplay,
+  startWith,
   switchMap,
 } from 'rxjs';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
@@ -31,8 +31,14 @@ export interface BaseLayerSearchGroup {
   layers: BaseLayer[] | null;
 }
 
+export interface BaseLayerSearchResults {
+  groups: BaseLayerSearchGroup[];
+  /** The backend had more matches than SEARCH_LIMIT. */
+  truncated: boolean;
+}
+
 // Base layer datasets are small, so we fetch every match in one go and skip pagination.
-const SEARCH_LIMIT = 100;
+export const SEARCH_LIMIT = 100;
 
 /** Base layers panel used when DATA_ORGANIZATION is on. */
 @Component({
@@ -68,10 +74,10 @@ export class BaseLayersPanelComponent {
   private _searchTerm$ = new BehaviorSubject<string>('');
   searchTerm$ = this._searchTerm$.asObservable();
 
-  private _searching$ = new BehaviorSubject(false);
-  searching$ = this._searching$.asObservable();
+  readonly SEARCH_LIMIT = SEARCH_LIMIT;
 
-  searchResults$: Observable<BaseLayerSearchGroup[] | null> = combineLatest([
+  /** null while there is no term or the search is in flight. */
+  searchResults$: Observable<BaseLayerSearchResults | null> = combineLatest([
     this.searchTerm$,
     this.baseDataSets$,
   ]).pipe(
@@ -79,7 +85,6 @@ export class BaseLayersPanelComponent {
       if (!term) {
         return of(null);
       }
-      this._searching$.next(true);
       return this.dataLayersService
         .search({
           term,
@@ -88,19 +93,23 @@ export class BaseLayersPanelComponent {
           module: this.mapModuleService.moduleName,
         })
         .pipe(
-          map((response) => groupSearchResults(response.results, dataSets)),
+          map((response) => ({
+            groups: groupSearchResults(response.results, dataSets),
+            truncated: response.count > response.results.length,
+          })),
           catchError(() => {
             this.matSnackBar.open(
               'Error: Could not search base layers',
               'Dismiss',
               SNACK_ERROR_CONFIG
             );
-            return of([]);
+            return of({ groups: [], truncated: false });
           }),
-          finalize(() => this._searching$.next(false))
+          // drop the previous term's results while this one loads
+          startWith(null)
         );
     }),
-    shareReplay(1)
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   constructor(

@@ -62,6 +62,18 @@ describe('BaseLayersGroupComponent', () => {
     expect(layerNames()).toEqual(['Alpha', 'Zeta']);
   });
 
+  it('fetches only once even when the dataset has no layers', () => {
+    listSpy.and.returnValue(of([]));
+    fixture.detectChanges();
+    const header = fixture.debugElement.query(By.css('.group-header'));
+
+    header.nativeElement.click();
+    header.nativeElement.click();
+    header.nativeElement.click();
+
+    expect(listSpy).toHaveBeenCalledTimes(1);
+  });
+
   it('collapses again on a second click', () => {
     fixture.componentRef.setInput('initialExpanded', true);
     fixture.detectChanges();
