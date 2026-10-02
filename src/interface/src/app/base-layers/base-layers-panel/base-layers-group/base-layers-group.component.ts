@@ -64,6 +64,7 @@ export class BaseLayersGroupComponent implements OnChanges, OnInit {
   expanded = false;
   baseLayers: BaseLayer[] = [];
   loaded = false;
+  private fetchStarted = false;
 
   constructor(
     private baseLayersStateService: BaseLayersStateService,
@@ -91,7 +92,7 @@ export class BaseLayersGroupComponent implements OnChanges, OnInit {
 
   toggle() {
     this.expanded = !this.expanded;
-    if (this.expanded && this.baseLayers.length === 0 && !this.layers) {
+    if (this.expanded && !this.fetchStarted && !this.layers) {
       this.fetchLayers();
     }
   }
@@ -109,6 +110,7 @@ export class BaseLayersGroupComponent implements OnChanges, OnInit {
 
   private fetchLayers(afterLoad?: () => void) {
     this.loaded = false;
+    this.fetchStarted = true;
     this.dataLayersService
       .listBaseLayersByDataSet(
         this.dataSet.id,
@@ -119,6 +121,8 @@ export class BaseLayersGroupComponent implements OnChanges, OnInit {
         tap(() => (this.loaded = true)),
         catchError(() => {
           this.loaded = true;
+          // let the next expand retry
+          this.fetchStarted = false;
           this.matSnackBar.open(
             `Error: Could not load layers for ${this.dataSet.name}`,
             'Dismiss',

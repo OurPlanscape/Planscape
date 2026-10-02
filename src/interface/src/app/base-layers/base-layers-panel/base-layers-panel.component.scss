@@ -27,6 +27,11 @@ $side-padding: 16px;
   margin: 28px auto;
 }
 
+.truncated-hint {
+  padding: $side-padding;
+  color: $color-md-gray;
+}
+
 .footer {
   display: flex;
   align-items: center;

@@ -7,7 +7,7 @@ import {
 } from './base-layers-panel.component';
 import { MockProvider } from 'ng-mocks';
 import { BaseLayersStateService } from '../base-layers.state.service';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { MapModuleService } from '@services/map-module.service';
 import { DataLayersService } from '@services/data-layers.service';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -111,6 +111,33 @@ describe('BaseLayersPanelComponent', () => {
     expect(
       fixture.debugElement.query(By.css('app-base-layers-group'))
     ).toBeNull();
+  });
+
+  it('shows only a spinner while a new search is in flight', () => {
+    searchSpy.and.returnValue(of({ count: 1, results: [layerResult(10, 1)] }));
+    component.search('fire');
+    fixture.detectChanges();
+
+    const pending = new Subject<{ count: number; results: SearchResult[] }>();
+    searchSpy.and.returnValue(pending);
+    component.search('road');
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('.loader'))).toBeTruthy();
+    expect(
+      fixture.debugElement.query(By.css('app-base-layers-group'))
+    ).toBeNull();
+    expect(fixture.debugElement.query(By.css('sg-no-results'))).toBeNull();
+  });
+
+  it('says when the backend had more matches than the limit', () => {
+    searchSpy.and.returnValue(
+      of({ count: 150, results: [layerResult(10, 1)] })
+    );
+    component.search('fire');
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('.truncated-hint'))).toBeTruthy();
   });
 
   it('goes back to browsing all datasets when the search is cleared', () => {
