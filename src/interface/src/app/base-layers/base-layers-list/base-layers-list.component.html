@@ -64,7 +64,6 @@
       class="toggle-option"
       [attr.selected]="allSelectedLayersIds.includes(layer.id) ? '' : null">
       <sg-toggle
-        size="small"
         [checked]="allSelectedLayersIds.includes(layer.id)"
         (changed)="onLayerToggle(layer, $event)"
         >{{ layer.name }}
