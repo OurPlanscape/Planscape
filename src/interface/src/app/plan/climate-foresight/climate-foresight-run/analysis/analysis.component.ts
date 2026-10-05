@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { delay, map, startWith, switchMap, take } from 'rxjs';
+import { delay, finalize, map, startWith, switchMap, take } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -96,6 +96,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   planId: number | null = null;
   loading = true;
   downloading = false;
+  checkingDownloadStatus = false;
   downloadStatus: GeoPackageDownloadStatus | null = null;
   downloadUrl: string | null = null;
   private downloadPollingInterval: ReturnType<typeof setInterval> | null = null;
@@ -278,7 +279,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   }
 
   downloadGeopackage(): void {
-    if (!this.runId || this.downloading) return;
+    if (!this.runId || this.downloading || this.checkingDownloadStatus) return;
 
     if (this.downloadStatus === 'ready' && this.downloadUrl) {
       this.performDownload(this.downloadUrl);
@@ -292,43 +293,47 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   private checkDownloadStatus(): void {
     if (!this.runId) return;
 
-    this.climateForesightService.getDownloadStatus(this.runId).subscribe({
-      next: (response) => {
-        this.downloadStatus = response.status;
+    this.checkingDownloadStatus = true;
+    this.climateForesightService
+      .getDownloadStatus(this.runId)
+      .pipe(finalize(() => (this.checkingDownloadStatus = false)))
+      .subscribe({
+        next: (response) => {
+          this.downloadStatus = response.status;
 
-        if (response.status === 'ready' && response.download_url) {
-          this.downloadUrl = response.download_url;
-          this.stopDownloadPolling();
-          this.performDownload(response.download_url);
-        } else if (
-          response.status === 'processing' ||
-          response.status === 'pending'
-        ) {
-          if (!this.downloadPollingInterval) {
+          if (response.status === 'ready' && response.download_url) {
+            this.downloadUrl = response.download_url;
+            this.stopDownloadPolling();
+            this.performDownload(response.download_url);
+          } else if (
+            response.status === 'processing' ||
+            response.status === 'pending'
+          ) {
+            if (!this.downloadPollingInterval) {
+              this.snackBar.open(
+                'GeoPackage is being generated. This may take a few minutes.',
+                'Dismiss',
+                SNACK_BOTTOM_NOTICE_CONFIG
+              );
+              this.startDownloadPolling();
+            }
+          } else if (response.status === 'error') {
             this.snackBar.open(
-              'GeoPackage is being generated. This may take a few minutes.',
+              response.message || 'Failed to generate GeoPackage',
               'Dismiss',
-              SNACK_BOTTOM_NOTICE_CONFIG
+              SNACK_ERROR_CONFIG
             );
-            this.startDownloadPolling();
           }
-        } else if (response.status === 'error') {
+        },
+        error: (err) => {
+          console.error('Failed to check download status:', err);
           this.snackBar.open(
-            response.message || 'Failed to generate GeoPackage',
+            'Failed to check download status',
             'Dismiss',
             SNACK_ERROR_CONFIG
           );
-        }
-      },
-      error: (err) => {
-        console.error('Failed to check download status:', err);
-        this.snackBar.open(
-          'Failed to check download status',
-          'Dismiss',
-          SNACK_ERROR_CONFIG
-        );
-      },
-    });
+        },
+      });
   }
 
   private startDownloadPolling(): void {
