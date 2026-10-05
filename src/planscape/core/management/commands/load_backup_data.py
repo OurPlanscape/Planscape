@@ -1,36 +1,19 @@
 import os
-import shutil
 import subprocess
 
-from datasets.tasks import datalayer_uploaded
-from django.db import transaction
 from django.conf import settings
-from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from django.db import transaction
 from django.utils import timezone
-from core.mattermost import post_to_mattermost
 
+from core.catalog_import import CatalogImporter
+from core.mattermost import post_to_mattermost
 from core.models import RestoreBackTrack, RestoreBackTrackStatus
-from datasets.models import (
-    DataLayer, 
-    DataLayerStatus, 
-    DataLayerType, 
-    Dataset, 
-    Category, 
-    DataLayerHasStyle,
-    Style,
-)
-from planning.models import (
-    TreatmentGoal,
-    TreatmentGoalCategory,
-    TreatmentGoalUsesDataLayer,
-)
-from stands.models import StandMetric
-from organizations.models import Organization
+from datasets.tasks import datalayer_uploaded
 
 
 class Command(BaseCommand):
-    help = "Loads backup data and trigger Vector layers post-upload tasks."
+    help = "Merges a catalog backup by scoped names and rebuilds imported vectors as needed."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -51,7 +34,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--batch-size",
             default=500,
-            help="Batch size for batched deletion.",
+            help="Deprecated compatibility option; catalog imports no longer delete records.",
             type=int,
         )
 
@@ -74,13 +57,13 @@ class Command(BaseCommand):
             "!! 1. Sync source env datalayers bucket with targeted env bucket;!!\n"
         )
         self.stdout.write(
-            "!! 2. Load data from given JSON file to targeted env database;   !!\n"
+            "!! 2. Merge catalog by scoped names; preserve local records;     !!\n"
         )
         self.stdout.write(
             "!! 3. Update datalayers url to point to targeted env bucket;     !!\n"
         )
         self.stdout.write(
-            "!! 4. Execute post-update process for Vector Layers (Ready only);!!\n"
+            "!! 4. Rebuild imported ready vectors when necessary;             !!\n"
         )
         self.stdout.write(
             "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
@@ -133,26 +116,13 @@ class Command(BaseCommand):
                 "!!  Error: Backup file and source env does not match. !!\n"
                 "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
             )
-        
-        try:
-            last_restore = RestoreBackTrack.objects.filter(status=RestoreBackTrackStatus.SUCCESS).order_by("-started_at").first()
-            last_restore_date = last_restore.started_at
-            self.stdout.write(f"Last restored happend on {last_restore_date}. Records created after that will be deleted.")
-        except Exception:
-            raise SystemError(
-                "\n"
-                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-                "!!  Error: Could not find the last successful restore !!\n"
-                "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-            )
-        
-        
+
         now = timezone.now()
         current_run = RestoreBackTrack.objects.create(
-            started_at=now,
-            file_name=filename
+            started_at=now, file_name=filename
         )
         try:
+            importer = CatalogImporter.from_file(file_path, source_env, settings.ENV)
             # Sync buckets
             subprocess.run(
                 [
@@ -167,91 +137,18 @@ class Command(BaseCommand):
                 check=True,
             )
 
-            batch_size = options.get("batch_size", 500)
-            with transaction.atomic():
-
-                datalayers = DataLayer.dead_or_alive.filter(created_at__gte=last_restore_date)
-
-                # Stand metrics batch deletion
-                stand_metrics = StandMetric.objects.filter(datalayer__in=datalayers)
-                self.stdout.write(f"Found {stand_metrics.count()} to be deleted.")
-
-                while stand_metrics.exists():
-                    ids = stand_metrics.values_list("id", flat=True)[:batch_size]
-                    count = StandMetric.objects.filter(id__in=ids).delete()
-                    self.stdout.write(f"Deleted batch of {count[1]} entry(ies) related to StandMetric.")
-
-
-                # N-N relational tables deletion by `updated_at`
-                count = TreatmentGoalUsesDataLayer.dead_or_alive.filter(updated_at__gte=last_restore_date).delete()
-                self.stdout.write(f"Deleted {count[1]} entry(ies) related to TreatmentGoalUsesDataLayer updated after last restore.")
-
-                count = DataLayerHasStyle.objects.filter(updated_at__gte=last_restore_date).delete()
-                self.stdout.write(f"Deleted {count[1]} entry(ies) related to DataLayerHasStyle updated after last restore.")
-
-
-                # Other tables deletion by `created_at`
-                count = TreatmentGoal.dead_or_alive.filter(created_at__gte=last_restore_date).delete()
-                self.stdout.write(f"Deleted {count[1]} entry(ies) related to TreatmentGoal created after last restore.")
-
-                count = TreatmentGoalCategory.objects.filter(
-                    created_at__gte=last_restore_date
-                ).delete()
+            importer.merge()
+            for label, counts in importer.counts.items():
                 self.stdout.write(
-                    f"Deleted {count[1]} entry(ies) related to TreatmentGoalCategory created after last restore."
+                    f"{label}: {counts['created']} created, {counts['updated']} updated, "
+                    f"{counts['unchanged']} unchanged."
                 )
-
-                count = Category.objects.filter(created_at__gte=last_restore_date).delete()
-                self.stdout.write(f"Deleted {count[1]} entry(ies) related to Category(s) created after last restore.")
-
-                count = Style.dead_or_alive.filter(created_at__gte=last_restore_date).delete()
-                self.stdout.write(f"Deleted {count[1]} entry(ies) related to Style(s) created after last restore.")
-
-                count = datalayers.delete()
-                self.stdout.write(f"Deleted {count[1]} entry(ies) related to DataLayer(s) created after last restore.")
-
-                count = Dataset.dead_or_alive.filter(created_at__gte=last_restore_date).delete()
-                self.stdout.write(f"Deleted {count[1]} entry(ies) related to Dataset(s) created after last restore.")
-
-                count = Organization.dead_or_alive.filter(created_at__gte=last_restore_date).delete()
-                self.stdout.write(f"Deleted {count[1]} entry(ies) related to Organization(s) created after last restore.")
-
-            # Copy to tmp folder and rename all `url` fields
-            self.stdout.write(f"Copying file from {file_path} to /tmp/{filename}.")
-            shutil.copyfile(file_path, f"/tmp/{filename}")
-
-            self.stdout.write(
-                f"Replacing  `planscape-datastore-{source_env}` with `planscape-datastore-{settings.ENV}` on /tmp/{filename}."
-            )
-            subprocess.call(
-                [
-                    "sed",
-                    "-i",
-                    f"s/planscape-datastore-{source_env}/planscape-datastore-{settings.ENV}/g",
-                    f"/tmp/{filename}",
-                ]
-            )
-            # Load data to DB
-            self.stdout.write(f"Loading data from `/tmp/{filename}`")
-            call_command(
-                "loaddata",
-                f"/tmp/{filename}",
-            )
-
-            self.stdout.write(
-                self.style.SUCCESS(f"Successfully loaded data from `/tmp/{filename}`")
-            )
-
-            ready_vector_layers = DataLayer.objects.filter(
-                type=DataLayerType.VECTOR, status=DataLayerStatus.READY
-            )
-
-            for vector_layer in ready_vector_layers.iterator():
-                datalayer_uploaded.delay(vector_layer.pk)
-
+            for layer_id in importer.vector_ids:
+                transaction.on_commit(lambda pk=layer_id: datalayer_uploaded.delay(pk))
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Triggered post-upload process for {ready_vector_layers.count()} Datalayers type=VECTOR and status=READY."
+                    f"Merged catalog data from {file_path}; scheduled "
+                    f"{len(importer.vector_ids)} vector layers for processing."
                 )
             )
             post_to_mattermost(
@@ -262,10 +159,10 @@ class Command(BaseCommand):
             current_run.save()
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Error loading data: {e}"))
-            post_to_mattermost(
-                f"planscape-{settings.ENV} :x: Catalog data restore failed: {e}"
-            )
             current_run.finished_at = timezone.now()
             current_run.status = RestoreBackTrackStatus.FAILED
             current_run.save()
+            post_to_mattermost(
+                f"planscape-{settings.ENV} :x: Catalog data restore failed: {e}"
+            )
             raise
