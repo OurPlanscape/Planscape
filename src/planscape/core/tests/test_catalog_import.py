@@ -175,7 +175,6 @@ class CatalogImportTests(TestCase):
         original = copy.deepcopy(self.fixture)
         invalid = [
             lambda: self.fixture.append(copy.deepcopy(self.row("datasets.dataset"))),
-            lambda: self.row("datasets.datalayer")["fields"].update(workspace=999),
             lambda: self.row("datasets.datalayer")["fields"].update(dataset=999),
             lambda: self.row("datasets.category", 1)["fields"].update(path="99990001"),
             lambda: self.row("datasets.category", 1)["fields"].update(depth=99),
@@ -345,3 +344,66 @@ class CatalogImportTests(TestCase):
                     RestoreBackTrack.objects.get().status,
                     RestoreBackTrackStatus.SUCCESS,
                 )
+
+    def test_default_workspace_records_are_imported_and_remapped(self):
+        from workspaces.models import Workspace
+
+        Workspace.objects.get(pk=1)
+        for row in self.fixture:
+            if "workspace" in row["fields"]:
+                row["fields"]["workspace"] = 1
+        result = self.importer().merge()
+        self.layer.refresh_from_db()
+        self.dataset.refresh_from_db()
+        self.child.refresh_from_db()
+        self.style.refresh_from_db()
+        for obj in (self.layer, self.dataset, self.child, self.style):
+            self.assertEqual(obj.workspace_id, 1)
+        self.assertEqual(result.id_map[DataLayer][self.layer.pk + 10000], self.layer.pk)
+        second = self.importer().merge()
+        self.assertTrue(
+            all(
+                counts["created"] == counts["updated"] == 0
+                for counts in second.counts.values()
+            )
+        )
+
+    def test_other_workspace_layer_and_dependent_links_are_skipped(self):
+        self.row("datasets.datalayer")["fields"].update(
+            workspace=99, metadata={"do_not_import": True}
+        )
+        result = self.importer().merge()
+        self.layer.refresh_from_db()
+        self.assertEqual(self.layer.metadata, {})
+        self.assertEqual(result.id_map[DataLayer], {})
+        for label in (
+            "datasets.datalayer",
+            "datasets.datalayerhasstyle",
+            "planning.treatmentgoalusesdatalayer",
+        ):
+            self.assertEqual(result.counts[label]["skipped"], 1)
+
+    def test_excluded_dataset_excludes_children_even_with_null_workspace(self):
+        self.row("datasets.dataset")["fields"]["workspace"] = 99
+        result = self.importer().merge()
+        self.assertEqual(result.id_map[Dataset], {})
+        self.assertEqual(result.id_map[Category], {})
+        self.assertEqual(result.id_map[DataLayer], {})
+        self.assertEqual(result.counts["datasets.category"]["skipped"], 2)
+
+    def test_excluded_category_skips_descendants_and_layers(self):
+        self.row("datasets.category", 0)["fields"]["workspace"] = 99
+        result = self.importer().merge()
+        self.assertEqual(result.id_map[Category], {})
+        self.assertEqual(result.id_map[DataLayer], {})
+
+    def test_missing_default_workspace_fails_preflight(self):
+        from unittest import mock
+
+        self.row("datasets.dataset")["fields"]["workspace"] = 1
+        with mock.patch(
+            "core.catalog_import.Workspace.objects.filter"
+        ) as workspace_filter:
+            workspace_filter.return_value.exists.return_value = False
+            with self.assertRaisesRegex(CommandError, "default workspace"):
+                self.importer()

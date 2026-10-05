@@ -16,6 +16,7 @@ from django.db import transaction
 from datasets.models import Category, DataLayer, DataLayerStatus, DataLayerType
 from datasets.models import DataLayerHasStyle, Dataset, Style
 from organizations.models import Organization
+from workspaces.models import Workspace
 from planning.models import (
     TreatmentGoal,
     TreatmentGoalCategory,
@@ -71,6 +72,15 @@ class CatalogImporter:
         self.source_env = source_env
         self.target_env = target_env
         self._parse(fixture)
+        if any(
+            fields.get("workspace") == 1
+            for rows in self.rows.values()
+            for fields in rows.values()
+        ):
+            if not Workspace.objects.filter(pk=1).exists():
+                raise CommandError(
+                    "Destination default workspace (ID 1) is missing or deleted."
+                )
         self._validate_tree()
         self._validate_identities()
         self._index_destination()
@@ -99,6 +109,7 @@ class CatalogImporter:
         if not isinstance(fixture, list):
             raise CommandError("Catalog backup must be a JSON list.")
         labels = {model._meta.label_lower: model for model in MODELS}
+        fixture = self._filter_workspaces(fixture, labels)
         for row in fixture:
             if not isinstance(row, dict) or row.get("model") not in labels:
                 raise CommandError(f"Unsupported catalog fixture record: {row!r}")
@@ -111,10 +122,6 @@ class CatalogImporter:
             if pk in self.rows[model]:
                 raise CommandError(
                     f"Duplicate source ID for {model._meta.label_lower}: {pk}"
-                )
-            if fields.get("workspace") is not None:
-                raise CommandError(
-                    "Workspace-owned records are not supported by catalog import."
                 )
             model_fields = {
                 field.name: field
@@ -182,7 +189,10 @@ class CatalogImporter:
         for model, rows in self.rows.items():
             for pk, fields in rows.items():
                 for field in model._meta.fields:
-                    if field.is_relation and field.name != "created_by":
+                    if field.is_relation and field.name not in {
+                        "created_by",
+                        "workspace",
+                    }:
                         value = fields.get(field.name)
                         if value is not None and value not in self.rows.get(
                             field.related_model, {}
@@ -190,6 +200,66 @@ class CatalogImporter:
                             raise CommandError(
                                 f"Missing source reference {model._meta.label_lower}.{field.name}={value} (record {pk})."
                             )
+
+    def _filter_workspaces(self, fixture, labels):
+        """Exclude non-default workspaces and records depending on their catalog data."""
+        records = {}
+        excluded = set()
+        for row in fixture:
+            if not isinstance(row, dict) or row.get("model") not in labels:
+                raise CommandError(f"Unsupported catalog fixture record: {row!r}")
+            model = labels[row["model"]]
+            pk, fields = row.get("pk"), row.get("fields")
+            if type(pk) is not int or pk <= 0 or not isinstance(fields, dict):
+                raise CommandError(
+                    f"Invalid fixture record for {model._meta.label_lower}."
+                )
+            key = (model, pk)
+            if key in records:
+                raise CommandError(
+                    f"Duplicate source ID for {model._meta.label_lower}: {pk}"
+                )
+            records[key] = row
+            if fields.get("workspace") not in (None, 1):
+                excluded.add(key)
+        # Repeat until exclusion has propagated through categories and through tables.
+        changed = True
+        while changed:
+            changed = False
+            excluded_paths = [
+                records[key]["fields"].get("path")
+                for key in excluded
+                if key[0] is Category
+            ]
+            for key, row in records.items():
+                if key in excluded:
+                    continue
+                model = key[0]
+                fields = row["fields"]
+                depends_on_excluded = any(
+                    (field.related_model, fields.get(field.name)) in excluded
+                    for field in model._meta.fields
+                    if field.is_relation
+                    and field.name not in {"created_by", "workspace"}
+                    and type(fields.get(field.name)) is int
+                )
+                path = fields.get("path")
+                excluded_ancestor = (
+                    model is Category
+                    and isinstance(path, str)
+                    and any(
+                        isinstance(ancestor, str)
+                        and ancestor
+                        and path.startswith(ancestor)
+                        for ancestor in excluded_paths
+                    )
+                )
+                if depends_on_excluded or excluded_ancestor:
+                    excluded.add(key)
+                    changed = True
+        for model, _pk in excluded:
+            self.counts[model._meta.label_lower]["skipped"] += 1
+        return [row for key, row in records.items() if key not in excluded]
 
     def _validate_tree(self):
         paths = {}
@@ -303,7 +373,7 @@ class CatalogImporter:
         return relations
 
     def _is_catalog_record(self, obj):
-        if getattr(obj, "workspace_id", None) is not None:
+        if getattr(obj, "workspace_id", None) not in (None, 1):
             return False
         names = ("dataset",) if type(obj) is Category else KEYS[type(obj)]
         return all(
@@ -325,7 +395,7 @@ class CatalogImporter:
                 .select_related(*self._identity_relations(model))
                 .iterator()
             ):
-                # Workspace catalogs must not match global catalog identities.
+                # Private workspace records must not match default catalog identities.
                 if not self._is_catalog_record(obj):
                     continue
                 key = self._destination_identity(obj)
@@ -343,7 +413,10 @@ class CatalogImporter:
             if name in IGNORED:
                 continue
             field = model._meta.get_field(name)
-            if field.is_relation:
+            if name == "workspace":
+                # ID 1 is the reserved default workspace, not a source catalog PK.
+                values[field.attname] = value
+            elif field.is_relation:
                 values[field.attname] = (
                     self.id_map[field.related_model][value]
                     if value is not None

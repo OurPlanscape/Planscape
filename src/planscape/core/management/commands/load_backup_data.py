@@ -141,7 +141,7 @@ class Command(BaseCommand):
             for label, counts in importer.counts.items():
                 self.stdout.write(
                     f"{label}: {counts['created']} created, {counts['updated']} updated, "
-                    f"{counts['unchanged']} unchanged."
+                    f"{counts['unchanged']} unchanged, {counts['skipped']} skipped."
                 )
             for layer_id in importer.vector_ids:
                 transaction.on_commit(lambda pk=layer_id: datalayer_uploaded.delay(pk))
