@@ -10,7 +10,7 @@ from collections.abc import Collection
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
-from typing import (  # noqa: F401
+from typing import (  # noqa
     Any,
     Dict,
     List,
@@ -44,6 +44,7 @@ from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from modules.base import (
+    ForsysModule,
     PrioritizeSubUnitsModule,
     compute_planning_area_capabilities,
     compute_scenario_capabilities,
@@ -52,11 +53,22 @@ from planscape.analytics import track_event
 from planscape.exceptions import InvalidGeometry
 from pyproj import Geod
 from shapely import wkt
-from stands.models import Stand, StandMetric, StandSizeChoices, area_from_size
+from stands.models import (
+    STAND_DISPLAY_ACRES,
+    Stand,
+    StandMetric,
+    StandSizeChoices,
+    area_from_size,
+)
 from stands.services import get_datalayer_metric, get_stand_grid_key_search_precision
 from utils.geometry import to_multi
 
-from planning.geometry import coerce_geojson, coerce_geometry, to_multipolygon
+from planning.geometry import (
+    coerce_geojson,
+    coerce_geometry,
+    fix_geometry,
+    to_multipolygon,
+)
 from planning.models import (
     GeoPackageStatus,
     PlanningArea,
@@ -435,7 +447,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
                 "origin": scenario.origin,
                 "treatment_goal_id": treatment_goal.pk if treatment_goal else None,
                 "treatment_goal_category": (
-                    treatment_goal.category if treatment_goal else None
+                    treatment_goal.category.name if treatment_goal and treatment_goal.category else None
                 ),
                 "treatment_goal_name": treatment_goal.name if treatment_goal else None,
                 "email": user.email if user else None,
@@ -483,6 +495,10 @@ def feature_to_project_area(
     geometry_dict: dict[str, Any],
     idx: int = 1,
 ):
+    """Creates a ProjectArea from an uploaded geometry. The stored geometry is
+    always the intersection with the Scenario's Planning Area - returns None
+    (no ProjectArea is created) if the uploaded shape doesn't overlap the
+    planning area at all."""
     user = scenario.user
     stand_size = scenario.get_stand_size()
     try:
@@ -490,6 +506,12 @@ def feature_to_project_area(
         logger.info("creating project area %s %s", area_name, geometry_dict)
         _bbox = geometry_dict.pop("bbox", None)
         geometry = coerce_geometry(geometry_dict)
+
+        geometry = geometry.intersection(scenario.planning_area.geometry)
+        if geometry.empty:
+            logger.info("%s does not overlap the planning area, skipping", area_name)
+            return None
+        geometry = to_multipolygon(fix_geometry(geometry))
 
         stand_count = Stand.objects.within_polygon(
             geometry,
@@ -557,16 +579,23 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
             target=scenario.planning_area,
         )
     )
-    project_areas = list(
-        map(
-            lambda i: feature_to_project_area(
+    project_areas = [
+        project_area
+        for project_area in (
+            feature_to_project_area(
                 scenario=scenario,
-                idx=i[0],
-                geometry_dict=i[1].get("geometry", {}),
-            ),
-            enumerate(feature_collection.get("features"), 1),
+                idx=idx,
+                geometry_dict=feature.get("geometry", {}),
+            )
+            for idx, feature in enumerate(feature_collection.get("features"), 1)
         )
-    )
+        if project_area is not None
+    ]
+    if not project_areas:
+        raise ValueError(
+            "Upload was unsuccessful. The uploaded geometry is not within the "
+            "selected planning area."
+        )
     result = {
         "type": "FeatureCollection",
         "features": [
@@ -795,6 +824,28 @@ def calculate_child_project_areas(scenario: Scenario) -> list[ProjectArea]:
     return project_areas
 
 
+def _get_operation(operator: str, value: str) -> str:
+    match operator:
+        case "btw":
+            values = value.strip().replace(" ", "").split(",", maxsplit=1)
+            values.sort()
+            min_value, max_value = values
+            return f"value >= {min_value} & value <= {max_value}"
+        case _:
+            # normal cases
+            # constraints datalayers from scenario configuration
+            OPERATOR_MAP = {
+                "eq": "=",
+                "dne": "!=",
+                "lt": "<",
+                "lte": "<=",
+                "gt": ">",
+                "gte": ">=",
+            }
+
+            return f"value {OPERATOR_MAP.get(operator, operator)} {value}"
+
+
 def build_run_configuration(scenario: "Scenario") -> dict[str, Any]:
     tx_goal = scenario.treatment_goal
     datalayers = []
@@ -814,14 +865,6 @@ def build_run_configuration(scenario: "Scenario") -> dict[str, Any]:
 
             datalayers.append(item)
 
-    # constraints datalayers from scenario configuration
-    OPERATOR_MAP = {
-        "eq": "=",
-        "lt": "<",
-        "lte": "<=",
-        "gt": ">",
-        "gte": ">=",
-    }
     cfg = getattr(scenario, "configuration", {}) or {}
     constraints = cfg.get("constraints") or []
     priorities = cfg.get("priorities") or []
@@ -841,9 +884,7 @@ def build_run_configuration(scenario: "Scenario") -> dict[str, Any]:
 
         # Defer custom objectives/cobenefits so their thresholds get applied later.
         if datalayer_id in custom_datalayer_ids:
-            custom_thresholds[datalayer_id] = (
-                f"value {OPERATOR_MAP.get(operator, operator)} {value}"
-            )
+            custom_thresholds[datalayer_id] = _get_operation(operator, value)
             continue
 
         dl = DataLayer.objects.get(pk=datalayer_id)
@@ -854,7 +895,7 @@ def build_run_configuration(scenario: "Scenario") -> dict[str, Any]:
                 "metric": get_datalayer_metric(dl),
                 "type": dl.type,
                 "geometry_type": dl.geometry_type,
-                "threshold": f"value {OPERATOR_MAP.get(operator, operator)} {value}",
+                "threshold": _get_operation(operator, value),
                 "usage_type": "THRESHOLD",
                 "weight": None,
             }
@@ -909,7 +950,7 @@ def build_run_configuration(scenario: "Scenario") -> dict[str, Any]:
     targets = cfg.get("targets", {})
     number_of_projects = targets.get("max_project_count", 1)
 
-    min_area_project = get_min_project_area(scenario)
+    min_area_project = get_min_project_area(scenario.get_stand_size())
     max_area_project = get_max_area_project(scenario=scenario)
 
     sdw = settings.FORSYS_SDW
@@ -1025,7 +1066,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> list[str]:
                 )
 
             elif sub_units_fixed_target is True:
-                min_area = get_min_project_area(scenario=scenario)
+                min_area = get_min_project_area(stand_size or StandSizeChoices.LARGE)
 
                 if sub_units_target_value < min_area:
                     errors.append(
@@ -1061,7 +1102,7 @@ def validate_scenario_configuration(scenario: "Scenario") -> list[str]:
 
             elif sub_units_fixed_target is True:
                 sub_units_layer = DataLayer.objects.get(pk=sub_units_layer_id)
-                min_area = get_min_project_area(scenario=scenario)
+                min_area = get_min_project_area(stand_size or StandSizeChoices.LARGE)
                 max_area = get_sub_units_details(
                     scenario=scenario,
                     stand_size=scenario.get_stand_size(),
@@ -1087,7 +1128,9 @@ def validate_scenario_configuration(scenario: "Scenario") -> list[str]:
             )
 
         if max_area is not None:
-            min_area_project = get_min_project_area(scenario)
+            min_area_project = get_min_project_area(
+                stand_size or StandSizeChoices.LARGE
+            )
             if max_area < min_area_project:
                 errors.append(
                     f"Target `max_area` must be at least {min_area_project} acres "
@@ -1130,7 +1173,9 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
         properties={
             "origin": scenario.origin,
             "treatment_goal_id": tx_goal.pk if tx_goal else None,
-            "treatment_goal_category": (tx_goal.category if tx_goal else None),
+            "treatment_goal_category": (
+                tx_goal.category.name if tx_goal and tx_goal.category else None
+            ),
             "treatment_goal_name": (tx_goal.name if tx_goal else None),
             "email": user.email if user else None,
         },
@@ -1166,7 +1211,7 @@ def get_max_area_project(scenario: Scenario) -> float:
     return (
         float(max_area)
         if max_area is not None
-        else float(get_min_project_area(scenario))
+        else float(get_min_project_area(scenario.get_stand_size()))
     )
 
 
@@ -1298,7 +1343,10 @@ def _get_datalayers_id_lookup_table(scenario):
 
 
 def _get_sub_units_lookup_table(scenario: Scenario) -> dict[int, Any] | None:
-    if scenario.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS:
+    if (
+        scenario.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        and not is_project_areas_child(scenario)
+    ):
         return None
     geojson = get_flatten_geojson(scenario)
     ret = {}
@@ -1393,8 +1441,12 @@ def export_scenario_stand_outputs_to_geopackage(
     scenario_outputs = {}
     dl_lookup = _get_datalayers_id_lookup_table(scenario)
     stand_size = scenario.get_stand_size()
+    is_sub_units = (
+        scenario.planning_approach != ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        and not is_project_areas_child(scenario)
+    )
 
-    sub_units_lookup_table = _get_sub_units_lookup_table(scenario=scenario)
+    sub_units_lookup_table = _get_sub_units_lookup_table(scenario=scenario) if is_sub_units else None
 
     with open(stnd_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
@@ -1407,13 +1459,16 @@ def export_scenario_stand_outputs_to_geopackage(
                     case "DoTreat", "selected":
                         properties[key] = bool(int(value))
                     case "sub_unit_id":
-                        properties[key] = int(value)
-                        if sub_units_lookup_table:
-                            properties["treatment_rank"] = (
-                                sub_units_lookup_table.get(int(value), {})
-                                .get("properties", {})
-                                .get("treatment_rank")
-                            )
+                        if is_sub_units:
+                            properties[key] = int(value)
+                            if sub_units_lookup_table:
+                                properties["treatment_rank"] = (
+                                    sub_units_lookup_table.get(int(value), {})
+                                    .get("properties", {})
+                                    .get("treatment_rank")
+                                )
+                        else:
+                            properties["proj_id"] = int(value)
                     case _:
                         try:
                             f = float(value)
@@ -1659,10 +1714,13 @@ def export_scenario_sub_units_outputs_to_geopackage(
 ) -> None:
     geojson = get_flatten_geojson(scenario)
 
-    # rename proj_id to subunit_id on schema
+    is_child_scenario = is_project_areas_child(scenario)
+    
     schema_geojson = copy.deepcopy(geojson)
-    proj_id = schema_geojson["features"][0]["properties"].pop("proj_id")
-    proj_id = schema_geojson["features"][0]["properties"]["subunit_id"] = proj_id
+    if not is_child_scenario:
+        # rename proj_id to subunit_id on schema
+        proj_id = schema_geojson["features"][0]["properties"].pop("proj_id")
+        proj_id = schema_geojson["features"][0]["properties"]["subunit_id"] = proj_id
 
     weighting_data = get_weighing_from_input(stand_inputs)
 
@@ -1675,7 +1733,7 @@ def export_scenario_sub_units_outputs_to_geopackage(
     project_areas = None
     sub_units = None
 
-    if is_project_areas_child(scenario):
+    if is_child_scenario:
         project_areas = scenario.parent.project_areas.all()
     else:
         sub_units_layer_id = scenario.configuration.get("sub_units_layer")
@@ -1697,9 +1755,13 @@ def export_scenario_sub_units_outputs_to_geopackage(
                 allow_unsupported_drivers=True,
             ) as out:
                 for feature in geojson.get("features", []):
-                    # rename proj_id to subunit_id on features
-                    proj_id = feature["properties"].pop("proj_id")
-                    feature["properties"]["subunit_id"] = proj_id
+                    if is_child_scenario:
+                        proj_id = feature["properties"].get("proj_id")
+                    else:
+                        # rename proj_id to subunit_id on features
+                        proj_id = feature["properties"].pop("proj_id")
+                        feature["properties"]["subunit_id"] = proj_id
+
                     feature["properties"] = {**feature["properties"], **weighting_data}
                     if project_areas is not None:
                         source_area = project_areas.get(pk=proj_id)
@@ -1942,47 +2004,6 @@ def toggle_scenario_status(scenario: Scenario, user: User) -> Scenario:
     return scenario
 
 
-def planning_area_covers(
-    planning_area: PlanningArea,
-    geometry: GEOSGeometry,
-    stand_size: StandSizeChoices,
-    buffer_size: float = -1.0,
-) -> bool:
-    """Specialized version of `covers` predicate for Planning Area.
-    This is necessary because some times our users want to upload
-    project areas that are slightly off the planning area. So this
-    function first considers the Planning Area itself, then all the
-    stands that make up the planning area and lastly it considers
-    a buffered version of the test geometry (negative means smaller).
-    """
-    if planning_area.geometry.covers(geometry):
-        logger.info("Planning Area covers geometry using DE9IM matrix.")
-        return True
-
-    all_stands = Stand.objects.within_polygon(
-        planning_area.geometry,
-        stand_size,
-    ).aggregate(geometry=UnionOp("geometry"))["geometry"]
-
-    if all_stands is None:
-        return False
-
-    if all_stands.covers(geometry):
-        logger.info("Planning Area covers geometry using stands DE9IM matrix.")
-        return True
-
-    # units here are in meters
-    test_geometry = geometry.transform(settings.AREA_SRID, clone=True)
-    test_geometry = test_geometry.buffer(buffer_size).transform(4269, clone=True)
-
-    if all_stands.covers(test_geometry):
-        logger.info(
-            "Planning Area covers geometry using a buffered version of test geometry."
-        )
-        return True
-    return False
-
-
 def get_excluded_stands(stands_qs, datalayer: DataLayer):
     return stands_qs.filter(
         metrics__datalayer_id=datalayer.pk, metrics__majority=1
@@ -2068,6 +2089,9 @@ def get_available_stands(
         excludes = list()
     if not constraints:
         constraints = list()
+    if not sub_unit:
+        sub_unit = scenario.sub_unit_datalayer
+
     planning_area = scenario.planning_area
     area_transform = Area(Transform("geometry", settings.AREA_SRID))
     if feature_enabled("ADD_INCLUDES") and scenario.treatable_area is not None:
@@ -2076,7 +2100,17 @@ def get_available_stands(
         stands = planning_area.get_stands(stand_size)
 
     stands = stands.annotate(area=area_transform)
-    total_area = stands.all().aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+
+    total_area = stands.aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+
+    if is_project_areas_child(scenario):
+        project_area_stand_ids = get_project_areas_child_stand_ids(
+            scenario=scenario,
+            stand_size=stand_size,
+        )
+        stands = stands.filter(id__in=project_area_stand_ids)
+
+    potential_area = stands.aggregate(total_area_m2=Sum("area"))["total_area_m2"]
 
     excluded_ids = []
     constrained_ids = []
@@ -2086,13 +2120,16 @@ def get_available_stands(
         excluded_ids.extend(list(excluded_stands.values_list("id", flat=True)))
 
     if (
-        scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        not is_project_areas_child(scenario)
+        and scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
         and sub_unit
     ):
-        # Exclude stands that is not included to any sub-unit
         stands_queryset = stands.all()
         sub_units_stands = get_stands_from_sub_units(
-            stands_queryset, planning_area, scenario.get_stand_size(), sub_unit
+            stands_queryset,
+            planning_area,
+            scenario.get_stand_size(),
+            sub_unit,
         )
         sub_units_stands_ids = set(sub_units_stands.values_list("id", flat=True))
         stand_ids = stands_queryset.exclude(id__in=sub_units_stands_ids).values_list(
@@ -2101,6 +2138,11 @@ def get_available_stands(
 
         excluded_ids.extend(list(stand_ids))
 
+    constraints = [
+        constraint
+        for constraint in constraints
+        if constraint.get("datalayer").has_module(ForsysModule.name)
+    ]
     for constraint in constraints:
         stands_queryset = stands.all()
         constrained_stands = get_constrained_stands(
@@ -2129,12 +2171,14 @@ def get_available_stands(
     )
     if not total_area:
         total_area = A(sq_m=0)
+    if not potential_area:
+        potential_area = A(sq_m=0)
     if not total_excluded_area:
         total_excluded_area = A(sq_m=0)
     if not total_constrained_area:
         total_constrained_area = A(sq_m=0)
 
-    available_area = total_area - total_excluded_area
+    available_area = potential_area - total_excluded_area
     treatable_area = available_area - total_constrained_area
     total_unavailable_area = total_excluded_area + total_constrained_area
     return {
@@ -2233,8 +2277,7 @@ def calculate_scenario_treatable_area(
     return to_multipolygon(included_geometry) if included_geometry else None
 
 
-def get_min_project_area(scenario: Scenario) -> float:
-    stand_size = scenario.get_stand_size()
+def get_min_project_area(stand_size: StandSizeChoices) -> float:
     match stand_size:
         case StandSizeChoices.SMALL:
             return settings.MIN_AREA_PROJECT_SMALL
@@ -2254,7 +2297,7 @@ def get_sub_units_areas(
     stands = planning_area.get_stands(stand_size).annotate(
         centroid=Centroid("geometry")
     )
-    stand_area = get_min_project_area(scenario=scenario)
+    stand_area = get_min_project_area(stand_size)
 
     queryset = DynamicModel.objects.filter(geometry__bboverlaps=geometry).filter(
         geometry__intersects=geometry
@@ -2278,24 +2321,15 @@ def get_sub_units_areas(
 
 def get_project_areas_child_areas(
     scenario: Scenario,
-    stand_size: StandSizeChoices,
 ) -> list[float] | None:
     parent = scenario.parent
     if not parent:
         return None
 
-    stand_area = get_min_project_area(scenario)
-    areas = []
-
-    for project_area in parent.project_areas.all():
-        stand_count = get_project_areas_child_stands(
-            scenario=scenario,
-            project_area=project_area,
-            stand_size=stand_size,
-        ).count()
-
-        if stand_count > 0:
-            areas.append(stand_count * stand_area)
+    areas = [
+        get_acreage(project_area.geometry)
+        for project_area in parent.project_areas.all()
+    ]
 
     return areas or None
 
@@ -2307,11 +2341,9 @@ def get_sub_units_details(
     fixed_target: bool | None = None,
     target_value: float | None = None,
 ) -> dict[str, float | None] | None:
-
     if is_project_areas_child(scenario):
         areas = get_project_areas_child_areas(
             scenario=scenario,
-            stand_size=stand_size,
         )
     elif datalayer:
         areas = get_sub_units_areas(
@@ -2489,7 +2521,7 @@ def calculate_and_update_pct_treatable_area(scenario: Scenario, features: list) 
     forsys_input = scenario.forsys_input or {}
 
     number_of_stands = len(forsys_input.get("stand_ids", []))
-    stand_area = get_min_project_area(scenario=scenario)
+    stand_area = get_min_project_area(scenario.get_stand_size())
 
     treatable_area = number_of_stands * stand_area
 
@@ -2501,3 +2533,274 @@ def calculate_and_update_pct_treatable_area(scenario: Scenario, features: list) 
         feature["properties"]["pct_treatable_area"] = pct_treatable_area
 
     return features
+
+
+STAND_LEVEL_CONSTRAINT_LAYERS = ("slope", "distance_from_roads")
+LEGACY_STAND_LEVEL_CONSTRAINTS = (
+    ("max_slope", "slope"),
+    ("min_distance_from_road", "distance_from_roads"),
+)
+
+
+def _to_datalayer_id(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _get_datalayers_by_id(ids: list[Any]) -> dict[int, DataLayer]:
+    parsed_ids = {pk for pk in map(_to_datalayer_id, ids) if pk is not None}
+    if not parsed_ids:
+        return {}
+    datalayers = DataLayer.objects.filter(pk__in=parsed_ids).only(
+        "id", "name", "metadata"
+    )
+    return {datalayer.pk: datalayer for datalayer in datalayers}
+
+
+def get_forsys_name(datalayer: DataLayer) -> str | None:
+    modules = (datalayer.metadata or {}).get("modules") or {}
+    return (modules.get("forsys") or {}).get("name")
+
+
+def _named(instance: Any) -> dict[str, Any]:
+    return {"id": instance.pk, "name": instance.name}
+
+
+def _resolve_datalayers(
+    ids: list[Any], datalayers: dict[int, DataLayer]
+) -> list[dict[str, Any]]:
+    resolved = [datalayers.get(_to_datalayer_id(pk)) for pk in ids]
+    return [_named(datalayer) for datalayer in resolved if datalayer]
+
+
+def _resolve_legacy_areas(
+    values: list[Any], datalayers: dict[int, DataLayer]
+) -> list[dict[str, Any]]:
+    """
+    Legacy (V1) excluded areas are stored as names instead of datalayer ids.
+    """
+    areas = []
+    for value in values:
+        datalayer_id = _to_datalayer_id(value)
+        if datalayer_id is None:
+            areas.append({"id": None, "name": str(value)})
+        elif datalayer_id in datalayers:
+            areas.append(_named(datalayers[datalayer_id]))
+    return areas
+
+
+def _get_stand_size_details(stand_size: Any) -> dict[str, Any] | None:
+    if stand_size not in StandSizeChoices.values:
+        return None
+    choice = StandSizeChoices(stand_size)
+    return {
+        "key": choice.value,
+        "label": choice.label,
+        "acres": STAND_DISPLAY_ACRES[choice],
+    }
+
+
+def _get_planning_approach_details(planning_approach: Any) -> dict[str, Any] | None:
+    if planning_approach not in ScenarioPlanningApproach.values:
+        return None
+    choice = ScenarioPlanningApproach(planning_approach)
+    return {"key": choice.value, "label": choice.label}
+
+
+def _get_treatment_goal_usages_details(
+    treatment_goal: TreatmentGoal | None,
+) -> dict[str, list[dict[str, Any]]]:
+    details: dict[str, list[dict[str, Any]]] = {
+        "priority_objectives": [],
+        "cobenefits": [],
+        "treatment_goal_constraints": [],
+    }
+    if not treatment_goal:
+        return details
+
+    usages = (
+        treatment_goal.datalayer_usages.filter(datalayer__deleted_at__isnull=True)
+        .select_related("datalayer")
+        .order_by("id")
+    )
+    for usage in usages:
+        match usage.usage_type:
+            case TreatmentGoalUsageType.PRIORITY:
+                details["priority_objectives"].append(
+                    {**_named(usage.datalayer), "weight": usage.weight}
+                )
+            case TreatmentGoalUsageType.SECONDARY_METRIC:
+                details["cobenefits"].append(_named(usage.datalayer))
+            case TreatmentGoalUsageType.THRESHOLD:
+                details["treatment_goal_constraints"].append(
+                    {"datalayer": _named(usage.datalayer), "threshold": usage.threshold}
+                )
+    return details
+
+
+def _get_v3_configuration_details(
+    scenario: Scenario,
+    configuration: dict[str, Any],
+    treatment_goal: TreatmentGoal | None,
+) -> dict[str, Any]:
+    priorities = [
+        priority
+        for priority in configuration.get("priorities") or []
+        if isinstance(priority, dict)
+    ] or [
+        {"datalayer": datalayer_id, "weight": 1}
+        for datalayer_id in configuration.get("priority_objectives") or []
+    ]
+    cobenefit_ids = configuration.get("cobenefits") or []
+    constraints = [
+        constraint
+        for constraint in configuration.get("constraints") or []
+        if isinstance(constraint, dict)
+    ]
+    included_areas_ids = configuration.get("included_areas_ids") or []
+    excluded_areas_ids = configuration.get("excluded_areas_ids") or []
+    sub_units_layer_id = configuration.get("sub_units_layer")
+
+    datalayers = _get_datalayers_by_id(
+        [
+            *(priority.get("datalayer") for priority in priorities),
+            *cobenefit_ids,
+            *(constraint.get("datalayer") for constraint in constraints),
+            *included_areas_ids,
+            *excluded_areas_ids,
+            sub_units_layer_id,
+        ]
+    )
+
+    if scenario.type == ScenarioType.CUSTOM:
+        goal_details = {
+            "priority_objectives": [
+                {
+                    **_named(datalayers[datalayer_id]),
+                    "weight": priority.get("weight", 1),
+                }
+                for priority in priorities
+                if (datalayer_id := _to_datalayer_id(priority.get("datalayer")))
+                in datalayers
+            ],
+            "cobenefits": _resolve_datalayers(cobenefit_ids, datalayers),
+            "treatment_goal_constraints": [],
+        }
+    else:
+        goal_details = _get_treatment_goal_usages_details(treatment_goal)
+
+    stand_level_constraints = []
+    advanced_stand_level_constraints = []
+    for constraint in constraints:
+        datalayer = datalayers.get(_to_datalayer_id(constraint.get("datalayer")))
+        if not datalayer:
+            continue
+        item = {
+            "datalayer": _named(datalayer),
+            "operator": constraint.get("operator"),
+            "value": constraint.get("value"),
+        }
+        if get_forsys_name(datalayer) in STAND_LEVEL_CONSTRAINT_LAYERS:
+            stand_level_constraints.append(item)
+        else:
+            advanced_stand_level_constraints.append(item)
+
+    sub_units_layer = datalayers.get(_to_datalayer_id(sub_units_layer_id))
+    targets = configuration.get("targets") or {}
+
+    return {
+        **goal_details,
+        "sub_units_layer": _named(sub_units_layer) if sub_units_layer else None,
+        "included_areas": _resolve_datalayers(included_areas_ids, datalayers),
+        "excluded_areas": _resolve_datalayers(excluded_areas_ids, datalayers),
+        "stand_level_constraints": stand_level_constraints,
+        "advanced_stand_level_constraints": advanced_stand_level_constraints,
+        "targets": {
+            "max_area": targets.get("max_area"),
+            "max_project_count": targets.get("max_project_count"),
+            "estimated_cost": targets.get("estimated_cost"),
+            "max_budget": None,
+            "sub_units_fixed_target": targets.get("sub_units_fixed_target"),
+            "sub_units_target_value": targets.get("sub_units_target_value"),
+        },
+    }
+
+
+def _get_legacy_configuration_details(
+    configuration: dict[str, Any],
+    treatment_goal: TreatmentGoal | None,
+) -> dict[str, Any]:
+    # V2 stores datalayer ids under `excluded_areas_ids`, V1 stores names
+    # under `excluded_areas`.
+    excluded_areas = (
+        configuration.get("excluded_areas_ids")
+        or configuration.get("excluded_areas")
+        or []
+    )
+    datalayers = _get_datalayers_by_id(excluded_areas)
+
+    stand_level_constraints = []
+    for key, layer_name in LEGACY_STAND_LEVEL_CONSTRAINTS:
+        value = configuration.get(key)
+        if value is None:
+            continue
+        datalayer = DataLayer.objects.all().by_meta_name(layer_name)
+        if not datalayer:
+            continue
+        stand_level_constraints.append(
+            {"datalayer": _named(datalayer), "operator": "lte", "value": str(value)}
+        )
+
+    return {
+        **_get_treatment_goal_usages_details(treatment_goal),
+        "sub_units_layer": None,
+        "included_areas": [],
+        "excluded_areas": _resolve_legacy_areas(excluded_areas, datalayers),
+        "stand_level_constraints": stand_level_constraints,
+        "advanced_stand_level_constraints": [],
+        "targets": {
+            "max_area": configuration.get("max_area")
+            or configuration.get("max_treatment_area_ratio"),
+            "max_project_count": configuration.get("max_project_count"),
+            "estimated_cost": configuration.get("estimated_cost")
+            or configuration.get("est_cost"),
+            "max_budget": configuration.get("max_budget"),
+            "sub_units_fixed_target": None,
+            "sub_units_target_value": None,
+        },
+    }
+
+
+def get_scenario_configuration_details(scenario: Scenario) -> dict[str, Any]:
+    """
+    Returns the scenario configuration with every referenced entity resolved
+    (names and labels), so clients can display it without extra requests.
+    Supports V1, V2 and V3 configurations.
+    """
+    configuration = scenario.configuration or {}
+    version = scenario.version
+    treatment_goal = scenario.treatment_goal
+    if treatment_goal is None and version == ScenarioVersion.V1:
+        treatment_goal = get_treatment_goal_from_configuration(configuration)
+    # Custom scenarios define their own priorities, a leftover goal is not used.
+    if version == ScenarioVersion.V3 and scenario.type == ScenarioType.CUSTOM:
+        treatment_goal = None
+
+    if version == ScenarioVersion.V3:
+        details = _get_v3_configuration_details(scenario, configuration, treatment_goal)
+    else:
+        details = _get_legacy_configuration_details(configuration, treatment_goal)
+
+    return {
+        "version": version,
+        "type": scenario.type,
+        "planning_area": _named(scenario.planning_area),
+        "stand_size": _get_stand_size_details(configuration.get("stand_size")),
+        "planning_approach": _get_planning_approach_details(scenario.planning_approach),
+        "treatment_goal": _named(treatment_goal) if treatment_goal else None,
+        **details,
+    }

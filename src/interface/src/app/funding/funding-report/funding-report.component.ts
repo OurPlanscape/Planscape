@@ -64,6 +64,7 @@ import {
   MapLayer,
 } from '../funding-map-layers/funding-map-layers.component';
 import { ScrollSpyDirective } from '@app/standalone/scroll-spy-directive/scroll-spy.directive';
+import { AbbreviatedNumberPipe } from '@app/standalone/abbreviated-number.pipe';
 import { FundingMapConfigState } from '../funding-map-config-state';
 import { FundingReportToPdfService } from '../funding-report-to-pdf.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -138,6 +139,7 @@ export type ReportInteractivity = boolean | 'readonly';
     ReactiveFormsModule,
     MessageCardComponent,
     ScrollSpyDirective,
+    AbbreviatedNumberPipe,
   ],
   providers: [FundingReportToPdfService],
   templateUrl: './funding-report.component.html',
@@ -347,8 +349,6 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     );
   }
 
-  @Input() showMap = true;
-  @Input() showFooter = true;
   @Input() reportType: 'preview' | 'full' = 'preview';
   @Input() report!: FundingReport;
   /** Selected project area ids; empty means show the whole-scenario summary. */
@@ -364,7 +364,6 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   @Input() updatingWaterAvailability = false;
 
   // todo datalayer probably
-  @Output() showLayer = new EventEmitter<number>();
   @Output() updateWaterAvailability = new EventEmitter<number>();
 
   ngOnInit(): void {
@@ -615,7 +614,6 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
           this.dataLayersStateService.selectDataLayer(fetched)
         );
     }
-    this.showLayer.emit(layer.id);
   }
 
   /**

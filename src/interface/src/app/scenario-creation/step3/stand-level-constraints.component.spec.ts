@@ -8,6 +8,7 @@ import { NewScenarioState } from '../new-scenario.state';
 import { BehaviorSubject, of } from 'rxjs';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '@types';
+import { FeaturesModule } from '@features/features.module';
 
 describe('StandLevelConstraintsComponent', () => {
   let component: StandLevelConstraintsComponent;
@@ -25,6 +26,7 @@ describe('StandLevelConstraintsComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [
+        FeaturesModule,
         StandLevelConstraintsComponent,
         BrowserAnimationsModule,
         ReactiveFormsModule,

@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { WorkspaceCardComponent } from './workspace-card.component';
 
@@ -9,7 +10,8 @@ describe('WorkspaceCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [WorkspaceCardComponent, NoopAnimationsModule],
+      imports: [WorkspaceCardComponent, NoopAnimationsModule, RouterLink],
+      providers: [{ provide: ActivatedRoute, useValue: { firstChild: {} } }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(WorkspaceCardComponent);
@@ -51,22 +53,134 @@ describe('WorkspaceCardComponent', () => {
     expect(text).toContain('Created Date: -');
   });
 
-  it('emits clicked when the card is clicked', () => {
-    const spy = jasmine.createSpy('clicked');
-    component.clicked.subscribe(spy);
+  it('makes the whole card a link named after the workspace', () => {
+    component.name = 'My Workspace';
+    component.link = ['/workspace', 7];
     fixture.detectChanges();
 
-    fixture.nativeElement.click();
+    const link = fixture.nativeElement.querySelector('a.card-link');
+    expect(link.getAttribute('href')).toBe('/workspace/7');
+    expect(link.getAttribute('aria-label')).toBe('My Workspace');
+  });
 
-    expect(spy).toHaveBeenCalled();
+  function clickWithSelectionOn(selector: string) {
+    const el = fixture.nativeElement.querySelector(selector);
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    el.dispatchEvent(
+      new MouseEvent('click', { bubbles: true, cancelable: true })
+    );
+    selection.removeAllRanges();
+  }
+
+  it('does not navigate when a click ends a text selection', () => {
+    const navigate = spyOn(
+      TestBed.inject(Router),
+      'navigateByUrl'
+    ).and.returnValue(Promise.resolve(true));
+    component.name = 'My Workspace';
+    component.link = ['/workspace', 7];
+    fixture.detectChanges();
+
+    clickWithSelectionOn('.workspace-name');
+
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('does not navigate when the selection ends on the link itself', () => {
+    const navigate = spyOn(
+      TestBed.inject(Router),
+      'navigateByUrl'
+    ).and.returnValue(Promise.resolve(true));
+    component.name = 'My Workspace';
+    component.link = ['/workspace', 7];
+    fixture.detectChanges();
+
+    clickWithSelectionOn('.card-link');
+
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('navigates on a plain click', () => {
+    const navigate = spyOn(
+      TestBed.inject(Router),
+      'navigateByUrl'
+    ).and.returnValue(Promise.resolve(true));
+    component.link = ['/workspace', 7];
+    fixture.detectChanges();
+
+    fixture.nativeElement
+      .querySelector('.workspace-name')
+      .dispatchEvent(
+        new MouseEvent('click', { bubbles: true, cancelable: true })
+      );
+
+    expect(navigate).toHaveBeenCalled();
+  });
+
+  it('leaves modified clicks to the browser', () => {
+    const navigate = spyOn(
+      TestBed.inject(Router),
+      'navigateByUrl'
+    ).and.returnValue(Promise.resolve(true));
+    component.link = ['/workspace', 7];
+    fixture.detectChanges();
+
+    // RouterLink leaves a modified click alone, which means the browser would
+    // really follow the href and reload the test page. Record its decision,
+    // then stop the navigation.
+    let leftToTheBrowser = false;
+    const stopRealNavigation = (event: Event) => {
+      leftToTheBrowser = !event.defaultPrevented;
+      event.preventDefault();
+    };
+    document.addEventListener('click', stopRealNavigation);
+    fixture.nativeElement.querySelector('.workspace-name').dispatchEvent(
+      new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        metaKey: true,
+      })
+    );
+    document.removeEventListener('click', stopRealNavigation);
+
+    expect(navigate).not.toHaveBeenCalled();
+    expect(leftToTheBrowser).toBe(true);
+  });
+
+  it('does not navigate when the menu button is clicked', () => {
+    component.userCanRename = true;
+    fixture.detectChanges();
+
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+    fixture.nativeElement
+      .querySelector('.more-menu-button')
+      .dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('hides the menu button when the user has no actions', () => {
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.more-menu-button')).toBeNull();
   });
 
   it('only shows menu actions the user is allowed to perform', () => {
+    component.userCanShare = true;
     fixture.detectChanges();
+
     fixture.nativeElement.querySelector('.more-menu-button').click();
     fixture.detectChanges();
 
-    expect(document.querySelectorAll('.action-button').length).toBe(0);
+    const labels = Array.from(
+      document.querySelectorAll('.action-button .mat-mdc-menu-item-text')
+    ).map((el) => el.textContent?.trim());
+    expect(labels).toEqual(['Share']);
   });
 
   it('shows rename, share and delete when permitted', () => {

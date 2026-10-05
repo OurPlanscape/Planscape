@@ -1,12 +1,18 @@
 FROM ghcr.io/astral-sh/uv:latest AS builder
 
+FROM google/cloud-sdk:alpine AS gcloud-sdk
+
 FROM python:3.10-slim-bookworm
 COPY --from=builder /uv /uvx /bin/
+COPY --from=gcloud-sdk /google-cloud-sdk /opt/google-cloud-sdk
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV UV_PROJECT_ENVIRONMENT=/opt/virtualenvs/
 ENV UV_LINK_MODE=copy
+ENV CLOUDSDK_CORE_DISABLE_PROMPTS=1
+ENV CLOUDSDK_PYTHON=/usr/local/bin/python
+ENV PATH=/opt/google-cloud-sdk/bin:$PATH
 ARG UID=1000
 ARG GID=1000
 
@@ -34,7 +40,7 @@ COPY pyproject.toml uv.lock /app/
 RUN uv sync --locked --no-install-project --dev
 RUN uv run opentelemetry-bootstrap --action=install
 
-COPY . /app
+COPY --chown=app:app . /app
 
 WORKDIR /app/src/planscape
 

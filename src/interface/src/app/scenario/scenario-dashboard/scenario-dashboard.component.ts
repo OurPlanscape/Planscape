@@ -17,6 +17,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatMenuModule } from '@angular/material/menu';
 import { ScenarioDashboardFooterComponent } from '../scenario-dashboard-footer/scenario-dashboard-footer.component';
 import {
+  getResultsTableHeadline,
   isPlanningApproachSubUnits,
   suggestUniqueName,
 } from '../scenario-helper';
@@ -84,7 +85,7 @@ export class ScenarioDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const planPath = getPlanPath(this.planId);
+    const planPath = getPlanPath(this.planId, this.route.snapshot);
     this.currentScenario$.pipe(take(1)).subscribe((scenario) => {
       const breadcrumb = scenario?.parent
         ? {
@@ -97,6 +98,13 @@ export class ScenarioDashboardComponent implements OnInit {
           };
       this.breadcrumbService.updateBreadCrumb(breadcrumb);
     });
+  }
+
+  headlineText(scenario: Scenario) {
+    return getResultsTableHeadline(
+      scenario.planning_approach || 'OPTIMIZE_PROJECT_AREAS',
+      scenario.parent
+    );
   }
 
   isPlanningApproachSubUnits(scenario: Scenario) {

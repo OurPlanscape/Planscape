@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.contrib.contenttypes.models import ContentType
 from collaboration.models import UserObjectRole, Role
 from collaboration.services import link_invites, validate_ownership, get_permissions
-from impacts.permissions import OWNER_PERMISSIONS
+from workspaces.access import OWNER_PERMISSIONS
 from planning.models import PlanningArea
 from django.contrib.auth.models import User
 

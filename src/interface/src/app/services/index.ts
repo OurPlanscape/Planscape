@@ -16,3 +16,4 @@ export * from './development-route.guard';
 export * from './climate-foresight.service';
 export * from './data-layers.service';
 export * from './workspaces.service';
+export * from './websocket.service';

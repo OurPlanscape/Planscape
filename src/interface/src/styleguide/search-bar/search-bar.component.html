@@ -2,7 +2,11 @@
   class="search-bar-container"
   matAutocompleteOrigin
   #origin="matAutocompleteOrigin">
-  <sg-input-field class="search-input" leadingIcon="search" [disabled]="false">
+  <sg-input-field
+    class="search-input"
+    leadingIcon="search"
+    [disabled]="false"
+    [size]="fullWidth ? 'full' : 'regular'">
     <input
       #inputElement
       sgInput
@@ -20,10 +24,10 @@
         {{ autocompleteTitle }}
       </div>
       @for (historyItem of displayedHistory; track historyItem) {
-        <mat-option [value]="historyItem" class="autocomplete-option"
-          ><mat-icon class="history-icon">schedule</mat-icon
-          >{{ historyItem }}</mat-option
-        >
+        <mat-option [value]="historyItem" class="autocomplete-option">
+          <mat-icon class="history-icon">schedule </mat-icon>
+          {{ historyItem }}
+        </mat-option>
       }
     </mat-autocomplete>
     <button

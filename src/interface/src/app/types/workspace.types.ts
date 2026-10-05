@@ -14,6 +14,20 @@ export interface Workspace {
   permissions: string[];
 }
 
+/** An accepted member has a `user_id`; a pending invite only has an email. */
+export type WorkspaceMemberStatus = 'ACTIVE' | 'PENDING';
+
+export interface WorkspaceMember {
+  /** Access row id. The handle for pending invites, which have no user yet. */
+  id: number;
+  user_id: number | null;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: WorkspaceRole;
+  status: WorkspaceMemberStatus;
+}
+
 export interface CreateWorkspacePayload {
   name: string;
 }

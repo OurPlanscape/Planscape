@@ -342,7 +342,7 @@ describe('ClimateForesightComponent', () => {
   it('should navigate back to plan on navigateBack', () => {
     component.navigateBack();
 
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['/plan', 123]);
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/plan/123']);
   });
 
   it('should navigate to home when no planId in route on navigateBack', () => {

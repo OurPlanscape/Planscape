@@ -53,7 +53,7 @@ describe('WorkspacesService', () => {
     });
 
     it('passes the search term', () => {
-      service.listWorkspaces('wild').subscribe();
+      service.listWorkspaces({ search: 'wild' }).subscribe();
 
       const req = httpTestingController.expectOne(
         `${service.v2Path}?search=wild`
@@ -62,11 +62,21 @@ describe('WorkspacesService', () => {
       req.flush({ count: 0, results: [] });
     });
 
-    it('omits the search param when not given', () => {
-      service.listWorkspaces().subscribe();
+    it('passes limit and offset', () => {
+      service.listWorkspaces({ limit: 12, offset: 24 }).subscribe();
+
+      const req = httpTestingController.expectOne(
+        `${service.v2Path}?limit=12&offset=24`
+      );
+      req.flush({ count: 0, results: [] });
+    });
+
+    it('omits empty params', () => {
+      service.listWorkspaces({ search: '', offset: 0 }).subscribe();
 
       const req = httpTestingController.expectOne(service.v2Path);
       expect(req.request.params.has('search')).toBeFalse();
+      expect(req.request.params.has('offset')).toBeFalse();
       req.flush({ count: 0, results: [] });
     });
   });

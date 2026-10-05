@@ -76,6 +76,8 @@ import { SubUnitsTreatmentTargetComponent } from './sub-units-treatment-target/s
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { IncludeAreasSelectorComponent } from './include-areas-selector/include-areas-selector.component';
 import { CreateScenarioError } from '@app/services/errors';
+import { AdvStandLevelConstraintsComponent } from './step3/adv-stand-level-constraints/adv-stand-level-constraints.component';
+import { ConstraintsStepComponent } from './constraints-step/constraints-step.component';
 
 @UntilDestroy()
 @Component({
@@ -100,31 +102,32 @@ import { CreateScenarioError } from '@app/services/errors';
   ],
   standalone: true,
   imports: [
+    AdvStandLevelConstraintsComponent,
     AsyncPipe,
-    ReactiveFormsModule,
-    NgIf,
-    StepsComponent,
     CdkStepperModule,
-    StepComponent,
-    StandLevelConstraintsComponent,
-    TreatmentTargetComponent,
-    FeaturesModule,
+    ConstraintsStepComponent,
+    CustomCobenefitsComponent,
+    CustomPriorityObjectivesComponent,
     ExcludeAreasSelectorComponent,
-    StepsNavComponent,
-    ScenarioMapComponent,
-    Step1WithOverviewComponent,
-    SubUnitSelectorComponent,
+    FeaturesModule,
+    IncludeAreasSelectorComponent,
+    NavBarComponent,
     NgClass,
+    NgIf,
+    ReactiveFormsModule,
+    ScenarioMapComponent,
     ScenarioSummaryComponent,
     SharedModule,
-    CustomPriorityObjectivesComponent,
-    CustomCobenefitsComponent,
-    TreatmentGoalStepComponent,
+    StandLevelConstraintsComponent,
     Step1WithOverviewComponent,
+    Step1WithOverviewComponent,
+    StepComponent,
+    StepsComponent,
+    StepsNavComponent,
+    SubUnitSelectorComponent,
     SubUnitsTreatmentTargetComponent,
-    FeaturesModule,
-    NavBarComponent,
-    IncludeAreasSelectorComponent,
+    TreatmentGoalStepComponent,
+    TreatmentTargetComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
@@ -276,7 +279,7 @@ export class ScenarioCreationComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe((scenario) => {
         // Setting up the breadcrumb
-        let scenarioBackUrl = getPlanPath(this.planId);
+        let scenarioBackUrl = getPlanPath(this.planId, this.route.snapshot);
         // for child scenarios, we want to go to the parent dashboard, instead
         if (scenario.parent) {
           scenarioBackUrl += `/scenario/${scenario.parent}/dashboard`;
@@ -410,23 +413,21 @@ export class ScenarioCreationComponent implements OnInit {
           }
           // After initiating a run of the scenario...
 
+          const planPath = getPlanPath(
+            result.planning_area,
+            this.route.snapshot
+          );
           // for scenarios with a parent id, we navigate to the parent scenario dashboard
           if (result.parent) {
             this.router.navigate(
-              [
-                'plan',
-                result.planning_area,
-                'scenario',
-                result.parent,
-                'dashboard',
-              ],
+              [planPath, 'scenario', result.parent, 'dashboard'],
               {
                 state: { showInProgressModal: true }, // this is passed to the switcher component
               }
             );
           } else {
             // all other scenarios will be directed to the planning area
-            this.router.navigate(['plan', result.planning_area], {
+            this.router.navigate([planPath], {
               state: { showInProgressModal: true },
             });
           }

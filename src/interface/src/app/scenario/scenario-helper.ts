@@ -2,6 +2,9 @@ import { isNumber } from '@turf/helpers';
 import {
   Capabilities,
   Constraint,
+  CONSTRAINT_OPERATOR,
+  CONSTRAINT_OPERATOR_MAP,
+  DataLayer,
   PLANNING_APPROACH,
   Scenario,
   SCENARIO_TYPE,
@@ -17,28 +20,17 @@ import {
  */
 export function getGroupedGoals(
   goals: ScenarioGoal[]
-): Record<string, Record<string, ScenarioGoal[]>> {
-  return goals.reduce<Record<string, Record<string, ScenarioGoal[]>>>(
-    (acc, goal) => {
-      const groupLabel = goal.group_text;
-      const categoryLabel = goal.category_text;
+): Record<string, ScenarioGoal[]> {
+  return goals.reduce<Record<string, ScenarioGoal[]>>((acc, goal) => {
+    const categoryLabel = goal.category;
 
-      // Grouping by groupLabel
-      if (!acc[groupLabel]) {
-        acc[groupLabel] = {};
-      }
+    if (!acc[categoryLabel]) {
+      acc[categoryLabel] = [];
+    }
 
-      // Nesting categories to groups
-      if (!acc[groupLabel][categoryLabel]) {
-        acc[groupLabel][categoryLabel] = [];
-      }
-
-      // Adding the treatment goals
-      acc[groupLabel][categoryLabel].push(goal);
-      return acc;
-    },
-    {}
-  );
+    acc[categoryLabel].push(goal);
+    return acc;
+  }, {});
 }
 
 /***
@@ -126,7 +118,7 @@ export function convertOldConfigurationToV3Payload(
     constraints.push({
       datalayer: roadLayerId,
       operator: 'lte',
-      value: formData.min_distance_from_road,
+      value: String(formData.min_distance_from_road),
     });
   }
   const slopeId = thresholdIds.get('slope');
@@ -134,7 +126,17 @@ export function convertOldConfigurationToV3Payload(
     constraints.push({
       datalayer: slopeId,
       operator: 'lt',
-      value: formData.max_slope,
+      value: String(formData.max_slope),
+    });
+  }
+  // Map the adv stand level constraints to constraints array
+  if (formData.adv_constraints) {
+    formData.adv_constraints.map((c) => {
+      constraints.push({
+        datalayer: c.datalayer,
+        operator: c.operator,
+        value: c.value,
+      });
     });
   }
 
@@ -205,6 +207,20 @@ export function isPlanningApproachSubUnits(type: PLANNING_APPROACH) {
   return type === 'PRIORITIZE_SUB_UNITS';
 }
 
+/**
+ * Headline for the ranked results table. A child scenario ranks the project
+ * areas within a single subunit, so only a top level subunits scenario lists
+ * subunits.
+ */
+export function getResultsTableHeadline(
+  planningApproach: PLANNING_APPROACH,
+  parent: number | null | undefined
+) {
+  return isPlanningApproachSubUnits(planningApproach) && !parent
+    ? 'Top 10 Subunits'
+    : 'Project Areas';
+}
+
 function stripEmptyConfigurations(
   config: Partial<ScenarioV3Config>
 ): Partial<ScenarioV3Config> {
@@ -258,4 +274,21 @@ export function arrayHasChanged(source: number[], compare: number[]): boolean {
     source.some((item, index) => item !== compare[index]);
 
   return hasChanged;
+}
+
+export function getConstraintDisplayName(
+  constraint: Constraint,
+  layer: DataLayer | undefined
+): string {
+  const layerName = layer ? layer.name : 'Unknown Layer';
+  if (constraint.operator === 'btw' && constraint.value.includes(',')) {
+    const [num1, num2] = constraint.value.split(',').map(Number);
+    return `${layerName}: ${Math.min(num1, num2)}-${Math.max(num1, num2)}`;
+  }
+  return `${layerName}: ${getOperatorDisplayText(constraint.operator)} ${constraint.value}`;
+}
+
+export function getOperatorDisplayText(operator: CONSTRAINT_OPERATOR): string {
+  const def = CONSTRAINT_OPERATOR_MAP.get(operator);
+  return def?.symbol ? def.symbol : operator;
 }

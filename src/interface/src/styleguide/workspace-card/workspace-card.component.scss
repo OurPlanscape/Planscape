@@ -3,6 +3,11 @@
 
 :host {
   display: flex;
+}
+
+.card-link {
+  flex: 1;
+  display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 16px;
@@ -11,9 +16,16 @@
   background-color: $color-white;
   box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.16);
   cursor: pointer;
+  color: inherit;
+  text-decoration: none;
 
   &:hover {
     background-color: $color-lighter-gray;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-standard-blue;
+    outline-offset: 2px;
   }
 }
 
@@ -55,6 +67,10 @@
     flex-direction: row;
     align-items: center;
     gap: 8px;
+  }
+
+  .detail-info {
+    font-weight: 500;
   }
 
   .detail-icon {

@@ -277,6 +277,12 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
     this.mapLibreMap = map;
     this.mapCreated.emit({ map: map, mapNumber: this.mapNumber });
     this.initDrawingModes();
+    // the draw mode may have been entered before terra draw was initialized
+    this.mapConfigState.mapInteractionMode$.pipe(take(1)).subscribe((mode) => {
+      if (mode === 'draw') {
+        this.enablePolygonDrawingMode();
+      }
+    });
   }
 
   initDrawingModes() {

@@ -241,9 +241,10 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
             download_url = promote.get_geopackage_url()
             if download_url:
                 track_event(
-                    name="climate_foresight.run.downloaded",
+                    name="climate_foresight.run.geopackage_downloaded",
                     properties={
                         "run_id": run.pk,
+                        "status": "ready",
                         "email": request.user.email if request.user else None,
                     },
                     user_id=request.user.pk,
@@ -268,17 +269,37 @@ class ClimateForesightRunViewSet(viewsets.ModelViewSet):
                 }
             )
 
+        elif promote.geopackage_status == GeoPackageStatus.PENDING:
+            # Already queued by a previous ask; the client is just polling for
+            # status, not making a new request - don't re-track or re-queue.
+            return Response(
+                {
+                    "status": "pending",
+                    "message": "Geopackage generation has been queued.",
+                }
+            )
+
         else:
+            # None or FAILED: this is a genuine new (or retried) ask.
             if promote.geopackage_status == GeoPackageStatus.FAILED:
                 log.warning(
                     f"Previous geopackage generation failed for run {run.id}. Trying again."
                 )
 
-            if promote.geopackage_status is None:
-                promote.geopackage_status = GeoPackageStatus.PENDING
-                promote.save(update_fields=["geopackage_status", "updated_at"])
+            promote.geopackage_status = GeoPackageStatus.PENDING
+            promote.save(update_fields=["geopackage_status"])
 
             async_generate_climate_foresight_geopackage.delay(run.id)
+
+            track_event(
+                name="climate_foresight.run.geopackage_downloaded",
+                properties={
+                    "run_id": run.pk,
+                    "status": "generating",
+                    "email": request.user.email if request.user else None,
+                },
+                user_id=request.user.pk,
+            )
 
             return Response(
                 {

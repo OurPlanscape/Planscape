@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { AsyncPipe, CommonModule, NgClass, NgIf } from '@angular/common';
 import { MapNavbarComponent } from '@maplibre-map/map-nav-bar/map-nav-bar.component';
 import { MapConfigState } from '@maplibre-map/map-config.state';
@@ -7,27 +7,34 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
 import { SyncedMapsComponent } from '@maplibre-map/synced-maps/synced-maps.component';
 import { MultiMapControlComponent } from '@maplibre-map/multi-map-control/multi-map-control.component';
-import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
-import { firstValueFrom, map, of, skip, switchMap, take } from 'rxjs';
-import { MatTabsModule } from '@angular/material/tabs';
+import { OpacitySliderComponent } from '@styleguide';
+import {
+  combineLatest,
+  firstValueFrom,
+  map,
+  of,
+  skip,
+  switchMap,
+  take,
+} from 'rxjs';
 import { ExploreStorageService } from '@services/local-storage.service';
-import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { ExploreModesToggleComponent } from '@maplibre-map/explore-modes-toggle/explore-modes-toggle.component';
-import { MapSelectorComponent } from '@explore/map-selector/map-selector.component';
+import { ExploreSidebarComponent } from '@explore/explore-sidebar/explore-sidebar.component';
+import { LegacySidebarComponent } from '@explore/legacy-sidebar/legacy-sidebar.component';
+import { SidebarTabs } from '@explore/sidebar-tabs';
 import { DrawService } from '@maplibre-map/draw.service';
 import { HttpClientModule } from '@angular/common/http';
 import { MapConfigService } from '@maplibre-map/map-config.service';
 import { PlanState } from '@plan/plan.state';
-import { getPlanPath } from '@plan/plan-helpers';
+import { getPlanPath, getWorkspaceId } from '@plan/plan-helpers';
 
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FrontendConstants } from '@map/map.constants';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
-
-enum SidebarTabs {
-  DATA_LAYERS,
-  BASE_LAYERS,
-}
+import { ActivatedRoute } from '@angular/router';
+import { ScenarioState } from '@app/scenario/scenario.state';
+import { FeaturesModule } from '@features/features.module';
+import { FeatureService } from '@features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -43,12 +50,11 @@ enum SidebarTabs {
     MultiMapControlComponent,
     OpacitySliderComponent,
     NgClass,
-    ButtonComponent,
     NgIf,
-    MatTabsModule,
     CommonModule,
-    BaseLayersComponent,
-    MapSelectorComponent,
+    FeaturesModule,
+    ExploreSidebarComponent,
+    LegacySidebarComponent,
     NavBarComponent,
   ],
   templateUrl: './explore.component.html',
@@ -63,12 +69,14 @@ enum SidebarTabs {
     MapConfigService,
   ],
 })
-export class ExploreComponent implements OnDestroy {
+export class ExploreComponent implements OnDestroy, OnInit {
   dataLayerOpacity$ = this.multiMapConfigState.dataLayersOpacity$;
   defaultDataLayerOpacity = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY;
 
   panelExpanded = true;
-  tabIndex = 0;
+  tabIndex: SidebarTabs = SidebarTabs.DATA_LAYERS;
+  dataOrganizationEnabled =
+    this.featureService.isFeatureEnabled('DATA_ORGANIZATION');
 
   showSelectionToggle$ = this.planState.currentPlanId$.pipe(map((id) => !id));
 
@@ -85,34 +93,12 @@ export class ExploreComponent implements OnDestroy {
     private multiMapConfigState: MultiMapConfigState,
     private mapConfigService: MapConfigService,
     private planState: PlanState,
-    private drawService: DrawService
+    private scenarioState: ScenarioState,
+    private drawService: DrawService,
+    private route: ActivatedRoute,
+    private featureService: FeatureService
   ) {
     this.loadStateFromLocalStorage();
-
-    this.planState.currentPlanId$
-      .pipe(
-        take(1),
-        switchMap((id) => {
-          if (id) {
-            return this.planState.currentPlan$;
-          }
-          return of(null);
-        })
-      )
-      .subscribe((plan) => {
-        let label = 'New Plan';
-        let backUrl = '/';
-        if (plan) {
-          label = 'Map Viewer: ' + plan.name;
-          backUrl = getPlanPath(plan.id);
-        }
-        this.breadcrumbService.updateBreadCrumb({
-          label,
-          backUrl,
-          blackText: true,
-          icon: 'close',
-        });
-      });
 
     // expand panel automatically when the selected map change
     // (when the user clicks on the data layer name on the map)
@@ -129,12 +115,55 @@ export class ExploreComponent implements OnDestroy {
     this.mapConfigService.initialize();
   }
 
+  ngOnInit() {
+    const scenarioId = this.route.snapshot.data['scenarioId'];
+
+    this.planState.currentPlanId$
+      .pipe(
+        take(1),
+        switchMap((id) => {
+          if (!id) {
+            return of({ plan: null, scenario: null });
+          }
+
+          return combineLatest({
+            plan: this.planState.currentPlan$,
+            scenario: scenarioId
+              ? this.scenarioState.currentScenario$
+              : of(null),
+          });
+        })
+      )
+      .subscribe(({ plan, scenario }) => {
+        const route = this.route.snapshot;
+        const workspaceId = getWorkspaceId(route);
+        let label = 'New Plan';
+        let backUrl = workspaceId ? `/workspace/${workspaceId}` : '/';
+        // If we have a scenarioId (from the route) AND plan and scenario
+        if (scenarioId && plan && scenario) {
+          label = 'Map Viewer: ' + scenario.name;
+          backUrl = `${getPlanPath(plan.id, route)}/scenario/${scenarioId}/dashboard`;
+          // otherwise, just route back to the planning area
+        } else if (plan) {
+          label = 'Map Viewer: ' + plan.name;
+          backUrl = getPlanPath(plan.id, route);
+        }
+
+        this.breadcrumbService.updateBreadCrumb({
+          label,
+          backUrl,
+          blackText: true,
+          icon: 'close',
+        });
+      });
+  }
+
   handleOpacityChange(opacity: number) {
     this.multiMapConfigState.updateDataLayersOpacity(opacity);
   }
 
-  togglePanelExpanded() {
-    this.panelExpanded = !this.panelExpanded;
+  setPanelExpanded(expanded: boolean) {
+    this.panelExpanded = expanded;
   }
 
   ngOnDestroy() {
@@ -164,7 +193,8 @@ export class ExploreComponent implements OnDestroy {
     }
   }
 
-  onTabIndexChange(index: number) {
+  onTabIndexChange(index: SidebarTabs) {
+    this.tabIndex = index;
     // allow click on map only if viewing data layers tab
     this.multiMapConfigState.setAllowClickOnMap(
       index === SidebarTabs.DATA_LAYERS

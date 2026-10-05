@@ -1,51 +1,16 @@
-from collaboration.models import Role
 from collaboration.permissions import CheckPermissionMixin
-from collaboration.utils import (
-    check_for_owner_permission,
-    check_for_permission,
-    is_creator,
-)
+from collaboration.utils import is_creator
 from django.contrib.auth.models import AbstractUser
 from django.shortcuts import get_object_or_404
 from planning.models import Scenario
 from planscape.permissions import PlanscapePermission
 from rest_framework.serializers import ValidationError
+from workspaces.access import (
+    has_planning_area_owner_permission,
+    has_planning_area_permission,
+)
 
 from impacts.models import TreatmentPlan, TreatmentPlanNote
-
-VIEWER_PERMISSIONS = [
-    "view_planningarea",
-    "view_scenario",
-    "view_tx_plan",
-    "view_climate_foresight",
-]
-COLLABORATOR_PERMISSIONS = VIEWER_PERMISSIONS + [
-    "add_scenario",
-    "add_tx_plan",
-    "clone_tx_plan",
-    "edit_tx_plan",
-    "remove_tx_plan",
-    "add_tx_prescription",
-    "remove_tx_prescription",
-    "run_tx",
-    "run_climate_foresight",
-    "remove_climate_foresight",
-    "change_climate_foresight",
-]
-OWNER_PERMISSIONS = COLLABORATOR_PERMISSIONS + [
-    "change_scenario",
-    "remove_scenario",
-    "view_collaborator",
-    "add_collaborator",
-    "delete_collaborator",
-    "change_collaborator",
-    "change_planning_area",
-]
-PERMISSIONS = {
-    Role.OWNER: OWNER_PERMISSIONS,
-    Role.COLLABORATOR: COLLABORATOR_PERMISSIONS,
-    Role.VIEWER: VIEWER_PERMISSIONS,
-}
 
 
 class TreatmentPlanPermission(CheckPermissionMixin):
@@ -54,8 +19,8 @@ class TreatmentPlanPermission(CheckPermissionMixin):
         if is_creator(user, tx_plan.scenario.planning_area):
             return True
 
-        return check_for_permission(
-            user.id, tx_plan.scenario.planning_area, "view_tx_plan"
+        return has_planning_area_permission(
+            user, tx_plan.scenario.planning_area, "view_tx_plan"
         )
 
     @staticmethod
@@ -63,7 +28,7 @@ class TreatmentPlanPermission(CheckPermissionMixin):
         if is_creator(user, scenario.planning_area):
             return True
 
-        return check_for_permission(user.id, scenario.planning_area, "add_tx_plan")
+        return has_planning_area_permission(user, scenario.planning_area, "add_tx_plan")
 
     @staticmethod
     def can_change(user: AbstractUser, tx_plan: TreatmentPlan):
@@ -73,8 +38,8 @@ class TreatmentPlanPermission(CheckPermissionMixin):
         ):
             return True
 
-        return check_for_permission(
-            user.id, tx_plan.scenario.planning_area, "edit_tx_plan"
+        return has_planning_area_permission(
+            user, tx_plan.scenario.planning_area, "edit_tx_plan"
         )
 
     @staticmethod
@@ -85,15 +50,17 @@ class TreatmentPlanPermission(CheckPermissionMixin):
         if tx_plan.created_by.pk == user.pk:
             return True
 
-        return check_for_permission(
-            user.id,
+        return has_planning_area_permission(
+            user,
             tx_plan.scenario.planning_area,
             "remove_tx_plan",
         )
 
     @staticmethod
     def can_clone(user: AbstractUser, tx_plan: TreatmentPlan) -> bool:
-        return is_creator(user, tx_plan.scenario.planning_area) or check_for_permission(
+        return is_creator(
+            user, tx_plan.scenario.planning_area
+        ) or has_planning_area_permission(
             user,
             tx_plan.scenario.planning_area,
             "clone_tx_plan",
@@ -103,8 +70,8 @@ class TreatmentPlanPermission(CheckPermissionMixin):
     def can_run(user: AbstractUser, tx_plan: TreatmentPlan):
         is_creator_pa = is_creator(user, tx_plan.scenario.planning_area)
         is_creator_tx = tx_plan.created_by.pk == user.pk
-        has_perm = check_for_owner_permission(
-            user.pk, tx_plan.scenario.planning_area, "run_tx"
+        has_perm = has_planning_area_owner_permission(
+            user, tx_plan.scenario.planning_area, "run_tx"
         )
         return any([is_creator_pa, is_creator_tx, has_perm])
 
@@ -224,14 +191,14 @@ class TreatmentPlanNotePermission(CheckPermissionMixin):
         planning_area = treatment_plan_note.treatment_plan.scenario.planning_area
         if is_creator(user, planning_area):
             return True
-        return check_for_permission(user.id, planning_area, "view_planningarea")
+        return has_planning_area_permission(user, planning_area, "view_planningarea")
 
     @staticmethod
     def can_add(user: AbstractUser, treatment_plan: TreatmentPlan):
         planning_area = treatment_plan.scenario.planning_area
         if is_creator(user, planning_area):
             return True
-        return check_for_permission(user.id, planning_area, "view_planningarea")
+        return has_planning_area_permission(user, planning_area, "view_planningarea")
 
     @staticmethod
     def can_remove(user: AbstractUser, treatment_plan_note: TreatmentPlanNote):

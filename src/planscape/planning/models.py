@@ -48,10 +48,14 @@ class PlanningAreaManager(AliveObjectsManager):
         ids = (
             qs.filter(
                 Q(user=user)
+                | Q(workspace__user_access__user=user)
+                | Q(workspace__created_by=user)
+                # planning areas outside workspaces still use planning-area sharing
                 | Q(
+                    workspace__isnull=True,
                     pk__in=UserObjectRole.objects.filter(
                         collaborator_id=user, content_type_id=content_type_pk
-                    ).values_list("object_pk", flat=True)
+                    ).values_list("object_pk", flat=True),
                 )
             )
             .values_list("id", flat=True)
@@ -156,10 +160,10 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
             )
         ]
         constraints = [
+            # NULL workspaces are distinct, so areas outside a workspace can repeat names
             models.UniqueConstraint(
                 fields=[
-                    "user",
-                    "region_name",
+                    "workspace",
                     "name",
                 ],
                 name="unique_planning_area",
@@ -212,6 +216,22 @@ class ScenarioResultStatus(models.TextChoices):
     DRAFT = "DRAFT", "Draft"
 
 
+class ScenarioResultErrorCode(models.TextChoices):
+    TIME_OUT = "TIME_OUT", "Time Out"
+    GENERIC_PANIC = "GENERIC_PANIC", "Generic Panic"
+    NO_AVAILABLE_STANDS = "NO_AVAILABLE_STANDS", "No Available Stands"
+    STAND_METRIC_FAILURE = "STAND_METRIC_FAILURE", "Stand Metric Failure"
+    UNKNOWN_ERROR = "UNKNOWN_ERROR", "Unknown Error"
+    SCENARIO_LOAD_ERROR = "SCENARIO_LOAD_ERROR", "Scenario Load Error"
+    STAND_DATA_ERROR = "STAND_DATA_ERROR", "Stand Data Error"
+    PROJECT_DATA_ERROR = "PROJECT_DATA_ERROR", "Project Data Error"
+    FORSYS_PREPARATION_ERROR = "FORSYS_PREPARATION_ERROR", "Forsys Preparation Error"
+    FORSYS_EXECUTION_ERROR = "FORSYS_EXECUTION_ERROR", "Forsys Execution Error"
+    FORSYS_EMPTY_RESULT = "FORSYS_EMPTY_RESULT", "Forsys Empty Result"
+    RESULT_PROCESSING_ERROR = "RESULT_PROCESSING_ERROR", "Result Processing Error"
+    PROJECT_AREA_UPDATE_ERROR = "PROJECT_AREA_UPDATE_ERROR", "Project Area Update Error"
+
+
 class ScenarioPostProcessingStatus(models.TextChoices):
     PENDING = "PENDING", "Pending"
     RUNNING = "RUNNING", "Running"
@@ -257,10 +277,20 @@ class ScenarioVersion(models.TextChoices):
     V3 = "V3", "Version 3"
 
 
-class TreatmentGoalCategory(models.TextChoices):
-    FIRE_DYNAMICS = "FIRE_DYNAMICS", "Fire Dynamics"
-    BIODIVERSITY = "BIODIVERSITY", "Biodiversity"
-    CARBON_BIOMASS = "CARBON_BIOMASS", "Carbon/Biomass"
+class TreatmentGoalCategory(CreatedAtMixin, UpdatedAtMixin, models.Model):
+    id: int
+    name = models.CharField(
+        max_length=120,
+        unique=True,
+        help_text="Name of the Treatment Goal category.",
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta(TypedModelMeta):
+        ordering = ["name"]
+        verbose_name_plural = "Treatment Goal Categories"
 
 
 class TreatmentGoalGroup(models.TextChoices):
@@ -311,9 +341,11 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
     active = models.BooleanField(
         default=True, help_text="Treatment Goal active status."
     )
-    category = models.CharField(
-        max_length=32,
-        choices=TreatmentGoalCategory.choices,
+    category_id: int
+    category = models.ForeignKey(
+        TreatmentGoalCategory,
+        related_name="treatment_goals",
+        on_delete=models.RESTRICT,
         help_text="Treatment Goal category.",
         null=True,
     )
@@ -366,10 +398,6 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
             ).filter(type=DataLayerType.RASTER)
         )
 
-        for name in ["slope", "distance_from_roads"]:
-            datalayer = DataLayer.objects.all().by_meta_name(name=name)
-            if datalayer:
-                datalayers.append(datalayer)
         return datalayers
 
     def __str__(self):
@@ -576,6 +604,13 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
             return ScenarioVersion.V1
         return ScenarioVersion.V2
 
+    @cached_property
+    def sub_unit_datalayer(self) -> Optional[DataLayer]:
+        sub_units_layer_id = self.configuration.get("sub_units_layer")
+        if not sub_units_layer_id:
+            return None
+        return DataLayer.objects.filter(pk=sub_units_layer_id).first()
+
     def creator_name(self) -> str:
         return self.user.get_full_name()
 
@@ -629,6 +664,7 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         return signed_url
 
     def get_raster_datalayers(self) -> Collection[DataLayer]:
+        datalayers = []
         if self.type == ScenarioType.CUSTOM:
             priorities = [
                 p.get("datalayer") for p in self.configuration.get("priorities")
@@ -640,14 +676,21 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
             )
             datalayers = list(datalayers)
 
-            for name in ["slope", "distance_from_roads"]:
-                datalayer = DataLayer.objects.all().by_meta_name(name=name)
-                if datalayer:
-                    datalayers.append(datalayer)
-
-            return datalayers
         else:
-            return self.treatment_goal.get_raster_datalayers()  # type: ignore
+            datalayers = list(self.treatment_goal.get_raster_datalayers())  # type: ignore
+
+        constraints = self.configuration.get("constraints", [])
+        if constraints:
+            datalayer_ids = [constraint.get("datalayer") for constraint in constraints]
+            constraints_datalayers = DataLayer.objects.filter(
+                pk__in=datalayer_ids,
+                type=DataLayerType.RASTER,
+            )
+            datalayers.extend(list(constraints_datalayers))
+
+        datalayers = list(set(datalayers)) # remove duplication
+
+        return datalayers
 
     objects = ScenarioManager()
 
@@ -683,6 +726,8 @@ class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Mode
     result = models.JSONField(null=True, encoder=DjangoJSONEncoder)
 
     run_details = models.JSONField(null=True)
+
+    errors = models.JSONField(null=True, encoder=DjangoJSONEncoder)
 
     started_at = models.DateTimeField(
         null=True, help_text="Start of the Forsys run, in UTC timezone."

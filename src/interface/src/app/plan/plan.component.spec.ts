@@ -20,6 +20,8 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MockDeclaration } from 'ng-mocks';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
+import { BreadcrumbService } from '@services/breadcrumb.service';
+import { PlanState } from './plan.state';
 
 describe('PlanComponent', () => {
   let router: Router;
@@ -156,7 +158,7 @@ describe('PlanComponent', () => {
 
     component.backToOverview();
 
-    expect(navSpy).toHaveBeenCalledOnceWith(['plan', fakePlan.id.toString()]);
+    expect(navSpy).toHaveBeenCalledOnceWith([`/plan/${fakePlan.id}`]);
   });
 
   // --- constructor behavior (checkForInProgressModal) ---
@@ -196,6 +198,36 @@ describe('PlanComponent', () => {
     expect(lastArgs[0]).toEqual({ foo: 'bar' });
   });
 
+  it('opens the success modal after a planning area is created', () => {
+    spyOn(router, 'getCurrentNavigation').and.returnValue({
+      id: 3,
+      initialUrl: router.parseUrl('/plan/24'),
+      extractedUrl: router.parseUrl('/plan/24'),
+      trigger: 'imperative',
+      previousNavigation: null,
+      extras: { state: { planningAreaCreated: 'uploaded' } },
+      finalUrl: router.parseUrl('/plan/24'),
+    } as unknown as Navigation);
+
+    window.history.replaceState(
+      { planningAreaCreated: 'uploaded', foo: 'bar' },
+      document.title
+    );
+    const replaceSpy = spyOn(window.history, 'replaceState').and.callThrough();
+    const showSpy = spyOn(
+      PlanComponent.prototype as any,
+      'showPlanningAreaCreatedModal'
+    );
+
+    const fixture = create();
+    const component = fixture.componentInstance;
+    (component as any).plan = fakePlan;
+    fixture.detectChanges();
+
+    expect(showSpy).toHaveBeenCalledOnceWith('uploaded');
+    expect(replaceSpy.calls.mostRecent().args[0]).toEqual({ foo: 'bar' });
+  });
+
   it('does nothing when the flag is missing', () => {
     spyOn(router, 'getCurrentNavigation').and.returnValue({
       id: 2,
@@ -211,23 +243,9 @@ describe('PlanComponent', () => {
       PlanComponent.prototype as any,
       'showInProgressModal'
     );
-    const replaceSpy = spyOn(window.history, 'replaceState');
-
-    const fixture = create();
-    const component = fixture.componentInstance;
-    (component as any).plan = fakePlan;
-    fixture.detectChanges();
-
-    expect(showSpy).not.toHaveBeenCalled();
-    expect(replaceSpy).not.toHaveBeenCalled();
-  });
-
-  it('does nothing when getCurrentNavigation() is null', () => {
-    spyOn(router, 'getCurrentNavigation').and.returnValue(null);
-
-    const showSpy = spyOn(
+    const createdSpy = spyOn(
       PlanComponent.prototype as any,
-      'showInProgressModal'
+      'showPlanningAreaCreatedModal'
     );
     const replaceSpy = spyOn(window.history, 'replaceState');
 
@@ -237,6 +255,61 @@ describe('PlanComponent', () => {
     fixture.detectChanges();
 
     expect(showSpy).not.toHaveBeenCalled();
+    expect(createdSpy).not.toHaveBeenCalled();
+    expect(replaceSpy).not.toHaveBeenCalled();
+  });
+
+  describe('breadcrumb', () => {
+    let updateSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      (TestBed.inject(PlanState) as any).currentPlan$ = of(fakePlan);
+      updateSpy = spyOn(TestBed.inject(BreadcrumbService), 'updateBreadCrumb');
+    });
+
+    it('points back home outside a workspace', () => {
+      create();
+
+      expect(updateSpy).toHaveBeenCalledWith({
+        label: 'Home',
+        backUrl: '/home',
+      });
+    });
+
+    it('points back to the workspace when nested under one', () => {
+      (TestBed.inject(ActivatedRoute).snapshot as any).pathFromRoot = [
+        { paramMap: convertToParamMap({ workspaceId: '7' }) },
+      ];
+
+      create();
+
+      expect(updateSpy).toHaveBeenCalledWith({
+        label: 'Workspace',
+        backUrl: '/workspace/7',
+      });
+    });
+  });
+
+  it('does nothing when getCurrentNavigation() is null', () => {
+    spyOn(router, 'getCurrentNavigation').and.returnValue(null);
+
+    const showSpy = spyOn(
+      PlanComponent.prototype as any,
+      'showInProgressModal'
+    );
+    const createdSpy = spyOn(
+      PlanComponent.prototype as any,
+      'showPlanningAreaCreatedModal'
+    );
+    const replaceSpy = spyOn(window.history, 'replaceState');
+
+    const fixture = create();
+    const component = fixture.componentInstance;
+    (component as any).plan = fakePlan;
+    fixture.detectChanges();
+
+    expect(showSpy).not.toHaveBeenCalled();
+    expect(createdSpy).not.toHaveBeenCalled();
     expect(replaceSpy).not.toHaveBeenCalled();
   });
 });

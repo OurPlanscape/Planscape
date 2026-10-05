@@ -102,7 +102,7 @@ describe('ScenarioRoutePlaceholderComponent', () => {
       component.canViewScenarioCreation$
     );
 
-    expect(navigateSpy).toHaveBeenCalledWith(['/plan', 5]);
+    expect(navigateSpy).toHaveBeenCalledWith(['/plan/5']);
     expect(canViewScenarioCreation).toBeFalse();
   });
 

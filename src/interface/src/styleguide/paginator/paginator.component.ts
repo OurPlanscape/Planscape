@@ -81,7 +81,7 @@ export class PaginatorComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['pageCount']) {
+    if (changes['pageCount'] || changes['currentPage']) {
       this.calcButtonLabels();
     }
   }

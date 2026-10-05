@@ -126,7 +126,7 @@ def calculate_stand_vector_stats_with_stand_list(
             ST_Centroid(geometry) as "geometry"
         FROM stands_stand s
         WHERE
-            s.id IN %s
+            s.id = ANY(%s)
     )
     INSERT INTO stands_standmetric (created_at, stand_id, datalayer_id, majority)
     SELECT
@@ -151,7 +151,7 @@ def calculate_stand_vector_stats_with_stand_list(
     with connection.cursor() as cursor:
         cursor.execute(
             query,
-            [tuple(stand_ids), datalayer.pk],
+            [list(stand_ids), datalayer.pk],
         )
 
 
@@ -344,7 +344,7 @@ def get_missing_stand_ids_for_datalayer_from_stand_list(
     LEFT OUTER JOIN stands_standmetric sm
     ON s.id = sm.stand_id AND sm.datalayer_id = %s
     WHERE
-        s.id IN %s
+        s.id = ANY(%s)
         AND sm.id IS NULL
         ORDER BY s.grid_key;
     """
@@ -353,7 +353,7 @@ def get_missing_stand_ids_for_datalayer_from_stand_list(
             query,
             [
                 datalayer.pk,
-                tuple(stand_ids),
+                list(stand_ids),
             ],
         )
         rows = cursor.fetchall()

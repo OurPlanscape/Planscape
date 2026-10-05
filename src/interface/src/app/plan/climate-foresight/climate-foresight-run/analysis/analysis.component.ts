@@ -25,6 +25,7 @@ import {
 } from '@shared/constants';
 import { SharedModule } from '@shared/shared.module';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { getPlanPath } from '@plan/plan-helpers';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatMenuModule } from '@angular/material/menu';
 import { PopoverComponent } from '@styleguide/popover/popover.component';
@@ -197,7 +198,7 @@ export class AnalysisComponent implements OnInit, OnDestroy {
               ) {
                 this.breadcrumbService.updateBreadCrumb({
                   label: `New Climate Foresight Analysis: ${run.name}`,
-                  backUrl: `/plan/${this.planId}/climate-foresight`,
+                  backUrl: `${getPlanPath(this.planId!, this.route.snapshot)}/climate-foresight`,
                   blackText: true,
                   icon: 'close',
                 });

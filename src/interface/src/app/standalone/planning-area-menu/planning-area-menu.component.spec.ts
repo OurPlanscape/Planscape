@@ -1,13 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PlanningAreaMenuComponent } from './planning-area-menu.component';
-import { MockDeclaration, MockProvider } from 'ng-mocks';
+import { MockProvider } from 'ng-mocks';
 import { AuthService, PlanService } from '@services';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MOCK_PLAN } from '@services/mocks';
 import { MatDialogModule } from '@angular/material/dialog';
-import { CreatePlanDialogComponent } from '@explore/create-plan-dialog/create-plan-dialog.component';
 
 describe('PlanningAreaMenuComponent', () => {
   let component: PlanningAreaMenuComponent;
@@ -21,7 +20,6 @@ describe('PlanningAreaMenuComponent', () => {
         MatDialogModule,
         RouterTestingModule,
       ],
-      declarations: [MockDeclaration(CreatePlanDialogComponent)],
       providers: [
         MockProvider(AuthService),
         MockProvider(MatSnackBar),
@@ -59,5 +57,33 @@ describe('PlanningAreaMenuComponent', () => {
     component.plan = { ...MOCK_PLAN, permissions: ['view_collaborator'] };
     fixture.detectChanges();
     expect(component.shareEnabled).toBeTrue();
+  });
+
+  it('hides the menu button when no actions are available', () => {
+    component.showOpen = false;
+    component.showViewMap = false;
+    component.showShare = false;
+    fixture.detectChanges();
+
+    expect(component.hasActions).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.more-menu-button')).toBeNull();
+  });
+
+  it('shows the menu button when at least one action is available', () => {
+    component.showOpen = false;
+    component.showViewMap = false;
+    component.plan = { ...MOCK_PLAN, permissions: ['view_collaborator'] };
+    fixture.detectChanges();
+
+    expect(component.hasActions).toBeTrue();
+    expect(
+      fixture.nativeElement.querySelector('.more-menu-button')
+    ).not.toBeNull();
+  });
+
+  it('keeps the menu button when only ungated actions are shown', () => {
+    fixture.detectChanges();
+
+    expect(component.hasActions).toBeTrue();
   });
 });

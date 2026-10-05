@@ -18,7 +18,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ButtonComponent, OverlayLoaderComponent } from '@styleguide';
 import { ChipInputComponent } from '@styleguide/chip-input/chip-input.component';
-import { ShareDialogComponent } from '@styleguide/share-dialog/share-dialog.component';
 
 import { FeaturesModule } from '@features/features.module';
 import { HomeComponent } from '@home/home.component';
@@ -28,7 +27,6 @@ import { LegacyMaterialModule } from '@material/legacy-material.module';
 
 import { NgxMaskModule } from 'ngx-mask';
 
-import { SharePlanDialogComponent } from '@home/share-plan-dialog/share-plan-dialog.component';
 import { SharedModule } from '@shared';
 import { environment } from '@env/environment';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
@@ -39,7 +37,7 @@ import * as Sentry from '@sentry/angular';
 import { LoggingHttpInterceptor } from '@services/logging-http.interceptor';
 
 @NgModule({
-  declarations: [AppComponent, HomeComponent, SharePlanDialogComponent],
+  declarations: [AppComponent, HomeComponent],
   imports: [
     AppRoutingModule,
     BrowserAnimationsModule,
@@ -66,7 +64,6 @@ import { LoggingHttpInterceptor } from '@services/logging-http.interceptor';
     PlanningAreasComponent,
     OverlayLoaderComponent,
     ChipInputComponent,
-    ShareDialogComponent,
   ],
   providers: [
     WINDOW_PROVIDERS,

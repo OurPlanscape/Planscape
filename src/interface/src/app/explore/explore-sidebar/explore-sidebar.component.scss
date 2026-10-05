@@ -1,0 +1,60 @@
+@import 'variables';
+@import 'colors';
+@import 'mixins';
+
+$panel-header-height: 64px;
+$panel-side-padding: 16px;
+
+:host {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  height: 100%;
+  width: $map-sidebar-rail-width;
+  background-color: $color-white;
+}
+
+:host(.expanded) {
+  width: $map-sidebar-width;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  height: $panel-header-height;
+  padding: 0 8px 0 16px;
+
+  h4 {
+    @include standard-label();
+    margin: 0;
+  }
+}
+
+.panel-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+// Search spacing for this design only; the legacy sidebar keeps the
+// defaults from data-layers.component.scss. Extra selectors to outrank
+// that component's own :host ::ng-deep rules.
+.panel .panel-content ::ng-deep {
+  .side-search-container {
+    height: auto;
+    padding: 0 $panel-side-padding $panel-side-padding;
+  }
+
+  .search-bar .input-wrapper {
+    height: 50px;
+  }
+}

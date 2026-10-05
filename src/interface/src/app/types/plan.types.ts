@@ -15,6 +15,7 @@ export interface Plan {
   role: string;
   user: number;
   capabilities: Capabilities[];
+  bbox?: [number, number, number, number];
   map_status?:
     | 'DONE'
     | 'PENDING'
@@ -29,6 +30,7 @@ export type PreviewPlan = Omit<Plan, 'geometry' | 'area_m2'>;
 export interface CreatePlanPayload {
   geometry: Geometry;
   name: string;
+  workspace?: number; // TODO: Remove optional when WORKSPACES be released
 }
 
 export interface BackendProjectArea {

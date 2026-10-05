@@ -96,6 +96,7 @@ export class DrawService {
   start() {
     if (this._terraDraw && !this._terraDraw.enabled) {
       this._terraDraw.start();
+      this.setMode('polygon'); // force initial state to be 'polygon', no matter what
     }
   }
 

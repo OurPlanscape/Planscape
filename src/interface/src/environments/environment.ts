@@ -11,6 +11,7 @@ export const environment = {
   download_endpoint: '', // Replace with actual URL
   martin_server: 'https://dev.planscape.org/tiles/',
   feature_flags: '',
+  websocket_endpoint: '', // Replace with the backend WebSocket URL (ws:// or wss://)
   mapbox_key: '',
   mixpanel_token: '',
   mixpanel_enabled: false,

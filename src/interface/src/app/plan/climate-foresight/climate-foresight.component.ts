@@ -36,6 +36,7 @@ import {
 } from '@maplibre-map/maplibre.helper';
 import { FrontendConstants } from '@map/map.constants';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { getPlanPath } from '@plan/plan-helpers';
 import { NewAnalysisModalComponent } from '@plan/climate-foresight/new-analysis-modal/new-analysis-modal.component';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
@@ -123,7 +124,7 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
             if (breadcrumb?.label !== 'Planning Area Overview') {
               this.breadcrumbService.updateBreadCrumb({
                 label: 'Planning Area Overview',
-                backUrl: `/plan/${this.currentPlan?.id}`,
+                backUrl: getPlanPath(plan.id, this.route.snapshot),
               });
             }
           });
@@ -155,7 +156,7 @@ export class ClimateForesightComponent implements OnInit, OnDestroy {
   navigateBack(): void {
     const planId = this.route.snapshot.data['planId'];
     if (planId) {
-      this.router.navigate(['/plan', planId]);
+      this.router.navigate([getPlanPath(planId, this.route.snapshot)]);
     } else {
       this.router.navigate(['/']);
     }

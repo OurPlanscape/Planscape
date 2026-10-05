@@ -5,7 +5,12 @@ from django.contrib.gis.db import models
 from django.db.models import Count, Q
 from django_stubs_ext.db.models import TypedModelMeta
 
-from core.models import AliveObjectsManager, CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin
+from core.models import (
+    AliveObjectsManager,
+    CreatedAtMixin,
+    DeletedAtMixin,
+    UpdatedAtMixin,
+)
 from datasets.models import VisibilityOptions
 
 if TYPE_CHECKING:
@@ -119,6 +124,27 @@ class UserAccessWorkspace(CreatedAtMixin, UpdatedAtMixin, models.Model):
         User,
         related_name="workspace_access",
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="Set once a pending invite is accepted. Null while the invite is pending.",
+    )
+
+    # Set on invite creation, kept around for pending rows (user is null) and
+    # for audit purposes once accepted.
+    email = models.EmailField(
+        max_length=254,
+        null=True,
+        blank=True,
+        help_text="Email the invite was sent to.",
+    )
+
+    invited_by = models.ForeignKey(
+        User,
+        related_name="sent_workspace_invites",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="User that sent the invite, if this row originated from one.",
     )
 
     workspace_id: int
@@ -141,5 +167,11 @@ class UserAccessWorkspace(CreatedAtMixin, UpdatedAtMixin, models.Model):
             models.UniqueConstraint(
                 fields=["user", "workspace"],
                 name="unique_user_workspace_access",
-            )
+                condition=Q(user__isnull=False),
+            ),
+            models.UniqueConstraint(
+                fields=["email", "workspace"],
+                name="unique_email_workspace_invite",
+                condition=Q(user__isnull=True),
+            ),
         ]

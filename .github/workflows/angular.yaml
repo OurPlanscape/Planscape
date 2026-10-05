@@ -8,7 +8,27 @@ on:
 
 jobs:
 
+  # Only runs on PRs. On push (or if this job fails) the output is empty,
+  # so the jobs below fall through and run.
+  changes:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'src/interface/**'
+              - '.github/workflows/angular.yaml'
+
   lint-frontend:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.frontend != 'false' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -26,6 +46,8 @@ jobs:
       - run: npm run lint
 
   build-frontend:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.frontend != 'false' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -43,6 +65,8 @@ jobs:
       - run: npm run test:prod
 
   storybook:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.frontend != 'false' }}
     runs-on: ubuntu-latest
     defaults:
       run:

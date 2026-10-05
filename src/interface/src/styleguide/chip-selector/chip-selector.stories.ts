@@ -41,6 +41,28 @@ export const Default: Story = {
   },
 };
 
+export const Hoverable: Story = {
+  args: {
+    items: items,
+    hoverable: true,
+  },
+};
+
+export const WithEditIcon: Story = {
+  args: {
+    items: items,
+    showClose: false,
+    showEdit: true,
+  },
+};
+
+export const WithSelectedItem: Story = {
+  args: {
+    items: items,
+    selectedItem: { id: 4, name: 'Neuromorphic Ontology' },
+  },
+};
+
 export const NoItems: Story = {
   args: {
     items: [],

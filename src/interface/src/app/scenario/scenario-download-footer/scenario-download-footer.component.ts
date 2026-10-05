@@ -14,6 +14,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { GeopackageFailureModalComponent } from '@scenario/geopackage-failure-modal/geopackage-failure-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { GEO_PACKAGE_LABELS } from '../scenario.constants';
+import { ScenarioConfigListOverlayComponent } from '../scenario-config-list-overlay/scenario-config-list-overlay.component';
 
 @Component({
   selector: 'app-scenario-download-footer',
@@ -27,6 +28,7 @@ import { GEO_PACKAGE_LABELS } from '../scenario.constants';
     MatMenuModule,
     LegacyScenarioConfigOverlayComponent,
     ScenarioConfigOverlayComponent,
+    ScenarioConfigListOverlayComponent,
   ],
   templateUrl: './scenario-download-footer.component.html',
   styleUrl: './scenario-download-footer.component.scss',

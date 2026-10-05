@@ -1,5 +1,9 @@
+import logging
+
 from django.contrib.gis.geos import MultiPolygon
 from django.db import migrations
+
+logger = logging.getLogger(__name__)
 
 
 def get_or_create_admin(User):
@@ -219,7 +223,7 @@ def add_riskmonitor_transmission_to_housing_treatment_goal(apps, schema_editor):
     for spec in goal["layers"]:
         datalayer = get_layer(DataLayer, spec["dataset"], spec["layer"])
         if not datalayer:
-            print(
+            logger.warning(
                 f"[TreatmentGoal migration] Missing DataLayer: {spec['dataset']} / {spec['layer']}"
             )
             continue

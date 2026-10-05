@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { FeatureService } from '@features/feature.service';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { TileButtonComponent } from '@styleguide';
 import { Capabilities } from '@types';
@@ -37,10 +36,7 @@ export class ScenarioToolsComponent {
     map((capabilities) => this.buildTools(capabilities))
   );
 
-  constructor(
-    private featureService: FeatureService,
-    private scenarioState: ScenarioState
-  ) {}
+  constructor(private scenarioState: ScenarioState) {}
 
   private buildTools(capabilities: Capabilities[]): ScenarioTool[] {
     const tools: ScenarioTool[] = [];
@@ -55,16 +51,8 @@ export class ScenarioToolsComponent {
         enabled: true,
       });
 
-    if (!this.featureService.isFeatureEnabled('FUNDING_REPORTS')) {
-      // coming soon if feature flag is off
-      tools.push({
-        id: 'coming-soon',
-        backgroundImage: '/assets/svg/lock.svg',
-        title: 'Coming Soon',
-        enabled: false,
-      });
-    } else if (capabilities.includes('FUNDING_REPORT')) {
-      // add item if scenario has capabilities
+    // add item if scenario has capabilities
+    if (capabilities.includes('FUNDING_REPORT')) {
       tools.push({
         id: 'funding-opportunity-report',
         backgroundImage: '/assets/svg/funding.svg',

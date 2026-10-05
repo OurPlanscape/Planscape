@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PlanningAnalyticsToolsComponent } from './planning-analytics-tools.component';
 import { FeatureService } from '@features/feature.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { PlanState } from '../plan.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { of } from 'rxjs';
@@ -140,8 +140,24 @@ describe('PlanningAnalyticsToolsComponent', () => {
       backUrl: '/plan/1',
     });
     expect(mockRouter.navigate).toHaveBeenCalledWith([
-      '/plan',
-      1,
+      '/plan/1',
+      'climate-foresight',
+    ]);
+  });
+
+  it('keeps the workspace prefix when nested under a workspace', () => {
+    mockActivatedRoute.snapshot.pathFromRoot = [
+      { paramMap: convertToParamMap({ workspaceId: '7' }) },
+    ];
+
+    component.onToolClick('climate-foresight');
+
+    expect(mockBreadcrumbService.updateBreadCrumb).toHaveBeenCalledWith({
+      label: 'Planning Area Overview',
+      backUrl: '/workspace/7/plan/1',
+    });
+    expect(mockRouter.navigate).toHaveBeenCalledWith([
+      '/workspace/7/plan/1',
       'climate-foresight',
     ]);
   });

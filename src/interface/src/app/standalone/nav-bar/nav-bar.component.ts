@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 
-import { SharePlanDialogComponent } from '@home/share-plan-dialog/share-plan-dialog.component';
+import { ShareDialogComponent } from '@app/sharing/share-dialog/share-dialog.component';
 import { Params, RouterModule } from '@angular/router';
 import { filter, lastValueFrom, map, take } from 'rxjs';
 import { canViewCollaborators } from '@plan/permissions';
@@ -10,6 +10,7 @@ import { PlanState } from '@plan/plan.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { ButtonComponent, SectionComponent } from '@styleguide';
 import { CommonModule } from '@angular/common';
+import { FeatureService } from '@app/features/feature.service';
 
 @Component({
   standalone: true,
@@ -39,9 +40,14 @@ export class NavBarComponent implements OnInit {
 
   currentPlan$ = this.planState.currentPlan$;
 
+  /** Workspaces have their own sharing, so the plan-level share button goes away. */
+  private sharingEnabled = !this.featureService.isFeatureEnabled('WORKSPACES');
+
   canSharePlan$ = this.currentPlan$.pipe(
     filter((plan) => !!plan),
-    map((plan) => (plan ? canViewCollaborators(plan) : false))
+    map((plan) =>
+      plan ? this.sharingEnabled && canViewCollaborators(plan) : false
+    )
   );
 
   breadcrumb$ = this.breadcrumbService.breadcrumb$;
@@ -52,7 +58,8 @@ export class NavBarComponent implements OnInit {
     private dialog: MatDialog,
     private homeParametersStorageService: HomeParametersStorageService,
     private planState: PlanState,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private featureService: FeatureService
   ) {}
 
   ngOnInit(): void {
@@ -62,8 +69,8 @@ export class NavBarComponent implements OnInit {
   async sharePlan() {
     const plan = await lastValueFrom(this.currentPlan$.pipe(take(1)));
 
-    this.dialog.open(SharePlanDialogComponent, {
-      data: { plan },
+    this.dialog.open(ShareDialogComponent, {
+      data: { kind: 'plan', plan },
       restoreFocus: false,
       panelClass: 'no-padding-dialog',
     });

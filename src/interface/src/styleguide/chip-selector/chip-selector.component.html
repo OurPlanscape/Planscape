@@ -3,9 +3,15 @@
     class="chip-row"
     *ngFor="let item of displayedItems"
     (removed)="handleRemove(item)"
-    [disableRipple]="true">
+    (click)="handleClick(item)"
+    [disableRipple]="true"
+    [class.is-hoverable]="hoverable"
+    [class.selected-chip]="isSelected(item)">
+    <mat-icon class="material-symbols-outlined" *ngIf="showEdit" matChipAvatar
+      >edit</mat-icon
+    >
     {{ item.name }}
-    <button class="chip-button" matChipRemove>
+    <button *ngIf="showClose" class="chip-button" matChipRemove>
       <mat-icon>close</mat-icon>
     </button>
   </mat-chip-row>

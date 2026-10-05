@@ -31,6 +31,7 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FundingReportService } from '@app/services/funding-report.service';
 import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
+import { FEATURES_JSON } from '@app/features/features-config';
 
 describe('FundingDashboardComponent', () => {
   let component: FundingDashboardComponent;
@@ -110,6 +111,7 @@ describe('FundingDashboardComponent', () => {
         { provide: PlanState, useValue: { currentPlan$ } },
         { provide: AuthService, useValue: { loggedInUser$ } },
         MockProvider(ProductAnalyticsService),
+        { provide: FEATURES_JSON, useValue: {} },
       ],
     }).compileComponents();
 

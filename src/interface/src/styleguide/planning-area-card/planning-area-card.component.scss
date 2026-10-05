@@ -1,14 +1,18 @@
 @import 'colors';
 @import 'mixins';
 
-:host {
+.card-link {
   display: flex;
   border-radius: 8px;
+  border: 1px solid $color-soft-gray;
   box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.16);
   padding: 16px;
   gap: 16px;
   background-color: $color-white;
   align-items: center;
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
 
   .map-container {
     display: flex;
@@ -24,10 +28,14 @@
   }
 }
 
+.card-link:hover {
+  background-color: $color-light-gray;
+}
+
 .header {
   display: inline-flex;
-  align-items: center;
-  .more-menu-button {
+  align-items: baseline;
+  .menu {
     margin-left: auto;
   }
 }
@@ -45,6 +53,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    gap: 8px;
 
     .detail-header {
       font-size: 14px;
@@ -58,13 +67,5 @@
       font-weight: 600;
       color: $color-black;
     }
-  }
-}
-
-.delete {
-  color: $color-error;
-
-  mat-icon {
-    color: $color-error;
   }
 }

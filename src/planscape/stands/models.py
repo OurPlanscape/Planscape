@@ -33,6 +33,13 @@ STAND_AREA_ACRES = {
     StandSizeChoices.SMALL: 9.884,
 }
 
+# Rounded acres, used only for display purposes.
+STAND_DISPLAY_ACRES = {
+    StandSizeChoices.LARGE: 500,
+    StandSizeChoices.MEDIUM: 100,
+    StandSizeChoices.SMALL: 10,
+}
+
 STAND_PIXELS = {
     # 200 ha / 500ac
     StandSizeChoices.LARGE: 3960,

@@ -32,6 +32,7 @@ import {
 import { DataLayerSelectionComponent } from '@plan/climate-foresight/climate-foresight-run/data-layer-selection/data-layer-selection.component';
 import { AssignFavorabilityComponent } from '@plan/climate-foresight/climate-foresight-run/assign-favorability/assign-favorability.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { getPlanPath } from '@plan/plan-helpers';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { AssignPillarsComponent } from '@plan/climate-foresight/climate-foresight-run/assign-pillars/assign-pillars.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -184,7 +185,7 @@ export class ClimateForesightRunComponent implements OnInit {
               if (breadcrumb?.label !== `Climate Foresight: ${run.name}`) {
                 this.breadcrumbService.updateBreadCrumb({
                   label: `Climate Foresight: ${run.name}`,
-                  backUrl: `/plan/${this.currentPlan?.id}/climate-foresight`,
+                  backUrl: `${this.planPath}/climate-foresight`,
                   icon: 'close',
                   blackText: true,
                 });
@@ -219,9 +220,14 @@ export class ClimateForesightRunComponent implements OnInit {
   }
 
   onFinished(): void {
-    this.router.navigate([`/plan/${this.currentPlan?.id}/climate-foresight`], {
-      relativeTo: this.route,
-    });
+    this.router.navigate([`${this.planPath}/climate-foresight`]);
+  }
+
+  private get planPath() {
+    return getPlanPath(
+      this.route.snapshot.params['planId'],
+      this.route.snapshot
+    );
   }
 
   goToNextStep(): void {
@@ -482,12 +488,7 @@ export class ClimateForesightRunComponent implements OnInit {
 
           this.savingStep = false;
 
-          this.router.navigate(
-            [`/plan/${this.currentPlan?.id}/climate-foresight`],
-            {
-              relativeTo: this.route,
-            }
-          );
+          this.router.navigate([`${this.planPath}/climate-foresight`]);
         },
         error: (error) => {
           Sentry.captureException(error);

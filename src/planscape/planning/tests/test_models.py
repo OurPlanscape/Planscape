@@ -5,6 +5,7 @@ from datasets.tests.factories import DataLayerFactory
 from django.db.utils import IntegrityError
 from django.test import TestCase
 from planscape.tests.factories import UserFactory
+from workspaces.tests.factories import PlanningWorkspaceFactory
 
 from planning.models import PlanningArea, RegionChoices, ScenarioType
 from planning.tests.factories import (
@@ -16,16 +17,31 @@ from planning.tests.factories import (
 
 
 class PlanningAreaModelTest(TestCase):
-    def test_cannot_create_two_planning_areas_with_same_name(self):
+    def test_cannot_create_two_planning_areas_with_same_name_in_workspace(self):
         user = UserFactory()
-        PlanningAreaFactory(
-            name="foo", region_name=RegionChoices.SIERRA_NEVADA, user=user
-        )
+        workspace = PlanningWorkspaceFactory(created_by=user)
+        PlanningAreaFactory(name="foo", user=user, workspace=workspace)
 
         with self.assertRaises(IntegrityError):
-            PlanningArea.objects.create(
-                user=user, name="foo", region_name=RegionChoices.SIERRA_NEVADA
-            )
+            PlanningArea.objects.create(user=user, name="foo", workspace=workspace)
+
+    def test_same_name_in_different_workspaces(self):
+        user = UserFactory()
+        PlanningAreaFactory(
+            name="foo", user=user, workspace=PlanningWorkspaceFactory(created_by=user)
+        )
+        PlanningArea.objects.create(
+            user=user, name="foo", workspace=PlanningWorkspaceFactory(created_by=user)
+        )
+
+        self.assertEqual(2, PlanningArea.objects.filter(name="foo").count())
+
+    def test_same_name_without_workspace(self):
+        user = UserFactory()
+        PlanningAreaFactory(name="foo", user=user)
+        PlanningArea.objects.create(user=user, name="foo")
+
+        self.assertEqual(2, PlanningArea.objects.filter(name="foo").count())
 
     def test_use_name_of_a_deleted_planning_area(self):
         try:
@@ -103,6 +119,18 @@ class ScenarioModelTest(TestCase):
         datalayers = scenario.get_raster_datalayers()
         self.assertEqual(len(datalayers), 5)
 
+    def test_get_raster_datalayers_preset_scenario_with_constraints(self):
+        constraints_datalayers = DataLayerFactory.create_batch(
+            size=2, type=DataLayerType.RASTER
+        )
+        scenario = ScenarioFactory(
+            type=ScenarioType.PRESET, 
+            treatment_goal=self.treatment_goal,
+            with_constraints=constraints_datalayers,
+        )
+        datalayers = scenario.get_raster_datalayers()
+        self.assertEqual(len(datalayers), 7)
+
     def test_get_raster_datalayers_custom_scenario(self):
         scenario = ScenarioFactory(
             type=ScenarioType.CUSTOM,
@@ -112,9 +140,38 @@ class ScenarioModelTest(TestCase):
         datalayers = scenario.get_raster_datalayers()
         self.assertEqual(len(datalayers), 5)
 
+    def test_get_raster_datalayers_custom_scenario_with_constraints(self):
+        constraints_datalayers = DataLayerFactory.create_batch(
+            size=2, type=DataLayerType.RASTER
+        )
+        scenario = ScenarioFactory(
+            type=ScenarioType.CUSTOM,
+            with_priorities=self.datalayers[:2],
+            with_cobenefits=self.datalayers[2:],
+            with_constraints=constraints_datalayers,
+        )
+        datalayers = scenario.get_raster_datalayers()
+        self.assertEqual(len(datalayers), 7)
+
     def test_scenario_can_have_parent(self):
         parent = ScenarioFactory.create()
         child = ScenarioFactory.create(parent=parent)
 
         self.assertEqual(child.parent, parent)
         self.assertIn(child, parent.children.all())
+
+    def test_sub_unit_datalayer_returns_none_without_config_value(self):
+        scenario = ScenarioFactory(configuration={})
+
+        self.assertIsNone(scenario.sub_unit_datalayer)
+
+    def test_sub_unit_datalayer_returns_configured_datalayer(self):
+        datalayer = DataLayerFactory.create(type=DataLayerType.VECTOR)
+        scenario = ScenarioFactory(configuration={"sub_units_layer": datalayer.pk})
+
+        self.assertEqual(scenario.sub_unit_datalayer, datalayer)
+
+    def test_sub_unit_datalayer_returns_none_for_missing_datalayer_id(self):
+        scenario = ScenarioFactory(configuration={"sub_units_layer": 99999999})
+
+        self.assertIsNone(scenario.sub_unit_datalayer)

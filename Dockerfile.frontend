@@ -6,7 +6,7 @@ COPY src/interface/package.json src/interface/package-lock.json ./
 RUN npm ci
 
 COPY src/interface/ ./
-RUN npm run build -- --configuration production --output-path=dist/out
+RUN npm run build -- --configuration docker --output-path=dist/out
 
 FROM nginx:1.27-alpine
 

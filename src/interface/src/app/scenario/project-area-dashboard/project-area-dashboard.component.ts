@@ -71,7 +71,7 @@ export class ProjectAreaDashboardComponent implements OnInit {
   ngOnInit(): void {
     this.breadcrumbService.updateBreadCrumb({
       label: 'Planning Area Overview',
-      backUrl: getPlanPath(this.planId),
+      backUrl: getPlanPath(this.planId, this.route.snapshot),
     });
     if (this.shouldShowInProgressModal) {
       this.showInProgressModal();

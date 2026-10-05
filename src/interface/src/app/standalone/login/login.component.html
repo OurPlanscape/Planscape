@@ -9,6 +9,20 @@
     <div class="signin-card">
       <h1 class="signin-title">Sign in to Planscape</h1>
 
+      <sg-banner
+        class="error"
+        type="error"
+        *ngIf="loginError ? true : false"
+        iconPosition="top"
+        >Either the user name or password that you have entered is incorrect.
+        Please try again.
+        <div *ngIf="offerReverify">
+          <a [routerLink]="[]" (click)="resendVerification()"
+            >Click here to re-send your verification email.</a
+          >
+        </div>
+      </sg-banner>
+
       <form [formGroup]="form" (ngSubmit)="login()" autocomplete="on">
         <mat-label class="standard-label"
           >Email
@@ -54,19 +68,6 @@
             Password is required.
           </mat-error>
         </mat-form-field>
-
-        <app-form-message
-          [messageType]="FormMessageType.ERROR"
-          *ngIf="loginError ? true : false"
-          title="Credentials error"
-          class="d-block mb-10"
-          message="{{ loginError }}">
-          <div *ngIf="offerReverify">
-            <a [routerLink]="[]" (click)="resendVerification()"
-              >Click here to re-send your verification email.</a
-            >
-          </div>
-        </app-form-message>
 
         <mat-card-actions class="login-form-buttons">
           <button

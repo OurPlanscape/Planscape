@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Plan, PreviewPlan } from '@types';
 import {
   canDeletePlanningArea,
@@ -12,7 +12,7 @@ import { take } from 'rxjs';
 import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { AuthService, PlanService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SharePlanDialogComponent } from '@home/share-plan-dialog/share-plan-dialog.component';
+import { ShareDialogComponent } from '@app/sharing/share-dialog/share-dialog.component';
 import {
   MatDialog,
   MatDialogModule,
@@ -40,6 +40,11 @@ import { MatButtonModule } from '@angular/material/button';
 })
 export class PlanningAreaMenuComponent {
   @Input() plan!: Plan | PreviewPlan;
+  @Input() showOpen = true;
+  @Input() showViewMap = true;
+  @Input() showRename = true;
+  @Input() showShare = true;
+  @Input() showDelete = true;
   @Output() afterDelete = new EventEmitter();
   @Output() afterRename = new EventEmitter();
 
@@ -48,11 +53,22 @@ export class PlanningAreaMenuComponent {
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private planService: PlanService,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private route: ActivatedRoute
   ) {}
 
   get shareEnabled() {
     return canViewCollaborators(this.plan);
+  }
+
+  get hasActions(): boolean {
+    return (
+      this.showOpen ||
+      this.showViewMap ||
+      (this.showRename && this.canEditPlanName) ||
+      (this.showShare && this.shareEnabled) ||
+      (this.showDelete && this.canDeletePlanningArea)
+    );
   }
 
   stopClickEvent(event: MouseEvent) {
@@ -61,10 +77,8 @@ export class PlanningAreaMenuComponent {
   }
 
   sharePlan() {
-    this.dialog.open(SharePlanDialogComponent, {
-      data: {
-        plan: this.plan,
-      },
+    this.dialog.open(ShareDialogComponent, {
+      data: { kind: 'plan', plan: this.plan },
       restoreFocus: false,
       panelClass: 'no-padding-dialog',
     });
@@ -93,6 +107,7 @@ export class PlanningAreaMenuComponent {
         data: {
           planName: this.plan.name,
           planId: this.plan.id,
+          workspaceId: this.route.snapshot.data['workspaceId'] ?? undefined,
         },
       }
     );

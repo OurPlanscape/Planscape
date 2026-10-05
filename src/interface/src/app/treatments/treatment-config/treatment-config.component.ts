@@ -42,6 +42,7 @@ import { PlanState } from '@plan/plan.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { getPlanPath } from '@plan/plan-helpers';
 
 @UntilDestroy()
 @Component({
@@ -163,15 +164,17 @@ export class TreatmentConfigComponent {
   );
 
   redirectToScenario() {
-    const summary = this.treatmentsState.getCurrentSummary();
-    let url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
-    this.router.navigate([url]);
+    this.router.navigate([this.scenarioPath()]);
   }
 
   redirectToNewPlan(planId: number) {
+    this.router.navigate([`${this.scenarioPath()}/treatment/${planId}`]);
+  }
+
+  private scenarioPath() {
     const summary = this.treatmentsState.getCurrentSummary();
-    let url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${planId}`;
-    this.router.navigate([url]);
+    const planPath = getPlanPath(summary.planning_area_id, this.route.snapshot);
+    return `${planPath}/scenario/${summary.scenario_id}`;
   }
 
   showReviewDialog() {

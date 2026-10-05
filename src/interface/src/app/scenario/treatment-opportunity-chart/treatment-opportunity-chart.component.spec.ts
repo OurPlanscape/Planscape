@@ -23,4 +23,19 @@ describe('TreatmentOpportunityChartComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('labels the x axis with the project area rank by default', () => {
+    expect(component.chartXAxisLabel).toBe('Project Area Rank');
+  });
+
+  it('labels the x axis with the subunit rank for a subunits scenario', () => {
+    component.planningApproach = 'PRIORITIZE_SUB_UNITS';
+    expect(component.chartXAxisLabel).toBe('Subunit Rank');
+  });
+
+  it('labels the x axis with the project area rank for a child of a subunits scenario', () => {
+    component.planningApproach = 'PRIORITIZE_SUB_UNITS';
+    component.hasParent = true;
+    expect(component.chartXAxisLabel).toBe('Project Area Rank');
+  });
 });

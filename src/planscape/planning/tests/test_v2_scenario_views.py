@@ -9,16 +9,19 @@ from django.test import TestCase
 from django.urls import reverse
 from modules.base import compute_scenario_capabilities
 from rest_framework import status
-from rest_framework.test import APITestCase, APITransactionTestCase
+from rest_framework.test import APITestCase
 
 from planning.models import (
+    GeoPackageStatus,
     Scenario,
     ScenarioCapability,
     ScenarioPlanningApproach,
     ScenarioResult,
+    ScenarioResultStatus,
     ScenarioType,
     ScenarioVersion,
     TreatmentGoalGroup,
+    TreatmentGoalUsageType,
 )
 from planning.serializers import ListScenarioSerializer, ScenarioV2Serializer
 from planning.tests.factories import (
@@ -27,11 +30,12 @@ from planning.tests.factories import (
     ScenarioFactory,
     ScenarioResultFactory,
     TreatmentGoalFactory,
+    TreatmentGoalUsesDataLayerFactory,
     UserFactory,
 )
 
 
-class CreateScenarioTest(APITransactionTestCase):
+class CreateScenarioTest(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.planning_area = PlanningAreaFactory(user=self.user)
@@ -64,11 +68,12 @@ class CreateScenarioTest(APITransactionTestCase):
             "configuration": configuration,
         }
         self.client.force_authenticate(self.user)
-        response = self.client.post(
-            reverse("api:planning:scenarios-list"),
-            payload,
-            format="json",
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(
+                reverse("api:planning:scenarios-list"),
+                payload,
+                format="json",
+            )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNotNone(response.json().get("id"))
@@ -1278,6 +1283,53 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(config.get("stand_size"), "SMALL")
         self.assertEqual(config.get("targets").get("estimated_cost"), 12345)
 
+    def test_patch_scenario_configuration_accepts_dne_and_btw_constraints(self):
+        dne_datalayer = DataLayerFactory(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        btw_datalayer = DataLayerFactory(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        payload = {
+            "configuration": {
+                "constraints": [
+                    {
+                        "datalayer": dne_datalayer.pk,
+                        "operator": "dne",
+                        "value": "10",
+                    },
+                    {
+                        "datalayer": btw_datalayer.pk,
+                        "operator": "btw",
+                        "value": "10,20",
+                    },
+                ],
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        config = response.data.get("configuration", {})
+        self.assertEqual(
+            config["constraints"],
+            [
+                {
+                    "datalayer": dne_datalayer.pk,
+                    "operator": "dne",
+                    "value": "10",
+                },
+                {
+                    "datalayer": btw_datalayer.pk,
+                    "operator": "btw",
+                    "value": "10,20",
+                },
+            ],
+        )
+
     # Test sequential patches, ensure we retain values as expected
     @mock.patch(
         "planning.serializers.calculate_scenario_treatable_area",
@@ -1439,6 +1491,10 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.assertEqual(config8.get("stand_size"), "SMALL")
         self.assertEqual(response8.data["treatment_goal"]["id"], new_goal.pk)
         self.assertEqual(response8.data["treatment_goal"]["name"], new_goal.name)
+        self.assertEqual(
+            response8.data["treatment_goal"]["category"],
+            new_goal.category.name,
+        )
 
     @mock.patch(
         "planning.serializers.calculate_scenario_treatable_area",
@@ -1506,7 +1562,6 @@ class PatchScenarioConfigurationTest(APITestCase):
     def test_patch_scenario_with_includes_empty_list(
         self, calculate_scenario_treatable_area_mock
     ):
-
         payload = {
             "configuration": {
                 "included_areas": [],
@@ -2045,6 +2100,45 @@ class PatchScenarioConfigurationTest(APITestCase):
             original_stand_count,
         )
 
+    def test_patch_full_configuration_uses_incoming_stand_size_for_fixed_target(
+        self,
+    ):
+        scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            configuration={},
+            treatment_goal=None,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+
+        url = reverse(
+            "api:planning:scenarios-patch-draft",
+            args=[scenario.pk],
+        )
+
+        payload = {
+            "configuration": {
+                "stand_size": "SMALL",
+                "targets": {
+                    "sub_units_fixed_target": True,
+                    "sub_units_target_value": 50,
+                },
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data["configuration"]["stand_size"],
+            "SMALL",
+        )
+        self.assertEqual(
+            response.data["configuration"]["targets"]["sub_units_target_value"],
+            50,
+        )
+
 
 class ScenarioCapabilitiesViewTest(APITestCase):
     def setUp(self):
@@ -2160,6 +2254,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
                 "CLIMATE_FORESIGHT",
                 "PRIORITIZE_SUB_UNITS",
                 "FUNDING_REPORT",
+                "ADVANCED_STAND_LEVEL_CONSTRAINT",
             },
         )
 
@@ -2183,6 +2278,7 @@ class ScenarioCapabilitiesViewTest(APITestCase):
                 "CLIMATE_FORESIGHT",
                 "PRIORITIZE_SUB_UNITS",
                 "FUNDING_REPORT",
+                "ADVANCED_STAND_LEVEL_CONSTRAINT",
             },
         )
 
@@ -2197,7 +2293,15 @@ class ScenarioCapabilitiesViewTest(APITestCase):
 
         caps = resp.data.get("capabilities")
         self.assertIsInstance(caps, list)
-        self.assertSetEqual(set(caps), {"MAP", "FORSYS", "PRIORITIZE_SUB_UNITS"})
+        self.assertSetEqual(
+            set(caps),
+            {
+                "MAP",
+                "FORSYS",
+                "PRIORITIZE_SUB_UNITS",
+                "ADVANCED_STAND_LEVEL_CONSTRAINT",
+            },
+        )
 
 
 class CreateScenarioForDraftsTest(APITestCase):
@@ -2748,3 +2852,553 @@ class SubUnitsDetailsTest(APITestCase):
             None,
             None,
         )
+
+
+class DownloadGeopackageTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning_area, user=self.user
+        )
+        self.url = reverse(
+            "api:planning:scenarios-download-geopackage", args=[self.scenario.pk]
+        )
+
+    @mock.patch("planning.views_v2.track_event")
+    @mock.patch(
+        "planning.models.create_download_url",
+        return_value="http://example.com/download",
+    )
+    def test_download_returns_url_when_succeeded(
+        self, mock_create_download_url, mock_track_event
+    ):
+        self.scenario.geopackage_status = GeoPackageStatus.SUCCEEDED
+        self.scenario.geopackage_url = "gs://bucket/path/to/geopackage.gpkg"
+        self.scenario.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["status"], "ready")
+        self.assertEqual(data["download_url"], "http://example.com/download")
+
+        mock_track_event.assert_called_once()
+        _, kwargs = mock_track_event.call_args
+        self.assertEqual(kwargs["name"], "planning.scenario.geopackage_downloaded")
+        self.assertEqual(kwargs["properties"]["scenario_id"], self.scenario.pk)
+        self.assertEqual(kwargs["properties"]["status"], "ready")
+        self.assertEqual(kwargs["user_id"], self.user.pk)
+
+    @mock.patch("planning.views_v2.track_event")
+    def test_download_returns_processing_status_without_tracking(
+        self, mock_track_event
+    ):
+        self.scenario.geopackage_status = GeoPackageStatus.PROCESSING
+        self.scenario.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "processing")
+        mock_track_event.assert_not_called()
+
+    @mock.patch("planning.views_v2.async_generate_scenario_geopackage")
+    @mock.patch("planning.views_v2.track_event")
+    def test_download_returns_pending_status_without_retriggering(
+        self, mock_track_event, mock_task
+    ):
+        # Already queued by a previous ask - a client polling for status
+        # shouldn't re-track the ask or re-queue generation.
+        self.scenario.geopackage_status = GeoPackageStatus.PENDING
+        self.scenario.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "pending")
+        mock_task.delay.assert_not_called()
+        mock_track_event.assert_not_called()
+
+    @mock.patch("planning.views_v2.async_generate_scenario_geopackage")
+    @mock.patch("planning.views_v2.track_event")
+    def test_download_triggers_generation_and_tracks_as_generating(
+        self, mock_track_event, mock_task
+    ):
+        self.scenario.geopackage_status = None
+        self.scenario.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "pending")
+        mock_task.delay.assert_called_once_with(self.scenario.pk, regenerate=False)
+        mock_track_event.assert_called_once()
+        _, kwargs = mock_track_event.call_args
+        self.assertEqual(kwargs["name"], "planning.scenario.geopackage_downloaded")
+        self.assertEqual(kwargs["properties"]["status"], "generating")
+
+        self.scenario.refresh_from_db()
+        self.assertEqual(self.scenario.geopackage_status, GeoPackageStatus.PENDING)
+
+    @mock.patch("planning.views_v2.async_generate_scenario_geopackage")
+    @mock.patch("planning.views_v2.track_event")
+    def test_download_retries_failed_generation_with_regenerate(
+        self, mock_track_event, mock_task
+    ):
+        # `async_generate_scenario_geopackage` only proceeds for PENDING
+        # scenarios unless `regenerate=True` is passed, so a FAILED retry
+        # must force it - otherwise the task silently no-ops.
+        self.scenario.geopackage_status = GeoPackageStatus.FAILED
+        self.scenario.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["status"], "pending")
+        mock_task.delay.assert_called_once_with(self.scenario.pk, regenerate=True)
+        mock_track_event.assert_called_once()
+        _, kwargs = mock_track_event.call_args
+        self.assertEqual(kwargs["properties"]["status"], "generating")
+
+        self.scenario.refresh_from_db()
+        self.assertEqual(self.scenario.geopackage_status, GeoPackageStatus.PENDING)
+
+    def test_download_requires_authentication(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class GetScenarioConfigurationTest(APITestCase):
+    def setUp(self):
+        self.creator = UserFactory()
+        self.viewer = UserFactory()
+        self.not_invited = UserFactory()
+        self.planning_area = PlanningAreaFactory(
+            user=self.creator,
+            name="Sierra North",
+            viewers=[self.viewer],
+        )
+
+        self.slope = DataLayerFactory(
+            name="Slope", metadata={"modules": {"forsys": {"name": "slope"}}}
+        )
+        self.roads = DataLayerFactory(
+            name="Distance from roads",
+            metadata={"modules": {"forsys": {"name": "distance_from_roads"}}},
+        )
+        self.whp = DataLayerFactory(name="Wildfire Hazard Potential")
+        self.included_area = DataLayerFactory(name="Included area")
+        self.excluded_area = DataLayerFactory(name="Excluded area")
+        self.priority = DataLayerFactory(name="Priority")
+        self.other_priority = DataLayerFactory(name="Other priority")
+        self.cobenefit = DataLayerFactory(name="Cobenefit")
+
+    def _get(self, scenario, user=None):
+        self.client.force_authenticate(user or self.creator)
+        url = reverse("api:planning:scenarios-get-configuration", args=[scenario.pk])
+        return self.client.get(url)
+
+    def _named(self, instance):
+        return {"id": instance.pk, "name": instance.name}
+
+    def test_v3_preset_scenario(self):
+        goal = TreatmentGoalFactory(name="Reduce wildfire risk")
+        threshold_layer = DataLayerFactory(name="Threshold")
+        TreatmentGoalUsesDataLayerFactory(
+            treatment_goal=goal,
+            datalayer=self.priority,
+            usage_type=TreatmentGoalUsageType.PRIORITY,
+            weight=2,
+        )
+        TreatmentGoalUsesDataLayerFactory(
+            treatment_goal=goal,
+            datalayer=self.cobenefit,
+            usage_type=TreatmentGoalUsageType.SECONDARY_METRIC,
+            weight=None,
+        )
+        TreatmentGoalUsesDataLayerFactory(
+            treatment_goal=goal,
+            datalayer=threshold_layer,
+            usage_type=TreatmentGoalUsageType.THRESHOLD,
+            threshold="value < 1",
+            weight=None,
+        )
+        TreatmentGoalUsesDataLayerFactory(
+            treatment_goal=goal,
+            datalayer=self.other_priority,
+            usage_type=TreatmentGoalUsageType.PRIORITY,
+        ).delete()
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            type=ScenarioType.PRESET,
+            treatment_goal=goal,
+            planning_approach=ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS,
+            configuration={
+                "stand_size": "SMALL",
+                "targets": {
+                    "max_area": 500,
+                    "max_project_count": 5,
+                    "estimated_cost": 2470,
+                },
+                "constraints": [
+                    {"datalayer": self.slope.pk, "operator": "lte", "value": "40"},
+                    {"datalayer": self.roads.pk, "operator": "lte", "value": "100"},
+                    {"datalayer": self.whp.pk, "operator": "gt", "value": "0"},
+                ],
+                "included_areas_ids": [self.included_area.pk],
+                "excluded_areas_ids": [self.excluded_area.pk],
+                "priorities": [],
+                "cobenefits": [],
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.json(),
+            {
+                "version": ScenarioVersion.V3,
+                "type": ScenarioType.PRESET,
+                "planning_area": {
+                    "id": self.planning_area.pk,
+                    "name": "Sierra North",
+                },
+                "stand_size": {"key": "SMALL", "label": "Small", "acres": 10},
+                "planning_approach": {
+                    "key": "OPTIMIZE_PROJECT_AREAS",
+                    "label": "Optimize Project Areas",
+                },
+                "sub_units_layer": None,
+                "treatment_goal": {"id": goal.pk, "name": "Reduce wildfire risk"},
+                "priority_objectives": [{**self._named(self.priority), "weight": 2}],
+                "cobenefits": [self._named(self.cobenefit)],
+                "treatment_goal_constraints": [
+                    {
+                        "datalayer": self._named(threshold_layer),
+                        "threshold": "value < 1",
+                    }
+                ],
+                "included_areas": [self._named(self.included_area)],
+                "excluded_areas": [self._named(self.excluded_area)],
+                "stand_level_constraints": [
+                    {
+                        "datalayer": self._named(self.slope),
+                        "operator": "lte",
+                        "value": "40",
+                    },
+                    {
+                        "datalayer": self._named(self.roads),
+                        "operator": "lte",
+                        "value": "100",
+                    },
+                ],
+                "advanced_stand_level_constraints": [
+                    {
+                        "datalayer": self._named(self.whp),
+                        "operator": "gt",
+                        "value": "0",
+                    }
+                ],
+                "targets": {
+                    "max_area": 500.0,
+                    "max_project_count": 5,
+                    "estimated_cost": 2470.0,
+                    "max_budget": None,
+                    "sub_units_fixed_target": None,
+                    "sub_units_target_value": None,
+                },
+            },
+        )
+
+    def test_v3_custom_scenario(self):
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            type=ScenarioType.CUSTOM,
+            treatment_goal=None,
+            configuration={
+                "stand_size": "MEDIUM",
+                "targets": {"max_area": 100, "max_project_count": 2},
+                "priorities": [
+                    {"datalayer": self.priority.pk, "weight": 2},
+                    {"datalayer": self.other_priority.pk, "weight": 1},
+                ],
+                "cobenefits": [self.cobenefit.pk, 999999],
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["type"], ScenarioType.CUSTOM)
+        self.assertIsNone(data["treatment_goal"])
+        self.assertEqual(
+            data["stand_size"], {"key": "MEDIUM", "label": "Medium", "acres": 100}
+        )
+        self.assertEqual(
+            data["priority_objectives"],
+            [
+                {**self._named(self.priority), "weight": 2},
+                {**self._named(self.other_priority), "weight": 1},
+            ],
+        )
+        self.assertEqual(data["cobenefits"], [self._named(self.cobenefit)])
+        self.assertEqual(data["treatment_goal_constraints"], [])
+        self.assertEqual(data["included_areas"], [])
+        self.assertEqual(data["excluded_areas"], [])
+        self.assertEqual(data["stand_level_constraints"], [])
+        self.assertEqual(data["advanced_stand_level_constraints"], [])
+
+    def test_v3_custom_scenario_with_legacy_priority_objectives(self):
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            type=ScenarioType.CUSTOM,
+            treatment_goal=None,
+            configuration={
+                "targets": {"max_area": 100, "max_project_count": 2},
+                "priority_objectives": [self.priority.pk],
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(
+            data["priority_objectives"],
+            [{**self._named(self.priority), "weight": 1}],
+        )
+        self.assertIsNone(data["stand_size"])
+
+    def test_v3_custom_scenario_ignores_leftover_treatment_goal(self):
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            type=ScenarioType.CUSTOM,
+            treatment_goal=TreatmentGoalFactory(with_datalayers=True),
+            configuration={
+                "targets": {"max_area": 100, "max_project_count": 2},
+                "priorities": [{"datalayer": self.priority.pk, "weight": 1}],
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIsNone(data["treatment_goal"])
+        self.assertEqual(
+            data["priority_objectives"],
+            [{**self._named(self.priority), "weight": 1}],
+        )
+        self.assertEqual(data["cobenefits"], [])
+        self.assertEqual(data["treatment_goal_constraints"], [])
+
+    def test_v3_sub_units_scenario(self):
+        sub_units_layer = DataLayerFactory(name="HUC12")
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+            configuration={
+                "stand_size": "LARGE",
+                "sub_units_layer": sub_units_layer.pk,
+                "targets": {
+                    "max_area": None,
+                    "max_project_count": None,
+                    "estimated_cost": 2470,
+                    "sub_units_fixed_target": False,
+                    "sub_units_target_value": 20,
+                },
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(
+            data["planning_approach"],
+            {"key": "PRIORITIZE_SUB_UNITS", "label": "Prioritize Sub-Units"},
+        )
+        self.assertEqual(data["sub_units_layer"], self._named(sub_units_layer))
+        self.assertEqual(
+            data["targets"],
+            {
+                "max_area": None,
+                "max_project_count": None,
+                "estimated_cost": 2470.0,
+                "max_budget": None,
+                "sub_units_fixed_target": False,
+                "sub_units_target_value": 20.0,
+            },
+        )
+
+    def test_missing_datalayers_are_skipped(self):
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            configuration={
+                "targets": {"max_area": 100, "max_project_count": 2},
+                "included_areas_ids": [self.included_area.pk, 999999],
+                "excluded_areas_ids": [999998],
+                "constraints": [
+                    {"datalayer": 999997, "operator": "gt", "value": "0"},
+                ],
+                "sub_units_layer": 999996,
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["included_areas"], [self._named(self.included_area)])
+        self.assertEqual(data["excluded_areas"], [])
+        self.assertEqual(data["stand_level_constraints"], [])
+        self.assertEqual(data["advanced_stand_level_constraints"], [])
+        self.assertIsNone(data["sub_units_layer"])
+
+    def test_v2_scenario(self):
+        goal = TreatmentGoalFactory(datalayers=[self.priority])
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            treatment_goal=goal,
+            configuration={
+                "stand_size": "LARGE",
+                "estimated_cost": 2470,
+                "max_budget": 100000,
+                "max_area": None,
+                "max_project_count": 5,
+                "max_slope": 30,
+                "min_distance_from_road": 200,
+                "excluded_areas_ids": [self.excluded_area.pk],
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["version"], ScenarioVersion.V2)
+        self.assertEqual(data["treatment_goal"], self._named(goal))
+        self.assertEqual(
+            data["priority_objectives"],
+            [{**self._named(self.priority), "weight": 1}],
+        )
+        self.assertEqual(data["excluded_areas"], [self._named(self.excluded_area)])
+        self.assertEqual(data["included_areas"], [])
+        self.assertEqual(
+            data["stand_level_constraints"],
+            [
+                {
+                    "datalayer": self._named(self.slope),
+                    "operator": "lte",
+                    "value": "30",
+                },
+                {
+                    "datalayer": self._named(self.roads),
+                    "operator": "lte",
+                    "value": "200",
+                },
+            ],
+        )
+        self.assertEqual(
+            data["targets"],
+            {
+                "max_area": None,
+                "max_project_count": 5,
+                "estimated_cost": 2470.0,
+                "max_budget": 100000.0,
+                "sub_units_fixed_target": None,
+                "sub_units_target_value": None,
+            },
+        )
+
+    def test_v1_scenario(self):
+        goal = TreatmentGoalFactory()
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            treatment_goal=None,
+            configuration={
+                "question_id": goal.pk,
+                "stand_size": "MEDIUM",
+                "est_cost": 2000,
+                "max_treatment_area_ratio": 40000,
+                "max_slope": 25,
+                "excluded_areas": ["national_forests", str(self.excluded_area.pk)],
+            },
+        )
+
+        response = self._get(scenario)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["version"], ScenarioVersion.V1)
+        self.assertEqual(data["treatment_goal"], self._named(goal))
+        self.assertEqual(
+            data["excluded_areas"],
+            [
+                {"id": None, "name": "national_forests"},
+                self._named(self.excluded_area),
+            ],
+        )
+        self.assertEqual(
+            data["stand_level_constraints"],
+            [
+                {
+                    "datalayer": self._named(self.slope),
+                    "operator": "lte",
+                    "value": "25",
+                }
+            ],
+        )
+        self.assertEqual(data["targets"]["max_area"], 40000.0)
+        self.assertEqual(data["targets"]["estimated_cost"], 2000.0)
+        self.assertIsNone(data["targets"]["max_budget"])
+
+    def test_viewer_can_get_configuration(self):
+        scenario = ScenarioFactory(planning_area=self.planning_area, user=self.creator)
+
+        response = self._get(scenario, user=self.viewer)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_not_invited_cannot_get_configuration(self):
+        scenario = ScenarioFactory(planning_area=self.planning_area, user=self.creator)
+
+        response = self._get(scenario, user=self.not_invited)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_anonymous_cannot_get_configuration(self):
+        scenario = ScenarioFactory(planning_area=self.planning_area, user=self.creator)
+        url = reverse("api:planning:scenarios-get-configuration", args=[scenario.pk])
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_other_users_draft_is_not_found(self):
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.creator,
+            result_status=ScenarioResultStatus.DRAFT,
+        )
+
+        response = self._get(scenario, user=self.viewer)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

@@ -16,6 +16,7 @@ Please see our [wiki](https://github.com/OurPlanscape/Planscape/wiki) for more p
 `CONTRIBUTING.md`
 `docs/`
  ├─ `setup_planscape_locally.md`
+ ├─ `deploy_on_cloud_run.md`
  └─ etc.
 ```
 
@@ -29,7 +30,8 @@ Please see our [wiki](https://github.com/OurPlanscape/Planscape/wiki) for more p
 ## Built With
 
 - [Angular](https://angular.io/) — frontend framework
-- [Ansible](https://www.ansible.com/) — deployment & configuration automation
+- [Ansible](https://www.ansible.com/) — deployment & configuration automation (deprecated)
+- [Terraform](https://developer.hashicorp.com/terraform) - development & configuration automation
 - [black](https://black.readthedocs.io/en/stable/) — Python code formatter
 - [Celery](https://docs.celeryq.dev/) — task queue for background jobs
 - [Django REST framework](https://www.django-rest-framework.org/) — backend API framework

@@ -32,11 +32,45 @@
             height: 16px;
             font-size: 16px;
         }
+
+        &.is-hoverable {
+            pointer-events: auto;
+            cursor: pointer;
+
+            &:hover {
+                background-color: $color-brand-teal;
+                --mdc-chip-label-text-color: #{$color-white};
+                --mdc-chip-with-icon-icon-color: #fff;
+
+                ::ng-deep {
+                    .mat-mdc-chip-remove {
+                        color: $color-white;
+
+                        ;
+                    }
+                }
+            }
+        }
+
+        &.selected-chip {
+            background-color: $color-brand-teal;
+            --mdc-chip-label-text-color: #{$color-white};
+            --mdc-chip-with-icon-icon-color: #{$color-white};
+            ;
+
+            ::ng-deep {
+                .mat-mdc-chip-remove {
+                    color: $color-white;
+                    ;
+                }
+            }
+        }
     }
 
     ::ng-deep {
         .chip-row.mat-mdc-standard-chip {
             --mdc-chip-selected-container-color: transparent;
+
             .mdc-evolution-chip__action--primary::before,
             .mdc-evolution-chip__action--primary::after,
             .mat-mdc-chip-focus-overlay {
@@ -46,24 +80,29 @@
 
         .chip-button.mat-mdc-chip-remove {
             position: relative;
+
             &::before {
                 background-color: $color-brand-soft-green;
                 border-radius: 16px;
                 opacity: 0;
                 display: block;
             }
+
             &:hover::before {
                 opacity: 1;
             }
+
             &:active::before {
                 opacity: 1;
                 filter: brightness(0.6);
             }
+
             &:hover mat-icon,
             &:active mat-icon {
                 color: $color-dark-gray;
                 position: relative;
             }
+
             .mat-mdc-chip-state-layer {
                 display: none;
             }

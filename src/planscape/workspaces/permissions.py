@@ -1,31 +1,9 @@
-from typing import Optional
-
 from collaboration.permissions import CheckPermissionMixin
 from django.contrib.auth.models import AbstractUser
 from planscape.permissions import PlanscapePermission
 
-from workspaces.models import UserAccessWorkspace, Workspace, WorkspaceRole
-
-
-def get_workspace_role(
-    user: AbstractUser,
-    workspace: Workspace,
-) -> Optional[str]:
-    """
-    Returns the role the user holds in the workspace, or None.
-    The creator is always treated as an owner, even if the access row is gone.
-    """
-    if not user or not user.is_authenticated:
-        return None
-
-    if workspace.created_by_id and workspace.created_by_id == user.pk:
-        return WorkspaceRole.OWNER
-
-    access = UserAccessWorkspace.objects.filter(
-        user=user,
-        workspace=workspace,
-    ).first()
-    return access.role if access else None
+from workspaces.access import get_workspace_role
+from workspaces.models import Workspace, WorkspaceRole
 
 
 VIEWER_PERMISSIONS = [
@@ -78,6 +56,32 @@ class WorkspacePermission(CheckPermissionMixin):
     def can_remove(user: AbstractUser, workspace: Workspace) -> bool:
         return get_workspace_role(user, workspace) == WorkspaceRole.OWNER
 
+    @staticmethod
+    def can_manage_members(user: AbstractUser, workspace: Workspace) -> bool:
+        return get_workspace_role(user, workspace) == WorkspaceRole.OWNER
+
 
 class WorkspaceViewPermission(PlanscapePermission):
     permission_set = WorkspacePermission
+
+    def has_object_permission(self, request, view, obj):
+        match view.action:
+            case "invite":
+                return self.permission_set.can_manage_members(request.user, obj)
+            case "accept_invite":
+                # Authorization here is "there's a pending invite matching
+                # your email", which the service layer checks (and 404s on).
+                # The requester doesn't have workspace access yet, so the
+                # usual can_view gate doesn't apply.
+                return True
+            case "manage_invite":
+                return self.permission_set.can_manage_members(request.user, obj)
+            case "manage_user":
+                user_id = view.kwargs.get("user_id")
+                if request.method == "DELETE" and str(request.user.pk) == str(user_id):
+                    # Self-leave; the creator-can't-leave rule is enforced in
+                    # the service layer, not here.
+                    return True
+                return self.permission_set.can_manage_members(request.user, obj)
+            case _:
+                return super().has_object_permission(request, view, obj)

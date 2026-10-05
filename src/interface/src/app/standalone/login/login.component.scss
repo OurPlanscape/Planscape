@@ -45,16 +45,17 @@
 }
 
 .signin-card {
-  max-width: 300px;
+  max-width: 460px;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  padding: 40px 60px;
+  padding: 40px 45px;
   background-color: white;
   border: 1px solid rgba(72, 84, 192, 0.5);
   margin: auto auto 16px;
+  box-sizing: border-box;
 }
 
 h1 {
@@ -177,9 +178,6 @@ mat-form-field {
   }
 }
 
-.d-block {
-  display: block;
-}
 
 .mb-10 {
   margin-bottom: 10px;
@@ -195,4 +193,8 @@ app-credits-blurb {
   position: sticky;
   bottom: 0;
   z-index: 10;
+}
+
+.error {
+  margin: 0 16px 16px 16px;
 }

@@ -1,0 +1,63 @@
+@import 'colors';
+@import 'mixins';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+
+  .image {
+    width: 140px;
+    height: 140px;
+    border-radius: 8px;
+  }
+
+  .text-content {
+    text-align: center;
+    .title {
+      @include h4();
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      @include regular-paragraph();
+      color: $color-dark-gray;
+      margin: 0;
+    }
+  }
+
+  .action-row {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .awaiting-block {
+    display: flex;
+    width: 50%;
+    min-width: 300px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 24px 16px;
+    text-align: center;
+
+    .search-icon {
+      height: 36px;
+      width: 36px;
+      font-size: 36px;
+      color: $color-md-gray;
+    }
+
+    .title {
+      @include h4();
+    }
+
+    .awaiting-blurb {
+      @include small-paragraph();
+      color: $color-md-gray;
+    }
+  }
+}

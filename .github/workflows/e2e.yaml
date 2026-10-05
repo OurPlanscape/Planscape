@@ -3,6 +3,9 @@ name: E2E Tests
 on:
   pull_request:
     branches: [main]
+    paths:
+      - 'src/interface/**'
+      - '.github/workflows/e2e.yaml'
 
 jobs:
   e2e:
@@ -43,6 +46,7 @@ jobs:
             mixpanel_enabled: false,
             google_analytics_id: '',
             debug_layers: false,
+            websocket_endpoint: '',
             sentry: {
               dsn_url: '',
               enable_extra_error_data: false,

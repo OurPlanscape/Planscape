@@ -1,43 +1,66 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ScenarioCreationComponent } from './scenario-creation.component';
-import { MockComponents, MockModule, MockProvider } from 'ng-mocks';
-import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { DataLayersStateService } from '@data-layers/data-layers.state.service';
-import { BehaviorSubject, of } from 'rxjs';
-import { ScenarioService } from '@services';
-import { ActivatedRoute } from '@angular/router';
-import { ScenarioState } from '@scenario/scenario.state';
-import { StandLevelConstraintsComponent } from '@scenario-creation/step3/stand-level-constraints.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxMaskModule } from 'ngx-mask';
-import { NewScenarioState } from './new-scenario.state';
-import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
-import { AvailableStands, Scenario, ScenarioV3Config } from '@types';
-import { TreatmentTargetComponent } from '@scenario-creation/treatment-target/treatment-target.component';
-import { SharedModule } from '@shared';
-import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
-import { MOCK_SCENARIO } from '@services/mocks';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { ActivatedRoute } from '@angular/router';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { MockComponents, MockModule, MockProvider } from 'ng-mocks';
+
+import { ScenarioCreationComponent } from './scenario-creation.component';
+import { FeaturesModule } from '@features/features.module';
+import { overrideFeatureFlags } from '@features/testing';
+import { SharedModule } from '@shared';
+import { ScenarioService } from '@services';
+import { ScenarioState } from '@scenario/scenario.state';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { NewScenarioState } from './new-scenario.state';
+import { AvailableStands, Scenario, ScenarioV3Config } from '@types';
 import { SUB_UNITS_STEP } from '@app/scenario/scenario.constants';
+import { MOCK_SCENARIO } from '@services/mocks';
+
+import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
+import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { StandLevelConstraintsComponent } from '@scenario-creation/step3/stand-level-constraints.component';
+import { ConstraintsStepComponent } from './constraints-step/constraints-step.component';
+import { TreatmentTargetComponent } from '@scenario-creation/treatment-target/treatment-target.component';
+import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
+import { FeatureService } from '@app/features/feature.service';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
   let fixture: ComponentFixture<ScenarioCreationComponent>;
 
-  beforeEach(async () => {
+  async function setUpComponent(
+    options: {
+      flags?: string[];
+      currentScenario$?: Observable<Scenario>;
+      scenarioConfig$?: Observable<ScenarioV3Config>;
+    } = {}
+  ) {
+    const {
+      flags = [],
+      currentScenario$ = of(MOCK_SCENARIO),
+      scenarioConfig$ = of({} as ScenarioV3Config),
+    } = options;
+
+    TestBed.resetTestingModule();
+
     await TestBed.configureTestingModule({
       imports: [
+        FeatureService,
         HttpClientTestingModule,
         ScenarioCreationComponent,
         NgxMaskModule.forRoot(),
         NoopAnimationsModule,
         MatSnackBarModule,
+        FeaturesModule,
         MockModule(SharedModule),
         MockComponents(
           Step1WithOverviewComponent,
           DataLayersComponent,
           StandLevelConstraintsComponent,
+          ConstraintsStepComponent,
           TreatmentTargetComponent,
           BaseLayersComponent
         ),
@@ -47,9 +70,7 @@ describe('ScenarioCreationComponent', () => {
           snapshot: { data: { planId: 24 } } as any,
         }),
         MockProvider(ScenarioService),
-        MockProvider(ScenarioState, {
-          currentScenario$: of(MOCK_SCENARIO),
-        }),
+        MockProvider(ScenarioState, { currentScenario$ }),
         MockProvider(DataLayersStateService, {
           paths$: of([]),
           viewedDataLayer$: of(null),
@@ -57,25 +78,29 @@ describe('ScenarioCreationComponent', () => {
         MockProvider(NewScenarioState, {
           availableStands$: of({ summary: {} } as AvailableStands),
           currentStep$: of(null),
-          scenarioConfig$: of({}),
+          scenarioConfig$,
           priorityObjectivesDetails$: of([]),
         }),
       ],
     }).compileComponents();
 
+    overrideFeatureFlags(); // explicit clear, no args
+    overrideFeatureFlags(...flags);
+
     fixture = TestBed.createComponent(ScenarioCreationComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  }
+
+  beforeEach(async () => {
+    await setUpComponent();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('ScenarioCreationComponent - Step Calculation Logic', () => {
-    let component: ScenarioCreationComponent;
-    let fixture: ComponentFixture<ScenarioCreationComponent>;
-
+  describe('Step Calculation Logic', () => {
     let scenarioConfigSubject: BehaviorSubject<ScenarioV3Config>;
     let currentScenarioSubject: BehaviorSubject<Scenario>;
 
@@ -89,46 +114,10 @@ describe('ScenarioCreationComponent', () => {
         parent: undefined,
       } as Scenario);
 
-      await TestBed.configureTestingModule({
-        imports: [
-          HttpClientTestingModule,
-          ScenarioCreationComponent,
-          NgxMaskModule.forRoot(),
-          NoopAnimationsModule,
-          MatSnackBarModule,
-          MockModule(SharedModule),
-          MockComponents(
-            Step1WithOverviewComponent,
-            DataLayersComponent,
-            StandLevelConstraintsComponent,
-            TreatmentTargetComponent,
-            BaseLayersComponent
-          ),
-        ],
-        providers: [
-          MockProvider(ActivatedRoute, {
-            snapshot: { data: { planId: 24 } } as any,
-          }),
-          MockProvider(ScenarioService),
-          MockProvider(ScenarioState, {
-            currentScenario$: currentScenarioSubject.asObservable(),
-          }),
-          MockProvider(DataLayersStateService, {
-            paths$: of([]),
-            viewedDataLayer$: of(null),
-          }),
-          MockProvider(NewScenarioState, {
-            availableStands$: of({ summary: {} } as AvailableStands),
-            currentStep$: of(null),
-            scenarioConfig$: scenarioConfigSubject.asObservable(),
-            priorityObjectivesDetails$: of([]),
-          }),
-        ],
-      }).compileComponents();
-
-      fixture = TestBed.createComponent(ScenarioCreationComponent);
-      component = fixture.componentInstance;
-      fixture.detectChanges();
+      await setUpComponent({
+        currentScenario$: currentScenarioSubject.asObservable(),
+        scenarioConfig$: scenarioConfigSubject.asObservable(),
+      });
     });
 
     describe('hasParent$', () => {
@@ -189,7 +178,7 @@ describe('ScenarioCreationComponent', () => {
       });
 
       it('should EXCLUDE SUB_UNITS_STEP if scenario has a parent id', (done) => {
-        currentScenarioSubject.next({ id: 2, parent: 99 } as Scenario); // Child scenario
+        currentScenarioSubject.next({ id: 2, parent: 99 } as Scenario);
         scenarioConfigSubject.next({
           type: 'PRESET',
           planning_approach: 'PRIORITIZE_SUB_UNITS',

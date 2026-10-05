@@ -42,11 +42,9 @@ export class TopBarComponent implements OnInit {
     private featureService: FeatureService
   ) {}
 
-  /** `/home` lists workspaces once the flag is on, plans otherwise. */
-  get homeLabel(): string {
-    return this.featureService.isFeatureEnabled('WORKSPACES')
-      ? 'Workspaces'
-      : 'Plans';
+  /** `/home` is the workspaces list once the flag is on, so the link is redundant. */
+  get showHomeLink(): boolean {
+    return !this.featureService.isFeatureEnabled('WORKSPACES');
   }
 
   ngOnInit(): void {

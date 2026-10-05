@@ -1,6 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { of, throwError } from 'rxjs';
 import { MockProvider } from 'ng-mocks';
 import { WorkspacesService } from '@services';
@@ -136,5 +140,73 @@ describe('CreateWorkspaceModalComponent', () => {
     component.cancel();
 
     expect(fakeDialogRef.close).toHaveBeenCalledWith(undefined);
+  });
+  describe('in edit mode', () => {
+    let editFixture: ComponentFixture<CreateWorkspaceModalComponent>;
+    let editComponent: CreateWorkspaceModalComponent;
+
+    beforeEach(async () => {
+      TestBed.resetTestingModule();
+      fakeDialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
+
+      await TestBed.configureTestingModule({
+        imports: [CreateWorkspaceModalComponent, MatDialogModule],
+        providers: [
+          MockProvider(WorkspacesService),
+          { provide: MatDialogRef, useValue: fakeDialogRef },
+          { provide: MAT_DIALOG_DATA, useValue: { workspace } },
+        ],
+      }).compileComponents();
+
+      workspacesService = TestBed.inject(WorkspacesService);
+
+      editFixture = TestBed.createComponent(CreateWorkspaceModalComponent);
+      editComponent = editFixture.componentInstance;
+      editFixture.detectChanges();
+    });
+
+    it('prefills the name and relabels the modal', () => {
+      expect(editComponent.form.getRawValue().name).toBe('My workspace');
+      expect(editComponent.title).toBe('Rename Workspace');
+      expect(editComponent.primaryCTA).toBe('Done');
+    });
+
+    it('patches the workspace and closes with the result', () => {
+      const renamed = { ...workspace, name: 'Renamed' };
+      const spy = spyOn(workspacesService, 'updateWorkspace').and.returnValue(
+        of(renamed)
+      );
+      editComponent.form.setValue({ name: 'Renamed' });
+
+      editComponent.handleSubmit();
+
+      expect(spy).toHaveBeenCalledWith(1, { name: 'Renamed' });
+      expect(fakeDialogRef.close).toHaveBeenCalledWith(renamed);
+    });
+
+    it('surfaces the backend message when the name is taken', () => {
+      spyOn(workspacesService, 'updateWorkspace').and.returnValue(
+        throwError(
+          () =>
+            new HttpErrorResponse({
+              status: 400,
+              error: {
+                detail: 'Validation error.',
+                errors: {
+                  name: ['A workspace with this name already exists.'],
+                },
+              },
+            })
+        )
+      );
+      editComponent.form.setValue({ name: 'Taken' });
+
+      editComponent.handleSubmit();
+
+      expect(editComponent.errorMessage).toBe(
+        'A workspace with this name already exists.'
+      );
+      expect(fakeDialogRef.close).not.toHaveBeenCalled();
+    });
   });
 });

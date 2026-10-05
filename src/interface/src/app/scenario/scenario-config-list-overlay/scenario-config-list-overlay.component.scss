@@ -1,0 +1,84 @@
+@import 'mixins';
+@import 'colors';
+
+:host {
+  padding: 0;
+
+  .header {
+    margin: 0;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid $color-soft-gray;
+
+    h4 {
+      @include h4();
+      margin: 0;
+    }
+  }
+
+  .content {
+    padding: 24px;
+    border-bottom: 1px solid $color-soft-gray;
+    overflow-y: auto;
+    max-height: 60vh;
+
+    &.global-spinner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 20vh;
+    }
+
+
+    dl {
+      margin: 0;
+    }
+
+    dt {
+      @include small-input-label();
+      color: $color-text-gray;
+    }
+
+    dt:not(:first-child) {
+      margin-top: 16px;
+    }
+
+    dd {
+      @include small-input-label();
+      font-weight: 600;
+      margin: 0;
+
+      span {
+        white-space: nowrap;
+      }
+    }
+
+    .list-element {
+      padding-left: 16px;
+      margin: 0;
+    }
+
+    .priority-weight {
+      color: $color-md-gray;
+    }
+  }
+
+  .footer {
+    padding: 16px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+}
+
+// This is safe because .scenario-config-overlay is a class we added to the menu panel
+::ng-deep .scenario-config-overlay {
+  min-width: 460px;
+  overflow: hidden;
+
+  .mat-mdc-menu-content {
+    padding: 0;
+  }
+}

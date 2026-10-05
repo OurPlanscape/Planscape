@@ -28,6 +28,13 @@ export const Default: Story = {
   },
 };
 
+export const FullWidth: Story = {
+  args: {
+    searchPlaceholder: 'Search for something',
+    fullWidth: true,
+  },
+};
+
 export const FilterHistory: Story = {
   args: {
     historyItems: ['previously', 'searched', 'terms'],

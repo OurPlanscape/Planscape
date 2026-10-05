@@ -17,7 +17,9 @@ async function waitForMapIdle(page: Page) {
   });
 }
 
-test('user can create planning area by drawing on the map', async ({ page }) => {
+test('user can create planning area by drawing on the map', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1280, height: 720 });
 
   const planningAreaName = `E2E Draw Plan ${Date.now()}`;
@@ -60,7 +62,10 @@ test('user can create planning area by drawing on the map', async ({ page }) => 
   await page.getByRole('button', { name: 'Create' }).click();
 
   await expect(page).toHaveURL(/\/plan\/\d+$/);
-  await expect(page.getByText('Planning Area Overview')).toBeVisible();
+  // scoped to the card: the creation success modal also mentions the overview
+  await expect(
+    page.locator('sg-details-card').getByText('Planning Area Overview')
+  ).toBeVisible();
   await expect(page.getByText(planningAreaName, { exact: true })).toBeVisible();
 
   await page.goto('/home');

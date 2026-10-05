@@ -1,4 +1,8 @@
 from django import forms
+from datasets.shapefile_geometry import (
+    ShapefileGeometryError,
+    geometry_from_uploaded_shapefile_zip,
+)
 from martor.widgets import AdminMartorWidget
 
 from planning.models import (
@@ -13,11 +17,31 @@ class TreatmentGoalAdminForm(forms.ModelForm):
     Admin form for TreatmentGoal model.
     """
 
+    geometry_shapefile_zip = forms.FileField(
+        required=False,
+        label="Geometry shapefile zip",
+        help_text="Upload a zipped polygon shapefile to update geometry only.",
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["description"].required = False
         self.fields["created_by"].required = False
         self.fields["geometry"].required = False
+
+    def clean_geometry_shapefile_zip(self):
+        uploaded_file = self.cleaned_data.get("geometry_shapefile_zip")
+        self.uploaded_shapefile_geometry = None
+        if not uploaded_file:
+            return uploaded_file
+
+        try:
+            self.uploaded_shapefile_geometry = geometry_from_uploaded_shapefile_zip(
+                uploaded_file
+            )
+        except ShapefileGeometryError as exc:
+            raise forms.ValidationError(str(exc)) from exc
+        return uploaded_file
 
     class Meta:
         model = TreatmentGoal
@@ -27,6 +51,7 @@ class TreatmentGoalAdminForm(forms.ModelForm):
             "category",
             "group",
             "description",
+            "geometry_shapefile_zip",
             "geometry",
             "active",
             "created_by",

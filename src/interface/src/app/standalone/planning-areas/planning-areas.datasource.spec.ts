@@ -1,7 +1,7 @@
 import { PlanningAreasDataSource } from './planning-areas.datasource';
 import { PlanService } from '@services';
 import { QueryParamsService } from './query-params.service';
-import { firstValueFrom, of } from 'rxjs';
+import { firstValueFrom, of, Subject } from 'rxjs';
 import { Sort } from '@angular/material/sort';
 
 describe('PlanningAreasDataSource', () => {
@@ -102,6 +102,57 @@ describe('PlanningAreasDataSource', () => {
     expect(pageStates[pageStates.length - 1]).toBe(2);
     expect(noEntriesStates[noEntriesStates.length - 1]).toBe(false);
     expect(hasFiltersStates[hasFiltersStates.length - 1]).toBe(false);
+  });
+
+  it('ignores a stale response when loadData is called again', () => {
+    const firstResponse$ = new Subject<any>();
+    const dataStates: unknown[] = [];
+    dataSource.connect().subscribe((value) => dataStates.push(value));
+
+    planServiceSpy.getPlanPreviews.and.returnValue(firstResponse$);
+    dataSource.loadData();
+    planServiceSpy.getPlanPreviews.and.returnValue(
+      of({ count: 1, results: [{ id: 2 } as any] })
+    );
+    dataSource.loadData();
+
+    firstResponse$.next({ count: 1, results: [{ id: 1 }] });
+
+    expect(dataStates[dataStates.length - 1]).toEqual([{ id: 2 }]);
+  });
+
+  describe('refresh', () => {
+    it('updates data and pages without emitting loading', () => {
+      planServiceSpy.getPlanPreviews.and.returnValue(
+        of({ count: 12, results: [{ id: 1 } as any] })
+      );
+      const loadingStates: boolean[] = [];
+      const dataStates: unknown[] = [];
+      const pageStates: number[] = [];
+      dataSource.loading$.subscribe((value) => loadingStates.push(value));
+      dataSource.connect().subscribe((value) => dataStates.push(value));
+      dataSource.pages$.subscribe((value) => pageStates.push(value));
+
+      dataSource.refresh().subscribe();
+
+      expect(loadingStates).toEqual([false]);
+      expect(dataStates[dataStates.length - 1]).toEqual([{ id: 1 }]);
+      expect(pageStates[pageStates.length - 1]).toBe(2);
+    });
+
+    it('does not emit data when the results did not change', () => {
+      planServiceSpy.getPlanPreviews.and.returnValue(
+        of({ count: 1, results: [{ id: 1 } as any] })
+      );
+      dataSource.loadData();
+      const dataStates: unknown[] = [];
+      dataSource.connect().subscribe((value) => dataStates.push(value));
+
+      dataSource.refresh().subscribe();
+
+      // only the current value replayed on subscribe
+      expect(dataStates.length).toBe(1);
+    });
   });
 
   it('emits noEntries when there are no results', () => {

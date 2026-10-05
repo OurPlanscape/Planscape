@@ -120,18 +120,20 @@ describe('TopBarComponent', () => {
         expect(texts).toEqual(['Plans', 'Account', 'Sign Out']);
       });
 
-      it('says `workspaces` instead of `plans` when the flag is on', async () => {
+      it('drops `plans` when the workspaces flag is on', async () => {
         overrideFeatureFlags('WORKSPACES');
         setUpComponent();
         const harness = await loader.getHarness(MatMenuHarness);
         await harness.open();
         const items = await harness.getItems();
 
+        expect(items.length).toBe(2);
+
         const texts = await Promise.all(
           items.map(async (item) => await item.getText())
         );
 
-        expect(texts).toEqual(['Workspaces', 'Account', 'Sign Out']);
+        expect(texts).toEqual(['Account', 'Sign Out']);
       });
     });
   });

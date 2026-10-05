@@ -3,6 +3,7 @@ import { CommonModule, NgClass } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TileButtonComponent } from '@styleguide';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { getPlanPath } from '@plan/plan-helpers';
 import { Capabilities } from '@types';
 
 interface AnalyticTool {
@@ -70,11 +71,12 @@ export class PlanningAnalyticsToolsComponent implements OnInit {
     if (toolId === 'climate-foresight') {
       const planId = this.route.snapshot.data['planId'];
       if (planId) {
+        const planPath = getPlanPath(planId, this.route.snapshot);
         this.breadcrumbService.updateBreadCrumb({
           label: 'Planning Area Overview',
-          backUrl: `/plan/${planId}`,
+          backUrl: planPath,
         });
-        this.router.navigate(['/plan', planId, 'climate-foresight']);
+        this.router.navigate([planPath, 'climate-foresight']);
       }
     }
   }

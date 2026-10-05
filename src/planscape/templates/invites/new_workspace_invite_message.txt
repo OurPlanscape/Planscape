@@ -1,0 +1,14 @@
+{{ inviter.get_full_name|default:"Someone" }} invited you to be {{ role_article }} {{ role }} on the workspace "{{ workspace.name }}".
+
+Log in to Planscape is required to view the workspace. If you don't have a Planscape account, please click here: {{ create_account_link }}.
+
+To find out more about collaboration and roles, click here:
+https://github.com/OurPlanscape/Planscape/wiki/Planscape-User-Guide#collaboration
+
+{% if message %}
+Message:
+{{ message }}
+{% endif %}
+
+You can view and accept the invite to workspace "{{ workspace.name }}" here:
+{{ workspace_link }}.

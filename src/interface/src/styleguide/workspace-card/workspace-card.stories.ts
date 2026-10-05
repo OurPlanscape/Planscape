@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideRouter } from '@angular/router';
 import { WorkspaceCardComponent } from './workspace-card.component';
 
 const meta: Meta<WorkspaceCardComponent> = {
@@ -8,7 +9,7 @@ const meta: Meta<WorkspaceCardComponent> = {
   component: WorkspaceCardComponent,
   decorators: [
     applicationConfig({
-      providers: [provideAnimations()],
+      providers: [provideAnimations(), provideRouter([])],
     }),
   ],
   tags: ['autodocs'],
@@ -26,6 +27,7 @@ type Story = StoryObj<WorkspaceCardComponent>;
 export const Default: Story = {
   args: {
     name: 'Name',
+    link: ['/workspace', 1],
     planningAreasCount: 0,
     creator: 'Name',
     createdAt: '2025-07-11 12:34:00',

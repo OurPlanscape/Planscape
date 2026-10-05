@@ -4,19 +4,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonComponent } from '@styleguide';
-import { FeaturesModule } from '@features/features.module';
 
 @Component({
   selector: 'app-funding-report-footer',
   standalone: true,
-  imports: [
-    ButtonComponent,
-    MatIconModule,
-    MatMenuModule,
-    NgIf,
-    NgClass,
-    FeaturesModule,
-  ],
+  imports: [ButtonComponent, MatIconModule, MatMenuModule, NgIf, NgClass],
   templateUrl: './funding-report-footer.component.html',
   styleUrl: './funding-report-footer.component.scss',
 })
@@ -29,8 +21,7 @@ export class FundingReportFooterComponent {
   @Input() buttonDisabled = false;
   @Input() footerType: 'preview' | 'full' = 'preview';
   /**
-   * Whether the Share button may appear. Still gated by the
-   * `SHARE_FUNDING_REPORTS` feature flag; the public read-only view sets this
+   * Whether the Share button appears. The public read-only view sets this
    * false to drop sharing entirely.
    */
   @Input() showShare = true;
