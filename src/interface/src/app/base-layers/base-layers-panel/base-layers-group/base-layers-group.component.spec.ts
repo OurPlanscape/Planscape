@@ -107,4 +107,46 @@ describe('BaseLayersGroupComponent', () => {
 
     expect(emitted).toEqual([{ layer: target, isMulti: true }]);
   });
+
+  describe('single selection', () => {
+    let stateService: BaseLayersStateService;
+
+    beforeEach(() => {
+      stateService = TestBed.inject(BaseLayersStateService);
+      fixture.componentRef.setInput('dataSet', {
+        ...dataSet,
+        selection_type: 'SINGLE',
+      });
+      fixture.componentRef.setInput('initialExpanded', true);
+      fixture.componentRef.setInput('layers', [layer(5, 'Fire Perimeters')]);
+      fixture.detectChanges();
+    });
+
+    it('renders toggles instead of radio buttons', () => {
+      expect(fixture.debugElement.queryAll(By.css('sg-toggle')).length).toBe(1);
+      expect(fixture.debugElement.query(By.css('mat-radio-button'))).toBeNull();
+    });
+
+    it('emits a single selection when toggled on', () => {
+      const emitted: { layer: BaseLayer; isMulti: boolean }[] = [];
+      component.layerSelected.subscribe((e) => emitted.push(e));
+      const target = layer(5, 'Fire Perimeters');
+
+      component.onLayerToggle(target, true);
+
+      expect(emitted).toEqual([{ layer: target, isMulti: false }]);
+    });
+
+    it('removes the layer when toggled off', () => {
+      const removeSpy = spyOn(stateService, 'removeBaseLayer');
+      const emitted: unknown[] = [];
+      component.layerSelected.subscribe((e) => emitted.push(e));
+      const target = layer(5, 'Fire Perimeters');
+
+      component.onLayerToggle(target, false);
+
+      expect(removeSpy).toHaveBeenCalledWith(target);
+      expect(emitted).toEqual([]);
+    });
+  });
 });

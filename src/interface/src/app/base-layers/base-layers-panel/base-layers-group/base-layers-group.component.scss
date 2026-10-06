@@ -57,7 +57,7 @@ $side-padding: 16px;
 .group-content {
   display: flex;
   flex-direction: column;
-  // mat checkbox/radio already pad their control by ~9px
+  // mat checkbox already pads their control by ~9px
   padding: 0 $side-padding 8px 7px;
 }
 
@@ -75,6 +75,15 @@ $side-padding: 16px;
     justify-content: space-between;
     gap: 8px;
   }
+}
+
+.toggle-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 0 4px 9px;
 }
 
 .right-items {

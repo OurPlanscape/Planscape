@@ -68,24 +68,23 @@
   </ng-container>
 
   <ng-template #singleSelect>
-    <mat-radio-button
+    <div
       *ngFor="let layer of baseLayers"
-      class="layer-option"
-      [value]="layer.id"
-      [checked]="isSelectedLayer(layer.id)"
-      [attr.selected]="isSelectedLayer(layer.id) ? '' : null"
-      (change)="onLayerChange(layer, false)">
-      <span
-        class="layer-name"
-        [sgHighlighter]="searchTerm"
-        [sgHighlighterText]="layer.name"></span>
-      <span class="right-items">
-        <mat-spinner
-          class="side-spinner"
-          diameter="20"
-          *ngIf="(loadingLayers$ | async)?.includes('source_' + layer.id)">
-        </mat-spinner>
-      </span>
-    </mat-radio-button>
+      class="toggle-option"
+      [attr.selected]="isSelectedLayer(layer.id) ? '' : null">
+      <sg-toggle
+        [checked]="isSelectedLayer(layer.id)"
+        (changed)="onLayerToggle(layer, $event)"
+        ><span
+          class="layer-name"
+          [sgHighlighter]="searchTerm"
+          [sgHighlighterText]="layer.name"></span>
+      </sg-toggle>
+      <mat-spinner
+        class="side-spinner"
+        diameter="20"
+        *ngIf="(loadingLayers$ | async)?.includes('source_' + layer.id)">
+      </mat-spinner>
+    </div>
   </ng-template>
 </div>

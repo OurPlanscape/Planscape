@@ -13,14 +13,17 @@ import {
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { DataLayerTooltipComponent } from '@data-layers/data-layer-tooltip/data-layer-tooltip.component';
 import { DataLayersService } from '@services/data-layers.service';
 import { MapModuleService } from '@services/map-module.service';
 import { BASE_LAYERS_DEFAULT, SNACK_ERROR_CONFIG } from '@shared';
-import { ButtonComponent, HighlighterDirective } from '@styleguide';
+import {
+  ButtonComponent,
+  HighlighterDirective,
+  ToggleComponent,
+} from '@styleguide';
 import { BaseLayer, MapDataDataSet } from '@types';
 import { catchError, map, of, tap } from 'rxjs';
 
@@ -35,9 +38,9 @@ import { catchError, map, of, tap } from 'rxjs';
     MatCheckboxModule,
     MatMenuModule,
     MatProgressSpinnerModule,
-    MatRadioModule,
     NgFor,
     NgIf,
+    ToggleComponent,
   ],
   templateUrl: './base-layers-group.component.html',
   styleUrl: './base-layers-group.component.scss',
@@ -102,6 +105,14 @@ export class BaseLayersGroupComponent implements OnChanges, OnInit {
       this.baseLayersStateService.resetSourceIds();
     }
     this.layerSelected.emit({ layer, isMulti });
+  }
+
+  onLayerToggle(layer: BaseLayer, checked: boolean): void {
+    if (checked) {
+      this.onLayerChange(layer, false);
+    } else {
+      this.baseLayersStateService.removeBaseLayer(layer);
+    }
   }
 
   isSelectedLayer(id: number): boolean {
