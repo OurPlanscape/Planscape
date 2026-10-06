@@ -15,8 +15,12 @@
  * under the same parent.
  */
 .data-layers div[role='group'] > .mat-tree-node {
-  margin-left: -8px;
   padding-right: 10px;
+
+  // offsets the checkbox's own padding
+  &.padded {
+    margin-left: -8px;
+  }
 }
 
 .icon {
@@ -64,6 +68,11 @@
 
 .data-layer {
   min-height: 36px;
+}
+
+// Lines toggles up with the arrows of sibling categories.
+.data-layer:not(.padded) {
+  padding-left: 16px;
 }
 
 .info-icon {

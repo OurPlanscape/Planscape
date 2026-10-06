@@ -19,6 +19,8 @@ import {
   SearchBarComponent,
 } from '@styleguide';
 import { BaseDataSet } from '@types';
+import { FeatureService } from '@features/feature.service';
+import { FeaturesModule } from '@features/features.module';
 import {
   catchError,
   combineLatest,
@@ -55,6 +57,7 @@ import { groupSearchResults, Results } from './search';
     MatRadioModule,
     FormsModule,
     PaginatorComponent,
+    FeaturesModule,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
@@ -63,7 +66,13 @@ export class DataLayersComponent {
   @Input() displayAddButton = false;
   @Input() useClearFooter = true;
 
-  constructor(private dataLayersStateService: DataLayersStateService) {}
+  constructor(
+    private dataLayersStateService: DataLayersStateService,
+    private featureService: FeatureService
+  ) {}
+
+  // With DATA_ORGANIZATION the clear button lives on the map's layer name instead.
+  showClearButton = !this.featureService.isFeatureEnabled('DATA_ORGANIZATION');
 
   loading$ = this.dataLayersStateService.loading$;
 
@@ -101,7 +110,10 @@ export class DataLayersComponent {
   isBrowsing$ = this.dataLayersStateService.isBrowsing$;
 
   showFooter$ = combineLatest([this.results$, this.viewedDataLayer$]).pipe(
-    map(([results, selectedLayer]) => this.pages > 1 || selectedLayer)
+    map(
+      ([results, selectedLayer]) =>
+        this.pages > 1 || (this.showClearButton && selectedLayer)
+    )
   );
 
   showDatasets$ = combineLatest([this.dataSets$, this.loading$]).pipe(
