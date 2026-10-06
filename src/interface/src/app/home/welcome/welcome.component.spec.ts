@@ -32,16 +32,7 @@ describe('WelcomeComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('offers Explore', () => {
-    expect(exploreLink()).not.toBeNull();
-  });
-
-  it('hides Explore when workspaces are enabled', () => {
-    // the map viewer needs a workspace, so there is nowhere for a logged out
-    // visitor to go
-    TestBed.resetTestingModule();
-    setUpComponent(['WORKSPACES']);
-
+  it('sends visitors to sign in, the map viewer needs a workspace', () => {
     expect(exploreLink()).toBeNull();
     expect(
       fixture.debugElement.query(By.css('a[routerLink="/login"]'))

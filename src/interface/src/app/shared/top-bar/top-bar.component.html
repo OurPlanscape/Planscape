@@ -49,13 +49,6 @@
       <!--  Logged in-->
       <ng-container *ngIf="loggedIn$ | async">
         <button
-          *ngIf="showHomeLink"
-          mat-menu-item
-          routerLink="/home"
-          data-id="home">
-          Plans
-        </button>
-        <button
           mat-menu-item
           routerLink="/account/information"
           data-id="account">
@@ -81,7 +74,6 @@
     </ng-container>
 
     <ng-container *ngIf="loggedIn$ | async">
-      <a *ngIf="showHomeLink" routerLink="/home">Plans</a>
       <a routerLink="/account/information">Account</a>
     </ng-container>
 

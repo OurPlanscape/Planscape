@@ -20,7 +20,6 @@ import { ButtonComponent, OverlayLoaderComponent } from '@styleguide';
 import { ChipInputComponent } from '@styleguide/chip-input/chip-input.component';
 
 import { FeaturesModule } from '@features/features.module';
-import { HomeComponent } from '@home/home.component';
 import { JwtInterceptor, WINDOW_PROVIDERS } from '@services';
 
 import { LegacyMaterialModule } from '@material/legacy-material.module';
@@ -31,13 +30,12 @@ import { SharedModule } from '@shared';
 import { environment } from '@env/environment';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 
-import { PlanningAreasComponent } from '@standalone/planning-areas/planning-areas.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import * as Sentry from '@sentry/angular';
 import { LoggingHttpInterceptor } from '@services/logging-http.interceptor';
 
 @NgModule({
-  declarations: [AppComponent, HomeComponent],
+  declarations: [AppComponent],
   imports: [
     AppRoutingModule,
     BrowserAnimationsModule,
@@ -61,7 +59,6 @@ import { LoggingHttpInterceptor } from '@services/logging-http.interceptor';
     NgxMaskModule.forRoot(),
     ButtonComponent,
     DeleteDialogComponent,
-    PlanningAreasComponent,
     OverlayLoaderComponent,
     ChipInputComponent,
   ],

@@ -97,8 +97,8 @@ class FlagOffComponent {}
 describe('createFeatureMatchGuard', () => {
   let featureServiceSpy: jasmine.SpyObj<FeatureService>;
 
-  // two routes on the same path, the flagged one first — the pattern used to
-  // swap the `home` component on the WORKSPACES flag
+  // two routes on the same path, the flagged one first — the pattern for
+  // swapping a component on a flag
   const routes: Routes = [
     {
       path: 'thing',
@@ -198,14 +198,13 @@ class PlanScenarioMapViewerStubComponent {}
 describe('map viewer routes', () => {
   let featureServiceSpy: jasmine.SpyObj<FeatureService>;
 
-  // mirrors the `map-viewer` routes in the app routing module
   const routes: Routes = [
     { path: 'home', component: HomeStubComponent },
     {
       path: 'map-viewer',
       canActivate: [
         createFeatureGuard({
-          featureName: 'WORKSPACES',
+          featureName: 'TEST_FEATURE',
           inverted: true,
           fallback: '/home',
         }),
@@ -214,7 +213,7 @@ describe('map viewer routes', () => {
     },
     {
       path: 'map-viewer/workspace/:workspaceId',
-      canMatch: [createFeatureMatchGuard('WORKSPACES')],
+      canMatch: [createFeatureMatchGuard('TEST_FEATURE')],
       component: WorkspaceMapViewerStubComponent,
     },
     { path: 'map-viewer/:planId', component: PlanMapViewerStubComponent },
@@ -238,7 +237,7 @@ describe('map viewer routes', () => {
     });
   });
 
-  describe('with workspaces enabled', () => {
+  describe('with the feature enabled', () => {
     beforeEach(() => featureServiceSpy.isFeatureEnabled.and.returnValue(true));
 
     it('redirects a bare map-viewer to home', async () => {
@@ -273,7 +272,7 @@ describe('map viewer routes', () => {
     });
   });
 
-  describe('with workspaces disabled', () => {
+  describe('with the feature disabled', () => {
     beforeEach(() => featureServiceSpy.isFeatureEnabled.and.returnValue(false));
 
     it('opens the map viewer without a workspace', async () => {

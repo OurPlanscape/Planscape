@@ -10,12 +10,14 @@ describe('PlanningAreasDataSource', () => {
   let queryParamsServiceSpy: jasmine.SpyObj<QueryParamsService>;
 
   const defaultSort: Sort = { active: 'name', direction: 'asc' };
+  const workspaceId = 7;
   const initialPageParams = { page: 1, limit: 10 };
 
   const createDataSource = () => {
     dataSource = new PlanningAreasDataSource(
       planServiceSpy,
-      queryParamsServiceSpy
+      queryParamsServiceSpy,
+      workspaceId
     );
   };
 
@@ -95,6 +97,7 @@ describe('PlanningAreasDataSource', () => {
       limit: 10,
       offset: 0,
       ordering: 'name',
+      workspace: workspaceId,
     });
     expect(loadingStates).toEqual([false, true, false]);
     expect(initialLoadStates[initialLoadStates.length - 1]).toBe(false);
