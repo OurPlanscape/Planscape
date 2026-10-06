@@ -79,28 +79,34 @@ describe('StandLevelConstraintsComponent', () => {
     expect(control?.hasError('min')).toBeTrue();
   });
 
-  it('should have invalid min_distance_from_road if value is greater than 100000', () => {
+  it('should have invalid min_distance_from_road if value is greater than 100 miles', () => {
     const control = component.form.get('min_distance_from_road');
-    control?.setValue(100001);
+    control?.setValue(101);
     expect(control?.valid).toBeFalse();
     expect(control?.hasError('max')).toBeTrue();
   });
 
   it('should have valid min_distance_from_road if value is within range', () => {
     const control = component.form.get('min_distance_from_road');
-    control?.setValue(500);
+    control?.setValue(5);
+    expect(control?.valid).toBeTrue();
+  });
+
+  it('should accept fractions of a mile', () => {
+    const control = component.form.get('min_distance_from_road');
+    control?.setValue(0.5);
     expect(control?.valid).toBeTrue();
   });
 
   it('should have form invalid if one of the fields is invalid', () => {
     component.form.get('max_slope')?.setValue(50);
-    component.form.get('min_distance_from_road')?.setValue(100001);
+    component.form.get('min_distance_from_road')?.setValue(101);
     expect(component.form.valid).toBeFalse();
   });
 
   it('should have form valid if both fields are valid', () => {
     component.form.get('max_slope')?.setValue(10);
-    component.form.get('min_distance_from_road')?.setValue(1000);
+    component.form.get('min_distance_from_road')?.setValue(10);
     expect(component.form.valid).toBeTrue();
   });
 });

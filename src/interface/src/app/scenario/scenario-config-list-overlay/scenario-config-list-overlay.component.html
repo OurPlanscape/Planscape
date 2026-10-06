@@ -89,7 +89,7 @@
               {{
                 scenario.configuration.min_distance_from_road | number: '1.0-2'
               }}
-              yds
+              mi
             </dd>
           </ng-container>
         </ng-container>
@@ -103,7 +103,7 @@
               </li>
               <li *ngIf="c.datalayer === distanceToRoadsId">
                 Distance from roads is less than (<)
-                {{ c.value | number: '1.0-2' }} yds
+                {{ c.value | number: '1.0-2' }} mi
               </li>
             </dd>
           </ul>
