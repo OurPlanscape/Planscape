@@ -62,9 +62,12 @@ export class ScenarioDownloadFooterComponent {
   }
 
   handleDownload() {
-    this.downloadingScenario = true;
+    if (this.downloadingScenario) {
+      return;
+    }
 
     if (this.geoPackageURL && this.scenarioName) {
+      this.downloadingScenario = true;
       const filename = getSafeFileName(this.scenarioName) + '.zip';
       this.fileSaverService.downloadGeopackage(this.geoPackageURL).subscribe({
         next: (data) => {
