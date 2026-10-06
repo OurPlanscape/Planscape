@@ -27,6 +27,12 @@ import {
 import { BaseLayer, MapDataDataSet } from '@types';
 import { catchError, map, of, tap } from 'rxjs';
 
+/**
+ * One base layer dataset in the panel: a collapsible header with its layers
+ * (checkboxes for multi-select datasets, toggles for single-select).
+ * Fetches the dataset's layers on first expand, unless search results are
+ * passed in through `layers`.
+ */
 @Component({
   selector: 'app-base-layers-group',
   standalone: true,

@@ -40,7 +40,10 @@ export interface BaseLayerSearchResults {
 // Base layer datasets are small, so we fetch every match in one go and skip pagination.
 export const SEARCH_LIMIT = 100;
 
-/** Base layers panel used when DATA_ORGANIZATION is on. */
+/**
+ * Base layers panel used when DATA_ORGANIZATION is on: a search bar over a
+ * list of base-layers groups, one per dataset.
+ */
 @Component({
   selector: 'app-base-layers-panel',
   standalone: true,

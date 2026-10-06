@@ -9,7 +9,7 @@ $side-padding: 16px;
 }
 
 .side-search-container {
-  padding: 0 $side-padding $side-padding;
+  padding: $side-padding;
   border-bottom: 1px solid $color-soft-gray;
 }
 
