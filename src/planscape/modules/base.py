@@ -39,7 +39,7 @@ def with_datalayer_option_relations(
         "dataset",
         "dataset__organization",
         "category",
-    ).prefetch_related("styles")
+    ).prefetch_related("styles", "simple_categories")
 
 
 class BaseModule:
