@@ -47,6 +47,10 @@
       [layout]="{ visibility: 'none' }">
     </mgl-layer>
 
+    <mgl-control position="bottom-left" *appFeatureFlag="'DATA_ORGANIZATION'">
+      <app-data-layer-name></app-data-layer-name>
+    </mgl-control>
+
     <mgl-control position="top-right">
       <app-map-layer-color-legend></app-map-layer-color-legend>
     </mgl-control>
