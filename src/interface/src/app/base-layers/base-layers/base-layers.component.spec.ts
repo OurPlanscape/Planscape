@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 
 import { BaseLayersComponent } from './base-layers.component';
 import { MockProvider } from 'ng-mocks';
@@ -34,5 +35,16 @@ describe('BaseLayersComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('hides the search bar by default', () => {
+    expect(fixture.debugElement.query(By.css('sg-search-bar'))).toBeNull();
+  });
+
+  it('shows the search bar when showSearch is set', () => {
+    component.showSearch = true;
+    fixture.detectChanges();
+
+    expect(fixture.debugElement.query(By.css('sg-search-bar'))).toBeTruthy();
   });
 });

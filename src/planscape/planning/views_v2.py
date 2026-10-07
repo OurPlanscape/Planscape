@@ -84,6 +84,7 @@ from planning.serializers import (
     PlanningAreaSerializer,
     ProjectAreaSerializer,
     ScenarioAndProjectAreasSerializer,
+    ScenarioConfigurationDetailsSerializer,
     ScenarioSerializer,
     ScenarioV2Serializer,
     ScenarioV3Serializer,
@@ -103,6 +104,7 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
     get_available_stands,
+    get_scenario_configuration_details,
     get_sub_units_details,
     is_project_areas_child,
     toggle_scenario_status,
@@ -455,6 +457,20 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         planning_area.updated_at = timezone.now()
         planning_area.save(update_fields=["updated_at"])
         return Response(response_serializer.data)
+
+    @extend_schema(
+        description=(
+            "Retrieve the Scenario's configuration with every referenced entity "
+            "resolved (datalayer names, labels), ready to be displayed."
+        ),
+        responses={200: ScenarioConfigurationDetailsSerializer},
+    )
+    @action(methods=["get"], detail=True, url_path="get-configuration")
+    def get_configuration(self, request, pk=None):
+        scenario = self.get_object()
+        details = get_scenario_configuration_details(scenario)
+        serializer = ScenarioConfigurationDetailsSerializer(details)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(methods=["patch"], detail=True, url_path="draft")
     def patch_draft(self, request, *args, **kwargs):

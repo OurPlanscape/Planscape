@@ -1,29 +1,23 @@
 <app-nav-bar area="EXPLORE"></app-nav-bar>
 <section>
-  <div class="main">
-    <div class="side-panel" [ngClass]="{ expanded: panelExpanded }">
-      <button
-        class="expander"
-        sg-button
-        variant="icon-only"
-        [icon]="panelExpanded ? 'close_fullscreen' : 'open_in_full'"
-        (click)="togglePanelExpanded()"></button>
-      <h4 *ngIf="!panelExpanded" class="expanded-label">Map Control Panel</h4>
-      <mat-tab-group
-        class="side-tabs"
-        [(selectedIndex)]="tabIndex"
-        (selectedIndexChange)="onTabIndexChange($event)"
-        *ngIf="panelExpanded"
-        mat-stretch-tabs="false"
-        mat-align-tabs="start">
-        <mat-tab label="Data Layers">
-          <app-map-selector></app-map-selector>
-        </mat-tab>
-        <mat-tab label="Base Layers">
-          <app-base-layers></app-base-layers>
-        </mat-tab>
-      </mat-tab-group>
-    </div>
+  <div
+    class="main"
+    [ngClass]="{
+      'with-icon-rail': dataOrganizationEnabled,
+      'panel-expanded': panelExpanded,
+    }">
+    <app-explore-sidebar
+      *appFeatureFlag="'DATA_ORGANIZATION'"
+      [expanded]="panelExpanded"
+      [selectedTab]="tabIndex"
+      (expandedChange)="setPanelExpanded($event)"
+      (selectedTabChange)="onTabIndexChange($event)"></app-explore-sidebar>
+    <app-legacy-sidebar
+      *appFeatureFlag="'DATA_ORGANIZATION'; hide: true"
+      [expanded]="panelExpanded"
+      [selectedTab]="tabIndex"
+      (expandedChange)="setPanelExpanded($event)"
+      (selectedTabChange)="onTabIndexChange($event)"></app-legacy-sidebar>
     <app-map-nav-bar>
       <app-multi-map-control></app-multi-map-control>
       <sg-opacity-slider

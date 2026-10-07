@@ -86,7 +86,7 @@
     sg-button
     (click)="clearViewedDataLayer()"
     class="clear-btn"
-    *ngIf="viewedDataLayer$ | async">
+    *ngIf="showClearButton && (viewedDataLayer$ | async)">
     Clear
   </button>
 </div>

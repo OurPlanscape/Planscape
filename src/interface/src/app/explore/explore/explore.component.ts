@@ -7,7 +7,7 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
 import { SyncedMapsComponent } from '@maplibre-map/synced-maps/synced-maps.component';
 import { MultiMapControlComponent } from '@maplibre-map/multi-map-control/multi-map-control.component';
-import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
+import { OpacitySliderComponent } from '@styleguide';
 import {
   combineLatest,
   firstValueFrom,
@@ -17,11 +17,11 @@ import {
   switchMap,
   take,
 } from 'rxjs';
-import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
-import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { ExploreModesToggleComponent } from '@maplibre-map/explore-modes-toggle/explore-modes-toggle.component';
-import { MapSelectorComponent } from '@explore/map-selector/map-selector.component';
+import { ExploreSidebarComponent } from '@explore/explore-sidebar/explore-sidebar.component';
+import { LegacySidebarComponent } from '@explore/legacy-sidebar/legacy-sidebar.component';
+import { SidebarTabs } from '@explore/sidebar-tabs';
 import { DrawService } from '@maplibre-map/draw.service';
 import { HttpClientModule } from '@angular/common/http';
 import { MapConfigService } from '@maplibre-map/map-config.service';
@@ -33,11 +33,8 @@ import { FrontendConstants } from '@map/map.constants';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { ActivatedRoute } from '@angular/router';
 import { ScenarioState } from '@app/scenario/scenario.state';
-
-enum SidebarTabs {
-  DATA_LAYERS,
-  BASE_LAYERS,
-}
+import { FeaturesModule } from '@features/features.module';
+import { FeatureService } from '@features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -53,12 +50,11 @@ enum SidebarTabs {
     MultiMapControlComponent,
     OpacitySliderComponent,
     NgClass,
-    ButtonComponent,
     NgIf,
-    MatTabsModule,
     CommonModule,
-    BaseLayersComponent,
-    MapSelectorComponent,
+    FeaturesModule,
+    ExploreSidebarComponent,
+    LegacySidebarComponent,
     NavBarComponent,
   ],
   templateUrl: './explore.component.html',
@@ -78,7 +74,9 @@ export class ExploreComponent implements OnDestroy, OnInit {
   defaultDataLayerOpacity = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY;
 
   panelExpanded = true;
-  tabIndex = 0;
+  tabIndex: SidebarTabs = SidebarTabs.DATA_LAYERS;
+  dataOrganizationEnabled =
+    this.featureService.isFeatureEnabled('DATA_ORGANIZATION');
 
   showSelectionToggle$ = this.planState.currentPlanId$.pipe(map((id) => !id));
 
@@ -97,7 +95,8 @@ export class ExploreComponent implements OnDestroy, OnInit {
     private planState: PlanState,
     private scenarioState: ScenarioState,
     private drawService: DrawService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private featureService: FeatureService
   ) {
     this.loadStateFromLocalStorage();
 
@@ -163,8 +162,8 @@ export class ExploreComponent implements OnDestroy, OnInit {
     this.multiMapConfigState.updateDataLayersOpacity(opacity);
   }
 
-  togglePanelExpanded() {
-    this.panelExpanded = !this.panelExpanded;
+  setPanelExpanded(expanded: boolean) {
+    this.panelExpanded = expanded;
   }
 
   ngOnDestroy() {
@@ -194,7 +193,8 @@ export class ExploreComponent implements OnDestroy, OnInit {
     }
   }
 
-  onTabIndexChange(index: number) {
+  onTabIndexChange(index: SidebarTabs) {
+    this.tabIndex = index;
     // allow click on map only if viewing data layers tab
     this.multiMapConfigState.setAllowClickOnMap(
       index === SidebarTabs.DATA_LAYERS
