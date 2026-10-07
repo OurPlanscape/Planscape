@@ -41,7 +41,6 @@ class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
         fields = (
             "id",
             "name",
-            "icon",
         )
 
 
@@ -66,6 +65,7 @@ class SimpleCategorySerializer(serializers.ModelSerializer[SimpleCategory]):
         fields = (
             "id",
             "name",
+            "icon",
         )
 
 
