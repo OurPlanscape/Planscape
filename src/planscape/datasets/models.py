@@ -220,9 +220,30 @@ class Category(CreatedAtMixin, UpdatedAtMixin, MP_Node):
         verbose_name_plural = "Categories"
 
 
+class SimpleCategory(CreatedAtMixin, UpdatedAtMixin, models.Model):
+    id: int
+
+    name = models.CharField(max_length=128)
+    icon = models.CharField(max_length=128, null=True, blank=True)
+
+    def __str__(self) -> str:
+        return self.name
+
+    class Meta(TypedModelMeta):
+        ordering = ("name", "id")
+        verbose_name = "Simple Category"
+        verbose_name_plural = "Simple Categories"
+
+
 class DataLayerType(models.TextChoices):
     VECTOR = "VECTOR", "Vector"
     RASTER = "RASTER", "Raster"
+
+
+class SearchTab(models.TextChoices):
+    GENERAL = "general", "General"
+    FAVORITES = "favorites", "Favorites"
+    UPLOADED = "uploaded", "Uploaded"
 
 
 class DataLayerStatus(models.TextChoices):
@@ -282,7 +303,9 @@ class DataLayerQuerySet(models.QuerySet):
         return (
             self.all()
             .filter(metadata__modules__has_key=module)
-            .filter(Q(**{enabled_lookup: True}) | Q(**{f"{enabled_lookup}__isnull": True}))
+            .filter(
+                Q(**{enabled_lookup: True}) | Q(**{f"{enabled_lookup}__isnull": True})
+            )
         )
 
     def by_meta_name(self, name: str):
@@ -292,10 +315,13 @@ class DataLayerQuerySet(models.QuerySet):
     def by_meta_capability(self, capability: str):
         query = {"modules": {"forsys": {"capabilities": [capability]}}}
         return self.all().filter(metadata__contains=query)
-    
+
     def accessible_by(self, user) -> models.QuerySet:
-        accessible_datasets_ids = Dataset.objects.all().accessible_by(user).values_list("id", flat=True)
-        return self.all().filter(dataset_id__in=accessible_datasets_ids) 
+        accessible_datasets_ids = (
+            Dataset.objects.all().accessible_by(user).values_list("id", flat=True)
+        )
+        return self.all().filter(dataset_id__in=accessible_datasets_ids)
+
 
 class DataLayerManager(models.Manager):
     def get_queryset(self):
@@ -513,6 +539,11 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         to=Style,
         through="DataLayerHasStyle",
         through_fields=("datalayer", "style"),
+    )
+    simple_categories = models.ManyToManyField(
+        to=SimpleCategory,
+        related_name="datalayers",
+        blank=True,
     )
 
     objects: "Manager[DataLayer]" = DataLayerManager()

@@ -1,0 +1,118 @@
+@import 'colors';
+@import 'mixins';
+
+$side-padding: 16px;
+
+:host {
+  display: block;
+  border-bottom: 1px solid $color-soft-gray;
+}
+
+.group-header {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: $side-padding;
+  cursor: pointer;
+
+  &.expanded {
+    padding-bottom: 8px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color-standard-blue;
+    outline-offset: -2px;
+  }
+}
+
+.group-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: $color-dark-gray;
+  color: $color-white;
+
+  i {
+    font-size: 16px;
+  }
+}
+
+.group-name {
+  @include standard-label();
+  flex: 1;
+  color: $color-text-dark;
+}
+
+.chevron {
+  color: $color-text-dark;
+}
+
+.group-content {
+  display: flex;
+  flex-direction: column;
+  // mat checkbox already pads their control by ~9px
+  padding: 0 $side-padding 8px 7px;
+}
+
+.layer-option {
+  width: 100%;
+
+  ::ng-deep .mdc-form-field {
+    width: 100%;
+  }
+
+  ::ng-deep .mdc-label {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+}
+
+.toggle-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 0 4px 9px;
+}
+
+.right-items {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.base-layer-legend {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+}
+
+.list-spinner {
+  margin: 8px 0 8px 9px;
+}
+
+.no-data {
+  padding: 8px 0 8px 9px;
+  color: $color-md-gray;
+}
+
+.side-spinner {
+  flex-shrink: 0;
+}
+
+.info-icon {
+  color: $color-standard-blue;
+}

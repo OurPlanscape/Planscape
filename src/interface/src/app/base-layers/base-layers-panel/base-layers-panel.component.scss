@@ -1,0 +1,44 @@
+@import 'colors';
+
+$side-padding: 16px;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.side-search-container {
+  padding: $side-padding;
+  border-bottom: 1px solid $color-soft-gray;
+}
+
+.search-bar ::ng-deep .input-wrapper {
+  width: 100%;
+  height: 50px;
+}
+
+.scrollable {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.loader {
+  margin: 28px auto;
+}
+
+.truncated-hint {
+  padding: $side-padding;
+  color: $color-md-gray;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  padding: $side-padding;
+  border-top: 1px solid $color-soft-gray;
+}
+
+.clear-btn {
+  margin-left: auto;
+}
