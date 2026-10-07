@@ -1,0 +1,44 @@
+<div class="side-search-container">
+  <sg-search-bar
+    class="search-bar"
+    [debounceInterval]="160"
+    searchPlaceholder="Search in base layers"
+    [showCloseButton]="true"
+    (searchString)="search($event)"
+    (clearSearch)="clearSearch()"></sg-search-bar>
+</div>
+<div class="scrollable">
+  <ng-container *ngIf="searchTerm$ | async as searchTerm; else browse">
+    <ng-container *ngIf="searchResults$ | async as results; else loading">
+      <app-base-layers-group
+        *ngFor="let group of results.groups; trackBy: trackGroup"
+        [dataSet]="group.dataSet"
+        [layers]="group.layers"
+        [searchTerm]="searchTerm"
+        [allSelectedLayersIds]="(selectedLayersId$ | async) || []"
+        [initialExpanded]="true"
+        (layerSelected)="updateSelectedLayer($event)"></app-base-layers-group>
+      <sg-no-results
+        *ngIf="results.groups.length === 0"
+        [searchString]="searchTerm"></sg-no-results>
+      <div *ngIf="results.truncated" class="truncated-hint">
+        Showing the first {{ SEARCH_LIMIT }} matches. Refine your search to see
+        more.
+      </div>
+    </ng-container>
+    <ng-template #loading>
+      <mat-spinner diameter="20" class="loader"></mat-spinner>
+    </ng-template>
+  </ng-container>
+  <ng-template #browse>
+    <app-base-layers-group
+      *ngFor="let baseDataSet of baseDataSets$ | async"
+      [dataSet]="baseDataSet"
+      [allSelectedLayersIds]="(selectedLayersId$ | async) || []"
+      [initialExpanded]="(selectedLayersDataSet$ | async) === baseDataSet.id"
+      (layerSelected)="updateSelectedLayer($event)"></app-base-layers-group>
+  </ng-template>
+</div>
+<div class="footer" *ngIf="selectedLayers$ | async">
+  <button sg-button (click)="clearBaseLayer()" class="clear-btn">Clear</button>
+</div>
