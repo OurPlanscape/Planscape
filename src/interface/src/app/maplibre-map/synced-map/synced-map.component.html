@@ -66,6 +66,14 @@
           <i class="material-symbols-outlined">arrow_back</i
           >{{ selectedLayer.name }}
         </a>
+        <button
+          *appFeatureFlag="'DATA_ORGANIZATION'"
+          type="button"
+          class="label-button clear-layer"
+          aria-label="Clear data layer"
+          (click)="clearSelectedLayer()">
+          <i class="material-symbols-outlined">close</i>
+        </button>
       </span>
     </div>
   </mgl-control>
