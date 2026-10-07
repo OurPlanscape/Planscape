@@ -3,11 +3,6 @@ from typing import Any, Collection, Dict, Optional
 
 from core.fields import GeometryTypeField
 from core.loaders import get_python_object
-from organizations.models import Organization
-from rest_framework import serializers
-from rest_framework_gis import serializers as gis_serializers
-from workspaces.models import Workspace
-
 from datasets.models import (
     Category,
     DataLayer,
@@ -15,6 +10,8 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     MapServiceChoices,
+    SearchTab,
+    SimpleCategory,
     StorageTypeChoices,
     Style,
     VisibilityOptions,
@@ -24,6 +21,10 @@ from datasets.styles import (
     get_default_vector_style,
     get_raster_style,
 )
+from organizations.models import Organization
+from rest_framework import serializers
+from rest_framework_gis import serializers as gis_serializers
+from workspaces.models import Workspace
 
 
 def get_available_workspaces_for_request(request: Any):
@@ -55,6 +56,16 @@ class CategorySerializer(serializers.ModelSerializer[Category]):
             "dataset",
             "order",
             "name",
+        )
+
+
+class SimpleCategorySerializer(serializers.ModelSerializer[SimpleCategory]):
+    class Meta:
+        model = SimpleCategory
+        fields = (
+            "id",
+            "name",
+            "icon",
         )
 
 
@@ -564,6 +575,7 @@ class DatasetSimpleSerializer(serializers.ModelSerializer["Dataset"]):
 class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
     organization = OrganizationSimpleSerializer()
     dataset = DatasetSimpleSerializer()
+    simple_categories = SimpleCategorySerializer(many=True, read_only=True)
     path = serializers.SerializerMethodField()
     map_url = serializers.SerializerMethodField()
     styles = serializers.SerializerMethodField()
@@ -608,6 +620,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "id",
             "organization",
             "dataset",
+            "simple_categories",
             "path",
             "map_url",
             "name",
@@ -651,6 +664,12 @@ class BrowseDataSetSerializer(serializers.Serializer):
 
     type = serializers.ChoiceField(choices=DataLayerType.choices, required=False)
 
+    search_tab = serializers.ChoiceField(
+        choices=SearchTab.choices,
+        default=SearchTab.GENERAL,
+        required=False,
+    )
+
     geometry = GeometryTypeField(
         geometry_type="MultiPolygon",
         destination_srid=4269,
@@ -674,6 +693,12 @@ class FindAnythingSerializer(serializers.Serializer):
 
     type = serializers.ChoiceField(
         choices=DataLayerType.choices,
+    )
+
+    search_tab = serializers.ChoiceField(
+        choices=SearchTab.choices,
+        default=SearchTab.GENERAL,
+        required=False,
     )
 
     geometry = GeometryTypeField(
