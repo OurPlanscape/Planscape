@@ -475,7 +475,7 @@ def browse(
             "dataset",
             "category",
         )
-        .prefetch_related("styles")
+        .prefetch_related("styles", "simple_categories")
     )
 
     if type is not None:
@@ -518,7 +518,7 @@ def browse_simple_category(
             "dataset",
             "category",
         )
-        .prefetch_related("styles")
+        .prefetch_related("styles", "simple_categories")
     )
 
     if type is not None:

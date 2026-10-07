@@ -47,6 +47,7 @@ class SimpleCategoryFactory(factory.django.DjangoModelFactory):
         model = SimpleCategory
 
     name = factory.Sequence(lambda x: f"Simple Category {x}")
+    icon = None
 
 
 class StyleFactory(factory.django.DjangoModelFactory):

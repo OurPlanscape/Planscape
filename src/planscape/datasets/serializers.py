@@ -41,6 +41,7 @@ class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
         fields = (
             "id",
             "name",
+            "icon",
         )
 
 
@@ -574,6 +575,7 @@ class DatasetSimpleSerializer(serializers.ModelSerializer["Dataset"]):
 class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
     organization = OrganizationSimpleSerializer()
     dataset = DatasetSimpleSerializer()
+    simple_categories = SimpleCategorySerializer(many=True, read_only=True)
     path = serializers.SerializerMethodField()
     map_url = serializers.SerializerMethodField()
     styles = serializers.SerializerMethodField()
@@ -618,6 +620,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "id",
             "organization",
             "dataset",
+            "simple_categories",
             "path",
             "map_url",
             "name",

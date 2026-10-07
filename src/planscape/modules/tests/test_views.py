@@ -99,7 +99,7 @@ class ModuleAPITests(TestCase):
         self.assertIn(pk, str(resp.data["detail"]))
 
     def test_retrieve_advanced_stand_level_constraint_datalayers(self):
-        category = SimpleCategoryFactory.create(name="Ownership")
+        category = SimpleCategoryFactory.create(name="Ownership", icon="ownership")
         dataset = DatasetFactory.create(
             visibility=VisibilityOptions.PUBLIC,
             preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
@@ -133,7 +133,7 @@ class ModuleAPITests(TestCase):
         )
         self.assertEqual(
             response.data["options"]["datasets"]["categories"],
-            [{"id": category.id, "name": "Ownership"}],
+            [{"id": category.id, "name": "Ownership", "icon": "ownership"}],
         )
 
     def test_advanced_stand_level_constraint_details_filters_by_geometry(self):

@@ -22,6 +22,7 @@ class Migration(migrations.Migration):
                 ("created_at", models.DateTimeField(auto_now_add=True, null=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 ("name", models.CharField(max_length=128)),
+                ("icon", models.CharField(blank=True, max_length=128, null=True)),
             ],
             options={
                 "verbose_name": "Simple Category",

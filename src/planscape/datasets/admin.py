@@ -36,7 +36,7 @@ class CategoryAdmin(TreeAdmin):
 
 class SimpleCategoryAdmin(admin.ModelAdmin):
     search_fields = ["name"]
-    list_display = ("id", "name", "created_at", "updated_at")
+    list_display = ("id", "name", "icon", "created_at", "updated_at")
     readonly_fields = ("created_at", "updated_at")
 
 

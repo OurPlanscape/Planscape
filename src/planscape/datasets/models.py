@@ -224,6 +224,7 @@ class SimpleCategory(CreatedAtMixin, UpdatedAtMixin, models.Model):
     id: int
 
     name = models.CharField(max_length=128)
+    icon = models.CharField(max_length=128, null=True, blank=True)
 
     def __str__(self) -> str:
         return self.name

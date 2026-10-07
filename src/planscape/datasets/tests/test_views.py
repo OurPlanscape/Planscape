@@ -656,7 +656,7 @@ class TestSimpleCategoryViewSet(APITestCase):
 
     def test_browse_returns_datalayers_linked_to_simple_category(self):
         self.client.force_authenticate(user=self.normal)
-        category = SimpleCategoryFactory.create()
+        category = SimpleCategoryFactory.create(icon="layers")
         dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
         datalayer = DataLayerFactory.create(
             dataset=dataset,
@@ -671,6 +671,10 @@ class TestSimpleCategoryViewSet(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual([datalayer.pk], [row.get("id") for row in data])
+        self.assertEqual(
+            [{"id": category.pk, "name": category.name, "icon": "layers"}],
+            data[0].get("simple_categories"),
+        )
 
     def test_browse_filters_by_module(self):
         self.client.force_authenticate(user=self.normal)
