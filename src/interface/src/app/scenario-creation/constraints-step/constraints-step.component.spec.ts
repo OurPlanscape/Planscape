@@ -17,7 +17,6 @@ describe('ConstraintsStepComponent', () => {
   let component: ConstraintsStepComponent;
   let fixture: ComponentFixture<ConstraintsStepComponent>;
   let dataLayersStateService: DataLayersStateService;
-  let moduleService: ModuleService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -51,7 +50,6 @@ describe('ConstraintsStepComponent', () => {
     fixture = TestBed.createComponent(ConstraintsStepComponent);
     component = fixture.componentInstance;
     dataLayersStateService = TestBed.inject(DataLayersStateService);
-    moduleService = TestBed.inject(ModuleService);
     fixture.detectChanges();
   });
 
@@ -130,18 +128,6 @@ describe('ConstraintsStepComponent', () => {
       expect(dataLayersStateService.updateSelectedLayers).toHaveBeenCalledWith(
         []
       );
-    });
-  });
-
-  describe('constraintLayers$', () => {
-    it('should emit the datalayers from the advanced_stand_level_constraint module', (done) => {
-      component.constraintLayers$.subscribe((layers) => {
-        expect(layers).toEqual([]);
-        expect(moduleService.getModule).toHaveBeenCalledWith(
-          'advanced_stand_level_constraint'
-        );
-        done();
-      });
     });
   });
 });

@@ -5,9 +5,9 @@
   <mat-icon class="icon-back">arrow_back</mat-icon>
   {{ viewedDataLayer.name }}
   <mat-icon
-    *ngIf="showClearButton"
+    *ngIf="clearable"
     class="close-btn"
-    (click)="clearViewedDataLayer()"
+    (click)="clearViewedDataLayer($event)"
     >close</mat-icon
   >
 </button>

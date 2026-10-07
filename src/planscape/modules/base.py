@@ -7,18 +7,11 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     PreferredDisplayType,
+    SimpleCategory,
 )
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q, QuerySet
-from planning.models import (
-    PlanningArea,
-    Scenario,
-    ScenarioCapability,
-    ScenarioPlanningApproach,
-    TreatmentGoalUsageType,
-)
-
 from modules.serializers import (
     AdvancedStandLevelConstraintSerializer,
     BaseModuleSerializer,
@@ -26,6 +19,13 @@ from modules.serializers import (
     FundingReportModuleSerializer,
     MapModuleSerializer,
     PrioritizeSubUnitsModuleSerializer,
+)
+from planning.models import (
+    PlanningArea,
+    Scenario,
+    ScenarioCapability,
+    ScenarioPlanningApproach,
+    TreatmentGoalUsageType,
 )
 
 RunnableItem = Union[PlanningArea, Scenario]
@@ -39,7 +39,7 @@ def with_datalayer_option_relations(
         "dataset",
         "dataset__organization",
         "category",
-    ).prefetch_related("styles")
+    ).prefetch_related("styles", "simple_categories")
 
 
 class BaseModule:
@@ -107,6 +107,7 @@ class BaseModule:
                     if dataset.preferred_display_type
                     == PreferredDisplayType.BASE_DATALAYERS
                 ],
+                "categories": list(SimpleCategory.objects.all()),
             },
         }
 

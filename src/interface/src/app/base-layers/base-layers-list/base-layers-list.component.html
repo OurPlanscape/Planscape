@@ -59,19 +59,20 @@
     </div>
   </ng-container>
   <ng-template #singleSelect>
-    <mat-radio-button
+    <div
       *ngFor="let layer of baseLayers"
-      [value]="layer.id"
-      [checked]="allSelectedLayersIds.includes(layer.id)"
-      class="data-layer-input"
-      [attr.selected]="allSelectedLayersIds.includes(layer.id) ? '' : null"
-      (change)="onLayerChange(layer, false)"
-      >{{ layer.name }}
+      class="toggle-option"
+      [attr.selected]="allSelectedLayersIds.includes(layer.id) ? '' : null">
+      <sg-toggle
+        [checked]="allSelectedLayersIds.includes(layer.id)"
+        (changed)="onLayerToggle(layer, $event)"
+        >{{ layer.name }}
+      </sg-toggle>
       <mat-spinner
         class="side-spinner"
         diameter="20"
         *ngIf="(loadingLayers$ | async)?.includes('source_' + layer.id)">
       </mat-spinner>
-    </mat-radio-button>
+    </div>
   </ng-template>
 </div>

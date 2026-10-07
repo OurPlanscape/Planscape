@@ -13,6 +13,7 @@
       icon="download"
       [disabled]="
         downloading ||
+        checkingDownloadStatus ||
         downloadStatus === 'processing' ||
         downloadStatus === 'pending'
       "

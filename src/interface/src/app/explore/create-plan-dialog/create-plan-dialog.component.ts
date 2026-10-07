@@ -17,7 +17,7 @@ import {
 import { isValidTotalArea } from '@plan/plan-helpers';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
-import { firstValueFrom } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { AnalyticsService } from '@services/analytics.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -88,33 +88,26 @@ export class CreatePlanDialogComponent implements OnInit {
     return isValidTotalArea(area);
   }
 
-  async submitPlan() {
+  submitPlan() {
     if (this.planForm.valid) {
       this.displayError = false;
       this.submitting = true;
-      try {
-        const planExists = await firstValueFrom(
-          this.planService.planNameExists(
-            this.planForm.get('planName')?.value ?? ''
-          )
-        );
-        if (planExists) {
-          this.planForm.setErrors({ planNameExists: planExists });
-          this.submitting = false;
-          return;
-        }
-
-        const planName = this.planForm.get('planName')?.value || '';
-        if (this.editMode === true) {
-          this.editPlanningAreaName(planName);
-        } else {
-          this.createPlan(planName);
-        }
-      } catch (error) {
-        this.displayError = true;
-        this.submitting = false;
+      const planName = this.planForm.get('planName')?.value || '';
+      if (this.editMode === true) {
+        this.editPlanningAreaName(planName);
+      } else {
+        this.createPlan(planName);
       }
     }
+  }
+
+  // Name uniqueness is scoped per workspace, so the backend is the source of truth.
+  private isNameExistsError(e: HttpErrorResponse): boolean {
+    const nameErrors = e.error?.errors?.name;
+    return (
+      e.status === 400 &&
+      [nameErrors].flat().join(' ').includes('name already exists')
+    );
   }
 
   private createPlan(name: string) {
@@ -144,13 +137,17 @@ export class CreatePlanDialogComponent implements OnInit {
               (result as any).geometry?.coordinates?.length
             );
           },
-          error: (e) => {
+          error: (e: HttpErrorResponse) => {
+            this.submitting = false;
+            if (this.isNameExistsError(e)) {
+              this.planForm.setErrors({ planNameExists: true });
+              return;
+            }
             this.matSnackBar.open(
               '[Error] Unable to create plan due to backend error.',
               'Dismiss',
               SNACK_ERROR_CONFIG
             );
-            this.submitting = false;
           },
         });
     }
@@ -173,10 +170,14 @@ export class CreatePlanDialogComponent implements OnInit {
           result.id
         );
       },
-      error: (e) => {
+      error: (e: HttpErrorResponse) => {
+        this.submitting = false;
+        if (this.isNameExistsError(e)) {
+          this.planForm.setErrors({ planNameExists: true });
+          return;
+        }
         // Display error message and try again
         this.displayError = true;
-        this.submitting = false;
       },
     });
   }

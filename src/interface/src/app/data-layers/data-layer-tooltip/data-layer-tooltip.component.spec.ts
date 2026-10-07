@@ -87,7 +87,6 @@ describe('DataLayerTooltipComponent', () => {
 
       expect(text).toContain('California Landscape Metrics');
       expect(text).toContain('CA Wildfire & Forest Resilience Task Force');
-      expect(text).toContain('0-71');
       expect(text).toContain('short tons biomass/acre');
       expect(text).toContain('Kern County, CA');
       expect(text).toContain('A description of the layer');
@@ -98,11 +97,9 @@ describe('DataLayerTooltipComponent', () => {
       const values = Array.from(el.querySelectorAll('dd')).map((dd) =>
         dd.textContent?.trim()
       );
-      const [datasetName, dataCreator, coverage, valueRange, units, vintage] =
-        values;
+      const [datasetName, dataCreator, coverage, units, vintage] = values;
 
-      expect([datasetName, dataCreator, valueRange, units, vintage]).toEqual([
-        '--',
+      expect([datasetName, dataCreator, units, vintage]).toEqual([
         '--',
         '--',
         '--',
@@ -110,6 +107,13 @@ describe('DataLayerTooltipComponent', () => {
       ]);
       // placeholder until the API sends geographic coverage
       expect(coverage).toBe('Insert location');
+    });
+
+    it('does not show the value range', () => {
+      const el = create();
+
+      expect(el.textContent).not.toContain('Value Range');
+      expect(el.textContent).not.toContain('0-71');
     });
 
     it('links Learn More to the source url', () => {
