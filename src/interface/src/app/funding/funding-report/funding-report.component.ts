@@ -710,10 +710,14 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     ) {
       this.displayDownloadErrorSnackbar();
     }
-    this.downloadingGeopackage$.next(true);
+    if (this.downloadingGeopackage$.value) {
+      return;
+    }
+
     const filename = `geopackage-${this.report.scenario.toString()}.gpkg`;
 
     if (this.report.geopackage_url) {
+      this.downloadingGeopackage$.next(true);
       this.fileSaverService
         .downloadGeopackage(this.report.geopackage_url)
         .subscribe({

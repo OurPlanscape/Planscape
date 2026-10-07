@@ -60,9 +60,12 @@ export class ScenarioDashboardFooterComponent {
   }
 
   handleDownload() {
-    this.downloadingScenario = true;
+    if (this.downloadingScenario) {
+      return;
+    }
 
     if (this.scenario?.geopackage_url && this.scenario?.name) {
+      this.downloadingScenario = true;
       const filename = getSafeFileName(this.scenario.name) + '.zip';
       this.fileSaverService
         .downloadGeopackage(this.scenario.geopackage_url)

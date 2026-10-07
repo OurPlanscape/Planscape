@@ -47,6 +47,7 @@ import { MultiMapsStorageService } from '@services/local-storage.service';
 import { FrontendConstants } from '@map/map.constants';
 import { MULTIMAP_STORAGE } from '@app/services/multimap-storage.token';
 import { ActivatedRoute } from '@angular/router';
+import { FeaturesModule } from '@features/features.module';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { ScenarioState } from '@app/scenario/scenario.state';
 
@@ -70,6 +71,7 @@ import { ScenarioState } from '@app/scenario/scenario.state';
     MapBoundaryLayerComponent,
     PlanningAreaLayerComponent,
     MapProjectAreasComponent,
+    FeaturesModule,
   ],
   providers: [DataLayersStateService],
   templateUrl: './synced-map.component.html',
@@ -356,6 +358,10 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
   goToSelectedLayer(layer: DataLayer) {
     this.multiMapConfigState.setSelectedMap(this.mapNumber);
     this.dataLayersStateService.goToSelectedLayer(layer);
+  }
+
+  clearSelectedLayer() {
+    this.dataLayersStateService.clearViewedDataLayer();
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
