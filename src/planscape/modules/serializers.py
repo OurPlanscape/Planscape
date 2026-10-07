@@ -11,7 +11,6 @@ class OrganizationMapOptionsSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
-            "icon",
         )
 
 
@@ -35,6 +34,7 @@ class SimpleCategoryMapOptionsSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "name",
+            "icon",
         )
 
 
