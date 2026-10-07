@@ -1,7 +1,12 @@
 from unittest import mock
 
 from datasets.models import DataLayerType, PreferredDisplayType, VisibilityOptions
-from datasets.tests.factories import DatasetFactory, DataLayerFactory, StyleFactory
+from datasets.tests.factories import (
+    DataLayerFactory,
+    DatasetFactory,
+    SimpleCategoryFactory,
+    StyleFactory,
+)
 from django.db import connection
 from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
@@ -94,6 +99,7 @@ class ModuleAPITests(TestCase):
         self.assertIn(pk, str(resp.data["detail"]))
 
     def test_retrieve_advanced_stand_level_constraint_datalayers(self):
+        category = SimpleCategoryFactory.create(name="Ownership")
         dataset = DatasetFactory.create(
             visibility=VisibilityOptions.PUBLIC,
             preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
@@ -124,6 +130,10 @@ class ModuleAPITests(TestCase):
                 for item in response.data["options"]["datasets"]["main_datasets"]
             ],
             [dataset.id],
+        )
+        self.assertEqual(
+            response.data["options"]["datasets"]["categories"],
+            [{"id": category.id, "name": "Ownership"}],
         )
 
     def test_advanced_stand_level_constraint_details_filters_by_geometry(self):

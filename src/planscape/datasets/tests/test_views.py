@@ -1,15 +1,20 @@
 from unittest import mock
 from urllib.parse import urlencode
 
+from datasets.models import DataLayer, DataLayerType, VisibilityOptions
+from datasets.tests.factories import (
+    DataLayerFactory,
+    DatasetFactory,
+    SimpleCategoryFactory,
+    StyleFactory,
+)
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from organizations.tests.factories import OrganizationFactory
-from planscape.tests.factories import UserFactory
 from rest_framework.test import APITestCase
-
-from datasets.models import DataLayer, DataLayerType, VisibilityOptions
-from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
 from workspaces.tests.factories import WorkspaceFactory
+
+from planscape.tests.factories import UserFactory
 
 User = get_user_model()
 
@@ -377,15 +382,15 @@ class TestDataLayerViewSet(APITestCase):
             DataLayerFactory.create(
                 dataset=self.dataset, name=f"Bar {i}", type=DataLayerType.RASTER
             )
-        filter = {
+        params = {
             "term": "foo",
             "type": "RASTER",
         }
         DataLayerFactory.create(
             dataset=self.dataset, name="Foo Vector", type=DataLayerType.VECTOR
         )
-        url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(filter)}"
-        response = self.client.get(url)
+        url = reverse("api:datasets:datalayers-find-anything")
+        response = self.client.post(url, params, format="json")
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(10, data.get("count"))
@@ -400,8 +405,8 @@ class TestDataLayerViewSet(APITestCase):
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
         )
         params = {"term": "forest", "type": "RASTER"}
-        url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(params)}"
-        response = self.client.get(url)
+        url = reverse("api:datasets:datalayers-find-anything")
+        response = self.client.post(url, params, format="json")
 
         self.assertEqual(response.status_code, 200)
         track_event_mock.assert_called_once_with(
@@ -422,8 +427,8 @@ class TestDataLayerViewSet(APITestCase):
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
         )
         params = {"term": "forest", "type": "RASTER"}
-        url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(params)}"
-        response = self.client.get(url)
+        url = reverse("api:datasets:datalayers-find-anything")
+        response = self.client.post(url, params, format="json")
 
         self.assertEqual(response.status_code, 200)
         track_event_mock.assert_called_once_with(
@@ -438,6 +443,26 @@ class TestDataLayerViewSet(APITestCase):
             user_id=None,
         )
 
+    def test_find_anything_is_post_only(self):
+        url = reverse("api:datasets:datalayers-find-anything")
+        response = self.client.get(url, {"term": "forest", "type": "RASTER"})
+        self.assertEqual(response.status_code, 405)
+
+    def test_find_anything_accepts_search_tab(self):
+        self.client.force_authenticate(user=self.normal)
+        DataLayerFactory.create(
+            dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
+        )
+        url = reverse("api:datasets:datalayers-find-anything")
+        response = self.client.post(
+            url,
+            {"term": "forest", "type": "RASTER", "search_tab": "favorites"},
+            format="json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(1, data.get("count"))
+
     def test_find_anything_type_vector_returns_vectors(self):
         self.client.force_authenticate(user=self.normal)
         for i in range(3):
@@ -450,8 +475,8 @@ class TestDataLayerViewSet(APITestCase):
             )
 
         params = {"term": "vefoo", "type": DataLayerType.VECTOR}
-        url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(params)}"
-        resp = self.client.get(url)
+        url = reverse("api:datasets:datalayers-find-anything")
+        resp = self.client.post(url, params, format="json")
         data = resp.json()
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(3, data.get("count"))
@@ -470,8 +495,8 @@ class TestDataLayerViewSet(APITestCase):
             )
 
         params = {"term": "priv", "type": "RASTER"}
-        url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(params)}"
-        resp = self.client.get(url)
+        url = reverse("api:datasets:datalayers-find-anything")
+        resp = self.client.post(url, params, format="json")
         data = resp.json()
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(5, data.get("count"))
@@ -488,8 +513,8 @@ class TestDataLayerViewSet(APITestCase):
             )
 
         params = {"term": "priv", "type": "RASTER"}
-        url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(params)}"
-        resp = self.client.get(url)
+        url = reverse("api:datasets:datalayers-find-anything")
+        resp = self.client.post(url, params, format="json")
         data = resp.json()
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(0, data.get("count"))
@@ -534,8 +559,8 @@ class TestDataLayerViewSet(APITestCase):
         ]:
             self.client.force_authenticate(user=test.get("user"))
             params = {"term": "priv", "type": "RASTER"}
-            url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(params)}"
-            resp = self.client.get(url)
+            url = reverse("api:datasets:datalayers-find-anything")
+            resp = self.client.post(url, params, format="json")
             data = resp.json()
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(data.get("count"), test.get("expected_result"))
@@ -587,32 +612,115 @@ class TestDatasetViewSet(APITestCase):
         dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
         datalayer = DataLayerFactory.create(dataset=dataset)
         url = reverse("api:datasets:datasets-browse", kwargs={"pk": dataset.pk})
-        response = self.client.get(url)
+        response = self.client.post(url, {}, format="json")
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(datalayer.pk, data[0].get("id"))
 
-    def test_browses_datalayers__filter_by_name_exact(self):
+    def test_browse_datalayers_is_post_only(self):
         self.client.force_authenticate(user=self.normal)
         dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
-        datalayer = DataLayerFactory.create(dataset=dataset, name="Owl Habitat")
-        query_params = {"name": datalayer.name}
-        url = f"{reverse('api:datasets:datasets-browse', kwargs={'pk': dataset.pk})}?{urlencode(query_params)}"
+        url = reverse("api:datasets:datasets-browse", kwargs={"pk": dataset.pk})
         response = self.client.get(url)
-        data = response.json()
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(datalayer.pk, data[0].get("id"))
+        self.assertEqual(response.status_code, 405)
 
-    def test_browses_datalayers__filter_by_name_icontains(self):
+    def test_browses_datalayers__filter_by_type(self):
         self.client.force_authenticate(user=self.normal)
         dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
-        datalayer = DataLayerFactory.create(dataset=dataset, name="Owl Habitat")
-        query_params = {"name": "owl"}
-        url = f"{reverse('api:datasets:datasets-browse', kwargs={'pk': dataset.pk})}?{urlencode(query_params)}"
-        response = self.client.get(url)
+        datalayer = DataLayerFactory.create(dataset=dataset, type=DataLayerType.RASTER)
+        DataLayerFactory.create(dataset=dataset, type=DataLayerType.VECTOR)
+        url = reverse("api:datasets:datasets-browse", kwargs={"pk": dataset.pk})
+        response = self.client.post(url, {"type": "RASTER"}, format="json")
         data = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(datalayer.pk, data[0].get("id"))
+        self.assertEqual([datalayer.pk], [row.get("id") for row in data])
+
+    def test_browses_datalayers_accepts_search_tab(self):
+        self.client.force_authenticate(user=self.normal)
+        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        datalayer = DataLayerFactory.create(dataset=dataset, type=DataLayerType.RASTER)
+        url = reverse("api:datasets:datasets-browse", kwargs={"pk": dataset.pk})
+        response = self.client.post(
+            url,
+            {"type": "RASTER", "search_tab": "favorites"},
+            format="json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([datalayer.pk], [row.get("id") for row in data])
+
+
+class TestSimpleCategoryViewSet(APITestCase):
+    def setUp(self) -> None:
+        self.normal = UserFactory.create()
+
+    def test_browse_returns_datalayers_linked_to_simple_category(self):
+        self.client.force_authenticate(user=self.normal)
+        category = SimpleCategoryFactory.create()
+        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        datalayer = DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            simple_categories=[category],
+        )
+        DataLayerFactory.create(dataset=dataset, type=DataLayerType.RASTER)
+
+        url = reverse("api:datasets:categories-browse", kwargs={"pk": category.pk})
+        response = self.client.post(url, {"type": "RASTER"}, format="json")
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([datalayer.pk], [row.get("id") for row in data])
+
+    def test_browse_filters_by_module(self):
+        self.client.force_authenticate(user=self.normal)
+        category = SimpleCategoryFactory.create()
+        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        included = DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            metadata={"modules": {"map": {"enabled": True}}},
+            simple_categories=[category],
+        )
+        DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            metadata={"modules": {"map": {"enabled": False}}},
+            simple_categories=[category],
+        )
+
+        url = reverse("api:datasets:categories-browse", kwargs={"pk": category.pk})
+        response = self.client.post(
+            url,
+            {"type": "RASTER", "module": "map"},
+            format="json",
+        )
+        data = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([included.pk], [row.get("id") for row in data])
+
+    def test_browse_does_not_return_private_datalayers_to_unauthorized_user(self):
+        self.client.force_authenticate(user=self.normal)
+        category = SimpleCategoryFactory.create()
+        private_dataset = DatasetFactory(visibility=VisibilityOptions.PRIVATE)
+        DataLayerFactory.create(
+            dataset=private_dataset,
+            type=DataLayerType.RASTER,
+            simple_categories=[category],
+        )
+
+        url = reverse("api:datasets:categories-browse", kwargs={"pk": category.pk})
+        response = self.client.post(url, {"type": "RASTER"}, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([], response.json())
+
+    def test_browse_is_post_only(self):
+        category = SimpleCategoryFactory.create()
+        url = reverse("api:datasets:categories-browse", kwargs={"pk": category.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 405)
 
 
 class TestPublicAccess(APITestCase):
@@ -632,30 +740,49 @@ class TestPublicAccess(APITestCase):
         self.assertEqual(len(resp.data.get("results")), 1)
 
     def test_all_public_endpoints_are_readable(self):
-        urls = [
-            reverse(
-                "api:datasets:datasets-browse", kwargs={"pk": self.public_dataset.pk}
+        post_urls = [
+            (
+                reverse(
+                    "api:datasets:datasets-browse",
+                    kwargs={"pk": self.public_dataset.pk},
+                ),
+                {},
             ),
-            f"{reverse('api:datasets:datalayers-find-anything')}?term=x&type=RASTER",
+            (
+                reverse("api:datasets:datalayers-find-anything"),
+                {"term": "x", "type": "RASTER"},
+            ),
+        ]
+        get_urls = [
             reverse(
                 "api:datasets:datalayers-urls", kwargs={"pk": self.public_datalayer.pk}
             ),
         ]
-        for url in urls:
+        for url, data in post_urls:
+            with self.subTest(url=url):
+                resp = self.client.post(url, data, format="json")
+                self.assertEqual(resp.status_code, 200)
+        for url in get_urls:
             with self.subTest(url=url):
                 resp = self.client.get(url)
                 self.assertEqual(resp.status_code, 200)
 
     def test_private_endpoints_are_not_visible(self):
-        urls = [
+        post_urls = [
             reverse(
                 "api:datasets:datasets-browse", kwargs={"pk": self.private_dataset.pk}
             ),
+        ]
+        get_urls = [
             reverse(
                 "api:datasets:datalayers-urls", kwargs={"pk": self.private_datalayer.pk}
             ),
         ]
-        for url in urls:
+        for url in post_urls:
+            with self.subTest(url=url):
+                resp = self.client.post(url, {}, format="json")
+                self.assertEqual(resp.status_code, 404)
+        for url in get_urls:
             with self.subTest(url=url):
                 resp = self.client.get(url)
                 self.assertEqual(resp.status_code, 404)

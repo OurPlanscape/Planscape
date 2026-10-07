@@ -23,6 +23,8 @@ from datasets.models import (
     GeometryType,
     PreferredDisplayType,
     SearchResult,
+    SearchTab,
+    SimpleCategory,
     StorageTypeChoices,
     Style,
     VisibilityOptions,
@@ -461,6 +463,7 @@ def browse(
     type: Optional[DataLayerType] = None,
     module: Optional[str] = None,
     geometry: Optional[GEOSGeometry] = None,
+    search_tab: str = SearchTab.GENERAL,
 ) -> QuerySet[DataLayer]:
     datalayers = (
         DataLayer.objects.filter(
@@ -485,7 +488,57 @@ def browse(
         filter = {f"metadata__modules__{module}__enabled": True}
         datalayers = datalayers.filter(**filter)
 
+    if search_tab == SearchTab.FAVORITES:
+        # TODO: narrow to workspace favorites once favorites are implemented.
+        pass
+    elif search_tab == SearchTab.UPLOADED:
+        # TODO: narrow to uploaded datalayers once uploaded filtering is defined.
+        pass
+
     return datalayers
+
+
+def browse_simple_category(
+    category: SimpleCategory,
+    type: Optional[DataLayerType] = None,
+    module: Optional[str] = None,
+    geometry: Optional[GEOSGeometry] = None,
+    search_tab: str = SearchTab.GENERAL,
+    user: Optional[User] = None,
+) -> QuerySet[DataLayer]:
+    datalayers = (
+        DataLayer.objects.all()
+        .accessible_by(user)
+        .filter(
+            simple_categories=category,
+            status=DataLayerStatus.READY,
+        )
+        .select_related(
+            "organization",
+            "dataset",
+            "category",
+        )
+        .prefetch_related("styles")
+    )
+
+    if type is not None:
+        datalayers = datalayers.filter(type=type)
+
+    if geometry is not None:
+        datalayers = datalayers.filter(outline__intersects=geometry)
+
+    if module:
+        filter = {f"metadata__modules__{module}__enabled": True}
+        datalayers = datalayers.filter(**filter)
+
+    if search_tab == SearchTab.FAVORITES:
+        # TODO: narrow to workspace favorites once favorites are implemented.
+        pass
+    elif search_tab == SearchTab.UPLOADED:
+        # TODO: narrow to uploaded datalayers once uploaded filtering is defined.
+        pass
+
+    return datalayers.distinct()
 
 
 @cached(timeout=settings.FIND_ANYTHING_TTL)
@@ -494,6 +547,7 @@ def find_anything(
     type: DataLayerType,
     module: Optional[str] = None,
     geometry: Optional[GEOSGeometry] = None,
+    search_tab: str = SearchTab.GENERAL,
     user: Optional[User] = None,
     **kwargs,
 ) -> Dict[str, SearchResult]:
@@ -547,28 +601,43 @@ def find_anything(
         datalayer_filter["outline__intersects"] = geometry
         category_filter["outline__intersects"] = geometry
 
+    if search_tab == SearchTab.FAVORITES:
+        # TODO: narrow to workspace favorites once favorites are implemented.
+        pass
+    elif search_tab == SearchTab.UPLOADED:
+        # TODO: narrow to uploaded datalayers once uploaded filtering is defined.
+        pass
+
     raw_results = [
         [
             dataset_to_search_result(x)
-            for x in Dataset.objects.all().accessible_by(user).filter(
+            for x in Dataset.objects.all()
+            .accessible_by(user)
+            .filter(
                 **org_filter,
             )
         ],
         [
             dataset_to_search_result(x)
-            for x in Dataset.objects.all().accessible_by(user).filter(
+            for x in Dataset.objects.all()
+            .accessible_by(user)
+            .filter(
                 **dataset_filter,
             )
         ],
         [
             datalayer_to_search_result(x)
-            for x in DataLayer.objects.all().accessible_by(user).filter(
+            for x in DataLayer.objects.all()
+            .accessible_by(user)
+            .filter(
                 **category_filter,
             )
         ],
         [
             datalayer_to_search_result(x)
-            for x in DataLayer.objects.all().accessible_by(user).filter(
+            for x in DataLayer.objects.all()
+            .accessible_by(user)
+            .filter(
                 **datalayer_filter,
             )
         ],

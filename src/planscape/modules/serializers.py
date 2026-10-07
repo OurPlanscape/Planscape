@@ -1,5 +1,5 @@
 from core.fields import GeometryTypeField
-from datasets.models import DataLayer, Dataset
+from datasets.models import DataLayer, Dataset, SimpleCategory
 from datasets.serializers import BrowseDataLayerSerializer
 from organizations.models import Organization
 from rest_framework import serializers
@@ -28,9 +28,19 @@ class DatasetMapOptionsSerializer(serializers.ModelSerializer):
         )
 
 
+class SimpleCategoryMapOptionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SimpleCategory
+        fields = (
+            "id",
+            "name",
+        )
+
+
 class DatasetsOptionsSerializers(serializers.Serializer):
     main_datasets = serializers.ListField(child=DatasetMapOptionsSerializer())
     base_datasets = serializers.ListField(child=DatasetMapOptionsSerializer())
+    categories = serializers.ListField(child=SimpleCategoryMapOptionsSerializer())
 
 
 class BaseModuleOptionsSerializer(serializers.Serializer):
@@ -75,6 +85,7 @@ class InputModuleSerializer(serializers.Serializer):
         coerce_multi=True,
         required=False,
     )
+
 
 class BaseModuleSerializer(serializers.Serializer):
     name = serializers.CharField()

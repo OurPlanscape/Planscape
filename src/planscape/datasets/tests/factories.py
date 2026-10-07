@@ -1,7 +1,4 @@
 import factory
-from organizations.tests.factories import OrganizationFactory
-from planscape.tests.factories import UserFactory
-
 from datasets.models import (
     Category,
     DataLayer,
@@ -12,10 +9,14 @@ from datasets.models import (
     GeometryType,
     PreferredDisplayType,
     SelectionTypeOptions,
+    SimpleCategory,
     StorageTypeChoices,
     Style,
     VisibilityOptions,
 )
+from organizations.tests.factories import OrganizationFactory
+
+from planscape.tests.factories import UserFactory
 
 
 class DatasetFactory(factory.django.DjangoModelFactory):
@@ -39,6 +40,13 @@ class CategoryFactory(factory.django.DjangoModelFactory):
     organization = factory.SelfAttribute("dataset.organization")
     created_by = factory.SelfAttribute("dataset.created_by")
     name = factory.Sequence(lambda x: f"Category {x}")
+
+
+class SimpleCategoryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = SimpleCategory
+
+    name = factory.Sequence(lambda x: f"Simple Category {x}")
 
 
 class StyleFactory(factory.django.DjangoModelFactory):
@@ -68,6 +76,12 @@ class DataLayerFactory(factory.django.DjangoModelFactory):
     url = None
     outline = None
     workspace = None
+
+    @factory.post_generation
+    def simple_categories(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+        self.simple_categories.add(*extracted)
 
     @factory.post_generation
     def style(self, create, extracted, **kwargs):
