@@ -19,7 +19,7 @@ import { environment } from '../../environments/environment';
 export class ScenarioService {
   readonly v2Path = environment.backend_endpoint + '/v2/scenarios/';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   /** Fetches the scenarios for a plan from the backend.
    *  Includes an optional ordering param
@@ -91,6 +91,31 @@ export class ScenarioService {
     );
   }
 
+  cloneScenario(scenarioId: number, newName: string): Observable<Scenario> {
+    return this.http
+      .post<Scenario>(
+        `${this.v2Path}${scenarioId}/clone/`,
+        { name: newName },
+        { withCredentials: true }
+      )
+      .pipe(
+        catchError((error) => {
+          const message =
+            error.error?.errors?.global?.[0] ??
+            error.error?.detail ??
+            'Failed to copy scenario';
+
+          throw (
+            () =>
+              new CreateScenarioError(message, {
+                configurationError: false,
+                errorMessages: { global: [message] },
+              })
+          );
+        })
+      );
+  }
+
   //sends a partial scenario configuration using PATCH
   // returns success or failure, based on backend results
   patchScenarioConfig(
@@ -141,7 +166,7 @@ export class ScenarioService {
   downloadCsvData(scenarioId: number): Observable<any> {
     return this.http.get(
       environment.backend_endpoint +
-        `/planning/get_scenario_download_by_id?id=${scenarioId}`,
+      `/planning/get_scenario_download_by_id?id=${scenarioId}`,
       {
         withCredentials: true,
         responseType: 'arraybuffer',
@@ -152,7 +177,7 @@ export class ScenarioService {
   downloadShapeFiles(scenarioId: number): Observable<any> {
     return this.http.get(
       environment.backend_endpoint +
-        `/planning/download_shapefile?id=${scenarioId}`,
+      `/planning/download_shapefile?id=${scenarioId}`,
       {
         withCredentials: true,
         responseType: 'arraybuffer',
@@ -163,7 +188,7 @@ export class ScenarioService {
   getProjectAreas(scenarioId: number) {
     return this.http.get<ProjectArea[]>(
       environment.backend_endpoint +
-        `/v2/scenarios/${scenarioId}/project-areas/`,
+      `/v2/scenarios/${scenarioId}/project-areas/`,
       {
         withCredentials: true,
       }

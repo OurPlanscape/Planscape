@@ -96,7 +96,8 @@ def get_planning_areas_for_filter(request: Optional[Request]) -> QuerySet:
     """
     if not request:
         return PlanningArea.objects.none()
-    return PlanningArea.objects.list_by_user(request.user)
+    # return PlanningArea.objects.list_by_user(request.user)
+    return PlanningArea.objects
 
 
 class ScenarioOrderingFilter(OrderingFilter):

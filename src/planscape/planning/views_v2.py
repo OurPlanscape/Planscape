@@ -97,6 +97,7 @@ from planning.serializers import (
 )
 from planning.services import (
     calculate_child_project_areas,
+    clone_scenario,
     create_config,
     create_planning_area,
     create_scenario,
@@ -433,6 +434,31 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         return Response(
             out_serializer.data,
             status=status.HTTP_201_CREATED,
+        )
+
+    @extend_schema(description="Clone a scenario by id")
+    @action(methods=["POST"], detail=True, url_path="clone")
+
+    def clone(self, request, pk=None):
+        # TODO: confirm create perms
+        source = self.get_object()  
+
+        name = request.data.get("name")
+
+        new_scenario = clone_scenario(
+            original_scenario_id=source.pk,
+            user=request.user,
+            name=name
+        )
+
+        out = ScenarioV3Serializer(
+            instance=new_scenario,
+            context=self.get_serializer_context(),
+        )
+        return Response(
+            out.data,
+            status=status.HTTP_201_CREATED,
+            headers=self.get_success_headers(out.data),
         )
 
     @extend_schema(description="Update Scenario's configuration.")

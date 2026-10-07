@@ -335,52 +335,55 @@ def migrate_configuration(configuration: Dict[str, Any], current_version: Scenar
 
     return config
 
+
 @transaction.atomic
 def clone_scenario(
-    original_scenario_id: int, 
-    user: User, 
-    name: Optional[str] = None
+    original_scenario_id: int,
+    user: User,
+    name: Optional[str] = None,
 ) -> Scenario:
 
+    # never clone these fields
+    _CLONE_EXCLUDE = {"uuid", "created_at", "updated_at", 
+        "geopackage_url", "ready_email_sent_at"}
+   
     original = Scenario.objects.select_for_update().get(pk=original_scenario_id)
 
-    target_name = name or f"{original.name} (Copy)"
-    final_name = _get_unique_clone_name(original.planning_area_id, target_name)
+    # if we didn't get a name, we still create a new one
+    new_name = _get_unique_clone_name(
+        original.planning_area_id,
+        name or f"{original.name} (Copy)",
+    )
 
-    current_version = original.version
-    if current_version in (ScenarioVersion.V1, ScenarioVersion.V2):
-        new_config = migrate_configuration(original.configuration, current_version)
+    if original.version in (ScenarioVersion.V1, ScenarioVersion.V2):
+        new_config = migrate_configuration(original.configuration, original.version)
     else:
         new_config = copy.deepcopy(original.configuration)
 
-    clone = Scenario(
-        user=user,
-        planning_area=original.planning_area,
-        parent=original.parent,
-        treatment_goal=original.treatment_goal,
 
-        name=final_name,
-        origin=original.origin,
-        type=original.type,
-        planning_approach=original.planning_approach,
-        notes=original.notes,
+    # Fields that are replaced or reset rather than copied
+    overrides = {
+        "user": user, # whoever copies the scenario is the new owner
+        "name": new_name,
+        "configuration": new_config,
+        "treatable_area": (
+            original.treatable_area.clone() if original.treatable_area else None
+        ),
+        "status": ScenarioStatus.ACTIVE,
+        "result_status": ScenarioResultStatus.DRAFT,
+        "geopackage_status": GeoPackageStatus.PENDING,
+        "post_process_status": ScenarioPostProcessingStatus.PENDING,
+    }
 
-        configuration=new_config,
-        forsys_input=copy.deepcopy(original.forsys_input) if original.forsys_input else None,
-        capabilities=list(original.capabilities) if original.capabilities else [],
-        treatable_area=original.treatable_area.clone() if original.treatable_area else None,
+    # Everything else is copied, with deepcopy so JSON/array fields aren't shared
+    copied = {
+        f.attname: copy.deepcopy(getattr(original, f.attname))
+        for f in original._meta.concrete_fields
+        if not f.primary_key and f.name not in _CLONE_EXCLUDE | overrides.keys()
+    }
 
-        status=ScenarioStatus.ACTIVE,
-        result_status=None,
-        geopackage_status=GeoPackageStatus.PENDING,
-        post_process_status=ScenarioPostProcessingStatus.PENDING,
-        geopackage_url=None,
-        ready_email_sent_at=None,
-
-        uuid=uuid.uuid4(),
-    )
-
-    clone.save()
+    clone = Scenario.objects.create(**copied, **overrides)
+    ScenarioResult.objects.create(scenario=clone, status=ScenarioResultStatus.DRAFT)
     return clone
 
 @transaction.atomic()

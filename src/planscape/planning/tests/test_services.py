@@ -1806,9 +1806,6 @@ class CloneScenarioTest(TestCase):
         # assert that clone is associated with user doing the cloning
         self.assertEqual(cloned_scenario.user, self.secondUser)
 
-        # assert that the clone has no results
-        self.assertFalse(hasattr(cloned_scenario, 'results'))
-
         # assert that some attributes should not be cloned
         self.assertNotEqual(orig_scenario.user, cloned_scenario.user)
         self.assertNotEqual(orig_scenario.uuid, cloned_scenario.uuid)

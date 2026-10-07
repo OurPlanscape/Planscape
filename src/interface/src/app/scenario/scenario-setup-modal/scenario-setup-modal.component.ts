@@ -19,14 +19,8 @@ import { Router, UrlTree } from '@angular/router';
 import {
   Scenario,
   SCENARIO_TYPE,
-  ScenarioV3Config,
-  ScenarioV3Payload,
 } from '@types';
-import { EMPTY, map, Observable, of, switchMap, take, tap } from 'rxjs';
-import {
-  convertOldConfigurationToV3Payload,
-  sanitizePayloadForScenarioType,
-} from '../scenario-helper';
+import { EMPTY, map, Observable, switchMap, take, tap } from 'rxjs';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -126,7 +120,13 @@ export class ScenarioSetupModalComponent implements OnInit {
       const scenarioName =
         this.scenarioNameForm.get('scenarioName')?.value || '';
 
-      if (!this.editMode) {
+      if (this.data.fromClone && !this.editMode && this.data.scenario) {
+        this.handleClone(this.data.scenario, scenarioName).subscribe({
+          error: (e) =>
+            console.log(e)
+        });
+      }
+      else if (!this.editMode) {
         this.createScenario(scenarioName);
       } else {
         this.editScenarioName(scenarioName);
@@ -134,78 +134,90 @@ export class ScenarioSetupModalComponent implements OnInit {
     }
   }
 
-  private handleClone(
-    oldScenario: Scenario,
-    newScenario: Scenario
-  ): Observable<void> {
-    const source$ = oldScenario.configuration
-      ? of(oldScenario)
-      : this.scenarioService.getScenario(oldScenario.id).pipe(take(1));
 
-    return source$.pipe(
-      switchMap((fullOldScenario) =>
-        this.applyClonedConfig(fullOldScenario, newScenario)
-      )
+  private handleClone(oldScenario: Scenario, newName: string): Observable<void> {
+    this.submitting = true;
+    console.log('called handle clone?', oldScenario);
+    return this.scenarioService.cloneScenario(oldScenario.id!, newName).pipe(
+      tap((result) =>
+        this.reloadTo(`${this.planPath(result.planning_area)}/scenario/${result.id}`)
+      ),
+      map(() => void 0)
     );
   }
 
-  private applyClonedConfig(
-    oldScenario: Scenario,
-    newScenario: Scenario
-  ): Observable<void> {
-    let newPayload = this.buildClonedPayload(oldScenario, newScenario);
-    const redirectUrl = `${this.planPath(newScenario.planning_area)}/scenario/${newScenario.id}`;
+  // private handleClone(
+  //   oldScenario: Scenario,
+  //   newScenario: Scenario
+  // ): Observable<void> {
+  //   const source$ = oldScenario.configuration
+  //     ? of(oldScenario)
+  //     : this.scenarioService.getScenario(oldScenario.id).pipe(take(1));
 
-    if (
-      !newPayload.configuration ||
-      Object.keys(newPayload.configuration).length === 0
-    ) {
-      this.reloadTo(redirectUrl);
-      return EMPTY;
-    }
+  //   return source$.pipe(
+  //     switchMap((fullOldScenario) =>
+  //       this.applyClonedConfig(fullOldScenario, newScenario)
+  //     )
+  //   );
+  // }
 
-    return this.scenarioService
-      .patchScenarioConfig(newScenario.id!, newPayload)
-      .pipe(
-        tap((result) =>
-          this.reloadTo(
-            `${this.planPath(result.planning_area)}/scenario/${result.id}`
-          )
-        ),
-        map(() => void 0)
-      );
-  }
+  // private applyClonedConfig(
+  //   oldScenario: Scenario,
+  //   newScenario: Scenario
+  // ): Observable<void> {
+  //   let newPayload = this.buildClonedPayload(oldScenario, newScenario);
+  //   const redirectUrl = `${this.planPath(newScenario.planning_area)}/scenario/${newScenario.id}`;
 
-  private buildClonedPayload(
-    oldScenario: Scenario,
-    newScenario: Scenario
-  ): Partial<ScenarioV3Payload> {
-    let payload: Partial<ScenarioV3Payload> = {};
+  //   if (
+  //     !newPayload.configuration ||
+  //     Object.keys(newPayload.configuration).length === 0
+  //   ) {
+  //     this.reloadTo(redirectUrl);
+  //     return EMPTY;
+  //   }
 
-    if (oldScenario.version === 'V3') {
-      payload.configuration = structuredClone(
-        oldScenario.configuration
-      ) as ScenarioV3Config;
-    } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
-      const thresholdsIdMap = new Map([
-        ['slope', this.thresholdsData.slope?.id],
-        ['distance_to_roads', this.thresholdsData.distance_from_roads?.id],
-      ]);
-      const oldConfig: Partial<ScenarioV3Config> = oldScenario.configuration;
+  //   return this.scenarioService
+  //     .patchScenarioConfig(newScenario.id!, newPayload)
+  //     .pipe(
+  //       tap((result) =>
+  //         this.reloadTo(
+  //           `${this.planPath(result.planning_area)}/scenario/${result.id}`
+  //         )
+  //       ),
+  //       map(() => void 0)
+  //     );
+  // }
 
-      payload = convertOldConfigurationToV3Payload(oldConfig, thresholdsIdMap);
-    }
+  // private buildClonedPayload(
+  //   oldScenario: Scenario,
+  //   newScenario: Scenario
+  // ): Partial<ScenarioV3Payload> {
+  //   let payload: Partial<ScenarioV3Payload> = {};
 
-    if (Number(oldScenario.treatment_goal?.id)) {
-      payload.treatment_goal = Number(oldScenario.treatment_goal?.id);
-    }
+  //   if (oldScenario.version === 'V3') {
+  //     payload.configuration = structuredClone(
+  //       oldScenario.configuration
+  //     ) as ScenarioV3Config;
+  //   } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
+  //     const thresholdsIdMap = new Map([
+  //       ['slope', this.thresholdsData.slope?.id],
+  //       ['distance_to_roads', this.thresholdsData.distance_from_roads?.id],
+  //     ]);
+  //     const oldConfig: Partial<ScenarioV3Config> = oldScenario.configuration;
 
-    if (oldScenario.planning_approach) {
-      payload.planning_approach = oldScenario.planning_approach;
-    }
+  //     payload = convertOldConfigurationToV3Payload(oldConfig, thresholdsIdMap);
+  //   }
 
-    return sanitizePayloadForScenarioType(newScenario, payload);
-  }
+  //   if (Number(oldScenario.treatment_goal?.id)) {
+  //     payload.treatment_goal = Number(oldScenario.treatment_goal?.id);
+  //   }
+
+  //   if (oldScenario.planning_approach) {
+  //     payload.planning_approach = oldScenario.planning_approach;
+  //   }
+
+  //   return sanitizePayloadForScenarioType(newScenario, payload);
+  // }
 
   async reloadTo(url: string | UrlTree) {
     // Force reload a url route
@@ -224,7 +236,7 @@ export class ScenarioSetupModalComponent implements OnInit {
       return;
     }
 
-    const { planId, type, fromClone, scenario, parentId } = this.data;
+    const { planId, type, fromClone, parentId } = this.data;
 
     this.scenarioService
       .createScenario(name, planId, type, parentId)
@@ -234,9 +246,6 @@ export class ScenarioSetupModalComponent implements OnInit {
           this.submitting = false;
         }),
         switchMap((newScenario) => {
-          if (fromClone && newScenario.id && scenario) {
-            return this.handleClone(scenario, newScenario);
-          }
           if (!fromClone && newScenario.id) {
             this.router.navigate([
               this.planPath(planId),
