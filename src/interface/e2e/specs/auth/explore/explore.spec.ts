@@ -1,13 +1,30 @@
 import { expect, test } from '@playwright/test';
+import { createWorkspace, deleteWorkspace } from '../../../helpers/api-client';
 
-test('navigate to map-viewer from home', async ({ page }) => {
-  await page.goto('/home');
-  await page.click('a[routerLink="/map-viewer"]');
-  await expect(page).toHaveURL(/\/map-viewer/);
+// The map viewer belongs to a workspace, so every test needs one.
+let workspaceId: number;
+
+test.beforeEach(async ({ request }) => {
+  const workspace = await createWorkspace(request, `E2E Explore ${Date.now()}`);
+  workspaceId = workspace.id;
+});
+
+test.afterEach(async ({ request }) => {
+  await deleteWorkspace(request, workspaceId);
+});
+
+test('navigates to the map viewer from the workspace', async ({ page }) => {
+  await page.goto(`/workspace/${workspaceId}`);
+
+  await page.locator('sg-card-link .overlay-navigation').click();
+
+  await expect(page).toHaveURL(
+    new RegExp(`/map-viewer/workspace/${workspaceId}`)
+  );
 });
 
 test('map-viewer page has data layers panel and map', async ({ page }) => {
-  await page.goto('/map-viewer');
+  await page.goto(`/map-viewer/workspace/${workspaceId}`);
   // Data Layers tab is visible
   await expect(page.getByText('Data Layers')).toBeVisible();
   // Search bar is visible
@@ -19,7 +36,7 @@ test('map-viewer page has data layers panel and map', async ({ page }) => {
 });
 
 test('basemap switcher changes the rendered map', async ({ page }) => {
-  await page.goto('/map-viewer');
+  await page.goto(`/map-viewer/workspace/${workspaceId}`);
 
   const canvas = page.locator('.maplibregl-canvas');
   await expect(canvas).toBeVisible();
@@ -44,7 +61,7 @@ test('basemap switcher changes the rendered map', async ({ page }) => {
 test('map count switcher toggles between 1, 2, and 4 maps', async ({
   page,
 }) => {
-  await page.goto('/map-viewer');
+  await page.goto(`/map-viewer/workspace/${workspaceId}`);
 
   const mapControl = page.locator('app-multi-map-control');
   const buttons = mapControl.locator('button');

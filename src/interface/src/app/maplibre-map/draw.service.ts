@@ -90,6 +90,8 @@ export class DrawService {
       this.selectFeature(featureId);
       this.updateTotalAcreage();
     });
+    // a shape uploaded while the map was still loading is waiting to be drawn
+    this.renderUploadedShape();
   }
 
   //idempotent - start if not started
@@ -336,10 +338,20 @@ export class DrawService {
   }
 
   addUploadedFeatures(geoJSONShape: GeoJSON.GeoJSON) {
-    if (!this._mapRef) {
+    this._uploadedShape = geoJSONShape;
+    this.renderUploadedShape();
+    this.updateTotalAcreage();
+  }
+
+  /**
+   * Draws the uploaded shape, if there is one and the map is ready. A shape
+   * uploaded before the map finishes loading is painted on initialization
+   * instead of being dropped.
+   */
+  private renderUploadedShape() {
+    if (!this._mapRef || !this._uploadedShape) {
       return;
     }
-    this._uploadedShape = geoJSONShape;
     if (!this._mapRef.getSource('uploaded-shape')) {
       this.initializeUploadedShapeLayer();
     }
@@ -347,7 +359,6 @@ export class DrawService {
       'uploaded-shape'
     ) as maplibregl.GeoJSONSource;
     source.setData(this._uploadedShape);
-    this.updateTotalAcreage();
   }
 
   private initializeUploadedShapeLayer(): void {

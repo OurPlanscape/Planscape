@@ -1,32 +1,19 @@
-import { expect, Page, test } from '@playwright/test';
-
-async function waitForMapIdle(page: Page) {
-  await page.waitForFunction(() => {
-    return new Promise<boolean>((resolve) => {
-      const canvas = document.querySelector(
-        '.maplibregl-canvas'
-      ) as HTMLCanvasElement;
-      if (!canvas) return resolve(false);
-      const snap = canvas.toDataURL();
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          resolve(canvas.toDataURL() === snap);
-        });
-      });
-    });
-  });
-}
+import { expect, test } from '@playwright/test';
+import { createWorkspace, deleteWorkspace } from '../../../helpers/api-client';
+import { waitForMapIdle } from '../../../helpers/map';
 
 test('user can create planning area by drawing on the map', async ({
   page,
+  request,
 }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
 
   const planningAreaName = `E2E Draw Plan ${Date.now()}`;
+  const workspace = await createWorkspace(request, `E2E Draw ${Date.now()}`);
   const map = page.getByRole('region', { name: 'Map' });
   const canvas = page.locator('.maplibregl-canvas').first();
 
-  await page.goto('/map-viewer');
+  await page.goto(`/map-viewer/workspace/${workspace.id}`);
   await expect(map).toBeVisible();
   await expect(canvas).toBeVisible();
 
@@ -68,13 +55,6 @@ test('user can create planning area by drawing on the map', async ({
   ).toBeVisible();
   await expect(page.getByText(planningAreaName, { exact: true })).toBeVisible();
 
-  await page.goto('/home');
-
-  // Clean up
-  const row = page.getByRole('row', { name: new RegExp(planningAreaName) });
-  await expect(row).toBeVisible();
-  await row.getByLabel('more options').click();
-  await page.getByRole('menuitem', { name: 'Delete' }).click();
-  await page.getByRole('button', { name: 'Delete' }).click();
-  await expect(row).toHaveCount(0);
+  // Clean up: the workspace takes the planning area with it
+  await deleteWorkspace(request, workspace.id);
 });
