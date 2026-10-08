@@ -3,25 +3,31 @@
 import json
 from collections import Counter, defaultdict
 
+from datasets.models import (
+    Category,
+    DataLayer,
+    DataLayerHasStyle,
+    DataLayerStatus,
+    DataLayerType,
+    Dataset,
+    Style,
+)
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.gdal.error import GDALException
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.geos.error import GEOSException
-from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
 from django.db import transaction
-
-from datasets.models import Category, DataLayer, DataLayerStatus, DataLayerType
-from datasets.models import DataLayerHasStyle, Dataset, Style
 from organizations.models import Organization
-from workspaces.models import Workspace
 from planning.models import (
     TreatmentGoal,
     TreatmentGoalCategory,
     TreatmentGoalUsesDataLayer,
 )
+from workspaces.models import Workspace
 
 MODELS = (
     Organization,
@@ -45,6 +51,9 @@ KEYS = {
     TreatmentGoalUsesDataLayer: ("treatment_goal", "datalayer", "usage_type"),
 }
 IGNORED = {"created_at", "updated_at", "path", "depth", "numchild"}
+IGNORED_M2M = {
+    DataLayer: {"simple_categories"},
+}
 # These describe the input to vector ingestion; table/outline/info are derived.
 VECTOR_SOURCE_FIELDS = (
     "url",
@@ -119,6 +128,9 @@ class CatalogImporter:
                 raise CommandError(
                     f"Invalid fixture record for {model._meta.label_lower}."
                 )
+            fields = dict(fields)
+            for name in IGNORED_M2M.get(model, set()):
+                fields.pop(name, None)
             if pk in self.rows[model]:
                 raise CommandError(
                     f"Duplicate source ID for {model._meta.label_lower}: {pk}"

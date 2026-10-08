@@ -1,12 +1,6 @@
 import json
 from typing import Any, Dict
 
-from django.contrib import admin
-from django.core.exceptions import PermissionDenied
-from django.http import Http404, JsonResponse
-from django.urls import path
-from treebeard.admin import TreeAdmin
-
 from datasets.forms import (
     CategoryAdminForm,
     DataLayerAdminForm,
@@ -14,9 +8,21 @@ from datasets.forms import (
     DatasetAdminForm,
     StyleAdminForm,
 )
-from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Style
+from datasets.models import (
+    Category,
+    DataLayer,
+    DataLayerHasStyle,
+    Dataset,
+    SimpleCategory,
+    Style,
+)
 from datasets.services import enable_datalayer_module
 from datasets.tasks import calculate_datalayer_outline
+from django.contrib import admin
+from django.core.exceptions import PermissionDenied
+from django.http import Http404, JsonResponse
+from django.urls import path
+from treebeard.admin import TreeAdmin
 
 
 class CategoryAdmin(TreeAdmin):
@@ -26,6 +32,12 @@ class CategoryAdmin(TreeAdmin):
 
     def get_changeform_initial_data(self, request) -> Dict[str, Any]:
         return {"created_by": request.user}
+
+
+class SimpleCategoryAdmin(admin.ModelAdmin):
+    search_fields = ["name"]
+    list_display = ("id", "name", "icon", "created_at", "updated_at")
+    readonly_fields = ("created_at", "updated_at")
 
 
 class DatasetAdmin(admin.ModelAdmin):
@@ -74,7 +86,13 @@ class DataLayerAdmin(admin.ModelAdmin):
         "name",
         "table",
     ]
-    autocomplete_fields = ["organization", "created_by", "dataset", "category"]
+    autocomplete_fields = [
+        "organization",
+        "created_by",
+        "dataset",
+        "category",
+        "simple_categories",
+    ]
     list_display = (
         "id",
         "name",
@@ -171,7 +189,9 @@ class DataLayerAdmin(admin.ModelAdmin):
         ids = list(queryset.values_list("id", flat=True))
         for datalayer_id in ids:
             calculate_datalayer_outline.delay(datalayer_id)
-        self.message_user(request, f"Queued outline calculation for {len(ids)} datalayers.")
+        self.message_user(
+            request, f"Queued outline calculation for {len(ids)} datalayers."
+        )
 
     @admin.action(description="enable forsys")
     def enable_forsys(self, request, queryset):
@@ -232,4 +252,5 @@ class StyleAdmin(admin.ModelAdmin):
 admin.site.register(Dataset, DatasetAdmin)
 admin.site.register(DataLayer, DataLayerAdmin)
 admin.site.register(Category, CategoryAdmin)
+admin.site.register(SimpleCategory, SimpleCategoryAdmin)
 admin.site.register(Style, StyleAdmin)

@@ -73,7 +73,7 @@ def build_datalayer_lookup() -> Dict[Tuple[str, int, bool], DataLayer]:
     for datalayer in DataLayer.objects.filter(
         type=DataLayerType.RASTER,
         metadata__has_key="modules",
-    ):
+    ).prefetch_related("styles", "simple_categories"):
         fr_meta = (datalayer.metadata or {}).get("modules", {}).get("funding_report")
         if fr_meta is None:
             continue
@@ -103,7 +103,7 @@ def get_aet_delta_datalayer() -> DataLayer:
                     }
                 }
             },
-        )[:2]
+        ).prefetch_related("styles", "simple_categories")[:2]
     )
     if not datalayers:
         raise ValueError("Missing funding report AET delta datalayer.")
@@ -124,7 +124,7 @@ def _get_aet_role_datalayer(role: str) -> DataLayer | None:
                     }
                 }
             },
-        )[:2]
+        ).prefetch_related("styles", "simple_categories")[:2]
     )
     if not datalayers:
         log.warning("Missing funding report AET %s datalayer.", role)
@@ -149,7 +149,9 @@ def get_aet_percentual_datalayer() -> DataLayer | None:
 
 def get_mills_datalayers() -> List[DataLayer]:
     return list(
-        DataLayer.objects.filter(dataset__name=settings.FORISK_MILLS_DATASET_NAME)
+        DataLayer.objects.filter(
+            dataset__name=settings.FORISK_MILLS_DATASET_NAME
+        ).prefetch_related("styles", "simple_categories")
     )
 
 

@@ -11,7 +11,6 @@ import { BreadcrumbService } from '@app/services/breadcrumb.service';
 import { getPlanPath } from '@app/plan/plan-helpers';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MapViewerCardComponent } from '@app/plan/map-viewer-card/map-viewer-card.component';
-import { ProjectAreaComingSoonComponent } from '../project-area-coming-soon/project-area-coming-soon.component';
 import { ScenarioState } from '../scenario.state';
 import { ScenarioToolsComponent } from '@scenario/scenario-tools/scenario-tools.component';
 import { ProjectAreasEmptyListComponent } from '../project-areas-empty-list/project-areas-empty-list.component';
@@ -32,7 +31,6 @@ import { ScenariosListComponent } from '@app/plan/plan-summary/scenarios-list/sc
     MapViewerCardComponent,
     NavBarComponent,
     DetailsCardComponent,
-    ProjectAreaComingSoonComponent,
     ProjectAreasEmptyListComponent,
     ScenariosListComponent,
     OverlayLoaderComponent,
