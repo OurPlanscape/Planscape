@@ -12,7 +12,7 @@ from pprint import pprint
 import fiona
 from cacheops import invalidate_all
 from datasets.dynamic_models import qualify_for_django
-from datasets.models import DataLayerType, GeometryType
+from datasets.models import DataLayer, DataLayerType, GeometryType
 from datasets.tasks import datalayer_uploaded
 from datasets.tests.factories import DataLayerFactory
 from django.conf import settings
@@ -1863,17 +1863,98 @@ class CloneScenarioTest(TestCase):
 
 
 
-    ## Test cloning of legacy scenario types
+    ## TODO Test cloning of legacy scenario types
     # test the cloning of a V1 scenario
     def test_cloning_of_v1_scenario(self):
-        scenarioV1 = ScenarioFactory.create(planning_area=self.planning_area)
+        goal = TreatmentGoalFactory(name="Reduce wildfire risk")
+        excluded_area = DataLayerFactory(name="Excluded area")
+        
+        # Create these layers, so we have them when we do the conversion
+        slope_datalayer = DataLayerFactory.create(
+            name="Slope",
+            metadata={"modules": {"forsys": {"name": "slope", "metric_column": "max"}}},
+        )
+        distance_from_road_datalayer = DataLayerFactory.create(
+            name="Distance from road",
+            metadata={
+                "modules": {
+                    "forsys": {"name": "distance_from_roads", "metric_column": "min"}
+                }
+            },
+        )
+        slope_datalayer.save()
+        distance_from_road_datalayer.save()
+        
+        scenarioV1 = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.user,
+            treatment_goal=None,
+            configuration={
+                "question_id": goal.pk,
+                "stand_size": "MEDIUM",
+                "est_cost": 2000,
+                "max_treatment_area_ratio": 40000,
+                "max_slope": 25,
+                "excluded_areas": ["national_forests", str(excluded_area.pk)],
+            },
+        )
+
+        pprint("Here is the V1 scenario....")
+        pprint(scenarioV1)
+
+
+
+        cloned_scenario = clone_scenario(scenarioV1.id, self.secondUser, 'some new scenario')
+        pprint("Here is the cloned scenario from a V1 example....")
+
         cloned_scenario = clone_scenario(scenarioV1.id, self.secondUser, 'some new scenario')
         pprint(cloned_scenario.__dict__)
 
-    # test the cloning of a V2 scenario
+    # TODO test the cloning of a V2 scenario
     def test_cloning_of_v2_scenario(self):
-        scenarioV2 = ScenarioFactory.create(planning_area=self.planning_area)
+        priority = DataLayerFactory(name="Priority")
+        excluded_area = DataLayerFactory(name="Excluded area")
+        # Create these layers, so we have them when we do the conversion
+        slope_datalayer = DataLayerFactory.create(
+            name="Slope",
+            metadata={"modules": {"forsys": {"name": "slope", "metric_column": "max"}}},
+        )
+        distance_from_road_datalayer = DataLayerFactory.create(
+            name="Distance from road",
+            metadata={
+                "modules": {
+                    "forsys": {"name": "distance_from_roads", "metric_column": "min"}
+                }
+            },
+        )
+        slope_datalayer.save()
+        distance_from_road_datalayer.save()
+
+
+        goal = TreatmentGoalFactory(datalayers=[priority])
+        scenarioV2 = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.user,
+            treatment_goal=goal,
+            configuration={
+                "stand_size": "LARGE",
+                "estimated_cost": 2470,
+                "max_budget": 100000,
+                "max_area": None,
+                "max_project_count": 5,
+                "max_slope": 30,
+                "min_distance_from_road": 200,
+                "excluded_areas_ids": [excluded_area.pk],
+            },
+        )      
+
+        pprint("Here is the V2 scenario....")
+        pprint(scenarioV2.__dict__)
+
+
+
         cloned_scenario = clone_scenario(scenarioV2.id, self.secondUser, 'some new scenario')
+        pprint("Here is the cloned scenario from a V2 example....")
         pprint(cloned_scenario.__dict__)
 
 

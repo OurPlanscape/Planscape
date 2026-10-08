@@ -38,6 +38,7 @@ from django.db import transaction
 from django.db.models import QuerySet
 from django.db.models.aggregates import Sum
 from django.db.models.functions import Substr
+from django.forms.models import model_to_dict
 from django.utils.text import slugify
 from django.utils.timezone import now
 from fiona.crs import from_epsg
@@ -316,25 +317,41 @@ def _get_unique_clone_name(planning_area_id: int, base_name: str) -> str:
 
     return new_name
 
-def migrate_configuration(configuration: Dict[str, Any], current_version: ScenarioVersion) -> Dict[str, Any]:
-    """
-    Migrates V1 or V2 scenario configuration to V3 schema.
-    """
-    config = copy.deepcopy(configuration or {})
+def migrate_configuration(old_config: Dict[str, Any], current_version: ScenarioVersion) -> Dict[str, Any]:
+    new_config = {}
+    
+    if current_version not in (ScenarioVersion.V1, ScenarioVersion.V2):
+        new_config = copy.deepcopy(old_config or {})
 
-    if current_version == ScenarioVersion.V1:
-        # TODO: Implement V1 -> V2/V3 migration logic
-        # e.g., config['targets'] = transform_v1_to_v3(config)
-        # config.pop('question_id', None)
-        pass
+    if current_version in (ScenarioVersion.V1, ScenarioVersion.V2):
+        new_config['constraints'] = []
+        new_config['targets'] = []
 
-    elif current_version == ScenarioVersion.V2:
-        # TODO: Implement V2 -> V3 migration logic
-        # e.g., config['targets'] = transform_v2_to_v3(config)
-        pass
+        if 'max_slope' in old_config:
+            slope_layer = DataLayer.objects.all().by_meta_name("slope")
+            new_config['constraints'].append({
+                "datalayer": slope_layer.pk,
+                "operator": "lt",
+                "value": old_config['max_slope'],
+            })
 
-    return config
+        if 'min_distance_from_roads' in old_config:
+            roads_layer = DataLayer.objects.all().by_meta_name("distance_from_roads")
+            new_config['constraints'].append({
+                "datalayer": roads_layer.pk,
+                "operator": "lte",
+                "value": old_config['min_distance_from_roads'],
+            })
 
+    print(f"\n\n\njson of old config...")
+    print(json.dumps(old_config, indent=2, default=str))
+    print(f"\n\n")
+            
+    print(f"\n\n\njson of new config...")
+    print(json.dumps(new_config, indent=2, default=str))
+    print(f"\n\n")
+
+    return new_config
 
 @transaction.atomic
 def clone_scenario(
@@ -384,6 +401,15 @@ def clone_scenario(
 
     clone = Scenario.objects.create(**copied, **overrides)
     ScenarioResult.objects.create(scenario=clone, status=ScenarioResultStatus.DRAFT)
+
+    print(f"\n\n\njson of old scenario...")
+    print(json.dumps(model_to_dict(original), indent=2, default=str))
+    print(f"\n\n")
+
+    print(f"\n\n\njson of new scenario...")
+    print(json.dumps(model_to_dict(clone), indent=2, default=str))
+    print(f"\n\n")
+
     return clone
 
 @transaction.atomic()
