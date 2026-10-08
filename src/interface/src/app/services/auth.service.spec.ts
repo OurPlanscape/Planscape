@@ -642,7 +642,7 @@ describe('logged in match guards', () => {
     },
     {
       path: 'home',
-      canMatch: [loggedInMatchGuard, createFeatureMatchGuard('WORKSPACES')],
+      canMatch: [loggedInMatchGuard, createFeatureMatchGuard('TEST_FEATURE')],
       component: WorkspacesStubComponent,
     },
     { path: 'home', component: HomeStubComponent },

@@ -20,7 +20,6 @@ import { CommonModule } from '@angular/common';
 import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { AboutComponent } from '@standalone/about/about.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { FeaturesModule } from '@features/features.module';
 import { BannerComponent } from '@styleguide';
 
 @Component({
@@ -36,7 +35,6 @@ import { BannerComponent } from '@styleguide';
     ReactiveFormsModule,
     RouterModule,
     SharedModule,
-    FeaturesModule,
     BannerComponent,
   ],
 })

@@ -1,13 +1,12 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ButtonComponent } from '@styleguide';
-import { FeaturesModule } from '@features/features.module';
 import { FAQ_URL, KNOWLEDGE_BASE_URL, FEEDBACK_URL } from '@shared';
 
 @Component({
   selector: 'app-welcome',
   standalone: true,
-  imports: [ButtonComponent, FeaturesModule, RouterLink],
+  imports: [ButtonComponent, RouterLink],
   templateUrl: './welcome.component.html',
   styleUrls: ['./welcome.component.scss'],
 })

@@ -18,7 +18,6 @@ import { MockDeclarations } from 'ng-mocks';
 import { ButtonComponent } from '@styleguide';
 import { MatMenuHarness } from '@angular/material/menu/testing';
 import { FeaturesModule } from '@features/features.module';
-import { overrideFeatureFlags } from '@features/testing';
 
 describe('TopBarComponent', () => {
   let component: TopBarComponent;
@@ -106,22 +105,6 @@ describe('TopBarComponent', () => {
         expect(menuTriggerEl.nativeElement.innerHTML.trim()).toEqual('Foo');
       });
       it('should have a menu with `plans`, `account`  and `sign out`', async () => {
-        setUpComponent();
-        const harness = await loader.getHarness(MatMenuHarness);
-        await harness.open();
-        const items = await harness.getItems();
-
-        expect(items.length).toBe(3);
-
-        const texts = await Promise.all(
-          items.map(async (item) => await item.getText())
-        );
-
-        expect(texts).toEqual(['Plans', 'Account', 'Sign Out']);
-      });
-
-      it('drops `plans` when the workspaces flag is on', async () => {
-        overrideFeatureFlags('WORKSPACES');
         setUpComponent();
         const harness = await loader.getHarness(MatMenuHarness);
         await harness.open();
