@@ -58,7 +58,7 @@ jobs:
           ENV: ${{ github.event_name == 'release'
             && (github.event.release.prerelease && 'staging' || 'production')
             || 'dev' }}
-          WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          WEBHOOK_URL: ${{ secrets[github.event_name == 'release' && !github.event.release.prerelease && 'MM_MAIN_WEBHOOK_URL' || 'MM_SECONDARY_WEBHOOK_URL'] }}
         run: |
           STATUS="${{ needs.deploy.result }}"
 
