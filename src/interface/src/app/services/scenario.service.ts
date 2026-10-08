@@ -94,7 +94,7 @@ export class ScenarioService {
   cloneScenario(scenarioId: number, newName: string): Observable<Scenario> {
     return this.http
       .post<Scenario>(
-        `${this.v2Path}${scenarioId}/notclone/`,
+        `${this.v2Path}${scenarioId}/clone/`,
         { name: newName },
         { withCredentials: true }
       )
