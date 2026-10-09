@@ -1776,9 +1776,9 @@ class CloneScenarioTest(TestCase):
         self.assertNotEqual(orig_scenario.uuid, cloned_scenario.uuid)
         self.assertNotEqual(orig_scenario.result_status, cloned_scenario.result_status)
 
-    def test_cloning_of_scenario_with_results(self):
+    def test_cloning_of_scenario_but_not_results(self):
         orig_scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
-        ScenarioResultFactory.create(
+        orig_result = ScenarioResultFactory.create(
             scenario=orig_scenario, status=ScenarioResultStatus.SUCCESS
         )
         cloned_scenario = clone_scenario(orig_scenario.id, self.secondUser, 'some new scenario')
@@ -1795,8 +1795,15 @@ class CloneScenarioTest(TestCase):
 
         # assert that some attributes should not be cloned
         self.assertNotEqual(orig_scenario.user, cloned_scenario.user)
+        self.assertNotEqual(orig_scenario.user, cloned_scenario.user)
         self.assertNotEqual(orig_scenario.uuid, cloned_scenario.uuid)
-        self.assertNotEqual(orig_scenario.result_status, cloned_scenario.result_status)
+
+        # assert that results are not copied
+        self.assertEqual(cloned_scenario.results.status, ScenarioResultStatus.DRAFT)
+        self.assertEqual(cloned_scenario.results.result, None)
+        self.assertEqual(cloned_scenario.results.errors, None)
+        self.assertEqual(cloned_scenario.results.started_at, None)
+        self.assertEqual(cloned_scenario.results.completed_at, None)
 
     def test_cloning_of_scenario_with_name_collisions(self):
         scenarioV3 = ScenarioFactory.create(

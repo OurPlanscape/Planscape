@@ -356,6 +356,7 @@ def migrate_configuration(old_config: dict[str, Any], current_version: ScenarioV
 
     return new_config
 
+# Clones the scenario configuration and sets to DRAFT
 @transaction.atomic
 def clone_scenario(
     original_scenario_id: int,
