@@ -4,7 +4,6 @@ import json
 import logging
 import math
 import os
-import uuid
 import zipfile
 from collections.abc import Collection
 from datetime import date, datetime, time
@@ -316,7 +315,7 @@ def _get_unique_clone_name(planning_area_id: int, base_name: str) -> str:
 
     return new_name
 
-def migrate_configuration(old_config: Dict[str, Any], current_version: ScenarioVersion) -> Dict[str, Any]:    
+def migrate_configuration(old_config: dict[str, Any], current_version: ScenarioVersion) -> dict[str, Any]:    
     new_config = copy.deepcopy(old_config or {})
     new_config['constraints'] = []
     new_config['targets'] = {}
@@ -361,7 +360,7 @@ def migrate_configuration(old_config: Dict[str, Any], current_version: ScenarioV
 def clone_scenario(
     original_scenario_id: int,
     user: User,
-    name: Optional[str] = None,
+    name: str | None = None
 ) -> Scenario:
 
     original = Scenario.objects.select_for_update().get(pk=original_scenario_id)
