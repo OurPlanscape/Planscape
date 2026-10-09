@@ -1,5 +1,5 @@
 import { AsyncPipe, NgClass, NgFor, NgIf } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ButtonComponent } from '@styleguide';
 import { delay, map, startWith } from 'rxjs';
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
@@ -23,6 +23,8 @@ import { DataLayersRegistryService } from '../data-layers-registry';
   styleUrl: './map-selector.component.scss',
 })
 export class MapSelectorComponent {
+  @Input() showSelectionHeader = true;
+
   layoutMode$ = this.multiMapConfigState.layoutMode$;
   mapsArray$ = this.dataLayersRegistryService.size$.pipe(
     startWith(0),

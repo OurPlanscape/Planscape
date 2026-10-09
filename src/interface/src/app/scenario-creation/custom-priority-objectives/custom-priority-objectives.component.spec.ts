@@ -30,7 +30,7 @@ describe('CustomPriorityObjectivesComponent', () => {
           selectedDataLayers$: of([]),
           selectedLayersCount$: of(0),
           searchTerm$: of(''),
-          selectedDataSet$: of(null),
+          selection$: of(null),
           dataTree$: of(null),
           searchResults$: of(null),
         }),

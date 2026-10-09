@@ -37,6 +37,19 @@ $panel-side-padding: 16px;
     @include standard-label();
     margin: 0;
   }
+
+  .back-button {
+    margin-left: -8px;
+  }
+
+  .selection-title {
+    flex: 1;
+    min-width: 0;
+    margin-left: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .panel-content {

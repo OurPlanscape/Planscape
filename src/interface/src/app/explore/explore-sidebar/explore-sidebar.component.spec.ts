@@ -5,14 +5,39 @@ import { MapSelectorComponent } from '@explore/map-selector/map-selector.compone
 import { SidebarTabs } from '@explore/sidebar-tabs';
 import { MockComponents } from 'ng-mocks';
 import { ExploreSidebarComponent } from './explore-sidebar.component';
+import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
+import { DataLayersRegistryService } from '@explore/data-layers-registry';
+import {
+  BrowseSelection,
+  DataLayersStateService,
+} from '@data-layers/data-layers.state.service';
+import { BehaviorSubject } from 'rxjs';
 
 describe('ExploreSidebarComponent', () => {
   let component: ExploreSidebarComponent;
   let fixture: ComponentFixture<ExploreSidebarComponent>;
+  let selection$: BehaviorSubject<BrowseSelection | null>;
+  let dataLayersState: jasmine.SpyObj<DataLayersStateService>;
 
   beforeEach(async () => {
+    selection$ = new BehaviorSubject<BrowseSelection | null>(null);
+    dataLayersState = jasmine.createSpyObj<DataLayersStateService>(
+      'DataLayersStateService',
+      ['goBackToSearchResults'],
+      { selection$ }
+    );
+    const registry = new DataLayersRegistryService();
+    registry.set(1, dataLayersState);
+
     await TestBed.configureTestingModule({
       imports: [ExploreSidebarComponent],
+      providers: [
+        {
+          provide: MultiMapConfigState,
+          useValue: { selectedMapId$: new BehaviorSubject(1) },
+        },
+        { provide: DataLayersRegistryService, useValue: registry },
+      ],
     })
       .overrideComponent(ExploreSidebarComponent, {
         remove: { imports: [MapSelectorComponent, BaseLayersComponent] },
@@ -87,5 +112,40 @@ describe('ExploreSidebarComponent', () => {
 
     expect(component.expandedChange.emit).not.toHaveBeenCalled();
     expect(component.selectedTabChange.emit).not.toHaveBeenCalled();
+  });
+
+  describe('when a category is open in the data layers panel', () => {
+    beforeEach(() => {
+      selection$.next({ type: 'category', id: 20, name: 'Air Quality' });
+      fixture.detectChanges();
+    });
+
+    it('shows the category name in the header', () => {
+      expect(
+        fixture.debugElement.query(By.css('.panel-header h4')).nativeElement
+          .textContent
+      ).toContain('Air Quality');
+    });
+
+    it('goes back to the list from the header arrow', () => {
+      fixture.debugElement
+        .query(By.css('.panel-header .back-button'))
+        .nativeElement.click();
+
+      expect(dataLayersState.goBackToSearchResults).toHaveBeenCalled();
+    });
+
+    it('keeps the panel title on the base layers tab', () => {
+      component.selectedTab = SidebarTabs.BASE_LAYERS;
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.query(By.css('.panel-header h4')).nativeElement
+          .textContent
+      ).toContain('Base Layers');
+      expect(
+        fixture.debugElement.query(By.css('.panel-header .back-button'))
+      ).toBeNull();
+    });
   });
 });
