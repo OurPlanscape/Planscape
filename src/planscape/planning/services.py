@@ -4,6 +4,7 @@ import json
 import logging
 import math
 import os
+import uuid
 import zipfile
 from collections.abc import Collection
 from datetime import date, datetime, time
@@ -18,7 +19,6 @@ from typing import (  # noqa
     Type,
     Union,
 )
-
 import fiona
 from actstream import action
 from cacheops import cached
@@ -77,6 +77,7 @@ from planning.models import (
     Scenario,
     ScenarioOrigin,
     ScenarioPlanningApproach,
+    ScenarioPostProcessingStatus,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
@@ -296,6 +297,116 @@ def create_config(
 
     return config
 
+
+def _get_unique_clone_name(planning_area_id: int, base_name: str) -> str:
+    """
+    Guarantees a unique scenario name within the planning area 
+    if the provided name conflicts with an existing active scenario.
+    """
+    new_name = base_name
+    counter = 1
+
+    while Scenario.objects.filter(
+        planning_area_id=planning_area_id, 
+        name=new_name, 
+        deleted_at__isnull=True
+    ).exists():
+        counter += 1
+        new_name = f"{base_name} ({counter})"
+
+    return new_name
+
+def migrate_configuration(old_config: Dict[str, Any], current_version: ScenarioVersion) -> Dict[str, Any]:    
+    new_config = copy.deepcopy(old_config or {})
+    new_config['constraints'] = []
+    new_config['targets'] = {}
+
+    # old configs that become targets
+    for old_key, new_key in (
+        ('est_cost', 'estimated_cost'),
+        ('estimated_cost', 'estimated_cost'),
+        ('max_project_count', 'max_project_count'),
+    ):
+        if old_key in new_config:
+            new_config['targets'][new_key] = new_config.pop(old_key)
+
+    # old configs that become constraint items
+    if 'max_slope' in new_config:
+        slope_value = new_config.pop('max_slope')
+        slope_layer = DataLayer.objects.all().by_meta_name("slope")
+        if slope_layer is None:
+            logger.warning("slope layer not found")
+        else:
+            new_config['constraints'].append({
+                "datalayer": slope_layer.pk,
+                "operator": "lt",
+                "value": slope_value,
+            })
+
+    if 'min_distance_from_road' in new_config:
+        roads_value = new_config.pop('min_distance_from_road')
+        roads_layer = DataLayer.objects.all().by_meta_name("distance_from_roads")
+        if roads_layer is None:
+            logger.warning("min_distance_from_road layer not found")
+        else:
+            new_config['constraints'].append({
+                "datalayer": roads_layer.pk,
+                "operator": "lte",
+                "value": roads_value,
+            })
+
+    return new_config
+
+@transaction.atomic
+def clone_scenario(
+    original_scenario_id: int,
+    user: User,
+    name: Optional[str] = None,
+) -> Scenario:
+
+    original = Scenario.objects.select_for_update().get(pk=original_scenario_id)
+
+    # if we didn't get a name, we still create a new one
+    new_name = _get_unique_clone_name(
+        original.planning_area_id,
+        name or f"{original.name} (Copy)",
+    )
+
+    if original.version in (ScenarioVersion.V1, ScenarioVersion.V2):
+        new_config = migrate_configuration(original.configuration, original.version)
+    else:
+        new_config = copy.deepcopy(original.configuration)
+
+
+    # never clone these fields
+    _CLONE_EXCLUDE = {"uuid", "created_at", "updated_at", 
+        "geopackage_url", "ready_email_sent_at"}
+
+    # Fields that are replaced or reset rather than copied
+    overrides = {
+        "user": user, # whoever copies the scenario is the new owner
+        "name": new_name,
+        "configuration": new_config,
+        "treatable_area": (
+            original.treatable_area.clone() if original.treatable_area else None
+        ),
+        "status": ScenarioStatus.ACTIVE,
+        "result_status": ScenarioResultStatus.DRAFT,
+        "geopackage_status": GeoPackageStatus.PENDING,
+        "post_process_status": ScenarioPostProcessingStatus.PENDING,
+    }
+
+    # Everything else is copied
+    copied = {
+        f.attname: copy.deepcopy(getattr(original, f.attname))
+        for f in original._meta.concrete_fields
+        if not f.primary_key and f.name not in _CLONE_EXCLUDE | overrides.keys()
+    }
+
+    clone = Scenario.objects.create(**copied, **overrides)
+    ScenarioResult.objects.create(scenario=clone, status=ScenarioResultStatus.DRAFT)
+
+    return clone
 
 @transaction.atomic()
 def create_scenario(user: User, **kwargs) -> Scenario:
