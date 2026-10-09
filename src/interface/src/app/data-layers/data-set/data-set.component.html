@@ -7,6 +7,7 @@
     <mat-icon>chevron_right</mat-icon>
   </div>
   <div
+    *ngIf="organizationName"
     class="data-set-org"
     [sgHighlighter]="searchTerm"
     [sgHighlighterText]="organizationName"></div>

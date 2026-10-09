@@ -5,7 +5,7 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import { NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { ButtonComponent } from '@styleguide';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { MapSelectorComponent } from '@explore/map-selector/map-selector.component';
@@ -14,6 +14,9 @@ import {
   SidebarRailItem,
 } from '@explore/sidebar-icon-rail/sidebar-icon-rail.component';
 import { SidebarTabs } from '@explore/sidebar-tabs';
+import { DataLayersRegistryService } from '@explore/data-layers-registry';
+import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
+import { combineLatest, map, of, switchMap, take } from 'rxjs';
 
 const PANEL_BY_RAIL_ITEM: Record<string, SidebarTabs> = {
   'data-layers': SidebarTabs.DATA_LAYERS,
@@ -25,6 +28,7 @@ const PANEL_BY_RAIL_ITEM: Record<string, SidebarTabs> = {
   standalone: true,
   imports: [
     NgIf,
+    AsyncPipe,
     ButtonComponent,
     BaseLayersComponent,
     MapSelectorComponent,
@@ -41,6 +45,29 @@ export class ExploreSidebarComponent {
 
   @Output() expandedChange = new EventEmitter<boolean>();
   @Output() selectedTabChange = new EventEmitter<SidebarTabs>();
+
+  // State of the data layers panel for the map currently picked in the selector
+  private dataLayersState$ = combineLatest([
+    this.multiMapConfigState.selectedMapId$,
+    this.dataLayersRegistry.size$,
+  ]).pipe(
+    map(([mapId]) => (mapId ? this.dataLayersRegistry.get(mapId) : undefined))
+  );
+
+  dataLayersSelection$ = this.dataLayersState$.pipe(
+    switchMap((state) => state?.selection$ ?? of(null))
+  );
+
+  constructor(
+    private multiMapConfigState: MultiMapConfigState,
+    private dataLayersRegistry: DataLayersRegistryService
+  ) {}
+
+  goBack() {
+    this.dataLayersState$
+      .pipe(take(1))
+      .subscribe((state) => state?.goBackToSearchResults());
+  }
 
   @HostBinding('class.expanded') get hostExpanded() {
     return this.expanded;

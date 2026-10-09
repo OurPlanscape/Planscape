@@ -47,6 +47,7 @@ describe('BaseLayersPanelComponent', () => {
           datasets$: of({
             main_datasets: [],
             base_datasets: [wildfires, roads],
+            categories: [],
           }),
           moduleName: 'map',
         }),

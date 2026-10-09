@@ -38,7 +38,11 @@ describe('MapModuleService datasets$ sorting', () => {
     baseDatasets: MapDataDataSet[]
   ) {
     const mapData: MapData = {
-      datasets: { main_datasets: mainDatasets, base_datasets: baseDatasets },
+      datasets: {
+        main_datasets: mainDatasets,
+        base_datasets: baseDatasets,
+        categories: [],
+      },
     };
     const apiModule: ApiModule<MapData> = { name: 'test', options: mapData };
     TestBed.configureTestingModule({

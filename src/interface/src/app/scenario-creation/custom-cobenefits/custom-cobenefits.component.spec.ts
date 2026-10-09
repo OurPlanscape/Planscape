@@ -31,7 +31,7 @@ describe('CustomCobenefitsComponent', () => {
           viewedDataLayer$: of(null),
           selectedDataLayers$: of([]),
           searchTerm$: of(''),
-          selectedDataSet$: of(null),
+          selection$: of(null),
           dataTree$: of(null),
           searchResults$: of(null),
         }),

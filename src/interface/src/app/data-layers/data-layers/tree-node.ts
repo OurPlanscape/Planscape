@@ -50,6 +50,13 @@ export function buildPathTree(items: DataLayer[]): TreeNode[] {
   return root;
 }
 
+/** Leaf nodes only, ignoring each item's `path`. */
+export function buildFlatTree(items: DataLayer[]): TreeNode[] {
+  const nodes = items.map((item) => ({ name: item.name, item }));
+  sortNodes(nodes);
+  return nodes;
+}
+
 function sortNodes(nodes: TreeNode[]): void {
   nodes.sort((a, b) => a.name.localeCompare(b.name));
   for (const node of nodes) {

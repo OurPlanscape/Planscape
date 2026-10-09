@@ -18,7 +18,7 @@ import {
   PaginatorComponent,
   SearchBarComponent,
 } from '@styleguide';
-import { BaseDataSet } from '@types';
+import { BaseDataSet, SimpleCategory } from '@types';
 import { FeatureService } from '@features/feature.service';
 import { FeaturesModule } from '@features/features.module';
 import {
@@ -65,6 +65,8 @@ import { groupSearchResults, Results } from './search';
 export class DataLayersComponent {
   @Input() displayAddButton = false;
   @Input() useClearFooter = true;
+  // Off when the host renders the back navigation itself (map viewer panel header).
+  @Input() showSelectionHeader = true;
 
   constructor(
     private dataLayersStateService: DataLayersStateService,
@@ -73,12 +75,14 @@ export class DataLayersComponent {
 
   // With DATA_ORGANIZATION the clear button lives on the map's layer name instead.
   showClearButton = !this.featureService.isFeatureEnabled('DATA_ORGANIZATION');
+  browseByCategory = this.featureService.isFeatureEnabled('DATA_ORGANIZATION');
 
   loading$ = this.dataLayersStateService.loading$;
 
   dataSets$ = this.dataLayersStateService.dataSets$;
+  categories$ = this.dataLayersStateService.categories$;
 
-  selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
+  selection$ = this.dataLayersStateService.selection$;
   viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
 
   searchTerm$ = this.dataLayersStateService.searchTerm$.pipe(
@@ -122,6 +126,10 @@ export class DataLayersComponent {
     })
   );
 
+  showCategories$ = combineLatest([this.categories$, this.loading$]).pipe(
+    map(([categories, loading]) => categories.length > 0 && !loading)
+  );
+
   get pages() {
     return this.resultCount
       ? Math.ceil(this.resultCount / this.dataLayersStateService.limit)
@@ -139,6 +147,11 @@ export class DataLayersComponent {
   viewDatasetCategories(dataSet: BaseDataSet) {
     this.dataLayersStateService.resetPath();
     this.dataLayersStateService.selectDataSet(dataSet);
+  }
+
+  viewCategoryLayers(category: SimpleCategory) {
+    this.dataLayersStateService.resetPath();
+    this.dataLayersStateService.selectCategory(category);
   }
 
   goBack() {

@@ -1,5 +1,5 @@
 import { DataLayer } from '@types';
-import { buildPathTree, TreeNode } from './tree-node';
+import { buildFlatTree, buildPathTree, TreeNode } from './tree-node';
 
 describe('buildPathTree', () => {
   it('should build the correct hierarchy for a typical set of DataLayer items', () => {
@@ -204,5 +204,19 @@ describe('buildPathTree', () => {
     const leaf = result[0].children![0];
     expect(leaf.name).toEqual('LonelyItem');
     expect(leaf.item!.id).toEqual(999);
+  });
+});
+
+describe('buildFlatTree', () => {
+  it('lists every layer as a sorted leaf, ignoring paths', () => {
+    const items = [
+      { id: 1, name: 'Total Carbon', path: ['Carbon', 'Storage'] },
+      { id: 2, name: 'Above Carbon', path: ['Other'] },
+    ] as DataLayer[];
+
+    const tree = buildFlatTree(items);
+
+    expect(tree.map((n) => n.name)).toEqual(['Above Carbon', 'Total Carbon']);
+    expect(tree.every((n) => !n.children && !!n.item)).toBeTrue();
   });
 });

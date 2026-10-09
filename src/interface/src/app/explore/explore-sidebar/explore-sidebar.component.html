@@ -5,7 +5,25 @@
 
 <div class="panel" *ngIf="expanded">
   <div class="panel-header">
-    <h4>{{ activeItem?.label }}</h4>
+    <ng-container
+      *ngIf="
+        selectedTab === SidebarTabs.DATA_LAYERS &&
+          (dataLayersSelection$ | async);
+        else title;
+        let selection
+      ">
+      <button
+        sg-button
+        variant="icon-only"
+        icon="arrow_back"
+        class="back-button"
+        aria-label="Back"
+        (click)="goBack()"></button>
+      <h4 class="selection-title">{{ selection.name }}</h4>
+    </ng-container>
+    <ng-template #title>
+      <h4>{{ activeItem?.label }}</h4>
+    </ng-template>
     <button
       sg-button
       variant="icon-only"
@@ -14,7 +32,8 @@
   </div>
   <div class="panel-content">
     <app-map-selector
-      *ngIf="selectedTab === SidebarTabs.DATA_LAYERS"></app-map-selector>
+      *ngIf="selectedTab === SidebarTabs.DATA_LAYERS"
+      [showSelectionHeader]="false"></app-map-selector>
     <app-base-layers
       *ngIf="selectedTab === SidebarTabs.BASE_LAYERS"></app-base-layers>
   </div>

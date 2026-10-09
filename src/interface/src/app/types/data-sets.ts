@@ -9,6 +9,12 @@ export interface BaseDataSet {
   organization: IdNamePair;
 }
 
+export interface SimpleCategory {
+  id: number;
+  name: string;
+  icon: string | null;
+}
+
 export interface DataSet extends BaseDataSet {
   created_at: string;
   updated_at: string;
@@ -104,6 +110,7 @@ export interface DataLayer {
   id: number;
   organization: IdNamePair;
   dataset: IdNamePair;
+  simple_categories?: SimpleCategory[];
   path: string[]; // Array of category names describing the tree path
   name: string;
   type: string;

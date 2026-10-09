@@ -18,6 +18,7 @@ describe('LegacyBaseLayersComponent', () => {
           datasets$: of({
             main_datasets: [],
             base_datasets: [],
+            categories: [],
           }),
         }),
         MockProvider(BaseLayersStateService, {

@@ -28,19 +28,19 @@
   </ng-container>
 
   <!--When browsing-->
-  <!--When a dataset is selected-->
+  <!--When a dataset or category is selected-->
   <ng-container *ngIf="isBrowsing$ | async">
-    <!--show link back to list datasets-->
-    <ng-container
-      *ngIf="selectedDataSet$ | async as selectedDataSet; else listDataSets">
-      <div (click)="goBack()" class="data-set sticky">
-        <mat-icon *ngIf="selectedDataSet" class="icon-back"
-          >arrow_back
-        </mat-icon>
+    <!--show link back to the list-->
+    <ng-container *ngIf="selection$ | async as selection; else browseList">
+      <div
+        *ngIf="showSelectionHeader"
+        (click)="goBack()"
+        class="data-set sticky">
+        <mat-icon class="icon-back">arrow_back </mat-icon>
         <div class="data-set-data">
-          <div class="selected-name">{{ selectedDataSet.name }}</div>
-          <div class="selected-org">
-            {{ selectedDataSet.organization.name }}
+          <div class="selected-name">{{ selection.name }}</div>
+          <div class="selected-org" *ngIf="selection.organization">
+            {{ selection.organization.name }}
           </div>
         </div>
       </div>
@@ -53,6 +53,25 @@
         No data layers available for this planning area location.
       </div>
     </ng-container>
+
+    <ng-template #browseList>
+      <ng-container
+        *ngIf="browseByCategory; then listCategories; else listDataSets">
+      </ng-container>
+    </ng-template>
+
+    <!--Listing Categories, no selection yet-->
+    <ng-template #listCategories>
+      <ng-container *ngIf="showCategories$ | async">
+        <ng-container *ngIf="categories$ | async; let categories">
+          <app-data-set
+            *ngFor="let category of categories"
+            (selectDataset)="viewCategoryLayers(category)"
+            [name]="category.name">
+          </app-data-set>
+        </ng-container>
+      </ng-container>
+    </ng-template>
 
     <!--Listing Datasets, no selection yet-->
     <ng-template #listDataSets>

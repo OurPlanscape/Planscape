@@ -43,6 +43,7 @@ describe('SyncedMapComponent', () => {
           datasets$: of({
             main_datasets: [],
             base_datasets: [],
+            categories: [],
           }),
         }),
         MockProvider(PlanState, {
