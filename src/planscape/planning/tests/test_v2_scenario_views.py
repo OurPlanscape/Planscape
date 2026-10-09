@@ -2452,21 +2452,29 @@ class CreateScenarioForDraftsTest(APITestCase):
 
 class CloneScenariosTest(APITestCase):
     def setUp(self):
-        self.user = UserFactory()
-        self.user2 = UserFactory()
-        self.planning_area = PlanningAreaFactory(user=self.user)
+        self.creator = UserFactory()
+        self.collaborator = UserFactory.create()
+        self.viewer = UserFactory.create()
+        self.other_user = UserFactory()
         self.treatment_goal = TreatmentGoalFactory()
+
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.creator,
+            owners=[self.creator],
+            collaborators=[self.collaborator],
+            viewers=[self.viewer],
+        )
 
         self.scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
-            user=self.user,
+            user=self.creator,
             treatment_goal=self.treatment_goal,
             configuration={"stand_size": "LARGE"},
             name="cloneme",
         )
 
     def test_clone(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.creator)
         response = self.client.post(
             reverse("api:planning:scenarios-clone", args=[self.scenario.pk]),
             {"name": "copy"},
@@ -2474,8 +2482,29 @@ class CloneScenariosTest(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    def test_clone_requires_add_permission(self):
-        self.client.force_authenticate(self.user2)
+
+    def test_collaborators_can_clone(self):
+        self.client.force_authenticate(self.collaborator)
+        response = self.client.post(
+            reverse("api:planning:scenarios-clone", args=[self.scenario.pk]),
+            {"name": "copy"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+    def test_clone_requires_create_priv(self):
+        self.client.force_authenticate(self.viewer)
+        response = self.client.post(
+            reverse("api:planning:scenarios-clone", args=[self.scenario.pk]),
+            {"name": "copy"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+    def test_clone_requires_pa_access(self):
+        self.client.force_authenticate(self.other_user)
         response = self.client.post(
             reverse("api:planning:scenarios-clone", args=[self.scenario.pk]),
             {"name": "copy"},

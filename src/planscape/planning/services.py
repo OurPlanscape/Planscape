@@ -364,10 +364,6 @@ def clone_scenario(
     name: Optional[str] = None,
 ) -> Scenario:
 
-    # never clone these fields
-    _CLONE_EXCLUDE = {"uuid", "created_at", "updated_at", 
-        "geopackage_url", "ready_email_sent_at"}
-   
     original = Scenario.objects.select_for_update().get(pk=original_scenario_id)
 
     # if we didn't get a name, we still create a new one
@@ -381,6 +377,10 @@ def clone_scenario(
     else:
         new_config = copy.deepcopy(original.configuration)
 
+
+    # never clone these fields
+    _CLONE_EXCLUDE = {"uuid", "created_at", "updated_at", 
+        "geopackage_url", "ready_email_sent_at"}
 
     # Fields that are replaced or reset rather than copied
     overrides = {
@@ -396,7 +396,7 @@ def clone_scenario(
         "post_process_status": ScenarioPostProcessingStatus.PENDING,
     }
 
-    # Everything else is copied, with deepcopy so JSON/array fields aren't shared
+    # Everything else is copied
     copied = {
         f.attname: copy.deepcopy(getattr(original, f.attname))
         for f in original._meta.concrete_fields
