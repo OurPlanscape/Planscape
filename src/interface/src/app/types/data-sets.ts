@@ -147,6 +147,7 @@ export interface SearchResult {
 
 export interface SearchQuery {
   term: string;
+  type?: 'RASTER' | 'VECTOR';
   limit: number;
   offset?: number;
   module?: string;

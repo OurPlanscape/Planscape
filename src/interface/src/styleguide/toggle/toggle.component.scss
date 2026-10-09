@@ -7,9 +7,9 @@ $color-on-disabled: rgba($color-brand-green, 0.5);
 }
 
 .sg-toggle {
-  --toggle-track-width: 42px;
-  --toggle-track-height: 24px;
-  --toggle-handle-size: 20px;
+  --toggle-track-width: 28px;
+  --toggle-track-height: 16px;
+  --toggle-handle-size: 12px;
   --toggle-handle-margin: 2px;
 
   display: inline-flex;
@@ -22,11 +22,10 @@ $color-on-disabled: rgba($color-brand-green, 0.5);
     cursor: not-allowed;
   }
 
-  &--small {
-    --toggle-track-width: 28px;
-    --toggle-track-height: 16px;
-    --toggle-handle-size: 12px;
-    --toggle-handle-margin: 2px;
+  &--large {
+    --toggle-track-width: 42px;
+    --toggle-track-height: 24px;
+    --toggle-handle-size: 20px;
   }
 }
 

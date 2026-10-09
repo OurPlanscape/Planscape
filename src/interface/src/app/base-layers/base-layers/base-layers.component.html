@@ -1,11 +1,4 @@
-<div class="scrollable">
-  <app-base-layers-list
-    *ngFor="let baseDataSet of baseDataSets$ | async"
-    [dataSet]="baseDataSet"
-    [allSelectedLayersIds]="(selectedLayersId$ | async) || []"
-    [initialExpanded]="(selectedLayersDataSet$ | async) === baseDataSet.id"
-    (layerSelected)="updateSelectedLayer($event)"></app-base-layers-list>
-</div>
-<div class="footer" *ngIf="selectedLayers$ | async">
-  <button sg-button (click)="clearBaseLayer()" class="clear-btn">Clear</button>
-</div>
+<app-base-layers-panel
+  *appFeatureFlag="'DATA_ORGANIZATION'"></app-base-layers-panel>
+<app-legacy-base-layers
+  *appFeatureFlag="'DATA_ORGANIZATION'; hide: true"></app-legacy-base-layers>

@@ -1,6 +1,5 @@
+from datasets.views import DataLayerViewSet, DatasetViewSet, SimpleCategoryViewSet
 from rest_framework.routers import SimpleRouter
-
-from datasets.views import DatasetViewSet, DataLayerViewSet
 
 router = SimpleRouter()
 router.register(
@@ -12,4 +11,9 @@ router.register(
     "datalayers",
     DataLayerViewSet,
     basename="datalayers",
+)
+router.register(
+    "categories",
+    SimpleCategoryViewSet,
+    basename="categories",
 )

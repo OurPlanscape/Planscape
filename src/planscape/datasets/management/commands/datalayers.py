@@ -1,3 +1,4 @@
+import builtins
 import csv
 import json
 import math
@@ -6,7 +7,7 @@ import re
 import subprocess
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 from urllib.parse import urlencode
 
 import requests
@@ -17,6 +18,7 @@ from core.pprint import pprint
 from core.s3 import is_s3_file, list_files
 from core.s3 import upload_file_via_api as upload_to_s3
 from django.core.management.base import CommandParser
+from funding_report.models import get_funding_report_metadata
 from gis.core import (
     fetch_datalayer_type,
     fetch_geometry_type,
@@ -32,7 +34,6 @@ from requests.exceptions import JSONDecodeError
 
 from datasets.models import DataLayer, DataLayerType, MapServiceChoices
 from datasets.parsers import get_and_parse_datalayer_file_metadata
-from funding_report.models import get_funding_report_metadata
 
 TREATMENT_METADATA_REGEX = re.compile(
     r"^(?P<action>\w+_\d{1,2})_(?P<year>\d{4})_(?P<variable>\w+)"
@@ -62,7 +63,7 @@ def sanitize_json_value(value: Any) -> Any:
     return value
 
 
-def get_impacts_metadata(input_file: str) -> Optional[Dict[str, Any]]:
+def get_impacts_metadata(input_file: str) -> dict[str, Any] | None:
     name = name_from_input_file(input_file)
     match = TREATMENT_METADATA_REGEX.match(name)
     if match:
@@ -92,9 +93,9 @@ def get_create_call(
     name,
     input_file,
     dataset,
-    metadata: Optional[str] = None,
-    map_service_type: Optional[str] = None,
-) -> List[str]:
+    metadata: str | None = None,
+    map_service_type: str | None = None,
+) -> list[str]:
     command = [
         "python3",
         "manage.py",
@@ -357,8 +358,8 @@ class Command(PlanscapeCommand):
         token,
         **kwargs,
     ) -> requests.Response:
-        base_url = self.get_base_url(**kwargs)
-        list_url = base_url + "/v2/admin/datalayers"
+        base_url = self.get_base_url(**kwargs).rstrip("/")
+        list_url = base_url + "/v2/admin/datalayers/"
         headers = self.get_headers(token, **kwargs)
         filters = self._list_filters(**kwargs)
         if filters:
@@ -411,7 +412,7 @@ class Command(PlanscapeCommand):
         style: int,
         **kwargs,
     ):
-        base_url = self.get_base_url(**kwargs)
+        base_url = self.get_base_url(**kwargs).rstrip("/")
         url = base_url + f"/v2/admin/datalayers/{datalayer}/apply_style/"
         headers = self.get_headers(**kwargs)
         input_data = {"record": style}
@@ -423,8 +424,8 @@ class Command(PlanscapeCommand):
         return response
 
     def _merge_metadata(
-        self, metadata: Dict[str, Any], excluded_modules: List[str]
-    ) -> Dict[str, Any]:
+        self, metadata: dict[str, Any], excluded_modules: builtins.list[str]
+    ) -> dict[str, Any]:
         modules = metadata.get("modules")
         if isinstance(modules, dict):
             module_names = modules.keys()
@@ -432,7 +433,7 @@ class Command(PlanscapeCommand):
             modules = {}
             module_names = MODULE_HANDLERS.keys()
 
-        merged_modules: Dict[str, Dict[str, Any]] = {}
+        merged_modules: dict[str, dict[str, Any]] = {}
         for module_name in module_names:
             if module_name in excluded_modules:
                 continue
@@ -450,13 +451,13 @@ class Command(PlanscapeCommand):
         org: int,
         layer_type: str,
         geometry_type: str,
-        layer_info: Dict[str, Any],
-        metadata: Optional[Dict[str, Any]] = None,
-        map_service_type: Optional[str] = None,
+        layer_info: dict[str, Any],
+        metadata: dict[str, Any] | None = None,
+        map_service_type: str | None = None,
         url: str | None = None,
         **kwargs,
     ) -> Response:
-        base_url = self.get_base_url(**kwargs)
+        base_url = self.get_base_url(**kwargs).rstrip("/")
         request_url = base_url + "/v2/admin/datalayers/"
         headers = self.get_headers(**kwargs)
         mimetype = kwargs.get("mimetype")
@@ -508,7 +509,7 @@ class Command(PlanscapeCommand):
         skip_existing: bool,
         url: str | None = None,
         **kwargs,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         map_service_type = kwargs.pop("map_service_type", None)
         excluded_modules = []
         for module_name in MODULE_HANDLERS.keys():
@@ -698,7 +699,7 @@ class Command(PlanscapeCommand):
         status: str,
         **kwargs,
     ):
-        base_url = self.get_base_url(**kwargs)
+        base_url = self.get_base_url(**kwargs).rstrip("/")
         url = f"{base_url}/v2/admin/datalayers/{datalayer_id}/change_status/"
         headers = self.get_headers(**kwargs)
         response = requests.post(

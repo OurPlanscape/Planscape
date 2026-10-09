@@ -11,8 +11,6 @@ The name and value of the flag will be shared by frontend and backend.
 
 ## Current flags
 
-`PRIORITIZE_PROJECT_AREAS`: Enables features for prioritize project areas epic
-
 `API_ZONAL_STATS`: Calculate Zonal Status using Stand-Metrics API
 
 `WORKSPACES`: Enables workspaces

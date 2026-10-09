@@ -244,6 +244,22 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
             self.configuration = merged_config
 
 
+    @factory.post_generation
+    def with_constraints(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            configuration = {
+                "constraints": [
+                    {"datalayer": datalayer.pk, "operator": "gte", "value": "1"} 
+                    for datalayer in extracted
+                ]
+            }
+            merged_config = {**(self.configuration or {}), **configuration}
+            self.configuration = merged_config
+
+
 class ScenarioResultFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ScenarioResult
