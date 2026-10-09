@@ -30,8 +30,7 @@ Please see our [wiki](https://github.com/OurPlanscape/Planscape/wiki) for more p
 ## Built With
 
 - [Angular](https://angular.io/) — frontend framework
-- [Ansible](https://www.ansible.com/) — deployment & configuration automation (deprecated)
-- [Terraform](https://developer.hashicorp.com/terraform) - development & configuration automation
+- [Terraform](https://developer.hashicorp.com/terraform) — infrastructure as code ([infrastructure repo](https://github.com/OurPlanscape/infrastructure))
 - [black](https://black.readthedocs.io/en/stable/) — Python code formatter
 - [Celery](https://docs.celeryq.dev/) — task queue for background jobs
 - [Django REST framework](https://www.django-rest-framework.org/) — backend API framework
@@ -39,7 +38,8 @@ Please see our [wiki](https://github.com/OurPlanscape/Planscape/wiki) for more p
 - [Docker & Docker Compose](https://www.docker.com/) — local development & runtime
 - [ForSys](https://github.com/forsys-sp/forsysr) — optimization package for land-management planning
 - [GDAL](https://gdal.org/) — geospatial data processing (raster/vector)
-- [GitHub Actions](https://github.com/features/actions) — CI/CD (tests, linting, builds)
+- [GitHub Actions](https://github.com/features/actions) — CI/CD (tests, linting, image builds, deploys)
+- [Google Cloud Run](https://cloud.google.com/run) — runtime for the backend, celery workers, gateway and build jobs
 - [Maplibre](https://github.com/maplibre/maplibre-gl-js) — interactive maps & layers
 - [Mapbox](https://www.mapbox.com/) — basemap tiles
 - [Martin](https://maplibre.org/martin/) — vector-tile server
@@ -49,6 +49,29 @@ Please see our [wiki](https://github.com/OurPlanscape/Planscape/wiki) for more p
 - [Redis](https://redis.io/) — cache & message broker
 - [Sentry](https://sentry.io/) — frontend error monitoring
 - [Storybook](https://storybook.js.org/) - ui components
+
+## Deployment
+
+Planscape runs on Google Cloud Run. Docker images are tagged with the git commit
+sha and shared by every environment, so a release ships exactly the image that
+was built and tested on dev.
+
+| Trigger | Environment |
+|---|---|
+| Push to `main` | dev |
+| GitHub **pre-release** published | staging |
+| GitHub **release** published, or pre-release promoted | production |
+
+The same steps can be run by hand from the `Makefile`:
+
+```bash
+make deploy ENV=<dev|staging|production>          # build missing images, deploy backend + frontend
+make deploy ENV=production IMAGE_TAG=<commit sha> # deploy a specific commit
+make migrate ENV=<env>                            # run migrations
+make manage ENV=<env> MANAGE_ARGS="<command>"     # any manage.py command as a Cloud Run job
+```
+
+See [docs/deploy_on_cloud_run.md](docs/deploy_on_cloud_run.md) for the full process.
 
 ## Next Step: Contributing & Docs
 
