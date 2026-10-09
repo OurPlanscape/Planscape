@@ -316,15 +316,12 @@ def _get_unique_clone_name(planning_area_id: int, base_name: str) -> str:
 
     return new_name
 
-def migrate_configuration(old_config: Dict[str, Any], current_version: ScenarioVersion) -> Dict[str, Any]:
-    if current_version not in (ScenarioVersion.V1, ScenarioVersion.V2):
-        return copy.deepcopy(old_config or {})
-
+def migrate_configuration(old_config: Dict[str, Any], current_version: ScenarioVersion) -> Dict[str, Any]:    
     new_config = copy.deepcopy(old_config or {})
     new_config['constraints'] = []
     new_config['targets'] = {}
 
-    # old configuration keys that become targets
+    # old configs that become targets
     for old_key, new_key in (
         ('est_cost', 'estimated_cost'),
         ('estimated_cost', 'estimated_cost'),
@@ -333,22 +330,29 @@ def migrate_configuration(old_config: Dict[str, Any], current_version: ScenarioV
         if old_key in new_config:
             new_config['targets'][new_key] = new_config.pop(old_key)
 
-    # old keys that become constraints
+    # old configs that become constraint items
     if 'max_slope' in new_config:
+        slope_value = new_config.pop('max_slope')
         slope_layer = DataLayer.objects.all().by_meta_name("slope")
-        new_config['constraints'].append({
-            "datalayer": slope_layer.pk,
-            "operator": "lt",
-            "value": new_config.pop('max_slope'),
-        })
+        if slope_layer is None:
+            logger.warning("slope layer not found")
+        else:
+            new_config['constraints'].append({
+                "datalayer": slope_layer.pk,
+                "operator": "lt",
+                "value": slope_value,
+            })
 
-    for key in ('min_distance_from_roads', 'min_distance_from_road'):
-        if key in new_config:
-            roads_layer = DataLayer.objects.all().by_meta_name("distance_from_roads")
+    if 'min_distance_from_road' in new_config:
+        roads_value = new_config.pop('min_distance_from_road')
+        roads_layer = DataLayer.objects.all().by_meta_name("distance_from_roads")
+        if roads_layer is None:
+            logger.warning("min_distance_from_road layer not found")
+        else:
             new_config['constraints'].append({
                 "datalayer": roads_layer.pk,
                 "operator": "lte",
-                "value": new_config.pop(key),
+                "value": roads_value,
             })
 
     return new_config

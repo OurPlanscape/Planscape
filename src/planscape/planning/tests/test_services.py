@@ -31,6 +31,7 @@ from planning.models import (
     ScenarioPlanningApproach,
     ScenarioResultStatus,
     ScenarioType,
+    ScenarioVersion,
     TreatmentGoalUsageType,
 )
 from planning.services import (
@@ -1762,10 +1763,7 @@ class CloneScenarioTest(TestCase):
 
     def test_cloning_of_scenario(self):
         orig_scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
-
-        pprint(orig_scenario.__dict__)
         cloned_scenario = clone_scenario(orig_scenario.id, self.secondUser, 'some new scenario')
-        pprint(cloned_scenario.__dict__)
         # assert that some cloned attributes should match
         self.assertEqual(orig_scenario.planning_area_id, cloned_scenario.planning_area_id)
         self.assertEqual(orig_scenario.origin, cloned_scenario.origin)
@@ -1782,20 +1780,12 @@ class CloneScenarioTest(TestCase):
         self.assertNotEqual(orig_scenario.result_status, cloned_scenario.result_status)
 
     def test_cloning_of_scenario_with_results(self):
-        print("basic cloning\n")
         orig_scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
         ScenarioResultFactory.create(
             scenario=orig_scenario, status=ScenarioResultStatus.SUCCESS
         )
-        pprint(orig_scenario.__dict__)
-        print("\n and results?\n")
-        pprint(vars(orig_scenario.results))
-
-
-
         cloned_scenario = clone_scenario(orig_scenario.id, self.secondUser, 'some new scenario')
-        print("and the clone\n")
-        pprint(cloned_scenario.__dict__)
+
         # assert that some cloned attributes should match
         self.assertEqual(orig_scenario.planning_area_id, cloned_scenario.planning_area_id)
         self.assertEqual(orig_scenario.origin, cloned_scenario.origin)
@@ -1812,8 +1802,17 @@ class CloneScenarioTest(TestCase):
         self.assertNotEqual(orig_scenario.result_status, cloned_scenario.result_status)
 
     def test_cloning_of_scenario_with_name_collisions(self):
-        scenarioV3 = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
-        
+        # ensure the version is derived at V3
+        config = {
+            "targets": {}
+        }
+        scenarioV3 = ScenarioFactory.create(
+            planning_area=self.planning_area, 
+            user=self.user,
+            configuration=config)
+        scenarioV3.version = ScenarioVersion.V3
+        scenarioV3.save()
+
         cloned_scenario = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
         cloned_scenario_2 = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
         cloned_scenario_3 = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
@@ -1824,47 +1823,27 @@ class CloneScenarioTest(TestCase):
 
     def test_cloning_w_configuration(self):
         config = {
-            "min_distance_from_road": 100,
-            "max_project_count": 5,
-            "configuration": {
-                "targets": {
-                    "estimated_cost": 12345,
-                    "max_area": 11111,
-                    "max_project_count": 10,
-                },
+            "stand_size": "MEDIUM",
+            "targets": {
+                "estimated_cost": 12345,
+                "max_area": 11111,
+                "max_project_count": 10,
             },
+            "constraints": [
+                {"datalayer": 1, "operator": "lt", "value": 25},
+            ],
         }
-        scenarioV3 = ScenarioFactory.create(planning_area=self.planning_area, user=self.user, configuration=config)
-        print("\nscenario w config:")
-        pprint(vars(scenarioV3))
+        scenarioV3 = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.user,
+            configuration=config,
+        )
+
         cloned_scenario = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
-        print("\nclone w config?")
-        pprint(vars(cloned_scenario))
 
-    # TODO: we should validate conconfiguration at some point -- before and after cloning?
-    def test_cloning_w_invalid_configuration(self):
-        config = {
-            "min_distance_from_road": 100,
-            "max_project_count": 5,
-            "configuration": {
-                "targets": {
-                    "estimated_cost": 12345,
-                    "max_area": 11111,
-                    "max_project_count": 10,
-                },
-            },
-        }
-        scenarioV3 = ScenarioFactory.create(planning_area=self.planning_area, user=self.user, configuration=config)
-        print("\nscenario w config:")
-        pprint(vars(scenarioV3))
-        cloned_scenario = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
-        print("\n\nclone w config?")
-        pprint(vars(cloned_scenario))
+        self.assertEqual(cloned_scenario.configuration, config)
+        self.assertIsNot(cloned_scenario.configuration, scenarioV3.configuration)
 
-
-
-    ## TODO Test cloning of legacy scenario types
-    # test the cloning of a V1 scenario
     def test_cloning_of_v1_scenario(self):
         goal = TreatmentGoalFactory(name="Reduce wildfire risk")
         excluded_area = DataLayerFactory(name="Excluded area")
@@ -1911,6 +1890,7 @@ class CloneScenarioTest(TestCase):
     def test_cloning_of_v2_scenario(self):
         priority = DataLayerFactory(name="Priority")
         excluded_area = DataLayerFactory(name="Excluded area")
+
         # Create these layers, so we have them when we do the conversion
         slope_datalayer = DataLayerFactory.create(
             name="Slope",
