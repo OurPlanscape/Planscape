@@ -2,37 +2,22 @@ UID ?= $(shell id -u)
 GID ?= $(shell id -g)
 export UID GID
 
-# User Systemd Service (see: ~/.config/systemd/user/planscape.service)
-SERVICE=planscape
-
-# Directory which NGINX serves up for planscape
-PUBLIC_WWW_DIR=/var/www/html/planscape/
-
-# Directory which NGINX serves up for storybook
-STORYBOOK_WWW_DIR=/var/www/html/storybook/
-
-# Systemd User Control
-SYS_CTL=systemctl --user
-TAG=main
+# Name used for git tags / GitHub releases (see taggit).
 VERSION="$$(date '+%Y.%m.%d')-$$(git log --abbrev=10 --format=%h | head -1)"
 E2E_IMPACTS=impacts_e2e_config.json
 
 help:
-	@echo 'Available commands:'
+	@echo 'Deploy (Cloud Run):'
+	@echo '  make deploy ENV=<dev|staging|production>    Build missing images, then deploy backend + frontend'
+	@echo '  make deploy-backend ENV=<env>               Migrate (if needed) and roll backend, celery and gateway'
+	@echo '  make deploy-frontend ENV=<env>              Rebuild the Angular app for <env> and publish it'
+	@echo '  make build-push-all                         Build and push all images for the current commit'
+	@echo '  make migrate ENV=<env>                      Run database migrations'
+	@echo '  make manage ENV=<env> MANAGE_ARGS="..."     Run any manage.py command as a Cloud Run job'
 	@echo ''
-	@echo 'build ................................ Builds image'
-	@echo 'run .................................. Runs the webserver'
-	@echo 'test ................................. Runs all tests except integration'
-	@echo 'lock ................................. Locks the versions of dependencies.'
-	@echo ''
-
-checkout:
-	set -e; \
-	git fetch origin; \
-	git switch main; \
-	git pull origin main; \
-	git checkout $(TAG); \
-	echo "Completed git checkout"
+	@echo 'Local development:'
+	@echo '  make docker-run / docker-test / docker-shell / docker-migrate / docker-makemigrations'
+	@echo '  make dev                                    Run frontend + backend locally'
 
 taggit:
 	set -e; \
@@ -65,62 +50,11 @@ upload-sentry-sourcemaps:
 
 handle-sentry-uploads: upload-sentry-sourcemaps remove-local-sourcemaps
 
-deploy-frontend-with-sentry: install-dependencies-frontend compile-angular handle-sentry-uploads
-	@echo "Copying build to web directory..."; \
-	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
-
-deploy-frontend: install-dependencies-frontend compile-angular handle-sentry-uploads
-	@echo "Copying build to web directory..."; \
-	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
-
-deploy-storybook: install-dependencies-frontend build-storybook
-	cp -r ./src/interface/storybook-static/** ${STORYBOOK_WWW_DIR}
-
 e2e-test:
 	cd src/interface && npx playwright test
 
 mypy:
 	mypy . --strict --ignore-missing-imports | grep src/ | wc -l
-
-migrate:
-	uv run --directory=src/planscape manage.py migrate --no-input
-	uv run --directory=src/planscape manage.py collectstatic --no-input
-
-install-dependencies-backend:
-	uv sync --locked --no-install-project --dev
-	uv run opentelemetry-bootstrap --action=install
-
-deploy-backend: install-dependencies-backend migrate restart
-
-deploy-backend-wo-migration: install-dependencies-backend restart
-
-deploy-all: deploy-backend deploy-frontend
-
-start-celery:
-	${SYS_CTL} start celery-* --all
-
-stop-celery:
-	${SYS_CTL} stop celery-* --all
-
-status-celery:
-	${SYS_CTL} status celery-* --all
-
-start:
-	${SYS_CTL} start ${SERVICE}
-
-stop:
-	${SYS_CTL} stop ${SERVICE}
-
-status:
-	${SYS_CTL} status ${SERVICE}
-
-reload:
-	${SYS_CTL} daemon-reload
-
-restart: reload stop-celery stop start start-celery
-
-nginx-restart:
-	sudo service nginx restart
 
 test-scenarios:
 	cd src/planscape && python3 manage.py test_scenarios
@@ -180,134 +114,175 @@ docker-migrate:
 	./src/planscape/bin/run.sh uv run python manage.py migrate
 
 
-# Cloud Run commands
+# ---------------------------------------------------------------------------
+# Cloud Run
+#
+# Images are tagged with the git commit sha and shared by every environment,
+# so a release deploys exactly the image that was built and tested on dev.
+#
+#   make deploy ENV=staging                   full deploy for the current commit
+#   make deploy ENV=production IMAGE_TAG=<sha> deploy a specific commit
+#   make build-push-all                       build + push the three images
+#   make manage ENV=dev MANAGE_ARGS="shell"   run a manage.py command
+# ---------------------------------------------------------------------------
 
 PROJECT=planscape-23d66
+REGION=us-central1
+ENV=dev
+IMAGE_TAG ?= $(shell git rev-parse HEAD)
+REGISTRY=us-central1-docker.pkg.dev/$(PROJECT)
+
+# Image being built/pushed. The gateway and frontend-builder targets override these.
 APP_NAME=planscape-backend
 DOCKERFILE=Dockerfile
-ENV=dev
-APP=$(APP_NAME)-$(ENV)
-DOCKER_REPO=planscape-$(APP_NAME)
-DOCKER_IMAGE=us-central1-docker.pkg.dev/$(PROJECT)/$(DOCKER_REPO)/$(APP_NAME)
-DOCKER_TAG=$(DOCKER_IMAGE):$(VERSION)
-SECRET_KEY_SECRET=planscape-backend-secret-key-$(ENV)
-REGION=us-central1
+DOCKER_IMAGE=$(REGISTRY)/planscape-$(APP_NAME)/$(APP_NAME)
+DOCKER_TAG=$(DOCKER_IMAGE):$(IMAGE_TAG)
+GATEWAY_VARS=APP_NAME=planscape-gateway DOCKERFILE=Dockerfile.gateway
+FRONTEND_BUILDER_VARS=APP_NAME=planscape-frontend-builder DOCKERFILE=Dockerfile.frontend-job
+
+BACKEND_SERVICE=planscape-backend-$(ENV)
+GATEWAY_SERVICE=planscape-gateway-$(ENV)
 CELERY_WORKER_GENERAL=planscape-celery-worker-general-$(ENV)
 CELERY_WORKER_HEAVY=planscape-celery-worker-heavy-$(ENV)
 CELERY_BEAT=planscape-celery-beat-$(ENV)
 DJANGO_JOB=planscape-django-cmd-$(ENV)
+FRONTEND_JOB=planscape-frontend-build-$(ENV)
 MANAGE_ARGS=migrate --no-input
+FORCE_MIGRATE=0
 COMMA=,
 EMPTY=
 SPACE=$(EMPTY) $(EMPTY)
 
-cloud-run-build:
-	@BUILDS=$$(gcloud builds list --filter="images:$(DOCKER_TAG)" --format=json); \
-	if [ "$$BUILDS" = "[]" ]; then \
-		echo "Building image with tag $(DOCKER_TAG).";\
-		docker build -f $(DOCKERFILE) -t $(DOCKER_TAG) .;\
+## Images -------------------------------------------------------------------
+
+image-tag:
+	@echo "$(DOCKER_TAG)"
+
+# Exit code tells whether the image for this commit is already in the registry.
+image-exists:
+	@gcloud artifacts docker images describe $(DOCKER_TAG) >/dev/null 2>&1
+
+# Builds with BuildKit, using the newest image in the repository as cache, and
+# embeds inline cache metadata so the next build can reuse this one.
+build-push:
+	@CACHE_TAG=$$(gcloud artifacts docker images list "$(DOCKER_IMAGE)" --include-tags --filter="tags:*" --sort-by="~UPDATE_TIME" --limit=1 --format="value(tags[0])" 2>/dev/null || true); \
+	CACHE_FROM=""; \
+	if [ -n "$$CACHE_TAG" ]; then \
+		echo "Using build cache from $(DOCKER_IMAGE):$$CACHE_TAG"; \
+		CACHE_FROM="--cache-from type=registry,ref=$(DOCKER_IMAGE):$$CACHE_TAG"; \
+	fi; \
+	docker buildx build --push --platform linux/amd64 --provenance=false \
+		--cache-to type=inline $$CACHE_FROM \
+		-f $(DOCKERFILE) -t $(DOCKER_TAG) .
+
+# Builds only when the image for this commit is missing.
+ensure-image:
+	@if $(MAKE) -s image-exists; then \
+		echo "Image $(DOCKER_TAG) already exists, skipping build."; \
 	else \
-		echo "Docker image already pushed to artifact repo (tag: $(DOCKER_TAG))";\
-	fi;
+		$(MAKE) build-push; \
+	fi
 
-cloud-run-build-force:
-	docker build -f $(DOCKERFILE) -t $(DOCKER_TAG) .
+image-exists-gateway:
+	$(MAKE) -s image-exists $(GATEWAY_VARS)
 
-cloud-run-push:
-	@BUILDS=$$(gcloud builds list --filter="images:$(DOCKER_TAG)" --format=json); \
-	if [ "$$BUILDS" = "[]" ]; then \
-		CACHE_TAG=$$(gcloud artifacts docker images list "$(DOCKER_IMAGE)" --include-tags --filter="tags:*" --sort-by="~UPDATE_TIME" --limit=1 --format="value(tags[0])" 2>/dev/null || true); \
-		CACHE_FROM=""; \
-		if [ -n "$$CACHE_TAG" ]; then \
-			CACHE_FROM="$(DOCKER_IMAGE):$$CACHE_TAG"; \
-			echo "Using Docker cache from $$CACHE_FROM ."; \
-		else \
-			echo "No existing Docker image found for cache."; \
-		fi; \
-		echo "Pushing image $(DOCKER_TAG) ."; \
-		gcloud builds submit --config cloudbuild.dockerfile.yaml --substitutions _DOCKERFILE=$(DOCKERFILE),_IMAGE=$(DOCKER_TAG),_CACHE_FROM=$$CACHE_FROM,_SECRET_KEY_SECRET=$(SECRET_KEY_SECRET) .;\
-	else \
-		echo "Image $(DOCKER_TAG) already submitted"; \
-	fi;
+image-exists-frontend-builder:
+	$(MAKE) -s image-exists $(FRONTEND_BUILDER_VARS)
 
-cloud-run-deploy:
-	gcloud run deploy $(APP) --image $(DOCKER_TAG) --platform managed --region $(REGION)
+build-push-gateway:
+	$(MAKE) build-push $(GATEWAY_VARS)
 
-cloud-run-update-job:
+build-push-frontend-builder:
+	$(MAKE) build-push $(FRONTEND_BUILDER_VARS)
+
+ensure-image-gateway:
+	$(MAKE) ensure-image $(GATEWAY_VARS)
+
+ensure-image-frontend-builder:
+	$(MAKE) ensure-image $(FRONTEND_BUILDER_VARS)
+
+build-push-all:
+	$(MAKE) -j3 build-push build-push-gateway build-push-frontend-builder
+
+ensure-images:
+	$(MAKE) -j3 ensure-image ensure-image-gateway ensure-image-frontend-builder
+
+## Jobs ---------------------------------------------------------------------
+
+update-job:
 	gcloud run jobs update $(JOB) --image $(DOCKER_TAG) --region $(REGION)
 
-cloud-run-build-deploy: cloud-run-build cloud-run-push cloud-run-deploy
+update-django-job:
+	$(MAKE) update-job JOB=$(DJANGO_JOB)
 
-cloud-run-docker-tag:
-	echo "$(DOCKER_TAG)"
+update-frontend-job:
+	$(MAKE) update-job JOB=$(FRONTEND_JOB) $(FRONTEND_BUILDER_VARS)
 
-
-cloud-run-deploy-celery-general:
-	gcloud run services update $(CELERY_WORKER_GENERAL) --image $(DOCKER_TAG) --region $(REGION)
-
-cloud-run-deploy-celery-heavy:
-	gcloud run services update $(CELERY_WORKER_HEAVY) --image $(DOCKER_TAG) --region $(REGION)
-
-cloud-run-deploy-celery-beat:
-	gcloud run services update $(CELERY_BEAT) --image $(DOCKER_TAG) --region $(REGION)
-
-cloud-run-deploy-celery: cloud-run-push cloud-run-deploy-celery-general cloud-run-deploy-celery-heavy cloud-run-deploy-celery-beat
-
-
-cloud-run-update-django-job:
-	$(MAKE) cloud-run-update-job JOB=$(DJANGO_JOB)
-
-cloud-run-execute-django-job:
+# Runs any manage.py command on Cloud Run with the image currently set on the job.
+manage:
 	gcloud run jobs execute $(DJANGO_JOB) --region $(REGION) --args "$(subst $(SPACE),$(COMMA),$(MANAGE_ARGS))" --wait
 
-cloud-run-deploy-django-job: cloud-run-push cloud-run-update-django-job
+migrate:
+	$(MAKE) manage MANAGE_ARGS="migrate --no-input"
 
+# Skips the migrate job when no migration file changed between the commit
+# currently serving BACKEND_SERVICE and IMAGE_TAG. Any doubt (tag that is not
+# a sha, commit not reachable, FORCE_MIGRATE=1) falls back to running it.
+migrate-if-needed:
+	@RUN=1; \
+	if [ "$(FORCE_MIGRATE)" != "1" ]; then \
+		DEPLOYED=$$(gcloud run services describe $(BACKEND_SERVICE) --region $(REGION) --format='value(spec.template.spec.containers[0].image)' 2>/dev/null | sed 's/.*://'); \
+		if echo "$$DEPLOYED" | grep -qE '^[0-9a-f]{40}$$'; then \
+			git cat-file -e "$$DEPLOYED" 2>/dev/null || git fetch --quiet --depth=1 origin "$$DEPLOYED" || true; \
+			if CHANGED=$$(git diff --name-only "$$DEPLOYED" "$(IMAGE_TAG)" 2>/dev/null) && ! echo "$$CHANGED" | grep -q '/migrations/'; then \
+				echo "No migration changes between $$DEPLOYED and $(IMAGE_TAG), skipping migrate."; \
+				RUN=0; \
+			fi; \
+		fi; \
+	fi; \
+	if [ "$$RUN" = "1" ]; then $(MAKE) migrate; fi
 
-cloud-run-build-gateway:
-	$(MAKE) cloud-run-build APP_NAME=planscape-gateway DOCKERFILE=Dockerfile.gateway DOCKER_REPO=planscape-planscape-gateway
+## Services -----------------------------------------------------------------
 
-cloud-run-push-gateway:
-	$(MAKE) cloud-run-push APP_NAME=planscape-gateway DOCKERFILE=Dockerfile.gateway DOCKER_REPO=planscape-planscape-gateway
+deploy-service:
+	gcloud run services update $(SERVICE) --image $(DOCKER_TAG) --region $(REGION)
 
-cloud-run-deploy-gateway:
-	$(MAKE) cloud-run-deploy APP_NAME=planscape-gateway DOCKERFILE=Dockerfile.gateway DOCKER_REPO=planscape-planscape-gateway
+deploy-backend-service:
+	$(MAKE) deploy-service SERVICE=$(BACKEND_SERVICE)
 
-cloud-run-docker-tag-gateway:
-	$(MAKE) cloud-run-docker-tag APP_NAME=planscape-gateway DOCKER_REPO=planscape-planscape-gateway
+deploy-celery-general:
+	$(MAKE) deploy-service SERVICE=$(CELERY_WORKER_GENERAL)
 
+deploy-celery-heavy:
+	$(MAKE) deploy-service SERVICE=$(CELERY_WORKER_HEAVY)
 
-cloud-run-build-frontend-job:
-	$(MAKE) cloud-run-build APP_NAME=planscape-frontend-builder DOCKERFILE=Dockerfile.frontend-job DOCKER_REPO=planscape-planscape-frontend-builder
+deploy-celery-beat:
+	$(MAKE) deploy-service SERVICE=$(CELERY_BEAT)
 
-cloud-run-push-frontend-job:
-	$(MAKE) cloud-run-push APP_NAME=planscape-frontend-builder DOCKERFILE=Dockerfile.frontend-job DOCKER_REPO=planscape-planscape-frontend-builder
+deploy-gateway:
+	$(MAKE) deploy-service SERVICE=$(GATEWAY_SERVICE) $(GATEWAY_VARS)
 
-cloud-run-update-frontend-job:
-	$(MAKE) cloud-run-update-job JOB=planscape-frontend-build-$(ENV) APP_NAME=planscape-frontend-builder DOCKERFILE=Dockerfile.frontend-job DOCKER_REPO=planscape-planscape-frontend-builder
+deploy-services:
+	$(MAKE) -j5 deploy-backend-service deploy-celery-general deploy-celery-heavy deploy-celery-beat deploy-gateway
 
-# Deploy front-end
-cloud-run-execute-frontend-job:
-	gcloud run jobs execute planscape-frontend-build-$(ENV) --region $(REGION) --wait
+## Deploy -------------------------------------------------------------------
 
-cloud-run-deploy-frontend-job: cloud-run-push-frontend-job cloud-run-update-frontend-job cloud-run-execute-frontend-job
+# Backend: point the django job at the new image, migrate when needed, then
+# roll backend, celery and gateway to the new image.
+deploy-backend:
+	$(MAKE) update-django-job
+	$(MAKE) migrate-if-needed
+	$(MAKE) deploy-services
 
-cloud-run-docker-tag-frontend-job:
-	$(MAKE) cloud-run-docker-tag APP_NAME=planscape-frontend-builder DOCKER_REPO=planscape-planscape-frontend-builder
+# Frontend: rebuild the Angular app for ENV and publish it to the bucket.
+deploy-frontend:
+	$(MAKE) update-frontend-job
+	gcloud run jobs execute $(FRONTEND_JOB) --region $(REGION) --wait
 
-
-cloud-run-build-all:
-	$(MAKE) cloud-run-build
-	$(MAKE) cloud-run-build-gateway
-	$(MAKE) cloud-run-build-frontend-job
-
-cloud-run-push-all:
-	$(MAKE) -j3 cloud-run-push cloud-run-push-frontend-job cloud-run-push-gateway
-
-cloud-run-deploy-all:
-	$(MAKE) cloud-run-push-all
-	$(MAKE) -j2 cloud-run-update-django-job cloud-run-update-frontend-job
-	$(MAKE) cloud-run-execute-django-job MANAGE_ARGS="migrate --no-input"
-	$(MAKE) -j6 cloud-run-deploy-celery-general cloud-run-deploy-celery-heavy cloud-run-deploy-celery-beat cloud-run-deploy cloud-run-deploy-gateway cloud-run-execute-frontend-job
+# Full deploy of IMAGE_TAG to ENV. Builds whatever image is missing first.
+deploy:
+	$(MAKE) ensure-images
+	$(MAKE) -j2 deploy-backend deploy-frontend
 
 
 # Reset relevant tables and load development fixture data
@@ -323,4 +298,13 @@ dev-frontend:
 dev-backend:
 	cd src/planscape && poetry run sh -c "./bin/run_gunicorn.sh"
 
-.PHONY: all docker-build docker-test docker-run docker-shell docker-makemigrations docker-migrate load-dev-data
+.PHONY: help taggit install-dependencies-frontend compile-angular build-storybook \
+	remove-local-sourcemaps upload-sentry-sourcemaps handle-sentry-uploads e2e-test mypy \
+	test-scenarios test-impacts docker-clean docker-hard-clean docker-build docker-test \
+	docker-run docker-run-deps docker-stop-deps docker-clean-deps docker-logs-deps docker-shell \
+	docker-makemigrations docker-migrate image-tag image-exists build-push ensure-image \
+	image-exists-gateway image-exists-frontend-builder build-push-gateway build-push-frontend-builder \
+	ensure-image-gateway ensure-image-frontend-builder build-push-all ensure-images update-job \
+	update-django-job update-frontend-job manage migrate migrate-if-needed deploy-service \
+	deploy-backend-service deploy-celery-general deploy-celery-heavy deploy-celery-beat deploy-gateway \
+	deploy-services deploy-backend deploy-frontend deploy load-dev-data dev dev-frontend dev-backend

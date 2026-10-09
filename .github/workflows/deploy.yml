@@ -1,71 +1,100 @@
 name: Deploy to GCP Cloud Run
 
+# push to main      -> dev
+# pre-release       -> staging
+# release           -> production (also when a pre-release is promoted)
 on:
   push:
     branches:
       - main
   release:
-    types: [published, released]
+    types: [prereleased, released]
 
 env:
-  APP_NAME: planscape-backend
-  ENV: dev
-  REPO_URL: us-central1-docker.pkg.dev
-  REGION: us-central1
+  ENV: ${{ github.event_name == 'release' && (github.event.action == 'prereleased' && 'staging' || 'production') || 'dev' }}
+  IMAGE_TAG: ${{ github.sha }}
+
+# One deploy at a time per environment. A newer run waits instead of
+# cancelling one that is already rolling out.
+concurrency:
+  group: deploy-${{ github.event_name == 'release' && (github.event.action == 'prereleased' && 'staging' || 'production') || 'dev' }}
+  cancel-in-progress: false
+
 jobs:
-  deploy:
+  # Images are tagged by commit, so releases reuse what the push to main built.
+  build-backend:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Set Target Environment
-
-        run: echo "DEPLOYING TO $ENV"
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Set up Google Cloud SDK
-        id: auth
-        uses: google-github-actions/auth@v2
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-image
         with:
-          credentials_json: "${{ secrets.GCP_CREDENTIALS }}"
+          app_name: planscape-backend
+          dockerfile: Dockerfile
+          image_tag: ${{ env.IMAGE_TAG }}
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-      - name: Set up Cloud SDK
-        uses: "google-github-actions/setup-gcloud@v3"
+  build-gateway:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-image
+        with:
+          app_name: planscape-gateway
+          dockerfile: Dockerfile.gateway
+          image_tag: ${{ env.IMAGE_TAG }}
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-      - name: Configure Docker for GCP
-        run: gcloud auth configure-docker
+  build-frontend-builder:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build-image
+        with:
+          app_name: planscape-frontend-builder
+          dockerfile: Dockerfile.frontend-job
+          image_tag: ${{ env.IMAGE_TAG }}
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-      - name: Build and push Docker image
-        env:
-          # sets the ENV value to be based on the type of event triggerd
-          # push -> DEV
-          # prereleased -> STAGING
-          # releases -> PRODUCTION
-          ENV: ${{ github.event_name == 'release'
-            && (github.event.release.prerelease && 'staging' || 'production')
-            || 'dev' }}
-        run: |
-            make cloud-run-deploy-all ENV=$ENV 
+  deploy-backend:
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-gateway]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+      - uses: google-github-actions/setup-gcloud@v3
+      - name: Deploy backend to ${{ env.ENV }}
+        run: make deploy-backend ENV="$ENV" IMAGE_TAG="$IMAGE_TAG"
 
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    needs: [build-frontend-builder]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+      - uses: google-github-actions/setup-gcloud@v3
+      - name: Deploy frontend to ${{ env.ENV }}
+        run: make deploy-frontend ENV="$ENV" IMAGE_TAG="$IMAGE_TAG"
 
   notify:
     runs-on: ubuntu-latest
-    needs: deploy
+    needs: [deploy-backend, deploy-frontend]
     if: always()
-
     steps:
       - name: Notify Mattermost
         env:
-          ENV: ${{ github.event_name == 'release'
-            && (github.event.release.prerelease && 'staging' || 'production')
-            || 'dev' }}
-          WEBHOOK_URL: ${{ secrets[github.event_name == 'release' && !github.event.release.prerelease && 'MM_MAIN_WEBHOOK_URL' || 'MM_SECONDARY_WEBHOOK_URL'] }}
+          BACKEND: ${{ needs.deploy-backend.result }}
+          FRONTEND: ${{ needs.deploy-frontend.result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          WEBHOOK_URL: ${{ secrets[github.event.action == 'released' && 'MM_MAIN_WEBHOOK_URL' || 'MM_SECONDARY_WEBHOOK_URL'] }}
         run: |
-          STATUS="${{ needs.deploy.result }}"
-
-          if [ "$STATUS" = "success" ]; then
+          if [ "$BACKEND" = "success" ] && [ "$FRONTEND" = "success" ]; then
             TEXT="Planscape $ENV - :white_check_mark: Deployment succeeded."
           else
-            TEXT="Planscape $ENV - :x: Deployment failed"
+            TEXT="Planscape $ENV - :x: Deployment failed (backend: $BACKEND, frontend: $FRONTEND). $RUN_URL"
           fi
 
           curl -X POST \

@@ -26,78 +26,79 @@ Outside GCP:
 
 ## Deployment process
 
-The deploy to GCP commands are configured on `Makefile`.
-To deploy all components of this repository, it is necessary having 
-[Google Cloud CLI tool](https://docs.cloud.google.com/sdk/docs/install-sdk) installed 
-and logged in with a service account with following permissions at minimum:
+All deploy commands live in the `Makefile`. Docker images are tagged with the
+git commit sha and shared by every environment, so staging and production run
+exactly the image that was built and tested on dev.
 
-* `roles/run.invoker`: Cloud Run Invoker
-* `roles/secretmanager.secretAccessor`: Secret Manger Access
-* `roles/artifactregistry.writer`: Artifact Registry upload
-* `roles/artifactregistry.reader`: Artifact Registry read
+To deploy by hand you need the
+[Google Cloud CLI](https://docs.cloud.google.com/sdk/docs/install-sdk), Docker
+with BuildKit, and an account with at least:
 
-With that being set, the following performs the deploy on given 
-enviroment (dev/staging/production):
+* `roles/run.admin`: update Cloud Run services and jobs, execute jobs
+* `roles/artifactregistry.writer`: push images
+* `roles/iam.serviceAccountUser`: deploy with the services' service accounts
 
 ```bash
-make cloud-run-deploy-all ENV=<environment>
+make deploy ENV=<dev|staging|production>              # current commit
+make deploy ENV=production IMAGE_TAG=<commit sha>     # a specific commit
 ```
 
-The `cloud-run-deploy-all` is divided in four steps detailing bellow:
+`make deploy` runs the steps below. Each one is also a target on its own.
 
-### Build Docker Images
+### Build images (`make ensure-images`)
 
-The images `Dockerfile`, `Dockerfile.gateway` and `Dockerfile.frontend-job` 
-are built using the command `gcloud builds submit` by sending the dockerfile 
-recepie and the latest image as cache. Which means that the docker image is 
-built on GCP infrastructure and any image stored on Artifact Registry can be 
-used as cache in order to speed-up the build process.
+`Dockerfile` (backend, celery and the django command job), `Dockerfile.gateway`
+(NGINX) and `Dockerfile.frontend-job` (Angular builder) are built with BuildKit,
+using the newest image in each Artifact Registry repository as cache. An image
+is only built when the registry does not have one for the commit yet, so
+deploying an already-built commit to another environment skips this step.
 
-The `Dockerfile` contains the Python/Django backend application, this image is 
-used by backend web service, celery workers and configured to be executed with 
-Cloud Run Jobs for database migration and Django Commands.
+Static files are collected inside the backend image at build time.
 
-The `Dockerfile.gateway` contains the NGINX configuration that supports local 
-hosting with docker-compose and GCP Cloud Run configuration.
+### Backend (`make deploy-backend`)
 
-The `Dockerfile.frontend-job` contains the process that builds the Angular app.
-It is run on a Cloud Run Job as it ingest multiple environment variables and 
-secrets. All environment variables are configured via Terraform and secrets kept 
-on Secret Manger in order to have a single point of configuration, as front-end 
-and back-end share some variables. (e.g. Feature Flags)
+1. Points the django command job at the new image.
+2. Runs `migrate`, unless no migration file changed between the commit
+   currently serving the backend and the one being deployed
+   (`FORCE_MIGRATE=1` always runs it).
+3. Rolls backend, celery workers, celery beat and gateway to the new image, in
+   parallel.
 
-### Update Cloud Run Jobs
+### Frontend (`make deploy-frontend`)
 
-After images submission, the next is updating the Cloud Run Jobs that runs 
-the front-end builder and back-end commands.
+Points the frontend build job at the new image and executes it. The job builds
+the Angular app with the environment's variables and secrets and publishes it
+to the GCS bucket. It runs in parallel with the backend deploy.
 
-### Database migration
+### Other useful targets
 
-With images up-to-date on Cloud Run Jobs, the database migration command 
-is executed.
-
-### Provisioning Cloud Run Services and Building Angular App
-
-After migration, all Cloud Run Services of given environment are updated with 
-submitted image and the Fron-End builder job is executed.
+```bash
+make migrate ENV=<environment>                   # run migrations
+make manage ENV=<environment> MANAGE_ARGS="..."  # any manage.py command as a job
+make build-push-all                              # build + push the three images
+```
 
 
 ## CI/CD
 
-The CI/CD process is executed via Github Actions. It executes  
-`make cloud-run-deploy-all ENV=<environment>` with given conditions:
+GitHub Actions (`.github/workflows/deploy.yml`) runs the same `Makefile`
+targets, with one job per image and separate jobs for backend and frontend so
+each part starts as soon as its image is ready.
 
 ### Dev
 
-Each time a Pull Request is merged to main branch.
+Each push to `main` (merged Pull Request).
 
 ### Staging
 
-Each time a **Pre-release** is created.
+Each time a **Pre-release** is published.
 
 ### Production
 
-Each time a **Release** is created.
+Each time a **Release** is published, or a pre-release is promoted to release.
+
+Deploys to the same environment never run concurrently; a newer run waits for
+the one in progress.
 
 
 ## Changing Feature Flags
@@ -111,5 +112,5 @@ In order to execute it, use the following command OR trigger the
 execution on GCP web console.
 
 ```bash
-make cloud-run-execute-frontend-job ENV=<environment>
+make deploy-frontend ENV=<environment>
 ```
