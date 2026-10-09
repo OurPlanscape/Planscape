@@ -1868,7 +1868,7 @@ class CloneScenarioTest(TestCase):
     def test_cloning_of_v1_scenario(self):
         goal = TreatmentGoalFactory(name="Reduce wildfire risk")
         excluded_area = DataLayerFactory(name="Excluded area")
-        
+
         # Create these layers, so we have them when we do the conversion
         slope_datalayer = DataLayerFactory.create(
             name="Slope",
@@ -1899,18 +1899,15 @@ class CloneScenarioTest(TestCase):
             },
         )
 
-        pprint("Here is the V1 scenario....")
-        pprint(scenarioV1)
-
-
-
         cloned_scenario = clone_scenario(scenarioV1.id, self.secondUser, 'some new scenario')
-        pprint("Here is the cloned scenario from a V1 example....")
 
-        cloned_scenario = clone_scenario(scenarioV1.id, self.secondUser, 'some new scenario')
-        pprint(cloned_scenario.__dict__)
+        config = cloned_scenario.configuration
+        self.assertEqual(config["targets"], {"estimated_cost": 2000})
+        self.assertEqual(
+            config["constraints"],
+            [{"datalayer": slope_datalayer.pk, "operator": "lt", "value": 25}],
+        )
 
-    # TODO test the cloning of a V2 scenario
     def test_cloning_of_v2_scenario(self):
         priority = DataLayerFactory(name="Priority")
         excluded_area = DataLayerFactory(name="Excluded area")
@@ -1930,7 +1927,6 @@ class CloneScenarioTest(TestCase):
         slope_datalayer.save()
         distance_from_road_datalayer.save()
 
-
         goal = TreatmentGoalFactory(datalayers=[priority])
         scenarioV2 = ScenarioFactory(
             planning_area=self.planning_area,
@@ -1946,16 +1942,26 @@ class CloneScenarioTest(TestCase):
                 "min_distance_from_road": 200,
                 "excluded_areas_ids": [excluded_area.pk],
             },
-        )      
-
-        pprint("Here is the V2 scenario....")
-        pprint(scenarioV2.__dict__)
-
-
+        )
 
         cloned_scenario = clone_scenario(scenarioV2.id, self.secondUser, 'some new scenario')
-        pprint("Here is the cloned scenario from a V2 example....")
-        pprint(cloned_scenario.__dict__)
+
+        config = cloned_scenario.configuration
+        self.assertEqual(
+            config["targets"],
+            {"estimated_cost": 2470, "max_project_count": 5},
+        )
+        self.assertEqual(
+            config["constraints"],
+            [
+                {"datalayer": slope_datalayer.pk, "operator": "lt", "value": 30},
+                {
+                    "datalayer": distance_from_road_datalayer.pk,
+                    "operator": "lte",
+                    "value": 200,
+                },
+            ],
+        )
 
 
 class CreateScenarioGuardTest(TestCase):

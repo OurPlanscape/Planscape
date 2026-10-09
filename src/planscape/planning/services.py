@@ -318,38 +318,39 @@ def _get_unique_clone_name(planning_area_id: int, base_name: str) -> str:
     return new_name
 
 def migrate_configuration(old_config: Dict[str, Any], current_version: ScenarioVersion) -> Dict[str, Any]:
-    new_config = {}
-    
     if current_version not in (ScenarioVersion.V1, ScenarioVersion.V2):
-        new_config = copy.deepcopy(old_config or {})
+        return copy.deepcopy(old_config or {})
 
-    if current_version in (ScenarioVersion.V1, ScenarioVersion.V2):
-        new_config['constraints'] = []
-        new_config['targets'] = []
+    new_config = copy.deepcopy(old_config or {})
+    new_config['constraints'] = []
+    new_config['targets'] = {}
 
-        if 'max_slope' in old_config:
-            slope_layer = DataLayer.objects.all().by_meta_name("slope")
-            new_config['constraints'].append({
-                "datalayer": slope_layer.pk,
-                "operator": "lt",
-                "value": old_config['max_slope'],
-            })
+    # old configuration keys that become targets
+    for old_key, new_key in (
+        ('est_cost', 'estimated_cost'),
+        ('estimated_cost', 'estimated_cost'),
+        ('max_project_count', 'max_project_count'),
+    ):
+        if old_key in new_config:
+            new_config['targets'][new_key] = new_config.pop(old_key)
 
-        if 'min_distance_from_roads' in old_config:
+    # old keys that become constraints
+    if 'max_slope' in new_config:
+        slope_layer = DataLayer.objects.all().by_meta_name("slope")
+        new_config['constraints'].append({
+            "datalayer": slope_layer.pk,
+            "operator": "lt",
+            "value": new_config.pop('max_slope'),
+        })
+
+    for key in ('min_distance_from_roads', 'min_distance_from_road'):
+        if key in new_config:
             roads_layer = DataLayer.objects.all().by_meta_name("distance_from_roads")
             new_config['constraints'].append({
                 "datalayer": roads_layer.pk,
                 "operator": "lte",
-                "value": old_config['min_distance_from_roads'],
+                "value": new_config.pop(key),
             })
-
-    print(f"\n\n\njson of old config...")
-    print(json.dumps(old_config, indent=2, default=str))
-    print(f"\n\n")
-            
-    print(f"\n\n\njson of new config...")
-    print(json.dumps(new_config, indent=2, default=str))
-    print(f"\n\n")
 
     return new_config
 
@@ -401,14 +402,6 @@ def clone_scenario(
 
     clone = Scenario.objects.create(**copied, **overrides)
     ScenarioResult.objects.create(scenario=clone, status=ScenarioResultStatus.DRAFT)
-
-    print(f"\n\n\njson of old scenario...")
-    print(json.dumps(model_to_dict(original), indent=2, default=str))
-    print(f"\n\n")
-
-    print(f"\n\n\njson of new scenario...")
-    print(json.dumps(model_to_dict(clone), indent=2, default=str))
-    print(f"\n\n")
 
     return clone
 
