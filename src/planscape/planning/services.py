@@ -38,7 +38,6 @@ from django.db import transaction
 from django.db.models import QuerySet
 from django.db.models.aggregates import Sum
 from django.db.models.functions import Substr
-from django.forms.models import model_to_dict
 from django.utils.text import slugify
 from django.utils.timezone import now
 from fiona.crs import from_epsg
