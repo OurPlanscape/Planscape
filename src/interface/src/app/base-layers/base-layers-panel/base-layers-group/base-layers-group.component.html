@@ -4,7 +4,7 @@
   [class.expanded]="expanded"
   [attr.aria-expanded]="expanded"
   (click)="toggle()">
-  <span class="group-icon">
+  <span class="group-icon" *ngIf="showIcon">
     <i class="material-symbols-outlined">layers</i>
   </span>
   <span
