@@ -12,6 +12,7 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { ResourceUnavailableComponent } from '@app/shared/resource-unavailable/resource-unavailable.component';
 import { PlanningAreaListComponent } from '../planning-area-list/planning-area-list.component';
 import { Workspace } from '@types';
+import { FeatureService } from '@app/features/feature.service';
 
 @Component({
   selector: 'app-workspace-dashboard',
@@ -38,6 +39,7 @@ export class WorkspaceDashboardComponent implements OnInit {
   private workspaceState = inject(WorkspaceState);
   private workspaceActionsService = inject(WorkspaceActionsService);
   private router: Router = inject(Router);
+  private featureService: FeatureService = inject(FeatureService);
 
   workspaceId = this.route.snapshot.data['workspaceId'];
 
@@ -64,5 +66,11 @@ export class WorkspaceDashboardComponent implements OnInit {
 
   handleNavigation() {
     this.router.navigate(['/map-viewer/workspace', this.workspaceId]);
+  }
+
+  get subLabelText(): string | null {
+    return this.featureService.isFeatureEnabled('DATA_UPLOAD')
+      ? 'View & upload data'
+      : null;
   }
 }
