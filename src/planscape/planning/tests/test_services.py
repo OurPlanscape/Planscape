@@ -9,7 +9,7 @@ from unittest import mock
 import fiona
 from cacheops import invalidate_all
 from datasets.dynamic_models import qualify_for_django
-from datasets.models import DataLayer, DataLayerType, GeometryType
+from datasets.models import DataLayerType, GeometryType
 from datasets.tasks import datalayer_uploaded
 from datasets.tests.factories import DataLayerFactory
 from django.conf import settings
