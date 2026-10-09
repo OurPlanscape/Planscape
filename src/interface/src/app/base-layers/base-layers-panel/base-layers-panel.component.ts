@@ -3,7 +3,6 @@ import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
-  BehaviorSubject,
   catchError,
   combineLatest,
   map,
@@ -12,6 +11,7 @@ import {
   shareReplay,
   startWith,
   switchMap,
+  tap,
 } from 'rxjs';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { DataLayersService } from '@services/data-layers.service';
@@ -22,13 +22,12 @@ import {
   NoResultsComponent,
   SearchBarComponent,
 } from '@styleguide';
-import { BaseLayer, MapDataDataSet, SearchResult } from '@types';
+import { BaseLayer, MapDataDataSet, Pagination, SearchResult } from '@types';
 import { BaseLayersGroupComponent } from './base-layers-group/base-layers-group.component';
 
 export interface BaseLayerSearchGroup {
   dataSet: MapDataDataSet;
-  /** Matching layers, or null when only the dataset itself matched. */
-  layers: BaseLayer[] | null;
+  layers: BaseLayer[];
 }
 
 export interface BaseLayerSearchResults {
@@ -74,8 +73,7 @@ export class BaseLayersPanelComponent {
     map((mapData) => mapData.base_datasets)
   );
 
-  private _searchTerm$ = new BehaviorSubject<string>('');
-  searchTerm$ = this._searchTerm$.asObservable();
+  searchTerm$ = this.baseLayersStateService.searchTerm$;
 
   readonly SEARCH_LIMIT = SEARCH_LIMIT;
 
@@ -88,18 +86,27 @@ export class BaseLayersPanelComponent {
       if (!term) {
         return of(null);
       }
+      const module = this.mapModuleService.moduleName;
+      const toResults = (response: Pagination<SearchResult>) => ({
+        groups: groupSearchResults(response.results, dataSets, term),
+        truncated: response.count > response.results.length,
+      });
+      const cached = this.baseLayersStateService.getCachedSearch(module, term);
+      if (cached) {
+        return of(toResults(cached));
+      }
       return this.dataLayersService
         .search({
           term,
           type: 'VECTOR',
           limit: SEARCH_LIMIT,
-          module: this.mapModuleService.moduleName,
+          module,
         })
         .pipe(
-          map((response) => ({
-            groups: groupSearchResults(response.results, dataSets),
-            truncated: response.count > response.results.length,
-          })),
+          tap((response) =>
+            this.baseLayersStateService.cacheSearch(module, term, response)
+          ),
+          map(toResults),
           catchError(() => {
             this.matSnackBar.open(
               'Error: Could not search base layers',
@@ -131,43 +138,50 @@ export class BaseLayersPanelComponent {
   }
 
   search(term: string) {
-    this._searchTerm$.next(term.trim());
+    this.baseLayersStateService.setSearchTerm(term.trim());
   }
 
   clearSearch() {
-    this._searchTerm$.next('');
+    this.baseLayersStateService.setSearchTerm('');
   }
 
-  // A group switching between preloaded and fetched layers needs a fresh component.
+  // Falls back to the selected layers' dataset until the user toggles a group.
+  isBrowseGroupExpanded(dataSetId: number, selectedDataSetId: number | null) {
+    return (
+      this.baseLayersStateService.isDataSetExpanded(dataSetId) ??
+      selectedDataSetId === dataSetId
+    );
+  }
+
+  onBrowseGroupToggled(dataSetId: number, expanded: boolean) {
+    this.baseLayersStateService.setDataSetExpanded(dataSetId, expanded);
+  }
+
   trackGroup(_: number, group: BaseLayerSearchGroup) {
-    return `${group.dataSet.id}-${group.layers ? 'layers' : 'dataset'}`;
+    return group.dataSet.id;
   }
 }
 
 /**
- * Groups results under the module's base datasets, keeping their order.
- * Layer matches win; a dataset that only matched by name/org shows all its layers.
+ * Groups layers whose own name matches the term under the module's base
+ * datasets, keeping their order. Dataset, organization and category matches
+ * from the backend are dropped.
  */
 export function groupSearchResults(
   results: SearchResult[],
-  dataSets: MapDataDataSet[]
+  dataSets: MapDataDataSet[],
+  term: string
 ): BaseLayerSearchGroup[] {
-  const matchedDataSetIds = new Set(
-    results.filter((r) => r.type === 'DATASET').map((r) => r.id)
-  );
+  const needle = term.toLowerCase();
   const layers = results
     .filter((r) => r.type === 'DATALAYER')
-    .map((r) => r.data as unknown as BaseLayer);
+    .map((r) => r.data as unknown as BaseLayer)
+    .filter((l) => l.name.toLowerCase().includes(needle));
 
   return dataSets
-    .map((dataSet) => {
-      const dataSetLayers = layers.filter((l) => l.dataset.id === dataSet.id);
-      if (dataSetLayers.length) {
-        return { dataSet, layers: dataSetLayers };
-      }
-      return matchedDataSetIds.has(dataSet.id)
-        ? { dataSet, layers: null }
-        : null;
-    })
-    .filter((group): group is BaseLayerSearchGroup => group !== null);
+    .map((dataSet) => ({
+      dataSet,
+      layers: layers.filter((l) => l.dataset.id === dataSet.id),
+    }))
+    .filter((group) => group.layers.length > 0);
 }

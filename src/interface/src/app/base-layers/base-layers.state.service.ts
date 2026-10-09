@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, distinctUntilChanged } from 'rxjs';
-import { BaseLayer } from '@types';
+import { BaseLayer, Pagination, SearchResult } from '@types';
 
 @Injectable({
   providedIn: 'root',
@@ -18,6 +18,59 @@ export class BaseLayersStateService {
 
   private _selectedBaseLayers$ = new BehaviorSubject<BaseLayer[] | null>(null);
   selectedBaseLayers$ = this._selectedBaseLayers$.asObservable();
+
+  // Panel search and expanded groups, kept here so they survive switching tabs.
+  private _searchTerm$ = new BehaviorSubject<string>('');
+  searchTerm$ = this._searchTerm$.asObservable().pipe(distinctUntilChanged());
+
+  /** null until the user expands or collapses a group while browsing. */
+  private expandedDataSetIds: Set<number> | null = null;
+
+  // Backend responses, so a recreated panel renders without refetching.
+  private lastSearch: {
+    key: string;
+    response: Pagination<SearchResult>;
+  } | null = null;
+  private dataSetLayers = new Map<string, BaseLayer[]>();
+
+  getCachedSearch(module: string, term: string) {
+    return this.lastSearch?.key === `${module}|${term}`
+      ? this.lastSearch.response
+      : null;
+  }
+
+  cacheSearch(
+    module: string,
+    term: string,
+    response: Pagination<SearchResult>
+  ) {
+    this.lastSearch = { key: `${module}|${term}`, response };
+  }
+
+  getCachedDataSetLayers(module: string, dataSetId: number) {
+    return this.dataSetLayers.get(`${module}|${dataSetId}`) ?? null;
+  }
+
+  cacheDataSetLayers(module: string, dataSetId: number, layers: BaseLayer[]) {
+    this.dataSetLayers.set(`${module}|${dataSetId}`, layers);
+  }
+
+  setSearchTerm(term: string) {
+    this._searchTerm$.next(term);
+  }
+
+  isDataSetExpanded(id: number): boolean | null {
+    return this.expandedDataSetIds ? this.expandedDataSetIds.has(id) : null;
+  }
+
+  setDataSetExpanded(id: number, expanded: boolean) {
+    this.expandedDataSetIds ??= new Set();
+    if (expanded) {
+      this.expandedDataSetIds.add(id);
+    } else {
+      this.expandedDataSetIds.delete(id);
+    }
+  }
 
   updateBaseLayers(bl: BaseLayer, isMulti: boolean) {
     const currentLayers = this._selectedBaseLayers$.value ?? [];
