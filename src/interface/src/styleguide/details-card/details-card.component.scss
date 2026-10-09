@@ -1,6 +1,8 @@
 @import 'mixins';
 @import 'colors';
 
+$text-line-height: 24px;
+
 :host {
   border-radius: 8px;
   border: 1px solid $color-soft-gray;
@@ -32,16 +34,28 @@
 
 .title {
   @include h4();
-  height: 32px;
-  line-height: 32px;
+  min-height: 32px;
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 8px;
+}
+
+.title-text {
+  line-height: $text-line-height;
+  padding: 4px 0;
+  overflow-wrap: anywhere;
+}
+
+.share-button {
+  flex-shrink: 0;
 }
 
 .name {
   @include h5();
-  height: 32px;
-  line-height: 32px;
+  line-height: $text-line-height;
+  padding: 4px 0;
+  overflow-wrap: anywhere;
 }
 
 .detail-line {
