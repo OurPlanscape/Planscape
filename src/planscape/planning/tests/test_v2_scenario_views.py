@@ -2450,6 +2450,39 @@ class CreateScenarioForDraftsTest(APITestCase):
             Scenario.objects.filter(name="invalid child scenario").exists()
         )
 
+class CloneScenariosTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.user2 = UserFactory()
+        self.planning_area = PlanningAreaFactory(user=self.user)
+        self.treatment_goal = TreatmentGoalFactory()
+
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.user,
+            treatment_goal=self.treatment_goal,
+            configuration={"stand_size": "LARGE"},
+            name="cloneme",
+        )
+
+    def test_clone(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-clone", args=[self.scenario.pk]),
+            {"name": "copy"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_clone_requires_add_permission(self):
+        self.client.force_authenticate(self.user2)
+        response = self.client.post(
+            reverse("api:planning:scenarios-clone", args=[self.scenario.pk]),
+            {"name": "copy"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
 
 class ScenarioCapabilitiesSerializerTest(TestCase):
     def test_v2_serializer_includes_capabilities(self):

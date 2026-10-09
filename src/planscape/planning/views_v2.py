@@ -438,7 +438,6 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
     @extend_schema(description="Clone a scenario by id")
     @action(methods=["POST"], detail=True, url_path="clone")
-
     def clone(self, request, pk=None):
         # TODO: confirm create perms
         source = self.get_object()  
