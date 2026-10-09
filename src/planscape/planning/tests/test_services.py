@@ -1757,6 +1757,18 @@ class CloneScenarioTest(TestCase):
         self.secondUser = UserFactory.create()
         self.treatment_goal = TreatmentGoalFactory.create()
         self.planning_area = PlanningAreaFactory.create()
+        self.slope_datalayer = DataLayerFactory.create(
+            name="Slope",
+            metadata={"modules": {"forsys": {"name": "slope", "metric_column": "max"}}},
+        )
+        self.distance_from_road_datalayer = DataLayerFactory.create(
+            name="Distance from road",
+            metadata={
+                "modules": {
+                    "forsys": {"name": "distance_from_roads", "metric_column": "min"}
+                }
+            },
+        )
 
     def test_cloning_of_scenario(self):
         orig_scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
@@ -1778,7 +1790,7 @@ class CloneScenarioTest(TestCase):
 
     def test_cloning_of_scenario_but_not_results(self):
         orig_scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
-        orig_result = ScenarioResultFactory.create(
+        ScenarioResultFactory.create(
             scenario=orig_scenario, status=ScenarioResultStatus.SUCCESS
         )
         cloned_scenario = clone_scenario(orig_scenario.id, self.secondUser, 'some new scenario')
@@ -1799,6 +1811,8 @@ class CloneScenarioTest(TestCase):
         self.assertNotEqual(orig_scenario.uuid, cloned_scenario.uuid)
 
         # assert that results are not copied
+        self.assertNotEqual(orig_scenario.results.status, cloned_scenario.results.status)
+
         self.assertEqual(cloned_scenario.results.status, ScenarioResultStatus.DRAFT)
         self.assertEqual(cloned_scenario.results.result, None)
         self.assertEqual(cloned_scenario.results.errors, None)
@@ -1820,7 +1834,7 @@ class CloneScenarioTest(TestCase):
         self.assertNotEqual(cloned_scenario_2.name, cloned_scenario_3.name)
         self.assertEqual(cloned_scenario_3.name, "some new scenario (3)")
 
-    def test_cloning_w_configuration(self):
+    def test_cloning_v3_w_configuration(self):
         config = {
             "stand_size": "MEDIUM",
             "targets": {
@@ -1831,38 +1845,36 @@ class CloneScenarioTest(TestCase):
             "constraints": [
                 {"datalayer": 1, "operator": "lt", "value": 25},
             ],
+            "included_areas": [123,456,789],
+            "excluded_areas": [333,222,111],
+            "priorities": [100,200],
+            "cobenefits": [300,400],
         }
+        tx_goal = TreatmentGoalFactory(name="Some tx goal")
         scenarioV3 = ScenarioFactory.create(
             planning_area=self.planning_area,
             user=self.user,
             configuration=config,
+            treatment_goal=tx_goal,
+            planning_approach=ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS,
         )
+        self.assertEqual(scenarioV3.version, ScenarioVersion.V3)
 
         cloned_scenario = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
 
+        self.assertNotEqual(cloned_scenario.pk, scenarioV3.pk)
+        self.assertEqual(cloned_scenario.user, self.secondUser)
+        self.assertEqual(cloned_scenario.name, 'some new scenario')
+        self.assertEqual(cloned_scenario.treatment_goal, tx_goal)
+        self.assertEqual(
+            cloned_scenario.planning_approach,
+            ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS,
+        )
         self.assertEqual(cloned_scenario.configuration, config)
-        self.assertIsNot(cloned_scenario.configuration, scenarioV3.configuration)
 
     def test_cloning_of_v1_scenario(self):
         goal = TreatmentGoalFactory(name="Reduce wildfire risk")
         excluded_area = DataLayerFactory(name="Excluded area")
-
-        # Create these layers, so we have them when we do the conversion
-        slope_datalayer = DataLayerFactory.create(
-            name="Slope",
-            metadata={"modules": {"forsys": {"name": "slope", "metric_column": "max"}}},
-        )
-        distance_from_road_datalayer = DataLayerFactory.create(
-            name="Distance from road",
-            metadata={
-                "modules": {
-                    "forsys": {"name": "distance_from_roads", "metric_column": "min"}
-                }
-            },
-        )
-        slope_datalayer.save()
-        distance_from_road_datalayer.save()
-        
         scenarioV1 = ScenarioFactory(
             planning_area=self.planning_area,
             user=self.user,
@@ -1883,29 +1895,12 @@ class CloneScenarioTest(TestCase):
         self.assertEqual(config["targets"], {"estimated_cost": 2000})
         self.assertEqual(
             config["constraints"],
-            [{"datalayer": slope_datalayer.pk, "operator": "lt", "value": 25}],
+            [{"datalayer": self.slope_datalayer.pk, "operator": "lt", "value": 25}],
         )
 
     def test_cloning_of_v2_scenario(self):
         priority = DataLayerFactory(name="Priority")
         excluded_area = DataLayerFactory(name="Excluded area")
-
-        # Create these layers, so we have them when we do the conversion
-        slope_datalayer = DataLayerFactory.create(
-            name="Slope",
-            metadata={"modules": {"forsys": {"name": "slope", "metric_column": "max"}}},
-        )
-        distance_from_road_datalayer = DataLayerFactory.create(
-            name="Distance from road",
-            metadata={
-                "modules": {
-                    "forsys": {"name": "distance_from_roads", "metric_column": "min"}
-                }
-            },
-        )
-        slope_datalayer.save()
-        distance_from_road_datalayer.save()
-
         goal = TreatmentGoalFactory(datalayers=[priority])
         scenarioV2 = ScenarioFactory(
             planning_area=self.planning_area,
@@ -1933,9 +1928,9 @@ class CloneScenarioTest(TestCase):
         self.assertEqual(
             config["constraints"],
             [
-                {"datalayer": slope_datalayer.pk, "operator": "lt", "value": 30},
+                {"datalayer": self.slope_datalayer.pk, "operator": "lt", "value": 30},
                 {
-                    "datalayer": distance_from_road_datalayer.pk,
+                    "datalayer": self.distance_from_road_datalayer.pk,
                     "operator": "lte",
                     "value": 200,
                 },
