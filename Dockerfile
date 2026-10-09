@@ -44,6 +44,10 @@ COPY --chown=app:app . /app
 
 WORKDIR /app/src/planscape
 
+# Static files are collected at build time so the image is self-contained.
+# SECRET_KEY is the only required setting; collectstatic never uses its value.
+RUN SECRET_KEY=build-only uv run python manage.py collectstatic --no-input
+
 EXPOSE 8000
 
 CMD ["bin/run_gunicorn.sh"]

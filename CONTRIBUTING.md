@@ -123,9 +123,10 @@ PLAN-<ticket>: short-descriptive-slug-of-commit
 
 ## Releases
 
-- Merge PRs to main → CI builds and tests
-- Tag a release via terminal and submit its tag to: https://github.com/OurPlanscape/Planscape/releases
-- If cleared to do so, enable VPN and deploy via Jenkins to staging/production
+- Merge PRs to main → CI builds the images and deploys to **dev**
+- To ship to **staging**, tag main (`make taggit`) and publish a **pre-release** for that tag at https://github.com/OurPlanscape/Planscape/releases
+- To ship to **production**, promote the pre-release to a release (or publish a release directly)
+- Deploys run from `.github/workflows/deploy.yml` and reuse the image built for the commit; see [docs/deploy_on_cloud_run.md](docs/deploy_on_cloud_run.md)
 
 ## Planscape Key Glossary Terms
 
