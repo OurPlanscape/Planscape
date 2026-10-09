@@ -1,8 +1,8 @@
 // Custom Theming for Angular Material
 // For more information: https://material.angular.io/guide/theming
 @use '@angular/material' as mat;
-@import "styles/theme";
-@import "colors";
+@import 'styles/theme';
+@import 'colors';
 // @import '~angular/material/theming';
 // @import 'super-styles';
 // Plus imports for other components in your app.
@@ -29,7 +29,6 @@
 @include mat.all-legacy-component-themes($planscape-frontend-theme);
 @include mat.all-component-themes($planscape-frontend-theme);
 
-
 html,
 body {
   height: 100%;
@@ -52,13 +51,44 @@ body.no-scroll-bounce {
   font-size: 14px;
 }
 
-.snackbar-error {
+// Updating snack bar with new style based on the figma
+.mat-mdc-snack-bar-container.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color: #{$color-dark-gray};
+  --mdc-snackbar-container-shape: 4px;
+  --mdc-snackbar-supporting-text-color: #{$color-white};
+  --mdc-snackbar-supporting-text-size: 14px;
+  --mdc-snackbar-supporting-text-weight: 500;
+  --mdc-snackbar-supporting-text-line-height: 22px;
   --mat-snack-bar-button-color: #{$color-main-yellow};
 
-  button {
-    color: $color-white;
+  .mdc-snackbar__surface {
+    display: inline-flex;
+    align-items: center;
+    min-width: auto;
+    padding: 13px 16px;
+    box-shadow:
+      0 4px 8px 3px rgba(0, 0, 0, 0.15),
+      0 1px 3px 0 rgba(0, 0, 0, 0.3);
   }
 
+  .mdc-snackbar__label {
+    padding: 0;
+  }
+
+  .mat-mdc-snack-bar-actions {
+    margin-left: 16px;
+    padding: 0;
+  }
+
+  .mat-mdc-snack-bar-action {
+    height: auto;
+    min-width: 0;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 16px;
+    text-transform: capitalize;
+  }
 }
 
 .snackbar-error-multiline {
@@ -67,16 +97,6 @@ body.no-scroll-bounce {
 
 .snackbar-debug-error {
   white-space: pre-line;
-}
-
-.snackbar-notice {
-  --mat-snack-bar-button-color: #{$color-main-yellow};
-  background: $color-black;
-
-
-  button {
-    color: $color-white;
-  }
 }
 
 // Removes the box when a boundary is clicked. https://github.com/OurPlanscape/Planscape/issues/357
@@ -93,4 +113,4 @@ body.no-scroll-bounce {
   height: 5px !important;
 }
 
-@import "styles/index";
+@import 'styles/index';
