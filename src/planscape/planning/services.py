@@ -299,21 +299,22 @@ def create_config(
 
 def _get_unique_clone_name(planning_area_id: int, base_name: str) -> str:
     """
-    Guarantees a unique scenario name within the planning area 
+    Guarantees a unique scenario name within the planning area
     if the provided name conflicts with an existing active scenario.
     """
-    new_name = base_name
-    counter = 1
-
-    while Scenario.objects.filter(
-        planning_area_id=planning_area_id, 
-        name=new_name, 
-        deleted_at__isnull=True
-    ).exists():
+    existing = set(
+        Scenario.objects.filter(
+            planning_area_id=planning_area_id,
+            name__startswith=base_name,
+            deleted_at__isnull=True,
+        ).values_list("name", flat=True)
+    )
+    if base_name not in existing:
+        return base_name
+    counter = 2
+    while f"{base_name} ({counter})" in existing:
         counter += 1
-        new_name = f"{base_name} ({counter})"
-
-    return new_name
+    return f"{base_name} ({counter})"
 
 def migrate_configuration(old_config: dict[str, Any], current_version: ScenarioVersion) -> dict[str, Any]:    
     new_config = copy.deepcopy(old_config or {})
