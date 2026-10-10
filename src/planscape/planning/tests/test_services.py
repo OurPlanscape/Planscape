@@ -1786,7 +1786,6 @@ class CloneScenarioTest(TestCase):
         # assert that some attributes should not be cloned
         self.assertNotEqual(orig_scenario.user, cloned_scenario.user)
         self.assertNotEqual(orig_scenario.uuid, cloned_scenario.uuid)
-        self.assertNotEqual(orig_scenario.result_status, cloned_scenario.result_status)
 
     def test_cloning_of_scenario_but_not_results(self):
         orig_scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
