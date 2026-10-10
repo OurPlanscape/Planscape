@@ -16,17 +16,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ScenarioService } from '@services';
 import { Router, UrlTree } from '@angular/router';
-import {
-  Scenario,
-  SCENARIO_TYPE,
-  ScenarioV3Config,
-  ScenarioV3Payload,
-} from '@types';
-import { EMPTY, map, Observable, of, switchMap, take, tap } from 'rxjs';
-import {
-  convertOldConfigurationToV3Payload,
-  sanitizePayloadForScenarioType,
-} from '../scenario-helper';
+import { Scenario, SCENARIO_TYPE } from '@types';
+import { EMPTY, from, map, Observable, switchMap, take, tap } from 'rxjs';
 import { ForsysService } from '@services/forsys.service';
 import { ForsysData } from '../../types/module.types';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -126,7 +117,12 @@ export class ScenarioSetupModalComponent implements OnInit {
       const scenarioName =
         this.scenarioNameForm.get('scenarioName')?.value || '';
 
-      if (!this.editMode) {
+      // in handleSubmit
+      if (this.data.fromClone && !this.editMode && this.data.scenario) {
+        this.handleClone(this.data.scenario, scenarioName).subscribe({
+          error: (e) => this.handleSubmitError(e),
+        });
+      } else if (!this.editMode) {
         this.createScenario(scenarioName);
       } else {
         this.editScenarioName(scenarioName);
@@ -136,75 +132,21 @@ export class ScenarioSetupModalComponent implements OnInit {
 
   private handleClone(
     oldScenario: Scenario,
-    newScenario: Scenario
+    newName: string
   ): Observable<void> {
-    const source$ = oldScenario.configuration
-      ? of(oldScenario)
-      : this.scenarioService.getScenario(oldScenario.id).pipe(take(1));
-
-    return source$.pipe(
-      switchMap((fullOldScenario) =>
-        this.applyClonedConfig(fullOldScenario, newScenario)
-      )
-    );
-  }
-
-  private applyClonedConfig(
-    oldScenario: Scenario,
-    newScenario: Scenario
-  ): Observable<void> {
-    let newPayload = this.buildClonedPayload(oldScenario, newScenario);
-    const redirectUrl = `${this.planPath(newScenario.planning_area)}/scenario/${newScenario.id}`;
-
-    if (
-      !newPayload.configuration ||
-      Object.keys(newPayload.configuration).length === 0
-    ) {
-      this.reloadTo(redirectUrl);
-      return EMPTY;
-    }
-
-    return this.scenarioService
-      .patchScenarioConfig(newScenario.id!, newPayload)
-      .pipe(
-        tap((result) =>
+    this.submitting = true;
+    return this.scenarioService.cloneScenario(oldScenario.id!, newName).pipe(
+      // wait for the route reload to finish so the spinner stays up until then
+      switchMap((result) =>
+        from(
           this.reloadTo(
             `${this.planPath(result.planning_area)}/scenario/${result.id}`
           )
-        ),
-        map(() => void 0)
-      );
-  }
-
-  private buildClonedPayload(
-    oldScenario: Scenario,
-    newScenario: Scenario
-  ): Partial<ScenarioV3Payload> {
-    let payload: Partial<ScenarioV3Payload> = {};
-
-    if (oldScenario.version === 'V3') {
-      payload.configuration = structuredClone(
-        oldScenario.configuration
-      ) as ScenarioV3Config;
-    } else if (oldScenario.version === 'V2' || oldScenario.version === 'V1') {
-      const thresholdsIdMap = new Map([
-        ['slope', this.thresholdsData.slope?.id],
-        ['distance_to_roads', this.thresholdsData.distance_from_roads?.id],
-      ]);
-      const oldConfig: Partial<ScenarioV3Config> = oldScenario.configuration;
-
-      payload = convertOldConfigurationToV3Payload(oldConfig, thresholdsIdMap);
-    }
-
-    if (Number(oldScenario.treatment_goal?.id)) {
-      payload.treatment_goal = Number(oldScenario.treatment_goal?.id);
-    }
-
-    if (oldScenario.planning_approach) {
-      payload.planning_approach = oldScenario.planning_approach;
-    }
-
-    return sanitizePayloadForScenarioType(newScenario, payload);
+        )
+      ),
+      tap(() => this.dialogRef.close(true)),
+      map(() => void 0)
+    );
   }
 
   async reloadTo(url: string | UrlTree) {
@@ -224,7 +166,7 @@ export class ScenarioSetupModalComponent implements OnInit {
       return;
     }
 
-    const { planId, type, fromClone, scenario, parentId } = this.data;
+    const { planId, type, fromClone, parentId } = this.data;
 
     this.scenarioService
       .createScenario(name, planId, type, parentId)
@@ -234,9 +176,6 @@ export class ScenarioSetupModalComponent implements OnInit {
           this.submitting = false;
         }),
         switchMap((newScenario) => {
-          if (fromClone && newScenario.id && scenario) {
-            return this.handleClone(scenario, newScenario);
-          }
           if (!fromClone && newScenario.id) {
             this.router.navigate([
               this.planPath(planId),
@@ -249,26 +188,16 @@ export class ScenarioSetupModalComponent implements OnInit {
       )
       .subscribe({
         error: (e) => {
-          this.submitting = false;
-          const isNameConflict = e.error.errors?.global?.some((msg: string) =>
-            msg.includes(
-              'The fields planning_area, name must make a unique set.'
-            )
-          );
-          if (isNameConflict) {
-            this.errorMessage =
-              'This name is already used by another scenario in this planning area.';
-          } else {
-            this.showGenericErrorSnackbar();
-            this.dialogRef.close(false);
-          }
+          this.handleSubmitError(e);
         },
       });
   }
 
-  private showGenericErrorSnackbar() {
+  private showErrorSnackbar(message?: string) {
+    const displayMessage =  message ?? '[Error] Unable to create scenario...';
+
     this.matSnackBar.open(
-      '[Error] Unable to create scenario...',
+      displayMessage,
       'Dismiss',
       SNACK_ERROR_CONFIG
     );
@@ -300,7 +229,7 @@ export class ScenarioSetupModalComponent implements OnInit {
             this.errorMessage =
               'This name is already used by another scenario in this planning area.';
           } else {
-            this.showGenericErrorSnackbar();
+            this.showErrorSnackbar();
           }
         },
       });
@@ -313,5 +242,21 @@ export class ScenarioSetupModalComponent implements OnInit {
     }
     event.preventDefault();
     this.handleSubmit();
+  }
+
+  private handleSubmitError(e: any, closeOnGeneric = false) {
+    this.submitting = false;
+    this.dialogRef.close(false);
+
+    const isNameConflict = e?.error?.errors?.global?.some((msg: string) =>
+      msg.includes('The fields planning_area, name must make a unique set.')
+    );
+    if (isNameConflict) {
+      this.errorMessage =
+        'This name is already used by another scenario in this planning area.';
+    } else {
+      this.showErrorSnackbar();
+      if (closeOnGeneric) this.dialogRef.close(false);
+    }
   }
 }
