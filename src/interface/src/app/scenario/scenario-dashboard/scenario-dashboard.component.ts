@@ -151,6 +151,7 @@ export class ScenarioDashboardComponent implements OnInit {
             : '';
         this.isLoadingDialog = false;
         this.dialog.open(ScenarioSetupModalComponent, {
+          closeOnNavigation: false,
           maxWidth: '560px',
           data: {
             planId: this.planId,
