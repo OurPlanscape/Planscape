@@ -194,13 +194,9 @@ export class ScenarioSetupModalComponent implements OnInit {
   }
 
   private showErrorSnackbar(message?: string) {
-    const displayMessage =  message ?? '[Error] Unable to create scenario...';
+    const displayMessage = message ?? '[Error] Unable to create scenario...';
 
-    this.matSnackBar.open(
-      displayMessage,
-      'Dismiss',
-      SNACK_ERROR_CONFIG
-    );
+    this.matSnackBar.open(displayMessage, 'Dismiss', SNACK_ERROR_CONFIG);
   }
 
   private editScenarioName(name: string) {
