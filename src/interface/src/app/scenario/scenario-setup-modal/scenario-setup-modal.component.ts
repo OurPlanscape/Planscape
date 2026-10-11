@@ -120,7 +120,7 @@ export class ScenarioSetupModalComponent implements OnInit {
       // in handleSubmit
       if (this.data.fromClone && !this.editMode && this.data.scenario) {
         this.handleClone(this.data.scenario, scenarioName).subscribe({
-          error: (e) => this.handleSubmitError(e),
+          error: (e) => this.handleCloneError(e),
         });
       } else if (!this.editMode) {
         this.createScenario(scenarioName);
@@ -195,7 +195,6 @@ export class ScenarioSetupModalComponent implements OnInit {
 
   private showErrorSnackbar(message?: string) {
     const displayMessage = message ?? '[Error] Unable to create scenario...';
-
     this.matSnackBar.open(displayMessage, 'Dismiss', SNACK_ERROR_CONFIG);
   }
 
@@ -238,6 +237,12 @@ export class ScenarioSetupModalComponent implements OnInit {
     }
     event.preventDefault();
     this.handleSubmit();
+  }
+
+  private handleCloneError(e: any) {
+    this.submitting = false;
+    this.dialogRef.close(false);
+    this.showErrorSnackbar('[Error] Unable to clone scenario.');
   }
 
   private handleSubmitError(e: any, closeOnGeneric = false) {
