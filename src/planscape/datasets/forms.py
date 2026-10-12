@@ -3,11 +3,20 @@ import json
 import mmh3
 from cacheops import invalidate_model
 from django import forms
+from django.contrib import admin
+from django.contrib.admin.widgets import AutocompleteSelectMultiple
 from django.urls import reverse
 from django_json_widget.widgets import JSONEditorWidget
 from treebeard.forms import movenodeform_factory
 
-from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Style
+from datasets.models import (
+    Category,
+    DataLayer,
+    DataLayerHasStyle,
+    Dataset,
+    SimpleCategory,
+    Style,
+)
 from datasets.shapefile_geometry import (
     ShapefileGeometryError,
     geometry_from_uploaded_shapefile_zip,
@@ -79,6 +88,36 @@ class CategoryAdminForm(movenodeform_factory(Category)):
             "created_by",
             "name",
             "order",
+        )
+
+
+class SimpleCategoryAdminForm(forms.ModelForm):
+    datalayers = forms.ModelMultipleChoiceField(
+        queryset=DataLayer.objects.defer("geometry", "outline"),
+        required=False,
+        # the autocomplete view needs a forward relation pointing at DataLayer,
+        # so we use the datalayer FK of the M2M through table.
+        widget=AutocompleteSelectMultiple(
+            DataLayer.simple_categories.through._meta.get_field("datalayer"),
+            admin.site,
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields["datalayers"].initial = self.instance.datalayers.all()
+
+    def _save_m2m(self):
+        super()._save_m2m()
+        self.instance.datalayers.set(self.cleaned_data["datalayers"])
+
+    class Meta:
+        model = SimpleCategory
+        fields = (
+            "name",
+            "icon",
+            "datalayers",
         )
 
 

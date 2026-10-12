@@ -58,7 +58,9 @@ export class BaseLayersGroupComponent implements OnChanges, OnInit {
   /** Layers to display as-is (search results) instead of fetching the dataset's layers. */
   @Input() layers: BaseLayer[] | null = null;
   @Input() searchTerm = '';
+  @Input() showIcon = false;
 
+  @Output() expandedChange = new EventEmitter<boolean>();
   @Output() layerSelected = new EventEmitter<{
     layer: BaseLayer;
     isMulti: boolean;
@@ -101,6 +103,7 @@ export class BaseLayersGroupComponent implements OnChanges, OnInit {
 
   toggle() {
     this.expanded = !this.expanded;
+    this.expandedChange.emit(this.expanded);
     if (this.expanded && !this.fetchStarted && !this.layers) {
       this.fetchLayers();
     }
@@ -126,16 +129,31 @@ export class BaseLayersGroupComponent implements OnChanges, OnInit {
   }
 
   private fetchLayers(afterLoad?: () => void) {
-    this.loaded = false;
+    const module = this.mapModuleService.moduleName;
     this.fetchStarted = true;
+    const cached = this.baseLayersStateService.getCachedDataSetLayers(
+      module,
+      this.dataSet.id
+    );
+    if (cached) {
+      this.baseLayers = cached;
+      this.loaded = true;
+      afterLoad?.();
+      return;
+    }
+    this.loaded = false;
     this.dataLayersService
-      .listBaseLayersByDataSet(
-        this.dataSet.id,
-        this.mapModuleService.moduleName
-      )
+      .listBaseLayersByDataSet(this.dataSet.id, module)
       .pipe(
         map((layers) => sortByName(layers)),
-        tap(() => (this.loaded = true)),
+        tap((layers) => {
+          this.loaded = true;
+          this.baseLayersStateService.cacheDataSetLayers(
+            module,
+            this.dataSet.id,
+            layers
+          );
+        }),
         catchError(() => {
           this.loaded = true;
           // let the next expand retry

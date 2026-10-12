@@ -4,7 +4,6 @@ import {
   Constraint,
   CONSTRAINT_OPERATOR,
   CONSTRAINT_OPERATOR_MAP,
-  DataLayer,
   PLANNING_APPROACH,
   Scenario,
   SCENARIO_TYPE,
@@ -277,8 +276,8 @@ export function arrayHasChanged(source: number[], compare: number[]): boolean {
 }
 
 export function getConstraintDisplayName(
-  constraint: Constraint,
-  layer: DataLayer | undefined
+  constraint: Pick<Constraint, 'operator' | 'value'>,
+  layer: { name: string } | undefined // optional, can still accept DataLayer type
 ): string {
   const layerName = layer ? layer.name : 'Unknown Layer';
   if (constraint.operator === 'btw' && constraint.value.includes(',')) {

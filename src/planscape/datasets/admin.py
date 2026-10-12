@@ -6,6 +6,7 @@ from datasets.forms import (
     DataLayerAdminForm,
     DataLayerHasStyleAdminForm,
     DatasetAdminForm,
+    SimpleCategoryAdminForm,
     StyleAdminForm,
 )
 from datasets.models import (
@@ -35,6 +36,7 @@ class CategoryAdmin(TreeAdmin):
 
 
 class SimpleCategoryAdmin(admin.ModelAdmin):
+    form = SimpleCategoryAdminForm
     search_fields = ["name"]
     list_display = ("id", "name", "icon", "created_at", "updated_at")
     readonly_fields = ("created_at", "updated_at")
