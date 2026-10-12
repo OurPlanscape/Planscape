@@ -5,7 +5,8 @@
     searchPlaceholder="Search in base layers"
     [showCloseButton]="true"
     (searchString)="search($event)"
-    (clearSearch)="clearSearch()"></sg-search-bar>
+    (clearSearch)="clearSearch()"
+    [searchValue]="(searchTerm$ | async) || ''"></sg-search-bar>
 </div>
 <div class="scrollable">
   <ng-container *ngIf="searchTerm$ | async as searchTerm; else browse">
@@ -17,6 +18,7 @@
         [searchTerm]="searchTerm"
         [allSelectedLayersIds]="(selectedLayersId$ | async) || []"
         [initialExpanded]="true"
+        [showIcon]="true"
         (layerSelected)="updateSelectedLayer($event)"></app-base-layers-group>
       <sg-no-results
         *ngIf="results.groups.length === 0"
@@ -35,7 +37,13 @@
       *ngFor="let baseDataSet of baseDataSets$ | async"
       [dataSet]="baseDataSet"
       [allSelectedLayersIds]="(selectedLayersId$ | async) || []"
-      [initialExpanded]="(selectedLayersDataSet$ | async) === baseDataSet.id"
+      [initialExpanded]="
+        isBrowseGroupExpanded(
+          baseDataSet.id,
+          (selectedLayersDataSet$ | async) ?? null
+        )
+      "
+      (expandedChange)="onBrowseGroupToggled(baseDataSet.id, $event)"
       (layerSelected)="updateSelectedLayer($event)"></app-base-layers-group>
   </ng-template>
 </div>

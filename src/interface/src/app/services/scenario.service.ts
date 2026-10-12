@@ -7,6 +7,7 @@ import {
   ProjectArea,
   Scenario,
   SCENARIO_TYPE,
+  ScenarioConfigurationDetails,
   ScenarioV3Payload,
   SubUnitsDetail,
 } from '@types';
@@ -194,6 +195,20 @@ export class ScenarioService {
         withCredentials: true,
       }
     );
+  }
+
+  /* This endpoint is intended to support the configurations modal
+    
+    Note: not to be confused with the similarly named configurations
+    in the draft configiration types
+  */
+  getScenarioConfiguration(scenarioId: number) {
+    const url =
+      environment.backend_endpoint +
+      `/v2/scenarios/${scenarioId}/get-configuration/`;
+    return this.http.get<ScenarioConfigurationDetails>(url, {
+      withCredentials: true,
+    });
   }
 
   getSubUnitsDetails(

@@ -4,6 +4,7 @@ import { Geometry } from 'geojson';
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
 export type ORIGIN_TYPE = 'USER' | 'SYSTEM';
 export type SCENARIO_TYPE = 'PRESET' | 'CUSTOM' | 'PROJECT_AREAS';
+export type SCENARIO_VERSION = 'V1' | 'V2' | 'V3';
 
 export type ScenarioResultStatus =
   | 'LOADING' // when loading results
@@ -275,4 +276,67 @@ export interface ProjectArea {
     [key: string]: any;
   };
   geometry: Geometry;
+}
+
+//// These types support the configurations modal
+
+interface Targets {
+  max_area: number;
+  max_project_count: number;
+  estimated_cost: number;
+  max_budget: number | null;
+  sub_units_fixed_target: number | null;
+  sub_units_target_value: number | null;
+}
+
+export interface StandLevelConstraint {
+  datalayer: LayerInfo;
+  operator: CONSTRAINT_OPERATOR;
+  value: string; // BE sends numbers as strings, e.g. "1000"
+}
+
+interface TreatmentGoalConstraint {
+  datalayer: LayerInfo;
+  threshold: string; // e.g. "value > 0"
+}
+
+interface LayerInfo {
+  id: number;
+  name: string;
+}
+
+interface PlanningApproach {
+  key: PLANNING_APPROACH;
+  label: string;
+}
+
+interface StandSize {
+  key: STAND_SIZE;
+  label: string;
+  acres: number;
+}
+
+interface PriorityObjective extends LayerInfo {
+  weight: number;
+}
+
+// This type matches the result from `scenario/:id/get-configuration`
+//  not to be confused with the ScenarioConfig-related types above
+
+export interface ScenarioConfigurationDetails {
+  version: SCENARIO_VERSION;
+  type: SCENARIO_TYPE;
+  planning_area: LayerInfo;
+  stand_size: StandSize | null;
+  planning_approach: PlanningApproach;
+  sub_units_layer: LayerInfo | null;
+  treatment_goal: LayerInfo;
+  priority_objectives: PriorityObjective[];
+  cobenefits: LayerInfo[];
+  treatment_goal_constraints: TreatmentGoalConstraint[];
+  included_areas: LayerInfo[];
+  excluded_areas: LayerInfo[];
+  stand_level_constraints: StandLevelConstraint[];
+  advanced_stand_level_constraints: StandLevelConstraint[];
+  targets: Targets;
 }

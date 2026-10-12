@@ -219,4 +219,23 @@ describe('BaseLayersStateService', () => {
       done();
     });
   });
+
+  it('remembers the search term', (done) => {
+    service.setSearchTerm('fire');
+    service.searchTerm$.pipe(take(1)).subscribe((term) => {
+      expect(term).toBe('fire');
+      done();
+    });
+  });
+
+  it('has no expanded state for datasets until one is toggled', () => {
+    expect(service.isDataSetExpanded(1)).toBeNull();
+
+    service.setDataSetExpanded(1, true);
+    expect(service.isDataSetExpanded(1)).toBeTrue();
+    expect(service.isDataSetExpanded(2)).toBeFalse();
+
+    service.setDataSetExpanded(1, false);
+    expect(service.isDataSetExpanded(1)).toBeFalse();
+  });
 });

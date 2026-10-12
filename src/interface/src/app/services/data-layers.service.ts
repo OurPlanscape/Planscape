@@ -97,11 +97,11 @@ export class DataLayersService {
   }
 
   listBaseLayersByDataSet(dataSetId: number, module: string) {
-    return this.http.get<BaseLayer[]>(
+    return this.http.post<BaseLayer[]>(
       environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse/',
+      { type: 'VECTOR', module: module },
       {
         withCredentials: true,
-        params: { type: 'VECTOR', module: module },
       }
     );
   }
