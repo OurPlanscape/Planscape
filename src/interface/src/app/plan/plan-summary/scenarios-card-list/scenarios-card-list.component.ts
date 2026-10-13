@@ -243,6 +243,7 @@ export class ScenariosCardListComponent {
   handleCopyScenario(scenario: Scenario) {
     //open the dialog first, so we have some UX while we wait
     const dialogRef = this.dialog.open(ScenarioSetupModalComponent, {
+      closeOnNavigation: false,
       maxWidth: '560px',
       data: {
         planId: scenario.planning_area,

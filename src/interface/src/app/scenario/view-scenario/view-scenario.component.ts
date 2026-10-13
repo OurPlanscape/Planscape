@@ -181,6 +181,7 @@ export class ViewScenarioComponent {
         this.dialog.open(ScenarioSetupModalComponent, {
           maxWidth: '560px',
           data: {
+            closeOnNavigation: false,
             planId: this.planId,
             defaultName: suggestedName,
             fromClone: true,

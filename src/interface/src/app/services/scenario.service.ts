@@ -92,6 +92,29 @@ export class ScenarioService {
     );
   }
 
+  cloneScenario(scenarioId: number, newName: string): Observable<Scenario> {
+    return this.http
+      .post<Scenario>(
+        `${this.v2Path}${scenarioId}/clone/`,
+        { name: newName },
+        { withCredentials: true }
+      )
+      .pipe(
+        catchError((error) => {
+          const message =
+            error.error?.errors?.global?.[0] ??
+            error.error?.detail ??
+            'Failed to copy scenario';
+
+          throw () =>
+            new CreateScenarioError(message, {
+              configurationError: false,
+              errorMessages: { global: [message] },
+            });
+        })
+      );
+  }
+
   //sends a partial scenario configuration using PATCH
   // returns success or failure, based on backend results
   patchScenarioConfig(
