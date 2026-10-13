@@ -17,12 +17,16 @@ const wildfires = { id: 1, name: 'Wildfires' } as MapDataDataSet;
 const roads = { id: 2, name: 'Roads' } as MapDataDataSet;
 const ownership = { id: 3, name: 'Ownership' } as MapDataDataSet;
 
-function layerResult(id: number, dataSetId: number): SearchResult {
+function layerResult(
+  id: number,
+  dataSetId: number,
+  name = `Fire layer ${id}`
+): SearchResult {
   return {
     id,
-    name: `Layer ${id}`,
+    name,
     type: 'DATALAYER',
-    data: { id, name: `Layer ${id}`, dataset: { id: dataSetId } },
+    data: { id, name, dataset: { id: dataSetId } },
   } as unknown as SearchResult;
 }
 
@@ -34,11 +38,15 @@ describe('BaseLayersPanelComponent', () => {
   let component: BaseLayersPanelComponent;
   let fixture: ComponentFixture<BaseLayersPanelComponent>;
   let searchSpy: jasmine.Spy;
+  let listSpy: jasmine.Spy;
 
   beforeEach(async () => {
     searchSpy = jasmine
       .createSpy('search')
       .and.returnValue(of({ count: 0, results: [] }));
+    listSpy = jasmine
+      .createSpy('listBaseLayersByDataSet')
+      .and.returnValue(of([]));
 
     await TestBed.configureTestingModule({
       imports: [BaseLayersPanelComponent, MatSnackBarModule],
@@ -52,11 +60,9 @@ describe('BaseLayersPanelComponent', () => {
         }),
         MockProvider(DataLayersService, {
           search: searchSpy,
-          listBaseLayersByDataSet: () => of([]),
+          listBaseLayersByDataSet: listSpy,
         }),
-        MockProvider(BaseLayersStateService, {
-          selectedBaseLayers$: of([]),
-        }),
+        BaseLayersStateService,
       ],
     }).compileComponents();
 
@@ -151,40 +157,95 @@ describe('BaseLayersPanelComponent', () => {
     ).toBe(2);
     expect(searchSpy).toHaveBeenCalledTimes(1);
   });
+
+  describe('when the panel is recreated, e.g. after switching tabs', () => {
+    function recreate() {
+      fixture.destroy();
+      fixture = TestBed.createComponent(BaseLayersPanelComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+    }
+
+    function expandedGroupIds() {
+      return fixture.debugElement
+        .queryAll(By.css('app-base-layers-group'))
+        .filter((g) => g.componentInstance.expanded)
+        .map((g) => g.componentInstance.dataSet.id);
+    }
+
+    it('keeps the search term and its results', () => {
+      searchSpy.and.returnValue(
+        of({ count: 1, results: [layerResult(10, 1)] })
+      );
+      component.search('fire');
+      fixture.detectChanges();
+
+      recreate();
+
+      expect(
+        fixture.debugElement.query(By.css('sg-search-bar')).componentInstance
+          .searchValue
+      ).toBe('fire');
+      expect(
+        fixture.debugElement.queryAll(By.css('app-base-layers-group')).length
+      ).toBe(1);
+      expect(fixture.debugElement.query(By.css('.loader'))).toBeNull();
+      expect(searchSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps the groups the user expanded while browsing', () => {
+      fixture.debugElement
+        .queryAll(By.css('.group-header'))[1]
+        .nativeElement.click();
+      fixture.detectChanges();
+
+      recreate();
+
+      expect(expandedGroupIds()).toEqual([roads.id]);
+      expect(listSpy).toHaveBeenCalledTimes(1);
+    });
+  });
 });
 
 describe('groupSearchResults', () => {
   it('groups layers by dataset in the module dataset order', () => {
     const groups = groupSearchResults(
       [layerResult(20, 2), layerResult(10, 1), layerResult(21, 2)],
-      [wildfires, roads, ownership]
+      [wildfires, roads, ownership],
+      'fire'
     );
 
     expect(groups.map((g) => g.dataSet.id)).toEqual([1, 2]);
-    expect(groups[1].layers?.map((l) => l.id)).toEqual([20, 21]);
+    expect(groups[1].layers.map((l) => l.id)).toEqual([20, 21]);
   });
 
-  it('includes datasets that only matched by name, without preloaded layers', () => {
+  it('drops dataset matches', () => {
     const groups = groupSearchResults(
-      [dataSetResult(3)],
-      [wildfires, ownership]
+      [dataSetResult(3), layerResult(10, 1)],
+      [wildfires, ownership],
+      'fire'
     );
 
-    expect(groups).toEqual([{ dataSet: ownership, layers: null }]);
+    expect(groups.map((g) => g.dataSet.id)).toEqual([1]);
   });
 
-  it('prefers layer matches over a dataset match', () => {
+  it('drops layers whose own name does not match, like category matches', () => {
     const groups = groupSearchResults(
-      [dataSetResult(1), layerResult(10, 1)],
-      [wildfires]
+      [layerResult(10, 1), layerResult(11, 1, 'Burn scars')],
+      [wildfires],
+      'FIRE'
     );
 
-    expect(groups[0].layers?.map((l) => l.id)).toEqual([10]);
+    expect(groups[0].layers.map((l) => l.id)).toEqual([10]);
   });
 
   it('ignores results from datasets outside the module', () => {
     expect(
-      groupSearchResults([layerResult(99, 42), dataSetResult(42)], [wildfires])
+      groupSearchResults(
+        [layerResult(99, 42), dataSetResult(42)],
+        [wildfires],
+        'fire'
+      )
     ).toEqual([]);
   });
 });

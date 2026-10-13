@@ -58,19 +58,24 @@ class TwigTreatmentsTest(SimpleTestCase):
     def test_build_twig_where_clauses_uses_dynamic_cutoffs(self):
         where_clauses = build_twig_where_clauses(today=date(2026, 6, 1))
 
+        wildfire_filter = "(activity IS NULL OR activity NOT LIKE 'Wildfire -%')"
+
         self.assertEqual(
             where_clauses[TWIG_TREATMENT_LAYER_NAMES["0-5"]],
-            "treatment_date >= TIMESTAMP '2021-06-01 00:00:00'",
+            f"(treatment_date >= TIMESTAMP '2021-06-01 00:00:00') "
+            f"AND {wildfire_filter}",
         )
         self.assertEqual(
             where_clauses[TWIG_TREATMENT_LAYER_NAMES["06-10"]],
-            "treatment_date >= TIMESTAMP '2016-06-01 00:00:00' "
-            "AND treatment_date < TIMESTAMP '2021-06-01 00:00:00'",
+            f"(treatment_date >= TIMESTAMP '2016-06-01 00:00:00' "
+            f"AND treatment_date < TIMESTAMP '2021-06-01 00:00:00') "
+            f"AND {wildfire_filter}",
         )
         self.assertEqual(
             where_clauses[TWIG_TREATMENT_LAYER_NAMES["11-15"]],
-            "treatment_date >= TIMESTAMP '2011-06-01 00:00:00' "
-            "AND treatment_date < TIMESTAMP '2016-06-01 00:00:00'",
+            f"(treatment_date >= TIMESTAMP '2011-06-01 00:00:00' "
+            f"AND treatment_date < TIMESTAMP '2016-06-01 00:00:00') "
+            f"AND {wildfire_filter}",
         )
 
     def test_build_twig_where_clauses_can_add_status_filter(self):

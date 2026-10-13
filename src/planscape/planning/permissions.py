@@ -31,5 +31,9 @@ class ScenarioViewPermission(PlanscapePermission):
         match view.action:
             case "run_report":
                 return ScenarioPermission.can_add(request.user, obj)
+            case "clone":
+                return PlanningAreaPermission.can_add_scenario(
+                    request.user, obj.planning_area
+                )
             case _:
                 return super().has_object_permission(request, view, obj)
