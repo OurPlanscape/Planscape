@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MockProvider } from 'ng-mocks';
 import { WorkspaceActionsService } from '../workspace-actions.service';
+import { FeatureService } from '@app/features/feature.service';
 
 describe('WorkspaceDashboardComponent', () => {
   let component: WorkspaceDashboardComponent;
@@ -20,6 +21,7 @@ describe('WorkspaceDashboardComponent', () => {
       ],
       providers: [
         MockProvider(WorkspaceActionsService),
+        MockProvider(FeatureService),
         {
           provide: ActivatedRoute,
           useValue: {

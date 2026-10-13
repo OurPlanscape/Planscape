@@ -84,6 +84,17 @@ describe('BaseLayersGroupComponent', () => {
     expect(fixture.debugElement.query(By.css('.group-content'))).toBeNull();
   });
 
+  it('emits the new expanded state when toggled', () => {
+    const emitted: boolean[] = [];
+    component.expandedChange.subscribe((e) => emitted.push(e));
+
+    const header = fixture.debugElement.query(By.css('.group-header'));
+    header.nativeElement.click();
+    header.nativeElement.click();
+
+    expect(emitted).toEqual([true, false]);
+  });
+
   it('shows preloaded layers without fetching and highlights the term', () => {
     fixture.componentRef.setInput('initialExpanded', true);
     fixture.componentRef.setInput('layers', [layer(5, 'Fire Perimeters')]);
