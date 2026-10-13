@@ -61,6 +61,12 @@ describe('ExploreSidebarComponent', () => {
     ).toContain('Data Layers');
   });
 
+  it('renders the selection header itself, not inside the data layers', () => {
+    const selector = fixture.debugElement.query(By.css('app-map-selector'))
+      .componentInstance as MapSelectorComponent;
+    expect(selector.showSelectionHeader).toBeFalse();
+  });
+
   it('shows the base layers panel when that tab is selected', () => {
     component.selectedTab = SidebarTabs.BASE_LAYERS;
     fixture.detectChanges();
@@ -88,12 +94,12 @@ describe('ExploreSidebarComponent', () => {
     );
   });
 
-  it('collapses when the active rail item is picked again', () => {
+  it('stays open when the active rail item is picked again', () => {
     spyOn(component.expandedChange, 'emit');
     spyOn(component.selectedTabChange, 'emit');
     component.selectItem(component.railItems[0]);
 
-    expect(component.expandedChange.emit).toHaveBeenCalledWith(false);
+    expect(component.expandedChange.emit).not.toHaveBeenCalled();
     expect(component.selectedTabChange.emit).not.toHaveBeenCalled();
   });
 

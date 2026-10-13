@@ -1,5 +1,5 @@
-@import "mixins";
-@import "colors";
+@import 'mixins';
+@import 'colors';
 
 $search-container-height: 79px;
 
@@ -33,7 +33,6 @@ $search-container-height: 79px;
   flex: 1;
 }
 
-
 .selected-name {
   font-size: 16px;
   font-style: normal;
@@ -52,7 +51,6 @@ $search-container-height: 79px;
   margin-right: 8px;
   line-height: 32px;
 }
-
 
 .no-data {
   margin: 28px;
@@ -82,7 +80,6 @@ $search-container-height: 79px;
   z-index: 100;
   box-sizing: border-box;
 }
-
 
 :host {
   ::ng-deep .search-bar .input-wrapper {
@@ -118,8 +115,18 @@ $search-container-height: 79px;
   z-index: 100;
 }
 
-// end component
+// DATA_ORGANIZATION: match the base layers panel
+:host(.data-organization) {
+  .scrollable {
+    overflow-y: auto;
+  }
 
+  ::ng-deep .search-bar .input-wrapper {
+    height: 50px;
+  }
+}
+
+// end component
 
 :host(.sticky-search) {
   .side-search-container {

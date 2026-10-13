@@ -1,5 +1,5 @@
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, HostBinding, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCommonModule } from '@angular/material/core';
@@ -75,7 +75,11 @@ export class DataLayersComponent {
 
   // With DATA_ORGANIZATION the clear button lives on the map's layer name instead.
   showClearButton = !this.featureService.isFeatureEnabled('DATA_ORGANIZATION');
+  @HostBinding('class.data-organization')
   browseByCategory = this.featureService.isFeatureEnabled('DATA_ORGANIZATION');
+  searchPlaceholder = this.browseByCategory
+    ? 'Search in data layers'
+    : 'Search by dataset, metric, category, org...';
 
   loading$ = this.dataLayersStateService.loading$;
 

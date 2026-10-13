@@ -94,11 +94,6 @@ export class ExploreSidebarComponent {
     if (tab === undefined) {
       return;
     }
-    // clicking the icon of the panel already on screen collapses it
-    if (this.expanded && tab === this.selectedTab) {
-      this.expandedChange.emit(false);
-      return;
-    }
     if (!this.expanded) {
       this.expandedChange.emit(true);
     }

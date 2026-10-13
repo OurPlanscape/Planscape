@@ -61,6 +61,10 @@ export const SEARCH_LIMIT = 100;
 })
 export class BaseLayersPanelComponent {
   selectedLayers$ = this.baseLayersStateService.selectedBaseLayers$;
+  // the state can hold [] as well as null when nothing is selected
+  hasSelectedLayers$ = this.selectedLayers$.pipe(
+    map((layers) => !!layers?.length)
+  );
   selectedLayersDataSet$ = this.selectedLayers$.pipe(
     // just return the first item data set id, as we can only have 1 dataset active.
     map((layers) => layers?.[0]?.dataset.id ?? null)

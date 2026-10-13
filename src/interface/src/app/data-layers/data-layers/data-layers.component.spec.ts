@@ -56,6 +56,18 @@ describe('DataLayersComponent', () => {
     expect(component.showClearButton).toBeFalse();
   });
 
+  it('keeps the old search hint with DATA_ORGANIZATION off', async () => {
+    await setup(false);
+    expect(component.searchPlaceholder).toBe(
+      'Search by dataset, metric, category, org...'
+    );
+  });
+
+  it('searches "in data layers" with DATA_ORGANIZATION on', async () => {
+    await setup(true);
+    expect(component.searchPlaceholder).toBe('Search in data layers');
+  });
+
   describe('selection header', () => {
     beforeEach(async () => {
       await setup();

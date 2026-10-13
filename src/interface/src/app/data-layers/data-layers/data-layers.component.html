@@ -2,7 +2,7 @@
   <sg-search-bar
     class="search-bar"
     [debounceInterval]="160"
-    searchPlaceholder="Search by dataset, metric, category, org..."
+    [searchPlaceholder]="searchPlaceholder"
     (searchString)="search($event)"
     [showCloseButton]="true"
     (clearSearch)="clearSearch()"
