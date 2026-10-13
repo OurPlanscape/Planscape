@@ -5,7 +5,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { LegacyMaterialModule } from '@material/legacy-material.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MockProvider } from 'ng-mocks';
-import { firstValueFrom, of } from 'rxjs';
+import { of } from 'rxjs';
 import { ButtonComponent } from '@styleguide';
 import { PlanState } from '@plan/plan.state';
 import { Plan } from '@types';
@@ -59,16 +59,5 @@ describe('NavBarComponent', () => {
   it('should create', async () => {
     await setUpComponent();
     expect(component).toBeTruthy();
-  });
-
-  it('allows sharing the plan when the workspaces flag is off', async () => {
-    await setUpComponent();
-    expect(await firstValueFrom(component.canSharePlan$)).toBe(true);
-  });
-
-  it('hides the share button when the workspaces flag is on', async () => {
-    await setUpComponent({ WORKSPACES: true });
-    expect(await firstValueFrom(component.canSharePlan$)).toBe(false);
-    expect(fixture.nativeElement.querySelector('[data-id="share"]')).toBeNull();
   });
 });

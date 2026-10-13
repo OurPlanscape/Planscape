@@ -81,7 +81,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   constructor(
     private planService: PlanService,
     private queryParamsService: QueryParamsService,
-    private workspaceId?: number // TODO: Once WORKSPACES be released this will be required
+    private workspaceId: number
   ) {
     super();
   }

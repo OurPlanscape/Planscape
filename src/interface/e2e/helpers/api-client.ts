@@ -19,7 +19,10 @@ export async function registerTestUser(api: APIRequestContext, user: TestUser) {
   });
 }
 
-export async function loginTestUser(api: APIRequestContext, user: Pick<TestUser, 'email' | 'password'>) {
+export async function loginTestUser(
+  api: APIRequestContext,
+  user: Pick<TestUser, 'email' | 'password'>
+) {
   const res = await api.post('/planscape-backend/dj-rest-auth/login/', {
     data: {
       email: user.email,
@@ -30,6 +33,32 @@ export async function loginTestUser(api: APIRequestContext, user: Pick<TestUser,
     throw new Error(`Login failed: ${res.status()} ${await res.text()}`);
   }
   return res;
+}
+
+/**
+ * Planning areas and the map viewer live inside a workspace, so authenticated
+ * specs need one before they can reach either.
+ */
+export async function createWorkspace(api: APIRequestContext, name: string) {
+  const res = await api.post('/planscape-backend/v2/workspaces/', {
+    data: { name },
+  });
+  if (!res.ok()) {
+    throw new Error(
+      `Creating workspace failed: ${res.status()} ${await res.text()}`
+    );
+  }
+  return (await res.json()) as { id: number; name: string };
+}
+
+/** Deleting the workspace removes the planning areas created inside it. */
+export async function deleteWorkspace(api: APIRequestContext, id: number) {
+  const res = await api.delete(`/planscape-backend/v2/workspaces/${id}/`);
+  if (!res.ok()) {
+    throw new Error(
+      `Deleting workspace failed: ${res.status()} ${await res.text()}`
+    );
+  }
 }
 
 export async function destroyTestUser(api: APIRequestContext) {

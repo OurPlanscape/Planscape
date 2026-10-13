@@ -392,7 +392,7 @@ def clone_scenario(
             original.treatable_area.clone() if original.treatable_area else None
         ),
         "status": ScenarioStatus.ACTIVE,
-        "result_status": ScenarioResultStatus.DRAFT,
+        "result_status": ScenarioResultStatus.PENDING, # remember this is not results.status
         "geopackage_status": GeoPackageStatus.PENDING,
         "post_process_status": ScenarioPostProcessingStatus.PENDING,
     }
