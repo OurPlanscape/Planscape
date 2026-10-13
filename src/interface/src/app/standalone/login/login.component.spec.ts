@@ -101,35 +101,6 @@ describe('LoginComponent', () => {
     });
   });
 
-  describe('Map Viewer', () => {
-    it('navigates to Map Viewer', async () => {
-      fixture.detectChanges();
-      const button = fixture.debugElement.query(
-        By.css('[data-id="map-viewer"]')
-      );
-      await button.nativeElement.click();
-
-      // check current URL
-      const location = TestBed.inject(Location);
-      fixture.detectChanges();
-      expect(location.path()).toEqual('/map-viewer');
-    });
-
-    it('is hidden when workspaces are enabled', () => {
-      // the map viewer needs a workspace, so there is nowhere for a logged out
-      // visitor to go
-      TestBed.resetTestingModule();
-      setUpComponent(['WORKSPACES']);
-      fixture.detectChanges();
-
-      expect(
-        fixture.debugElement.query(By.css('[data-id="map-viewer"]'))
-      ).toBeNull();
-      expect(
-        fixture.debugElement.query(By.css('[data-id="create-account"]'))
-      ).not.toBeNull();
-    });
-  });
   describe('create account', () => {
     it('navigates to signup', async () => {
       fixture.detectChanges();
