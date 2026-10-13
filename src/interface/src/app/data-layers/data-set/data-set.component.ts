@@ -54,7 +54,9 @@ export class DataSetComponent {
   loadingDataLayer$ = this.dataLayersStateService.loadingLayer$;
 
   selectedDataLayerId$ = this.dataLayersStateService.viewedDataLayer$.pipe(
-    map((dl) => dl?.id)
+    map((dl) => { 
+      console.log('what is this dl?', dl);
+      return dl?.id })
   );
 
   displayTooltipLayer = false;

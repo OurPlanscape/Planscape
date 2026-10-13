@@ -139,6 +139,7 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
 
   selectedLayer$ = this.dataLayersStateService.viewedDataLayer$.pipe(
     tap((layer) => {
+      console.log('we are here in the selected layer?', layer);
       // If the selected layer was updated we want to update the storage
       if (this.multiDataLayerView) {
         this.saveSelectedLayerOnStorage(layer);

@@ -83,6 +83,7 @@ export class DataLayersStateService {
 
   dataLayerWithUrl$ = this.viewedDataLayer$.pipe(
     switchMap((layer) => {
+      console.log('here is the layer to get the url for:', layer);
       if (!layer) {
         return of(null);
       }
@@ -139,6 +140,7 @@ export class DataLayersStateService {
 
   colorLegendInfo$ = this.viewedDataLayer$.pipe(
     map((currentLayer: DataLayer | null) => {
+      console.log('here is the current layer for colorlegendinfo:', currentLayer);
       if (currentLayer) {
         return extractLegendInfo(currentLayer);
       } else {
@@ -218,8 +220,10 @@ export class DataLayersStateService {
   }
 
   selectDataLayer(dataLayer: DataLayer | null) {
+    console.log('setting it to load?', dataLayer);
     this.setDataLayerLoading(true);
     this._viewedDataLayer$.next(dataLayer);
+    console.log('viewed data layers are:', this._viewedDataLayer$.value);
   }
 
   setDataLayerLoading(status: boolean) {
@@ -369,4 +373,9 @@ export class DataLayersStateService {
   setMaxSelectedLayers(max: number): void {
     this.maxSelectedDatalayers = max;
   }
+
+  setSelectionMode(mode: 'AUTOMATIC' | 'MANUAL') {
+    this.selectionMode = mode;
+  } 
+
 }

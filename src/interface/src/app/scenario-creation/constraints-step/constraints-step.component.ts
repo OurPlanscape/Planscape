@@ -71,10 +71,11 @@ export class ConstraintsStepComponent extends StepDirective<ScenarioDraftConfigu
     };
     return formData;
   }
-
+  
   override beforeStepLoad() {
     this.dataLayersStateService.updateSelectedLayers([]);
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
+    this.dataLayersStateService.setSelectionMode('MANUAL');
     this.dataLayersStateService.clearUnselectableLayers();
     this.newScenarioState.scenarioConfig$
       .pipe(take(1))
@@ -85,6 +86,7 @@ export class ConstraintsStepComponent extends StepDirective<ScenarioDraftConfigu
   }
 
   override beforeStepExit() {
+    this.dataLayersStateService.setSelectionMode('AUTOMATIC');
     this.dataLayersStateService.resetAll();
     this.dataLayersStateService.updateSelectedLayers([]);
   }

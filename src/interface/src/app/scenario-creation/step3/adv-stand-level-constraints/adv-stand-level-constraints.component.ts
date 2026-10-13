@@ -12,7 +12,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
-import { MAX_SELECTED_DATALAYERS } from '@app/data-layers/data-layers/max-selected-datalayers.token';
+// import { MAX_SELECTED_DATALAYERS } from '@app/data-layers/data-layers/max-selected-datalayers.token';
 import { PlanState } from '@app/plan/plan.state';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { MapModuleService } from '@app/services/map-module.service';
@@ -44,7 +44,7 @@ import {
   Constraint,
 } from '@app/types';
 import { ModuleService } from '@app/services/module.service';
-import { SELECTION_MODE } from '@app/data-layers/data-layers/selection-mode.token';
+// import { SELECTION_MODE } from '@app/data-layers/data-layers/selection-mode.token';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { getConstraintDisplayName } from '@app/scenario/scenario-helper';
@@ -54,9 +54,9 @@ import { getConstraintDisplayName } from '@app/scenario/scenario-helper';
   selector: 'app-adv-stand-level-constraints',
   standalone: true,
   providers: [
-    DataLayersStateService,
-    { provide: SELECTION_MODE, useValue: 'MANUAL' },
-    { provide: MAX_SELECTED_DATALAYERS, useValue: Number.POSITIVE_INFINITY },
+    // DataLayersStateService,
+    // { provide: SELECTION_MODE, useValue: 'MANUAL' },
+    // { provide: MAX_SELECTED_DATALAYERS, useValue: Number.POSITIVE_INFINITY },
     MapModuleService,
     { provide: MAP_MODULE_NAME, useValue: 'advanced_stand_level_constraint' },
   ],
@@ -87,6 +87,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
       .pipe(
         map((data) => data.options.datalayers),
         tap((layers) => {
+          console.log('we have layers from the module service?', layers)
           this.knownLayers = layers;
           return layers;
         }),
@@ -105,6 +106,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
   readonly layersLoaded$: Observable<boolean> =
     this.advStandLevelConstraintLayers$.pipe(
       map(() => true),
+      tap((what)=> {console.log('what is this?:', what)}),
       startWith(false)
     );
 
@@ -120,6 +122,8 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
       this.newScenarioState.advConstraints$,
       this.advStandLevelConstraintLayers$,
     ]).subscribe(([constraints, layers]) => {
+      console.log('we have constriants?', constraints);
+      console.log('we have layers?', layers);
       if (!constraints) {
         this.selectedConstraints$.next([]);
         return;
@@ -131,7 +135,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
             (l: DataLayer) => l.id === constraint.datalayer
           );
           if (layer) {
-            this.dataLayerState.addSelectedLayer(layer);
+            this.dataLayersStateService.addSelectedLayer(layer);
             acc.push({
               ...constraint,
               name: getConstraintDisplayName(constraint, layer),
@@ -152,7 +156,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     private scenarioState: ScenarioState,
     private newScenarioState: NewScenarioState,
     private planState: PlanState,
-    private dataLayerState: DataLayersStateService,
+    private dataLayersStateService: DataLayersStateService,
     @Host() @SkipSelf() private parentContainer: ControlContainer
   ) {
     this.scenarioState.currentScenario$
@@ -163,7 +167,10 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
       )
       .subscribe();
 
-    this.dataLayerState.layerClicked$
+      // this.dataLayersStateService.setSelectionMode('MANUAL');
+      // this.dataLayersStateService.setMaxSelectedLayers(Number.POSITIVE_INFINITY);
+
+    this.dataLayersStateService.layerClicked$
       .pipe(untilDestroyed(this))
       .subscribe((layer) => {
         this.handleSelectedLayer(layer);
@@ -183,6 +190,10 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+
+    // reset dataLayersStateService to normal:
+    // this.dataLayersStateService.setSelectionMode('AUTOMATIC');
+
     // Clean up parent form and RxJS subscriptions
     this.parentFormGroup.removeControl(this.keyName);
     this.destroy$.next();
@@ -205,7 +216,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     this.selectedConstraints$.next(current);
     const layerToAdd = this.getFullLayerById(constraint.datalayer);
     if (layerToAdd) {
-      this.dataLayerState.addSelectedLayer(layerToAdd);
+      this.dataLayersStateService.addSelectedLayer(layerToAdd);
     }
   }
 
@@ -229,7 +240,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
 
     const removeLayer = this.getFullLayerById(id);
     if (removeLayer) {
-      this.dataLayerState.removeSelectedLayer(removeLayer);
+      this.dataLayersStateService.removeSelectedLayer(removeLayer);
     }
   }
 
@@ -316,4 +327,6 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
         }
       });
   }
+
+
 }

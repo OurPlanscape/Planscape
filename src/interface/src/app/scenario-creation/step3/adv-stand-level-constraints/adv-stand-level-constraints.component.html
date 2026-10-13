@@ -10,6 +10,7 @@
     <div class="num-constraints-line">
       {{ (selectedConstraints$ | async)?.length || 0 }} Applied (No Limit)
     </div>
+    <div>eh layers loaded? {{ layersLoaded$ | async}} </div>
     <sg-chip-selector
       *ngIf="layersLoaded$ | async"
       [items]="(selectedConstraints$ | async) ?? []"
