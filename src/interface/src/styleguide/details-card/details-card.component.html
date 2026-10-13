@@ -1,7 +1,7 @@
 <div class="heading">
   <div class="title-label" *ngIf="titleLabel">{{ titleLabel }}</div>
   <div class="title" *ngIf="cardTitle">
-    {{ cardTitle }}
+    <span class="title-text">{{ cardTitle }}</span>
     <div class="share-button" *ngIf="canShare">
       <button sg-button icon="share" (click)="share.emit()">Share</button>
     </div>
