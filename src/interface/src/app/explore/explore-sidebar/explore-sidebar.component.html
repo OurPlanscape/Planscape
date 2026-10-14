@@ -31,9 +31,8 @@
       (click)="expandedChange.emit(false)"></button>
   </div>
   <div class="panel-content">
-    <app-map-selector
-      *ngIf="selectedTab === SidebarTabs.DATA_LAYERS"
-      [showSelectionHeader]="false"></app-map-selector>
+    <app-map-tabs
+      *ngIf="selectedTab === SidebarTabs.DATA_LAYERS"></app-map-tabs>
     <app-base-layers
       *ngIf="selectedTab === SidebarTabs.BASE_LAYERS"></app-base-layers>
   </div>

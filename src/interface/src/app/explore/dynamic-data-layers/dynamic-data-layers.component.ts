@@ -6,6 +6,7 @@ import {
   Input,
   OnDestroy,
   OnInit,
+  TemplateRef,
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
@@ -23,6 +24,7 @@ import { NgIf } from '@angular/common';
 export class DynamicDataLayersComponent implements OnInit, OnDestroy {
   @Input({ required: true }) mapId!: number;
   @Input() showSelectionHeader = true;
+  @Input() belowSearch?: TemplateRef<unknown>;
 
   @ViewChild('outlet', { read: ViewContainerRef, static: true })
   outlet!: ViewContainerRef;
@@ -46,6 +48,7 @@ export class DynamicDataLayersComponent implements OnInit, OnDestroy {
       injector: customInjector,
     });
     this.componentRef.setInput('showSelectionHeader', this.showSelectionHeader);
+    this.componentRef.setInput('belowSearch', this.belowSearch);
   }
 
   ngOnDestroy(): void {

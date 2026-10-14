@@ -8,7 +8,7 @@ import {
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ButtonComponent } from '@styleguide';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
-import { MapSelectorComponent } from '@explore/map-selector/map-selector.component';
+import { MapTabsComponent } from '@explore/map-tabs/map-tabs.component';
 import {
   SidebarIconRailComponent,
   SidebarRailItem,
@@ -31,7 +31,7 @@ const PANEL_BY_RAIL_ITEM: Record<string, SidebarTabs> = {
     AsyncPipe,
     ButtonComponent,
     BaseLayersComponent,
-    MapSelectorComponent,
+    MapTabsComponent,
     SidebarIconRailComponent,
   ],
   templateUrl: './explore-sidebar.component.html',

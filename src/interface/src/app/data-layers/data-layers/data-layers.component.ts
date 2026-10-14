@@ -1,5 +1,11 @@
-import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
-import { Component, HostBinding, Input } from '@angular/core';
+import {
+  AsyncPipe,
+  NgClass,
+  NgForOf,
+  NgIf,
+  NgTemplateOutlet,
+} from '@angular/common';
+import { Component, HostBinding, Input, TemplateRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCommonModule } from '@angular/material/core';
@@ -58,6 +64,7 @@ import { groupSearchResults, Results } from './search';
     FormsModule,
     PaginatorComponent,
     FeaturesModule,
+    NgTemplateOutlet,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
@@ -67,6 +74,8 @@ export class DataLayersComponent {
   @Input() useClearFooter = true;
   // Off when the host renders the back navigation itself (map viewer panel header).
   @Input() showSelectionHeader = true;
+  // Rendered between the search bar and the list (map viewer map tabs)
+  @Input() belowSearch?: TemplateRef<unknown>;
 
   constructor(
     private dataLayersStateService: DataLayersStateService,
