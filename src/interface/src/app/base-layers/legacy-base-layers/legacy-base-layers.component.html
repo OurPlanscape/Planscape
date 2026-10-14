@@ -6,6 +6,6 @@
     [initialExpanded]="(selectedLayersDataSet$ | async) === baseDataSet.id"
     (layerSelected)="updateSelectedLayer($event)"></app-base-layers-list>
 </div>
-<div class="footer" *ngIf="selectedLayers$ | async">
+<div class="footer" *ngIf="hasSelectedLayers$ | async">
   <button sg-button (click)="clearBaseLayer()" class="clear-btn">Clear</button>
 </div>

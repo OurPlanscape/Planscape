@@ -11,7 +11,7 @@ import { of, Subject } from 'rxjs';
 import { MapModuleService } from '@services/map-module.service';
 import { DataLayersService } from '@services/data-layers.service';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { MapDataDataSet, SearchResult } from '@types';
+import { BaseLayer, MapDataDataSet, SearchResult } from '@types';
 
 const wildfires = { id: 1, name: 'Wildfires' } as MapDataDataSet;
 const roads = { id: 2, name: 'Roads' } as MapDataDataSet;
@@ -55,6 +55,7 @@ describe('BaseLayersPanelComponent', () => {
           datasets$: of({
             main_datasets: [],
             base_datasets: [wildfires, roads],
+            categories: [],
           }),
           moduleName: 'map',
         }),
@@ -73,6 +74,24 @@ describe('BaseLayersPanelComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  describe('clear button', () => {
+    const clearButton = () => fixture.debugElement.query(By.css('.clear-btn'));
+
+    it('is hidden when base layers were reset to an empty list', () => {
+      TestBed.inject(BaseLayersStateService).setBaseLayers([]);
+      fixture.detectChanges();
+      expect(clearButton()).toBeNull();
+    });
+
+    it('shows once a layer is selected', () => {
+      TestBed.inject(BaseLayersStateService).setBaseLayers([
+        { id: 7, dataset: { id: 1, name: 'Wildfires' } } as BaseLayer,
+      ]);
+      fixture.detectChanges();
+      expect(clearButton()).toBeTruthy();
+    });
   });
 
   it('shows the search bar', () => {

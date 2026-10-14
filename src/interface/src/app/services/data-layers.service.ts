@@ -29,19 +29,26 @@ export class DataLayersService {
   }
 
   listDataLayers(dataSetId: number, module: string, geometry?: Geometry) {
-    let body = {
-      type: 'RASTER',
-      module: module,
-    };
-    if (geometry) {
-      body = {
-        ...body,
-        ...{ geometry: geometry },
-      };
-    }
+    return this.browse('datasets', dataSetId, module, geometry);
+  }
+
+  listCategoryDataLayers(
+    categoryId: number,
+    module: string,
+    geometry?: Geometry
+  ) {
+    return this.browse('categories', categoryId, module, geometry);
+  }
+
+  private browse(
+    resource: 'datasets' | 'categories',
+    id: number,
+    module: string,
+    geometry?: Geometry
+  ) {
     return this.http.post<DataLayer[]>(
-      environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse/',
-      body,
+      `${environment.backend_endpoint}/v2/${resource}/${id}/browse/`,
+      { type: 'RASTER', module, ...(geometry ? { geometry } : {}) },
       {
         withCredentials: true,
       }
