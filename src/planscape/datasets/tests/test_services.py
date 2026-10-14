@@ -518,6 +518,7 @@ class TestSearch(TestCase):
         self.assertNotIn(cat2_datalayer1.name, names)
         self.assertNotIn(cat2_datalayer2.name, names)
 
+    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
     def test_simple_category_name_returns_datalayers(self):
         dataset = DatasetFactory(visibility="PUBLIC")
         wildlife = SimpleCategoryFactory.create(name="Wildlife Habitat")
@@ -557,6 +558,23 @@ class TestSearch(TestCase):
             {"id": wildlife.pk, "name": wildlife.name, "icon": None},
         )
 
+    @override_settings(FEATURE_FLAGS=[])
+    def test_simple_categories_are_not_searched_without_flag(self):
+        dataset = DatasetFactory(visibility="PUBLIC")
+        category = SimpleCategoryFactory.create(name="Ponderosa forests")
+        DataLayerFactory.create(
+            dataset=dataset,
+            name="Tree height",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            simple_categories=[category],
+        )
+
+        results = find_anything("ponderosa", type=DataLayerType.RASTER)
+
+        self.assertEqual(results, {})
+
+    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
     def test_simple_category_without_matching_datalayers_is_not_returned(self):
         dataset = DatasetFactory(visibility="PUBLIC")
         vector_only = SimpleCategoryFactory.create(name="Tamarisk stands")
@@ -649,6 +667,7 @@ class TestSearch(TestCase):
 
         self.assertEqual(find_anything("can%height", type=DataLayerType.RASTER), {})
 
+    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
     def test_metadata_and_simple_category_respect_geometry(self):
         unit_square = GEOSGeometry(
             "MULTIPOLYGON (((0 0, 1 0, 1 1, 0 1, 0 0)))", srid=4269
@@ -687,6 +706,7 @@ class TestSearch(TestCase):
         self.assertIn(inside.name, names)
         self.assertNotIn(outside.name, names)
 
+    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
     def test_metadata_and_simple_category_respect_access(self):
         user = UserFactory.create()
         public_dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)

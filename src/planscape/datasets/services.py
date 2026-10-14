@@ -9,6 +9,7 @@ from uuid import uuid4
 import mmh3
 from actstream import action
 from cacheops import cached, invalidate_model
+from core.flags import feature_enabled
 from core.gcs import create_upload_url as create_upload_url_gcs
 from core.gcs import is_gcs_file
 from core.s3 import create_upload_url as create_upload_url_s3
@@ -663,6 +664,23 @@ def find_anything(
         # TODO: narrow to uploaded datalayers once uploaded filtering is defined.
         pass
 
+    simple_categories = SimpleCategory.objects.none()
+    simple_category_datalayers = DataLayer.objects.none()
+    if feature_enabled("DATA_ORGANIZATION"):
+        simple_categories = SimpleCategory.objects.filter(
+            name__icontains=term,
+            id__in=DataLayer.objects.all()
+            .accessible_by(user)
+            .filter(**simple_category_layer_filter)
+            .values("simple_categories"),
+        )
+        simple_category_datalayers = (
+            DataLayer.objects.all()
+            .accessible_by(user)
+            .filter(**simple_category_filter)
+            .distinct()
+        )
+
     raw_results = [
         [
             dataset_to_search_result(x)
@@ -680,16 +698,7 @@ def find_anything(
                 **dataset_filter,
             )
         ],
-        [
-            simple_category_to_search_result(x)
-            for x in SimpleCategory.objects.filter(
-                name__icontains=term,
-                id__in=DataLayer.objects.all()
-                .accessible_by(user)
-                .filter(**simple_category_layer_filter)
-                .values("simple_categories"),
-            )
-        ],
+        [simple_category_to_search_result(x) for x in simple_categories],
         [
             datalayer_to_search_result(x)
             for x in DataLayer.objects.all()
@@ -706,15 +715,7 @@ def find_anything(
                 **datalayer_filter,
             )
         ],
-        [
-            datalayer_to_search_result(x)
-            for x in DataLayer.objects.all()
-            .accessible_by(user)
-            .filter(
-                **simple_category_filter,
-            )
-            .distinct()
-        ],
+        [datalayer_to_search_result(x) for x in simple_category_datalayers],
         [
             datalayer_to_search_result(x)
             for x in DataLayer.objects.all()
