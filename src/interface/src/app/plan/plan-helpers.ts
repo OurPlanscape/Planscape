@@ -144,6 +144,9 @@ export function getWorkspaceId(route?: ActivatedRouteSnapshot): string | null {
   return match?.paramMap.get('workspaceId') ?? null;
 }
 
+// How the planning area the user just landed on was created
+export type PlanningAreaCreationOrigin = 'uploaded' | 'drawn';
+
 /** Pass the route so pages under `/workspace/:workspaceId` keep the prefix. */
 export function getPlanPath(
   planId: number | string,

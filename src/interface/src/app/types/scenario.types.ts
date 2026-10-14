@@ -4,6 +4,7 @@ import { Geometry } from 'geojson';
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
 export type ORIGIN_TYPE = 'USER' | 'SYSTEM';
 export type SCENARIO_TYPE = 'PRESET' | 'CUSTOM' | 'PROJECT_AREAS';
+export type SCENARIO_VERSION = 'V1' | 'V2' | 'V3';
 
 export type ScenarioResultStatus =
   | 'LOADING' // when loading results
@@ -14,6 +15,42 @@ export type ScenarioResultStatus =
   | 'PANIC' // Run failed; panic
   | 'TIMED_OUT'
   | 'DRAFT'; // Creating a scenario but not completed the steps yet.
+
+export const USER_REVISABLE_ERRORS = [
+  'NO_AVAILABLE_RESULT',
+  'FORSYS_EMPTY_RESULT',
+] as const;
+
+export const SYSTEM_ERRORS = [
+  'TIME_OUT',
+  'GENERIC_PANIC',
+  'STAND_METRIC_FAILURE',
+  'UNKNOWN_ERROR',
+  'STAND_DATA_ERROR',
+  'PROJECT_DATA_ERROR',
+  'FORSYS_PREPARATION_ERROR',
+  'FORSYS_EXECUTION_ERROR',
+  'RESULT_PROCESSING_ERROR',
+  'PROJECT_AREA_UPDATE_ERROR',
+] as const;
+
+// Clean and readable type definition
+export type ScenarioResultErrorCode =
+  | (typeof USER_REVISABLE_ERRORS)[number]
+  | (typeof SYSTEM_ERRORS)[number];
+
+export interface ScenarioResultError {
+  error_code: ScenarioResultErrorCode;
+  description: string;
+}
+
+// Runtime lookup sets (derived from the arrays)
+export const USER_REVISABLE_ERRORS_SET = new Set<ScenarioResultErrorCode>(
+  USER_REVISABLE_ERRORS
+);
+export const SYSTEM_ERRORS_SET = new Set<ScenarioResultErrorCode>(
+  SYSTEM_ERRORS
+);
 
 export type GeoPackageStatus =
   | 'PENDING'
@@ -105,6 +142,7 @@ export interface ScenarioResult {
     features: FeatureCollection[]; // TODO this is actually Features[]
     type: string;
   };
+  errors?: ScenarioResultError[];
 }
 
 // Base draft/wizard shape (legacy flat config fields) used by FE draft types.
@@ -188,9 +226,29 @@ export type CONSTRAINT_OPERATOR =
 export interface Constraint {
   datalayer: number;
   operator: CONSTRAINT_OPERATOR;
-  value: number; // be supports string
-  value2?: number; // be supports string //TODO: rename?
+  value: string;
 }
+
+export interface OperatorDefinition {
+  value: CONSTRAINT_OPERATOR;
+  label: string;
+  symbol?: string;
+}
+
+export const CONSTRAINT_OPERATORS: OperatorDefinition[] = [
+  { value: 'eq', label: 'Equal to', symbol: '=' },
+  { value: 'dne', label: 'Does not equal', symbol: '!=' },
+  { value: 'gt', label: 'Greater than', symbol: '>' },
+  { value: 'gte', label: 'Greater than or equal to', symbol: '≥' },
+  { value: 'lt', label: 'Less than', symbol: '<' },
+  { value: 'lte', label: 'Less than or equal to', symbol: '≤' },
+  { value: 'btw', label: 'Between' },
+];
+
+export const CONSTRAINT_OPERATOR_MAP = new Map<
+  CONSTRAINT_OPERATOR,
+  OperatorDefinition
+>(CONSTRAINT_OPERATORS.map((op) => [op.value, op]));
 
 export interface ScenarioPriority {
   datalayer: number;
@@ -218,4 +276,67 @@ export interface ProjectArea {
     [key: string]: any;
   };
   geometry: Geometry;
+}
+
+//// These types support the configurations modal
+
+interface Targets {
+  max_area: number;
+  max_project_count: number;
+  estimated_cost: number;
+  max_budget: number | null;
+  sub_units_fixed_target: number | null;
+  sub_units_target_value: number | null;
+}
+
+export interface StandLevelConstraint {
+  datalayer: LayerInfo;
+  operator: CONSTRAINT_OPERATOR;
+  value: string; // BE sends numbers as strings, e.g. "1000"
+}
+
+interface TreatmentGoalConstraint {
+  datalayer: LayerInfo;
+  threshold: string; // e.g. "value > 0"
+}
+
+interface LayerInfo {
+  id: number;
+  name: string;
+}
+
+interface PlanningApproach {
+  key: PLANNING_APPROACH;
+  label: string;
+}
+
+interface StandSize {
+  key: STAND_SIZE;
+  label: string;
+  acres: number;
+}
+
+interface PriorityObjective extends LayerInfo {
+  weight: number;
+}
+
+// This type matches the result from `scenario/:id/get-configuration`
+//  not to be confused with the ScenarioConfig-related types above
+
+export interface ScenarioConfigurationDetails {
+  version: SCENARIO_VERSION;
+  type: SCENARIO_TYPE;
+  planning_area: LayerInfo;
+  stand_size: StandSize | null;
+  planning_approach: PlanningApproach;
+  sub_units_layer: LayerInfo | null;
+  treatment_goal: LayerInfo;
+  priority_objectives: PriorityObjective[];
+  cobenefits: LayerInfo[];
+  treatment_goal_constraints: TreatmentGoalConstraint[];
+  included_areas: LayerInfo[];
+  excluded_areas: LayerInfo[];
+  stand_level_constraints: StandLevelConstraint[];
+  advanced_stand_level_constraints: StandLevelConstraint[];
+  targets: Targets;
 }

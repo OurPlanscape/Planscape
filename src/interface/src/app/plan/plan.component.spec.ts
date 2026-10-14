@@ -198,6 +198,36 @@ describe('PlanComponent', () => {
     expect(lastArgs[0]).toEqual({ foo: 'bar' });
   });
 
+  it('opens the success modal after a planning area is created', () => {
+    spyOn(router, 'getCurrentNavigation').and.returnValue({
+      id: 3,
+      initialUrl: router.parseUrl('/plan/24'),
+      extractedUrl: router.parseUrl('/plan/24'),
+      trigger: 'imperative',
+      previousNavigation: null,
+      extras: { state: { planningAreaCreated: 'uploaded' } },
+      finalUrl: router.parseUrl('/plan/24'),
+    } as unknown as Navigation);
+
+    window.history.replaceState(
+      { planningAreaCreated: 'uploaded', foo: 'bar' },
+      document.title
+    );
+    const replaceSpy = spyOn(window.history, 'replaceState').and.callThrough();
+    const showSpy = spyOn(
+      PlanComponent.prototype as any,
+      'showPlanningAreaCreatedModal'
+    );
+
+    const fixture = create();
+    const component = fixture.componentInstance;
+    (component as any).plan = fakePlan;
+    fixture.detectChanges();
+
+    expect(showSpy).toHaveBeenCalledOnceWith('uploaded');
+    expect(replaceSpy.calls.mostRecent().args[0]).toEqual({ foo: 'bar' });
+  });
+
   it('does nothing when the flag is missing', () => {
     spyOn(router, 'getCurrentNavigation').and.returnValue({
       id: 2,
@@ -213,6 +243,10 @@ describe('PlanComponent', () => {
       PlanComponent.prototype as any,
       'showInProgressModal'
     );
+    const createdSpy = spyOn(
+      PlanComponent.prototype as any,
+      'showPlanningAreaCreatedModal'
+    );
     const replaceSpy = spyOn(window.history, 'replaceState');
 
     const fixture = create();
@@ -221,6 +255,7 @@ describe('PlanComponent', () => {
     fixture.detectChanges();
 
     expect(showSpy).not.toHaveBeenCalled();
+    expect(createdSpy).not.toHaveBeenCalled();
     expect(replaceSpy).not.toHaveBeenCalled();
   });
 
@@ -262,6 +297,10 @@ describe('PlanComponent', () => {
       PlanComponent.prototype as any,
       'showInProgressModal'
     );
+    const createdSpy = spyOn(
+      PlanComponent.prototype as any,
+      'showPlanningAreaCreatedModal'
+    );
     const replaceSpy = spyOn(window.history, 'replaceState');
 
     const fixture = create();
@@ -270,6 +309,7 @@ describe('PlanComponent', () => {
     fixture.detectChanges();
 
     expect(showSpy).not.toHaveBeenCalled();
+    expect(createdSpy).not.toHaveBeenCalled();
     expect(replaceSpy).not.toHaveBeenCalled();
   });
 });

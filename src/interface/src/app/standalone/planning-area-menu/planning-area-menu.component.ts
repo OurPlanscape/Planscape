@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Plan, PreviewPlan } from '@types';
 import {
   canDeletePlanningArea,
@@ -53,7 +53,8 @@ export class PlanningAreaMenuComponent {
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private planService: PlanService,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private route: ActivatedRoute
   ) {}
 
   get shareEnabled() {
@@ -106,6 +107,7 @@ export class PlanningAreaMenuComponent {
         data: {
           planName: this.plan.name,
           planId: this.plan.id,
+          workspaceId: this.route.snapshot.data['workspaceId'] ?? undefined,
         },
       }
     );

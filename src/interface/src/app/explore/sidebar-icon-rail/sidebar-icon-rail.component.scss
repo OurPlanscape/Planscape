@@ -1,0 +1,49 @@
+@import 'variables';
+@import 'colors';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 $map-sidebar-rail-width;
+  width: $map-sidebar-rail-width;
+  box-sizing: border-box;
+  padding: 14px 0;
+  gap: 16px;
+  background-color: $color-off-white;
+  border-right: 1px solid $color-soft-gray;
+}
+
+.rail-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: $color-dark-gray;
+  cursor: pointer;
+
+  &:hover:not(.disabled):not(.active) {
+    background-color: $color-light-gray;
+  }
+
+  &.active {
+    background-color: $color-soft-light-blue;
+    color: $color-standard-blue;
+  }
+
+  &.disabled {
+    color: $color-disabled-gray;
+    cursor: default;
+  }
+
+  mat-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+  }
+}

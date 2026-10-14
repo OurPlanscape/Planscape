@@ -7,6 +7,7 @@ import {
   ProjectArea,
   Scenario,
   SCENARIO_TYPE,
+  ScenarioConfigurationDetails,
   ScenarioV3Payload,
   SubUnitsDetail,
 } from '@types';
@@ -89,6 +90,29 @@ export class ScenarioService {
       { name, planning_area },
       { withCredentials: true }
     );
+  }
+
+  cloneScenario(scenarioId: number, newName: string): Observable<Scenario> {
+    return this.http
+      .post<Scenario>(
+        `${this.v2Path}${scenarioId}/clone/`,
+        { name: newName },
+        { withCredentials: true }
+      )
+      .pipe(
+        catchError((error) => {
+          const message =
+            error.error?.errors?.global?.[0] ??
+            error.error?.detail ??
+            'Failed to copy scenario';
+
+          throw () =>
+            new CreateScenarioError(message, {
+              configurationError: false,
+              errorMessages: { global: [message] },
+            });
+        })
+      );
   }
 
   //sends a partial scenario configuration using PATCH
@@ -194,6 +218,20 @@ export class ScenarioService {
         withCredentials: true,
       }
     );
+  }
+
+  /* This endpoint is intended to support the configurations modal
+    
+    Note: not to be confused with the similarly named configurations
+    in the draft configiration types
+  */
+  getScenarioConfiguration(scenarioId: number) {
+    const url =
+      environment.backend_endpoint +
+      `/v2/scenarios/${scenarioId}/get-configuration/`;
+    return this.http.get<ScenarioConfigurationDetails>(url, {
+      withCredentials: true,
+    });
   }
 
   getSubUnitsDetails(

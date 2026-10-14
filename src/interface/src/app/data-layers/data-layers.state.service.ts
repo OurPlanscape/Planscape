@@ -9,17 +9,22 @@ import {
   of,
   shareReplay,
   startWith,
+  Subject,
   switchMap,
   tap,
 } from 'rxjs';
 import {
   BaseDataSet,
   DataLayer,
-  DataSet,
+  IdNamePair,
   Pagination,
   SearchResult,
+  SimpleCategory,
 } from '@types';
-import { buildPathTree } from '@data-layers/data-layers/tree-node';
+import {
+  buildFlatTree,
+  buildPathTree,
+} from '@data-layers/data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
 import { MapModuleService } from '@services/map-module.service';
 
@@ -30,6 +35,16 @@ import { PlanState } from '@plan/plan.state';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import { SNACK_ERROR_CONFIG, UnselectableType } from '@app/shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { SELECTION_MODE } from './data-layers/selection-mode.token';
+import { FeatureService } from '@features/feature.service';
+
+/** The dataset or category whose layers are being browsed. */
+export interface BrowseSelection {
+  type: 'dataset' | 'category';
+  id: number;
+  name: string;
+  organization?: IdNamePair;
+}
 
 export interface unselectableLayer {
   id: number;
@@ -46,8 +61,14 @@ export class DataLayersStateService {
     tap(() => queueMicrotask(() => this.loadingSubject.next(false)))
   );
 
-  private _selectedDataSet$ = new BehaviorSubject<BaseDataSet | null>(null);
-  selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
+  categories$ = this.mapModuleService.datasets$.pipe(
+    distinctUntilChanged(),
+    map((mapData) => mapData.categories),
+    tap(() => queueMicrotask(() => this.loadingSubject.next(false)))
+  );
+
+  private _selection$ = new BehaviorSubject<BrowseSelection | null>(null);
+  selection$ = this._selection$.asObservable().pipe(shareReplay(1));
 
   // Datalayers applied to the map
   private _viewedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
@@ -61,6 +82,10 @@ export class DataLayersStateService {
   private _unSelectableDataLayerIds$ = new BehaviorSubject<
     unselectableLayer[] | []
   >([]);
+
+  private layerClicked = new Subject<DataLayer>();
+  public layerClicked$: Observable<DataLayer> =
+    this.layerClicked.asObservable();
 
   // Selected datalayers count
   selectedLayersCount$ = this.selectedDataLayers$.pipe(
@@ -87,33 +112,39 @@ export class DataLayersStateService {
   );
 
   dataTree$ = combineLatest([
-    this.selectedDataSet$,
+    this.selection$,
     // Setting an initial value when there is no plan
     this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
   ]).pipe(
     tap(() => this.loadingSubject.next(true)),
-    switchMap(([dataset, planningAreaGeometry]) => {
-      if (!dataset) {
+    switchMap(([selection, planningAreaGeometry]) => {
+      if (!selection) {
         this.loadingSubject.next(false);
         return of(null);
       }
       const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
-      return this.service
-        .listDataLayers(dataset.id, this.mapModuleService.moduleName, geometry)
-        .pipe(
-          map((items) => buildPathTree(items)),
-          tap((s) => this.loadingSubject.next(false)),
-          catchError((e) => {
-            this.loadingSubject.next(false);
-            this._selectedDataSet$.next(null);
-            this.matSnackBar.open(
-              `Error: Could not load layers for ${dataset.name}`,
-              'Dismiss',
-              SNACK_ERROR_CONFIG
-            );
-            return of(null);
-          })
-        );
+      const module = this.mapModuleService.moduleName;
+      // categories list their layers flat; datasets nest them by path
+      const isCategory = selection.type === 'category';
+      const layers$ = isCategory
+        ? this.service.listCategoryDataLayers(selection.id, module, geometry)
+        : this.service.listDataLayers(selection.id, module, geometry);
+      return layers$.pipe(
+        map((items) =>
+          isCategory ? buildFlatTree(items) : buildPathTree(items)
+        ),
+        tap((s) => this.loadingSubject.next(false)),
+        catchError((e) => {
+          this.loadingSubject.next(false);
+          this._selection$.next(null);
+          this.matSnackBar.open(
+            `Error: Could not load layers for ${selection.name}`,
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+          return of(null);
+        })
+      );
     }),
     shareReplay(1)
   );
@@ -189,20 +220,36 @@ export class DataLayersStateService {
     private mapModuleService: MapModuleService,
     @Inject(MAX_SELECTED_DATALAYERS)
     private maxSelectedDatalayers: number,
+    @Inject(SELECTION_MODE)
+    private selectionMode: 'AUTOMATIC' | 'MANUAL',
     @Inject(USE_GEOMETRY)
     private readonly sendGeometry: boolean,
     private planState: PlanState,
-    private matSnackBar: MatSnackBar
+    private matSnackBar: MatSnackBar,
+    private featureService: FeatureService
   ) {}
 
   selectDataSet(dataset: BaseDataSet) {
+    this.select({
+      type: 'dataset',
+      id: dataset.id,
+      name: dataset.name,
+      organization: dataset.organization,
+    });
+  }
+
+  selectCategory(category: SimpleCategory) {
+    this.select({ type: 'category', id: category.id, name: category.name });
+  }
+
+  private select(selection: BrowseSelection) {
     this._isBrowsing$.next(true);
-    this._selectedDataSet$.next(dataset);
+    this._selection$.next(selection);
     this.loadingSubject.next(true);
   }
 
   goBackToSearchResults() {
-    this._selectedDataSet$.next(null);
+    this._selection$.next(null);
     // if I go back but im not searching
     if (this._searchTerm$.value) {
       this._isBrowsing$.next(false);
@@ -241,7 +288,7 @@ export class DataLayersStateService {
 
   clearSearch() {
     this.search('');
-    this._selectedDataSet$.next(null);
+    this._selection$.next(null);
   }
 
   goToSelectedLayer(layer: DataLayer) {
@@ -254,18 +301,37 @@ export class DataLayersStateService {
   goToDataLayerCategory(layer: DataLayer) {
     this._isBrowsing$.next(true);
     this.loadingSubject.next(false);
-    // needs to select the dataset if it's not the same as the one selected already
-    if (this._selectedDataSet$.value?.id !== layer.dataset.id) {
-      const dataSet: Partial<DataSet> = {
-        ...layer.dataset,
-        organization: layer.organization,
-      };
+    const target = this.browseSelectionFor(layer);
+    // only reselect if it's not the one selected already
+    const current = this._selection$.value;
+    if (current?.type !== target.type || current.id !== target.id) {
       // reset previous results
-      this._selectedDataSet$.next(null);
-      // select the new data set
-      this.selectDataSet(dataSet as DataSet);
+      this._selection$.next(null);
+      this.select(target);
     }
     this._paths$.next(layer.path);
+  }
+
+  private browseSelectionFor(layer: DataLayer): BrowseSelection {
+    const categories = layer.simple_categories ?? [];
+    if (
+      this.featureService.isFeatureEnabled('DATA_ORGANIZATION') &&
+      categories.length > 0
+    ) {
+      // stay in the current category if the layer belongs to it
+      const current = this._selection$.value;
+      const category =
+        categories.find(
+          (c) => current?.type === 'category' && c.id === current.id
+        ) ?? categories[0];
+      return { type: 'category', id: category.id, name: category.name };
+    }
+    return {
+      type: 'dataset',
+      id: layer.dataset.id,
+      name: layer.dataset.name,
+      organization: layer.organization,
+    };
   }
 
   resetPath() {
@@ -288,6 +354,14 @@ export class DataLayersStateService {
     const updatedSelectedDatalayers = this._selectedDataLayers$.value.filter(
       (l) => l.id !== layer.id
     );
+    this._selectedDataLayers$.next(updatedSelectedDatalayers);
+  }
+
+  //explicitly set a layer to the selected list
+  addSelectedLayer(layer: DataLayer) {
+    const updatedSelectedDatalayers: DataLayer[] =
+      this._selectedDataLayers$.value;
+    updatedSelectedDatalayers.push(layer);
     this._selectedDataLayers$.next(updatedSelectedDatalayers);
   }
 
@@ -316,7 +390,17 @@ export class DataLayersStateService {
   }
 
   // Adding or removing an item to the selected list
-  toggleLayerAdition(layer: DataLayer) {
+  handleLayerClick(layer: DataLayer) {
+    // if this is automatic, we go ahead and 'automatically' toggle...
+    if (this.selectionMode === 'AUTOMATIC') {
+      this.toggleLayer(layer);
+    } else {
+      // otherwise we throw an event, and let the subscriber 'manually' select
+      this.layerClicked.next(layer);
+    }
+  }
+
+  toggleLayer(layer: DataLayer) {
     if (this.isSelectedLayer(layer)) {
       this.removeSelectedLayer(layer);
     } else if (

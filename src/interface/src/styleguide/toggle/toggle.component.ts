@@ -24,7 +24,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 export class ToggleComponent implements ControlValueAccessor {
   @Input() checked = false;
   @Input() disabled = false;
-  @Input() size: 'default' | 'small' = 'default';
+  @Input() size: 'small' | 'large' = 'small';
 
   @Output() changed = new EventEmitter<boolean>();
 

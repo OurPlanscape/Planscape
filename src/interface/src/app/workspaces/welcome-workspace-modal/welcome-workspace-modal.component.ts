@@ -31,7 +31,7 @@ export class WelcomeWorkspaceModalComponent {
     },
     {
       icon: 'map',
-      text: 'View, organize, and upload data in the Map Viewer',
+      text: 'View, organize, and upload data in the Map Viewer (upload data coming soon!)',
     },
     {
       icon: 'groups',

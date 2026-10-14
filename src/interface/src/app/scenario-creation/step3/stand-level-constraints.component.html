@@ -18,10 +18,8 @@ They help ensure that only feasible and operationally suitable areas are targete
     Set the conditions that must be met for ForSys to select stands for
     treatment.
   </p>
-
-  <form
+  <div
     [formGroup]="form"
-    class="constraints-form"
     [ngClass]="{
       'constraints-form': !isAdvSLCEnabled,
       'apply-constraints-form': isAdvSLCEnabled,
@@ -53,6 +51,7 @@ They help ensure that only feasible and operationally suitable areas are targete
         </mat-form-field>
       </div>
     </div>
+
     <div class="field-area">
       <label for="min_distance_from_road" class="input-label">
         Max Distance From Roads</label
@@ -83,5 +82,5 @@ They help ensure that only feasible and operationally suitable areas are targete
         </mat-form-field>
       </div>
     </div>
-  </form>
+  </div>
 </sg-section>

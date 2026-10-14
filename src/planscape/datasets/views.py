@@ -1,12 +1,29 @@
 from typing import Optional
 
 from core.serializers import MultiSerializerMixin
+from datasets.filters import DataLayerFilterSet
+from datasets.models import (
+    DataLayer,
+    DataLayerType,
+    Dataset,
+    SimpleCategory,
+    VisibilityOptions,
+)
+from datasets.serializers import (
+    BrowseDataLayerSerializer,
+    BrowseDataSetSerializer,
+    DataLayerSerializer,
+    DatasetSerializer,
+    FindAnythingSerializer,
+    SearchResultsSerializer,
+    SimpleCategorySerializer,
+)
+from datasets.services import browse, browse_simple_category, find_anything
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.db.models import Q
 from drf_spectacular.utils import extend_schema
-from planscape.analytics import track_event
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
@@ -15,18 +32,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from datasets.filters import DataLayerFilterSet
-from datasets.models import DataLayer, DataLayerType, Dataset, VisibilityOptions
-from datasets.serializers import (
-    BrowseDataLayerFilterSerializer,
-    BrowseDataLayerSerializer,
-    BrowseDataSetSerializer,
-    DataLayerSerializer,
-    DatasetSerializer,
-    FindAnythingSerializer,
-    SearchResultsSerializer,
-)
-from datasets.services import browse, find_anything
+from planscape.analytics import track_event
 
 
 class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
@@ -48,22 +54,22 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
 
     @extend_schema(
         description="Returns all datalayers inside this dataset",
-        parameters=[BrowseDataLayerFilterSerializer],
+        request=BrowseDataSetSerializer,
         responses={
             200: BrowseDataLayerSerializer(many=True),
         },
     )
-    @action(detail=True, methods=["get", "post"], permission_classes=[AllowAny])
+    @action(detail=True, methods=["post"], permission_classes=[AllowAny])
     def browse(self, request, pk=None):
         dataset = self.get_object()
-        params = request.query_params if request.method == "GET" else request.data
-        serializer = BrowseDataSetSerializer(data=params)
+        serializer = BrowseDataSetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         results = self._get_browse_result(
             dataset,
             type=serializer.validated_data.get("type"),
             module=serializer.validated_data.get("module"),
             geometry=serializer.validated_data.get("geometry"),
+            search_tab=serializer.validated_data.get("search_tab"),
         )
         serializer = BrowseDataLayerSerializer(results, many=True)
         is_authenticated = request.user and request.user.is_authenticated
@@ -86,6 +92,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         type: Optional[DataLayerType] = None,
         module: Optional[str] = None,
         geometry: Optional[GEOSGeometry] = None,
+        search_tab: Optional[str] = None,
     ):
         dataset = self.get_object()
         datalayers = browse(
@@ -93,8 +100,36 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             type=type,
             module=module,
             geometry=geometry,
+            search_tab=search_tab,
         )
         return list(datalayers.all())
+
+
+class SimpleCategoryViewSet(MultiSerializerMixin, GenericViewSet):
+    queryset = SimpleCategory.objects.all()
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = SimpleCategorySerializer
+
+    @extend_schema(
+        description="Returns all datalayers assigned to this category",
+        request=BrowseDataSetSerializer,
+        responses={200: BrowseDataLayerSerializer(many=True)},
+    )
+    @action(detail=True, methods=["post"], permission_classes=[AllowAny])
+    def browse(self, request, pk=None):
+        category = self.get_object()
+        serializer = BrowseDataSetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        results = browse_simple_category(
+            category,
+            type=serializer.validated_data.get("type"),
+            module=serializer.validated_data.get("module"),
+            geometry=serializer.validated_data.get("geometry"),
+            search_tab=serializer.validated_data.get("search_tab"),
+            user=request.user,
+        )
+        serializer = BrowseDataLayerSerializer(list(results.all()), many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class DataLayerViewSet(
@@ -119,13 +154,12 @@ class DataLayerViewSet(
         return Response({"layer_url": datalayer.get_map_url()})
 
     @extend_schema(
-        parameters=[FindAnythingSerializer],
+        request=FindAnythingSerializer,
         responses={200: SearchResultsSerializer(many=True)},
     )
-    @action(detail=False, methods=["get", "post"], permission_classes=[AllowAny])
+    @action(detail=False, methods=["post"], permission_classes=[AllowAny])
     def find_anything(self, request):
-        params = request.query_params if request.method == "GET" else request.data
-        serializer = FindAnythingSerializer(data=params)
+        serializer = FindAnythingSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         results = find_anything(user=request.user, **serializer.validated_data)

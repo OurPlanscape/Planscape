@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from funding_report.events import publish_report_event
 from funding_report.models import (
@@ -61,6 +62,7 @@ from planning.filters import (
     TreatmentGoalFilter,
 )
 from planning.models import (
+    GeoPackageStatus,
     PlanningArea,
     ProjectArea,
     Scenario,
@@ -83,6 +85,7 @@ from planning.serializers import (
     PlanningAreaSerializer,
     ProjectAreaSerializer,
     ScenarioAndProjectAreasSerializer,
+    ScenarioConfigurationDetailsSerializer,
     ScenarioSerializer,
     ScenarioV2Serializer,
     ScenarioV3Serializer,
@@ -95,6 +98,7 @@ from planning.serializers import (
 )
 from planning.services import (
     calculate_child_project_areas,
+    clone_scenario,
     create_config,
     create_planning_area,
     create_scenario,
@@ -102,12 +106,14 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
     get_available_stands,
+    get_scenario_configuration_details,
     get_sub_units_details,
     is_project_areas_child,
     toggle_scenario_status,
     trigger_scenario_run,
     validate_scenario_configuration,
 )
+from planning.tasks import async_generate_scenario_geopackage
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -431,6 +437,29 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    @extend_schema(description="Clone a scenario by id")
+    @action(methods=["POST"], detail=True, url_path="clone")
+    def clone(self, request, pk=None):
+        source = self.get_object()  
+
+        name = request.data.get("name")
+
+        new_scenario = clone_scenario(
+            original_scenario_id=source.pk,
+            user=request.user,
+            name=name
+        )
+
+        out = ScenarioV3Serializer(
+            instance=new_scenario,
+            context=self.get_serializer_context(),
+        )
+        return Response(
+            out.data,
+            status=status.HTTP_201_CREATED,
+            headers=self.get_success_headers(out.data),
+        )
+
     @extend_schema(description="Update Scenario's configuration.")
     @action(
         methods=["patch"],
@@ -453,6 +482,20 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         planning_area.updated_at = timezone.now()
         planning_area.save(update_fields=["updated_at"])
         return Response(response_serializer.data)
+
+    @extend_schema(
+        description=(
+            "Retrieve the Scenario's configuration with every referenced entity "
+            "resolved (datalayer names, labels), ready to be displayed."
+        ),
+        responses={200: ScenarioConfigurationDetailsSerializer},
+    )
+    @action(methods=["get"], detail=True, url_path="get-configuration")
+    def get_configuration(self, request, pk=None):
+        scenario = self.get_object()
+        details = get_scenario_configuration_details(scenario)
+        serializer = ScenarioConfigurationDetailsSerializer(details)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(methods=["patch"], detail=True, url_path="draft")
     def patch_draft(self, request, *args, **kwargs):
@@ -561,6 +604,90 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         report = get_object_or_404(FundingOpportunityReport, scenario=scenario)
         serializer = FundingOpportunityReportSerializer(instance=report)
         return Response(serializer.data)
+
+    @extend_schema(
+        description="Get the download URL for a Scenario's funding opportunity report geopackage.",
+        responses={
+            200: OpenApiTypes.OBJECT,
+            404: BaseErrorMessageSerializer,
+        },
+    )
+    @action(
+        methods=["get"],
+        detail=True,
+        url_path="funding-report-download",
+        filterset_class=None,
+    )
+    def funding_report_download_geopackage(self, request, pk=None):
+        scenario = self.get_object()
+        report = get_object_or_404(FundingOpportunityReport, scenario=scenario)
+
+        if report.geopackage_status == GeoPackageStatus.SUCCEEDED:
+            download_url = report.get_geopackage_url()
+            if download_url:
+                track_event(
+                    name="planning.funding_report.geopackage_downloaded",
+                    properties={
+                        "scenario_id": scenario.pk,
+                        "report_id": report.pk,
+                        "status": "ready",
+                        "email": request.user.email if request.user else None,
+                    },
+                    user_id=request.user.pk,
+                )
+                return Response({"status": "ready", "download_url": download_url})
+            return Response(
+                {"status": "error", "message": "Download URL generation failed"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        elif report.geopackage_status == GeoPackageStatus.PROCESSING:
+            return Response(
+                {
+                    "status": "processing",
+                    "message": "Geopackage is being generated. Please try again later.",
+                }
+            )
+
+        elif report.geopackage_status == GeoPackageStatus.PENDING:
+            # Already queued by a previous ask; the client is just polling for
+            # status, not making a new request - don't re-track or re-queue.
+            return Response(
+                {
+                    "status": "pending",
+                    "message": "Geopackage generation has been queued.",
+                }
+            )
+
+        else:
+            # None or FAILED: this is a genuine new (or retried) ask.
+            if report.geopackage_status == GeoPackageStatus.FAILED:
+                logger.warning(
+                    f"Previous geopackage generation failed for funding report {report.pk}. Trying again."
+                )
+
+            report.geopackage_status = GeoPackageStatus.PENDING
+            report.save(update_fields=["geopackage_status", "updated_at"])
+
+            async_generate_funding_report_geopackage.delay(report.pk)
+
+            track_event(
+                name="planning.funding_report.geopackage_downloaded",
+                properties={
+                    "scenario_id": scenario.pk,
+                    "report_id": report.pk,
+                    "status": "generating",
+                    "email": request.user.email if request.user else None,
+                },
+                user_id=request.user.pk,
+            )
+
+            return Response(
+                {
+                    "status": "pending",
+                    "message": "Geopackage generation has been queued.",
+                }
+            )
 
     @extend_schema(
         description=(
@@ -693,6 +820,91 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
         serializer = ScenarioV3Serializer(instance=scenario)
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    @extend_schema(
+        description="Get the download URL for a Scenario's geopackage export.",
+        responses={
+            200: OpenApiTypes.OBJECT,
+            404: BaseErrorMessageSerializer,
+        },
+    )
+    @action(
+        methods=["get"], detail=True, url_path="download-geopackage", filterset_class=None
+    )
+    def download_geopackage(self, request, pk=None):
+        scenario = self.get_object()
+
+        if scenario.geopackage_status == GeoPackageStatus.SUCCEEDED:
+            download_url = scenario.get_geopackage_url()
+            if download_url:
+                track_event(
+                    name="planning.scenario.geopackage_downloaded",
+                    properties={
+                        "scenario_id": scenario.pk,
+                        "status": "ready",
+                        "email": request.user.email if request.user else None,
+                    },
+                    user_id=request.user.pk,
+                )
+                return Response({"status": "ready", "download_url": download_url})
+            return Response(
+                {"status": "error", "message": "Download URL generation failed"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        elif scenario.geopackage_status == GeoPackageStatus.PROCESSING:
+            return Response(
+                {
+                    "status": "processing",
+                    "message": "Geopackage is being generated. Please try again later.",
+                }
+            )
+
+        elif scenario.geopackage_status == GeoPackageStatus.PENDING:
+            # Already queued by a previous ask; the client is just polling for
+            # status, not making a new request - don't re-track or re-queue.
+            return Response(
+                {
+                    "status": "pending",
+                    "message": "Geopackage generation has been queued.",
+                }
+            )
+
+        else:
+            # None or FAILED: this is a genuine new (or retried) ask.
+            retrying_failed = scenario.geopackage_status == GeoPackageStatus.FAILED
+            if retrying_failed:
+                logger.warning(
+                    f"Previous geopackage generation failed for scenario {scenario.pk}. Trying again."
+                )
+
+            scenario.geopackage_status = GeoPackageStatus.PENDING
+            scenario.save(update_fields=["geopackage_status", "updated_at"])
+
+            # `async_generate_scenario_geopackage` only proceeds for scenarios
+            # already in PENDING status unless told to regenerate - force it
+            # here since a FAILED scenario was just reset to PENDING above,
+            # not by the periodic task that normally makes that transition.
+            async_generate_scenario_geopackage.delay(
+                scenario.pk, regenerate=retrying_failed
+            )
+
+            track_event(
+                name="planning.scenario.geopackage_downloaded",
+                properties={
+                    "scenario_id": scenario.pk,
+                    "status": "generating",
+                    "email": request.user.email if request.user else None,
+                },
+                user_id=request.user.pk,
+            )
+
+            return Response(
+                {
+                    "status": "pending",
+                    "message": "Geopackage generation has been queued.",
+                }
+            )
 
     @extend_schema(
         description="Sub-Units areas details.",

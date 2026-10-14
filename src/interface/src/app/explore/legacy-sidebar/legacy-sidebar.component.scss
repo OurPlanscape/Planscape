@@ -1,0 +1,47 @@
+@import 'variables';
+@import 'colors';
+
+:host {
+  display: block;
+  position: absolute;
+  z-index: 5;
+  width: $map-sidebar-panel-width;
+  height: $map-nav-bar-height;
+  background-color: $color-white;
+}
+
+:host(.expanded) {
+  height: 100%;
+}
+
+.mat-mdc-tab-group {
+  height: 100%;
+}
+
+:host ::ng-deep .mat-mdc-tab-body-wrapper {
+  height: 100%;
+}
+
+:host ::ng-deep .mat-mdc-tab-header {
+  --mdc-secondary-navigation-tab-container-height: calc(
+    #{$map-nav-bar-height} - 2px
+  );
+  --mat-tab-header-label-text-size: 18px;
+  --mat-tab-header-label-text-weight: 600;
+}
+
+.expander {
+  position: absolute;
+  top: 13px;
+  right: 10px;
+  z-index: 101212;
+}
+
+.expanded-label {
+  margin: 0;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 32px;
+  padding: 15px 15px 15px 24px;
+}

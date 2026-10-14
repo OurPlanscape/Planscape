@@ -7,18 +7,11 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     PreferredDisplayType,
+    SimpleCategory,
 )
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q, QuerySet
-from planning.models import (
-    PlanningArea,
-    Scenario,
-    ScenarioCapability,
-    ScenarioPlanningApproach,
-    TreatmentGoalUsageType,
-)
-
 from modules.serializers import (
     AdvancedStandLevelConstraintSerializer,
     BaseModuleSerializer,
@@ -26,6 +19,13 @@ from modules.serializers import (
     FundingReportModuleSerializer,
     MapModuleSerializer,
     PrioritizeSubUnitsModuleSerializer,
+)
+from planning.models import (
+    PlanningArea,
+    Scenario,
+    ScenarioCapability,
+    ScenarioPlanningApproach,
+    TreatmentGoalUsageType,
 )
 
 RunnableItem = Union[PlanningArea, Scenario]
@@ -39,7 +39,7 @@ def with_datalayer_option_relations(
         "dataset",
         "dataset__organization",
         "category",
-    ).prefetch_related("styles")
+    ).prefetch_related("styles", "simple_categories")
 
 
 class BaseModule:
@@ -89,22 +89,25 @@ class BaseModule:
             .distinct()
         )
 
-    def _get_main_datasets(self, **kwargs):
-        return self.get_datasets(**kwargs).filter(
-            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
-        )
-
-    def _get_base_datasets(self, **kwargs):
-        return self.get_datasets(**kwargs).filter(
-            preferred_display_type=PreferredDisplayType.BASE_DATALAYERS,
-        )
-
     def _get_options(self, **kwargs) -> Dict[str, Any]:
+        # Single query for both lists: filtering by geometry is expensive.
+        datasets = list(self.get_datasets(**kwargs))
         return {
             "datalayers": self.get_datalayers(**kwargs),
             "datasets": {
-                "main_datasets": self._get_main_datasets(**kwargs),
-                "base_datasets": self._get_base_datasets(**kwargs),
+                "main_datasets": [
+                    dataset
+                    for dataset in datasets
+                    if dataset.preferred_display_type
+                    == PreferredDisplayType.MAIN_DATALAYERS
+                ],
+                "base_datasets": [
+                    dataset
+                    for dataset in datasets
+                    if dataset.preferred_display_type
+                    == PreferredDisplayType.BASE_DATALAYERS
+                ],
+                "categories": list(SimpleCategory.objects.all()),
             },
         }
 

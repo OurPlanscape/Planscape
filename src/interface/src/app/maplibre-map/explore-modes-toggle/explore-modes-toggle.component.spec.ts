@@ -6,6 +6,7 @@ import { MultiMapConfigState } from '../multi-map-config.state';
 import { MatDialogModule } from '@angular/material/dialog';
 import { DrawService } from '../draw.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ActivatedRoute } from '@angular/router';
 
 describe('ExploreModesToggleComponent', () => {
   let component: ExploreModesToggleComponent;
@@ -22,6 +23,10 @@ describe('ExploreModesToggleComponent', () => {
         MockProvider(MapConfigState),
         MockProvider(MultiMapConfigState),
         MockProvider(DrawService),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { data: { workspaceId: 2 } } },
+        },
       ],
     }).compileComponents();
 

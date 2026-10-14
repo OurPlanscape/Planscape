@@ -21,7 +21,9 @@ from impacts.models import (
 from impacts.services import get_calculation_matrix
 from impacts.tasks import (
     async_calculate_impacts_for_variable_action_year,
+    async_generate_treatment_plan_geopackage,
     async_send_email_process_finished,
+    batch_stand_ids,
 )
 from impacts.tests.factories import TreatmentPlanFactory, TreatmentPrescriptionFactory
 
@@ -53,6 +55,32 @@ class AsyncSendEmailProcessFinishedTest(TestCase):
             treatment_plan_pk=self.treatment_plan.pk,
         )
         self.assertFalse(send_email_mock.called)
+
+
+class AsyncTreatmentPlanGeopackageTest(TestCase):
+    @mock.patch("impacts.tasks.export_and_upload_geopackage")
+    def test_async_generate_treatment_plan_geopackage(self, mock_export):
+        treatment_plan = TreatmentPlanFactory.create()
+        mock_export.return_value = "gs://test-bucket/geopackages/test.gpkg.zip"
+
+        result = async_generate_treatment_plan_geopackage(treatment_plan.pk)
+
+        self.assertEqual(result, "gs://test-bucket/geopackages/test.gpkg.zip")
+        mock_export.assert_called_once_with(treatment_plan)
+
+
+class BatchStandIdsTest(TestCase):
+    def test_returns_deterministic_batches_with_partial_final_batch(self):
+        self.assertEqual(
+            batch_stand_ids([1, 2, 3, 4, 5], batch_size=2),
+            [[1, 2], [3, 4], [5]],
+        )
+
+    def test_rejects_non_positive_batch_size(self):
+        with self.assertRaisesMessage(
+            ValueError, "IMPACTS_STAND_BATCH_SIZE must be greater than zero"
+        ):
+            batch_stand_ids([1], batch_size=0)
 
 
 class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
@@ -155,10 +183,11 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
                 variable=variable,
                 action=action,
                 year=year,
+                stand_ids=[stand.id for stand in self.stands],
             )
 
             self.assertGreater(TreatmentResult.objects.count(), 0)
-            self.assertGreater(ProjectAreaTreatmentResult.objects.count(), 0)
+            self.assertEquals(ProjectAreaTreatmentResult.objects.count(), 0)
             self.assertEquals(len(self.stands), TreatmentResult.objects.count())
 
     def test_trigger_task_with_delted_tx_plan(self):
@@ -210,6 +239,7 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
                 variable=variable,
                 action=action,
                 year=year,
+                stand_ids=[stand.id for stand in self.stands],
             )
 
             self.assertEquals(TreatmentResult.objects.count(), 0)

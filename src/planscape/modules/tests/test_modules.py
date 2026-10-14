@@ -8,7 +8,11 @@ from datasets.models import (
     PreferredDisplayType,
     VisibilityOptions,
 )
-from datasets.tests.factories import DatasetFactory, DataLayerFactory
+from datasets.tests.factories import (
+    DatasetFactory,
+    DataLayerFactory,
+    SimpleCategoryFactory,
+)
 from django.conf import settings
 from django.test import TestCase
 from django.contrib.gis.geos import GEOSGeometry
@@ -75,6 +79,7 @@ class MapModuleTest(TestCase):
             visibility=VisibilityOptions.PUBLIC,
             preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS
         )
+        category = SimpleCategoryFactory.create(name="Ownership")
 
         module = get_module("map")
         configuration: Dict[str, Any] = module.get_configuration()
@@ -89,12 +94,14 @@ class MapModuleTest(TestCase):
 
         self.assertIn("main_datasets", datasets)
         self.assertIn("base_datasets", datasets)
+        self.assertIn("categories", datasets)
 
         main = datasets["main_datasets"]
         base = datasets["base_datasets"]
 
         self.assertGreaterEqual(len(main), 1)
         self.assertGreaterEqual(len(base), 1)
+        self.assertEqual([category], datasets["categories"])
 
 
     def test_returns_datalayers_filtered_by_outline_geometry(self):

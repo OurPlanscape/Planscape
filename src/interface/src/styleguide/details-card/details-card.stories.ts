@@ -31,6 +31,7 @@ const meta: Meta<DetailsCardComponent> = {
     }),
   ],
   args: {
+    titleLabel: '',
     cardTitle: 'Plan Details',
     subtitle: 'Forest Restoration Plan',
     details: mockDetails,
@@ -42,6 +43,17 @@ export default meta;
 type Story = StoryObj<DetailsCardComponent>;
 
 export const Default: Story = {};
+
+export const WithTitleLabel: Story = {
+  args: {
+    titleLabel: 'Workspace',
+    cardTitle: "John's Project",
+    subtitle: '',
+    details: [],
+    creator: 'John Snow',
+    created_at: '2026-09-16T12:09:36Z',
+  },
+};
 
 export const ManyItems: Story = {
   args: {
@@ -96,6 +108,31 @@ export const Loading: Story = {
     created_at: '2026-04-07T12:09:36Z',
     loading: true,
   },
+};
+
+// the card grows instead of overlapping when the name does not fit on one line
+export const LongTitleOnNarrowCard: Story = {
+  args: {
+    titleLabel: 'Workspace',
+    cardTitle: 'sacramento (Planning Area 2966)',
+    subtitle: '',
+    details: [],
+    creator: 'Han Solo',
+    created_at: '2026-09-16T12:09:36Z',
+    canShare: true,
+  },
+  render: (args) => ({
+    props: args,
+    template: `<div style="width: 290px">
+      <sg-details-card
+        [titleLabel]="titleLabel"
+        [cardTitle]="cardTitle"
+        [creator]="creator"
+        [created_at]="created_at"
+        [details]="details"
+        [canShare]="canShare"></sg-details-card>
+    </div>`,
+  }),
 };
 
 export const WithShareButton: Story = {

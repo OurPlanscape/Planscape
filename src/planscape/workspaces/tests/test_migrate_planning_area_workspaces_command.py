@@ -83,9 +83,7 @@ class MigratePlanningAreaWorkspacesCommandTest(TestCase):
 
         planning_area.refresh_from_db()
         workspace = planning_area.workspace
-        self.assertEqual(
-            workspace.name, f"Shared Area (Planning Area {planning_area.pk})"
-        )
+        self.assertEqual(workspace.name, "Shared Area")
         self.assertEqual(workspace.created_by, planning_area.user)
         self.assertEqual(
             UserAccessWorkspace.objects.get(
@@ -103,6 +101,20 @@ class MigratePlanningAreaWorkspacesCommandTest(TestCase):
         self.assertEqual(invite.role, WorkspaceRole.VIEWER)
         self.assertIn("created=1, defaults=0, moved=0", output)
         self.assertIn("members=1, invites=1", output)
+
+    def test_disambiguates_same_named_workspaces_for_the_same_user(self):
+        user = UserFactory.create()
+        planning_area1 = PlanningAreaFactory.create(user=user, name="Shared Area")
+        planning_area2 = PlanningAreaFactory.create(user=user, name="Shared Area")
+        for planning_area in (planning_area1, planning_area2):
+            self._share(planning_area, UserFactory.create(), Role.COLLABORATOR)
+
+        self._migrate()
+
+        planning_area1.refresh_from_db()
+        planning_area2.refresh_from_db()
+        names = {planning_area1.workspace.name, planning_area2.workspace.name}
+        self.assertEqual(names, {"Shared Area", "Shared Area-1"})
 
     def test_planning_areas_with_only_pending_shares_count_as_shared(self):
         planning_area = PlanningAreaFactory.create()

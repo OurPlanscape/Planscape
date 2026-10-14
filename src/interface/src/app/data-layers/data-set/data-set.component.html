@@ -7,6 +7,7 @@
     <mat-icon>chevron_right</mat-icon>
   </div>
   <div
+    *ngIf="organizationName"
     class="data-set-org"
     [sgHighlighter]="searchTerm"
     [sgHighlighterText]="organizationName"></div>
@@ -70,6 +71,7 @@
     <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
       <app-data-layer-tooltip
         [layer]="layer.data"
+        [searchText]="searchTerm"
         *ngIf="displayTooltipLayer"></app-data-layer-tooltip>
     </mat-menu>
   </div>

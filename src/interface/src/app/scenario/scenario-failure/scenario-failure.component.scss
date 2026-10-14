@@ -65,6 +65,11 @@ b {
   gap: 16px;
   justify-content: flex-end;
   padding-bottom: 16px;
+
+  ::ng-deep .copy-button {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .white-spinner {

@@ -8,7 +8,7 @@ from copy import deepcopy
 from datetime import date, datetime
 from datetime import timezone as datetime_timezone
 from pathlib import Path
-from typing import Any, Dict, Optional, TextIO
+from typing import Any, TextIO
 from uuid import uuid4
 
 import requests
@@ -50,7 +50,7 @@ TWIG_TREATMENT_LAYER_NAMES = {
 }
 
 
-def get_request_client(session: Optional[requests.Session] = None):
+def get_request_client(session: requests.Session | None = None):
     return session or RequestSessionWrap()
 
 
@@ -72,7 +72,7 @@ def format_arcgis_timestamp(value: date) -> str:
     return value.strftime("%Y-%m-%d 00:00:00")
 
 
-def format_arcgis_epoch_millis_date(value: Any) -> Optional[str]:
+def format_arcgis_epoch_millis_date(value: Any) -> str | None:
     if value in (None, ""):
         return None
 
@@ -91,7 +91,7 @@ def format_arcgis_epoch_millis_date(value: Any) -> Optional[str]:
     )
 
 
-def normalize_twig_feature_date(feature: Dict[str, Any]) -> Dict[str, Any]:
+def normalize_twig_feature_date(feature: dict[str, Any]) -> dict[str, Any]:
     properties = feature.get("properties")
     if not isinstance(properties, dict):
         return feature
@@ -107,9 +107,9 @@ def normalize_twig_feature_date(feature: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def build_twig_where_clauses(
-    today: Optional[date] = None,
-    status_filter: Optional[str] = None,
-) -> Dict[str, str]:
+    today: date | None = None,
+    status_filter: str | None = None,
+) -> dict[str, str]:
     today = today or timezone.localdate()
 
     five_year_cutoff = years_before(today, 5)
@@ -141,6 +141,14 @@ def build_twig_where_clauses(
             for layer_name, where_clause in where_clauses.items()
         }
 
+    where_clauses = {
+        layer_name: (
+            f"({where_clause}) AND "
+            "(activity IS NULL OR activity NOT LIKE 'Wildfire -%')"
+        )
+        for layer_name, where_clause in where_clauses.items()
+    }
+
     return where_clauses
 
 
@@ -148,7 +156,7 @@ def fetch_twig_count(
     api_url: str,
     where_clause: str,
     timeout: int = 120,
-    session: Optional[requests.Session] = None,
+    session: requests.Session | None = None,
 ) -> int:
     client = get_request_client(session)
     response = client.get(
@@ -183,8 +191,8 @@ def fetch_twig_feature_page(
     result_offset: int,
     result_record_count: int,
     timeout: int = 120,
-    session: Optional[requests.Session] = None,
-) -> Dict[str, Any]:
+    session: requests.Session | None = None,
+) -> dict[str, Any]:
     client = get_request_client(session)
     response = client.get(
         get_query_url(api_url),
@@ -224,7 +232,7 @@ def write_twig_feature_collection_to_file(
     output_file: TextIO,
     timeout: int = 120,
     page_size: int = 1000,
-    session: Optional[requests.Session] = None,
+    session: requests.Session | None = None,
 ) -> int:
     client = get_request_client(session)
     expected_count = fetch_twig_count(
@@ -512,8 +520,8 @@ def refresh_twig_treatment_layers(
     api_url: str,
     timeout: int = 120,
     page_size: int = 1000,
-    status_filter: Optional[str] = None,
-) -> Dict[str, str]:
+    status_filter: str | None = None,
+) -> dict[str, str]:
     organization = Organization.objects.get(pk=organization_id)
     dataset = get_or_create_twig_dataset(
         dataset_name=dataset_name,

@@ -28,6 +28,7 @@ import { ScenarioService, TreatmentGoalsService } from '@services';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   BaseLayer,
+  Constraint,
   DataLayer,
   Scenario,
   SCENARIO_TYPE,
@@ -76,6 +77,7 @@ import { SubUnitsTreatmentTargetComponent } from './sub-units-treatment-target/s
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { IncludeAreasSelectorComponent } from './include-areas-selector/include-areas-selector.component';
 import { CreateScenarioError } from '@app/services/errors';
+import { ConstraintsStepComponent } from './constraints-step/constraints-step.component';
 
 @UntilDestroy()
 @Component({
@@ -101,30 +103,30 @@ import { CreateScenarioError } from '@app/services/errors';
   standalone: true,
   imports: [
     AsyncPipe,
-    ReactiveFormsModule,
-    NgIf,
-    StepsComponent,
     CdkStepperModule,
-    StepComponent,
-    StandLevelConstraintsComponent,
-    TreatmentTargetComponent,
-    FeaturesModule,
+    ConstraintsStepComponent,
+    CustomCobenefitsComponent,
+    CustomPriorityObjectivesComponent,
     ExcludeAreasSelectorComponent,
-    StepsNavComponent,
-    ScenarioMapComponent,
-    Step1WithOverviewComponent,
-    SubUnitSelectorComponent,
+    FeaturesModule,
+    IncludeAreasSelectorComponent,
+    NavBarComponent,
     NgClass,
+    NgIf,
+    ReactiveFormsModule,
+    ScenarioMapComponent,
     ScenarioSummaryComponent,
     SharedModule,
-    CustomPriorityObjectivesComponent,
-    CustomCobenefitsComponent,
-    TreatmentGoalStepComponent,
+    StandLevelConstraintsComponent,
     Step1WithOverviewComponent,
+    Step1WithOverviewComponent,
+    StepComponent,
+    StepsComponent,
+    StepsNavComponent,
+    SubUnitSelectorComponent,
     SubUnitsTreatmentTargetComponent,
-    FeaturesModule,
-    NavBarComponent,
-    IncludeAreasSelectorComponent,
+    TreatmentGoalStepComponent,
+    TreatmentTargetComponent,
   ],
   templateUrl: './scenario-creation.component.html',
   styleUrl: './scenario-creation.component.scss',
@@ -296,18 +298,34 @@ export class ScenarioCreationComponent implements OnInit {
       });
   }
 
+  filterOutStandLevelConstraints(constraints: Constraint[]) {
+    const slopeId = this.newScenarioState.getSlopeId();
+    const distanceToRoadsId = this.newScenarioState.getDistanceToRoadsId();
+    return constraints.filter(
+      (c) => c.datalayer !== slopeId && c.datalayer !== distanceToRoadsId
+    );
+  }
+
   convertSavedConfigToNewConfig(scenario: Scenario): Partial<ScenarioV3Config> {
     const newState = Object.fromEntries(
       Object.entries(scenario.configuration)
         .filter(([, value]) => value != null)
         .map(([key, value]) => [key, value as NonNullable<typeof value>])
     );
+
     // Adding excluded areas and treatment goal
     newState['excluded_areas'] = scenario.configuration.excluded_areas || [];
     newState['included_areas'] = scenario.configuration.included_areas || [];
     newState['treatment_goal'] = scenario.treatment_goal?.id;
     newState['type'] = scenario.type;
     newState['planning_approach'] = scenario.planning_approach;
+
+    // The constraints arrive as one single array, but for the duration of the draft flow,
+    //  we want to keep adv_constraints in a separately updateable collection.
+    // Here, we init that collection, but filter out the other constraints
+    newState['adv_constraints'] = this.filterOutStandLevelConstraints(
+      newState['constraints']
+    );
     return newState as Partial<ScenarioDraftConfiguration>;
   }
 
@@ -342,7 +360,6 @@ export class ScenarioCreationComponent implements OnInit {
       this.newScenarioState.getDistanceToRoadsId()
     );
     const payload = convertOldConfigurationToV3Payload(data, thresholdsIdMap);
-
     return this.scenarioService
       .patchScenarioConfig(this.scenarioId, payload)
       .pipe(

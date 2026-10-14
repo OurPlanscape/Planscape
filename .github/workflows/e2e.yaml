@@ -3,6 +3,9 @@ name: E2E Tests
 on:
   pull_request:
     branches: [main]
+    paths:
+      - 'src/interface/**'
+      - '.github/workflows/e2e.yaml'
 
 jobs:
   e2e:

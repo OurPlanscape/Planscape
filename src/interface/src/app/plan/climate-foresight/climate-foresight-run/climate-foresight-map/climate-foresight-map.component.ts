@@ -25,6 +25,8 @@ import { MapDataLayerComponent } from '@maplibre-map/map-data-layer/map-data-lay
 import { MapBaseLayersComponent } from '@maplibre-map/map-base-layers/map-base-layers.component';
 import { MapLayerColorLegendComponent } from '@maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
 import { FrontendConstants } from '@map/map.constants';
+import { DataLayerNameComponent } from '@data-layers/data-layer-name/data-layer-name.component';
+import { FeaturesModule } from '@features/features.module';
 
 @Component({
   selector: 'app-climate-foresight-map',
@@ -43,6 +45,8 @@ import { FrontendConstants } from '@map/map.constants';
     MapLayerColorLegendComponent,
     MatProgressSpinnerModule,
     MapBaseLayersComponent,
+    DataLayerNameComponent,
+    FeaturesModule,
   ],
   templateUrl: './climate-foresight-map.component.html',
   styleUrl: './climate-foresight-map.component.scss',

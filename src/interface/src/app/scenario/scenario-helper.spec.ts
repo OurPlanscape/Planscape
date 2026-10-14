@@ -166,12 +166,12 @@ describe('convertOldConfigurationToV3Payload', () => {
     expect(payloadResult.configuration?.constraints).toContain({
       datalayer: 100,
       operator: 'lte',
-      value: 100,
+      value: '100',
     });
     expect(payloadResult.configuration?.constraints).toContain({
       datalayer: 200,
       operator: 'lt',
-      value: 99,
+      value: '99',
     });
   });
   it('should return the correct values for targets with maxarea', () => {

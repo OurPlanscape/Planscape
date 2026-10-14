@@ -1,11 +1,12 @@
 from django.contrib import admin
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import RequestFactory, SimpleTestCase, TestCase
+from django.urls import reverse
 
 from datasets.admin import DataLayerAdmin
 from datasets.forms import DataLayerAdminForm
-from datasets.models import DataLayer, Dataset
-from datasets.tests.factories import DataLayerFactory
+from datasets.models import DataLayer, Dataset, SimpleCategory
+from datasets.tests.factories import DataLayerFactory, SimpleCategoryFactory
 from datasets.tests.test_shapefile_geometry import make_shapefile_zip
 from planscape.tests.factories import UserFactory
 
@@ -97,3 +98,77 @@ class DataLayerAdminShapefileUploadTest(TestCase):
         self.assertEqual(self.datalayer.info, {"original": True})
         self.assertEqual(self.datalayer.type, original_type)
         self.assertEqual(self.datalayer.status, original_status)
+
+
+class SimpleCategoryAdminDataLayersTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create(is_staff=True, is_superuser=True)
+        self.client.force_login(self.user)
+        self.datalayer_a = DataLayerFactory.create(name="Canopy Cover")
+        self.datalayer_b = DataLayerFactory.create(name="Fire Severity")
+
+    def test_change_form_prefills_existing_datalayers(self):
+        category = SimpleCategoryFactory.create()
+        self.datalayer_a.simple_categories.add(category)
+
+        url = reverse("admin:datasets_simplecategory_change", args=[category.pk])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            list(response.context["adminform"].form["datalayers"].value()),
+            [self.datalayer_a.pk],
+        )
+
+    def test_add_view_links_multiple_datalayers(self):
+        url = reverse("admin:datasets_simplecategory_add")
+        response = self.client.post(
+            url,
+            {
+                "name": "Fire",
+                "icon": "",
+                "datalayers": [self.datalayer_a.pk, self.datalayer_b.pk],
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        category = SimpleCategory.objects.get(name="Fire")
+        self.assertQuerySetEqual(
+            category.datalayers.order_by("pk"),
+            [self.datalayer_a, self.datalayer_b],
+        )
+
+    def test_change_view_removes_unselected_datalayers(self):
+        category = SimpleCategoryFactory.create()
+        category.datalayers.add(self.datalayer_a, self.datalayer_b)
+
+        url = reverse("admin:datasets_simplecategory_change", args=[category.pk])
+        response = self.client.post(
+            url,
+            {
+                "name": category.name,
+                "icon": "",
+                "datalayers": [self.datalayer_b.pk],
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertQuerySetEqual(category.datalayers.all(), [self.datalayer_b])
+
+    def test_datalayers_autocomplete_searches_datalayers(self):
+        url = reverse("admin:autocomplete")
+        response = self.client.get(
+            url,
+            {
+                "app_label": "datasets",
+                "model_name": "datalayer_simple_categories",
+                "field_name": "datalayer",
+                "term": "Canopy",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [result["id"] for result in response.json()["results"]],
+            [str(self.datalayer_a.pk)],
+        )

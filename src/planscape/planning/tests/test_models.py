@@ -119,6 +119,18 @@ class ScenarioModelTest(TestCase):
         datalayers = scenario.get_raster_datalayers()
         self.assertEqual(len(datalayers), 5)
 
+    def test_get_raster_datalayers_preset_scenario_with_constraints(self):
+        constraints_datalayers = DataLayerFactory.create_batch(
+            size=2, type=DataLayerType.RASTER
+        )
+        scenario = ScenarioFactory(
+            type=ScenarioType.PRESET, 
+            treatment_goal=self.treatment_goal,
+            with_constraints=constraints_datalayers,
+        )
+        datalayers = scenario.get_raster_datalayers()
+        self.assertEqual(len(datalayers), 7)
+
     def test_get_raster_datalayers_custom_scenario(self):
         scenario = ScenarioFactory(
             type=ScenarioType.CUSTOM,
@@ -127,6 +139,19 @@ class ScenarioModelTest(TestCase):
         )
         datalayers = scenario.get_raster_datalayers()
         self.assertEqual(len(datalayers), 5)
+
+    def test_get_raster_datalayers_custom_scenario_with_constraints(self):
+        constraints_datalayers = DataLayerFactory.create_batch(
+            size=2, type=DataLayerType.RASTER
+        )
+        scenario = ScenarioFactory(
+            type=ScenarioType.CUSTOM,
+            with_priorities=self.datalayers[:2],
+            with_cobenefits=self.datalayers[2:],
+            with_constraints=constraints_datalayers,
+        )
+        datalayers = scenario.get_raster_datalayers()
+        self.assertEqual(len(datalayers), 7)
 
     def test_scenario_can_have_parent(self):
         parent = ScenarioFactory.create()

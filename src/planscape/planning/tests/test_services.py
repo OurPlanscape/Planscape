@@ -24,9 +24,11 @@ from stands.tests.factories import StandFactory, StandMetricFactory
 from planning.models import (
     PlanningArea,
     PlanningAreaMapStatus,
+    Scenario,
     ScenarioPlanningApproach,
     ScenarioResultStatus,
     ScenarioType,
+    ScenarioVersion,
     TreatmentGoalUsageType,
 )
 from planning.services import (
@@ -34,6 +36,7 @@ from planning.services import (
     calculate_and_update_scenario_result,
     create_planning_area,
     create_scenario,
+    clone_scenario,
     create_scenario_from_upload,
     export_planning_area_to_geopackage,
     export_scenario_inputs_to_geopackage,
@@ -51,6 +54,7 @@ from planning.services import (
     get_max_treatable_area,
     get_max_treatable_stand_count,
     get_schema,
+    get_scenario_configuration_details,
     get_sub_units_details,
     sanitize_shp_field_name,
     trigger_scenario_run,
@@ -155,7 +159,7 @@ class BuildRunConfigurationTest(TestCase):
         self.assertEqual(datalayers[dne_datalayer.pk]["threshold"], "value != 10")
         self.assertEqual(
             datalayers[btw_datalayer.pk]["threshold"],
-            "value >= 10.0 & value <= 20.0",
+            "value >= 10 & value <= 20",
         )
         self.assertEqual(
             datalayers[dne_datalayer.pk]["usage_type"],
@@ -202,7 +206,7 @@ class BuildRunConfigurationTest(TestCase):
         self.assertEqual(datalayers[priority.pk]["threshold"], "value != 10")
         self.assertEqual(
             datalayers[cobenefit.pk]["threshold"],
-            "value >= 10.0 & value <= 20.0",
+            "value >= 10 & value <= 20",
         )
         self.assertEqual(
             datalayers[priority.pk]["usage_type"],
@@ -1747,6 +1751,192 @@ class ProjectAreasChildForSysTest(TestCase):
         )
 
 
+class CloneScenarioTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.secondUser = UserFactory.create()
+        self.treatment_goal = TreatmentGoalFactory.create()
+        self.planning_area = PlanningAreaFactory.create()
+        self.slope_datalayer = DataLayerFactory.create(
+            name="Slope",
+            metadata={"modules": {"forsys": {"name": "slope", "metric_column": "max"}}},
+        )
+        self.distance_from_road_datalayer = DataLayerFactory.create(
+            name="Distance from road",
+            metadata={
+                "modules": {
+                    "forsys": {"name": "distance_from_roads", "metric_column": "min"}
+                }
+            },
+        )
+
+    def test_cloning_of_scenario(self):
+        orig_scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
+        cloned_scenario = clone_scenario(orig_scenario.id, self.secondUser, 'some new scenario')
+        # assert that some cloned attributes should match
+        self.assertEqual(orig_scenario.planning_area_id, cloned_scenario.planning_area_id)
+        self.assertEqual(orig_scenario.origin, cloned_scenario.origin)
+        self.assertEqual(orig_scenario.type, cloned_scenario.type)
+        self.assertEqual(orig_scenario.capabilities, cloned_scenario.capabilities)
+        self.assertEqual(orig_scenario.treatment_goal, cloned_scenario.treatment_goal)
+       
+        # assert that clone is associated with user doing the cloning
+        self.assertEqual(cloned_scenario.user, self.secondUser)
+        
+        # assert that some attributes should not be cloned
+        self.assertNotEqual(orig_scenario.user, cloned_scenario.user)
+        self.assertNotEqual(orig_scenario.uuid, cloned_scenario.uuid)
+
+    def test_cloning_of_scenario_but_not_results(self):
+        orig_scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
+        ScenarioResultFactory.create(
+            scenario=orig_scenario, status=ScenarioResultStatus.SUCCESS
+        )
+        cloned_scenario = clone_scenario(orig_scenario.id, self.secondUser, 'some new scenario')
+
+        # assert that some cloned attributes should match
+        self.assertEqual(orig_scenario.planning_area_id, cloned_scenario.planning_area_id)
+        self.assertEqual(orig_scenario.origin, cloned_scenario.origin)
+        self.assertEqual(orig_scenario.type, cloned_scenario.type)
+        self.assertEqual(orig_scenario.capabilities, cloned_scenario.capabilities)
+        self.assertEqual(orig_scenario.treatment_goal, cloned_scenario.treatment_goal)
+       
+        # assert that clone is associated with user doing the cloning
+        self.assertEqual(cloned_scenario.user, self.secondUser)
+
+        # assert that some attributes should not be cloned
+        self.assertNotEqual(orig_scenario.user, cloned_scenario.user)
+        self.assertNotEqual(orig_scenario.user, cloned_scenario.user)
+        self.assertNotEqual(orig_scenario.uuid, cloned_scenario.uuid)
+
+        # assert that results are not copied
+        self.assertNotEqual(orig_scenario.results.status, cloned_scenario.results.status)
+
+        self.assertEqual(cloned_scenario.results.status, ScenarioResultStatus.DRAFT)
+        self.assertEqual(cloned_scenario.results.result, None)
+        self.assertEqual(cloned_scenario.results.errors, None)
+        self.assertEqual(cloned_scenario.results.started_at, None)
+        self.assertEqual(cloned_scenario.results.completed_at, None)
+
+    def test_cloning_of_scenario_with_name_collisions(self):
+        scenarioV3 = ScenarioFactory.create(
+            planning_area=self.planning_area, 
+            user=self.user)
+        scenarioV3.version = ScenarioVersion.V3
+        scenarioV3.save()
+
+        cloned_scenario = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
+        cloned_scenario_2 = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
+        cloned_scenario_3 = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
+        self.assertNotEqual(cloned_scenario.name, cloned_scenario_2.name)
+        self.assertNotEqual(cloned_scenario.name, cloned_scenario_3.name)
+        self.assertNotEqual(cloned_scenario_2.name, cloned_scenario_3.name)
+        self.assertEqual(cloned_scenario_3.name, "some new scenario (3)")
+
+    def test_cloning_v3_w_configuration(self):
+        config = {
+            "stand_size": "MEDIUM",
+            "targets": {
+                "estimated_cost": 12345,
+                "max_area": 11111,
+                "max_project_count": 10,
+            },
+            "constraints": [
+                {"datalayer": 1, "operator": "lt", "value": 25},
+            ],
+            "included_areas": [123,456,789],
+            "excluded_areas": [333,222,111],
+            "priorities": [100,200],
+            "cobenefits": [300,400],
+        }
+        tx_goal = TreatmentGoalFactory(name="Some tx goal")
+        scenarioV3 = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            user=self.user,
+            configuration=config,
+            treatment_goal=tx_goal,
+            planning_approach=ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS,
+        )
+        self.assertEqual(scenarioV3.version, ScenarioVersion.V3)
+
+        cloned_scenario = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
+
+        self.assertNotEqual(cloned_scenario.pk, scenarioV3.pk)
+        self.assertEqual(cloned_scenario.user, self.secondUser)
+        self.assertEqual(cloned_scenario.name, 'some new scenario')
+        self.assertEqual(cloned_scenario.treatment_goal, tx_goal)
+        self.assertEqual(
+            cloned_scenario.planning_approach,
+            ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS,
+        )
+        self.assertEqual(cloned_scenario.configuration, config)
+
+    def test_cloning_of_v1_scenario(self):
+        goal = TreatmentGoalFactory(name="Reduce wildfire risk")
+        excluded_area = DataLayerFactory(name="Excluded area")
+        scenarioV1 = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.user,
+            treatment_goal=None,
+            configuration={
+                "question_id": goal.pk,
+                "stand_size": "MEDIUM",
+                "est_cost": 2000,
+                "max_treatment_area_ratio": 40000,
+                "max_slope": 25,
+                "excluded_areas": ["national_forests", str(excluded_area.pk)],
+            },
+        )
+
+        cloned_scenario = clone_scenario(scenarioV1.id, self.secondUser, 'some new scenario')
+
+        config = cloned_scenario.configuration
+        self.assertEqual(config["targets"], {"estimated_cost": 2000})
+        self.assertEqual(
+            config["constraints"],
+            [{"datalayer": self.slope_datalayer.pk, "operator": "lt", "value": 25}],
+        )
+
+    def test_cloning_of_v2_scenario(self):
+        priority = DataLayerFactory(name="Priority")
+        excluded_area = DataLayerFactory(name="Excluded area")
+        goal = TreatmentGoalFactory(datalayers=[priority])
+        scenarioV2 = ScenarioFactory(
+            planning_area=self.planning_area,
+            user=self.user,
+            treatment_goal=goal,
+            configuration={
+                "stand_size": "LARGE",
+                "estimated_cost": 2470,
+                "max_budget": 100000,
+                "max_area": None,
+                "max_project_count": 5,
+                "max_slope": 30,
+                "min_distance_from_road": 200,
+                "excluded_areas_ids": [excluded_area.pk],
+            },
+        )
+
+        cloned_scenario = clone_scenario(scenarioV2.id, self.secondUser, 'some new scenario')
+
+        config = cloned_scenario.configuration
+        self.assertEqual(
+            config["targets"],
+            {"estimated_cost": 2470, "max_project_count": 5},
+        )
+        self.assertEqual(
+            config["constraints"],
+            [
+                {"datalayer": self.slope_datalayer.pk, "operator": "lt", "value": 30},
+                {
+                    "datalayer": self.distance_from_road_datalayer.pk,
+                    "operator": "lte",
+                    "value": 200,
+                },
+            ],
+        )
+
+
 class CreateScenarioGuardTest(TestCase):
     def setUp(self):
         self.user = UserFactory.create()
@@ -2066,3 +2256,76 @@ class CalculateAndUpdateScenarioResult(TestCase):
             self.assertIsNotNone(
                 feature.get("properties", {}).get("pct_treatable_area")
             )
+
+
+class GetScenarioConfigurationDetailsTest(TestCase):
+    def _fetch(self, scenario):
+        return Scenario.objects.select_related("planning_area", "treatment_goal").get(
+            pk=scenario.pk
+        )
+
+    def test_v3_custom_resolves_datalayers_in_a_single_query(self):
+        priority, cobenefit, included, excluded, constraint = (
+            DataLayerFactory.create_batch(5)
+        )
+        scenario = self._fetch(
+            ScenarioFactory(
+                type=ScenarioType.CUSTOM,
+                treatment_goal=None,
+                configuration={
+                    "stand_size": "SMALL",
+                    "targets": {"max_area": 100, "max_project_count": 2},
+                    "priorities": [{"datalayer": priority.pk, "weight": 1}],
+                    "cobenefits": [cobenefit.pk],
+                    "included_areas_ids": [included.pk],
+                    "excluded_areas_ids": [excluded.pk],
+                    "constraints": [
+                        {"datalayer": constraint.pk, "operator": "gt", "value": "0"}
+                    ],
+                },
+            )
+        )
+
+        with self.assertNumQueries(1):
+            details = get_scenario_configuration_details(scenario)
+
+        self.assertEqual(details["priority_objectives"][0]["id"], priority.pk)
+        self.assertEqual(details["cobenefits"][0]["id"], cobenefit.pk)
+        self.assertEqual(details["included_areas"][0]["id"], included.pk)
+        self.assertEqual(details["excluded_areas"][0]["id"], excluded.pk)
+        self.assertEqual(
+            details["advanced_stand_level_constraints"][0]["datalayer"]["id"],
+            constraint.pk,
+        )
+
+    def test_v3_preset_loads_treatment_goal_usages_in_a_single_query(self):
+        goal = TreatmentGoalFactory(with_datalayers=True)
+        included = DataLayerFactory()
+        scenario = self._fetch(
+            ScenarioFactory(
+                treatment_goal=goal,
+                configuration={
+                    "targets": {"max_area": 100, "max_project_count": 2},
+                    "included_areas_ids": [included.pk],
+                },
+            )
+        )
+
+        with self.assertNumQueries(2):
+            details = get_scenario_configuration_details(scenario)
+
+        self.assertEqual(len(details["priority_objectives"]), 1)
+        self.assertEqual(len(details["cobenefits"]), 1)
+        self.assertEqual(len(details["treatment_goal_constraints"]), 1)
+
+    def test_empty_configuration(self):
+        scenario = self._fetch(ScenarioFactory(treatment_goal=None, configuration={}))
+
+        details = get_scenario_configuration_details(scenario)
+
+        self.assertEqual(details["version"], "V2")
+        self.assertIsNone(details["stand_size"])
+        self.assertIsNone(details["planning_approach"])
+        self.assertIsNone(details["treatment_goal"])
+        self.assertEqual(details["excluded_areas"], [])
+        self.assertEqual(details["stand_level_constraints"], [])

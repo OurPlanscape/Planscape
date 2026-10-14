@@ -1,4 +1,4 @@
-import { BaseDataSet, BaseLayer, DataLayer } from './data-sets';
+import { BaseDataSet, BaseLayer, DataLayer, SimpleCategory } from './data-sets';
 
 export interface ApiModule<T> {
   name: string;
@@ -18,6 +18,7 @@ export interface MapData {
   datasets: {
     main_datasets: MapDataDataSet[];
     base_datasets: MapDataDataSet[];
+    categories: SimpleCategory[];
   };
 }
 export interface SubUnits {
@@ -31,6 +32,14 @@ export interface SubUnits {
 export interface MapDataDataSet extends BaseDataSet {
   preferred_display_type: 'MAIN_DATALAYERS' | 'BASE_DATALAYERS';
   selection_type: 'SINGLE' | 'MULTIPLE';
+}
+
+export interface AdvStandLevelConstraintData {
+  datasets: {
+    main_datasets: MapDataDataSet[];
+    base_datasets: MapDataDataSet[];
+  };
+  datalayers: DataLayer[];
 }
 
 /**

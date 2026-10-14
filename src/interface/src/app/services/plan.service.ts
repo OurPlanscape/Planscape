@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import {
   CreatePlanPayload,
   Creator,
@@ -26,12 +26,6 @@ export class PlanService {
   readonly v2basePath = environment.backend_endpoint + '/v2/planningareas/';
 
   constructor(private http: HttpClient) {}
-
-  planNameExists(planName: string) {
-    return this.listPlansByUser().pipe(
-      map((plans) => plans.some((plan) => plan.name === planName))
-    );
-  }
 
   /** Makes a request to the backend to create a plan and updates state. */
   createPlan(payload: CreatePlanPayload): Observable<Plan> {

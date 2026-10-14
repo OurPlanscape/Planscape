@@ -78,7 +78,9 @@ class Command(BaseCommand):
                 )
             elif shares or not planning_area.user_id:
                 created += 1
-                name = self._workspace_name_for(planning_area)
+                name = self._unique_workspace_name(
+                    self._workspace_name_for(planning_area), planning_area.user
+                )
                 if dry_run:
                     self.stdout.write(
                         f"[DRY RUN] Would create Workspace '{name}' for "
@@ -219,7 +221,22 @@ class Command(BaseCommand):
         ).exists()
 
     def _workspace_name_for(self, planning_area: PlanningArea) -> str:
-        suffix = f" (Planning Area {planning_area.pk})"
-        max_base_length = Workspace._meta.get_field("name").max_length - len(suffix)
-        base_name = (planning_area.name or "Planning Area")[:max_base_length]
-        return f"{base_name}{suffix}"
+        max_length = Workspace._meta.get_field("name").max_length
+        return (planning_area.name or "Planning Area")[:max_length]
+
+    def _unique_workspace_name(
+        self, name: str, owner: Optional[AbstractUser]
+    ) -> str:
+        """Disambiguates `name` with a `-1`, `-2`, ... suffix if the owner
+        already has a workspace with that name (the DB enforces unique
+        workspace names per creator)."""
+        max_length = Workspace._meta.get_field("name").max_length
+        candidate = name
+        attempt = 0
+        while Workspace.objects.filter(
+            created_by=owner, name=candidate, deleted_at__isnull=True
+        ).exists():
+            attempt += 1
+            tail = f"-{attempt}"
+            candidate = f"{name[: max_length - len(tail)]}{tail}"
+        return candidate

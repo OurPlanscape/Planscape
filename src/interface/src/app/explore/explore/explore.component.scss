@@ -1,8 +1,6 @@
 @import 'variables';
 @import 'mixins';
 
-$side-panel-width: 360px;
-
 :host {
   height: 100%;
   display: flex;
@@ -12,50 +10,6 @@ $side-panel-width: 360px;
 section {
   display: flex;
   height: 100%;
-}
-
-.side-panel {
-  width: $side-panel-width;
-  position: absolute;
-  z-index: 5;
-  background-color: white;
-  height: $map-nav-bar-height;
-
-  .mat-mdc-tab-group {
-    height: 100%;
-  }
-
-  ::ng-deep .mat-mdc-tab-body-wrapper {
-    height: 100%;
-  }
-
-  ::ng-deep .mat-mdc-tab-header {
-    --mdc-secondary-navigation-tab-container-height: calc(
-      #{$map-nav-bar-height} - 2px
-    );
-    --mat-tab-header-label-text-size: 18px;
-    --mat-tab-header-label-text-weight: 600;
-  }
-
-  &.expanded {
-    height: 100%;
-  }
-
-  .expander {
-    position: absolute;
-    top: 13px;
-    right: 10px;
-    z-index: 101212;
-  }
-
-  .expanded-label {
-    margin: 0;
-    font-size: 18px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 32px;
-    padding: 15px 15px 15px 24px;
-  }
 }
 
 .main {
@@ -70,13 +24,34 @@ mgl-map {
 }
 
 app-map-nav-bar {
-  left: $side-panel-width;
+  left: $map-sidebar-panel-width;
 }
 
 app-synced-maps.withPanel {
-  margin-left: $side-panel-width;
+  margin-left: $map-sidebar-panel-width;
 }
 
+// DATA_ORGANIZATION: the icon rail stays on screen when the panel is collapsed,
+// so the map starts after the rail rather than at the edge.
+.main.with-icon-rail {
+  app-map-nav-bar {
+    left: $map-sidebar-rail-width;
+  }
+
+  app-synced-maps {
+    margin-left: $map-sidebar-rail-width;
+  }
+
+  &.panel-expanded {
+    app-map-nav-bar {
+      left: $map-sidebar-width;
+    }
+
+    app-synced-maps {
+      margin-left: $map-sidebar-width;
+    }
+  }
+}
 
 .total-acres {
   @include standard-label();

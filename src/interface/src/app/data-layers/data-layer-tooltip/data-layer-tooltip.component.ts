@@ -1,6 +1,13 @@
 import { Component, Input } from '@angular/core';
-import { AsyncPipe, DatePipe, DecimalPipe, NgIf } from '@angular/common';
+import {
+  AsyncPipe,
+  DatePipe,
+  DecimalPipe,
+  NgIf,
+  NgTemplateOutlet,
+} from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { BaseLayer, DataLayer } from '@types';
 import { getFileExtensionFromFile, getSafeFileName } from '@shared/files';
 import { DataLayersService } from '@services/data-layers.service';
@@ -14,8 +21,9 @@ import {
   switchMap,
   take,
 } from 'rxjs';
-import { ButtonComponent } from '@styleguide';
+import { ButtonComponent, HighlighterDirective } from '@styleguide';
 import { AccountRoutingModule } from '@account/account-routing.module';
+import { FeaturesModule } from '@features/features.module';
 
 type DownloadState =
   | { status: 'loading'; link: null; filename: null }
@@ -41,8 +49,12 @@ const loadingState: DownloadState = {
     AsyncPipe,
     ButtonComponent,
     DecimalPipe,
+    FeaturesModule,
+    HighlighterDirective,
     MatButtonModule,
+    MatIconModule,
     NgIf,
+    NgTemplateOutlet,
     AccountRoutingModule,
     DatePipe,
   ],
@@ -64,6 +76,17 @@ export class DataLayerTooltipComponent {
   }
 
   @Input() showAllData = true;
+
+  // We should highlight searchText if provided
+  @Input() searchText = '';
+
+  // The layer name collapses the description, it starts open
+  descriptionExpanded = true;
+
+  toggleDescription(event: any) {
+    this.descriptionExpanded = !this.descriptionExpanded;
+    event.stopPropagation();
+  }
 
   readonly downloadState$ = this.layerSubject.pipe(
     map((layer) => layer.id),
@@ -93,6 +116,50 @@ export class DataLayerTooltipComponent {
   );
 
   constructor(private dataLayersService: DataLayersService) {}
+
+  get datasetName(): string {
+    return this.layer.dataset?.name ?? '';
+  }
+
+  get dataCreator(): string {
+    return this.layer.organization?.name ?? '';
+  }
+
+  // TODO: To be confirmed and added by Jordan
+  get geographicCoverage(): string {
+    return this.identification?.['geographicCoverage'] ?? 'Insert location';
+  }
+
+  // TODO: To be confirmed and added by Jordan
+  get description(): string {
+    return (
+      this.identification?.['description'] ??
+      'Lorem ipsum dolor sit amet consectetur. Leo fermentum dictum ut arcu euismod consectetur purus adipiscing. Amet interdum...'
+    );
+  }
+
+  get valueRange(): string {
+    if (!this.hasMinMax()) {
+      return '';
+    }
+    const stats = this.layer.info.stats[0];
+    return `${this.formatValue(stats.min)}-${this.formatValue(stats.max)}`;
+  }
+
+  // Source metadata used by the Learn More button
+  get sourceUrl(): string {
+    return this.getSourceDownload()?.url ?? '';
+  }
+
+  private get identification() {
+    return this.layer.metadata?.['metadata']?.['identification'];
+  }
+
+  private formatValue(value: number) {
+    return Number(value).toLocaleString('en-US', {
+      maximumFractionDigits: 0,
+    });
+  }
 
   hasMinMax(): boolean {
     return (

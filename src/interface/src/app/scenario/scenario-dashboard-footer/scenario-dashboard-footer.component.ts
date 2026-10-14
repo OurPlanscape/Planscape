@@ -7,13 +7,15 @@ import { ScenarioState } from '../scenario.state';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { getSafeFileName } from '@app/shared/files';
-import { SNACK_ERROR_CONFIG } from '@app/shared';
+import { FEEDBACK_URL, SNACK_ERROR_CONFIG } from '@app/shared';
 import { GeopackageFailureModalComponent } from '../geopackage-failure-modal/geopackage-failure-modal.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { LegacyScenarioConfigOverlayComponent } from '../legacy-scenario-config-overlay/legacy-scenario-config-overlay.component';
 import { ScenarioConfigOverlayComponent } from '../scenario-config-overlay/scenario-config-overlay.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GEO_PACKAGE_LABELS } from '../scenario.constants';
+import { FeaturesModule } from '@app/features/features.module';
+import { ScenarioConfigListOverlayComponent } from '../scenario-config-list-overlay/scenario-config-list-overlay.component';
 
 @Component({
   selector: 'app-scenario-dashboard-footer',
@@ -21,9 +23,11 @@ import { GEO_PACKAGE_LABELS } from '../scenario.constants';
   imports: [
     CommonModule,
     ButtonComponent,
+    FeaturesModule,
     MatMenuModule,
     LegacyScenarioConfigOverlayComponent,
     ScenarioConfigOverlayComponent,
+    ScenarioConfigListOverlayComponent,
   ],
   templateUrl: './scenario-dashboard-footer.component.html',
   styleUrl: './scenario-dashboard-footer.component.scss',
@@ -56,9 +60,12 @@ export class ScenarioDashboardFooterComponent {
   }
 
   handleDownload() {
-    this.downloadingScenario = true;
+    if (this.downloadingScenario) {
+      return;
+    }
 
     if (this.scenario?.geopackage_url && this.scenario?.name) {
+      this.downloadingScenario = true;
       const filename = getSafeFileName(this.scenario.name) + '.zip';
       this.fileSaverService
         .downloadGeopackage(this.scenario.geopackage_url)
@@ -102,6 +109,6 @@ export class ScenarioDashboardFooterComponent {
   }
 
   handleFeedback() {
-    window.open('https://www.planscape.org/contact-us/', '_blank');
+    window.open(FEEDBACK_URL, '_blank');
   }
 }

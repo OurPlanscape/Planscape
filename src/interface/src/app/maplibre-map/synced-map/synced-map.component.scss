@@ -53,9 +53,9 @@
 }
 
 ::ng-deep .acreage-popup .maplibregl-popup-content {
-      padding: 8px;
-      border-radius: 8px;
-  }
+  padding: 8px;
+  border-radius: 8px;
+}
 
 mgl-map {
   width: 100%;
@@ -102,13 +102,25 @@ mgl-map {
   background-color: $color-active-blue;
   color: $color-white;
 
-  .label-button {
+  .label-button,
+  .label-button.clear-layer {
     color: $color-white;
   }
 }
 
 .label-button {
   cursor: pointer;
+
+  &.clear-layer {
+    margin-left: 8px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: $color-standard-blue;
+    font: inherit;
+    line-height: inherit;
+    vertical-align: top;
+  }
 
   .material-symbols-outlined {
     font-size: 20px;

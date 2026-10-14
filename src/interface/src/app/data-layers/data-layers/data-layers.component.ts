@@ -1,10 +1,16 @@
-import { Component, Input } from '@angular/core';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
-import { BaseDataSet } from '@types';
-import { MatTreeModule } from '@angular/material/tree';
-import { MatIconModule } from '@angular/material/icon';
-import { MatCommonModule } from '@angular/material/core';
+import { Component, HostBinding, Input } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCommonModule } from '@angular/material/core';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatTreeModule } from '@angular/material/tree';
+import { DataLayerTreeComponent } from '@data-layers/data-layer-tree/data-layer-tree.component';
+import { DataSetComponent } from '@data-layers/data-set/data-set.component';
+import { SearchResultsComponent } from '@data-layers/search-results/search-results.component';
+import { UntilDestroy } from '@ngneat/until-destroy';
 import {
   ButtonComponent,
   ExpanderSectionComponent,
@@ -12,8 +18,9 @@ import {
   PaginatorComponent,
   SearchBarComponent,
 } from '@styleguide';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { DataLayersStateService } from '../data-layers.state.service';
+import { BaseDataSet, SimpleCategory } from '@types';
+import { FeatureService } from '@features/feature.service';
+import { FeaturesModule } from '@features/features.module';
 import {
   catchError,
   combineLatest,
@@ -23,13 +30,8 @@ import {
   tap,
   throwError,
 } from 'rxjs';
+import { DataLayersStateService } from '../data-layers.state.service';
 import { groupSearchResults, Results } from './search';
-import { DataLayerTreeComponent } from '@data-layers/data-layer-tree/data-layer-tree.component';
-import { SearchResultsComponent } from '@data-layers/search-results/search-results.component';
-import { DataSetComponent } from '@data-layers/data-set/data-set.component';
-import { UntilDestroy } from '@ngneat/until-destroy';
-import { MatRadioModule } from '@angular/material/radio';
-import { FormsModule } from '@angular/forms';
 
 @UntilDestroy()
 @Component({
@@ -55,6 +57,7 @@ import { FormsModule } from '@angular/forms';
     MatRadioModule,
     FormsModule,
     PaginatorComponent,
+    FeaturesModule,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
@@ -62,14 +65,28 @@ import { FormsModule } from '@angular/forms';
 export class DataLayersComponent {
   @Input() displayAddButton = false;
   @Input() useClearFooter = true;
+  // Off when the host renders the back navigation itself (map viewer panel header).
+  @Input() showSelectionHeader = true;
 
-  constructor(private dataLayersStateService: DataLayersStateService) {}
+  constructor(
+    private dataLayersStateService: DataLayersStateService,
+    private featureService: FeatureService
+  ) {}
+
+  // With DATA_ORGANIZATION the clear button lives on the map's layer name instead.
+  showClearButton = !this.featureService.isFeatureEnabled('DATA_ORGANIZATION');
+  @HostBinding('class.data-organization')
+  browseByCategory = this.featureService.isFeatureEnabled('DATA_ORGANIZATION');
+  searchPlaceholder = this.browseByCategory
+    ? 'Search in data layers'
+    : 'Search by dataset, metric, category, org...';
 
   loading$ = this.dataLayersStateService.loading$;
 
   dataSets$ = this.dataLayersStateService.dataSets$;
+  categories$ = this.dataLayersStateService.categories$;
 
-  selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
+  selection$ = this.dataLayersStateService.selection$;
   viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
 
   searchTerm$ = this.dataLayersStateService.searchTerm$.pipe(
@@ -101,13 +118,20 @@ export class DataLayersComponent {
   isBrowsing$ = this.dataLayersStateService.isBrowsing$;
 
   showFooter$ = combineLatest([this.results$, this.viewedDataLayer$]).pipe(
-    map(([results, selectedLayer]) => this.pages > 1 || selectedLayer)
+    map(
+      ([results, selectedLayer]) =>
+        this.pages > 1 || (this.showClearButton && selectedLayer)
+    )
   );
 
   showDatasets$ = combineLatest([this.dataSets$, this.loading$]).pipe(
     map(([dataSets, loading]) => {
       return dataSets.length > 0 && !loading;
     })
+  );
+
+  showCategories$ = combineLatest([this.categories$, this.loading$]).pipe(
+    map(([categories, loading]) => categories.length > 0 && !loading)
   );
 
   get pages() {
@@ -127,6 +151,11 @@ export class DataLayersComponent {
   viewDatasetCategories(dataSet: BaseDataSet) {
     this.dataLayersStateService.resetPath();
     this.dataLayersStateService.selectDataSet(dataSet);
+  }
+
+  viewCategoryLayers(category: SimpleCategory) {
+    this.dataLayersStateService.resetPath();
+    this.dataLayersStateService.selectCategory(category);
   }
 
   goBack() {
