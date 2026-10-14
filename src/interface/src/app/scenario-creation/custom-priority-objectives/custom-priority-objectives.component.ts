@@ -9,6 +9,7 @@ import {
 } from '@angular/forms';
 
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { DataLayersRailComponent } from '@data-layers/data-layers-rail/data-layers-rail.component';
 import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { DataLayer, ScenarioDraftConfiguration } from '@types';
@@ -33,6 +34,7 @@ const MAX_SELECTABLE_LAYERS = 2;
     ChipSelectorComponent,
     CommonModule,
     DataLayersComponent,
+    DataLayersRailComponent,
     MatProgressSpinnerModule,
     SectionComponent,
     ReactiveFormsModule,

@@ -1,0 +1,48 @@
+@import 'mixins';
+
+:host {
+  display: flex;
+}
+
+// The rail's own height is the page's; stretch it along the panel
+app-sidebar-icon-rail {
+  align-self: stretch;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 56px;
+  padding: 0 16px;
+
+  h4 {
+    @include standard-label();
+    margin: 0;
+  }
+
+  .back-button {
+    margin-left: -8px;
+  }
+
+  .selection-title {
+    flex: 1;
+    min-width: 0;
+    margin-left: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+app-data-layers {
+  flex: 1;
+  min-height: 0;
+}

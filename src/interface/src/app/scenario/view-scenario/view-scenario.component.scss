@@ -16,6 +16,11 @@
   background-color: $color-white;
 }
 
+// fill the tab so the rail runs the full height
+.data-layers-rail {
+  height: 100%;
+}
+
 .failure-notice {
   flex: 1;
   overflow: hidden;
