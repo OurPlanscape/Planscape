@@ -5,7 +5,7 @@ from django.test import TestCase
 from workspaces.tests.factories import PlanningWorkspaceFactory
 
 from planning.models import GeoPackageStatus, PlanningAreaMapStatus
-from planning.services import export_to_geopackage
+from planning.services import clone_scenario, export_to_geopackage
 from planning.tasks import async_mark_scenario_panic, async_set_planning_area_status
 from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
 
@@ -98,3 +98,16 @@ class PlanningEventsTest(TestCase):
         self.assertEqual(events[0]["data"]["geopackage_status"], "PROCESSING")
         self.assertEqual(events[1]["data"]["geopackage_status"], "SUCCEEDED")
         self.assertTrue(events[1]["data"]["geopackage_url"].startswith("gs://"))
+
+    def test_clone_publishes_created(self, send):
+        scenario = ScenarioFactory.create(planning_area=self.planning_area)
+
+        with self.captureOnCommitCallbacks(execute=True):
+            clone = clone_scenario(scenario.pk, scenario.user)
+
+        (event,) = self.published(send)
+        self.assertEqual(event["type"], "planning.scenario.created")
+        self.assertEqual(event["workspace_id"], self.workspace.pk)
+        self.assertEqual(event["object"]["id"], clone.pk)
+        self.assertEqual(event["data"]["cloned_from"], scenario.pk)
+        self.assertEqual(event["actor_id"], scenario.user.pk)

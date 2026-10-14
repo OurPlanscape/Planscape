@@ -1,11 +1,16 @@
 from unittest import mock
 
 from django.test import TestCase
+from planning.models import GeoPackageStatus
 from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
 from workspaces.tests.factories import PlanningWorkspaceFactory
 
 from impacts.models import TreatmentPlanStatus
-from impacts.services import clone_treatment_plan, create_treatment_plan
+from impacts.services import (
+    clone_treatment_plan,
+    create_treatment_plan,
+    export_and_upload_geopackage,
+)
 from impacts.tasks import async_set_status
 
 
@@ -56,3 +61,39 @@ class TreatmentPlanEventsTest(TestCase):
         self.assertEqual(event["object"]["id"], plan.pk)
         self.assertEqual(event["data"], {"status": "RUNNING"})
         self.assertEqual(event["actor_id"], self.user.pk)
+
+    @mock.patch("impacts.services.upload_file_via_cli")
+    @mock.patch("impacts.services.export_geopackage", return_value="/tmp/missing.zip")
+    def test_geopackage_export_publishes_processing_then_succeeded(
+        self, _export, _upload, send
+    ):
+        with self.captureOnCommitCallbacks(execute=True):
+            plan = create_treatment_plan(self.scenario, "plan", self.user)
+        send.reset_mock()
+
+        with self.captureOnCommitCallbacks(execute=True):
+            export_and_upload_geopackage(plan)
+
+        events = self.published(send)
+        self.assertEqual(
+            [event["type"] for event in events],
+            ["impacts.treatment_plan.geopackage_status_changed"] * 2,
+        )
+        self.assertEqual(events[0]["data"]["geopackage_status"], "PROCESSING")
+        self.assertEqual(events[1]["data"]["geopackage_status"], "SUCCEEDED")
+        self.assertTrue(events[1]["data"]["geopackage_url"].startswith("gs://"))
+
+    @mock.patch("impacts.services.export_geopackage", side_effect=RuntimeError)
+    def test_geopackage_export_failure_is_published(self, _export, send):
+        with self.captureOnCommitCallbacks(execute=True):
+            plan = create_treatment_plan(self.scenario, "plan", self.user)
+        send.reset_mock()
+
+        with self.captureOnCommitCallbacks(execute=True):
+            with self.assertRaises(RuntimeError):
+                export_and_upload_geopackage(plan)
+
+        events = self.published(send)
+        self.assertEqual(events[-1]["data"]["geopackage_status"], "FAILED")
+        self.assertIsNone(events[-1]["data"]["geopackage_url"])
+        self.assertEqual(plan.geopackage_status, GeoPackageStatus.FAILED)

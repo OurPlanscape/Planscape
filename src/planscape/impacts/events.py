@@ -31,3 +31,12 @@ def publish_treatment_plan_event(
         data={"status": treatment_plan.status, **data},
         actor_id=get_actor_id(actor),
     )
+
+
+def publish_geopackage_status(treatment_plan: TreatmentPlan) -> None:
+    publish_treatment_plan_event(
+        "impacts.treatment_plan.geopackage_status_changed",
+        treatment_plan,
+        geopackage_status=treatment_plan.geopackage_status,
+        geopackage_url=treatment_plan.geopackage_url,
+    )
