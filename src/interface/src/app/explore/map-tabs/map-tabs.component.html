@@ -1,0 +1,28 @@
+<ng-template #mapTabs>
+  <nav
+    mat-tab-nav-bar
+    *ngIf="(layoutMode$ | async)! > 1"
+    class="map-tabs"
+    [tabPanel]="mapPanel"
+    mat-stretch-tabs="false"
+    mat-align-tabs="start"
+    animationDuration="0ms">
+    <a
+      mat-tab-link
+      *ngFor="let mapId of mapsArray$ | async"
+      [active]="(selectedMapId$ | async) === mapId"
+      (click)="selectMap(mapId)">
+      Map {{ mapId }}
+    </a>
+  </nav>
+</ng-template>
+
+<mat-tab-nav-panel #mapPanel class="map-panel">
+  <ng-container *ngFor="let mapId of mapsArray$ | async">
+    <app-dynamic-data-layers
+      *ngIf="(selectedMapId$ | async) === mapId"
+      [mapId]="mapId"
+      [showSelectionHeader]="false"
+      [belowSearch]="mapTabs"></app-dynamic-data-layers>
+  </ng-container>
+</mat-tab-nav-panel>

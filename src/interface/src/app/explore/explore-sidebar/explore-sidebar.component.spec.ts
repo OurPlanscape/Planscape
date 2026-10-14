@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
-import { MapSelectorComponent } from '@explore/map-selector/map-selector.component';
+import { MapTabsComponent } from '@explore/map-tabs/map-tabs.component';
 import { SidebarTabs } from '@explore/sidebar-tabs';
 import { MockComponents } from 'ng-mocks';
 import { ExploreSidebarComponent } from './explore-sidebar.component';
@@ -40,9 +40,9 @@ describe('ExploreSidebarComponent', () => {
       ],
     })
       .overrideComponent(ExploreSidebarComponent, {
-        remove: { imports: [MapSelectorComponent, BaseLayersComponent] },
+        remove: { imports: [MapTabsComponent, BaseLayersComponent] },
         add: {
-          imports: MockComponents(MapSelectorComponent, BaseLayersComponent),
+          imports: MockComponents(MapTabsComponent, BaseLayersComponent),
         },
       })
       .compileComponents();
@@ -53,7 +53,7 @@ describe('ExploreSidebarComponent', () => {
   });
 
   it('shows the data layers panel by default', () => {
-    expect(fixture.debugElement.query(By.css('app-map-selector'))).toBeTruthy();
+    expect(fixture.debugElement.query(By.css('app-map-tabs'))).toBeTruthy();
     expect(fixture.debugElement.query(By.css('app-base-layers'))).toBeNull();
     expect(
       fixture.debugElement.query(By.css('.panel-header h4')).nativeElement
@@ -61,18 +61,12 @@ describe('ExploreSidebarComponent', () => {
     ).toContain('Data Layers');
   });
 
-  it('renders the selection header itself, not inside the data layers', () => {
-    const selector = fixture.debugElement.query(By.css('app-map-selector'))
-      .componentInstance as MapSelectorComponent;
-    expect(selector.showSelectionHeader).toBeFalse();
-  });
-
   it('shows the base layers panel when that tab is selected', () => {
     component.selectedTab = SidebarTabs.BASE_LAYERS;
     fixture.detectChanges();
 
     expect(fixture.debugElement.query(By.css('app-base-layers'))).toBeTruthy();
-    expect(fixture.debugElement.query(By.css('app-map-selector'))).toBeNull();
+    expect(fixture.debugElement.query(By.css('app-map-tabs'))).toBeNull();
   });
 
   it('hides the panel and keeps the rail when collapsed', () => {
