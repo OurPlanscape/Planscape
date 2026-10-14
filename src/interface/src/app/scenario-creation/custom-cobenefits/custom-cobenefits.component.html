@@ -30,10 +30,7 @@
         Select <b>up to {{ maxLayers }} Co-Benefits</b> to track the broader
         outcomes of your scenario.
       </div>
-      <mat-spinner
-        class="loader"
-        diameter="20"
-        *ngIf="uiLoading"></mat-spinner>
+      <mat-spinner class="loader" diameter="20" *ngIf="uiLoading"></mat-spinner>
       <sg-chip-selector
         [items]="(selectedItems$ | async) ?? []"
         (removeItem)="handleRemoveItem($event)"></sg-chip-selector>

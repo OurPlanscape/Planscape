@@ -51,10 +51,7 @@
           will focus treatments.
         </p>
       </div>
-      <mat-spinner
-        class="loader"
-        diameter="20"
-        *ngIf="uiLoading"></mat-spinner>
+      <mat-spinner class="loader" diameter="20" *ngIf="uiLoading"></mat-spinner>
 
       <sg-chip-selector
         [items]="(selectedItems$ | async) ?? []"
