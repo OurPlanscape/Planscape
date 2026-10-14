@@ -3,6 +3,7 @@ import json
 from unittest import mock
 from urllib.parse import urlencode
 
+from asgiref.sync import async_to_sync
 from collaboration.models import Permissions, Role, UserObjectRole
 from collaboration.services import get_content_type
 from datasets.models import DataLayerType
@@ -40,6 +41,10 @@ from impacts.tests.factories import (
 from planscape.tests.factories import UserFactory
 
 User = get_user_model()
+
+
+async def read_body(response) -> bytes:
+    return b"".join([chunk async for chunk in response.streaming_content])
 
 
 class TxPlanViewSetTest(APITestCase):
@@ -221,8 +226,9 @@ class TxPlanViewSetTest(APITestCase):
             geopackage_status=GeoPackageStatus.SUCCEEDED,
             geopackage_url="gs://test-bucket/geopackages/treatment_plan.gpkg.zip",
         )
-        blob = mock.Mock()
-        blob.open.return_value = io.BytesIO(b"stored geopackage")
+        stored = io.BytesIO(b"stored geopackage")
+        blob = mock.Mock(size=len(b"stored geopackage"))
+        blob.open.return_value = stored
         mock_storage_client.return_value.bucket.return_value.get_blob.return_value = (
             blob
         )
@@ -233,7 +239,15 @@ class TxPlanViewSetTest(APITestCase):
             )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(b"".join(response.streaming_content), b"stored geopackage")
+        self.assertTrue(response.is_async)
+        self.assertEqual(async_to_sync(read_body)(response), b"stored geopackage")
+        self.assertTrue(stored.closed)
+        self.assertEqual(response["Content-Length"], "17")
+        self.assertEqual(response["Content-Type"], "application/zip")
+        self.assertEqual(
+            response["Content-Disposition"],
+            f'attachment; filename="treatment_plan_{tx_plan.uuid}.gpkg.zip"',
+        )
         mock_export_geopackage.assert_not_called()
         mock_storage_client.return_value.bucket.assert_called_once_with("test-bucket")
         mock_storage_client.return_value.bucket.return_value.get_blob.assert_called_once_with(
@@ -1272,7 +1286,7 @@ class TxPlanDownloadGeopackageTest(APITestCase):
     @mock.patch("impacts.views.storage.Client")
     @mock.patch("impacts.views.track_event")
     def test_download_tracks_as_ready(self, mock_track_event, mock_storage_client):
-        blob = mock.Mock()
+        blob = mock.Mock(size=len(b"stored geopackage"))
         blob.open.return_value = io.BytesIO(b"stored geopackage")
         mock_storage_client.return_value.bucket.return_value.get_blob.return_value = (
             blob

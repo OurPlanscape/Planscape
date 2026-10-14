@@ -12,9 +12,9 @@ The list below details which GCP service each component uses.
 * Cache: Memory Store for Valkey (Versio 8)
 * Celery Broker: Memory Store for Valkey (Versio 8)
 * Front-end: Built Angular files hosted on GCS Bucket
-* NGINX: Cloud Run Functions (Dockerfile.gateway)
-* Back-end web service: Cloud Run Functions (Dockerfile)
-* Celery workers: Cloud Run Functions (Dockerfile)
+* NGINX: Cloud Run service (Dockerfile.gateway)
+* Back-end web service: Cloud Run service (Dockerfile)
+* Celery workers: Cloud Run services (Dockerfile)
 * Front-end builder: Cloud Run Jobs (Dockerfile.frontend-job)
 * Database migration and command executions: Cloud Run Jobs (Dockerfile)
 * Secrets: Secret Manager
@@ -113,3 +113,33 @@ execution on GCP web console.
 ```bash
 make cloud-run-execute-frontend-job ENV=<environment>
 ```
+
+## WebSockets
+
+The backend serves WebSockets from the same Cloud Run service as HTTP
+(`bin/run_gunicorn.sh` runs gunicorn with uvicorn workers). The gateway
+proxies `/planscape-backend/ws/` with the `Upgrade` headers and a one hour
+read timeout. The Cloud Run services carry matching settings in the
+`infrastructure` repository (`terraform/app/`):
+
+* `planscape_backend_timeout` and `planscape_gateway_timeout` are `3600s`.
+  Cloud Run closes every socket at the request timeout; clients reconnect.
+* `planscape_backend_max_instance_request_concurrency` is `80`: every open
+  socket holds one request slot for its lifetime.
+* `CHANNEL_LAYER_REDIS_URL` points at a separate Valkey db so channel keys
+  stay out of the cache. `PLANSCAPE_WEBSOCKET_ALLOWED_ORIGINS` is optional and
+  defaults to `PLANSCAPE_CORS_ALLOWED_ORIGINS`.
+
+### Database connections under ASGI
+
+Django keeps database connections per thread, and under ASGI every request
+runs on a new thread. With `PLANSCAPE_DATABASE_CONN_MAX_AGE > 0` and no pool,
+connections are never reused and pile up until Postgres runs out of slots
+(locally, 2 workers held 82 open connections after 160 requests). Keep
+`PLANSCAPE_DATABASE_CONN_MAX_AGE=0` (the default) and enable
+`PLANSCAPE_DATABASE_POOL_ENABLED`: each worker process then holds at most
+`PLANSCAPE_DATABASE_POOL_MAX_SIZE` connections.
+
+The legacy VM deployment (`bin/run_server.sh`, uWSGI behind nginx with
+`uwsgi_pass`) has no WebSocket endpoint: uWSGI cannot serve ASGI. Everything
+else keeps working there as plain WSGI.

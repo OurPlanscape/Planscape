@@ -15,6 +15,7 @@ from celery import chain, chord, group
 from django.db import transaction
 from planning.models import GeoPackageStatus
 
+from climate_foresight.events import publish_run_event
 from climate_foresight.models import (
     ClimateForesightLandscapeRollup,
     ClimateForesightLandscapeRollupStatus,
@@ -82,6 +83,7 @@ def start_climate_foresight_analysis(run_id: int) -> Dict[str, Any]:
     with transaction.atomic():
         run.status = ClimateForesightRunStatus.RUNNING
         run.save()
+        publish_run_event("climate_foresight.run.status_changed", run)
 
         input_layers = list(run.input_datalayers.select_related("datalayer").all())
         normalization_layer_ids = [
@@ -206,7 +208,7 @@ def check_run_completion(run_id: int) -> Dict[str, Any]:
     Returns:
         dict: Summary of run completion status
     """
-    run = ClimateForesightRun.objects.get(pk=run_id)
+    run = ClimateForesightRun.objects.select_related("planning_area").get(pk=run_id)
 
     if run.status != ClimateForesightRunStatus.RUNNING:
         return {"run_id": run_id, "status": run.status}
@@ -220,6 +222,7 @@ def check_run_completion(run_id: int) -> Dict[str, Any]:
         with transaction.atomic():
             run.status = ClimateForesightRunStatus.DONE
             run.save()
+            publish_run_event("climate_foresight.run.status_changed", run)
 
             if promote.geopackage_status in (GeoPackageStatus.PENDING, None):
                 if promote.geopackage_status is None:
