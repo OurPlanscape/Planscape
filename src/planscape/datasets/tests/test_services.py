@@ -6,6 +6,7 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import connection
 from django.test import TestCase, override_settings
 from organizations.tests.factories import OrganizationFactory
+from planscape.tests.factories import UserFactory
 
 from datasets.models import (
     Category,
@@ -28,7 +29,11 @@ from datasets.services import (
     get_storage_url,
     get_table_mask,
 )
-from datasets.tests.factories import DataLayerFactory, DatasetFactory
+from datasets.tests.factories import (
+    DataLayerFactory,
+    DatasetFactory,
+    SimpleCategoryFactory,
+)
 from workspaces.tests.factories import WorkspaceFactory
 
 
@@ -512,6 +517,214 @@ class TestSearch(TestCase):
         self.assertNotIn(subcategory2.name, names)
         self.assertNotIn(cat2_datalayer1.name, names)
         self.assertNotIn(cat2_datalayer2.name, names)
+
+    def test_simple_category_name_returns_datalayers(self):
+        dataset = DatasetFactory(visibility="PUBLIC")
+        wildlife = SimpleCategoryFactory.create(name="Wildlife Habitat")
+        other = SimpleCategoryFactory.create(name="Roads")
+        habitat_layer = DataLayerFactory.create(
+            dataset=dataset,
+            name="Spotted owl",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            simple_categories=[wildlife, other],
+        )
+        vector_layer = DataLayerFactory.create(
+            dataset=dataset,
+            name="Owl nests",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.VECTOR,
+            simple_categories=[wildlife],
+        )
+        roads_layer = DataLayerFactory.create(
+            dataset=dataset,
+            name="Highways",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            simple_categories=[other],
+        )
+
+        results = find_anything("habitat", type=DataLayerType.RASTER)
+
+        names = [r.name for r in results.values()]
+        self.assertEqual(names.count(habitat_layer.name), 1)
+        self.assertNotIn(vector_layer.name, names)
+        self.assertNotIn(roads_layer.name, names)
+        category_result = results[f"SIMPLE_CATEGORY:{wildlife.pk}"]
+        self.assertEqual(category_result.name, wildlife.name)
+        self.assertEqual(
+            category_result.data,
+            {"id": wildlife.pk, "name": wildlife.name, "icon": None},
+        )
+
+    def test_simple_category_without_matching_datalayers_is_not_returned(self):
+        dataset = DatasetFactory(visibility="PUBLIC")
+        vector_only = SimpleCategoryFactory.create(name="Tamarisk stands")
+        SimpleCategoryFactory.create(name="Tamarisk removal")
+        DataLayerFactory.create(
+            dataset=dataset,
+            name="Stands",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.VECTOR,
+            simple_categories=[vector_only],
+        )
+
+        results = find_anything("tamarisk", type=DataLayerType.RASTER)
+
+        self.assertEqual(results, {})
+
+    def test_metadata_values_return_datalayers(self):
+        dataset = DatasetFactory(visibility="PUBLIC")
+        abstract_layer = DataLayerFactory.create(
+            dataset=dataset,
+            name="Layer A",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            metadata={
+                "identification": {
+                    "title": "Layer A",
+                    "abstract": "Modeled sagebrush cover",
+                }
+            },
+        )
+        keyword_layer = DataLayerFactory.create(
+            dataset=dataset,
+            name="Layer B",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            metadata={
+                "identification": {
+                    "keywords": {"default": {"keywords": ["fuels", "SAGEBRUSH"]}}
+                }
+            },
+        )
+        no_match_layer = DataLayerFactory.create(
+            dataset=dataset,
+            name="Layer C",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            metadata={"identification": {"abstract": "Canopy height"}},
+        )
+        null_metadata_layer = DataLayerFactory.create(
+            dataset=dataset,
+            name="Layer D",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            metadata=None,
+        )
+
+        results = find_anything("sagebrush", type=DataLayerType.RASTER)
+
+        names = [r.name for r in results.values()]
+        self.assertIn(abstract_layer.name, names)
+        self.assertIn(keyword_layer.name, names)
+        self.assertNotIn(no_match_layer.name, names)
+        self.assertNotIn(null_metadata_layer.name, names)
+
+    def test_metadata_search_ignores_keys_and_modules(self):
+        dataset = DatasetFactory(visibility="PUBLIC")
+        DataLayerFactory.create(
+            dataset=dataset,
+            name="Layer A",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            metadata={
+                "identification": {"abstract": "Canopy height"},
+                "modules": {"map": {"enabled": True, "label": "pinyon"}},
+            },
+        )
+
+        self.assertEqual(find_anything("abstract", type=DataLayerType.RASTER), {})
+        self.assertEqual(find_anything("pinyon", type=DataLayerType.RASTER), {})
+
+    def test_metadata_search_escapes_like_wildcards(self):
+        dataset = DatasetFactory(visibility="PUBLIC")
+        DataLayerFactory.create(
+            dataset=dataset,
+            name="Layer A",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            metadata={"identification": {"abstract": "Canopy height"}},
+        )
+
+        self.assertEqual(find_anything("can%height", type=DataLayerType.RASTER), {})
+
+    def test_metadata_and_simple_category_respect_geometry(self):
+        unit_square = GEOSGeometry(
+            "MULTIPOLYGON (((0 0, 1 0, 1 1, 0 1, 0 0)))", srid=4269
+        )
+        far_square = GEOSGeometry(
+            "MULTIPOLYGON (((5 5, 6 5, 6 6, 5 6, 5 5)))", srid=4269
+        )
+        dataset = DatasetFactory(visibility="PUBLIC")
+        category = SimpleCategoryFactory.create(name="Juniper woodlands")
+        inside = DataLayerFactory.create(
+            dataset=dataset,
+            name="Inside",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            outline=unit_square,
+            metadata={"identification": {"abstract": "juniper encroachment"}},
+            simple_categories=[category],
+        )
+        outside = DataLayerFactory.create(
+            dataset=dataset,
+            name="Outside",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            outline=far_square,
+            metadata={"identification": {"abstract": "juniper encroachment"}},
+            simple_categories=[category],
+        )
+
+        results = find_anything(
+            "juniper",
+            type=DataLayerType.RASTER,
+            geometry=unit_square,
+        )
+
+        names = [r.name for r in results.values()]
+        self.assertIn(inside.name, names)
+        self.assertNotIn(outside.name, names)
+
+    def test_metadata_and_simple_category_respect_access(self):
+        user = UserFactory.create()
+        public_dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        private_dataset = DatasetFactory(visibility=VisibilityOptions.PRIVATE)
+        category = SimpleCategoryFactory.create(name="Manzanita chaparral")
+        private_only = SimpleCategoryFactory.create(name="Manzanita barrens")
+        metadata = {"identification": {"abstract": "manzanita cover"}}
+        public_metadata = DataLayerFactory.create(
+            dataset=public_dataset,
+            name="Public metadata",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            metadata=metadata,
+        )
+        public_category = DataLayerFactory.create(
+            dataset=public_dataset,
+            name="Public category",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            simple_categories=[category],
+        )
+        private = DataLayerFactory.create(
+            dataset=private_dataset,
+            name="Private",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            metadata=metadata,
+            simple_categories=[category, private_only],
+        )
+
+        results = find_anything("manzanita", type=DataLayerType.RASTER, user=user)
+
+        names = [r.name for r in results.values()]
+        self.assertIn(public_metadata.name, names)
+        self.assertIn(public_category.name, names)
+        self.assertNotIn(private.name, names)
+        self.assertIn(f"SIMPLE_CATEGORY:{category.pk}", results)
+        self.assertNotIn(f"SIMPLE_CATEGORY:{private_only.pk}", results)
 
 
 class TestStorageURL(TestCase):

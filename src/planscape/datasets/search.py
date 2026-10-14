@@ -1,7 +1,11 @@
 import re
 
-from datasets.models import Dataset, SearchResult
-from datasets.serializers import BrowseDataLayerSerializer, DatasetSerializer
+from datasets.models import Dataset, SearchResult, SimpleCategory
+from datasets.serializers import (
+    BrowseDataLayerSerializer,
+    DatasetSerializer,
+    SimpleCategorySerializer,
+)
 
 
 def get_highlight(
@@ -22,6 +26,16 @@ def dataset_to_search_result(dataset: Dataset) -> SearchResult:
         name=dataset.name,
         type="DATASET",
         data=dataset_serializer.data,
+    )
+
+
+def simple_category_to_search_result(category: SimpleCategory) -> SearchResult:
+    category_serializer = SimpleCategorySerializer(instance=category)
+    return SearchResult(
+        id=category.id,
+        name=category.name,
+        type="SIMPLE_CATEGORY",
+        data=category_serializer.data,
     )
 
 
