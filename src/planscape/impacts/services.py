@@ -21,7 +21,7 @@ from django.db.models.expressions import RawSQL
 from fiona.crs import from_epsg
 from gis.core import get_storage_session
 from impacts.calculator import truncate_result
-from impacts.events import publish_treatment_plan_event
+from impacts.events import publish_geopackage_status, publish_treatment_plan_event
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -1193,6 +1193,7 @@ def export_geopackage(treatment_plan: TreatmentPlan) -> str:
 def export_and_upload_geopackage(treatment_plan: TreatmentPlan) -> str:
     treatment_plan.geopackage_status = GeoPackageStatus.PROCESSING
     treatment_plan.save(update_fields=["geopackage_status", "updated_at"])
+    publish_geopackage_status(treatment_plan)
 
     try:
         local_path = export_geopackage(treatment_plan)
@@ -1216,6 +1217,7 @@ def export_and_upload_geopackage(treatment_plan: TreatmentPlan) -> str:
         treatment_plan.save(
             update_fields=["geopackage_url", "geopackage_status", "updated_at"]
         )
+        publish_geopackage_status(treatment_plan)
         raise
 
     treatment_plan.geopackage_url = geopackage_path
@@ -1223,5 +1225,6 @@ def export_and_upload_geopackage(treatment_plan: TreatmentPlan) -> str:
     treatment_plan.save(
         update_fields=["geopackage_url", "geopackage_status", "updated_at"]
     )
+    publish_geopackage_status(treatment_plan)
     Path(local_path).unlink(missing_ok=True)
     return geopackage_path

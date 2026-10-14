@@ -416,6 +416,9 @@ def clone_scenario(
 
     clone = Scenario.objects.create(**copied, **overrides)
     ScenarioResult.objects.create(scenario=clone, status=ScenarioResultStatus.DRAFT)
+    publish_scenario_event(
+        "planning.scenario.created", clone, actor=user, cloned_from=original.pk
+    )
 
     return clone
 

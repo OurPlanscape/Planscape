@@ -588,9 +588,10 @@ not serve WebSockets; use `make docker-run` or the script instead.
 | `workspace.member.added`, `workspace.member.role_changed` | `workspace` | `user_id`, `role` |
 | `workspace.member.removed`, `workspace.member.left` | `workspace` | `user_id` |
 | `planning.planning_area.created`, `.deleted`, `.map_status_changed` | `planning_area` | `map_status`, `stands_ready_at`, `metrics_ready_at` |
-| `planning.scenario.created`, `.deleted`, `.status_changed` | `scenario` (`planning_area_id`) | `status`, `result_status`, `post_process_status`, `geopackage_status` |
+| `planning.scenario.created`, `.deleted`, `.status_changed` | `scenario` (`planning_area_id`) | `status`, `result_status`, `post_process_status`, `geopackage_status` (`cloned_from` on clones) |
 | `planning.scenario.geopackage_status_changed` | `scenario` | the above plus `geopackage_url` |
 | `impacts.treatment_plan.created`, `.deleted`, `.status_changed` | `treatment_plan` (`scenario_id`, `planning_area_id`) | `status` (`cloned_from` on clones) |
+| `impacts.treatment_plan.geopackage_status_changed` | `treatment_plan` | `status`, `geopackage_status`, `geopackage_url` |
 | `climate_foresight.run.created`, `.deleted`, `.status_changed` | `climate_foresight_run` (`planning_area_id`) | `status` |
 | `climate_foresight.run.geopackage_status_changed` | `climate_foresight_run` | `status`, `geopackage_status` |
 | `climate_foresight.input_datalayer.updated` | `climate_foresight_input_datalayer` (`run_id`, `planning_area_id`) | `status`, `has_statistics` |
