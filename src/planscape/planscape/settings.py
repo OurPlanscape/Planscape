@@ -134,8 +134,10 @@ PLANSCAPE_DATABASE_PASSWORD = config("PLANSCAPE_DATABASE_PASSWORD", default="pas
 PLANSCAPE_DATABASE_USER = config("PLANSCAPE_DATABASE_USER", default="planscape")
 PLANSCAPE_DATABASE_NAME = config("PLANSCAPE_DATABASE_NAME", default="planscape")
 PLANSCAPE_DATABASE_PORT = config("PLANSCAPE_PORT", default=5432)
+# Keep at 0 under ASGI: each request runs on a new thread, so persistent
+# connections are never reused and pile up. Use the pool below instead.
 PLANSCAPE_DATABASE_CONN_MAX_AGE = config(
-    "PLANSCAPE_DATABASE_CONN_MAX_AGE", default=60, cast=int
+    "PLANSCAPE_DATABASE_CONN_MAX_AGE", default=0, cast=int
 )
 PLANSCAPE_DATABASE_POOL_ENABLED = config(
     "PLANSCAPE_DATABASE_POOL_ENABLED", default=False, cast=bool
