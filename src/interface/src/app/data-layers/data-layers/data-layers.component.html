@@ -8,6 +8,7 @@
     (clearSearch)="clearSearch()"
     [searchValue]="(searchTerm$ | async) || ''"></sg-search-bar>
 </div>
+<ng-container *ngTemplateOutlet="belowSearch ?? null"></ng-container>
 <div class="scrollable">
   <!--When performing search, show results.-->
   <ng-container *ngIf="(isBrowsing$ | async) === false">
