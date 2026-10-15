@@ -25,8 +25,6 @@ import { extractLegendInfo } from './utilities';
 import { MapModuleService } from '@services/map-module.service';
 
 import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-datalayers.token';
-
-// import { distinctUntilChanged } from 'rxjs/operators';
 import { PlanState } from '@plan/plan.state';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import { SNACK_ERROR_CONFIG, UnselectableType } from '@app/shared';

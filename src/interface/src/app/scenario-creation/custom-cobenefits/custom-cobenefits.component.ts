@@ -51,7 +51,7 @@ export class CustomCobenefitsComponent extends StepDirective<ScenarioDraftConfig
     private newScenarioState: NewScenarioState
   ) {
     super();
-    // this.dataLayersStateService.setSelectionMode('AUTOMATIC');
+    
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
     this.dataLayersStateService.selectedDataLayers$
       .pipe(untilDestroyed(this))

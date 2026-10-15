@@ -91,6 +91,7 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
     private newScenarioState: NewScenarioState
   ) {
     super();
+    
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
     this.dataLayersStateService.selectedDataLayers$
       .pipe(untilDestroyed(this))

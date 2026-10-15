@@ -152,6 +152,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
         switchMap((plan) => this.mapModuleService.loadMapModule(plan.geometry))
       )
       .subscribe();
+      
     this.dataLayersStateService.layerClicked$
       .pipe(untilDestroyed(this))
       .subscribe((layer) => {
@@ -269,12 +270,14 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
 
   handleConstraintChipClicked(e: NamedConstraint) {
     this.activeConstraint$.next(e);
+
     const layerRecord = this.getFullLayerById(e.datalayer);
     if (!layerRecord) {
       return;
     }
     let valueOne = e.value;
     let valueTwo = null;
+
     if (e.value.includes(',')) {
       const [num1, num2] = e.value.split(',').map(Number);
       // guard against values being out of numeric order

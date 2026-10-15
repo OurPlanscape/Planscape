@@ -6,8 +6,6 @@ import { AdvStandLevelConstraintsComponent } from '../step3/adv-stand-level-cons
 import { StandLevelConstraintsComponent } from '../step3/stand-level-constraints.component';
 import { FeaturesModule } from '@app/features/features.module';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
-import { NewScenarioState } from '../new-scenario.state';
-import { take } from 'rxjs';
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { NamedConstraint } from '../step3/adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
 import { UntilDestroy } from '@ngneat/until-destroy';
@@ -52,7 +50,6 @@ export class ConstraintsStepComponent extends StepDirective<ScenarioDraftConfigu
 
   constructor(
     private dataLayersStateService: DataLayersStateService,
-    private newScenarioState: NewScenarioState
   ) {
     super();
   }
@@ -80,10 +77,6 @@ export class ConstraintsStepComponent extends StepDirective<ScenarioDraftConfigu
     this.dataLayersStateService.setModuleNameOverride(
       'advanced_stand_level_constraint'
     );
-    this.newScenarioState.scenarioConfig$
-      .pipe(take(1))
-      .subscribe((config) => {});
-
     // trigger child component refresh
     this.advConstraintsComponent.mapConfigToUI();
   }
