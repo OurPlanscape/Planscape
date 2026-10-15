@@ -23,6 +23,7 @@ export class MapModuleService {
       base_datasets: [...data.datasets.base_datasets].sort((a, b) =>
         a.name.localeCompare(b.name)
       ),
+      categories: data.datasets.categories ?? [],
     }))
   );
 

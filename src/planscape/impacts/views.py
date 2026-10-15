@@ -1,9 +1,13 @@
 import logging
+from typing import AsyncIterator, BinaryIO
 
+from asgiref.sync import sync_to_async
 from django.conf import settings
-from django.http import FileResponse
+from django.http import StreamingHttpResponse
+from django.utils.http import content_disposition_header
 from drf_spectacular.utils import OpenApiTypes, extend_schema, extend_schema_view
 from google.cloud import storage
+from impacts.events import publish_treatment_plan_event
 from impacts.filters import TreatmentPlanFilterSet, TreatmentPlanNoteFilterSet
 from impacts.models import (
     TreatmentPlan,
@@ -54,6 +58,20 @@ from planscape.filters import TrackedFilterBackend
 from planscape.serializers import BaseErrorMessageSerializer
 
 log = logging.getLogger(__name__)
+
+DOWNLOAD_CHUNK_SIZE = 1024 * 1024
+
+
+async def iter_file(file: BinaryIO) -> AsyncIterator[bytes]:
+    """Reads `file` in chunks off the event loop. Under ASGI a sync iterator
+    is read whole into memory before the first byte is sent."""
+    try:
+        while chunk := await sync_to_async(file.read, thread_sensitive=False)(
+            DOWNLOAD_CHUNK_SIZE
+        ):
+            yield chunk
+    finally:
+        await sync_to_async(file.close, thread_sensitive=False)()
 
 
 @extend_schema_view(
@@ -115,6 +133,12 @@ class TreatmentPlanViewSet(
             "created_by",
         )
         return qs
+
+    def perform_destroy(self, instance):
+        publish_treatment_plan_event(
+            "impacts.treatment_plan.deleted", instance, actor=self.request.user
+        )
+        super().perform_destroy(instance)
 
     def get_serializer_class(self):
         try:
@@ -220,11 +244,16 @@ class TreatmentPlanViewSet(
             },
             user_id=request.user.pk,
         )
-        return FileResponse(
-            blob.open("rb"),
+        response = StreamingHttpResponse(
+            iter_file(blob.open("rb")),
+            content_type="application/zip",
+        )
+        response["Content-Length"] = str(blob.size)
+        response["Content-Disposition"] = content_disposition_header(
             as_attachment=True,
             filename=f"treatment_plan_{treatment_plan.uuid}.gpkg.zip",
         )
+        return response
 
     @extend_schema(
         description="Runs a Treatment Plan.",

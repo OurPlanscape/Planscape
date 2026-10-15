@@ -12,6 +12,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
+import { DataLayersRailComponent } from '@data-layers/data-layers-rail/data-layers-rail.component';
+import { FeaturesModule } from '@features/features.module';
 import { PlanState } from '@app/plan/plan.state';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { MapModuleService } from '@app/services/map-module.service';
@@ -54,6 +56,8 @@ import { getConstraintDisplayName } from '@app/scenario/scenario-helper';
     ChipSelectorComponent,
     CommonModule,
     DataLayersComponent,
+    DataLayersRailComponent,
+    FeaturesModule,
     SectionComponent,
     MatExpansionModule,
     MatIconModule,

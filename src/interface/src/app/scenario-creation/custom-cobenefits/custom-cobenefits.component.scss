@@ -12,6 +12,10 @@
     gap: 16px;
   }
 
+  .loader {
+    margin: 8px 0 16px;
+  }
+
   .error-message {
     color: $color-error;
     margin: 0;
@@ -37,6 +41,10 @@
 
   app-data-layers {
     display: block;
+  }
+
+  app-data-layers-rail {
+    border-top: 1px solid $color-soft-gray;
   }
 
 

@@ -1,0 +1,18 @@
+@import 'colors';
+
+:host,
+.map-panel {
+  display: block;
+  height: 100%;
+}
+
+// Same look as the global .mat-mdc-tab-labels rules, which the nav bar doesn't use
+.map-tabs ::ng-deep .mat-mdc-tab-links {
+  padding: 0 16px;
+  border-bottom: 2px solid $color-soft-gray;
+
+  .mat-mdc-tab-link {
+    position: relative;
+    top: 2px;
+  }
+}

@@ -1,0 +1,26 @@
+<app-sidebar-icon-rail
+  [items]="railItems"
+  activeId="data-layers"></app-sidebar-icon-rail>
+
+<div class="panel">
+  <div class="panel-header">
+    <ng-container *ngIf="selection$ | async as selection; else title">
+      <button
+        sg-button
+        variant="icon-only"
+        icon="arrow_back"
+        class="back-button"
+        aria-label="Back"
+        (click)="goBack()"></button>
+      <h4 class="selection-title">{{ selection.name }}</h4>
+    </ng-container>
+    <ng-template #title>
+      <h4>Data Layers</h4>
+    </ng-template>
+  </div>
+  <app-data-layers
+    [displayAddButton]="displayAddButton"
+    [useClearFooter]="useClearFooter"
+    [showSelectionHeader]="false"
+    [class.sticky-search]="stickySearch"></app-data-layers>
+</div>

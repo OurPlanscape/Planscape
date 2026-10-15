@@ -4,6 +4,8 @@ import { CommonModule, NgIf } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { DataLayersRailComponent } from '@data-layers/data-layers-rail/data-layers-rail.component';
+import { FeaturesModule } from '@features/features.module';
 import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { DataLayer, ScenarioDraftConfiguration } from '@types';
@@ -24,6 +26,8 @@ const MAX_SELECTABLE_LAYERS = 10;
     ChipSelectorComponent,
     CommonModule,
     DataLayersComponent,
+    DataLayersRailComponent,
+    FeaturesModule,
     MatProgressSpinnerModule,
     NgIf,
     SectionComponent,

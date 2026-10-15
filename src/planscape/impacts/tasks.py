@@ -12,6 +12,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from rasterio.errors import RasterioIOError
 
+from impacts.events import publish_geopackage_status, publish_treatment_plan_event
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -183,14 +184,19 @@ def async_set_status(
     with transaction.atomic():
         user = User.objects.filter(pk=user_id).first()
         try:
-            treatment_plan = TreatmentPlan.objects.select_for_update().get(
-                pk=treatment_plan_pk
+            treatment_plan = (
+                TreatmentPlan.objects.select_for_update(of=("self",))
+                .select_related("scenario__planning_area")
+                .get(pk=treatment_plan_pk)
             )
             treatment_plan.status = status
             attr = "started_at" if start else "finished_at"
             setattr(treatment_plan, attr, timezone.now())
             treatment_plan.save()
             log.info(f"Treatment plan {treatment_plan_pk} changed status to {status}.")
+            publish_treatment_plan_event(
+                "impacts.treatment_plan.status_changed", treatment_plan, actor=user
+            )
             track_event(
                 name="impacts.treatment_plan.status_changed",
                 properties={
@@ -214,7 +220,9 @@ def async_set_status(
 @app.task()
 def async_generate_treatment_plan_geopackage(treatment_plan_pk: int) -> str | None:
     try:
-        treatment_plan = TreatmentPlan.objects.get(pk=treatment_plan_pk)
+        treatment_plan = TreatmentPlan.objects.select_related(
+            "scenario__planning_area"
+        ).get(pk=treatment_plan_pk)
     except TreatmentPlan.DoesNotExist:
         log.warning(
             "TreatmentPlan with pk %s does not exist or was deleted. Cannot generate geopackage.",
@@ -244,7 +252,9 @@ def async_calculate_persist_impacts_treatment_plan(
         user_id=user_id,
     )
     user = User.objects.filter(pk=user_id).first()
-    treatment_plan = TreatmentPlan.objects.get(pk=treatment_plan_pk)
+    treatment_plan = TreatmentPlan.objects.select_related(
+        "scenario__planning_area"
+    ).get(pk=treatment_plan_pk)
 
     calculation_matrix = get_calculation_matrix(
         treatment_plan=treatment_plan,
@@ -307,6 +317,9 @@ def async_calculate_persist_impacts_treatment_plan(
         geopackage_status=GeoPackageStatus.PENDING,
         updated_at=timezone.now(),
     )
+    treatment_plan.geopackage_url = None
+    treatment_plan.geopackage_status = GeoPackageStatus.PENDING
+    publish_geopackage_status(treatment_plan)
     if tasks:
         chord(tasks)(callback)
     else:
