@@ -53,7 +53,6 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
     dataLayersStateService.dataLayerWithUrl$
       .pipe(untilDestroyed(this))
       .subscribe((data) => {
-        console.log('we...have some data?: ', data);
         if (data) {
           this.cogUrl = `cog://${data.url}`;
           this.currentLayerId = data.layer?.id ?? null;

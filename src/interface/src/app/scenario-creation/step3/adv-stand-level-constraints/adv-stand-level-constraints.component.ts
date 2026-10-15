@@ -12,11 +12,9 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
-// import { MAX_SELECTED_DATALAYERS } from '@app/data-layers/data-layers/max-selected-datalayers.token';
 import { PlanState } from '@app/plan/plan.state';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { MapModuleService } from '@app/services/map-module.service';
-import { MAP_MODULE_NAME } from '@app/services/map-module.token';
 import { SectionComponent } from '@styleguide';
 import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
 import {
@@ -44,7 +42,6 @@ import {
   Constraint,
 } from '@app/types';
 import { ModuleService } from '@app/services/module.service';
-// import { SELECTION_MODE } from '@app/data-layers/data-layers/selection-mode.token';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { getConstraintDisplayName } from '@app/scenario/scenario-helper';
@@ -53,13 +50,6 @@ import { getConstraintDisplayName } from '@app/scenario/scenario-helper';
 @Component({
   selector: 'app-adv-stand-level-constraints',
   standalone: true,
-  providers: [
-    // DataLayersStateService,
-    // { provide: SELECTION_MODE, useValue: 'MANUAL' },
-    // { provide: MAX_SELECTED_DATALAYERS, useValue: Number.POSITIVE_INFINITY },
-    MapModuleService,
-    { provide: MAP_MODULE_NAME, useValue: 'advanced_stand_level_constraint' },
-  ],
   imports: [
     ChipSelectorComponent,
     CommonModule,
@@ -87,7 +77,6 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
       .pipe(
         map((data) => data.options.datalayers),
         tap((layers) => {
-          console.log('we have layers from the module service?', layers)
           this.knownLayers = layers;
           return layers;
         }),
@@ -106,7 +95,6 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
   readonly layersLoaded$: Observable<boolean> =
     this.advStandLevelConstraintLayers$.pipe(
       map(() => true),
-      tap((what)=> {console.log('what is this?:', what)}),
       startWith(false)
     );
 
@@ -122,8 +110,6 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
       this.newScenarioState.advConstraints$,
       this.advStandLevelConstraintLayers$,
     ]).subscribe(([constraints, layers]) => {
-      console.log('we have constriants?', constraints);
-      console.log('we have layers?', layers);
       if (!constraints) {
         this.selectedConstraints$.next([]);
         return;
@@ -167,8 +153,8 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
       )
       .subscribe();
 
-      // this.dataLayersStateService.setSelectionMode('MANUAL');
-      // this.dataLayersStateService.setMaxSelectedLayers(Number.POSITIVE_INFINITY);
+      this.dataLayersStateService.setSelectionMode('MANUAL');
+      this.dataLayersStateService.setMaxSelectedLayers(Number.POSITIVE_INFINITY);
 
     this.dataLayersStateService.layerClicked$
       .pipe(untilDestroyed(this))
@@ -192,7 +178,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
 
     // reset dataLayersStateService to normal:
-    // this.dataLayersStateService.setSelectionMode('AUTOMATIC');
+    this.dataLayersStateService.setSelectionMode('AUTOMATIC');
 
     // Clean up parent form and RxJS subscriptions
     this.parentFormGroup.removeControl(this.keyName);
@@ -288,14 +274,12 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
 
   handleConstraintChipClicked(e: NamedConstraint) {
     this.activeConstraint$.next(e);
-
     const layerRecord = this.getFullLayerById(e.datalayer);
     if (!layerRecord) {
       return;
     }
     let valueOne = e.value;
     let valueTwo = null;
-
     if (e.value.includes(',')) {
       const [num1, num2] = e.value.split(',').map(Number);
       // guard against values being out of numeric order

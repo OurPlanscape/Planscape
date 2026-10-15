@@ -26,12 +26,11 @@ import { MapModuleService } from '@services/map-module.service';
 
 import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-datalayers.token';
 
-import { distinctUntilChanged } from 'rxjs/operators';
+// import { distinctUntilChanged } from 'rxjs/operators';
 import { PlanState } from '@plan/plan.state';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import { SNACK_ERROR_CONFIG, UnselectableType } from '@app/shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SELECTION_MODE } from './data-layers/selection-mode.token';
 
 export interface unselectableLayer {
   id: number;
@@ -42,11 +41,27 @@ export interface unselectableLayer {
 export class DataLayersStateService {
   readonly limit = 20;
 
-  dataSets$ = this.mapModuleService.datasets$.pipe(
-    distinctUntilChanged(),
-    map((mapData) => mapData.main_datasets),
+
+  private moduleNameOverride$ = new BehaviorSubject<string | null>(null);
+
+  private baseDataSets$ = this.mapModuleService.datasets$.pipe(
+    map((d) => d.main_datasets)
+  );
+
+  dataSets$ = this.moduleNameOverride$.pipe(
+    switchMap((name) =>
+      name ? this.mapModuleService.datasetsFor(name) : this.baseDataSets$
+    ),
     tap(() => queueMicrotask(() => this.loadingSubject.next(false)))
   );
+
+
+  setModuleNameOverride(name: string | null) {
+    // Clear the selection first so dataTree$ doesn't fire with a dataset
+    // from the other module paired with the new module name
+    this._selectedDataSet$.next(null);
+    this.moduleNameOverride$.next(name);
+  }
 
   private _selectedDataSet$ = new BehaviorSubject<BaseDataSet | null>(null);
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
@@ -83,7 +98,6 @@ export class DataLayersStateService {
 
   dataLayerWithUrl$ = this.viewedDataLayer$.pipe(
     switchMap((layer) => {
-      console.log('here is the layer to get the url for:', layer);
       if (!layer) {
         return of(null);
       }
@@ -95,21 +109,23 @@ export class DataLayersStateService {
 
   dataTree$ = combineLatest([
     this.selectedDataSet$,
-    // Setting an initial value when there is no plan
     this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
+    this.moduleNameOverride$,
   ]).pipe(
     tap(() => this.loadingSubject.next(true)),
-    switchMap(([dataset, planningAreaGeometry]) => {
+    switchMap(([dataset, planningAreaGeometry, override]) => {
+      console.log('is there an override?', override);
       if (!dataset) {
         this.loadingSubject.next(false);
         return of(null);
       }
+      const moduleName = override ?? this.mapModuleService.moduleName;
       const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
       return this.service
-        .listDataLayers(dataset.id, this.mapModuleService.moduleName, geometry)
+        .listDataLayers(dataset.id, moduleName, geometry)
         .pipe(
           map((items) => buildPathTree(items)),
-          tap((s) => this.loadingSubject.next(false)),
+          tap(() => this.loadingSubject.next(false)),
           catchError((e) => {
             this.loadingSubject.next(false);
             this._selectedDataSet$.next(null);
@@ -140,7 +156,6 @@ export class DataLayersStateService {
 
   colorLegendInfo$ = this.viewedDataLayer$.pipe(
     map((currentLayer: DataLayer | null) => {
-      console.log('here is the current layer for colorlegendinfo:', currentLayer);
       if (currentLayer) {
         return extractLegendInfo(currentLayer);
       } else {
@@ -154,14 +169,16 @@ export class DataLayersStateService {
     this._offset,
     // Setting an initial value when there is no plan
     this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
+    this.moduleNameOverride$,
   ]).pipe(
     tap(() => this.loadingSubject.next(true)),
-    switchMap(([term, offset, planningAreaGeometry]) => {
+    switchMap(([term, offset, planningAreaGeometry, override]) => {
       if (!term) {
         return of(null);
       }
 
-      const module = this.mapModuleService.moduleName;
+      const module = override ?? this.mapModuleService.moduleName;
+
       const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
 
       return this.service
@@ -185,25 +202,27 @@ export class DataLayersStateService {
     }),
     shareReplay(1)
   );
-
   private _paths$ = new BehaviorSubject<string[]>([]);
   paths$ = this._paths$.asObservable();
 
   private _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
 
+
   constructor(
     private service: DataLayersService,
     private mapModuleService: MapModuleService,
     @Inject(MAX_SELECTED_DATALAYERS)
     private maxSelectedDatalayers: number,
-    @Inject(SELECTION_MODE)
-    private selectionMode: 'AUTOMATIC' | 'MANUAL',
     @Inject(USE_GEOMETRY)
     private readonly sendGeometry: boolean,
     private planState: PlanState,
     private matSnackBar: MatSnackBar
-  ) {}
+  ) { }
+
+  // determines whether we interject anything when the user makes a selection
+  selectionMode: 'AUTOMATIC' | 'MANUAL' = 'AUTOMATIC';
+
 
   selectDataSet(dataset: BaseDataSet) {
     this._isBrowsing$.next(true);
@@ -220,10 +239,8 @@ export class DataLayersStateService {
   }
 
   selectDataLayer(dataLayer: DataLayer | null) {
-    console.log('setting it to load?', dataLayer);
     this.setDataLayerLoading(true);
     this._viewedDataLayer$.next(dataLayer);
-    console.log('viewed data layers are:', this._viewedDataLayer$.value);
   }
 
   setDataLayerLoading(status: boolean) {
@@ -376,6 +393,6 @@ export class DataLayersStateService {
 
   setSelectionMode(mode: 'AUTOMATIC' | 'MANUAL') {
     this.selectionMode = mode;
-  } 
+  }
 
 }

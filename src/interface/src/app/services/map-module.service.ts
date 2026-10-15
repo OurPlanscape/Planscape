@@ -29,7 +29,14 @@ export class MapModuleService {
   constructor(
     private moduleService: ModuleService,
     @Inject(MAP_MODULE_NAME) private dynamicModuleName: string
-  ) {}
+  ) { }
+
+  datasetsFor(moduleName: string, geometry?: any) {
+    const filters = geometry ? { geometry } : undefined;
+    return this.moduleService
+      .getModule<ApiModule<MapData>>(moduleName, filters)
+      .pipe(map((data) => data.options.datasets.main_datasets));
+  }
 
   loadMapModule(geometry?: any) {
     const filters = geometry ? { geometry } : undefined;

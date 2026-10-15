@@ -90,9 +90,7 @@ export class DataLayerTreeComponent {
 
   selectDataLayer(dataLayer: DataLayer, event: Event) {
     const target = event.target as HTMLInputElement;
-    console.log('selecting data layer');
     if (target.checked) {
-    console.log('selecting data layer,', target.checked);
       this.dataLayersStateService.selectDataLayer(dataLayer);
     } else {
       this.dataLayersStateService.selectDataLayer(null);
