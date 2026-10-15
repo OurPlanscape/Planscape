@@ -152,7 +152,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
         switchMap((plan) => this.mapModuleService.loadMapModule(plan.geometry))
       )
       .subscribe();
-      
+
     this.dataLayersStateService.layerClicked$
       .pipe(untilDestroyed(this))
       .subscribe((layer) => {

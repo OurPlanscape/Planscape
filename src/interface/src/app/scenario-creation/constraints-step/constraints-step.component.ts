@@ -48,9 +48,7 @@ export class ConstraintsStepComponent extends StepDirective<ScenarioDraftConfigu
     // Note, the child forms add the other fields dynamically
   });
 
-  constructor(
-    private dataLayersStateService: DataLayersStateService,
-  ) {
+  constructor(private dataLayersStateService: DataLayersStateService) {
     super();
   }
 
