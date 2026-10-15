@@ -30,13 +30,19 @@
         Select <b>up to {{ maxLayers }} Co-Benefits</b> to track the broader
         outcomes of your scenario.
       </div>
-      <mat-spinner diameter="20" *ngIf="uiLoading"></mat-spinner>
+      <mat-spinner class="loader" diameter="20" *ngIf="uiLoading"></mat-spinner>
       <sg-chip-selector
         [items]="(selectedItems$ | async) ?? []"
         (removeItem)="handleRemoveItem($event)"></sg-chip-selector>
     </div>
     <section>
+      <app-data-layers-rail
+        *appFeatureFlag="'DATA_ORGANIZATION'"
+        [useClearFooter]="false"
+        [displayAddButton]="true"
+        [stickySearch]="true"></app-data-layers-rail>
       <app-data-layers
+        *appFeatureFlag="'DATA_ORGANIZATION'; hide: true"
         [useClearFooter]="false"
         [displayAddButton]="true"
         class="sticky-search"></app-data-layers>

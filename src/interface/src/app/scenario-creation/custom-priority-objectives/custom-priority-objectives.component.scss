@@ -16,6 +16,10 @@
     gap: 16px;
   }
 
+  .loader {
+    margin: 8px 0 16px;
+  }
+
   .error-message {
     color: $color-error;
     margin: 0;
@@ -44,6 +48,10 @@
     display: block;
   }
 
+  app-data-layers-rail {
+    border-top: 1px solid $color-soft-gray;
+  }
+
 
   app-data-layers .scrollable {
     overflow-y: visible;
@@ -54,7 +62,7 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  margin-top: 16px;
+  margin: 16px 0;
   padding: 16px;
   gap: 8px;
 

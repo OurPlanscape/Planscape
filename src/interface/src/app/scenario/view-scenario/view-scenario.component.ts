@@ -26,6 +26,8 @@ import { ScenarioDownloadFooterComponent } from '@scenario/scenario-download-foo
 import { NewTreatmentFooterComponent } from '@scenario/new-treatment-footer/new-treatment-footer.component';
 import { TreatmentsTabComponent } from '@scenario/treatments-tab/treatments-tab.component';
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { DataLayersRailComponent } from '@data-layers/data-layers-rail/data-layers-rail.component';
+import { FeaturesModule } from '@features/features.module';
 import { ScenarioFailureComponent } from '@scenario/scenario-failure/scenario-failure.component';
 import { ScenarioResultsComponent } from '@scenario/scenario-results/scenario-results.component';
 import { userCanAddTreatmentPlan } from '@plan/permissions';
@@ -61,6 +63,8 @@ enum ScenarioTabs {
     TreatmentsTabComponent,
     MatTabsModule,
     DataLayersComponent,
+    DataLayersRailComponent,
+    FeaturesModule,
     ScenarioFailureComponent,
     ScenarioResultsComponent,
     BaseLayersComponent,
