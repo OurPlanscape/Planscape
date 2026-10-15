@@ -33,10 +33,16 @@
       </div>
     </mat-expansion-panel-header>
 
-    <app-data-layers
-      *ngIf="layersLoaded$ | async"
-      [useClearFooter]="false"
-      [displayAddButton]="true"></app-data-layers>
+    <ng-container *ngIf="layersLoaded$ | async">
+      <app-data-layers-rail
+        *appFeatureFlag="'DATA_ORGANIZATION'"
+        [useClearFooter]="false"
+        [displayAddButton]="true"></app-data-layers-rail>
+      <app-data-layers
+        *appFeatureFlag="'DATA_ORGANIZATION'; hide: true"
+        [useClearFooter]="false"
+        [displayAddButton]="true"></app-data-layers>
+    </ng-container>
   </mat-expansion-panel>
 </sg-section>
 
