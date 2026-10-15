@@ -41,7 +41,6 @@ export interface unselectableLayer {
 export class DataLayersStateService {
   readonly limit = 20;
 
-
   private moduleNameOverride$ = new BehaviorSubject<string | null>(null);
 
   private baseDataSets$ = this.mapModuleService.datasets$.pipe(
@@ -54,7 +53,6 @@ export class DataLayersStateService {
     ),
     tap(() => queueMicrotask(() => this.loadingSubject.next(false)))
   );
-
 
   setModuleNameOverride(name: string | null) {
     // Clear the selection first so dataTree$ doesn't fire with a dataset
@@ -114,29 +112,26 @@ export class DataLayersStateService {
   ]).pipe(
     tap(() => this.loadingSubject.next(true)),
     switchMap(([dataset, planningAreaGeometry, override]) => {
-      console.log('is there an override?', override);
       if (!dataset) {
         this.loadingSubject.next(false);
         return of(null);
       }
       const moduleName = override ?? this.mapModuleService.moduleName;
       const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
-      return this.service
-        .listDataLayers(dataset.id, moduleName, geometry)
-        .pipe(
-          map((items) => buildPathTree(items)),
-          tap(() => this.loadingSubject.next(false)),
-          catchError((e) => {
-            this.loadingSubject.next(false);
-            this._selectedDataSet$.next(null);
-            this.matSnackBar.open(
-              `Error: Could not load layers for ${dataset.name}`,
-              'Dismiss',
-              SNACK_ERROR_CONFIG
-            );
-            return of(null);
-          })
-        );
+      return this.service.listDataLayers(dataset.id, moduleName, geometry).pipe(
+        map((items) => buildPathTree(items)),
+        tap(() => this.loadingSubject.next(false)),
+        catchError((e) => {
+          this.loadingSubject.next(false);
+          this._selectedDataSet$.next(null);
+          this.matSnackBar.open(
+            `Error: Could not load layers for ${dataset.name}`,
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+          return of(null);
+        })
+      );
     }),
     shareReplay(1)
   );
@@ -208,7 +203,6 @@ export class DataLayersStateService {
   private _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
 
-
   constructor(
     private service: DataLayersService,
     private mapModuleService: MapModuleService,
@@ -218,11 +212,10 @@ export class DataLayersStateService {
     private readonly sendGeometry: boolean,
     private planState: PlanState,
     private matSnackBar: MatSnackBar
-  ) { }
+  ) {}
 
   // determines whether we interject anything when the user makes a selection
   selectionMode: 'AUTOMATIC' | 'MANUAL' = 'AUTOMATIC';
-
 
   selectDataSet(dataset: BaseDataSet) {
     this._isBrowsing$.next(true);
@@ -394,5 +387,4 @@ export class DataLayersStateService {
   setSelectionMode(mode: 'AUTOMATIC' | 'MANUAL') {
     this.selectionMode = mode;
   }
-
 }

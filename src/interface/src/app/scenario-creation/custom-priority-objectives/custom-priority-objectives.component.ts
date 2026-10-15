@@ -91,7 +91,6 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
     private newScenarioState: NewScenarioState
   ) {
     super();
-    // this.dataLayersStateService.setSelectionMode('AUTOMATIC');
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
     this.dataLayersStateService.selectedDataLayers$
       .pipe(untilDestroyed(this))
@@ -162,7 +161,6 @@ export class CustomPriorityObjectivesComponent extends StepDirective<ScenarioDra
 
   override beforeStepLoad() {
     this.dataLayersStateService.updateSelectedLayers([]);
-    // this.dataLayersStateService.setSelectionMode('AUTOMATIC');
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
     this.dataLayersStateService.clearUnselectableLayers();
     this.newScenarioState.scenarioConfig$.pipe(take(1)).subscribe((config) => {

@@ -153,8 +153,8 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
       )
       .subscribe();
 
-      this.dataLayersStateService.setSelectionMode('MANUAL');
-      this.dataLayersStateService.setMaxSelectedLayers(Number.POSITIVE_INFINITY);
+    this.dataLayersStateService.setSelectionMode('MANUAL');
+    this.dataLayersStateService.setMaxSelectedLayers(Number.POSITIVE_INFINITY);
 
     this.dataLayersStateService.layerClicked$
       .pipe(untilDestroyed(this))
@@ -176,7 +176,6 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-
     // reset dataLayersStateService to normal:
     this.dataLayersStateService.setSelectionMode('AUTOMATIC');
 
@@ -311,6 +310,4 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
         }
       });
   }
-
-
 }
