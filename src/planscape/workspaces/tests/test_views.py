@@ -1,5 +1,11 @@
 from unittest.mock import patch
 
+from datasets.models import (
+    DataLayerStatus,
+    VisibilityOptions,
+    WorkspaceFavoriteDataLayer,
+)
+from datasets.tests.factories import DataLayerFactory, DatasetFactory
 from django.urls import reverse
 from planning.tests.factories import PlanningAreaFactory
 from planscape.tests.factories import UserFactory
@@ -25,6 +31,7 @@ USERS_URL = "api:workspaces:workspaces-users"
 MANAGE_USER_URL = "api:workspaces:workspaces-manage-user"
 MANAGE_INVITE_URL = "api:workspaces:workspaces-manage-invite"
 PLANNING_AREAS_URL = "api:workspaces:workspaces-planning-areas"
+FAVORITE_DATALAYER_URL = "api:workspaces:workspaces-favorite-datalayer"
 
 
 class CreateWorkspaceTest(APITestCase):
@@ -846,3 +853,162 @@ class WorkspacePlanningAreasListTest(APITestCase):
         )
 
         self.assertEqual(response.status_code, 404)
+
+
+class FavoriteDataLayerTest(APITestCase):
+    def setUp(self):
+        self.owner = UserFactory.create()
+        self.collaborator = UserFactory.create()
+        self.viewer = UserFactory.create()
+        self.stranger = UserFactory.create()
+        self.workspace = PlanningWorkspaceFactory.create(created_by=self.owner)
+        UserAccessWorkspaceFactory.create(
+            user=self.collaborator,
+            workspace=self.workspace,
+            role=WorkspaceRole.COLLABORATOR,
+        )
+        UserAccessWorkspaceFactory.create(
+            user=self.viewer, workspace=self.workspace, role=WorkspaceRole.VIEWER
+        )
+        self.datalayer = DataLayerFactory.create(
+            dataset=DatasetFactory.create(visibility=VisibilityOptions.PUBLIC),
+            status=DataLayerStatus.READY,
+        )
+
+    def url(self, workspace=None, datalayer_id=None):
+        return reverse(
+            FAVORITE_DATALAYER_URL,
+            kwargs={
+                "pk": (workspace or self.workspace).pk,
+                "datalayer_id": datalayer_id or self.datalayer.pk,
+            },
+        )
+
+    def favorite(self, workspace=None, datalayer=None):
+        return WorkspaceFavoriteDataLayer.objects.create(
+            workspace=workspace or self.workspace,
+            datalayer=datalayer or self.datalayer,
+            created_by=self.owner,
+        )
+
+    def test_requires_authentication(self):
+        response = self.client.post(self.url())
+        self.assertIn(response.status_code, (401, 403))
+
+    def test_owner_and_collaborator_can_favorite(self):
+        for user in (self.owner, self.collaborator):
+            WorkspaceFavoriteDataLayer.objects.all().delete()
+            self.client.force_authenticate(user=user)
+
+            response = self.client.post(self.url())
+
+            self.assertEqual(response.status_code, 201)
+            data = response.json()
+            self.assertEqual(data["workspace"], self.workspace.pk)
+            self.assertEqual(data["datalayer"], self.datalayer.pk)
+            self.assertEqual(data["created_by"], user.pk)
+            self.assertTrue(
+                WorkspaceFavoriteDataLayer.objects.filter(
+                    workspace=self.workspace, datalayer=self.datalayer
+                ).exists()
+            )
+
+    def test_favorite_twice_is_idempotent(self):
+        self.client.force_authenticate(user=self.collaborator)
+
+        self.client.post(self.url())
+        response = self.client.post(self.url())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(WorkspaceFavoriteDataLayer.objects.count(), 1)
+
+    def test_favorites_are_per_workspace(self):
+        other = PlanningWorkspaceFactory.create(created_by=self.owner)
+        self.client.force_authenticate(user=self.owner)
+
+        self.client.post(self.url())
+        response = self.client.post(self.url(workspace=other))
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(
+            WorkspaceFavoriteDataLayer.objects.filter(datalayer=self.datalayer).count(),
+            2,
+        )
+
+    def test_viewer_cannot_favorite(self):
+        self.client.force_authenticate(user=self.viewer)
+
+        response = self.client.post(self.url())
+
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(WorkspaceFavoriteDataLayer.objects.exists())
+
+    def test_stranger_gets_404(self):
+        self.client.force_authenticate(user=self.stranger)
+
+        response = self.client.post(self.url())
+
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(WorkspaceFavoriteDataLayer.objects.exists())
+
+    def test_cannot_favorite_inaccessible_datalayer(self):
+        private = DataLayerFactory.create(
+            dataset=DatasetFactory.create(visibility=VisibilityOptions.PRIVATE),
+            status=DataLayerStatus.READY,
+        )
+        self.client.force_authenticate(user=self.collaborator)
+
+        response = self.client.post(self.url(datalayer_id=private.pk))
+
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(WorkspaceFavoriteDataLayer.objects.exists())
+
+    def test_cannot_favorite_datalayer_not_ready(self):
+        pending = DataLayerFactory.create(
+            dataset=DatasetFactory.create(visibility=VisibilityOptions.PUBLIC),
+            status=DataLayerStatus.PENDING,
+        )
+        self.client.force_authenticate(user=self.collaborator)
+
+        response = self.client.post(self.url(datalayer_id=pending.pk))
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_owner_and_collaborator_can_unfavorite(self):
+        for user in (self.owner, self.collaborator):
+            self.favorite()
+            self.client.force_authenticate(user=user)
+
+            response = self.client.delete(self.url())
+
+            self.assertEqual(response.status_code, 204)
+            self.assertFalse(WorkspaceFavoriteDataLayer.objects.exists())
+
+    def test_unfavorite_only_removes_from_workspace(self):
+        other = PlanningWorkspaceFactory.create(created_by=self.owner)
+        self.favorite()
+        kept = self.favorite(workspace=other)
+        self.client.force_authenticate(user=self.owner)
+
+        self.client.delete(self.url())
+
+        self.assertEqual(
+            list(WorkspaceFavoriteDataLayer.objects.values_list("pk", flat=True)),
+            [kept.pk],
+        )
+
+    def test_unfavorite_not_favorited_returns_404(self):
+        self.client.force_authenticate(user=self.collaborator)
+
+        response = self.client.delete(self.url())
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_viewer_cannot_unfavorite(self):
+        self.favorite()
+        self.client.force_authenticate(user=self.viewer)
+
+        response = self.client.delete(self.url())
+
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(WorkspaceFavoriteDataLayer.objects.exists())

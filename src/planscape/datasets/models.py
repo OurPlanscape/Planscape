@@ -695,6 +695,51 @@ class DataLayerHasStyle(
         ]
 
 
+class WorkspaceFavoriteDataLayer(CreatedAtMixin, models.Model):
+    """
+    A DataLayer favorited inside a Workspace. Favorites are shared by every
+    member of the workspace, not kept per user.
+    """
+
+    id: int
+
+    workspace_id: int
+    workspace = models.ForeignKey(
+        "workspaces.Workspace",
+        related_name="favorite_datalayers",
+        on_delete=models.CASCADE,
+    )
+
+    datalayer_id: int
+    datalayer = models.ForeignKey(
+        DataLayer,
+        related_name="workspace_favorites",
+        on_delete=models.CASCADE,
+    )
+
+    created_by_id: int
+    created_by = models.ForeignKey(
+        User,
+        related_name="favorited_datalayers",
+        on_delete=models.SET_NULL,
+        null=True,
+        help_text="User that favorited the DataLayer.",
+    )
+
+    def __str__(self):
+        return f"{self.workspace_id} - {self.datalayer_id}"
+
+    class Meta(TypedModelMeta):
+        verbose_name = "Workspace Favorite DataLayer"
+        verbose_name_plural = "Workspace Favorite DataLayers"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["workspace", "datalayer"],
+                name="unique_workspace_favorite_datalayer",
+            )
+        ]
+
+
 @dataclass
 class SearchResult:
     id: int

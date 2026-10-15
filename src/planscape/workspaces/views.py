@@ -1,4 +1,10 @@
 from core.serializers import MultiSerializerMixin
+from datasets.models import DataLayer, DataLayerStatus
+from datasets.serializers import WorkspaceFavoriteDataLayerSerializer
+from datasets.services import (
+    add_favorite_datalayer,
+    remove_favorite_datalayer,
+)
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from planning.serializers import ListPlanningAreaSerializer
@@ -227,6 +233,49 @@ class WorkspaceViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             role=serializer.validated_data["role"],
         )
         return Response(WorkspaceMemberSerializer(access).data)
+
+    @extend_schema(
+        description="Favorite (POST) or unfavorite (DELETE) a DataLayer in this "
+        "Workspace. Favorites are shared by every member of the Workspace.",
+        request=None,
+        responses={
+            200: WorkspaceFavoriteDataLayerSerializer,
+            201: WorkspaceFavoriteDataLayerSerializer,
+            204: None,
+            404: BaseErrorMessageSerializer,
+        },
+    )
+    @action(
+        detail=True,
+        methods=["post", "delete"],
+        url_path=r"favorites/datalayers/(?P<datalayer_id>\d+)",
+    )
+    def favorite_datalayer(self, request, pk=None, datalayer_id=None):
+        workspace = self.get_object()
+
+        if request.method == "DELETE":
+            remove_favorite_datalayer(
+                user=request.user,
+                workspace=workspace,
+                datalayer_id=int(datalayer_id),
+            )
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        datalayer = get_object_or_404(
+            DataLayer.objects.all()
+            .accessible_by(request.user)
+            .filter(status=DataLayerStatus.READY),
+            pk=datalayer_id,
+        )
+        favorite, created = add_favorite_datalayer(
+            user=request.user,
+            workspace=workspace,
+            datalayer=datalayer,
+        )
+        return Response(
+            WorkspaceFavoriteDataLayerSerializer(favorite).data,
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
 
     @extend_schema(
         description="List Planning Areas that belong to this Workspace.",

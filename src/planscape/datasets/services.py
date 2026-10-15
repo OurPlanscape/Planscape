@@ -29,6 +29,7 @@ from datasets.models import (
     StorageTypeChoices,
     Style,
     VisibilityOptions,
+    WorkspaceFavoriteDataLayer,
 )
 from datasets.search import (
     datalayer_to_search_result,
@@ -47,6 +48,7 @@ from gis.rasters import get_estimated_mask as get_estimated_mask_raster
 from modules.base import get_module
 from organizations.models import Organization
 from planning.models import TreatmentGoalUsageType
+from rest_framework.exceptions import NotFound
 from workspaces.models import Workspace
 
 from planscape.analytics import track_event
@@ -470,6 +472,7 @@ def browse(
     module: Optional[str] = None,
     geometry: Optional[GEOSGeometry] = None,
     search_tab: str = SearchTab.GENERAL,
+    workspace: Optional[Workspace] = None,
 ) -> QuerySet[DataLayer]:
     datalayers = (
         DataLayer.objects.filter(
@@ -495,8 +498,7 @@ def browse(
         datalayers = datalayers.filter(**filter)
 
     if search_tab == SearchTab.FAVORITES:
-        # TODO: narrow to workspace favorites once favorites are implemented.
-        pass
+        datalayers = datalayers.filter(workspace_favorites__workspace=workspace)
     elif search_tab == SearchTab.UPLOADED:
         # TODO: narrow to uploaded datalayers once uploaded filtering is defined.
         pass
@@ -511,6 +513,7 @@ def browse_simple_category(
     geometry: Optional[GEOSGeometry] = None,
     search_tab: str = SearchTab.GENERAL,
     user: Optional[User] = None,
+    workspace: Optional[Workspace] = None,
 ) -> QuerySet[DataLayer]:
     datalayers = (
         DataLayer.objects.all()
@@ -538,8 +541,7 @@ def browse_simple_category(
         datalayers = datalayers.filter(**filter)
 
     if search_tab == SearchTab.FAVORITES:
-        # TODO: narrow to workspace favorites once favorites are implemented.
-        pass
+        datalayers = datalayers.filter(workspace_favorites__workspace=workspace)
     elif search_tab == SearchTab.UPLOADED:
         # TODO: narrow to uploaded datalayers once uploaded filtering is defined.
         pass
@@ -581,6 +583,7 @@ def find_anything(
     geometry: Optional[GEOSGeometry] = None,
     search_tab: str = SearchTab.GENERAL,
     user: Optional[User] = None,
+    workspace: Optional[Workspace] = None,
     **kwargs,
 ) -> Dict[str, SearchResult]:
     """
@@ -658,8 +661,22 @@ def find_anything(
         metadata_filter["outline__intersects"] = geometry
 
     if search_tab == SearchTab.FAVORITES:
-        # TODO: narrow to workspace favorites once favorites are implemented.
-        pass
+        favorites = WorkspaceFavoriteDataLayer.objects.filter(
+            workspace=workspace,
+            datalayer__deleted_at=None,
+            datalayer__status=DataLayerStatus.READY,
+        )
+        favorite_datalayer_ids = favorites.values("datalayer_id")
+        datalayer_filter["id__in"] = favorite_datalayer_ids
+        category_filter["id__in"] = favorite_datalayer_ids
+        simple_category_filter["id__in"] = favorite_datalayer_ids
+        simple_category_layer_filter["id__in"] = favorite_datalayer_ids
+        metadata_filter["id__in"] = favorite_datalayer_ids
+        # `pk__in` instead of `id__in` so it's ANDed with the module filter
+        # instead of overwriting it.
+        favorite_dataset_ids = favorites.values("datalayer__dataset_id")
+        dataset_filter["pk__in"] = favorite_dataset_ids
+        org_filter["pk__in"] = favorite_dataset_ids
     elif search_tab == SearchTab.UPLOADED:
         # TODO: narrow to uploaded datalayers once uploaded filtering is defined.
         pass
@@ -743,6 +760,56 @@ def find_anything(
                 results[key] = search_result
 
     return results
+
+
+def add_favorite_datalayer(
+    user: User,
+    workspace: Workspace,
+    datalayer: DataLayer,
+) -> Tuple[WorkspaceFavoriteDataLayer, bool]:
+    """
+    Favorites the datalayer in the workspace. Favoriting an already favorited
+    datalayer is a no-op. Returns the favorite and whether it was created.
+    """
+    favorite, created = WorkspaceFavoriteDataLayer.objects.get_or_create(
+        workspace=workspace,
+        datalayer=datalayer,
+        defaults={"created_by": user},
+    )
+    if created:
+        track_event(
+            name="datasets.datalayer.favorited",
+            properties={
+                "workspace_id": workspace.pk,
+                "datalayer_id": datalayer.pk,
+                "email": user.email,
+            },
+            user_id=user.pk,
+        )
+    return favorite, created
+
+
+def remove_favorite_datalayer(
+    user: User,
+    workspace: Workspace,
+    datalayer_id: int,
+) -> None:
+    deleted, _ = WorkspaceFavoriteDataLayer.objects.filter(
+        workspace=workspace,
+        datalayer_id=datalayer_id,
+    ).delete()
+    if not deleted:
+        raise NotFound("DataLayer is not a favorite of this workspace.")
+
+    track_event(
+        name="datasets.datalayer.unfavorited",
+        properties={
+            "workspace_id": workspace.pk,
+            "datalayer_id": datalayer_id,
+            "email": user.email,
+        },
+        user_id=user.pk,
+    )
 
 
 def get_datalayer_by_module_atribute(

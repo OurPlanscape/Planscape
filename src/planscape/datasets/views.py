@@ -31,6 +31,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from workspaces.models import Workspace
 
 from planscape.analytics import track_event
 
@@ -62,7 +63,10 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     @action(detail=True, methods=["post"], permission_classes=[AllowAny])
     def browse(self, request, pk=None):
         dataset = self.get_object()
-        serializer = BrowseDataSetSerializer(data=request.data)
+        serializer = BrowseDataSetSerializer(
+            data=request.data,
+            context={"request": request},
+        )
         serializer.is_valid(raise_exception=True)
         results = self._get_browse_result(
             dataset,
@@ -70,6 +74,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             module=serializer.validated_data.get("module"),
             geometry=serializer.validated_data.get("geometry"),
             search_tab=serializer.validated_data.get("search_tab"),
+            workspace=serializer.validated_data.get("workspace"),
         )
         serializer = BrowseDataLayerSerializer(results, many=True)
         is_authenticated = request.user and request.user.is_authenticated
@@ -93,6 +98,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         module: Optional[str] = None,
         geometry: Optional[GEOSGeometry] = None,
         search_tab: Optional[str] = None,
+        workspace: Optional[Workspace] = None,
     ):
         dataset = self.get_object()
         datalayers = browse(
@@ -101,6 +107,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             module=module,
             geometry=geometry,
             search_tab=search_tab,
+            workspace=workspace,
         )
         return list(datalayers.all())
 
@@ -118,7 +125,10 @@ class SimpleCategoryViewSet(MultiSerializerMixin, GenericViewSet):
     @action(detail=True, methods=["post"], permission_classes=[AllowAny])
     def browse(self, request, pk=None):
         category = self.get_object()
-        serializer = BrowseDataSetSerializer(data=request.data)
+        serializer = BrowseDataSetSerializer(
+            data=request.data,
+            context={"request": request},
+        )
         serializer.is_valid(raise_exception=True)
         results = browse_simple_category(
             category,
@@ -127,6 +137,7 @@ class SimpleCategoryViewSet(MultiSerializerMixin, GenericViewSet):
             geometry=serializer.validated_data.get("geometry"),
             search_tab=serializer.validated_data.get("search_tab"),
             user=request.user,
+            workspace=serializer.validated_data.get("workspace"),
         )
         serializer = BrowseDataLayerSerializer(list(results.all()), many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -159,7 +170,10 @@ class DataLayerViewSet(
     )
     @action(detail=False, methods=["post"], permission_classes=[AllowAny])
     def find_anything(self, request):
-        serializer = FindAnythingSerializer(data=request.data)
+        serializer = FindAnythingSerializer(
+            data=request.data,
+            context={"request": request},
+        )
         serializer.is_valid(raise_exception=True)
 
         results = find_anything(user=request.user, **serializer.validated_data)

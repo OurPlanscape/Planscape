@@ -15,6 +15,7 @@ from datasets.models import (
     StorageTypeChoices,
     Style,
     VisibilityOptions,
+    WorkspaceFavoriteDataLayer,
 )
 from datasets.styles import (
     get_default_raster_style,
@@ -651,7 +652,43 @@ class BrowseDataLayerFilterSerializer(serializers.Serializer):
     )
 
 
-class BrowseDataSetSerializer(serializers.Serializer):
+class SearchTabSerializer(serializers.Serializer):
+    """
+    `search_tab` handling shared by find anything and browse. The favorites tab
+    is scoped to a workspace the requester has access to.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["workspace_id"].queryset = get_available_workspaces_for_request(
+            self.context.get("request"),
+        )
+
+    search_tab = serializers.ChoiceField(
+        choices=SearchTab.choices,
+        default=SearchTab.GENERAL,
+        required=False,
+    )
+
+    workspace_id = serializers.PrimaryKeyRelatedField(
+        queryset=Workspace.objects.none(),
+        source="workspace",
+        required=False,
+        help_text="Workspace whose favorites are searched. "
+        "Required when `search_tab` is `favorites`.",
+    )
+
+    def validate(self, attrs):
+        if attrs.get("search_tab") == SearchTab.FAVORITES and not attrs.get(
+            "workspace"
+        ):
+            raise serializers.ValidationError(
+                {"workspace_id": "This field is required to search favorites."}
+            )
+        return attrs
+
+
+class BrowseDataSetSerializer(SearchTabSerializer):
     def __init__(self, *args, **kwargs):
         from modules.base import MODULE_HANDLERS
 
@@ -664,12 +701,6 @@ class BrowseDataSetSerializer(serializers.Serializer):
 
     type = serializers.ChoiceField(choices=DataLayerType.choices, required=False)
 
-    search_tab = serializers.ChoiceField(
-        choices=SearchTab.choices,
-        default=SearchTab.GENERAL,
-        required=False,
-    )
-
     geometry = GeometryTypeField(
         geometry_type="MultiPolygon",
         destination_srid=4269,
@@ -678,7 +709,7 @@ class BrowseDataSetSerializer(serializers.Serializer):
     )
 
 
-class FindAnythingSerializer(serializers.Serializer):
+class FindAnythingSerializer(SearchTabSerializer):
     def __init__(self, *args, **kwargs):
         from modules.base import MODULE_HANDLERS
 
@@ -695,12 +726,6 @@ class FindAnythingSerializer(serializers.Serializer):
         choices=DataLayerType.choices,
     )
 
-    search_tab = serializers.ChoiceField(
-        choices=SearchTab.choices,
-        default=SearchTab.GENERAL,
-        required=False,
-    )
-
     geometry = GeometryTypeField(
         geometry_type="MultiPolygon",
         destination_srid=4269,
@@ -714,3 +739,17 @@ class SearchResultsSerializer(serializers.Serializer):
     name = serializers.CharField()
     type = serializers.CharField()
     data = serializers.JSONField()  # type: ignore
+
+
+class WorkspaceFavoriteDataLayerSerializer(
+    serializers.ModelSerializer[WorkspaceFavoriteDataLayer]
+):
+    class Meta:
+        model = WorkspaceFavoriteDataLayer
+        fields = (
+            "id",
+            "workspace",
+            "datalayer",
+            "created_by",
+            "created_at",
+        )

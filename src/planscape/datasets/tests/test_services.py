@@ -16,8 +16,10 @@ from datasets.models import (
     Dataset,
     GeometryType,
     PreferredDisplayType,
+    SearchTab,
     SelectionTypeOptions,
     VisibilityOptions,
+    WorkspaceFavoriteDataLayer,
 )
 from datasets.services import (
     create_dataset,
@@ -34,7 +36,7 @@ from datasets.tests.factories import (
     DatasetFactory,
     SimpleCategoryFactory,
 )
-from workspaces.tests.factories import WorkspaceFactory
+from workspaces.tests.factories import PlanningWorkspaceFactory, WorkspaceFactory
 
 
 class TestCreateDataset(TestCase):
@@ -745,6 +747,122 @@ class TestSearch(TestCase):
         self.assertNotIn(private.name, names)
         self.assertIn(f"SIMPLE_CATEGORY:{category.pk}", results)
         self.assertNotIn(f"SIMPLE_CATEGORY:{private_only.pk}", results)
+
+
+class TestSearchFavorites(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.workspace = PlanningWorkspaceFactory.create(created_by=self.user)
+        self.organization = OrganizationFactory.create(name="Sierra Org")
+        self.favorite_dataset = DatasetFactory(
+            name="Wildfire dataset",
+            organization=self.organization,
+            visibility=VisibilityOptions.PUBLIC,
+        )
+        self.other_dataset = DatasetFactory(
+            name="Wildfire other dataset",
+            organization=self.organization,
+            visibility=VisibilityOptions.PUBLIC,
+        )
+        self.favorite_category = SimpleCategoryFactory.create(name="Wildfire risk")
+        self.other_category = SimpleCategoryFactory.create(name="Wildfire hazard")
+        self.favorite = DataLayerFactory.create(
+            dataset=self.favorite_dataset,
+            name="Wildfire favorite",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            simple_categories=[self.favorite_category],
+        )
+        self.not_favorite = DataLayerFactory.create(
+            dataset=self.other_dataset,
+            name="Wildfire not favorite",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            simple_categories=[self.other_category],
+        )
+
+    def search(self, term="wildfire", workspace=None):
+        return find_anything(
+            term,
+            type=DataLayerType.RASTER,
+            search_tab=SearchTab.FAVORITES,
+            user=self.user,
+            workspace=workspace or self.workspace,
+        )
+
+    def favorite_in(self, workspace, datalayer):
+        WorkspaceFavoriteDataLayer.objects.create(
+            workspace=workspace, datalayer=datalayer
+        )
+
+    def test_no_favorites_returns_nothing(self):
+        self.assertEqual(self.search(), {})
+
+    def test_returns_only_favorite_datalayers(self):
+        self.favorite_in(self.workspace, self.favorite)
+
+        results = self.search()
+
+        self.assertIn(f"DATALAYER:{self.favorite.pk}", results)
+        self.assertNotIn(f"DATALAYER:{self.not_favorite.pk}", results)
+
+    def test_ignores_favorites_from_other_workspaces(self):
+        other_workspace = PlanningWorkspaceFactory.create(created_by=self.user)
+        self.favorite_in(other_workspace, self.not_favorite)
+        self.favorite_in(self.workspace, self.favorite)
+
+        results = self.search()
+
+        self.assertIn(f"DATALAYER:{self.favorite.pk}", results)
+        self.assertNotIn(f"DATALAYER:{self.not_favorite.pk}", results)
+
+    def test_datasets_restricted_to_ones_with_favorites(self):
+        self.favorite_in(self.workspace, self.favorite)
+
+        results = self.search()
+
+        self.assertIn(f"DATASET:{self.favorite_dataset.pk}", results)
+        self.assertNotIn(f"DATASET:{self.other_dataset.pk}", results)
+
+    def test_organization_match_restricted_to_datasets_with_favorites(self):
+        self.favorite_in(self.workspace, self.favorite)
+
+        results = self.search(term="sierra")
+
+        self.assertIn(f"DATASET:{self.favorite_dataset.pk}", results)
+        self.assertNotIn(f"DATASET:{self.other_dataset.pk}", results)
+
+    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
+    def test_simple_categories_restricted_to_ones_with_favorites(self):
+        self.favorite_in(self.workspace, self.favorite)
+
+        results = self.search()
+
+        self.assertIn(f"SIMPLE_CATEGORY:{self.favorite_category.pk}", results)
+        self.assertNotIn(f"SIMPLE_CATEGORY:{self.other_category.pk}", results)
+
+    def test_metadata_match_restricted_to_favorites(self):
+        metadata = {"identification": {"abstract": "sequoia groves"}}
+        favorite = DataLayerFactory.create(
+            dataset=self.favorite_dataset,
+            name="Metadata favorite",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            metadata=metadata,
+        )
+        not_favorite = DataLayerFactory.create(
+            dataset=self.favorite_dataset,
+            name="Metadata not favorite",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            metadata=metadata,
+        )
+        self.favorite_in(self.workspace, favorite)
+
+        results = self.search(term="sequoia")
+
+        self.assertIn(f"DATALAYER:{favorite.pk}", results)
+        self.assertNotIn(f"DATALAYER:{not_favorite.pk}", results)
 
 
 class TestStorageURL(TestCase):
