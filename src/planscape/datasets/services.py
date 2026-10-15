@@ -9,6 +9,7 @@ from uuid import uuid4
 import mmh3
 from actstream import action
 from cacheops import cached, invalidate_model
+from core.flags import feature_enabled
 from core.gcs import create_upload_url as create_upload_url_gcs
 from core.gcs import is_gcs_file
 from core.s3 import create_upload_url as create_upload_url_s3
@@ -29,13 +30,18 @@ from datasets.models import (
     Style,
     VisibilityOptions,
 )
-from datasets.search import datalayer_to_search_result, dataset_to_search_result
+from datasets.search import (
+    datalayer_to_search_result,
+    dataset_to_search_result,
+    simple_category_to_search_result,
+)
 from datasets.tasks import datalayer_uploaded
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, Polygon
 from django.db import connection, transaction
-from django.db.models import QuerySet
+from django.db.models import BooleanField, QuerySet
+from django.db.models.expressions import RawSQL
 from gis.geometry import geodjango_to_multi, to_geodjango_geometry
 from gis.rasters import get_estimated_mask as get_estimated_mask_raster
 from modules.base import get_module
@@ -541,6 +547,32 @@ def browse_simple_category(
     return datalayers.distinct()
 
 
+def _escape_like(term: str) -> str:
+    return term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+def metadata_values_contain(term: str) -> RawSQL:
+    """
+    Matches datalayers that have any string value in their metadata containing
+    `term` (case insensitive). Only values are searched, never keys, and the
+    internal `modules` configuration is ignored.
+    """
+    column = f'"{DataLayer._meta.db_table}"."metadata"'
+    sql = f"""EXISTS (
+    SELECT 1
+    FROM jsonb_path_query(
+        CASE
+            WHEN jsonb_typeof({column}) = 'object' THEN {column} - 'modules'
+            ELSE {column}
+        END,
+        'strict $.**'
+    ) AS value
+    WHERE jsonb_typeof(value) = 'string'
+    AND value #>> '{{}}' ILIKE %s
+)"""
+    return RawSQL(sql, (f"%{_escape_like(term)}%",), output_field=BooleanField())
+
+
 @cached(timeout=settings.FIND_ANYTHING_TTL)
 def find_anything(
     term: str,
@@ -580,6 +612,21 @@ def find_anything(
         "status": DataLayerStatus.READY,
         "type": layer_type,
     }
+    # datalayers a simple category must contain to be returned as a result
+    simple_category_layer_filter: Dict[str, Any] = {
+        "status": DataLayerStatus.READY,
+        "type": layer_type,
+    }
+    simple_category_filter: Dict[str, Any] = {
+        "simple_categories__name__icontains": term,
+        "status": DataLayerStatus.READY,
+        "type": layer_type,
+    }
+    metadata_filter: Dict[str, Any] = {
+        "metadata_match": True,
+        "status": DataLayerStatus.READY,
+        "type": layer_type,
+    }
     dataset_filter: Dict[str, Any] = {
         "name__icontains": term,
     }
@@ -590,16 +637,25 @@ def find_anything(
     if module:
         datalayer_filter[f"metadata__modules__{module}__enabled"] = True
         category_filter[f"metadata__modules__{module}__enabled"] = True
+        simple_category_filter[f"metadata__modules__{module}__enabled"] = True
+        simple_category_layer_filter[f"metadata__modules__{module}__enabled"] = True
+        metadata_filter[f"metadata__modules__{module}__enabled"] = True
 
     if dataset_ids:
         datalayer_filter["dataset_id__in"] = dataset_ids
         category_filter["dataset__id__in"] = dataset_ids
+        simple_category_filter["dataset_id__in"] = dataset_ids
+        simple_category_layer_filter["dataset_id__in"] = dataset_ids
+        metadata_filter["dataset_id__in"] = dataset_ids
         dataset_filter["id__in"] = dataset_ids
         org_filter["id__in"] = dataset_ids
 
     if geometry:
         datalayer_filter["outline__intersects"] = geometry
         category_filter["outline__intersects"] = geometry
+        simple_category_filter["outline__intersects"] = geometry
+        simple_category_layer_filter["outline__intersects"] = geometry
+        metadata_filter["outline__intersects"] = geometry
 
     if search_tab == SearchTab.FAVORITES:
         # TODO: narrow to workspace favorites once favorites are implemented.
@@ -607,6 +663,23 @@ def find_anything(
     elif search_tab == SearchTab.UPLOADED:
         # TODO: narrow to uploaded datalayers once uploaded filtering is defined.
         pass
+
+    simple_categories = SimpleCategory.objects.none()
+    simple_category_datalayers = DataLayer.objects.none()
+    if feature_enabled("DATA_ORGANIZATION"):
+        simple_categories = SimpleCategory.objects.filter(
+            name__icontains=term,
+            id__in=DataLayer.objects.all()
+            .accessible_by(user)
+            .filter(**simple_category_layer_filter)
+            .values("simple_categories"),
+        )
+        simple_category_datalayers = (
+            DataLayer.objects.all()
+            .accessible_by(user)
+            .filter(**simple_category_filter)
+            .distinct()
+        )
 
     raw_results = [
         [
@@ -625,6 +698,7 @@ def find_anything(
                 **dataset_filter,
             )
         ],
+        [simple_category_to_search_result(x) for x in simple_categories],
         [
             datalayer_to_search_result(x)
             for x in DataLayer.objects.all()
@@ -639,6 +713,16 @@ def find_anything(
             .accessible_by(user)
             .filter(
                 **datalayer_filter,
+            )
+        ],
+        [datalayer_to_search_result(x) for x in simple_category_datalayers],
+        [
+            datalayer_to_search_result(x)
+            for x in DataLayer.objects.all()
+            .accessible_by(user)
+            .alias(metadata_match=metadata_values_contain(term))
+            .filter(
+                **metadata_filter,
             )
         ],
     ]
