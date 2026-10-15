@@ -76,6 +76,8 @@ class WorkspaceViewPermission(PlanscapePermission):
                 return True
             case "manage_invite":
                 return self.permission_set.can_manage_members(request.user, obj)
+            case "favorite_datalayer":
+                return self.permission_set.can_add(request.user, obj)
             case "manage_user":
                 user_id = view.kwargs.get("user_id")
                 if request.method == "DELETE" and str(request.user.pk) == str(user_id):
