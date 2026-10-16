@@ -111,6 +111,11 @@ export function convertOldConfigurationToV3Payload(
 
   // Constraints
   const constraints: Constraint[] = [];
+  // this will be true if we are on the constraints step
+  let onConstraintsStep =
+    formData.min_distance_from_road !== undefined ||
+    formData.max_slope !== undefined ||
+    formData.adv_constraints !== undefined;
 
   const roadLayerId = thresholdIds.get('distance_to_roads');
   if (formData.min_distance_from_road && roadLayerId) {
@@ -138,8 +143,9 @@ export function convertOldConfigurationToV3Payload(
       });
     });
   }
-
-  if (constraints.length > 0) {
+  // if we have no values, we should still send an empty constraints array,
+  // so the backend overwrites the constraints with an empty array
+  if (onConstraintsStep) {
     config.constraints = constraints;
   }
 
