@@ -658,6 +658,73 @@ class TestDataLayerViewSet(APITestCase):
 
         self.assertEqual(response.status_code, 400)
 
+    def test_find_anything_is_favorite(self):
+        workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        other_workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        favorite = DataLayerFactory.create(
+            dataset=self.dataset, name="Fire favorite", type=DataLayerType.RASTER
+        )
+        not_favorite = DataLayerFactory.create(
+            dataset=self.dataset, name="Fire not favorite", type=DataLayerType.RASTER
+        )
+        WorkspaceFavoriteDataLayer.objects.create(
+            workspace=workspace, datalayer=favorite
+        )
+        WorkspaceFavoriteDataLayer.objects.create(
+            workspace=other_workspace, datalayer=not_favorite
+        )
+        self.client.force_authenticate(user=self.normal)
+        url = reverse("api:datasets:datalayers-find-anything")
+        params = {"term": "fire", "type": "RASTER", "workspace_id": workspace.pk}
+
+        response = self.client.post(url, params, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        is_favorite = {
+            row["id"]: row["data"]["is_favorite"]
+            for row in response.json()["results"]
+            if row["type"] == "DATALAYER"
+        }
+        self.assertEqual(is_favorite, {favorite.pk: True, not_favorite.pk: False})
+
+    def test_find_anything_is_favorite_null_without_workspace(self):
+        datalayer = DataLayerFactory.create(
+            dataset=self.dataset, name="Fire", type=DataLayerType.RASTER
+        )
+        self.client.force_authenticate(user=self.normal)
+        url = reverse("api:datasets:datalayers-find-anything")
+
+        response = self.client.post(
+            url, {"term": "fire", "type": "RASTER"}, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        results = response.json()["results"]
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["id"], datalayer.pk)
+        self.assertIsNone(results[0]["data"]["is_favorite"])
+
+    def test_find_anything_is_favorite_reflects_new_favorites(self):
+        workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        datalayer = DataLayerFactory.create(
+            dataset=self.dataset, name="Fire", type=DataLayerType.RASTER
+        )
+        self.client.force_authenticate(user=self.normal)
+        url = reverse("api:datasets:datalayers-find-anything")
+        params = {"term": "fire", "type": "RASTER", "workspace_id": workspace.pk}
+
+        response = self.client.post(url, params, format="json")
+        self.assertIs(response.json()["results"][0]["data"]["is_favorite"], False)
+
+        favorite_url = reverse(
+            "api:workspaces:workspaces-favorite-datalayer",
+            kwargs={"pk": workspace.pk, "datalayer_id": datalayer.pk},
+        )
+        self.assertEqual(self.client.post(favorite_url).status_code, 201)
+
+        response = self.client.post(url, params, format="json")
+        self.assertIs(response.json()["results"][0]["data"]["is_favorite"], True)
+
 
 class TestDatasetViewSet(APITestCase):
     def setUp(self) -> None:
@@ -786,6 +853,44 @@ class TestDatasetViewSet(APITestCase):
         )
         self.assertEqual(response.status_code, 400)
 
+    def test_browses_datalayers_is_favorite(self):
+        self.client.force_authenticate(user=self.normal)
+        workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        other_workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        favorite = DataLayerFactory.create(dataset=dataset, type=DataLayerType.RASTER)
+        not_favorite = DataLayerFactory.create(
+            dataset=dataset, type=DataLayerType.RASTER
+        )
+        WorkspaceFavoriteDataLayer.objects.create(
+            workspace=workspace, datalayer=favorite
+        )
+        WorkspaceFavoriteDataLayer.objects.create(
+            workspace=other_workspace, datalayer=not_favorite
+        )
+        url = reverse("api:datasets:datasets-browse", kwargs={"pk": dataset.pk})
+
+        response = self.client.post(
+            url, {"type": "RASTER", "workspace_id": workspace.pk}, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            {row["id"]: row["is_favorite"] for row in response.json()},
+            {favorite.pk: True, not_favorite.pk: False},
+        )
+
+    def test_browses_datalayers_is_favorite_null_without_workspace(self):
+        self.client.force_authenticate(user=self.normal)
+        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        DataLayerFactory.create(dataset=dataset, type=DataLayerType.RASTER)
+        url = reverse("api:datasets:datasets-browse", kwargs={"pk": dataset.pk})
+
+        response = self.client.post(url, {"type": "RASTER"}, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.json()[0]["is_favorite"])
+
 
 class TestSimpleCategoryViewSet(APITestCase):
     def setUp(self) -> None:
@@ -912,6 +1017,52 @@ class TestSimpleCategoryViewSet(APITestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn("workspace_id", response.json()["errors"])
+
+    def test_browse_is_favorite(self):
+        self.client.force_authenticate(user=self.normal)
+        workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        category = SimpleCategoryFactory.create()
+        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        favorite = DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            simple_categories=[category],
+        )
+        not_favorite = DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            simple_categories=[category],
+        )
+        WorkspaceFavoriteDataLayer.objects.create(
+            workspace=workspace, datalayer=favorite
+        )
+        url = reverse("api:datasets:categories-browse", kwargs={"pk": category.pk})
+
+        response = self.client.post(
+            url, {"type": "RASTER", "workspace_id": workspace.pk}, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            {row["id"]: row["is_favorite"] for row in response.json()},
+            {favorite.pk: True, not_favorite.pk: False},
+        )
+
+    def test_browse_is_favorite_null_without_workspace(self):
+        self.client.force_authenticate(user=self.normal)
+        category = SimpleCategoryFactory.create()
+        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            simple_categories=[category],
+        )
+        url = reverse("api:datasets:categories-browse", kwargs={"pk": category.pk})
+
+        response = self.client.post(url, {"type": "RASTER"}, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.json()[0]["is_favorite"])
 
     def test_browse_is_post_only(self):
         category = SimpleCategoryFactory.create()
