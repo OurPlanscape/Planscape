@@ -553,11 +553,33 @@ class TestSearch(TestCase):
         self.assertEqual(names.count(habitat_layer.name), 1)
         self.assertNotIn(vector_layer.name, names)
         self.assertNotIn(roads_layer.name, names)
-        category_result = results[f"SIMPLE_CATEGORY:{wildlife.pk}"]
-        self.assertEqual(category_result.name, wildlife.name)
+        # its layers are already listed, so the category isn't
+        self.assertNotIn(f"SIMPLE_CATEGORY:{wildlife.pk}", results)
+
+    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
+    def test_simple_category_is_dropped_when_its_datalayers_are_returned(self):
+        dataset = DatasetFactory(visibility="PUBLIC")
+        forest = SimpleCategoryFactory.create(name="Forest")
+        canopy = DataLayerFactory.create(
+            dataset=dataset,
+            name="Canopy cover",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            simple_categories=[forest],
+        )
+        height = DataLayerFactory.create(
+            dataset=dataset,
+            name="Tree height",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            simple_categories=[forest],
+        )
+
+        results = find_anything("forest", type=DataLayerType.RASTER)
+
         self.assertEqual(
-            category_result.data,
-            {"id": wildlife.pk, "name": wildlife.name, "icon": None},
+            set(results),
+            {f"DATALAYER:{canopy.pk}", f"DATALAYER:{height.pk}"},
         )
 
     @override_settings(FEATURE_FLAGS=[])
@@ -745,7 +767,7 @@ class TestSearch(TestCase):
         self.assertIn(public_metadata.name, names)
         self.assertIn(public_category.name, names)
         self.assertNotIn(private.name, names)
-        self.assertIn(f"SIMPLE_CATEGORY:{category.pk}", results)
+        self.assertNotIn(f"SIMPLE_CATEGORY:{category.pk}", results)
         self.assertNotIn(f"SIMPLE_CATEGORY:{private_only.pk}", results)
 
 
@@ -838,7 +860,7 @@ class TestSearchFavorites(TestCase):
 
         results = self.search()
 
-        self.assertIn(f"SIMPLE_CATEGORY:{self.favorite_category.pk}", results)
+        self.assertNotIn(f"SIMPLE_CATEGORY:{self.favorite_category.pk}", results)
         self.assertNotIn(f"SIMPLE_CATEGORY:{self.other_category.pk}", results)
 
     def test_metadata_match_restricted_to_favorites(self):

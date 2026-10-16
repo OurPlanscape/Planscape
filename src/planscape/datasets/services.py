@@ -759,7 +759,18 @@ def find_anything(
                     continue
                 results[key] = search_result
 
-    return results
+    # a category is redundant when its layers are already in the results
+    layer_category_ids = {
+        category["id"]
+        for result in results.values()
+        if result.type == "DATALAYER"
+        for category in result.data.get("simple_categories", [])
+    }
+    return {
+        key: result
+        for key, result in results.items()
+        if not (result.type == "SIMPLE_CATEGORY" and result.id in layer_category_ids)
+    }
 
 
 def add_favorite_datalayer(
