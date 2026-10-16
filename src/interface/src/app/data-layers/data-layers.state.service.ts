@@ -4,6 +4,7 @@ import {
   BehaviorSubject,
   catchError,
   combineLatest,
+  distinctUntilChanged,
   map,
   Observable,
   of,
@@ -29,13 +30,10 @@ import { extractLegendInfo } from './utilities';
 import { MapModuleService } from '@services/map-module.service';
 
 import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-datalayers.token';
-
-import { distinctUntilChanged } from 'rxjs/operators';
 import { PlanState } from '@plan/plan.state';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import { SNACK_ERROR_CONFIG, UnselectableType } from '@app/shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SELECTION_MODE } from './data-layers/selection-mode.token';
 import { FeatureService } from '@features/feature.service';
 
 /** The dataset or category whose layers are being browsed. */
@@ -55,11 +53,28 @@ export interface unselectableLayer {
 export class DataLayersStateService {
   readonly limit = 20;
 
-  dataSets$ = this.mapModuleService.datasets$.pipe(
-    distinctUntilChanged(),
-    map((mapData) => mapData.main_datasets),
+  private moduleNameOverride$ = new BehaviorSubject<string | null>(null);
+
+  private baseDataSets$ = this.mapModuleService.datasets$.pipe(
+    map((d) => d.main_datasets)
+  );
+
+  dataSets$ = this.moduleNameOverride$.pipe(
+    switchMap((name) =>
+      name ? this.mapModuleService.datasetsFor(name) : this.baseDataSets$
+    ),
     tap(() => queueMicrotask(() => this.loadingSubject.next(false)))
   );
+
+  setModuleNameOverride(name: string | null) {
+    // Clear the selection first so dataTree$ doesn't fire with a dataset
+    // from the other module paired with the new module name
+    this._selectedDataSet$.next(null);
+    this.moduleNameOverride$.next(name);
+  }
+
+  private _selectedDataSet$ = new BehaviorSubject<BaseDataSet | null>(null);
+  selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
   categories$ = this.mapModuleService.datasets$.pipe(
     distinctUntilChanged(),
@@ -115,15 +130,16 @@ export class DataLayersStateService {
     this.selection$,
     // Setting an initial value when there is no plan
     this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
+    this.moduleNameOverride$,
   ]).pipe(
     tap(() => this.loadingSubject.next(true)),
-    switchMap(([selection, planningAreaGeometry]) => {
+    switchMap(([selection, planningAreaGeometry, override]) => {
       if (!selection) {
         this.loadingSubject.next(false);
         return of(null);
       }
+      const module = override ?? this.mapModuleService.moduleName;
       const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
-      const module = this.mapModuleService.moduleName;
       // categories list their layers flat; datasets nest them by path
       const isCategory = selection.type === 'category';
       const layers$ = isCategory
@@ -177,14 +193,16 @@ export class DataLayersStateService {
     this._offset,
     // Setting an initial value when there is no plan
     this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
+    this.moduleNameOverride$,
   ]).pipe(
     tap(() => this.loadingSubject.next(true)),
-    switchMap(([term, offset, planningAreaGeometry]) => {
+    switchMap(([term, offset, planningAreaGeometry, override]) => {
       if (!term) {
         return of(null);
       }
 
-      const module = this.mapModuleService.moduleName;
+      const module = override ?? this.mapModuleService.moduleName;
+
       const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
 
       return this.service
@@ -208,7 +226,6 @@ export class DataLayersStateService {
     }),
     shareReplay(1)
   );
-
   private _paths$ = new BehaviorSubject<string[]>([]);
   paths$ = this._paths$.asObservable();
 
@@ -220,14 +237,15 @@ export class DataLayersStateService {
     private mapModuleService: MapModuleService,
     @Inject(MAX_SELECTED_DATALAYERS)
     private maxSelectedDatalayers: number,
-    @Inject(SELECTION_MODE)
-    private selectionMode: 'AUTOMATIC' | 'MANUAL',
     @Inject(USE_GEOMETRY)
     private readonly sendGeometry: boolean,
     private planState: PlanState,
     private matSnackBar: MatSnackBar,
     private featureService: FeatureService
   ) {}
+
+  // determines whether we interject anything when the user makes a selection
+  selectionMode: 'AUTOMATIC' | 'MANUAL' = 'AUTOMATIC';
 
   selectDataSet(dataset: BaseDataSet) {
     this.select({
@@ -448,5 +466,9 @@ export class DataLayersStateService {
 
   setMaxSelectedLayers(max: number): void {
     this.maxSelectedDatalayers = max;
+  }
+
+  setSelectionMode(mode: 'AUTOMATIC' | 'MANUAL') {
+    this.selectionMode = mode;
   }
 }
