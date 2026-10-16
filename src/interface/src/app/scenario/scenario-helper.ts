@@ -112,8 +112,8 @@ export function convertOldConfigurationToV3Payload(
   // Constraints
   const constraints: Constraint[] = [];
   // this will be true if we are on the constraints step
-  // Note that this assume there is *a single* constraints step
-  let onConstraintsStep = formData.min_distance_from_road !== undefined ||
+  let onConstraintsStep =
+    formData.min_distance_from_road !== undefined ||
     formData.max_slope !== undefined ||
     formData.adv_constraints !== undefined;
 
@@ -145,7 +145,7 @@ export function convertOldConfigurationToV3Payload(
   }
   // if we have no values, we should still send an empty constraints array,
   // so the backend overwrites the constraints with an empty array
-  if (constraints.length > 0 || onConstraintsStep) {
+  if (onConstraintsStep) {
     config.constraints = constraints;
   }
 
