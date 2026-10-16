@@ -199,8 +199,7 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
       const selectedLayer =
         multimapStorage?.dataLayers?.[this.mapNumber] || null;
       if (selectedLayer) {
-        this.dataLayersStateService.selectDataLayer(selectedLayer);
-        this.dataLayersStateService.goToSelectedLayer(selectedLayer);
+        this.dataLayersStateService.restoreDataLayer(selectedLayer);
       }
     }
   }
