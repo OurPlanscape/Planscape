@@ -13,14 +13,21 @@
   <!--When performing search, show results.-->
   <ng-container *ngIf="(isBrowsing$ | async) === false">
     <ng-container *ngIf="searchTerm$ | async as searchTerm">
-      <div *ngIf="results$ | async as results">
+      <div *ngIf="searchResults$ | async">
         <div *ngIf="resultCount" class="result-count sticky">
           {{ resultCount }} Results for "{{ searchTerm }}"
         </div>
-        <app-search-results
+        <app-category-search-results
+          *ngIf="browseByCategory; else datasetResults"
           [searchTerm]="searchTerm"
-          [results]="results"
-          [displayAddButton]="displayAddButton"></app-search-results>
+          [results]="categoryResults$ | async"
+          [displayAddButton]="displayAddButton"></app-category-search-results>
+        <ng-template #datasetResults>
+          <app-search-results
+            [searchTerm]="searchTerm"
+            [results]="results$ | async"
+            [displayAddButton]="displayAddButton"></app-search-results>
+        </ng-template>
         <div *ngIf="resultCount === 0">
           <sg-no-results></sg-no-results>
         </div>
