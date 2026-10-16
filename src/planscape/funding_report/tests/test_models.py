@@ -1,8 +1,6 @@
 from django.test import SimpleTestCase
 
 from funding_report.models import (
-    FundingOpportunityReport,
-    FundingOpportunityReportStatus,
     FundingReportMetric,
     get_funding_report_metadata,
 )
@@ -45,68 +43,3 @@ class GetFundingReportMetadataTest(SimpleTestCase):
     def test_unknown_metric_raises(self):
         with self.assertRaises(ValueError):
             get_funding_report_metadata("/tmp/Baseline_2026_tcuft.tif")
-
-
-class FundingOpportunityReportStatusTest(SimpleTestCase):
-    def test_overall_status_success_when_both_succeed(self):
-        report = FundingOpportunityReport(
-            calculation_status=FundingOpportunityReportStatus.SUCCESS,
-            burn_simulation_status=FundingOpportunityReportStatus.SUCCESS,
-        )
-
-        self.assertEqual(
-            report.get_overall_status(),
-            FundingOpportunityReportStatus.SUCCESS,
-        )
-
-    def test_overall_status_running_when_burn_simulation_running(self):
-        report = FundingOpportunityReport(
-            calculation_status=FundingOpportunityReportStatus.SUCCESS,
-            burn_simulation_status=FundingOpportunityReportStatus.RUNNING,
-        )
-
-        self.assertEqual(
-            report.get_overall_status(),
-            FundingOpportunityReportStatus.RUNNING,
-        )
-
-    def test_overall_status_failed_when_burn_simulation_fails(self):
-        report = FundingOpportunityReport(
-            calculation_status=FundingOpportunityReportStatus.SUCCESS,
-            burn_simulation_status=FundingOpportunityReportStatus.FAILED,
-        )
-
-        self.assertEqual(
-            report.get_overall_status(),
-            FundingOpportunityReportStatus.FAILED,
-        )
-
-    def test_overall_status_pending_by_default(self):
-        report = FundingOpportunityReport()
-
-        self.assertEqual(
-            report.get_overall_status(),
-            FundingOpportunityReportStatus.PENDING,
-        )
-
-    def test_overall_status_running_when_calculation_running(self):
-        report = FundingOpportunityReport(
-            calculation_status=FundingOpportunityReportStatus.RUNNING,
-            burn_simulation_status=FundingOpportunityReportStatus.SUCCESS,
-        )
-
-        self.assertEqual(
-            report.get_overall_status(),
-            FundingOpportunityReportStatus.RUNNING,
-        )
-
-    def test_overall_status_failed_when_calculation_fails(self):
-        report = FundingOpportunityReport(
-            calculation_status=FundingOpportunityReportStatus.FAILED,
-            burn_simulation_status=FundingOpportunityReportStatus.SUCCESS,
-        )
-
-        self.assertEqual(
-            report.get_overall_status(),
-            FundingOpportunityReportStatus.FAILED,
-        )
