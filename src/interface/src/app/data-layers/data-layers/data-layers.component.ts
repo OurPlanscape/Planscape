@@ -16,6 +16,11 @@ import { MatTreeModule } from '@angular/material/tree';
 import { DataLayerTreeComponent } from '@data-layers/data-layer-tree/data-layer-tree.component';
 import { DataSetComponent } from '@data-layers/data-set/data-set.component';
 import { SearchResultsComponent } from '@data-layers/search-results/search-results.component';
+import { CategorySearchResultsComponent } from '@data-layers/category-search-results/category-search-results.component';
+import {
+  CategoryResults,
+  groupSearchResultsByCategory,
+} from '@data-layers/category-search-results/category-search';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import {
   ButtonComponent,
@@ -58,6 +63,7 @@ import { groupSearchResults, Results } from './search';
     DataLayerTreeComponent,
     SearchBarComponent,
     SearchResultsComponent,
+    CategorySearchResultsComponent,
     DataSetComponent,
     NoResultsComponent,
     MatRadioModule,
@@ -106,27 +112,35 @@ export class DataLayersComponent {
   );
   resultCount: number | null = null;
 
-  results$: Observable<Results | null> =
-    this.dataLayersStateService.searchResults$.pipe(
-      startWith(null),
-      map((results) => {
-        if (results) {
-          this.resultCount = results.count;
-          return groupSearchResults(results.results);
-        } else {
-          return results;
-        }
-      }),
-      catchError((err) => {
-        // TODO handle errors
-        return throwError(() => err);
-      })
+  searchResults$ = this.dataLayersStateService.searchResults$.pipe(
+    startWith(null),
+    tap((results) => {
+      if (results) {
+        this.resultCount = results.count;
+      }
+    }),
+    catchError((err) => {
+      // TODO handle errors
+      return throwError(() => err);
+    })
+  );
+
+  results$: Observable<Results | null> = this.searchResults$.pipe(
+    map((results) => results && groupSearchResults(results.results))
+  );
+
+  categoryResults$: Observable<CategoryResults | null> =
+    this.searchResults$.pipe(
+      map((results) => results && groupSearchResultsByCategory(results.results))
     );
 
   hasNoData$ = this.dataLayersStateService.hasNoTreeData$;
   isBrowsing$ = this.dataLayersStateService.isBrowsing$;
 
-  showFooter$ = combineLatest([this.results$, this.viewedDataLayer$]).pipe(
+  showFooter$ = combineLatest([
+    this.searchResults$,
+    this.viewedDataLayer$,
+  ]).pipe(
     map(
       ([results, selectedLayer]) =>
         this.pages > 1 || (this.showClearButton && selectedLayer)

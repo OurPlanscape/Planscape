@@ -3,7 +3,7 @@ import json
 import logging
 import mimetypes
 from pathlib import Path
-from typing import Any, Collection, Dict, Optional, Tuple
+from typing import Any, Collection, Dict, Optional, Set, Tuple
 from uuid import uuid4
 
 import mmh3
@@ -798,6 +798,24 @@ def add_favorite_datalayer(
             user_id=user.pk,
         )
     return favorite, created
+
+
+def get_favorite_datalayer_ids(
+    workspace: Optional[Workspace],
+    datalayer_ids: Collection[int],
+) -> Optional[Set[int]]:
+    """
+    Returns which of `datalayer_ids` are favorites of the workspace, or None
+    when there is no workspace to check against.
+    """
+    if workspace is None:
+        return None
+    return set(
+        WorkspaceFavoriteDataLayer.objects.filter(
+            workspace=workspace,
+            datalayer_id__in=datalayer_ids,
+        ).values_list("datalayer_id", flat=True)
+    )
 
 
 def remove_favorite_datalayer(

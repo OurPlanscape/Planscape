@@ -580,6 +580,16 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
     path = serializers.SerializerMethodField()
     map_url = serializers.SerializerMethodField()
     styles = serializers.SerializerMethodField()
+    is_favorite = serializers.SerializerMethodField(
+        help_text="Whether the DataLayer is a favorite of the requested workspace. "
+        "Null when no workspace was supplied.",
+    )
+
+    def get_is_favorite(self, instance) -> Optional[bool]:
+        favorite_ids = self.context.get("favorite_datalayer_ids")
+        if favorite_ids is None:
+            return None
+        return instance.pk in favorite_ids
 
     def _default_raster_style(self, instance):
         stats = instance.info.get("stats")[0]
@@ -633,6 +643,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "metadata",
             "map_service_type",
             "styles",
+            "is_favorite",
         )
 
 

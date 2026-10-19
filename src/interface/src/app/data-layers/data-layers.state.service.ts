@@ -291,6 +291,28 @@ export class DataLayersStateService {
     this._selection$.next(null);
   }
 
+  /**
+   * Views a layer saved in local storage and browses to it. Copies saved
+   * before simple categories existed are refreshed first, so DATA_ORGANIZATION
+   * opens the layer's category instead of its dataset tree.
+   */
+  restoreDataLayer(stored: DataLayer) {
+    const layer$ =
+      this.featureService.isFeatureEnabled('DATA_ORGANIZATION') &&
+      !stored.simple_categories?.length
+        ? this.service
+            .listDataLayers(stored.dataset.id, this.mapModuleService.moduleName)
+            .pipe(
+              map((layers) => layers.find((l) => l.id === stored.id) ?? stored),
+              catchError(() => of(stored))
+            )
+        : of(stored);
+    layer$.subscribe((layer) => {
+      this.selectDataLayer(layer);
+      this.goToSelectedLayer(layer);
+    });
+  }
+
   goToSelectedLayer(layer: DataLayer) {
     // Reset search
     this._searchTerm$.next('');

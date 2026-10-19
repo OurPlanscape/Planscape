@@ -147,9 +147,9 @@ export interface ColorLegendInfo {
 export interface SearchResult {
   id: number;
   name: string;
-  type: 'DATASET' | 'DATALAYER';
+  type: 'DATASET' | 'DATALAYER' | 'SIMPLE_CATEGORY';
   url: string;
-  data: DataLayer | DataSet;
+  data: DataLayer | DataSet | SimpleCategory;
 }
 
 export interface SearchQuery {
@@ -169,4 +169,9 @@ export interface DataSetSearchResult extends SearchResult {
 export interface DataLayerSearchResult extends SearchResult {
   type: 'DATALAYER';
   data: DataLayer;
+}
+
+export interface SimpleCategorySearchResult extends SearchResult {
+  type: 'SIMPLE_CATEGORY';
+  data: SimpleCategory;
 }
