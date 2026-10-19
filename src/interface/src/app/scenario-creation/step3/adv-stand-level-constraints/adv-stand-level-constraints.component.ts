@@ -1,11 +1,9 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
-  Host,
-  Input,
+  // Input,
   OnDestroy,
-  OnInit,
-  SkipSelf,
+  OnInit
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -25,10 +23,12 @@ import {
   AdvStandLevelConstraintsModalComponent,
   NamedConstraint,
 } from '../adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
-import { ControlContainer, FormControl, FormGroup } from '@angular/forms';
 import {
   BehaviorSubject,
   combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
   map,
   Observable,
   shareReplay,
@@ -50,6 +50,17 @@ import { SELECTION_MODE } from '@app/data-layers/data-layers/selection-mode.toke
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { getConstraintDisplayName } from '@app/scenario/scenario-helper';
+import { ForsysService } from '@app/services/forsys.service';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatInputModule } from '@angular/material/input';
+// import { NgxMaskModule } from 'ngx-mask';
 
 @UntilDestroy()
 @Component({
@@ -70,7 +81,16 @@ import { getConstraintDisplayName } from '@app/scenario/scenario-helper';
     FeaturesModule,
     SectionComponent,
     MatExpansionModule,
+    MatFormFieldModule,
     MatIconModule,
+    CommonModule,
+    SectionComponent,
+    ReactiveFormsModule,
+    MatProgressSpinnerModule,
+    MatExpansionModule,
+    MatFormFieldModule,
+    MatInputModule,
+    // NgxMaskModule,
   ],
   templateUrl: './adv-stand-level-constraints.component.html',
   styleUrl: './adv-stand-level-constraints.component.scss',
@@ -97,12 +117,19 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
         shareReplay(1)
       );
 
-  @Input() keyName = 'advStandLevelConstraints';
-
-  // single FormControl holding the constraints array
-  readonly form = new FormGroup({
+  form = new FormGroup({
+    max_slope: new FormControl<number | null>(null, [
+      Validators.min(0),
+      Validators.max(100),
+    ]),
+    min_distance_from_road: new FormControl<number | null>(null, [
+      Validators.min(0),
+      Validators.max(100000),
+    ]),
     constraints: new FormControl<NamedConstraint[]>([], { nonNullable: true }),
+
   });
+
   private knownLayers: DataLayer[] = [];
 
   // loading state derived from advStandLevelConstraintLayers$
@@ -154,10 +181,10 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     private mapModuleService: MapModuleService,
     private moduleService: ModuleService,
     private scenarioState: ScenarioState,
-    private newScenarioState: NewScenarioState,
     private planState: PlanState,
     private dataLayerState: DataLayersStateService,
-    @Host() @SkipSelf() private parentContainer: ControlContainer
+    private newScenarioState: NewScenarioState,
+    private forsysService: ForsysService,
   ) {
     this.scenarioState.currentScenario$
       .pipe(
@@ -176,7 +203,76 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // Directly attach to the parent form
-    this.parentFormGroup.addControl(this.keyName, this.form);
+    // this.parentFormGroup.addControl(this.keyName, this.form);
+
+    this.forsysService.forsysData$
+      .pipe(
+        take(1),
+        switchMap((forsysData) =>
+          this.form.valueChanges.pipe(
+            debounceTime(300),
+            distinctUntilChanged(),
+            map((data: any) => {
+              if (this.form.valid) {
+                const constraints: Constraint[] = [];
+                if (!(data.max_slope === null || data.max_slope === '')) {
+                  constraints.push({
+                    datalayer: forsysData.thresholds.slope.id,
+                    operator: 'lte',
+                    value: data.max_slope,
+                  });
+                }
+                if (
+                  !(
+                    data.min_distance_from_road === null ||
+                    data.min_distance_from_road === ''
+                  )
+                ) {
+                  constraints.push({
+                    datalayer: forsysData.thresholds.distance_from_roads.id,
+                    operator: 'lte',
+                    value: data.min_distance_from_road,
+                  });
+                }
+                this.newScenarioState.setConstraints(constraints);
+              }
+            })
+          )
+        )
+      )
+      .subscribe();
+
+    this.newScenarioState.scenarioConfig$
+      .pipe(
+        untilDestroyed(this),
+        filter((c) => !!c?.constraints),
+        take(1),
+        switchMap((config) =>
+          this.forsysService.forsysData$.pipe(
+            map((data) => {
+              const slope = config.constraints?.find(
+                (c) => c.datalayer === data.thresholds.slope.id
+              );
+              if (slope) {
+                this.form.get('max_slope')?.setValue(Number(slope.value));
+              }
+
+              const distance = config.constraints?.find(
+                (c) => c.datalayer === data.thresholds.distance_from_roads.id
+              );
+              if (distance) {
+                this.form
+                  .get('min_distance_from_road')
+                  ?.setValue(Number(distance.value));
+              }
+
+              return config;
+            })
+          )
+        )
+      )
+      .subscribe((config) => { });
+
 
     // keep form control in sync with selectedConstraints$
     this.selectedConstraints$
@@ -188,14 +284,14 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     // Clean up parent form and RxJS subscriptions
-    this.parentFormGroup.removeControl(this.keyName);
+    // this.parentFormGroup.removeControl(this.keyName);
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  private get parentFormGroup(): FormGroup {
-    return this.parentContainer?.control as FormGroup;
-  }
+  // private get parentFormGroup(): FormGroup {
+  //   return this.parentContainer?.control as FormGroup;
+  // }
 
   public handleConstraintAdded(constraint: NamedConstraint): void {
     const current = [...this.selectedConstraints$.value];
@@ -320,4 +416,9 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
         }
       });
   }
+
+  getData() {
+    return this.form.value;
+  }
+
 }
