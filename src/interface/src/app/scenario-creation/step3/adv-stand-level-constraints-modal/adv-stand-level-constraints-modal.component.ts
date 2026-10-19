@@ -52,7 +52,7 @@ export const betweenValidator: ValidatorFn = (
   return Object.keys(errors).length > 0 ? errors : null;
 };
 
-const DIGITS_AND_COMMAS = /^\s*\d+(\s*,\s*\d+)*\s*,?\s*$/; // allows '9', '9,9', '9,9,'
+const DIGITS_AND_COMMAS = /^\s*\d+(?:\s*,\s*\d+)*\s*(?:,\s*)?$/;// allows '999', '9, 9999', '9999,9999,'
 const LIST_OPERATORS = ['eq', 'dne']; // operators that accept multi values
 
 // This allows us to enter numbers and the separator/delimiter for multi valued fields
@@ -60,19 +60,15 @@ export const splitValueValidator: ValidatorFn = (
   control: AbstractControl
 ): ValidationErrors | null => {
   const operator = control.get('constraintOperator')?.value;
-  const raw = control.get('constraintValueOne')?.value;
-  if (raw === null || raw === undefined || raw === '') {
+  const valueOne = control.get('constraintValueOne')?.value;
+  if (valueOne === null || valueOne === undefined || valueOne === '') {
     return null; // required checks live in betweenValidator / required attr
   }
 
-  const parts = String(raw)
-    .split(',')
-    .map((p) => p.trim());
-  if (!parts.every((p) => DIGITS_AND_COMMAS.test(p))) {
-    console.log('fails regex');
+  if (!DIGITS_AND_COMMAS.test(valueOne)) {
     return { invalidNumberList: true };
   }
-  if (parts.length > 1 && !LIST_OPERATORS.includes(operator)) {
+  if (valueOne.length > 1 && !LIST_OPERATORS.includes(operator)) {
     console.log('operator is not allowed');
     return { multipleNotAllowed: true };
   }
@@ -150,21 +146,32 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
     });
   }
 
-  private readonly ERROR_MESSAGES: Record<string, string> = {
+  private readonly VALUE_ONE_ERROR_MESSAGES: Record<string, string> = {
     requiredOne: 'A value is required.',
-    requiredTwo: 'A second value is required.',
     invalidNumberList: 'Enter numbers only, separated by commas.',
-    multipleNotAllowed: 'This operator accepts one value.',
+    multipleNotAllowed: 'This operator allows single values.',
   };
 
-  get errorMsg(): string {
+
+  private readonly VALUE_TWO_ERROR_MESSAGES: Record<string, string> = {
+    requiredTwo: 'A second value is required.',
+  };
+
+  get valueOneErrorMsg(): string {
     const errors = this.form.errors;
     if (!errors) return '';
-
     if (typeof errors['conflict'] === 'string') return errors['conflict'];
+    const key = Object.keys(errors).find((k) => this.VALUE_ONE_ERROR_MESSAGES[k]);
+    return key ? this.VALUE_ONE_ERROR_MESSAGES[key] : '';
+  }
 
-    const key = Object.keys(errors).find((k) => this.ERROR_MESSAGES[k]);
-    return key ? this.ERROR_MESSAGES[key] : '';
+
+  get valueTwoErrorMsg(): string {
+    const errors = this.form.errors;
+    if (!errors) return '';
+    if (typeof errors['conflict'] === 'string') return errors['conflict'];
+    const key = Object.keys(errors).find((k) => this.VALUE_TWO_ERROR_MESSAGES[k]);
+    return key ? this.VALUE_TWO_ERROR_MESSAGES[key] : '';
   }
 
   handleApply() {

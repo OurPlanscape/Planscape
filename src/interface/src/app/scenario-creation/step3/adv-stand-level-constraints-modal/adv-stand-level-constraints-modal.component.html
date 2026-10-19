@@ -51,7 +51,7 @@
             label="{{ showSecondValue ? 'Min' : 'Value' }}"
             showSupportMessage="on-error"
             size="full"
-            [supportMessage]="errorMsg"
+            [supportMessage]="valueOneErrorMsg"
             [error]="
               (form.hasError('requiredOne') &&
                 form.hasError('invalidNumberList')) ||
@@ -77,6 +77,7 @@
               label="Max"
               required
               showSupportMessage="on-error"
+              [supportMessage]="valueTwoErrorMsg"
               [error]="
                 form.hasError('requiredTwo') &&
                 form.get('constraintValueTwo')?.touched === true
