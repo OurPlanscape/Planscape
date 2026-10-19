@@ -51,8 +51,10 @@
             label="{{ showSecondValue ? 'Min' : 'Value' }}"
             showSupportMessage="on-error"
             size="full"
+            [supportMessage]="errorMsg"
             [error]="
-              form.hasError('requiredOne') &&
+              (form.hasError('requiredOne') &&
+                form.hasError('invalidNumberList')) ||
               form.get('constraintValueOne')?.touched === true
             ">
             <input
@@ -63,7 +65,7 @@
               formControlName="constraintValueOne"
               required
               id="constraintValueOne"
-              type="number" />
+              type="text" />
           </sg-input-field>
         </div>
 

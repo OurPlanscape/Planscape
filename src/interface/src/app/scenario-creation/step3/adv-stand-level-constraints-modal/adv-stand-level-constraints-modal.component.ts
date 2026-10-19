@@ -52,6 +52,33 @@ export const betweenValidator: ValidatorFn = (
   return Object.keys(errors).length > 0 ? errors : null;
 };
 
+const DIGITS_AND_COMMAS = /^\s*\d+(\s*,\s*\d+)*\s*,?\s*$/; // allows '9', '9,9', '9,9,'
+const LIST_OPERATORS = ['eq', 'dne']; // operators that accept multi values
+
+// This allows us to enter numbers and the separator/delimiter for multi valued fields
+export const splitValueValidator: ValidatorFn = (
+  control: AbstractControl
+): ValidationErrors | null => {
+  const operator = control.get('constraintOperator')?.value;
+  const raw = control.get('constraintValueOne')?.value;
+  if (raw === null || raw === undefined || raw === '') {
+    return null; // required checks live in betweenValidator / required attr
+  }
+
+  const parts = String(raw)
+    .split(',')
+    .map((p) => p.trim());
+  if (!parts.every((p) => DIGITS_AND_COMMAS.test(p))) {
+    console.log('fails regex');
+    return { invalidNumberList: true };
+  }
+  if (parts.length > 1 && !LIST_OPERATORS.includes(operator)) {
+    console.log('operator is not allowed');
+    return { multipleNotAllowed: true };
+  }
+  return null;
+};
+
 @Component({
   selector: 'app-adv-stand-level-constraints-modal',
   standalone: true,
@@ -86,7 +113,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
           nonNullable: false,
         }
       ),
-      constraintValueOne: new FormControl<number | null>(
+      constraintValueOne: new FormControl<string | null>(
         this.data.valueOne ?? null,
         [Validators.required]
       ),
@@ -94,7 +121,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
         this.data.valueTwo ?? null
       ),
     },
-    { validators: [betweenValidator] }
+    { validators: [betweenValidator, splitValueValidator] }
   );
 
   get showSecondValue(): boolean {
@@ -121,6 +148,23 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
         valTwoControl?.markAsUntouched();
       }
     });
+  }
+
+  private readonly ERROR_MESSAGES: Record<string, string> = {
+    requiredOne: 'A value is required.',
+    requiredTwo: 'A second value is required.',
+    invalidNumberList: 'Enter numbers only, separated by commas.',
+    multipleNotAllowed: 'This operator accepts one value.',
+  };
+
+  get errorMsg(): string {
+    const errors = this.form.errors;
+    if (!errors) return '';
+
+    if (typeof errors['conflict'] === 'string') return errors['conflict'];
+
+    const key = Object.keys(errors).find((k) => this.ERROR_MESSAGES[k]);
+    return key ? this.ERROR_MESSAGES[key] : '';
   }
 
   handleApply() {
