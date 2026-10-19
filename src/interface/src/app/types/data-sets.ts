@@ -123,6 +123,7 @@ export interface DataLayer {
   map_service_type: 'VECTORTILES' | 'COG' | 'ESRI_GEOJSON';
   public_url: string | null;
   map_url: string | null;
+  is_favorite?: boolean | null;
 }
 
 export interface BaseLayer extends Omit<DataLayer, 'styles'> {
@@ -159,6 +160,7 @@ export interface SearchQuery {
   offset?: number;
   module?: string;
   geometry?: Geometry;
+  workspaceId?: number | null;
 }
 
 export interface DataSetSearchResult extends SearchResult {

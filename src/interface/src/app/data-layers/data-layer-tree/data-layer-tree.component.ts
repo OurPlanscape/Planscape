@@ -20,6 +20,7 @@ import { ButtonComponent, ToggleComponent } from '@styleguide';
 import { DataLayer } from '@types';
 import { map, shareReplay, switchMap } from 'rxjs';
 import { DataLayersStateService } from '../data-layers.state.service';
+import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.component';
 
 @UntilDestroy()
 @Component({
@@ -40,6 +41,7 @@ import { DataLayersStateService } from '../data-layers.state.service';
     MatIconModule,
     MatCheckboxModule,
     ToggleComponent,
+    FavoriteStarComponent,
   ],
   templateUrl: './data-layer-tree.component.html',
   styleUrl: './data-layer-tree.component.scss',

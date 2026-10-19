@@ -25,11 +25,9 @@ test('navigates to the map viewer from the workspace', async ({ page }) => {
 
 test('map-viewer page has data layers panel and map', async ({ page }) => {
   await page.goto(`/map-viewer/workspace/${workspaceId}`);
-  // Data Layers tab is visible
-  await expect(page.getByText('Data Layers')).toBeVisible();
-  // Search bar is visible
+  await expect(page.locator('app-data-layers')).toBeVisible();
   await expect(
-    page.getByPlaceholder('Search by dataset, metric, category, org...')
+    page.locator('app-data-layers sg-search-bar input')
   ).toBeVisible();
   // Map canvas is rendered
   await expect(page.locator('.maplibregl-canvas')).toBeVisible();

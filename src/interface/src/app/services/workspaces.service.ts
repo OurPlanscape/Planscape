@@ -78,6 +78,26 @@ export class WorkspacesService {
     });
   }
 
+  /**
+   * Favorite data layers belong to the workspace, so every member sees the same
+   * ones. Only owners and collaborators may change them.
+   */
+  favoriteDataLayer(id: number, dataLayerId: number): Observable<unknown> {
+    return this.http.post(this.favoriteDataLayerPath(id, dataLayerId), null, {
+      withCredentials: true,
+    });
+  }
+
+  unfavoriteDataLayer(id: number, dataLayerId: number): Observable<void> {
+    return this.http.delete<void>(this.favoriteDataLayerPath(id, dataLayerId), {
+      withCredentials: true,
+    });
+  }
+
+  private favoriteDataLayerPath(id: number, dataLayerId: number): string {
+    return `${this.v2Path}${id}/favorites/datalayers/${dataLayerId}/`;
+  }
+
   /** The backend invites one email at a time; callers fan out. */
   inviteMember(
     id: number,
