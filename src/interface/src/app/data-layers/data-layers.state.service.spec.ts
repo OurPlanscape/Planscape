@@ -154,4 +154,55 @@ describe('DataLayersStateService', () => {
       );
     });
   });
+
+  describe('restoreDataLayer', () => {
+    const stale = { ...layer, simple_categories: undefined } as DataLayer;
+
+    it('views and browses a current copy as is', () => {
+      createService('DATA_ORGANIZATION');
+      service.restoreDataLayer(layer);
+      expect(dataLayersService.listDataLayers).not.toHaveBeenCalled();
+      expect(dataLayersService.listCategoryDataLayers).toHaveBeenCalledWith(
+        20,
+        'map',
+        undefined
+      );
+    });
+
+    it('refreshes a copy saved without categories', () => {
+      createService('DATA_ORGANIZATION');
+      dataLayersService.listDataLayers.and.returnValue(of([layer]));
+      let viewed = null as DataLayer | null;
+      service.viewedDataLayer$.subscribe((l) => (viewed = l));
+
+      service.restoreDataLayer(stale);
+
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(10, 'map');
+      expect(viewed).toBe(layer);
+      expect(dataLayersService.listCategoryDataLayers).toHaveBeenCalledWith(
+        20,
+        'map',
+        undefined
+      );
+    });
+
+    it('keeps the stored copy when the layer is no longer listed', () => {
+      createService('DATA_ORGANIZATION');
+      let viewed = null as DataLayer | null;
+      service.viewedDataLayer$.subscribe((l) => (viewed = l));
+
+      service.restoreDataLayer(stale);
+      expect(viewed).toBe(stale);
+    });
+
+    it("doesn't refresh with DATA_ORGANIZATION off", () => {
+      createService();
+      service.restoreDataLayer(stale);
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledOnceWith(
+        10,
+        'map',
+        undefined
+      );
+    });
+  });
 });

@@ -444,8 +444,8 @@ SENTRY_QUEUE_SIZE = config("SENTRY_QUEUE_SIZE", default=100, cast=int)
 
 
 class RetryingSentryHttpTransport(HttpTransport):
-    def _get_pool_options(self, ca_certs):
-        options = super()._get_pool_options(ca_certs)
+    def _get_pool_options(self):
+        options = super()._get_pool_options()
         options["timeout"] = urllib3.Timeout(
             connect=SENTRY_CONNECT_TIMEOUT,
             read=SENTRY_TIMEOUT,
@@ -473,7 +473,6 @@ if SENTRY_DSN is not None:
         ],
         send_default_pii=True,
         environment=ENV,
-        enable_tracing=True,
         profiles_sample_rate=0.1,
         traces_sample_rate=0.05,
         debug=SENTRY_DEBUG,
