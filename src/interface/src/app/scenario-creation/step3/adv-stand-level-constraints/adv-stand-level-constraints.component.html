@@ -14,9 +14,7 @@ They help ensure that only feasible and operationally suitable areas are targete
     Set the conditions that must be met for ForSys to select stands for
     treatment.
   </p>
-  <div
-    [formGroup]="form"
-    class="apply-constraints-form">
+  <div [formGroup]="form" class="apply-constraints-form">
     <div class="field-area">
       <label for="max_slope" class="input-label">Max Slope</label>
       <div class="flex">
@@ -84,31 +82,33 @@ They help ensure that only feasible and operationally suitable areas are targete
     [hideToggle]="true">
     <mat-expansion-panel-header class="advslc-header datalayers-header">
       <div class="header-content">
-        <span>Advanced Stand-Level Constraints <mat-icon>{{
-          showLayersPanel ? 'expand_less' : 'expand_more'
-        }}</mat-icon></span>
-        
+        <span
+          >Advanced Stand-Level Constraints
+          <mat-icon>{{
+            showLayersPanel ? 'expand_less' : 'expand_more'
+          }}</mat-icon></span
+        >
+
         <span class="num-constraints-line">
-      {{ (selectedConstraints$ | async)?.length || 0 }} Applied (No Limit)
+          {{ (selectedConstraints$ | async)?.length || 0 }} Applied (No Limit)
         </span>
       </div>
-      <p class="stand-label">
-      Choose from any data layers in Planscape to define eligible stands for
-      treatment.
-    </p>
-    
 
-      <div class="padded-section">
-    
-    <sg-chip-selector
-      *ngIf="layersLoaded$ | async"
-      [items]="(selectedConstraints$ | async) ?? []"
-      (itemClicked)="handleConstraintChipClicked($event)"
-      [hoverable]="true"
-      [selectedItem]="activeConstraint$ | async"
-      [showClose]="false"
-      [showEdit]="true"></sg-chip-selector>
-  </div>
+      <div class="padded-section" (click)="$event.stopPropagation()">
+        <p class="stand-label">
+          Choose from any data layers in Planscape to define eligible stands for
+          treatment.
+        </p>
+
+        <sg-chip-selector
+          *ngIf="layersLoaded$ | async"
+          [items]="(selectedConstraints$ | async) ?? []"
+          (itemClicked)="handleConstraintChipClicked($event)"
+          [hoverable]="true"
+          [selectedItem]="activeConstraint$ | async"
+          [showClose]="false"
+          [showEdit]="true"></sg-chip-selector>
+      </div>
     </mat-expansion-panel-header>
 
     <ng-container *ngIf="layersLoaded$ | async">

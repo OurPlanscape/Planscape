@@ -3,7 +3,7 @@ import {
   Component,
   // Input,
   OnDestroy,
-  OnInit
+  OnInit,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -12,12 +12,10 @@ import { DataLayersStateService } from '@app/data-layers/data-layers.state.servi
 import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
 import { DataLayersRailComponent } from '@data-layers/data-layers-rail/data-layers-rail.component';
 import { FeaturesModule } from '@features/features.module';
-import { MAX_SELECTED_DATALAYERS } from '@app/data-layers/data-layers/max-selected-datalayers.token';
 import { PlanState } from '@app/plan/plan.state';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { MapModuleService } from '@app/services/map-module.service';
-import { MAP_MODULE_NAME } from '@app/services/map-module.token';
-import { SectionComponent } from '@styleguide';
+import { SectionComponent, StepDirective } from '@styleguide';
 import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
 import {
   AdvStandLevelConstraintsModalComponent,
@@ -44,9 +42,10 @@ import {
   DataLayer,
   AdvStandLevelConstraintData,
   Constraint,
+  ScenarioDraftConfiguration,
 } from '@app/types';
 import { ModuleService } from '@app/services/module.service';
-import { SELECTION_MODE } from '@app/data-layers/data-layers/selection-mode.token';
+// import { SELECTION_MODE } from '@app/data-layers/data-layers/selection-mode.token';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { getConstraintDisplayName } from '@app/scenario/scenario-helper';
@@ -55,23 +54,25 @@ import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
-  Validators
+  Validators,
 } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatInputModule } from '@angular/material/input';
-// import { NgxMaskModule } from 'ngx-mask';
+
+const MAX_SELECTABLE_LAYERS = Number.POSITIVE_INFINITY;
 
 @UntilDestroy()
 @Component({
   selector: 'app-adv-stand-level-constraints',
   standalone: true,
   providers: [
-    DataLayersStateService,
-    { provide: SELECTION_MODE, useValue: 'MANUAL' },
-    { provide: MAX_SELECTED_DATALAYERS, useValue: Number.POSITIVE_INFINITY },
-    MapModuleService,
-    { provide: MAP_MODULE_NAME, useValue: 'advanced_stand_level_constraint' },
+    // DataLayersStateService,
+    // { provide: SELECTION_MODE, useValue: 'MANUAL' },
+    // { provide: MAX_SELECTED_DATALAYERS, useValue: Number.POSITIVE_INFINITY },
+    // MapModuleService,
+    // { provide: MAP_MODULE_NAME, useValue: 'advanced_stand_level_constraint' },
+    { provide: StepDirective, useExisting: AdvStandLevelConstraintsComponent },
   ],
   imports: [
     ChipSelectorComponent,
@@ -90,12 +91,14 @@ import { MatInputModule } from '@angular/material/input';
     MatExpansionModule,
     MatFormFieldModule,
     MatInputModule,
-    // NgxMaskModule,
   ],
   templateUrl: './adv-stand-level-constraints.component.html',
   styleUrl: './adv-stand-level-constraints.component.scss',
 })
-export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
+export class AdvStandLevelConstraintsComponent
+  extends StepDirective<ScenarioDraftConfiguration>
+  implements OnInit, OnDestroy
+{
   selectedConstraints$ = new BehaviorSubject<NamedConstraint[]>([]);
   private readonly destroy$ = new Subject<void>();
 
@@ -127,7 +130,6 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
       Validators.max(100000),
     ]),
     constraints: new FormControl<NamedConstraint[]>([], { nonNullable: true }),
-
   });
 
   private knownLayers: DataLayer[] = [];
@@ -162,7 +164,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
             (l: DataLayer) => l.id === constraint.datalayer
           );
           if (layer) {
-            this.dataLayerState.addSelectedLayer(layer);
+            this.dataLayersStateService.addSelectedLayer(layer);
             acc.push({
               ...constraint,
               name: getConstraintDisplayName(constraint, layer),
@@ -182,10 +184,12 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     private moduleService: ModuleService,
     private scenarioState: ScenarioState,
     private planState: PlanState,
-    private dataLayerState: DataLayersStateService,
+    private dataLayersStateService: DataLayersStateService,
     private newScenarioState: NewScenarioState,
-    private forsysService: ForsysService,
+    private forsysService: ForsysService
   ) {
+    super();
+
     this.scenarioState.currentScenario$
       .pipe(
         take(1),
@@ -194,7 +198,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
       )
       .subscribe();
 
-    this.dataLayerState.layerClicked$
+    this.dataLayersStateService.layerClicked$
       .pipe(untilDestroyed(this))
       .subscribe((layer) => {
         this.handleSelectedLayer(layer);
@@ -202,9 +206,6 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Directly attach to the parent form
-    // this.parentFormGroup.addControl(this.keyName, this.form);
-
     this.forsysService.forsysData$
       .pipe(
         take(1),
@@ -271,8 +272,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
           )
         )
       )
-      .subscribe((config) => { });
-
+      .subscribe((config) => {});
 
     // keep form control in sync with selectedConstraints$
     this.selectedConstraints$
@@ -283,15 +283,9 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Clean up parent form and RxJS subscriptions
-    // this.parentFormGroup.removeControl(this.keyName);
     this.destroy$.next();
     this.destroy$.complete();
   }
-
-  // private get parentFormGroup(): FormGroup {
-  //   return this.parentContainer?.control as FormGroup;
-  // }
 
   public handleConstraintAdded(constraint: NamedConstraint): void {
     const current = [...this.selectedConstraints$.value];
@@ -305,7 +299,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     this.selectedConstraints$.next(current);
     const layerToAdd = this.getFullLayerById(constraint.datalayer);
     if (layerToAdd) {
-      this.dataLayerState.addSelectedLayer(layerToAdd);
+      this.dataLayersStateService.addSelectedLayer(layerToAdd);
     }
   }
 
@@ -329,7 +323,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
 
     const removeLayer = this.getFullLayerById(id);
     if (removeLayer) {
-      this.dataLayerState.removeSelectedLayer(removeLayer);
+      this.dataLayersStateService.removeSelectedLayer(removeLayer);
     }
   }
 
@@ -417,8 +411,29 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
       });
   }
 
-  getData() {
-    return this.form.value;
+  getData(): Partial<ScenarioDraftConfiguration> {
+    const formValues = this.form.getRawValue();
+
+    console.log('here are the form values:', formValues);
+
+    const formData = {
+      max_slope: formValues.max_slope ?? null,
+      min_distance_from_road: formValues.min_distance_from_road ?? null,
+      adv_constraints: formValues.constraints ?? [],
+    };
+    console.log('here is the formData:', formValues);
+    return formData;
   }
 
+  override beforeStepLoad() {
+    this.dataLayersStateService.updateSelectedLayers([]);
+    this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
+    this.dataLayersStateService.clearUnselectableLayers();
+    this.mapConfigToUI();
+  }
+
+  override beforeStepExit() {
+    this.dataLayersStateService.resetAll();
+    this.dataLayersStateService.updateSelectedLayers([]);
+  }
 }
