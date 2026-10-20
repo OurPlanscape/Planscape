@@ -37,12 +37,7 @@ import {
   takeUntil,
   tap,
 } from 'rxjs';
-import {
-  ApiModule,
-  DataLayer,
-  AdvStandLevelConstraintData,
-  Constraint,
-} from '@app/types';
+import { ApiModule, DataLayer, AdvStandLevelConstraintData } from '@app/types';
 import { ModuleService } from '@app/services/module.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
@@ -109,34 +104,34 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
 
   // update UI of this component when the step loads, not eagerly on step construction
   mapConfigToUI() {
-    // here, we reconcile the layer names with the constraints from the configuration
     combineLatest([
       this.newScenarioState.advConstraints$,
       this.advStandLevelConstraintLayers$,
-    ]).subscribe(([constraints, layers]) => {
-      if (!constraints) {
-        this.selectedConstraints$.next([]);
-        return;
-      }
-      // only collect constraints where we find a match in the subset of Adv Constraint Layers
-      const namedConstraints: NamedConstraint[] = constraints.reduce(
-        (acc: NamedConstraint[], constraint: Constraint) => {
-          const layer = layers.find(
-            (l: DataLayer) => l.id === constraint.datalayer
-          );
-          if (layer) {
-            this.dataLayersStateService.addSelectedLayer(layer);
-            acc.push({
-              ...constraint,
-              name: getConstraintDisplayName(constraint, layer),
-            });
-          }
-          return acc;
-        },
-        []
-      );
-      this.selectedConstraints$.next(namedConstraints);
-    });
+    ])
+      .pipe(take(1))
+      .subscribe(([constraints, layers]) => {
+        if (!constraints) {
+          this.selectedConstraints$.next([]);
+          return;
+        }
+
+        const namedConstraints = constraints.reduce<NamedConstraint[]>(
+          (acc, constraint) => {
+            const layer = layers.find((l) => l.id === constraint.datalayer);
+            if (layer) {
+              this.dataLayersStateService.addSelectedLayer(layer);
+              acc.push({
+                ...constraint,
+                name: getConstraintDisplayName(constraint, layer),
+              });
+            }
+            return acc;
+          },
+          []
+        );
+
+        this.selectedConstraints$.next(namedConstraints);
+      });
   }
 
   constructor(

@@ -211,11 +211,12 @@ describe('AdvStandLevelConstraintsComponent', () => {
     });
 
     describe('mapConfigToUI', () => {
-      beforeEach(() => component.mapConfigToUI());
-
       it('clears selections when there is no configured constraint', () => {
         select(makeConstraint());
         advConstraints$.next(null);
+
+        component.mapConfigToUI();
+
         expect(selected()).toEqual([]);
       });
 
@@ -224,6 +225,8 @@ describe('AdvStandLevelConstraintsComponent', () => {
           makeConstraint({ datalayer: 1 }),
           makeConstraint({ datalayer: 42 }), // unknown layer, dropped
         ]);
+
+        component.mapConfigToUI();
 
         expect(selected().length).toBe(1);
         expect(selected()[0].datalayer).toBe(1);

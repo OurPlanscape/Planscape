@@ -479,12 +479,18 @@ export class DataLayersStateService {
     this._selectedDataLayers$.next(updatedSelectedDatalayers);
   }
 
-  //explicitly set a layer to the selected list
   addSelectedLayer(layer: DataLayer) {
-    const updatedSelectedDatalayers: DataLayer[] =
-      this._selectedDataLayers$.value;
-    updatedSelectedDatalayers.push(layer);
-    this._selectedDataLayers$.next(updatedSelectedDatalayers);
+    const currentLayers = this._selectedDataLayers$.value;
+
+    // Check if the layer is already in the list by its ID
+    const exists = currentLayers.some(
+      (existingLayer) => existingLayer.id === layer.id
+    );
+
+    if (!exists) {
+      const updatedSelectedDatalayers = [...currentLayers, layer];
+      this._selectedDataLayers$.next(updatedSelectedDatalayers);
+    }
   }
 
   //manage collection of layers that can't be selected
