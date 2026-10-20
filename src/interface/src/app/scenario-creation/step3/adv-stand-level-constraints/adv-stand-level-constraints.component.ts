@@ -45,7 +45,6 @@ import {
   ScenarioDraftConfiguration,
 } from '@app/types';
 import { ModuleService } from '@app/services/module.service';
-// import { SELECTION_MODE } from '@app/data-layers/data-layers/selection-mode.token';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { getConstraintDisplayName } from '@app/scenario/scenario-helper';
@@ -67,11 +66,6 @@ const MAX_SELECTABLE_LAYERS = Number.POSITIVE_INFINITY;
   selector: 'app-adv-stand-level-constraints',
   standalone: true,
   providers: [
-    // DataLayersStateService,
-    // { provide: SELECTION_MODE, useValue: 'MANUAL' },
-    // { provide: MAX_SELECTED_DATALAYERS, useValue: Number.POSITIVE_INFINITY },
-    // MapModuleService,
-    // { provide: MAP_MODULE_NAME, useValue: 'advanced_stand_level_constraint' },
     { provide: StepDirective, useExisting: AdvStandLevelConstraintsComponent },
   ],
   imports: [
@@ -203,9 +197,11 @@ export class AdvStandLevelConstraintsComponent
       .subscribe((layer) => {
         this.handleSelectedLayer(layer);
       });
+
   }
 
   ngOnInit(): void {
+
     this.forsysService.forsysData$
       .pipe(
         take(1),
@@ -411,17 +407,19 @@ export class AdvStandLevelConstraintsComponent
       });
   }
 
+
   getData(): Partial<ScenarioDraftConfiguration> {
     const formValues = this.form.getRawValue();
 
-    console.log('here are the form values:', formValues);
+    console.log('here are the formvalues:', formValues);
 
     const formData = {
       max_slope: formValues.max_slope ?? null,
-      min_distance_from_road: formValues.min_distance_from_road ?? null,
+      min_distance_from_road:
+        formValues.min_distance_from_road ?? null,
       adv_constraints: formValues.constraints ?? [],
     };
-    console.log('here is the formData:', formValues);
+    console.log('here is the formData we are sending:', formValues);
     return formData;
   }
 
