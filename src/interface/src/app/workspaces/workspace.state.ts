@@ -87,6 +87,10 @@ export class WorkspaceState {
     shareReplay(1)
   );
 
+  get currentWorkspaceIdValue(): number | null {
+    return this._currentWorkspaceId$.value;
+  }
+
   setWorkspaceId(id: number) {
     this._currentWorkspaceId$.next(id);
   }
