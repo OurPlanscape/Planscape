@@ -37,6 +37,8 @@ import { SNACK_ERROR_CONFIG, UnselectableType } from '@app/shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SELECTION_MODE } from './data-layers/selection-mode.token';
 import { FeatureService } from '@features/feature.service';
+import { WorkspacesService } from '@services/workspaces.service';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
 
 /** The dataset or category whose layers are being browsed. */
 export interface BrowseSelection {
@@ -126,9 +128,20 @@ export class DataLayersStateService {
       const module = this.mapModuleService.moduleName;
       // categories list their layers flat; datasets nest them by path
       const isCategory = selection.type === 'category';
+      const workspaceId = this.favoritesWorkspaceId();
       const layers$ = isCategory
-        ? this.service.listCategoryDataLayers(selection.id, module, geometry)
-        : this.service.listDataLayers(selection.id, module, geometry);
+        ? this.service.listCategoryDataLayers(
+            selection.id,
+            module,
+            geometry,
+            workspaceId
+          )
+        : this.service.listDataLayers(
+            selection.id,
+            module,
+            geometry,
+            workspaceId
+          );
       return layers$.pipe(
         map((items) =>
           isCategory ? buildFlatTree(items) : buildPathTree(items)
@@ -194,6 +207,7 @@ export class DataLayersStateService {
           offset,
           module,
           geometry,
+          workspaceId: this.favoritesWorkspaceId(),
         })
         .pipe(
           startWith(null),
@@ -208,6 +222,71 @@ export class DataLayersStateService {
     }),
     shareReplay(1)
   );
+
+  /**
+   * Favorites the user flipped here, over what the payload said. Keeping only
+   * the changes means every place that shows the same layer agrees at once,
+   * without refetching, and a layer nobody touched keeps the server's answer.
+   */
+  private _favoriteChanges$ = new BehaviorSubject<ReadonlyMap<number, boolean>>(
+    new Map()
+  );
+
+  /** Whether the star of this layer is filled right now. */
+  isFavorite$(layer: DataLayer): Observable<boolean> {
+    return this._favoriteChanges$.pipe(
+      map((changes) => changes.get(layer.id) ?? layer.is_favorite === true),
+      distinctUntilChanged()
+    );
+  }
+
+  isFavorite(layer: DataLayer): boolean {
+    return (
+      this._favoriteChanges$.value.get(layer.id) ?? layer.is_favorite === true
+    );
+  }
+
+  favoritesEnabled(): boolean {
+    return (
+      this.featureService.isFeatureEnabled('DATA_ORGANIZATION') &&
+      this.workspaceState.currentWorkspaceIdValue !== null
+    );
+  }
+
+  toggleFavorite(layer: DataLayer) {
+    const workspaceId = this.workspaceState.currentWorkspaceIdValue;
+    if (workspaceId === null || !this.favoritesEnabled()) {
+      return;
+    }
+    const wanted = !this.isFavorite(layer);
+    const previous = this._favoriteChanges$.value;
+    const changes = new Map(previous);
+    changes.set(layer.id, wanted);
+    this._favoriteChanges$.next(changes);
+
+    const request = wanted
+      ? this.workspacesService.favoriteDataLayer(workspaceId, layer.id)
+      : this.workspacesService.unfavoriteDataLayer(workspaceId, layer.id);
+
+    request.subscribe({
+      error: () => {
+        this._favoriteChanges$.next(previous);
+        this.matSnackBar.open(
+          `There was an error trying to ${
+            wanted ? 'favorite' : 'unfavorite'
+          } this data layer.`,
+          'Dismiss',
+          SNACK_ERROR_CONFIG
+        );
+      },
+    });
+  }
+
+  private favoritesWorkspaceId(): number | null {
+    return this.favoritesEnabled()
+      ? this.workspaceState.currentWorkspaceIdValue
+      : null;
+  }
 
   private _paths$ = new BehaviorSubject<string[]>([]);
   paths$ = this._paths$.asObservable();
@@ -226,7 +305,9 @@ export class DataLayersStateService {
     private readonly sendGeometry: boolean,
     private planState: PlanState,
     private matSnackBar: MatSnackBar,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private workspacesService: WorkspacesService,
+    private workspaceState: WorkspaceState
   ) {}
 
   selectDataSet(dataset: BaseDataSet) {

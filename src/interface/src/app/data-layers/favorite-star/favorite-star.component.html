@@ -1,0 +1,14 @@
+<button
+  *ngIf="enabled"
+  type="button"
+  class="favorite-star"
+  [class.favorited]="isFavorite$ | async"
+  [attr.aria-pressed]="isFavorite$ | async"
+  [attr.aria-label]="
+    (isFavorite$ | async) ? 'Remove from favorites' : 'Add to favorites'
+  "
+  (click)="toggle($event)">
+  <mat-icon [class.material-symbols-outlined]="(isFavorite$ | async) === false">
+    star
+  </mat-icon>
+</button>
