@@ -549,6 +549,44 @@ def browse_simple_category(
     return datalayers.distinct()
 
 
+def browse_favorites(
+    workspace: Workspace,
+    type: Optional[DataLayerType] = None,
+    module: Optional[str] = None,
+    geometry: Optional[GEOSGeometry] = None,
+    user: Optional[User] = None,
+) -> QuerySet[DataLayer]:
+    """
+    Every datalayer favorited in the workspace, across all datasets.
+    """
+    datalayers = (
+        DataLayer.objects.all()
+        .accessible_by(user)
+        .filter(
+            workspace_favorites__workspace=workspace,
+            status=DataLayerStatus.READY,
+        )
+        .select_related(
+            "organization",
+            "dataset",
+            "category",
+        )
+        .prefetch_related("styles", "simple_categories")
+    )
+
+    if type is not None:
+        datalayers = datalayers.filter(type=type)
+
+    if geometry is not None:
+        datalayers = datalayers.filter(outline__intersects=geometry)
+
+    if module:
+        filter = {f"metadata__modules__{module}__enabled": True}
+        datalayers = datalayers.filter(**filter)
+
+    return datalayers.order_by("name")
+
+
 def _escape_like(term: str) -> str:
     return term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
