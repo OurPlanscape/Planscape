@@ -1,119 +1,136 @@
-<div class="side-search-container">
-  <sg-search-bar
-    class="search-bar"
-    [debounceInterval]="160"
-    [searchPlaceholder]="searchPlaceholder"
-    (searchString)="search($event)"
-    [showCloseButton]="true"
-    (clearSearch)="clearSearch()"
-    [searchValue]="(searchTerm$ | async) || ''"></sg-search-bar>
-</div>
-<ng-container *ngTemplateOutlet="belowSearch ?? null"></ng-container>
-<div class="scrollable">
-  <!--When performing search, show results.-->
-  <ng-container *ngIf="(isBrowsing$ | async) === false">
-    <ng-container *ngIf="searchTerm$ | async as searchTerm">
-      <div *ngIf="searchResults$ | async">
-        <div *ngIf="resultCount" class="result-count sticky">
-          {{ resultCount }} Results for "{{ searchTerm }}"
-        </div>
-        <app-category-search-results
-          *ngIf="browseByCategory; else datasetResults"
-          [searchTerm]="searchTerm"
-          [results]="categoryResults$ | async"
-          [displayAddButton]="displayAddButton"></app-category-search-results>
-        <ng-template #datasetResults>
-          <app-search-results
+<ng-container *ngIf="(loadError$ | async) !== true; else loadError">
+  <div class="side-search-container">
+    <sg-search-bar
+      class="search-bar"
+      [debounceInterval]="160"
+      [searchPlaceholder]="searchPlaceholder"
+      (searchString)="search($event)"
+      [showCloseButton]="true"
+      (clearSearch)="clearSearch()"
+      [searchValue]="(searchTerm$ | async) || ''"></sg-search-bar>
+  </div>
+  <ng-container *ngTemplateOutlet="belowSearch ?? null"></ng-container>
+  <div class="scrollable">
+    <!--When performing search, show results.-->
+    <ng-container *ngIf="(isBrowsing$ | async) === false">
+      <ng-container *ngIf="searchTerm$ | async as searchTerm">
+        <div *ngIf="searchResults$ | async">
+          <div *ngIf="resultCount" class="result-count sticky">
+            {{ resultCount }} Results for "{{ searchTerm }}"
+          </div>
+          <app-category-search-results
+            *ngIf="browseByCategory; else datasetResults"
             [searchTerm]="searchTerm"
-            [results]="results$ | async"
-            [displayAddButton]="displayAddButton"></app-search-results>
-        </ng-template>
-        <div *ngIf="resultCount === 0">
-          <sg-no-results></sg-no-results>
-        </div>
-      </div>
-    </ng-container>
-  </ng-container>
-
-  <!--When browsing-->
-  <!--When a dataset or category is selected-->
-  <ng-container *ngIf="isBrowsing$ | async">
-    <!--show link back to the list-->
-    <ng-container *ngIf="selection$ | async as selection; else browseList">
-      <div
-        *ngIf="showSelectionHeader"
-        (click)="goBack()"
-        class="data-set sticky">
-        <mat-icon class="icon-back">arrow_back </mat-icon>
-        <div class="data-set-data">
-          <div class="selected-name">{{ selection.name }}</div>
-          <div class="selected-org" *ngIf="selection.organization">
-            {{ selection.organization.name }}
+            [results]="categoryResults$ | async"
+            [displayAddButton]="displayAddButton"></app-category-search-results>
+          <ng-template #datasetResults>
+            <app-search-results
+              [searchTerm]="searchTerm"
+              [results]="results$ | async"
+              [displayAddButton]="displayAddButton"></app-search-results>
+          </ng-template>
+          <div *ngIf="resultCount === 0">
+            <sg-no-results></sg-no-results>
           </div>
         </div>
-      </div>
-
-      <app-data-layer-tree
-        *ngIf="(hasNoData$ | async) === false"
-        [displayAddButton]="displayAddButton"></app-data-layer-tree>
-
-      <div *ngIf="hasNoData$ | async" class="no-data">
-        No data layers available for this planning area location.
-      </div>
+      </ng-container>
     </ng-container>
 
-    <ng-template #browseList>
-      <ng-container
-        *ngIf="browseByCategory; then listCategories; else listDataSets">
-      </ng-container>
-    </ng-template>
+    <!--When browsing-->
+    <!--When a dataset or category is selected-->
+    <ng-container *ngIf="isBrowsing$ | async">
+      <!--show link back to the list-->
+      <ng-container *ngIf="selection$ | async as selection; else browseList">
+        <div
+          *ngIf="showSelectionHeader"
+          (click)="goBack()"
+          class="data-set sticky">
+          <mat-icon class="icon-back">arrow_back </mat-icon>
+          <div class="data-set-data">
+            <div class="selected-name">{{ selection.name }}</div>
+            <div class="selected-org" *ngIf="selection.organization">
+              {{ selection.organization.name }}
+            </div>
+          </div>
+        </div>
 
-    <!--Listing Categories, no selection yet-->
-    <ng-template #listCategories>
-      <ng-container *ngIf="showCategories$ | async">
-        <ng-container *ngIf="categories$ | async; let categories">
-          <app-data-set
-            *ngFor="let category of categories"
-            (selectDataset)="viewCategoryLayers(category)"
-            [name]="category.name">
-          </app-data-set>
+        <app-data-layer-tree
+          *ngIf="(hasNoData$ | async) === false"
+          [displayAddButton]="displayAddButton"></app-data-layer-tree>
+
+        <div *ngIf="hasNoData$ | async" class="no-data">
+          No data layers available for this planning area location.
+        </div>
+      </ng-container>
+
+      <ng-template #browseList>
+        <ng-container
+          *ngIf="browseByCategory; then listCategories; else listDataSets">
         </ng-container>
-      </ng-container>
-    </ng-template>
+      </ng-template>
 
-    <!--Listing Datasets, no selection yet-->
-    <ng-template #listDataSets>
-      <ng-container *ngIf="showDatasets$ | async">
-        <ng-container *ngIf="dataSets$ | async; let dataSets">
-          <app-data-set
-            *ngFor="let dataSet of dataSets"
-            (selectDataset)="viewDatasetCategories(dataSet)"
-            [name]="dataSet.name"
-            [organizationName]="dataSet.organization.name">
-          </app-data-set>
+      <!--Listing Categories, no selection yet-->
+      <ng-template #listCategories>
+        <ng-container *ngIf="showCategories$ | async">
+          <ng-container *ngIf="categories$ | async; let categories">
+            <app-data-set
+              *ngFor="let category of categories"
+              (selectDataset)="viewCategoryLayers(category)"
+              [name]="category.name">
+            </app-data-set>
+          </ng-container>
         </ng-container>
-      </ng-container>
-    </ng-template>
-  </ng-container>
-  <mat-spinner
-    *ngIf="loading$ | async"
-    diameter="20"
-    class="loader"></mat-spinner>
-</div>
+      </ng-template>
 
-<div class="footer" *ngIf="useClearFooter && (showFooter$ | async)">
-  <!-- Search pagination -->
-  <ng-container *ngIf="pages && (isBrowsing$ | async) === false">
-    <sg-paginator
-      [compact]="true"
-      [pageCount]="pages"
-      (pageChanged)="showPage($event)"></sg-paginator>
-  </ng-container>
-  <button
-    sg-button
-    (click)="clearViewedDataLayer()"
-    class="clear-btn"
-    *ngIf="showClearButton && (viewedDataLayer$ | async)">
-    Clear
-  </button>
-</div>
+      <!--Listing Datasets, no selection yet-->
+      <ng-template #listDataSets>
+        <ng-container *ngIf="showDatasets$ | async">
+          <ng-container *ngIf="dataSets$ | async; let dataSets">
+            <app-data-set
+              *ngFor="let dataSet of dataSets"
+              (selectDataset)="viewDatasetCategories(dataSet)"
+              [name]="dataSet.name"
+              [organizationName]="dataSet.organization.name">
+            </app-data-set>
+          </ng-container>
+        </ng-container>
+      </ng-template>
+    </ng-container>
+    <mat-spinner
+      *ngIf="loading$ | async"
+      diameter="20"
+      class="loader"></mat-spinner>
+  </div>
+
+  <div class="footer" *ngIf="useClearFooter && (showFooter$ | async)">
+    <!-- Search pagination -->
+    <ng-container *ngIf="pages && (isBrowsing$ | async) === false">
+      <sg-paginator
+        [compact]="true"
+        [pageCount]="pages"
+        (pageChanged)="showPage($event)"></sg-paginator>
+    </ng-container>
+    <button
+      sg-button
+      (click)="clearViewedDataLayer()"
+      class="clear-btn"
+      *ngIf="showClearButton && (viewedDataLayer$ | async)">
+      Clear
+    </button>
+  </div>
+</ng-container>
+
+<ng-template #loadError>
+  <sg-message-card
+    class="load-error"
+    cardType="error"
+    cardTitle="We couldn't load data layers"
+    [withBorders]="false">
+    Something went wrong. Please try again.
+    <div class="load-error-actions">
+      <button sg-button variant="primary" (click)="retryLoad()">
+        Try Again
+      </button>
+    </div>
+  </sg-message-card>
+</ng-template>

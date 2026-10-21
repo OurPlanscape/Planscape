@@ -1,4 +1,15 @@
+@import 'colors';
+
 :host {
   display: block;
   height: 100%;
+}
+
+.load-error {
+  padding: 16px;
+  border-top: 1px solid $color-soft-gray;
+}
+
+.load-error-actions {
+  margin-top: 16px;
 }
