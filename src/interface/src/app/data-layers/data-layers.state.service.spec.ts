@@ -1,9 +1,9 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 
 import { DataLayersStateService } from './data-layers.state.service';
 import { MockProvider } from 'ng-mocks';
 import { DataLayersService } from '@services/data-layers.service';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { DataLayer, DataSet, Pagination } from '@types';
 import { MapModuleService } from '@services/map-module.service';
 import { FeaturesModule } from '@features/features.module';
@@ -136,6 +136,29 @@ describe('DataLayersStateService', () => {
     service.selectCategory({ id: 20, name: 'Fire', icon: null });
 
     expect(tree!).toEqual([{ name: 'Layer', item: layer }]);
+  });
+
+  describe('loading$', () => {
+    it('stops once the categories load, even if the plan geometry arrives later', fakeAsync(() => {
+      const geometry$ = new Subject<any>();
+      TestBed.overrideProvider(PlanState, {
+        useValue: { planningAreaGeometry$: geometry$ },
+      });
+      service = TestBed.inject(DataLayersStateService);
+      let loading: boolean | undefined;
+      service.loading$.subscribe((l) => (loading = l));
+
+      // what the data layers panel subscribes to while browsing
+      service.categories$.subscribe();
+      service.searchResults$.subscribe();
+      flushMicrotasks();
+      expect(loading).toBeFalse();
+
+      geometry$.next(MOCK_GEOMETRY);
+      flushMicrotasks();
+
+      expect(loading).toBeFalse();
+    }));
   });
 
   describe('goToDataLayerCategory', () => {
