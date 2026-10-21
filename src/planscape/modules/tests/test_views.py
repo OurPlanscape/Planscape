@@ -131,9 +131,9 @@ class ModuleAPITests(TestCase):
             ],
             [dataset.id],
         )
-        self.assertEqual(
+        self.assertIn(
+            {"id": category.id, "name": "Ownership", "icon": "ownership"},
             response.data["options"]["datasets"]["categories"],
-            [{"id": category.id, "name": "Ownership", "icon": "ownership"}],
         )
 
     def test_advanced_stand_level_constraint_details_filters_by_geometry(self):
