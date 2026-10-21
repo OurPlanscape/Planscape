@@ -3,7 +3,7 @@ import json
 import logging
 import mimetypes
 from pathlib import Path
-from typing import Any, Collection, Dict, Optional, Tuple
+from typing import Any, Collection, Dict, Optional, Set, Tuple
 from uuid import uuid4
 
 import mmh3
@@ -549,6 +549,44 @@ def browse_simple_category(
     return datalayers.distinct()
 
 
+def browse_favorites(
+    workspace: Workspace,
+    type: Optional[DataLayerType] = None,
+    module: Optional[str] = None,
+    geometry: Optional[GEOSGeometry] = None,
+    user: Optional[User] = None,
+) -> QuerySet[DataLayer]:
+    """
+    Every datalayer favorited in the workspace, across all datasets.
+    """
+    datalayers = (
+        DataLayer.objects.all()
+        .accessible_by(user)
+        .filter(
+            workspace_favorites__workspace=workspace,
+            status=DataLayerStatus.READY,
+        )
+        .select_related(
+            "organization",
+            "dataset",
+            "category",
+        )
+        .prefetch_related("styles", "simple_categories")
+    )
+
+    if type is not None:
+        datalayers = datalayers.filter(type=type)
+
+    if geometry is not None:
+        datalayers = datalayers.filter(outline__intersects=geometry)
+
+    if module:
+        filter = {f"metadata__modules__{module}__enabled": True}
+        datalayers = datalayers.filter(**filter)
+
+    return datalayers.order_by("name")
+
+
 def _escape_like(term: str) -> str:
     return term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
@@ -759,7 +797,18 @@ def find_anything(
                     continue
                 results[key] = search_result
 
-    return results
+    # a category is redundant when its layers are already in the results
+    layer_category_ids = {
+        category["id"]
+        for result in results.values()
+        if result.type == "DATALAYER"
+        for category in result.data.get("simple_categories", [])
+    }
+    return {
+        key: result
+        for key, result in results.items()
+        if not (result.type == "SIMPLE_CATEGORY" and result.id in layer_category_ids)
+    }
 
 
 def add_favorite_datalayer(
@@ -787,6 +836,24 @@ def add_favorite_datalayer(
             user_id=user.pk,
         )
     return favorite, created
+
+
+def get_favorite_datalayer_ids(
+    workspace: Optional[Workspace],
+    datalayer_ids: Collection[int],
+) -> Optional[Set[int]]:
+    """
+    Returns which of `datalayer_ids` are favorites of the workspace, or None
+    when there is no workspace to check against.
+    """
+    if workspace is None:
+        return None
+    return set(
+        WorkspaceFavoriteDataLayer.objects.filter(
+            workspace=workspace,
+            datalayer_id__in=datalayer_ids,
+        ).values_list("datalayer_id", flat=True)
+    )
 
 
 def remove_favorite_datalayer(

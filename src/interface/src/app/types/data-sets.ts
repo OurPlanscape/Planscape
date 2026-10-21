@@ -123,6 +123,7 @@ export interface DataLayer {
   map_service_type: 'VECTORTILES' | 'COG' | 'ESRI_GEOJSON';
   public_url: string | null;
   map_url: string | null;
+  is_favorite?: boolean | null;
 }
 
 export interface BaseLayer extends Omit<DataLayer, 'styles'> {
@@ -147,9 +148,9 @@ export interface ColorLegendInfo {
 export interface SearchResult {
   id: number;
   name: string;
-  type: 'DATASET' | 'DATALAYER';
+  type: 'DATASET' | 'DATALAYER' | 'SIMPLE_CATEGORY';
   url: string;
-  data: DataLayer | DataSet;
+  data: DataLayer | DataSet | SimpleCategory;
 }
 
 export interface SearchQuery {
@@ -159,6 +160,7 @@ export interface SearchQuery {
   offset?: number;
   module?: string;
   geometry?: Geometry;
+  workspaceId?: number | null;
 }
 
 export interface DataSetSearchResult extends SearchResult {
@@ -169,4 +171,9 @@ export interface DataSetSearchResult extends SearchResult {
 export interface DataLayerSearchResult extends SearchResult {
   type: 'DATALAYER';
   data: DataLayer;
+}
+
+export interface SimpleCategorySearchResult extends SearchResult {
+  type: 'SIMPLE_CATEGORY';
+  data: SimpleCategory;
 }

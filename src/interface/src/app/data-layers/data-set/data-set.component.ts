@@ -17,6 +17,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { unselectableReason } from '@app/shared';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
+import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.component';
 
 @Component({
   selector: 'app-data-set',
@@ -37,6 +38,7 @@ import { FormsModule } from '@angular/forms';
     MatCheckboxModule,
     ToggleComponent,
     FormsModule,
+    FavoriteStarComponent,
   ],
   templateUrl: './data-set.component.html',
   styleUrl: './data-set.component.scss',

@@ -11,6 +11,7 @@ from datasets.models import (
 )
 from datasets.serializers import (
     BrowseDataLayerSerializer,
+    BrowseDataLayersSerializer,
     BrowseDataSetSerializer,
     DataLayerSerializer,
     DatasetSerializer,
@@ -18,7 +19,13 @@ from datasets.serializers import (
     SearchResultsSerializer,
     SimpleCategorySerializer,
 )
-from datasets.services import browse, browse_simple_category, find_anything
+from datasets.services import (
+    browse,
+    browse_favorites,
+    browse_simple_category,
+    find_anything,
+    get_favorite_datalayer_ids,
+)
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.search import SearchQuery, SearchVector
@@ -68,15 +75,24 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             context={"request": request},
         )
         serializer.is_valid(raise_exception=True)
+        workspace = serializer.validated_data.get("workspace")
         results = self._get_browse_result(
             dataset,
             type=serializer.validated_data.get("type"),
             module=serializer.validated_data.get("module"),
             geometry=serializer.validated_data.get("geometry"),
             search_tab=serializer.validated_data.get("search_tab"),
-            workspace=serializer.validated_data.get("workspace"),
+            workspace=workspace,
         )
-        serializer = BrowseDataLayerSerializer(results, many=True)
+        serializer = BrowseDataLayerSerializer(
+            results,
+            many=True,
+            context={
+                "favorite_datalayer_ids": get_favorite_datalayer_ids(
+                    workspace, [datalayer.pk for datalayer in results]
+                ),
+            },
+        )
         is_authenticated = request.user and request.user.is_authenticated
         track_event(
             name="datasets.dataset.browse",
@@ -130,16 +146,27 @@ class SimpleCategoryViewSet(MultiSerializerMixin, GenericViewSet):
             context={"request": request},
         )
         serializer.is_valid(raise_exception=True)
-        results = browse_simple_category(
-            category,
-            type=serializer.validated_data.get("type"),
-            module=serializer.validated_data.get("module"),
-            geometry=serializer.validated_data.get("geometry"),
-            search_tab=serializer.validated_data.get("search_tab"),
-            user=request.user,
-            workspace=serializer.validated_data.get("workspace"),
+        workspace = serializer.validated_data.get("workspace")
+        results = list(
+            browse_simple_category(
+                category,
+                type=serializer.validated_data.get("type"),
+                module=serializer.validated_data.get("module"),
+                geometry=serializer.validated_data.get("geometry"),
+                search_tab=serializer.validated_data.get("search_tab"),
+                user=request.user,
+                workspace=workspace,
+            ).all()
         )
-        serializer = BrowseDataLayerSerializer(list(results.all()), many=True)
+        serializer = BrowseDataLayerSerializer(
+            results,
+            many=True,
+            context={
+                "favorite_datalayer_ids": get_favorite_datalayer_ids(
+                    workspace, [datalayer.pk for datalayer in results]
+                ),
+            },
+        )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -165,6 +192,38 @@ class DataLayerViewSet(
         return Response({"layer_url": datalayer.get_map_url()})
 
     @extend_schema(
+        description="Returns the datalayers favorited in a workspace, across "
+        "all datasets.",
+        request=BrowseDataLayersSerializer,
+        responses={200: BrowseDataLayerSerializer(many=True)},
+    )
+    @action(detail=False, methods=["post"], permission_classes=[AllowAny])
+    def browse(self, request):
+        serializer = BrowseDataLayersSerializer(
+            data=request.data,
+            context={"request": request},
+        )
+        serializer.is_valid(raise_exception=True)
+        workspace = serializer.validated_data["workspace"]
+        results = list(
+            browse_favorites(
+                workspace,
+                type=serializer.validated_data.get("type"),
+                module=serializer.validated_data.get("module"),
+                geometry=serializer.validated_data.get("geometry"),
+                user=request.user,
+            )
+        )
+        serializer = BrowseDataLayerSerializer(
+            results,
+            many=True,
+            context={
+                "favorite_datalayer_ids": {datalayer.pk for datalayer in results},
+            },
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
         request=FindAnythingSerializer,
         responses={200: SearchResultsSerializer(many=True)},
     )
@@ -178,6 +237,18 @@ class DataLayerViewSet(
 
         results = find_anything(user=request.user, **serializer.validated_data)
         search_results = list(results.values())
+
+        # `find_anything` is cached, so favorites are resolved here to reflect
+        # the workspace's current favorites.
+        datalayer_results = [r for r in search_results if r.type == "DATALAYER"]
+        favorite_ids = get_favorite_datalayer_ids(
+            serializer.validated_data.get("workspace"),
+            [r.id for r in datalayer_results],
+        )
+        for result in datalayer_results:
+            result.data["is_favorite"] = (
+                None if favorite_ids is None else result.id in favorite_ids
+            )
 
         user = request.user
         is_authenticated = bool(user and user.is_authenticated)

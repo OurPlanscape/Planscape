@@ -42,6 +42,7 @@
           class="toggle"
           [ngModel]="treeContainerModel.value === node.item.id"
           (change)="selectDataLayer(node.item, $event)">
+          <app-favorite-star [layer]="node.item"></app-favorite-star>
           {{ node.name }}
         </sg-toggle>
         <mat-spinner

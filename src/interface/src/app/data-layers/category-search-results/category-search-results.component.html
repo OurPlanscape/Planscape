@@ -1,0 +1,23 @@
+<ng-container *ngIf="results">
+  <app-data-set
+    *ngFor="let result of results.categories"
+    (selectDataset)="goToCategory(result.data)"
+    [name]="result.name"
+    [searchTerm]="searchTerm">
+  </app-data-set>
+  <app-data-set
+    *ngFor="let result of results.dataSets"
+    (selectDataset)="goToDataSet(result)"
+    [name]="result.name"
+    [organizationName]="result.data.organization.name"
+    [searchTerm]="searchTerm">
+  </app-data-set>
+  <app-data-set
+    *ngFor="let group of results.groupedLayers"
+    (selectDataset)="goToGroup(group)"
+    [name]="group.category?.name ?? 'Uncategorized'"
+    [layers]="group.layers"
+    [searchTerm]="searchTerm"
+    [displayAddButton]="displayAddButton">
+  </app-data-set>
+</ng-container>

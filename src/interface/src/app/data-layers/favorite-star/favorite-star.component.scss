@@ -1,0 +1,27 @@
+@import 'colors';
+
+.favorite-star {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  aspect-ratio: 1/1;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: $color-md-gray;
+
+  mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    line-height: 20px;
+  }
+
+  &.favorited {
+    color: $color-standard-blue;
+  }
+}
