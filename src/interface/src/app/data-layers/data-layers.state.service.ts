@@ -61,12 +61,19 @@ export class DataLayersStateService {
     map((d) => d.main_datasets)
   );
 
+  /** The map module failed to load, so there are no datasets or categories to browse. */
+  loadError$ = this.mapModuleService.loadError$;
+
   dataSets$ = this.moduleNameOverride$.pipe(
     switchMap((name) =>
       name ? this.mapModuleService.datasetsFor(name) : this.baseDataSets$
     ),
     tap(() => queueMicrotask(() => this.loadingSubject.next(false)))
   );
+
+  retryLoad() {
+    this.mapModuleService.retryLoadMapModule();
+  }
 
   setModuleNameOverride(name: string | null) {
     // Clear the selection first so dataTree$ doesn't fire with a dataset

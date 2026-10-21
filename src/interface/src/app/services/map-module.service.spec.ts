@@ -5,7 +5,7 @@ import { MockProvider } from 'ng-mocks';
 import { ModuleService } from './module.service';
 import { MapDataDataSet } from '@app/types/module.types';
 import { ApiModule, MapData } from '@types';
-import { of } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 function makeDataSet(id: number, name: string): MapDataDataSet {
   return {
@@ -120,5 +120,57 @@ describe('MapModuleService datasets$ sorting', () => {
       expect(originalBase.map((d) => d.name)).toEqual(['Z', 'A', 'M']);
       done();
     });
+  });
+});
+
+describe('MapModuleService loadError$', () => {
+  const apiModule: ApiModule<MapData> = {
+    name: 'test',
+    options: {
+      datasets: { main_datasets: [], base_datasets: [], categories: [] },
+    },
+  };
+  let getModule: jasmine.Spy;
+  let svc: MapModuleService;
+  let errors: boolean[];
+
+  beforeEach(() => {
+    getModule = jasmine.createSpy('getModule');
+    TestBed.configureTestingModule({
+      providers: [
+        MockProvider(ModuleService, {
+          getModule: getModule as ModuleService['getModule'],
+        }),
+      ],
+    });
+    svc = TestBed.inject(MapModuleService);
+    errors = [];
+    svc.loadError$.subscribe((e) => errors.push(e));
+  });
+
+  it('is set when the module request fails', () => {
+    getModule.and.returnValue(throwError(() => new Error('502')));
+
+    svc.loadMapModule().subscribe({ error: () => {} });
+
+    expect(errors).toEqual([false, false, true]);
+  });
+
+  it('retries with the last geometry and clears the error on success', () => {
+    const geometry = { type: 'Point', coordinates: [0, 0] };
+    getModule.and.returnValue(throwError(() => new Error('502')));
+    svc.loadMapModule(geometry).subscribe({ error: () => {} });
+
+    const response = new Subject<ApiModule<MapData>>();
+    getModule.and.returnValue(response);
+    svc.retryLoadMapModule();
+
+    expect(getModule).toHaveBeenCalledTimes(2);
+    expect(getModule.calls.mostRecent().args[1]).toEqual({ geometry });
+    expect(errors[errors.length - 1]).toBeFalse();
+
+    response.next(apiModule);
+    response.complete();
+    expect(errors[errors.length - 1]).toBeFalse();
   });
 });

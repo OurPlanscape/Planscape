@@ -41,6 +41,7 @@ import {
   tap,
   throwError,
 } from 'rxjs';
+import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
 import { DataLayersStateService } from '../data-layers.state.service';
 import { groupSearchResults, Results } from './search';
 
@@ -60,6 +61,7 @@ import { groupSearchResults, Results } from './search';
     NgClass,
     MatProgressSpinnerModule,
     ButtonComponent,
+    MessageCardComponent,
     DataLayerTreeComponent,
     SearchBarComponent,
     SearchResultsComponent,
@@ -97,6 +99,7 @@ export class DataLayersComponent {
     : 'Search by dataset, metric, category, org...';
 
   loading$ = this.dataLayersStateService.loading$;
+  loadError$ = this.dataLayersStateService.loadError$;
 
   dataSets$ = this.dataLayersStateService.dataSets$;
   categories$ = this.dataLayersStateService.categories$;
@@ -187,6 +190,10 @@ export class DataLayersComponent {
 
   clearSearch() {
     this.dataLayersStateService.clearSearch();
+  }
+
+  retryLoad() {
+    this.dataLayersStateService.retryLoad();
   }
 
   clearViewedDataLayer() {
