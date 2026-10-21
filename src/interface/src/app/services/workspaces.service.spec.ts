@@ -143,4 +143,28 @@ describe('WorkspacesService', () => {
       req.flush(null);
     });
   });
+
+  describe('favorite data layers', () => {
+    const path = (workspaceId: number, layerId: number) =>
+      `${service.v2Path}${workspaceId}/favorites/datalayers/${layerId}/`;
+
+    it('favorites a data layer in the workspace', () => {
+      service.favoriteDataLayer(3, 7).subscribe();
+
+      const req = httpTestingController.expectOne(path(3, 7));
+
+      expect(req.request.method).toEqual('POST');
+      expect(req.request.body).toBeNull();
+      req.flush({});
+    });
+
+    it('removes a data layer from the workspace favorites', () => {
+      service.unfavoriteDataLayer(3, 7).subscribe();
+
+      const req = httpTestingController.expectOne(path(3, 7));
+
+      expect(req.request.method).toEqual('DELETE');
+      req.flush(null);
+    });
+  });
 });

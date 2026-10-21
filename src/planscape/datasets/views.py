@@ -11,6 +11,7 @@ from datasets.models import (
 )
 from datasets.serializers import (
     BrowseDataLayerSerializer,
+    BrowseDataLayersSerializer,
     BrowseDataSetSerializer,
     DataLayerSerializer,
     DatasetSerializer,
@@ -20,6 +21,7 @@ from datasets.serializers import (
 )
 from datasets.services import (
     browse,
+    browse_favorites,
     browse_simple_category,
     find_anything,
     get_favorite_datalayer_ids,
@@ -188,6 +190,38 @@ class DataLayerViewSet(
     def urls(self, request, pk=None):
         datalayer = self.get_object()
         return Response({"layer_url": datalayer.get_map_url()})
+
+    @extend_schema(
+        description="Returns the datalayers favorited in a workspace, across "
+        "all datasets.",
+        request=BrowseDataLayersSerializer,
+        responses={200: BrowseDataLayerSerializer(many=True)},
+    )
+    @action(detail=False, methods=["post"], permission_classes=[AllowAny])
+    def browse(self, request):
+        serializer = BrowseDataLayersSerializer(
+            data=request.data,
+            context={"request": request},
+        )
+        serializer.is_valid(raise_exception=True)
+        workspace = serializer.validated_data["workspace"]
+        results = list(
+            browse_favorites(
+                workspace,
+                type=serializer.validated_data.get("type"),
+                module=serializer.validated_data.get("module"),
+                geometry=serializer.validated_data.get("geometry"),
+                user=request.user,
+            )
+        )
+        serializer = BrowseDataLayerSerializer(
+            results,
+            many=True,
+            context={
+                "favorite_datalayer_ids": {datalayer.pk for datalayer in results},
+            },
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @extend_schema(
         request=FindAnythingSerializer,

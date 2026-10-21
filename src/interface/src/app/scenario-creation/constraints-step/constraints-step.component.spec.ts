@@ -30,6 +30,9 @@ describe('ConstraintsStepComponent', () => {
       ],
       providers: [
         MockProvider(DataLayersStateService, {
+          layerClicked$: of(),
+          searchTerm$: of(''),
+          searchResults$: of(null),
           viewedDataLayer$: of(null),
           updateSelectedLayers: jasmine.createSpy('updateSelectedLayers'),
           setMaxSelectedLayers: jasmine.createSpy('setMaxSelectedLayers'),

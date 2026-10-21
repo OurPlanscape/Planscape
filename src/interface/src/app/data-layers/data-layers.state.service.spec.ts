@@ -1,24 +1,28 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 
 import { DataLayersStateService } from './data-layers.state.service';
 import { MockProvider } from 'ng-mocks';
 import { DataLayersService } from '@services/data-layers.service';
-import { of } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { DataLayer, DataSet, Pagination } from '@types';
 import { MapModuleService } from '@services/map-module.service';
 import { FeaturesModule } from '@features/features.module';
 import { overrideFeatureFlags } from '@features/testing';
 import { PlanState } from '@plan/plan.state';
 import { MOCK_GEOMETRY, MOCK_PLAN } from '@services/mocks';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-datalayers.token';
-import { SELECTION_MODE } from '@data-layers/data-layers/selection-mode.token';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import { TreeNode } from '@data-layers/data-layers/tree-node';
+import { WorkspacesService } from '@services/workspaces.service';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
 
 describe('DataLayersStateService', () => {
   let service: DataLayersStateService;
   let dataLayersService: jasmine.SpyObj<DataLayersService>;
+  let workspacesService: jasmine.SpyObj<WorkspacesService>;
+  let currentWorkspaceId: number | null;
 
   const layer = {
     id: 1,
@@ -43,13 +47,20 @@ describe('DataLayersStateService', () => {
     dataLayersService.listDataLayers.and.returnValue(of([]));
     dataLayersService.listCategoryDataLayers.and.returnValue(of([]));
 
+    currentWorkspaceId = null;
+    workspacesService = jasmine.createSpyObj<WorkspacesService>(
+      'WorkspacesService',
+      ['favoriteDataLayer', 'unfavoriteDataLayer']
+    );
+    workspacesService.favoriteDataLayer.and.returnValue(of({}));
+    workspacesService.unfavoriteDataLayer.and.returnValue(of(undefined));
+
     TestBed.configureTestingModule({
-      imports: [FeaturesModule, MatSnackBarModule],
+      imports: [FeaturesModule, MatSnackBarModule, NoopAnimationsModule],
       providers: [
         { provide: DataLayersService, useValue: dataLayersService },
         DataLayersStateService,
         { provide: MAX_SELECTED_DATALAYERS, useValue: 1 },
-        { provide: SELECTION_MODE, useValue: 'AUTOMATIC' },
         { provide: USE_GEOMETRY, useValue: false },
         MockProvider(MapModuleService, {
           moduleName: 'map',
@@ -64,6 +75,15 @@ describe('DataLayersStateService', () => {
           currentPlanId$: of(123),
           planningAreaGeometry$: of(MOCK_GEOMETRY),
         }),
+        { provide: WorkspacesService, useValue: workspacesService },
+        {
+          provide: WorkspaceState,
+          useValue: {
+            get currentWorkspaceIdValue() {
+              return currentWorkspaceId;
+            },
+          },
+        },
       ],
     });
   });
@@ -89,7 +109,8 @@ describe('DataLayersStateService', () => {
     expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
       10,
       'map',
-      undefined
+      undefined,
+      null
     );
     expect(dataLayersService.listCategoryDataLayers).not.toHaveBeenCalled();
   });
@@ -100,7 +121,8 @@ describe('DataLayersStateService', () => {
     expect(dataLayersService.listCategoryDataLayers).toHaveBeenCalledWith(
       20,
       'map',
-      undefined
+      undefined,
+      null
     );
     expect(dataLayersService.listDataLayers).not.toHaveBeenCalled();
   });
@@ -116,6 +138,29 @@ describe('DataLayersStateService', () => {
     expect(tree!).toEqual([{ name: 'Layer', item: layer }]);
   });
 
+  describe('loading$', () => {
+    it('stops once the categories load, even if the plan geometry arrives later', fakeAsync(() => {
+      const geometry$ = new Subject<any>();
+      TestBed.overrideProvider(PlanState, {
+        useValue: { planningAreaGeometry$: geometry$ },
+      });
+      service = TestBed.inject(DataLayersStateService);
+      let loading: boolean | undefined;
+      service.loading$.subscribe((l) => (loading = l));
+
+      // what the data layers panel subscribes to while browsing
+      service.categories$.subscribe();
+      service.searchResults$.subscribe();
+      flushMicrotasks();
+      expect(loading).toBeFalse();
+
+      geometry$.next(MOCK_GEOMETRY);
+      flushMicrotasks();
+
+      expect(loading).toBeFalse();
+    }));
+  });
+
   describe('goToDataLayerCategory', () => {
     it("opens the layer's dataset with DATA_ORGANIZATION off", () => {
       createService();
@@ -123,7 +168,8 @@ describe('DataLayersStateService', () => {
       expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
         10,
         'map',
-        undefined
+        undefined,
+        null
       );
     });
 
@@ -133,7 +179,8 @@ describe('DataLayersStateService', () => {
       expect(dataLayersService.listCategoryDataLayers).toHaveBeenCalledWith(
         20,
         'map',
-        undefined
+        undefined,
+        null
       );
     });
 
@@ -152,7 +199,8 @@ describe('DataLayersStateService', () => {
       expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
         10,
         'map',
-        undefined
+        undefined,
+        null
       );
     });
   });
@@ -167,7 +215,8 @@ describe('DataLayersStateService', () => {
       expect(dataLayersService.listCategoryDataLayers).toHaveBeenCalledWith(
         20,
         'map',
-        undefined
+        undefined,
+        null
       );
     });
 
@@ -184,7 +233,8 @@ describe('DataLayersStateService', () => {
       expect(dataLayersService.listCategoryDataLayers).toHaveBeenCalledWith(
         20,
         'map',
-        undefined
+        undefined,
+        null
       );
     });
 
@@ -203,8 +253,150 @@ describe('DataLayersStateService', () => {
       expect(dataLayersService.listDataLayers).toHaveBeenCalledOnceWith(
         10,
         'map',
-        undefined
+        undefined,
+        null
       );
+    });
+  });
+
+  describe('favorites', () => {
+    const favorited = { ...layer, id: 2, is_favorite: true } as DataLayer;
+    const notFavorited = { ...layer, id: 3, is_favorite: false } as DataLayer;
+    const noFlag = { ...layer, id: 4 } as DataLayer;
+
+    function isFavorite(l: DataLayer): boolean {
+      let value = false;
+      service
+        .isFavorite$(l)
+        .subscribe((v) => (value = v))
+        .unsubscribe();
+      return value;
+    }
+
+    /** Inside a workspace, with the redesign on, which is when stars show. */
+    function createInWorkspace(...flags: string[]) {
+      currentWorkspaceId = 7;
+      createService(...flags);
+    }
+
+    it('follows the payload for a layer nobody touched', () => {
+      createInWorkspace('DATA_ORGANIZATION');
+
+      expect(isFavorite(favorited)).toBe(true);
+      expect(isFavorite(notFavorited)).toBe(false);
+      // null, which is what the backend sends when no workspace was asked for
+      expect(isFavorite(noFlag)).toBe(false);
+    });
+
+    it('favorites a layer in the workspace', () => {
+      createInWorkspace('DATA_ORGANIZATION');
+
+      service.toggleFavorite(notFavorited);
+
+      expect(workspacesService.favoriteDataLayer).toHaveBeenCalledWith(7, 3);
+      expect(isFavorite(notFavorited)).toBe(true);
+    });
+
+    it('unfavorites a layer the payload reported as a favorite', () => {
+      createInWorkspace('DATA_ORGANIZATION');
+
+      service.toggleFavorite(favorited);
+
+      expect(workspacesService.unfavoriteDataLayer).toHaveBeenCalledWith(7, 2);
+      expect(isFavorite(favorited)).toBe(false);
+    });
+
+    it('agrees about the same layer wherever it shows up', () => {
+      createInWorkspace('DATA_ORGANIZATION');
+      // the tree and the search results hand over different objects
+      const inTree = { ...notFavorited } as DataLayer;
+      const inSearch = { ...notFavorited } as DataLayer;
+
+      service.toggleFavorite(inTree);
+
+      expect(isFavorite(inSearch)).toBe(true);
+    });
+
+    it('puts the star back and warns when favoriting fails', () => {
+      createInWorkspace('DATA_ORGANIZATION');
+      const toast = spyOn(TestBed.inject(MatSnackBar), 'open');
+      workspacesService.favoriteDataLayer.and.returnValue(
+        throwError(() => new Error('nope'))
+      );
+
+      service.toggleFavorite(notFavorited);
+
+      expect(isFavorite(notFavorited)).toBe(false);
+      expect(toast).toHaveBeenCalled();
+    });
+
+    it('puts the star back and warns when unfavoriting fails', () => {
+      createInWorkspace('DATA_ORGANIZATION');
+      const toast = spyOn(TestBed.inject(MatSnackBar), 'open');
+      workspacesService.unfavoriteDataLayer.and.returnValue(
+        throwError(() => new Error('nope'))
+      );
+
+      service.toggleFavorite(favorited);
+
+      expect(isFavorite(favorited)).toBe(true);
+      expect(toast).toHaveBeenCalled();
+    });
+
+    it('asks the browse endpoints about the workspace', () => {
+      createInWorkspace('DATA_ORGANIZATION');
+
+      service.selectDataSet({
+        id: 10,
+        name: 'Dataset',
+        organization: layer.organization,
+      });
+
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        undefined,
+        7
+      );
+    });
+
+    it('offers no favoriting with the feature off', () => {
+      createInWorkspace();
+
+      expect(service.favoritesEnabled()).toBe(false);
+
+      service.toggleFavorite(notFavorited);
+
+      expect(workspacesService.favoriteDataLayer).not.toHaveBeenCalled();
+      expect(isFavorite(notFavorited)).toBe(false);
+    });
+
+    it('leaves the browse calls alone with the feature off', () => {
+      createInWorkspace();
+
+      service.selectDataSet({
+        id: 10,
+        name: 'Dataset',
+        organization: layer.organization,
+      });
+
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        undefined,
+        null
+      );
+    });
+
+    it('offers no favoriting outside a workspace', () => {
+      currentWorkspaceId = null;
+      createService('DATA_ORGANIZATION');
+
+      expect(service.favoritesEnabled()).toBe(false);
+
+      service.toggleFavorite(notFavorited);
+
+      expect(workspacesService.favoriteDataLayer).not.toHaveBeenCalled();
     });
   });
 });

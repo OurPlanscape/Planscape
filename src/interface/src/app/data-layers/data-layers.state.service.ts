@@ -4,6 +4,7 @@ import {
   BehaviorSubject,
   catchError,
   combineLatest,
+  distinctUntilChanged,
   map,
   Observable,
   of,
@@ -29,14 +30,13 @@ import { extractLegendInfo } from './utilities';
 import { MapModuleService } from '@services/map-module.service';
 
 import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-datalayers.token';
-
-import { distinctUntilChanged } from 'rxjs/operators';
 import { PlanState } from '@plan/plan.state';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import { SNACK_ERROR_CONFIG, UnselectableType } from '@app/shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SELECTION_MODE } from './data-layers/selection-mode.token';
 import { FeatureService } from '@features/feature.service';
+import { WorkspacesService } from '@services/workspaces.service';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
 
 /** The dataset or category whose layers are being browsed. */
 export interface BrowseSelection {
@@ -55,11 +55,35 @@ export interface unselectableLayer {
 export class DataLayersStateService {
   readonly limit = 20;
 
-  dataSets$ = this.mapModuleService.datasets$.pipe(
-    distinctUntilChanged(),
-    map((mapData) => mapData.main_datasets),
+  private moduleNameOverride$ = new BehaviorSubject<string | null>(null);
+
+  private baseDataSets$ = this.mapModuleService.datasets$.pipe(
+    map((d) => d.main_datasets)
+  );
+
+  /** The map module failed to load, so there are no datasets or categories to browse. */
+  loadError$ = this.mapModuleService.loadError$;
+
+  dataSets$ = this.moduleNameOverride$.pipe(
+    switchMap((name) =>
+      name ? this.mapModuleService.datasetsFor(name) : this.baseDataSets$
+    ),
     tap(() => queueMicrotask(() => this.loadingSubject.next(false)))
   );
+
+  retryLoad() {
+    this.mapModuleService.retryLoadMapModule();
+  }
+
+  setModuleNameOverride(name: string | null) {
+    // Clear the selection first so dataTree$ doesn't fire with a dataset
+    // from the other module paired with the new module name
+    this._selectedDataSet$.next(null);
+    this.moduleNameOverride$.next(name);
+  }
+
+  private _selectedDataSet$ = new BehaviorSubject<BaseDataSet | null>(null);
+  selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
   categories$ = this.mapModuleService.datasets$.pipe(
     distinctUntilChanged(),
@@ -115,20 +139,32 @@ export class DataLayersStateService {
     this.selection$,
     // Setting an initial value when there is no plan
     this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
+    this.moduleNameOverride$,
   ]).pipe(
     tap(() => this.loadingSubject.next(true)),
-    switchMap(([selection, planningAreaGeometry]) => {
+    switchMap(([selection, planningAreaGeometry, override]) => {
       if (!selection) {
         this.loadingSubject.next(false);
         return of(null);
       }
+      const module = override ?? this.mapModuleService.moduleName;
       const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
-      const module = this.mapModuleService.moduleName;
       // categories list their layers flat; datasets nest them by path
       const isCategory = selection.type === 'category';
+      const workspaceId = this.favoritesWorkspaceId();
       const layers$ = isCategory
-        ? this.service.listCategoryDataLayers(selection.id, module, geometry)
-        : this.service.listDataLayers(selection.id, module, geometry);
+        ? this.service.listCategoryDataLayers(
+            selection.id,
+            module,
+            geometry,
+            workspaceId
+          )
+        : this.service.listDataLayers(
+            selection.id,
+            module,
+            geometry,
+            workspaceId
+          );
       return layers$.pipe(
         map((items) =>
           isCategory ? buildFlatTree(items) : buildPathTree(items)
@@ -177,14 +213,16 @@ export class DataLayersStateService {
     this._offset,
     // Setting an initial value when there is no plan
     this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
+    this.moduleNameOverride$,
   ]).pipe(
-    tap(() => this.loadingSubject.next(true)),
-    switchMap(([term, offset, planningAreaGeometry]) => {
+    switchMap(([term, offset, planningAreaGeometry, override]) => {
       if (!term) {
         return of(null);
       }
+      this.loadingSubject.next(true);
 
-      const module = this.mapModuleService.moduleName;
+      const module = override ?? this.mapModuleService.moduleName;
+
       const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
 
       return this.service
@@ -194,6 +232,7 @@ export class DataLayersStateService {
           offset,
           module,
           geometry,
+          workspaceId: this.favoritesWorkspaceId(),
         })
         .pipe(
           startWith(null),
@@ -209,6 +248,71 @@ export class DataLayersStateService {
     shareReplay(1)
   );
 
+  /**
+   * Favorites the user flipped here, over what the payload said. Keeping only
+   * the changes means every place that shows the same layer agrees at once,
+   * without refetching, and a layer nobody touched keeps the server's answer.
+   */
+  private _favoriteChanges$ = new BehaviorSubject<ReadonlyMap<number, boolean>>(
+    new Map()
+  );
+
+  /** Whether the star of this layer is filled right now. */
+  isFavorite$(layer: DataLayer): Observable<boolean> {
+    return this._favoriteChanges$.pipe(
+      map((changes) => changes.get(layer.id) ?? layer.is_favorite === true),
+      distinctUntilChanged()
+    );
+  }
+
+  isFavorite(layer: DataLayer): boolean {
+    return (
+      this._favoriteChanges$.value.get(layer.id) ?? layer.is_favorite === true
+    );
+  }
+
+  favoritesEnabled(): boolean {
+    return (
+      this.featureService.isFeatureEnabled('DATA_ORGANIZATION') &&
+      this.workspaceState.currentWorkspaceIdValue !== null
+    );
+  }
+
+  toggleFavorite(layer: DataLayer) {
+    const workspaceId = this.workspaceState.currentWorkspaceIdValue;
+    if (workspaceId === null || !this.favoritesEnabled()) {
+      return;
+    }
+    const wanted = !this.isFavorite(layer);
+    const previous = this._favoriteChanges$.value;
+    const changes = new Map(previous);
+    changes.set(layer.id, wanted);
+    this._favoriteChanges$.next(changes);
+
+    const request = wanted
+      ? this.workspacesService.favoriteDataLayer(workspaceId, layer.id)
+      : this.workspacesService.unfavoriteDataLayer(workspaceId, layer.id);
+
+    request.subscribe({
+      error: () => {
+        this._favoriteChanges$.next(previous);
+        this.matSnackBar.open(
+          `There was an error trying to ${
+            wanted ? 'favorite' : 'unfavorite'
+          } this data layer.`,
+          'Dismiss',
+          SNACK_ERROR_CONFIG
+        );
+      },
+    });
+  }
+
+  private favoritesWorkspaceId(): number | null {
+    return this.favoritesEnabled()
+      ? this.workspaceState.currentWorkspaceIdValue
+      : null;
+  }
+
   private _paths$ = new BehaviorSubject<string[]>([]);
   paths$ = this._paths$.asObservable();
 
@@ -220,14 +324,17 @@ export class DataLayersStateService {
     private mapModuleService: MapModuleService,
     @Inject(MAX_SELECTED_DATALAYERS)
     private maxSelectedDatalayers: number,
-    @Inject(SELECTION_MODE)
-    private selectionMode: 'AUTOMATIC' | 'MANUAL',
     @Inject(USE_GEOMETRY)
     private readonly sendGeometry: boolean,
     private planState: PlanState,
     private matSnackBar: MatSnackBar,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private workspacesService: WorkspacesService,
+    private workspaceState: WorkspaceState
   ) {}
+
+  // determines whether we interject anything when the user makes a selection
+  selectionMode: 'AUTOMATIC' | 'MANUAL' = 'AUTOMATIC';
 
   selectDataSet(dataset: BaseDataSet) {
     this.select({
@@ -379,12 +486,18 @@ export class DataLayersStateService {
     this._selectedDataLayers$.next(updatedSelectedDatalayers);
   }
 
-  //explicitly set a layer to the selected list
   addSelectedLayer(layer: DataLayer) {
-    const updatedSelectedDatalayers: DataLayer[] =
-      this._selectedDataLayers$.value;
-    updatedSelectedDatalayers.push(layer);
-    this._selectedDataLayers$.next(updatedSelectedDatalayers);
+    const currentLayers = this._selectedDataLayers$.value;
+
+    // Check if the layer is already in the list by its ID
+    const exists = currentLayers.some(
+      (existingLayer) => existingLayer.id === layer.id
+    );
+
+    if (!exists) {
+      const updatedSelectedDatalayers = [...currentLayers, layer];
+      this._selectedDataLayers$.next(updatedSelectedDatalayers);
+    }
   }
 
   //manage collection of layers that can't be selected
@@ -448,5 +561,9 @@ export class DataLayersStateService {
 
   setMaxSelectedLayers(max: number): void {
     this.maxSelectedDatalayers = max;
+  }
+
+  setSelectionMode(mode: 'AUTOMATIC' | 'MANUAL') {
+    this.selectionMode = mode;
   }
 }

@@ -47,6 +47,8 @@ import { ScenarioService } from '@services';
 
 enum ScenarioTabs {
   RESULTS,
+  // With DATA_ORGANIZATION this is the Map Layers tab.
+  // TODO: once DATA_ORGANIZATION is fully on, rename to MAP_LAYERS and delete BASE_LAYERS.
   DATA_LAYERS,
   BASE_LAYERS,
   TREATMENTS,
