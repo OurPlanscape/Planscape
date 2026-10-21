@@ -1,0 +1,61 @@
+<div class="side-search-container">
+  <sg-search-bar
+    class="search-bar"
+    [debounceInterval]="160"
+    searchPlaceholder="Search in favorites"
+    [showCloseButton]="true"
+    [searchValue]="(searchTerm$ | async) || ''"
+    (searchString)="search($event)"
+    (clearSearch)="clearSearch()"></sg-search-bar>
+</div>
+
+<div class="scrollable" *ngIf="favorites$ | async as favorites">
+  <mat-spinner
+    *ngIf="favorites.isLoading"
+    diameter="20"
+    class="loader"></mat-spinner>
+
+  <sg-empty-state
+    *ngIf="favorites.error"
+    icon="error_outline"
+    [outlined]="true"
+    title="We couldn't load your favorites"
+    description="The server could not return the favorites of this workspace. Try again later."></sg-empty-state>
+
+  <ng-container *ngIf="!favorites.isLoading && !favorites.error">
+    <div
+      class="data-layer"
+      *ngFor="let layer of results$ | async; trackBy: trackById">
+      <sg-toggle
+        class="toggle"
+        [ngModel]="(viewedDataLayerId$ | async) === layer.id"
+        (change)="selectDataLayer(layer, $event)">
+        <app-favorite-star [layer]="layer"></app-favorite-star>
+        <span
+          class="layer-name"
+          [sgHighlighter]="(searchTerm$ | async) || ''"
+          [sgHighlighterText]="layer.name"></span>
+      </sg-toggle>
+      <mat-spinner
+        diameter="20"
+        *ngIf="
+          (viewedDataLayerId$ | async) === layer.id &&
+          (loadingDataLayer$ | async)
+        "></mat-spinner>
+    </div>
+
+    <!-- nothing favorited yet -->
+    <sg-empty-state
+      *ngIf="(searchTerm$ | async) === '' && (hasResults$ | async) === false"
+      icon="star"
+      [outlined]="true"
+      title="No favorite data layers yet"
+      description="Favoriting data layers will help you define priority areas later in your planning process."></sg-empty-state>
+
+    <!-- there are favorites, they just do not match what was typed -->
+    <sg-no-results
+      *ngIf="
+        (searchTerm$ | async) && (hasResults$ | async) === false
+      "></sg-no-results>
+  </ng-container>
+</div>

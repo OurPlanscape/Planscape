@@ -21,6 +21,7 @@ import { combineLatest, map, of, switchMap, take } from 'rxjs';
 const PANEL_BY_RAIL_ITEM: Record<string, SidebarTabs> = {
   'data-layers': SidebarTabs.DATA_LAYERS,
   'base-layers': SidebarTabs.BASE_LAYERS,
+  favorites: SidebarTabs.FAVORITES,
 };
 
 @Component({
@@ -76,7 +77,7 @@ export class ExploreSidebarComponent {
   readonly railItems: SidebarRailItem[] = [
     { id: 'data-layers', icon: 'category', label: 'Data Layers' },
     { id: 'base-layers', icon: 'layers', label: 'Base Layers' },
-    { id: 'favorites', icon: 'star', label: 'Favorites', disabled: true },
+    { id: 'favorites', icon: 'star', label: 'Favorite Data Layers' },
   ];
 
   get activeItem() {

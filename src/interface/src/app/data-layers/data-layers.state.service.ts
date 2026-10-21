@@ -19,6 +19,7 @@ import {
   DataLayer,
   IdNamePair,
   Pagination,
+  Resource,
   SearchResult,
   SimpleCategory,
 } from '@types';
@@ -294,6 +295,7 @@ export class DataLayersStateService {
       : this.workspacesService.unfavoriteDataLayer(workspaceId, layer.id);
 
     request.subscribe({
+      next: () => this._reloadFavorites$.next(),
       error: () => {
         this._favoriteChanges$.next(previous);
         this.matSnackBar.open(
@@ -306,6 +308,53 @@ export class DataLayersStateService {
       },
     });
   }
+
+  private _reloadFavorites$ = new BehaviorSubject<void>(undefined);
+
+  private favoritesFromServer$: Observable<Resource<DataLayer[]>> =
+    this._reloadFavorites$.pipe(
+      switchMap(() => {
+        const workspaceId = this.favoritesWorkspaceId();
+        if (workspaceId === null) {
+          return of({ isLoading: false, data: [] } as Resource<DataLayer[]>);
+        }
+        return this.service
+          .browseFavorites(workspaceId, this.mapModuleService.moduleName)
+          .pipe(
+            map(
+              (layers) =>
+                ({ isLoading: false, data: layers }) as Resource<DataLayer[]>
+            ),
+            catchError((error) =>
+              of({ isLoading: false, error } as Resource<DataLayer[]>)
+            ),
+            startWith({ isLoading: true } as Resource<DataLayer[]>)
+          );
+      }),
+      shareReplay(1)
+    );
+
+  /**
+   * What the panel shows: the server's list, minus whatever was unfavorited
+   * here since, so a row leaves the moment its star is emptied instead of
+   * waiting for the refetch.
+   */
+  favorites$: Observable<Resource<DataLayer[]>> = combineLatest([
+    this.favoritesFromServer$,
+    this._favoriteChanges$,
+  ]).pipe(
+    map(([resource, changes]) =>
+      resource.data
+        ? {
+            ...resource,
+            data: resource.data.filter(
+              (layer) => changes.get(layer.id) !== false
+            ),
+          }
+        : resource
+    ),
+    shareReplay(1)
+  );
 
   private favoritesWorkspaceId(): number | null {
     return this.favoritesEnabled()

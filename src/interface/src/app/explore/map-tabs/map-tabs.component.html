@@ -22,6 +22,7 @@
     <app-dynamic-data-layers
       *ngIf="(selectedMapId$ | async) === mapId"
       [mapId]="mapId"
+      [panel]="panel"
       [showSelectionHeader]="false"
       [belowSearch]="mapTabs"></app-dynamic-data-layers>
   </ng-container>
