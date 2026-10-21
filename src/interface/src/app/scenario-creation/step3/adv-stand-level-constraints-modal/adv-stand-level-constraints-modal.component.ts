@@ -52,7 +52,7 @@ export const betweenValidator: ValidatorFn = (
   return Object.keys(errors).length > 0 ? errors : null;
 };
 
-const DIGITS_AND_COMMAS = /^\s*\d+(?:\s*,\s*\d+)*\s*(?:,\s*)?$/;// allows '999', '9, 9999', '9999,9999,'
+const DIGITS_AND_COMMAS = /^\s*\d+(?:\s*,\s*\d+)*\s*(?:,\s*)?$/; // allows '999', '9, 9999', '9999,9999,'
 const LIST_OPERATORS = ['in', 'nin']; // operators that accept multi values
 
 // This allows us to enter numbers and the separator/delimiter for multi valued fields
@@ -69,7 +69,6 @@ export const splitValueValidator: ValidatorFn = (
     return { invalidNumberList: true };
   }
   if (valueOne.length > 1 && !LIST_OPERATORS.includes(operator)) {
-    console.log('operator is not allowed');
     return { multipleNotAllowed: true };
   }
   return null;
@@ -139,6 +138,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
         valTwoControl?.enable();
       } else {
         valTwoControl?.disable();
+
         // clear it, so it doesn't get submitted
         valTwoControl?.setValue(null);
         valTwoControl?.markAsUntouched();
@@ -152,7 +152,6 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
     multipleNotAllowed: 'This operator requires single values.',
   };
 
-
   private readonly VALUE_TWO_ERROR_MESSAGES: Record<string, string> = {
     requiredTwo: 'A second value is required.',
   };
@@ -161,16 +160,19 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
     const errors = this.form.errors;
     if (!errors) return '';
     if (typeof errors['conflict'] === 'string') return errors['conflict'];
-    const key = Object.keys(errors).find((k) => this.VALUE_ONE_ERROR_MESSAGES[k]);
+    const key = Object.keys(errors).find(
+      (k) => this.VALUE_ONE_ERROR_MESSAGES[k]
+    );
     return key ? this.VALUE_ONE_ERROR_MESSAGES[key] : '';
   }
-
 
   get valueTwoErrorMsg(): string {
     const errors = this.form.errors;
     if (!errors) return '';
     if (typeof errors['conflict'] === 'string') return errors['conflict'];
-    const key = Object.keys(errors).find((k) => this.VALUE_TWO_ERROR_MESSAGES[k]);
+    const key = Object.keys(errors).find(
+      (k) => this.VALUE_TWO_ERROR_MESSAGES[k]
+    );
     return key ? this.VALUE_TWO_ERROR_MESSAGES[key] : '';
   }
 
@@ -197,6 +199,10 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
       }
       this.dialogRef.close({ action: 'SAVE', payload: constraintSelection });
     }
+  }
+  
+  get isMultiOperator() {
+    return this.form.value.constraintOperator === 'in' || this.form.value.constraintOperator === 'nin';
   }
 
   handleRemove() {

@@ -277,7 +277,7 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     let valueOne = e.value;
     let valueTwo = null;
 
-    if (e.value.includes(',')) {
+    if (e.operator === 'btw' && e.value.includes(',')) {
       const [num1, num2] = e.value.split(',').map(Number);
       // guard against values being out of numeric order
       valueOne = String(Math.min(num1, num2));

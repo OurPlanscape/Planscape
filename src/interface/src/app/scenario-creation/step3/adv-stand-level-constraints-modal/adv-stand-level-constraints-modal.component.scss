@@ -45,3 +45,7 @@
 .value-input {
     width: 100%;
 }
+
+.hint-blurb {
+    @include xs-label();
+}
