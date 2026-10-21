@@ -95,15 +95,6 @@ They help ensure that only feasible and operationally suitable areas are targete
           <span class="num-constraints-line">
             {{ (selectedConstraints$ | async)?.length || 0 }} Applied (No Limit)
           </span>
-          <!-- <button
-         (click)="$event.stopPropagation()"
-          sg-button
-          color="primary"
-          variant="icon-only"
-          icon="info"
-          class="info-icon"
-          [outlined]="true"
-          ></button> -->
           <sg-popover
             panelSize="medium"
             [contentTemplate]="aslcTooltipContent"></sg-popover>
