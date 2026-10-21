@@ -53,7 +53,7 @@ export const betweenValidator: ValidatorFn = (
 };
 
 const DIGITS_AND_COMMAS = /^\s*\d+(?:\s*,\s*\d+)*\s*(?:,\s*)?$/;// allows '999', '9, 9999', '9999,9999,'
-const LIST_OPERATORS = ['eq', 'dne']; // operators that accept multi values
+const LIST_OPERATORS = ['in', 'nin']; // operators that accept multi values
 
 // This allows us to enter numbers and the separator/delimiter for multi valued fields
 export const splitValueValidator: ValidatorFn = (
@@ -104,7 +104,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
   form = new FormGroup(
     {
       constraintOperator: new FormControl<CONSTRAINT_OPERATOR | null>(
-        this.data.operator ?? 'eq',
+        this.data.operator ?? 'in',
         {
           nonNullable: false,
         }
@@ -149,7 +149,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
   private readonly VALUE_ONE_ERROR_MESSAGES: Record<string, string> = {
     requiredOne: 'A value is required.',
     invalidNumberList: 'Enter numbers only, separated by commas.',
-    multipleNotAllowed: 'This operator allows single values.',
+    multipleNotAllowed: 'This operator requires single values.',
   };
 
 
@@ -177,7 +177,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
   handleApply() {
     if (this.form.valid) {
       const formVal = this.form.value;
-      const operator = formVal.constraintOperator ?? 'eq';
+      const operator = formVal.constraintOperator ?? 'in';
 
       const constraintSelection: NamedConstraint = {
         name: `${this.data.dataLayer.name}: ${getOperatorDisplayText(operator)} ${formVal.constraintValueOne}`,
