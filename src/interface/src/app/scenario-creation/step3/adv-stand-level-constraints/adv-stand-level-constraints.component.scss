@@ -109,6 +109,11 @@
     input[type="number"] {
         -moz-appearance: textfield;
     }
+
+    .mat-expansion-panel-body {
+    padding: 0;
+}
+
 }
 
 .legend {
@@ -121,10 +126,6 @@
     color: $color-text-gray;
     padding-bottom: 16px;
     padding-top: 16px;
-}
-
-:host ::ng-deep .mat-expansion-panel-body {
-    padding: 0;
 }
 
 .padded-section {

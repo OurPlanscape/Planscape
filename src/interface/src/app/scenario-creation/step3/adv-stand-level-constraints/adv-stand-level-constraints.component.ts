@@ -410,15 +410,11 @@ export class AdvStandLevelConstraintsComponent
 
   getData(): Partial<ScenarioDraftConfiguration> {
     const formValues = this.form.getRawValue();
-
-    console.log('here are the formvalues:', formValues);
-
     const formData = {
       max_slope: formValues.max_slope ?? null,
       min_distance_from_road: formValues.min_distance_from_road ?? null,
       adv_constraints: formValues.constraints ?? [],
     };
-    console.log('here is the formData we are sending:', formValues);
     return formData;
   }
 
