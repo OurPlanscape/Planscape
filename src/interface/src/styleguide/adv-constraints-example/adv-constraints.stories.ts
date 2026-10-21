@@ -14,6 +14,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { importProvidersFrom } from '@angular/core';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
+import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
+import { FeatureComponent } from '@maplibre/ngx-maplibre-gl';
 
 // TODO: remove this -- this is just a temporary story for layout
 
@@ -29,6 +31,8 @@ const meta: Meta<AdvStandLevelConstraintsComponent> = {
       // the card links to the planning area and its menu calls the API
       providers: [
         [NewScenarioState],
+        [DataLayersStateService],
+        [FeatureComponent],
         provideAnimations(),
         provideRouter([]),
         provideHttpClient(),

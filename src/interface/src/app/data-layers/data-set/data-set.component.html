@@ -49,6 +49,7 @@
       class="toggle"
       [ngModel]="(selectedDataLayerId$ | async) === layer.id"
       (change)="selectDataLayer(layer.data, $event)">
+      <app-favorite-star [layer]="layer.data"></app-favorite-star>
       <span
         [sgHighlighter]="searchTerm"
         [sgHighlighterText]="layer.name"></span>

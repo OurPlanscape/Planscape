@@ -720,6 +720,17 @@ class BrowseDataSetSerializer(SearchTabSerializer):
     )
 
 
+class BrowseDataLayersSerializer(BrowseDataSetSerializer):
+    """
+    Browse across every dataset. Only the favorites tab is supported, since the
+    general tab would return every accessible datalayer.
+    """
+
+    search_tab = serializers.ChoiceField(
+        choices=[(SearchTab.FAVORITES.value, SearchTab.FAVORITES.label)],
+    )
+
+
 class FindAnythingSerializer(SearchTabSerializer):
     def __init__(self, *args, **kwargs):
         from modules.base import MODULE_HANDLERS

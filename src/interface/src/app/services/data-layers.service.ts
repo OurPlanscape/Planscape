@@ -28,27 +28,40 @@ export class DataLayersService {
     );
   }
 
-  listDataLayers(dataSetId: number, module: string, geometry?: Geometry) {
-    return this.browse('datasets', dataSetId, module, geometry);
+  listDataLayers(
+    dataSetId: number,
+    module: string,
+    geometry?: Geometry,
+    workspaceId?: number | null
+  ) {
+    return this.browse('datasets', dataSetId, module, geometry, workspaceId);
   }
 
   listCategoryDataLayers(
     categoryId: number,
     module: string,
-    geometry?: Geometry
+    geometry?: Geometry,
+    workspaceId?: number | null
   ) {
-    return this.browse('categories', categoryId, module, geometry);
+    return this.browse('categories', categoryId, module, geometry, workspaceId);
   }
 
   private browse(
     resource: 'datasets' | 'categories',
     id: number,
     module: string,
-    geometry?: Geometry
+    geometry?: Geometry,
+    // If we send workspaceId we get is_favorite from backend
+    workspaceId?: number | null
   ) {
     return this.http.post<DataLayer[]>(
       `${environment.backend_endpoint}/v2/${resource}/${id}/browse/`,
-      { type: 'RASTER', module, ...(geometry ? { geometry } : {}) },
+      {
+        type: 'RASTER',
+        module,
+        ...(geometry ? { geometry } : {}),
+        ...(workspaceId ? { workspace_id: workspaceId } : {}),
+      },
       {
         withCredentials: true,
       }
@@ -61,6 +74,7 @@ export class DataLayersService {
       type: query.type ?? 'RASTER',
       ...(query.module ? { module: query.module } : {}),
       ...(query.geometry ? { geometry: query.geometry } : {}),
+      ...(query.workspaceId ? { workspace_id: query.workspaceId } : {}),
     };
 
     return this.http.post<Pagination<SearchResult>>(

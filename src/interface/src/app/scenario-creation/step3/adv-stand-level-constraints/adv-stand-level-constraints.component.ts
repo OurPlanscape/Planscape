@@ -1,10 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  // Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,7 +10,12 @@ import { FeaturesModule } from '@features/features.module';
 import { PlanState } from '@app/plan/plan.state';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { MapModuleService } from '@app/services/map-module.service';
-import { SectionComponent, StepDirective } from '@styleguide';
+import {
+  ButtonComponent,
+  PopoverComponent,
+  SectionComponent,
+  StepDirective,
+} from '@styleguide';
 import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
 import {
   AdvStandLevelConstraintsModalComponent,
@@ -69,11 +69,13 @@ const MAX_SELECTABLE_LAYERS = Number.POSITIVE_INFINITY;
     { provide: StepDirective, useExisting: AdvStandLevelConstraintsComponent },
   ],
   imports: [
+    ButtonComponent,
     ChipSelectorComponent,
     CommonModule,
     DataLayersComponent,
     DataLayersRailComponent,
     FeaturesModule,
+    PopoverComponent,
     SectionComponent,
     MatExpansionModule,
     MatFormFieldModule,
@@ -142,21 +144,21 @@ export class AdvStandLevelConstraintsComponent
 
   // update UI of this component when the step loads, not eagerly on step construction
   mapConfigToUI() {
-    // here, we reconcile the layer names with the constraints from the configuration
     combineLatest([
       this.newScenarioState.advConstraints$,
       this.advStandLevelConstraintLayers$,
-    ]).subscribe(([constraints, layers]) => {
-      if (!constraints) {
-        this.selectedConstraints$.next([]);
-        return;
-      }
-      // only collect constraints where we find a match in the subset of Adv Constraint Layers
-      const namedConstraints: NamedConstraint[] = constraints.reduce(
-        (acc: NamedConstraint[], constraint: Constraint) => {
-          const layer = layers.find(
-            (l: DataLayer) => l.id === constraint.datalayer
-          );
+    ])
+      .pipe(take(1))
+      .subscribe(([constraints, layers]) => {
+        if (!constraints) {
+          this.selectedConstraints$.next([]);
+          return;
+        }
+
+        const namedConstraints: NamedConstraint[] = constraints.reduce<
+          NamedConstraint[]
+        >((acc, constraint: Constraint) => {
+          const layer = layers.find((l) => l.id === constraint.datalayer);
           if (layer) {
             this.dataLayersStateService.addSelectedLayer(layer);
             acc.push({
@@ -165,11 +167,10 @@ export class AdvStandLevelConstraintsComponent
             });
           }
           return acc;
-        },
-        []
-      );
-      this.selectedConstraints$.next(namedConstraints);
-    });
+        }, []);
+
+        this.selectedConstraints$.next(namedConstraints);
+      });
   }
 
   constructor(
@@ -197,11 +198,9 @@ export class AdvStandLevelConstraintsComponent
       .subscribe((layer) => {
         this.handleSelectedLayer(layer);
       });
-
   }
 
   ngOnInit(): void {
-
     this.forsysService.forsysData$
       .pipe(
         take(1),
@@ -279,6 +278,8 @@ export class AdvStandLevelConstraintsComponent
   }
 
   ngOnDestroy(): void {
+    // reset dataLayersStateService to normal:
+    this.dataLayersStateService.setSelectionMode('AUTOMATIC');
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -407,7 +408,6 @@ export class AdvStandLevelConstraintsComponent
       });
   }
 
-
   getData(): Partial<ScenarioDraftConfiguration> {
     const formValues = this.form.getRawValue();
 
@@ -415,8 +415,7 @@ export class AdvStandLevelConstraintsComponent
 
     const formData = {
       max_slope: formValues.max_slope ?? null,
-      min_distance_from_road:
-        formValues.min_distance_from_road ?? null,
+      min_distance_from_road: formValues.min_distance_from_road ?? null,
       adv_constraints: formValues.constraints ?? [],
     };
     console.log('here is the formData we are sending:', formValues);
@@ -426,11 +425,17 @@ export class AdvStandLevelConstraintsComponent
   override beforeStepLoad() {
     this.dataLayersStateService.updateSelectedLayers([]);
     this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
+    this.dataLayersStateService.setSelectionMode('MANUAL');
     this.dataLayersStateService.clearUnselectableLayers();
+    this.dataLayersStateService.setModuleNameOverride(
+      'advanced_stand_level_constraint'
+    );
     this.mapConfigToUI();
   }
 
   override beforeStepExit() {
+    this.dataLayersStateService.setSelectionMode('AUTOMATIC');
+    this.dataLayersStateService.setModuleNameOverride(null);
     this.dataLayersStateService.resetAll();
     this.dataLayersStateService.updateSelectedLayers([]);
   }
