@@ -215,11 +215,11 @@ export class DataLayersStateService {
     this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
     this.moduleNameOverride$,
   ]).pipe(
-    tap(() => this.loadingSubject.next(true)),
     switchMap(([term, offset, planningAreaGeometry, override]) => {
       if (!term) {
         return of(null);
       }
+      this.loadingSubject.next(true);
 
       const module = override ?? this.mapModuleService.moduleName;
 
