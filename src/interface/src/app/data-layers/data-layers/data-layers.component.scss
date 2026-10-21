@@ -140,3 +140,12 @@ $search-container-height: 79px;
     top: calc($search-container-height - 16px);
   }
 }
+
+.load-error {
+  padding: 16px;
+  border-top: 1px solid $color-soft-gray;
+}
+
+.load-error-actions {
+  margin-top: 16px;
+}

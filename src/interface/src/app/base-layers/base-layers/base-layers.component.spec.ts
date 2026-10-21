@@ -1,8 +1,14 @@
 import { Component } from '@angular/core';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { FEATURES_JSON } from '@features/features-config';
 import { FeaturesModule } from '@features/features.module';
+import { MapModuleService } from '@services/map-module.service';
+import { MockProvider } from 'ng-mocks';
+import { BehaviorSubject } from 'rxjs';
+import { ButtonComponent } from '@styleguide';
+import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
 import { BaseLayersComponent } from './base-layers.component';
 
 @Component({
@@ -20,11 +26,21 @@ class BaseLayersPanelStubComponent {}
 class LegacyBaseLayersStubComponent {}
 
 describe('BaseLayersComponent', () => {
+  let loadError$: BehaviorSubject<boolean>;
+
   function setup(dataOrganization: boolean) {
-    TestBed.configureTestingModule({ imports: [BaseLayersComponent] })
+    loadError$ = new BehaviorSubject(false);
+    TestBed.configureTestingModule({
+      imports: [BaseLayersComponent],
+      providers: [MockProvider(MapModuleService, { loadError$ })],
+    })
       .overrideComponent(BaseLayersComponent, {
         set: {
           imports: [
+            AsyncPipe,
+            ButtonComponent,
+            MessageCardComponent,
+            NgIf,
             FeaturesModule,
             BaseLayersPanelStubComponent,
             LegacyBaseLayersStubComponent,
@@ -59,5 +75,34 @@ describe('BaseLayersComponent', () => {
     expect(
       fixture.debugElement.query(By.css('app-base-layers-panel'))
     ).toBeNull();
+  });
+
+  describe('when the map module fails to load', () => {
+    it('replaces the panel with an error', () => {
+      const fixture = setup(true);
+      loadError$.next(true);
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.query(By.css('app-base-layers-panel'))
+      ).toBeNull();
+      expect(
+        fixture.debugElement.query(By.css('sg-message-card')).nativeElement
+          .textContent
+      ).toContain("We couldn't load base layers");
+    });
+
+    it('retries the load', () => {
+      const fixture = setup(false);
+      loadError$.next(true);
+      fixture.detectChanges();
+
+      const mapModuleService = TestBed.inject(MapModuleService);
+      spyOn(mapModuleService, 'retryLoadMapModule');
+
+      fixture.nativeElement.querySelector('sg-message-card button').click();
+
+      expect(mapModuleService.retryLoadMapModule).toHaveBeenCalled();
+    });
   });
 });
