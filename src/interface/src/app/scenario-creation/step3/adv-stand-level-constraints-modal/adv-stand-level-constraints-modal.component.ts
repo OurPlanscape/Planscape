@@ -68,7 +68,7 @@ export const splitValueValidator: ValidatorFn = (
   if (!DIGITS_AND_COMMAS.test(valueOne)) {
     return { invalidNumberList: true };
   }
-  if (valueOne.length > 1 && !LIST_OPERATORS.includes(operator)) {
+  if (valueOne.includes(',') && !LIST_OPERATORS.includes(operator)) {
     return { multipleNotAllowed: true };
   }
   return null;
@@ -200,9 +200,12 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
       this.dialogRef.close({ action: 'SAVE', payload: constraintSelection });
     }
   }
-  
+
   get isMultiOperator() {
-    return this.form.value.constraintOperator === 'in' || this.form.value.constraintOperator === 'nin';
+    return (
+      this.form.value.constraintOperator === 'in' ||
+      this.form.value.constraintOperator === 'nin'
+    );
   }
 
   handleRemove() {
