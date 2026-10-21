@@ -10,16 +10,16 @@ import { BehaviorSubject, of, Subject } from 'rxjs';
 
 import { AdvStandLevelConstraintsComponent } from './adv-stand-level-constraints.component';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
-import { MAX_SELECTED_DATALAYERS } from '@app/data-layers/data-layers/max-selected-datalayers.token';
 import { PlanState } from '@app/plan/plan.state';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { MapModuleService } from '@app/services/map-module.service';
-import { MAP_MODULE_NAME } from '@app/services/map-module.token';
 import { ModuleService } from '@app/services/module.service';
-import { SELECTION_MODE } from '@app/data-layers/data-layers/selection-mode.token';
 import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { DataLayer, Constraint } from '@app/types';
 import { NamedConstraint } from '../adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
+import { MockComponent, MockProvider } from 'ng-mocks';
+import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
+import { DataLayersRailComponent } from '@app/data-layers/data-layers-rail/data-layers-rail.component';
 
 const layerOne = { id: 1, name: 'Test Layer One' } as unknown as DataLayer;
 const layerTwo = { id: 2, name: 'Test Layer Two' } as unknown as DataLayer;
@@ -53,7 +53,7 @@ describe('AdvStandLevelConstraintsComponent', () => {
   let fixture: ComponentFixture<HostComponent>;
   let host: HostComponent;
   let component: AdvStandLevelConstraintsComponent;
-  let dataLayerState: DataLayersStateService;
+  let dataLayerState: jasmine.SpyObj<DataLayersStateService>;
 
   let dialogSpy: jasmine.SpyObj<MatDialog>;
   let mapModuleServiceSpy: jasmine.SpyObj<MapModuleService>;
@@ -61,6 +61,7 @@ describe('AdvStandLevelConstraintsComponent', () => {
   let currentScenario$: Subject<unknown>;
   let currentPlan$: Subject<unknown>;
   let advConstraints$: BehaviorSubject<Constraint[] | null>;
+  let layerClicked$: Subject<DataLayer>;
 
   /** Makes the next dialog.open() close immediately with the given result. */
   const closeDialogWith = (result: { action: string; payload: unknown }) =>
@@ -82,13 +83,20 @@ describe('AdvStandLevelConstraintsComponent', () => {
     currentScenario$ = new Subject();
     currentPlan$ = new Subject();
     advConstraints$ = new BehaviorSubject<Constraint[] | null>(null);
+    layerClicked$ = new Subject<DataLayer>();
 
     dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
 
     mapModuleServiceSpy = jasmine.createSpyObj(
       'MapModuleService',
-      ['loadMapModule'],
-      { datasets$: new BehaviorSubject({ main_datasets: [] }) }
+      ['loadMapModule', 'datasetsFor'],
+      {
+        datasets$: new BehaviorSubject({
+          main_datasets: [],
+          base_datasets: [],
+        }),
+        moduleName: 'test-module',
+      }
     );
     mapModuleServiceSpy.loadMapModule.and.returnValue(of(null) as any);
 
@@ -107,6 +115,13 @@ describe('AdvStandLevelConstraintsComponent', () => {
         MatSnackBarModule,
       ],
       providers: [
+        { provide: MapModuleService, useValue: mapModuleServiceSpy },
+        MockProvider(DataLayersStateService, {
+          layerClicked$,
+          addSelectedLayer: jasmine.createSpy('addSelectedLayer'),
+          removeSelectedLayer: jasmine.createSpy('removeSelectedLayer'),
+          setSelectionMode: jasmine.createSpy('setSelectionMode'),
+        }),
         { provide: MatDialog, useValue: dialogSpy },
         { provide: ModuleService, useValue: moduleServiceSpy },
         { provide: ScenarioState, useValue: { currentScenario$ } },
@@ -117,20 +132,13 @@ describe('AdvStandLevelConstraintsComponent', () => {
         },
       ],
     })
+      // Stub children so they don't need a fully mocked DataLayersStateService
       .overrideComponent(AdvStandLevelConstraintsComponent, {
-        set: {
-          providers: [
-            DataLayersStateService,
-            { provide: SELECTION_MODE, useValue: 'MANUAL' },
-            {
-              provide: MAX_SELECTED_DATALAYERS,
-              useValue: Number.POSITIVE_INFINITY,
-            },
-            { provide: MapModuleService, useValue: mapModuleServiceSpy },
-            {
-              provide: MAP_MODULE_NAME,
-              useValue: 'advanced_stand_level_constraint',
-            },
+        remove: { imports: [DataLayersComponent, DataLayersRailComponent] },
+        add: {
+          imports: [
+            MockComponent(DataLayersComponent),
+            MockComponent(DataLayersRailComponent),
           ],
         },
       })
@@ -138,14 +146,14 @@ describe('AdvStandLevelConstraintsComponent', () => {
 
     fixture = TestBed.createComponent(HostComponent);
     host = fixture.componentInstance;
+    dataLayerState = TestBed.inject(
+      DataLayersStateService
+    ) as jasmine.SpyObj<DataLayersStateService>;
 
     const child = fixture.debugElement.query(
       By.directive(AdvStandLevelConstraintsComponent)
     );
     component = child.componentInstance;
-    dataLayerState = child.injector.get(DataLayersStateService);
-    spyOn(dataLayerState, 'addSelectedLayer');
-    spyOn(dataLayerState, 'removeSelectedLayer');
   });
 
   describe('before init', () => {
@@ -156,7 +164,10 @@ describe('AdvStandLevelConstraintsComponent', () => {
   });
 
   describe('after init', () => {
-    beforeEach(() => fixture.detectChanges());
+    beforeEach(() => {
+      fixture.detectChanges();
+      component.advStandLevelConstraintLayers$.subscribe();
+    });
 
     describe('lifecycle', () => {
       it('keeps the form control in sync with selectedConstraints$', () => {
@@ -168,6 +179,13 @@ describe('AdvStandLevelConstraintsComponent', () => {
       it('removes its control from the parent form on destroy', () => {
         fixture.destroy();
         expect(host.parentForm.get('advStandLevelConstraints')).toBeNull();
+      });
+
+      it('resets the data layers state on destroy', () => {
+        fixture.destroy();
+        expect(dataLayerState.setSelectionMode).toHaveBeenCalledWith(
+          'AUTOMATIC'
+        );
       });
     });
 
@@ -184,12 +202,21 @@ describe('AdvStandLevelConstraintsComponent', () => {
       });
     });
 
-    describe('mapConfigToUI', () => {
-      beforeEach(() => component.mapConfigToUI());
+    describe('layerClicked$', () => {
+      it('routes clicked layers to handleSelectedLayer', () => {
+        spyOn(component, 'handleSelectedLayer');
+        layerClicked$.next(layerOne);
+        expect(component.handleSelectedLayer).toHaveBeenCalledWith(layerOne);
+      });
+    });
 
+    describe('mapConfigToUI', () => {
       it('clears selections when there is no configured constraint', () => {
         select(makeConstraint());
         advConstraints$.next(null);
+
+        component.mapConfigToUI();
+
         expect(selected()).toEqual([]);
       });
 
@@ -199,10 +226,15 @@ describe('AdvStandLevelConstraintsComponent', () => {
           makeConstraint({ datalayer: 42 }), // unknown layer, dropped
         ]);
 
+        component.mapConfigToUI();
+
         expect(selected().length).toBe(1);
         expect(selected()[0].datalayer).toBe(1);
         expect(selected()[0].name).toContain('Test Layer One');
         expect(dataLayerState.addSelectedLayer).toHaveBeenCalledWith(layerOne);
+        expect(dataLayerState.addSelectedLayer).not.toHaveBeenCalledWith(
+          layerTwo
+        );
       });
     });
 

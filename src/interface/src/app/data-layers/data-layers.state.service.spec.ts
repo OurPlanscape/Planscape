@@ -13,7 +13,6 @@ import { MOCK_GEOMETRY, MOCK_PLAN } from '@services/mocks';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-datalayers.token';
-import { SELECTION_MODE } from '@data-layers/data-layers/selection-mode.token';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import { TreeNode } from '@data-layers/data-layers/tree-node';
 import { WorkspacesService } from '@services/workspaces.service';
@@ -62,7 +61,6 @@ describe('DataLayersStateService', () => {
         { provide: DataLayersService, useValue: dataLayersService },
         DataLayersStateService,
         { provide: MAX_SELECTED_DATALAYERS, useValue: 1 },
-        { provide: SELECTION_MODE, useValue: 'AUTOMATIC' },
         { provide: USE_GEOMETRY, useValue: false },
         MockProvider(MapModuleService, {
           moduleName: 'map',

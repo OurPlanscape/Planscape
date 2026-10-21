@@ -32,6 +32,7 @@
       </div>
       <mat-spinner class="loader" diameter="20" *ngIf="uiLoading"></mat-spinner>
       <sg-chip-selector
+        *ngIf="!uiLoading"
         [items]="(selectedItems$ | async) ?? []"
         (removeItem)="handleRemoveItem($event)"></sg-chip-selector>
     </div>
