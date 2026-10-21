@@ -70,7 +70,7 @@ class FundingOpportunityReportStatusTest(SimpleTestCase):
             FundingOpportunityReportStatus.RUNNING,
         )
 
-    def test_overall_status_failed_when_burn_simulation_fails(self):
+    def test_overall_status_success_when_burn_simulation_fails(self):
         report = FundingOpportunityReport(
             calculation_status=FundingOpportunityReportStatus.SUCCESS,
             burn_simulation_status=FundingOpportunityReportStatus.FAILED,
@@ -78,7 +78,7 @@ class FundingOpportunityReportStatusTest(SimpleTestCase):
 
         self.assertEqual(
             report.get_overall_status(),
-            FundingOpportunityReportStatus.FAILED,
+            FundingOpportunityReportStatus.SUCCESS,
         )
 
     def test_overall_status_pending_by_default(self):
@@ -106,6 +106,26 @@ class FundingOpportunityReportStatusTest(SimpleTestCase):
             burn_simulation_status=FundingOpportunityReportStatus.SUCCESS,
         )
 
+        self.assertEqual(
+            report.get_overall_status(),
+            FundingOpportunityReportStatus.FAILED,
+        )
+
+    def test_overall_status_empty_when_both_empty(self):
+        report = FundingOpportunityReport(
+            calculation_status=FundingOpportunityReportStatus.EMPTY,
+            burn_simulation_status=FundingOpportunityReportStatus.EMPTY,
+        )
+        self.assertEqual(
+            report.get_overall_status(),
+            FundingOpportunityReportStatus.EMPTY,
+        )
+
+    def test_calculation_failure_takes_priority_over_running(self):
+        report = FundingOpportunityReport(
+            calculation_status=FundingOpportunityReportStatus.FAILED,
+            burn_simulation_status=FundingOpportunityReportStatus.RUNNING,
+        )
         self.assertEqual(
             report.get_overall_status(),
             FundingOpportunityReportStatus.FAILED,

@@ -252,19 +252,29 @@ class FundingOpportunityReport(CreatedAtMixin, UpdatedAtMixin, models.Model):
             self.burn_simulation_status,
         )
 
-        if FundingOpportunityReportStatus.FAILED in statuses:
+        if self.calculation_status == FundingOpportunityReportStatus.FAILED:
             return FundingOpportunityReportStatus.FAILED
 
-        if FundingOpportunityReportStatus.EMPTY in statuses:
-            return FundingOpportunityReportStatus.EMPTY
-
-        if all(status == FundingOpportunityReportStatus.SUCCESS for status in statuses):
+        if (
+            self.calculation_status == FundingOpportunityReportStatus.SUCCESS
+            and self.burn_simulation_status
+            in (
+                FundingOpportunityReportStatus.SUCCESS,
+                FundingOpportunityReportStatus.FAILED,
+            )
+        ):
             return FundingOpportunityReportStatus.SUCCESS
 
         if FundingOpportunityReportStatus.RUNNING in statuses:
             return FundingOpportunityReportStatus.RUNNING
 
-        return FundingOpportunityReportStatus.PENDING
+        if FundingOpportunityReportStatus.PENDING in statuses:
+            return FundingOpportunityReportStatus.PENDING
+
+        if all(status == FundingOpportunityReportStatus.EMPTY for status in statuses):
+            return FundingOpportunityReportStatus.EMPTY
+
+        raise ValueError(f"Unhandled report status combination: {statuses}")
 
     def get_geopackage_url(self) -> str | None:
         if not self.geopackage_url:
