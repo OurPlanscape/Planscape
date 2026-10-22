@@ -559,7 +559,7 @@ class TestSearch(TestCase):
     @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
     def test_simple_category_is_dropped_when_its_datalayers_are_returned(self):
         dataset = DatasetFactory(visibility="PUBLIC")
-        forest = SimpleCategoryFactory.create(name="Forest")
+        forest = SimpleCategoryFactory.create(name="Conifers")
         canopy = DataLayerFactory.create(
             dataset=dataset,
             name="Canopy cover",
@@ -575,7 +575,7 @@ class TestSearch(TestCase):
             simple_categories=[forest],
         )
 
-        results = find_anything("forest", type=DataLayerType.RASTER)
+        results = find_anything("conifer", type=DataLayerType.RASTER)
 
         self.assertEqual(
             set(results),
