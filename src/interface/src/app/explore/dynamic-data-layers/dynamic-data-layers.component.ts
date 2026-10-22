@@ -4,8 +4,10 @@ import {
   inject,
   Injector,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
+  SimpleChanges,
   TemplateRef,
   ViewChild,
   ViewContainerRef,
@@ -21,7 +23,9 @@ import { NgIf } from '@angular/common';
   imports: [NgIf],
   template: ` <ng-template #outlet></ng-template>`,
 })
-export class DynamicDataLayersComponent implements OnInit, OnDestroy {
+export class DynamicDataLayersComponent
+  implements OnInit, OnChanges, OnDestroy
+{
   @Input({ required: true }) mapId!: number;
   @Input() showSelectionHeader = true;
   @Input() belowSearch?: TemplateRef<unknown>;
@@ -49,6 +53,12 @@ export class DynamicDataLayersComponent implements OnInit, OnDestroy {
     });
     this.componentRef.setInput('showSelectionHeader', this.showSelectionHeader);
     this.componentRef.setInput('belowSearch', this.belowSearch);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['belowSearch'] && this.componentRef) {
+      this.componentRef.setInput('belowSearch', this.belowSearch);
+    }
   }
 
   ngOnDestroy(): void {
