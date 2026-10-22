@@ -48,4 +48,6 @@
 
 .hint-blurb {
     @include xs-label();
+    letter-spacing: normal;
+    
 }

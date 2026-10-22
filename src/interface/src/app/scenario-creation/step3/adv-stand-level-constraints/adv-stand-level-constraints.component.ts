@@ -247,7 +247,9 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
         .afterClosed()
         .pipe(take(1))
         .subscribe((closeResult) => {
-          if (closeResult.action === 'SAVE') {
+          if (!closeResult) {
+            this.removeSelectionById(dl.id);
+          } else if (closeResult.action === 'SAVE') {
             this.handleConstraintAdded(closeResult.payload);
           } else if (closeResult.action === 'DELETE') {
             this.removeSelectionById(closeResult.payload);
@@ -301,9 +303,9 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
       .pipe(take(1))
       .subscribe((closeResult) => {
         this.activeConstraint$.next(null);
-        if (closeResult.action === 'SAVE') {
+        if (closeResult?.action === 'SAVE') {
           this.handleUpdateConstraint(closeResult.payload);
-        } else if (closeResult.action === 'DELETE') {
+        } else if (closeResult?.action === 'DELETE') {
           this.removeSelectionById(closeResult.payload.id);
         }
       });
