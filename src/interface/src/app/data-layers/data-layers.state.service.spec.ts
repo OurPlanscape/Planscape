@@ -39,13 +39,20 @@ describe('DataLayersStateService', () => {
   beforeEach(() => {
     dataLayersService = jasmine.createSpyObj<DataLayersService>(
       'DataLayersService',
-      ['listDataSets', 'listDataLayers', 'listCategoryDataLayers']
+      [
+        'listDataSets',
+        'listDataLayers',
+        'listCategoryDataLayers',
+        'search',
+        'browseFavorites',
+      ]
     );
     dataLayersService.listDataSets.and.returnValue(
       of({} as Pagination<DataSet>)
     );
     dataLayersService.listDataLayers.and.returnValue(of([]));
     dataLayersService.listCategoryDataLayers.and.returnValue(of([]));
+    dataLayersService.browseFavorites.and.returnValue(of([]));
 
     currentWorkspaceId = null;
     workspacesService = jasmine.createSpyObj<WorkspacesService>(
@@ -386,6 +393,92 @@ describe('DataLayersStateService', () => {
         undefined,
         null
       );
+    });
+
+    describe('listing them for the panel', () => {
+      it('browses the favorites of the workspace', () => {
+        dataLayersService.browseFavorites.and.returnValue(of([]));
+        createInWorkspace('DATA_ORGANIZATION');
+
+        service.favorites$.subscribe();
+
+        expect(dataLayersService.browseFavorites).toHaveBeenCalledWith(
+          7,
+          'map'
+        );
+      });
+
+      it('hands the panel the layers the backend returned', () => {
+        const layers = [{ id: 5, name: 'Fuels' }] as DataLayer[];
+        dataLayersService.browseFavorites.and.returnValue(of(layers));
+        createInWorkspace('DATA_ORGANIZATION');
+
+        let seen: DataLayer[] | undefined;
+        service.favorites$.subscribe((r) => (seen = r.data));
+
+        expect(seen).toEqual(layers);
+      });
+
+      it('surfaces the error instead of swallowing it', () => {
+        dataLayersService.browseFavorites.and.returnValue(
+          throwError(() => new Error('400'))
+        );
+        createInWorkspace('DATA_ORGANIZATION');
+
+        let errored = false;
+        service.favorites$.subscribe((r) => (errored = !!r.error));
+
+        expect(errored).toBe(true);
+      });
+
+      it('refetches once the backend takes a new favorite', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        service.favorites$.subscribe();
+
+        expect(dataLayersService.browseFavorites.calls.count()).toBe(1);
+
+        service.toggleFavorite(notFavorited);
+
+        // the panel would otherwise keep showing the list of the first visit
+        expect(dataLayersService.browseFavorites.calls.count()).toBe(2);
+      });
+
+      it('does not refetch when the backend refuses the favorite', () => {
+        workspacesService.favoriteDataLayer.and.returnValue(
+          throwError(() => new Error('400'))
+        );
+        createInWorkspace('DATA_ORGANIZATION');
+        service.favorites$.subscribe();
+
+        service.toggleFavorite(notFavorited);
+
+        expect(dataLayersService.browseFavorites.calls.count()).toBe(1);
+      });
+
+      it('drops a row as soon as its star is emptied', () => {
+        dataLayersService.browseFavorites.and.returnValue(of([favorited]));
+        createInWorkspace('DATA_ORGANIZATION');
+
+        let seen: DataLayer[] | undefined;
+        service.favorites$.subscribe((r) => (seen = r.data));
+
+        expect(seen).toEqual([favorited]);
+
+        // the refetch is still in flight, the row should already be gone
+        dataLayersService.browseFavorites.and.returnValue(of([favorited]));
+        service.toggleFavorite(favorited);
+
+        expect(seen).toEqual([]);
+      });
+
+      it('does not ask outside a workspace', () => {
+        currentWorkspaceId = null;
+        createService('DATA_ORGANIZATION');
+
+        service.favorites$.subscribe();
+
+        expect(dataLayersService.browseFavorites).not.toHaveBeenCalled();
+      });
     });
 
     it('offers no favoriting outside a workspace', () => {

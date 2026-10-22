@@ -36,6 +36,9 @@ import { ScenarioState } from '@app/scenario/scenario.state';
 import { FeaturesModule } from '@features/features.module';
 import { FeatureService } from '@features/feature.service';
 
+// Side panels that show the data layers of a single map
+const PER_MAP_TABS = [SidebarTabs.DATA_LAYERS, SidebarTabs.FAVORITES];
+
 @UntilDestroy()
 @Component({
   selector: 'app-explore',
@@ -187,22 +190,27 @@ export class ExploreComponent implements OnDestroy, OnInit {
       this.multiMapConfigState.updateDataLayersOpacity(
         options.opacity || FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY
       );
-      this.multiMapConfigState.setAllowClickOnMap(
-        this.tabIndex === SidebarTabs.DATA_LAYERS
-      );
+      this.applyTabToMaps(this.tabIndex);
     }
   }
 
   onTabIndexChange(index: SidebarTabs) {
     this.tabIndex = index;
-    // allow click on map only if viewing data layers tab
-    this.multiMapConfigState.setAllowClickOnMap(
-      index === SidebarTabs.DATA_LAYERS
-    );
-    if (index !== SidebarTabs.DATA_LAYERS) {
-      this.multiMapConfigState.setSelectedMap(null);
-    } else {
+    this.applyTabToMaps(index);
+  }
+
+  /**
+   * The panels that list a map's data layers need one map selected, and let the
+   * user pick it by clicking a map. The others leave no map selected, which is
+   * also what gets saved, so the restored tab has to go through here too.
+   */
+  private applyTabToMaps(index: SidebarTabs) {
+    const showsOneMapsLayers = PER_MAP_TABS.includes(index);
+    this.multiMapConfigState.setAllowClickOnMap(showsOneMapsLayers);
+    if (showsOneMapsLayers) {
       this.multiMapConfigState.resetToFirstMap();
+    } else {
+      this.multiMapConfigState.setSelectedMap(null);
     }
   }
 }
