@@ -116,12 +116,33 @@ def send_funding_opportunity_report_shared_link(
 @app.task()
 def async_set_status(
     funding_opportunity_report_id: int,
-    status: str,
+    status: str|None,
+    calculation_status: str|None,
+    burn_simulation_status: str|None,
 ) -> None:
-    FundingOpportunityReport.objects.filter(pk=funding_opportunity_report_id).update(
-        status=status
+    report_qs = FundingOpportunityReport.objects.filter(pk=funding_opportunity_report_id)
+    if status:
+        report_qs.update(
+            status=status
+        )
+    if calculation_status:
+        report_qs.update(
+            calculation_status=calculation_status
+        )
+    if burn_simulation_status:
+        report_qs.update(
+            burn_simulation_status=burn_simulation_status
+        )
+
+    report = report_qs.get()
+    report.refresh_from_db()
+    publish_report_status_by_id(
+        funding_opportunity_report_id, 
+        report.status, 
+        report.calculation_status, 
+        report.burn_simulation_status
     )
-    publish_report_status_by_id(funding_opportunity_report_id, status)
+
 
 
 @app.task()
@@ -358,6 +379,8 @@ def async_generate_funding_report_geopackage(
         )
 
 
+
+
 @app.task()
 def async_finalize_funding_report_results(
     project_results: list[dict | None],
@@ -441,6 +464,137 @@ def async_finalize_funding_report_results(
         async_send_email_funding_report_finished.delay(funding_opportunity_report_id)
 
 
+@app.task()
+def async_funding_report_calculation(funding_opportunity_report_id: int) -> None:
+    with transaction.atomic():
+        try:
+            report = (
+                FundingOpportunityReport.objects.select_for_update(of=("self",))
+                .select_related("scenario__planning_area")
+                .get(pk=funding_opportunity_report_id)
+            )
+        except FundingOpportunityReport.DoesNotExist:
+            log.warning(
+                "FundingOpportunityReport with pk %s does not exist. Cannot run report.",
+                funding_opportunity_report_id,
+            )
+            return
+        if (
+            report.calculation_status == FundingOpportunityReportStatus.RUNNING
+            and timezone.now() - report.updated_at < STALE_RUNNING_TIMEOUT
+        ):
+            log.warning(
+                "FundingOpportunityReport with pk %s is already running, skipping duplicate dispatch.",
+                funding_opportunity_report_id,
+            )
+            return
+        report.calculation_status = FundingOpportunityReportStatus.RUNNING
+        report.save(update_fields=["calculation_status", "updated_at"])
+
+        #TODO: check this
+        publish_report_event(STATUS_CHANGED_EVENT, report)
+        project_area_ids = list(
+            report.scenario.project_areas.values_list("id", flat=True)
+        )
+
+        try:
+            if not project_area_ids or not treatment_layer_has_valid_data(report.scenario):
+                FundingOpportunityReport.objects.filter(
+                    pk=funding_opportunity_report_id
+                ).update(status=FundingOpportunityReportStatus.EMPTY)
+                publish_report_status_by_id(
+                    funding_opportunity_report_id, FundingOpportunityReportStatus.EMPTY
+                )
+                return
+    
+            datalayer_lookup = build_datalayer_lookup()
+            tasks = []
+            for metric in FundingReportMetric:
+                for year in FUNDING_REPORT_YEARS:
+                    try:
+                        baseline_layer = datalayer_lookup[(metric.value, year, True)]
+                        value_layer = datalayer_lookup[(metric.value, year, False)]
+                    except KeyError:
+                        raise ValueError(
+                            "Missing funding report datalayer for variable="
+                            f"{metric.value!r}, year={year}."
+                        )
+                    intervals = (
+                        FLAME_LENGTH_REDUCTION_INTERVALS
+                        if metric == FundingReportMetric.TOTAL_FLAME_SEVERITY
+                        else (
+                            (
+                                FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
+                                FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
+                            ),
+                        )
+                    )
+                    for from_ft, to_ft in intervals:
+                        tasks.extend(
+                            async_calculate_funding_report_delta.si(
+                                project_area_id=project_area_id,
+                                baseline_layer_id=baseline_layer.pk,
+                                value_layer_id=value_layer.pk,
+                                year=year,
+                                metric=metric.value,
+                                from_ft=from_ft,
+                                to_ft=to_ft,
+                            )
+                            for project_area_id in project_area_ids
+                        )
+            tasks.append(
+                async_generate_treatment_datalayer.si(
+                    funding_opportunity_report_id=funding_opportunity_report_id,
+                )
+            )
+            tasks.append(
+                async_calculate_treatment_areas.si(
+                    funding_opportunity_report_id=funding_opportunity_report_id,
+                )
+            )
+            tasks.append(
+                async_calculate_aet_improvement.si(
+                    funding_opportunity_report_id=funding_opportunity_report_id,
+                )
+            )
+            tasks.append(
+                async_generate_aet_datalayer.si(
+                    funding_opportunity_report_id=funding_opportunity_report_id,
+                )
+            )
+            tasks.append(
+                async_calculate_biomass_volumes.si(
+                    funding_opportunity_report_id=funding_opportunity_report_id,
+                )
+            )
+            callback = async_set_status.s(
+                funding_opportunity_report_id=funding_opportunity_report_id,
+                calculation_status=FundingOpportunityReportStatus.SUCCESS,
+            ).on_error(
+                async_set_status.si(
+                    funding_opportunity_report_id=funding_opportunity_report_id,
+                    calculation_status=FundingOpportunityReportStatus.FAILED,
+                )
+            )
+            chord(tasks)(callback)
+        except Exception:
+            FundingOpportunityReport.objects.filter(
+                pk=funding_opportunity_report_id
+            ).update(calculation_status=FundingOpportunityReportStatus.FAILED)
+            raise
+
+
+@app.task()
+def async_call_burn_emulator(funding_opportunity_report_id: int) -> None:
+    pass
+
+
+@app.task()
+def check_burn_emulator_status(funding_opportunity_report_id: int) -> None:
+    pass
+
+
+#TODO: deprecate this method once FOR: Catastrophic fire reduction section is released
 @app.task()
 def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
     with transaction.atomic():
@@ -544,6 +698,35 @@ def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
         )
         callback = async_finalize_funding_report_results.s(
             funding_opportunity_report_id=funding_opportunity_report_id,
+        ).on_error(
+            async_set_status.si(
+                funding_opportunity_report_id=funding_opportunity_report_id,
+                status=FundingOpportunityReportStatus.FAILED,
+            )
+        )
+        chord(tasks)(callback)
+    except Exception:
+        FundingOpportunityReport.objects.filter(
+            pk=funding_opportunity_report_id
+        ).update(status=FundingOpportunityReportStatus.FAILED)
+        raise
+
+
+
+@app.task()
+def run_funding_opportunity_report_with_burn_emmulator(funding_opportunity_report_id: int) -> None:
+    try:
+        tasks = [
+            async_funding_report_calculation.si(
+                funding_opportunity_report_id=funding_opportunity_report_id
+            ),
+            async_call_burn_emulator.si(
+                funding_opportunity_report_id=funding_opportunity_report_id
+            )
+        ]
+        callback = async_set_status.s(
+            funding_opportunity_report_id=funding_opportunity_report_id,
+            status=FundingOpportunityReportStatus.SUCCESS,
         ).on_error(
             async_set_status.si(
                 funding_opportunity_report_id=funding_opportunity_report_id,
