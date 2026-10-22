@@ -1,5 +1,10 @@
 <div (click)="selectDataset.emit()" class="data-set">
   <div class="data-set-data">
+    <span *ngIf="categoryIcon !== undefined" class="category-icon">
+      <mat-icon class="material-symbols-outlined">{{
+        categoryIcon || 'category'
+      }}</mat-icon>
+    </span>
     <div
       class="data-set-name"
       [sgHighlighter]="searchTerm"

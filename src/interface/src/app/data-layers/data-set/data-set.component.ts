@@ -46,6 +46,8 @@ import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.
 export class DataSetComponent {
   @Input() name = '';
   @Input() organizationName = '';
+  /** Only set for simple categories; null shows the generic category icon. */
+  @Input() categoryIcon?: string | null;
   @Input() layers?: DataLayerSearchResult[];
   @Input() path?: string[];
   @Input() searchTerm = '';
