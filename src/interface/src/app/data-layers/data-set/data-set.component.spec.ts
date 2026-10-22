@@ -28,4 +28,25 @@ describe('DataSetComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  describe('category icon', () => {
+    const icon = () =>
+      fixture.nativeElement.querySelector('.category-icon')?.textContent.trim();
+
+    it('is hidden when the row is not a category', () => {
+      expect(icon()).toBeUndefined();
+    });
+
+    it('shows the icon from the category', () => {
+      fixture.componentRef.setInput('categoryIcon', 'local_fire_department');
+      fixture.detectChanges();
+      expect(icon()).toBe('local_fire_department');
+    });
+
+    it('falls back to the generic category icon', () => {
+      fixture.componentRef.setInput('categoryIcon', null);
+      fixture.detectChanges();
+      expect(icon()).toBe('category');
+    });
+  });
 });
