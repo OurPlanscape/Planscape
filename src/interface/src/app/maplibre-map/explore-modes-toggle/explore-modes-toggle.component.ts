@@ -69,11 +69,13 @@ export class ExploreModesToggleComponent {
   }
 
   handleUploadButton() {
+    console.log('we are handling the upload button...');
     this.showUploadForm = true;
     this.drawService.start();
     this.multiMapConfigState.setLayoutMode(1);
     this.mapConfigState.enterUploadMode();
     this.drawService.setMode('select');
+    console.log('what is the situation with drawService?:', this.drawService.getMode());
   }
 
   uploadedShape() {

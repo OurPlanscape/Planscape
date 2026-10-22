@@ -349,10 +349,18 @@ export class DrawService {
    * instead of being dropped.
    */
   private renderUploadedShape() {
+    console.log('do we have a map?', this._mapRef);
+    console.log('what is its ID?', this._mapRef?._getMapId());
+    console.log('do we have an uploaded shape?', this._uploadedShape);
+    const currentLayers = this._mapRef?.getStyle().layers;
+    console.log('what layers do we have?', currentLayers);
+
     if (!this._mapRef || !this._uploadedShape) {
       return;
     }
-    if (!this._mapRef.getSource('uploaded-shape')) {
+
+    console.log('do we have an uploaded shape source layer?', this._mapRef.isSourceLoaded('uploaded-shape'));
+    if (!this._mapRef.isSourceLoaded('uploaded-shape')) {
       this.initializeUploadedShapeLayer();
     }
     const source = this._mapRef.getSource(

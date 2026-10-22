@@ -46,8 +46,11 @@ export class SyncedMapsComponent implements OnDestroy {
   }
 
   async mapCreated(event: { map: MapLibreMap; mapNumber: number }) {
-    this.maps.set(event.mapNumber, event.map);
 
+    this.maps.set(event.mapNumber, event.map);
+    console.log('we are creating a map:', event.map);
+    console.log('and it is map number:', event.mapNumber);
+    console.log('the current collection of maps is:', this.maps);
     if (this.cleanupFn) {
       this.cleanupFn();
     }

@@ -40,6 +40,7 @@ export class MapSelectorComponent {
   ) {}
 
   setSelectedMap(id: number) {
+    console.log('we are setting selected map to:', id);
     this.multiMapConfigState.setSelectedMap(id);
   }
 }

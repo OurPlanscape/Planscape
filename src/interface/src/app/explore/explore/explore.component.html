@@ -33,6 +33,10 @@
         Total Acres: {{ totalAcres | number: '1.0-0' }}
       </div>
 
+      <div>
+        Here are the map ids:
+      </div>
+
       <app-explore-modes-selection-toggle
         *ngIf="
           showSelectionToggle$ | async

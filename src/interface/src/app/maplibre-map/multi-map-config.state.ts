@@ -33,6 +33,7 @@ export class MultiMapConfigState extends MapConfigState {
     if (!selectedMapId || views < selectedMapId) {
       this.setSelectedMap(!selectedMapId ? selectedMapId : 1);
     }
+    console.log('setting layout mode:', views);
     this._layoutMode$.next(views);
   }
 
@@ -79,10 +80,12 @@ export class MultiMapConfigState extends MapConfigState {
   }
 
   setSelectedMap(id: number | null) {
+    console.log('selected map is now:', id);
     this._selectedMapId$.next(id);
   }
 
   resetToFirstMap() {
+    console.log('we are resetting to first map')
     if (this._selectedMapId$.value === null) {
       this._selectedMapId$.next(1);
     }

@@ -22,6 +22,7 @@ export class MultiMapControlComponent {
   mapInteractionMode$ = this.mapConfigState.mapInteractionMode$;
 
   setLayoutMode(view: 1 | 2 | 4) {
+    console.log('we are setting layout mode to:', view);
     this.multiMapConfigState.setLayoutMode(view);
   }
 }
