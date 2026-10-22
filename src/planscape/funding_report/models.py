@@ -196,6 +196,10 @@ class FundingOpportunityReport(CreatedAtMixin, UpdatedAtMixin, models.Model):
         help_text="Status of the burn simulation.",
     )
 
+    burn_simulation_job_id = models.TextField(null=True, blank=True)
+    burn_simulation_response = models.JSONField(null=True, blank=True)
+    burn_simulation_started_at = models.DateTimeField(null=True, blank=True)
+
     results = models.JSONField(
         null=True,
         help_text="Funding opportunity report calculation results.",
