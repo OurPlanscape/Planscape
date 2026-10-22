@@ -1,3 +1,4 @@
+import json
 import logging
 import smtplib
 from collections import Counter
@@ -10,10 +11,12 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils import timezone
-from planning.models import ProjectArea
-from planscape.celery import app
-from utils.frontend import get_frontend_url
-
+from core.flags import feature_enabled
+from funding_report.burn_emulator import (
+    BurnEmulatorError,
+    BurnEmulatorTransientError,
+    request_job,
+)
 from funding_report.events import (
     STATUS_CHANGED_EVENT,
     publish_report_event,
@@ -42,10 +45,15 @@ from funding_report.services import (
     generate_aet_clip_datalayer,
     generate_treatment_clip_datalayer,
     get_aet_percentual_datalayer,
+    get_project_areas_union,
     get_treatment_datalayer,
     merge_aet_improvement_into_results,
     treatment_layer_has_valid_data,
 )
+from planning.models import ProjectArea
+from utils.frontend import get_frontend_url
+
+from planscape.celery import app
 
 log = logging.getLogger(__name__)
 
@@ -113,36 +121,119 @@ def send_funding_opportunity_report_shared_link(
         raise
 
 
+def update_report_components(
+    report_id: int,
+    *,
+    run_started_at: str | None = None,
+    expected_job_id: str | None = None,
+    active_burn_only: bool = False,
+    active_calculation_only: bool = False,
+    **changes,
+) -> bool:
+    """Serialize completion decisions and ignore responses from earlier runs."""
+    with transaction.atomic():
+        report = (
+            FundingOpportunityReport.objects.select_for_update()
+            .filter(pk=report_id)
+            .first()
+        )
+        if report is None:
+            return False
+        if run_started_at is not None and (
+            report.burn_simulation_started_at is None
+            or report.burn_simulation_started_at.isoformat() != run_started_at
+        ):
+            return False
+        if (
+            expected_job_id is not None
+            and report.burn_simulation_job_id != expected_job_id
+        ):
+            return False
+        active = (
+            FundingOpportunityReportStatus.PENDING,
+            FundingOpportunityReportStatus.RUNNING,
+        )
+        if active_burn_only and report.burn_simulation_status not in active:
+            return False
+        if active_calculation_only and report.calculation_status not in active:
+            return False
+        previous_status = report.status
+        for field, value in changes.items():
+            setattr(report, field, value)
+        # Legacy calculation-only callers explicitly supply their overall status.
+        if "status" not in changes:
+            report.status = report.get_overall_status()
+        report.save(
+            update_fields=[*changes, "status", "updated_at"]
+            if "status" not in changes
+            else [*changes, "updated_at"]
+        )
+        status, calculation_status, burn_status = (
+            report.status,
+            report.calculation_status,
+            report.burn_simulation_status,
+        )
+        transaction.on_commit(
+            lambda: publish_report_status_by_id(
+                report_id, status, calculation_status, burn_status
+            )
+        )
+        if (
+            previous_status != status
+            and status == FundingOpportunityReportStatus.SUCCESS
+        ):
+            transaction.on_commit(
+                lambda: async_generate_funding_report_geopackage.delay(report_id)
+            )
+            transaction.on_commit(
+                lambda: async_send_email_funding_report_finished.delay(report_id)
+            )
+        return True
+
+
+def dispatch_report_work(
+    callback, report_id: int, run_started_at: str | None, component: str
+) -> None:
+    """A broker failure must not strand a component in its active state."""
+    try:
+        callback()
+    except Exception:
+        log.exception(
+            "Failed to dispatch %s for funding report %s", component, report_id
+        )
+        update_report_components(
+            report_id,
+            run_started_at=run_started_at,
+            active_calculation_only=component == "calculation_status",
+            active_burn_only=component == "burn_simulation_status",
+            **{component: FundingOpportunityReportStatus.FAILED},
+        )
+
+
 @app.task()
 def async_set_status(
     funding_opportunity_report_id: int,
-    status: str|None,
-    calculation_status: str|None,
-    burn_simulation_status: str|None,
+    status: str | None = None,
+    calculation_status: str | None = None,
+    burn_simulation_status: str | None = None,
+    run_started_at: str | None = None,
 ) -> None:
-    report_qs = FundingOpportunityReport.objects.filter(pk=funding_opportunity_report_id)
-    if status:
-        report_qs.update(
-            status=status
-        )
-    if calculation_status:
-        report_qs.update(
-            calculation_status=calculation_status
-        )
-    if burn_simulation_status:
-        report_qs.update(
-            burn_simulation_status=burn_simulation_status
-        )
-
-    report = report_qs.get()
-    report.refresh_from_db()
-    publish_report_status_by_id(
-        funding_opportunity_report_id, 
-        report.status, 
-        report.calculation_status, 
-        report.burn_simulation_status
+    changes = {
+        key: value
+        for key, value in {
+            "status": status,
+            "calculation_status": calculation_status,
+            "burn_simulation_status": burn_simulation_status,
+        }.items()
+        if value is not None
+    }
+    update_report_components(
+        funding_opportunity_report_id,
+        run_started_at=run_started_at,
+        active_calculation_only=calculation_status is not None,
+        active_burn_only=burn_simulation_status is not None,
+        **changes,
     )
-
 
 
 @app.task()
@@ -159,7 +250,8 @@ def async_calculate_funding_report_delta(
         project_area = ProjectArea.objects.get(pk=project_area_id)
     except ProjectArea.DoesNotExist:
         log.warning(
-            "ProjectArea with pk %s does not exist. Cannot calculate funding report delta.",
+            "ProjectArea with pk %s does not exist. "
+            "Cannot calculate funding report delta.",
             project_area_id,
         )
         return None
@@ -308,7 +400,8 @@ def async_send_email_funding_report_finished(
     user = report.created_by
     if not user:
         log.info(
-            "FundingOpportunityReport %s completed but has no created_by user; skipping email.",
+            "FundingOpportunityReport %s completed but has no created_by user; "
+            "skipping email.",
             funding_opportunity_report_id,
         )
         return
@@ -379,12 +472,11 @@ def async_generate_funding_report_geopackage(
         )
 
 
-
-
 @app.task()
 def async_finalize_funding_report_results(
     project_results: list[dict | None],
     funding_opportunity_report_id: int,
+    run_started_at: str | None = None,
 ) -> None:
     successes = []
     errors = []
@@ -447,25 +539,27 @@ def async_finalize_funding_report_results(
 
     update_fields: dict = {
         "results": results,
-        "status": final_status,
+        "calculation_status": final_status,
     }
     if treatment_datalayer_id is not None:
         update_fields["treatment_datalayer_id"] = treatment_datalayer_id
     if aet_datalayer_id is not None:
         update_fields["aet_datalayer_id"] = aet_datalayer_id
 
-    FundingOpportunityReport.objects.filter(pk=funding_opportunity_report_id).update(
-        **update_fields
+    if run_started_at is None:
+        update_fields["status"] = final_status
+    update_report_components(
+        funding_opportunity_report_id,
+        run_started_at=run_started_at,
+        active_calculation_only=True,
+        **update_fields,
     )
-    publish_report_status_by_id(funding_opportunity_report_id, final_status)
-
-    if final_status == FundingOpportunityReportStatus.SUCCESS:
-        async_generate_funding_report_geopackage.delay(funding_opportunity_report_id)
-        async_send_email_funding_report_finished.delay(funding_opportunity_report_id)
 
 
 @app.task()
-def async_funding_report_calculation(funding_opportunity_report_id: int) -> None:
+def async_funding_report_calculation(
+    funding_opportunity_report_id: int, run_started_at: str | None = None
+) -> None:
     with transaction.atomic():
         try:
             report = (
@@ -475,38 +569,48 @@ def async_funding_report_calculation(funding_opportunity_report_id: int) -> None
             )
         except FundingOpportunityReport.DoesNotExist:
             log.warning(
-                "FundingOpportunityReport with pk %s does not exist. Cannot run report.",
+                "FundingOpportunityReport with pk %s does not exist. "
+                "Cannot run report.",
                 funding_opportunity_report_id,
             )
+            return
+        if run_started_at is not None and (
+            report.burn_simulation_started_at is None
+            or report.burn_simulation_started_at.isoformat() != run_started_at
+            or report.calculation_status != FundingOpportunityReportStatus.PENDING
+        ):
             return
         if (
             report.calculation_status == FundingOpportunityReportStatus.RUNNING
             and timezone.now() - report.updated_at < STALE_RUNNING_TIMEOUT
         ):
             log.warning(
-                "FundingOpportunityReport with pk %s is already running, skipping duplicate dispatch.",
+                "FundingOpportunityReport with pk %s is already running, "
+                "skipping duplicate dispatch.",
                 funding_opportunity_report_id,
             )
             return
-        report.calculation_status = FundingOpportunityReportStatus.RUNNING
-        report.save(update_fields=["calculation_status", "updated_at"])
-
-        #TODO: check this
-        publish_report_event(STATUS_CHANGED_EVENT, report)
+        update_report_components(
+            funding_opportunity_report_id,
+            run_started_at=run_started_at,
+            calculation_status=FundingOpportunityReportStatus.RUNNING,
+        )
         project_area_ids = list(
             report.scenario.project_areas.values_list("id", flat=True)
         )
 
         try:
-            if not project_area_ids or not treatment_layer_has_valid_data(report.scenario):
-                FundingOpportunityReport.objects.filter(
-                    pk=funding_opportunity_report_id
-                ).update(status=FundingOpportunityReportStatus.EMPTY)
-                publish_report_status_by_id(
-                    funding_opportunity_report_id, FundingOpportunityReportStatus.EMPTY
+            if not project_area_ids or not treatment_layer_has_valid_data(
+                report.scenario
+            ):
+                update_report_components(
+                    funding_opportunity_report_id,
+                    run_started_at=run_started_at,
+                    calculation_status=FundingOpportunityReportStatus.EMPTY,
+                    burn_simulation_status=FundingOpportunityReportStatus.EMPTY,
                 )
                 return
-    
+
             datalayer_lookup = build_datalayer_lookup()
             tasks = []
             for metric in FundingReportMetric:
@@ -567,34 +671,194 @@ def async_funding_report_calculation(funding_opportunity_report_id: int) -> None
                     funding_opportunity_report_id=funding_opportunity_report_id,
                 )
             )
-            callback = async_set_status.s(
+            callback = async_finalize_funding_report_results.s(
                 funding_opportunity_report_id=funding_opportunity_report_id,
-                calculation_status=FundingOpportunityReportStatus.SUCCESS,
+                run_started_at=run_started_at,
             ).on_error(
                 async_set_status.si(
                     funding_opportunity_report_id=funding_opportunity_report_id,
                     calculation_status=FundingOpportunityReportStatus.FAILED,
+                    run_started_at=run_started_at,
                 )
             )
-            chord(tasks)(callback)
+            transaction.on_commit(
+                lambda: dispatch_report_work(
+                    lambda: chord(tasks)(callback),
+                    funding_opportunity_report_id,
+                    run_started_at,
+                    "calculation_status",
+                )
+            )
         except Exception:
-            FundingOpportunityReport.objects.filter(
-                pk=funding_opportunity_report_id
-            ).update(calculation_status=FundingOpportunityReportStatus.FAILED)
-            raise
+            update_report_components(
+                funding_opportunity_report_id,
+                run_started_at=run_started_at,
+                calculation_status=FundingOpportunityReportStatus.FAILED,
+            )
+            log.exception(
+                "Failed to dispatch funding report calculations %s",
+                funding_opportunity_report_id,
+            )
 
 
-@app.task()
-def async_call_burn_emulator(funding_opportunity_report_id: int) -> None:
-    pass
+BURN_SIMULATION_TIMEOUT = timedelta(hours=24)
+
+
+def apply_burn_response(
+    report_id: int, run_started_at: str, response: dict, *, expected_job_id=None
+):
+    statuses = {
+        "pending": FundingOpportunityReportStatus.RUNNING,
+        "cached": FundingOpportunityReportStatus.SUCCESS,
+        "failed": FundingOpportunityReportStatus.FAILED,
+    }
+    update_report_components(
+        report_id,
+        run_started_at=run_started_at,
+        expected_job_id=expected_job_id,
+        active_burn_only=True,
+        burn_simulation_status=statuses[response["status"]],
+        burn_simulation_job_id=response["job_id"],
+        burn_simulation_response=response,
+    )
+
+
+def fail_burn_job(
+    report_id: int, run_started_at: str, message: str, *, expected_job_id=None
+):
+    update_report_components(
+        report_id,
+        run_started_at=run_started_at,
+        expected_job_id=expected_job_id,
+        active_burn_only=True,
+        burn_simulation_status=FundingOpportunityReportStatus.FAILED,
+        burn_simulation_response={
+            "status": "failed",
+            "error": message,
+            "job_id": expected_job_id,
+        },
+    )
+
+
+@app.task(bind=True, max_retries=3)
+def async_call_burn_emulator(
+    self, funding_opportunity_report_id: int, run_started_at: str | None = None
+) -> None:
+    with transaction.atomic():
+        report = (
+            FundingOpportunityReport.objects.select_for_update()
+            .filter(pk=funding_opportunity_report_id)
+            .first()
+        )
+        if report is None:
+            return
+        if report.burn_simulation_started_at is None:
+            report.burn_simulation_started_at = timezone.now()
+            report.save(update_fields=["burn_simulation_started_at"])
+        current_run = report.burn_simulation_started_at.isoformat()
+        if run_started_at is not None and run_started_at != current_run:
+            return
+        run_started_at = current_run
+        if report.burn_simulation_status not in (
+            FundingOpportunityReportStatus.PENDING,
+            FundingOpportunityReportStatus.RUNNING,
+        ):
+            return
+        if report.burn_simulation_job_id:
+            return
+        if (
+            timezone.now() - report.burn_simulation_started_at
+            >= BURN_SIMULATION_TIMEOUT
+        ):
+            fail_burn_job(
+                report.pk, run_started_at, "Burn simulation exceeded 24 hours."
+            )
+            return
+        update_report_components(
+            report.pk,
+            run_started_at=run_started_at,
+            burn_simulation_status=FundingOpportunityReportStatus.RUNNING,
+        )
+    try:
+        geometry = get_project_areas_union(report.scenario).transform(4326, clone=True)
+        response = request_job("POST", geometry=json.loads(geometry.geojson))
+        apply_burn_response(report.pk, run_started_at, response)
+    except BurnEmulatorTransientError as exc:
+        if self.request.retries < self.max_retries:
+            raise self.retry(
+                exc=exc,
+                args=(report.pk,),
+                kwargs={"run_started_at": run_started_at},
+                countdown=min(300, 10 * 2**self.request.retries),
+            )
+        fail_burn_job(report.pk, run_started_at, str(exc))
+    except Exception as exc:
+        log.exception("Burn-emulator submission failed for report %s", report.pk)
+        fail_burn_job(report.pk, run_started_at, str(exc)[:1000])
 
 
 @app.task()
 def check_burn_emulator_status(funding_opportunity_report_id: int) -> None:
-    pass
+    report = FundingOpportunityReport.objects.filter(
+        pk=funding_opportunity_report_id
+    ).first()
+    if (
+        report is None
+        or report.burn_simulation_status != FundingOpportunityReportStatus.RUNNING
+    ):
+        return
+    if report.burn_simulation_started_at is None:
+        return
+    run_started_at = report.burn_simulation_started_at.isoformat()
+    if timezone.now() - report.burn_simulation_started_at >= BURN_SIMULATION_TIMEOUT:
+        fail_burn_job(
+            report.pk,
+            run_started_at,
+            "Burn simulation exceeded 24 hours.",
+            expected_job_id=report.burn_simulation_job_id,
+        )
+        return
+    if not report.burn_simulation_job_id:
+        # Submission and its bounded retries own POST; polling must not duplicate them.
+        return
+    try:
+        response = request_job("GET", report.burn_simulation_job_id)
+        apply_burn_response(
+            report.pk,
+            run_started_at,
+            response,
+            expected_job_id=report.burn_simulation_job_id,
+        )
+    except BurnEmulatorTransientError:
+        log.warning(
+            "Transient burn-emulator poll failure for report %s",
+            report.pk,
+            exc_info=True,
+        )
+    except BurnEmulatorError as exc:
+        fail_burn_job(
+            report.pk,
+            run_started_at,
+            str(exc),
+            expected_job_id=report.burn_simulation_job_id,
+        )
 
 
-#TODO: deprecate this method once FOR: Catastrophic fire reduction section is released
+@app.task()
+def poll_burn_emulator_jobs() -> None:
+    if not feature_enabled("FOR_WITH_BURN_EMULATOR"):
+        log.info("Feature FOR_WITH_BURN_EMULATOR disabled.")
+        return
+    
+    report_ids = FundingOpportunityReport.objects.filter(
+        burn_simulation_status=FundingOpportunityReportStatus.RUNNING,
+        burn_simulation_started_at__isnull=False,
+    ).values_list("pk", flat=True)
+    for report_id in report_ids.iterator():
+        check_burn_emulator_status.delay(report_id)
+
+
+# TODO: deprecate this method once FOR: Catastrophic fire reduction section is released
 @app.task()
 def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
     with transaction.atomic():
@@ -606,7 +870,8 @@ def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
             )
         except FundingOpportunityReport.DoesNotExist:
             log.warning(
-                "FundingOpportunityReport with pk %s does not exist. Cannot run report.",
+                "FundingOpportunityReport with pk %s does not exist. "
+                "Cannot run report.",
                 funding_opportunity_report_id,
             )
             return
@@ -615,12 +880,14 @@ def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
             and timezone.now() - report.updated_at < STALE_RUNNING_TIMEOUT
         ):
             log.warning(
-                "FundingOpportunityReport with pk %s is already running, skipping duplicate dispatch.",
+                "FundingOpportunityReport with pk %s is already running, "
+                "skipping duplicate dispatch.",
                 funding_opportunity_report_id,
             )
             return
         report.status = FundingOpportunityReportStatus.RUNNING
-        report.save(update_fields=["status", "updated_at"])
+        report.calculation_status = FundingOpportunityReportStatus.RUNNING
+        report.save(update_fields=["status", "calculation_status", "updated_at"])
         publish_report_event(STATUS_CHANGED_EVENT, report)
         project_area_ids = list(
             report.scenario.project_areas.values_list("id", flat=True)
@@ -712,33 +979,76 @@ def run_funding_opportunity_report(funding_opportunity_report_id: int) -> None:
         raise
 
 
-
 @app.task()
-def run_funding_opportunity_report_with_burn_emmulator(funding_opportunity_report_id: int) -> None:
-    try:
-        tasks = [
-            async_funding_report_calculation.si(
-                funding_opportunity_report_id=funding_opportunity_report_id
-            ),
-            async_call_burn_emulator.si(
-                funding_opportunity_report_id=funding_opportunity_report_id
+def run_funding_opportunity_report_with_burn_emmulator(
+    funding_opportunity_report_id: int,
+) -> None:
+    with transaction.atomic():
+        report = (
+            FundingOpportunityReport.objects.select_for_update(of=("self",))
+            .select_related("scenario")
+            .filter(pk=funding_opportunity_report_id)
+            .first()
+        )
+        if report is None:
+            return
+        if report.burn_simulation_started_at is not None and (
+            report.calculation_status == FundingOpportunityReportStatus.RUNNING
+            or report.burn_simulation_status == FundingOpportunityReportStatus.RUNNING
+            or report.calculation_status == FundingOpportunityReportStatus.PENDING
+        ):
+            return
+        started_at = timezone.now()
+        run_started_at = started_at.isoformat()
+        update_report_components(
+            report.pk,
+            status=FundingOpportunityReportStatus.RUNNING,
+            calculation_status=FundingOpportunityReportStatus.PENDING,
+            burn_simulation_status=FundingOpportunityReportStatus.RUNNING,
+            burn_simulation_started_at=started_at,
+            burn_simulation_job_id=None,
+            burn_simulation_response=None,
+        )
+        try:
+            empty = (
+                not report.scenario.project_areas.exists()
+                or not treatment_layer_has_valid_data(report.scenario)
             )
-        ]
-        callback = async_set_status.s(
-            funding_opportunity_report_id=funding_opportunity_report_id,
-            status=FundingOpportunityReportStatus.SUCCESS,
-        ).on_error(
-            async_set_status.si(
-                funding_opportunity_report_id=funding_opportunity_report_id,
-                status=FundingOpportunityReportStatus.FAILED,
+        except Exception:
+            update_report_components(
+                report.pk,
+                calculation_status=FundingOpportunityReportStatus.FAILED,
+                burn_simulation_status=FundingOpportunityReportStatus.FAILED,
+            )
+            log.exception("Funding report preflight failed for %s", report.pk)
+            return
+        if empty:
+            update_report_components(
+                report.pk,
+                calculation_status=FundingOpportunityReportStatus.EMPTY,
+                burn_simulation_status=FundingOpportunityReportStatus.EMPTY,
+            )
+            return
+        transaction.on_commit(
+            lambda: dispatch_report_work(
+                lambda: async_funding_report_calculation.delay(
+                    report.pk, run_started_at=run_started_at
+                ),
+                report.pk,
+                run_started_at,
+                "calculation_status",
             )
         )
-        chord(tasks)(callback)
-    except Exception:
-        FundingOpportunityReport.objects.filter(
-            pk=funding_opportunity_report_id
-        ).update(status=FundingOpportunityReportStatus.FAILED)
-        raise
+        transaction.on_commit(
+            lambda: dispatch_report_work(
+                lambda: async_call_burn_emulator.delay(
+                    report.pk, run_started_at=run_started_at
+                ),
+                report.pk,
+                run_started_at,
+                "burn_simulation_status",
+            )
+        )
 
 
 @app.task()

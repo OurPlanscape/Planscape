@@ -38,9 +38,11 @@ from funding_report.services import (
     calculate_funding_report_flame_length_reduction,
     merge_aet_improvement_into_results,
 )
+from core.flags import feature_enabled
 from funding_report.tasks import (
     async_generate_funding_report_geopackage,
     run_funding_opportunity_report,
+    run_funding_opportunity_report_with_burn_emmulator,
     send_funding_opportunity_report_shared_link,
 )
 from modules.base import compute_scenario_capabilities
@@ -581,7 +583,10 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             "funding_report.report.created", report, actor=request.user
         )
 
-        run_funding_opportunity_report.delay(report.pk)
+        if feature_enabled("FOR_WITH_BURN_EMULATOR"):
+            run_funding_opportunity_report_with_burn_emmulator.delay(report.pk)
+        else:
+            run_funding_opportunity_report.delay(report.pk)
         track_event(
             name="planning.funding_report.run",
             properties={

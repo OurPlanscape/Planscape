@@ -60,6 +60,10 @@ def get_twig_treatments_schedule() -> dict[str, dict]:
 
 
 beat_schedule = {
+    "check-burn-emulator-jobs": {
+        "task": "funding_report.tasks.poll_burn_emulator_jobs",
+        "schedule": 60.0,
+    },
     "trigger-scenario-post-processing": {
         "task": "planning.tasks.trigger_scenario_post_processing",
         "schedule": 10.0,  # runs every 10 seconds
