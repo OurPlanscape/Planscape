@@ -77,7 +77,7 @@ import { SubUnitsTreatmentTargetComponent } from './sub-units-treatment-target/s
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { IncludeAreasSelectorComponent } from './include-areas-selector/include-areas-selector.component';
 import { CreateScenarioError } from '@app/services/errors';
-import { ConstraintsStepComponent } from './constraints-step/constraints-step.component';
+import { AdvStandLevelConstraintsComponent } from './step3/adv-stand-level-constraints/adv-stand-level-constraints.component';
 
 @UntilDestroy()
 @Component({
@@ -102,9 +102,9 @@ import { ConstraintsStepComponent } from './constraints-step/constraints-step.co
   ],
   standalone: true,
   imports: [
+    AdvStandLevelConstraintsComponent,
     AsyncPipe,
     CdkStepperModule,
-    ConstraintsStepComponent,
     CustomCobenefitsComponent,
     CustomPriorityObjectivesComponent,
     ExcludeAreasSelectorComponent,

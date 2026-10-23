@@ -1,12 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  Host,
-  Input,
-  OnDestroy,
-  OnInit,
-  SkipSelf,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,16 +10,23 @@ import { FeaturesModule } from '@features/features.module';
 import { PlanState } from '@app/plan/plan.state';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { MapModuleService } from '@app/services/map-module.service';
-import { SectionComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  PopoverComponent,
+  SectionComponent,
+  StepDirective,
+} from '@styleguide';
 import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
 import {
   AdvStandLevelConstraintsModalComponent,
   NamedConstraint,
 } from '../adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
-import { ControlContainer, FormControl, FormGroup } from '@angular/forms';
 import {
   BehaviorSubject,
   combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
   map,
   Observable,
   shareReplay,
@@ -37,30 +37,64 @@ import {
   takeUntil,
   tap,
 } from 'rxjs';
-import { ApiModule, DataLayer, AdvStandLevelConstraintData } from '@app/types';
+import {
+  ApiModule,
+  DataLayer,
+  AdvStandLevelConstraintData,
+  Constraint,
+  ScenarioDraftConfiguration,
+} from '@app/types';
 import { ModuleService } from '@app/services/module.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { getConstraintDisplayName } from '@app/scenario/scenario-helper';
+import { ForsysService } from '@app/services/forsys.service';
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatInputModule } from '@angular/material/input';
+
+const MAX_SELECTABLE_LAYERS = Number.POSITIVE_INFINITY;
 
 @UntilDestroy()
 @Component({
   selector: 'app-adv-stand-level-constraints',
   standalone: true,
+  providers: [
+    { provide: StepDirective, useExisting: AdvStandLevelConstraintsComponent },
+  ],
   imports: [
+    ButtonComponent,
     ChipSelectorComponent,
     CommonModule,
     DataLayersComponent,
     DataLayersRailComponent,
     FeaturesModule,
+    PopoverComponent,
     SectionComponent,
     MatExpansionModule,
+    MatFormFieldModule,
     MatIconModule,
+    CommonModule,
+    SectionComponent,
+    ReactiveFormsModule,
+    MatProgressSpinnerModule,
+    MatExpansionModule,
+    MatFormFieldModule,
+    MatInputModule,
   ],
   templateUrl: './adv-stand-level-constraints.component.html',
   styleUrl: './adv-stand-level-constraints.component.scss',
 })
-export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
+export class AdvStandLevelConstraintsComponent
+  extends StepDirective<ScenarioDraftConfiguration>
+  implements OnInit, OnDestroy
+{
   selectedConstraints$ = new BehaviorSubject<NamedConstraint[]>([]);
   private readonly destroy$ = new Subject<void>();
 
@@ -82,12 +116,18 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
         shareReplay(1)
       );
 
-  @Input() keyName = 'advStandLevelConstraints';
-
-  // single FormControl holding the constraints array
-  readonly form = new FormGroup({
+  form = new FormGroup({
+    max_slope: new FormControl<number | null>(null, [
+      Validators.min(0),
+      Validators.max(100),
+    ]),
+    min_distance_from_road: new FormControl<number | null>(null, [
+      Validators.min(0),
+      Validators.max(100000),
+    ]),
     constraints: new FormControl<NamedConstraint[]>([], { nonNullable: true }),
   });
+
   private knownLayers: DataLayer[] = [];
 
   // loading state derived from advStandLevelConstraintLayers$
@@ -115,20 +155,19 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
           return;
         }
 
-        const namedConstraints = constraints.reduce<NamedConstraint[]>(
-          (acc, constraint) => {
-            const layer = layers.find((l) => l.id === constraint.datalayer);
-            if (layer) {
-              this.dataLayersStateService.addSelectedLayer(layer);
-              acc.push({
-                ...constraint,
-                name: getConstraintDisplayName(constraint, layer),
-              });
-            }
-            return acc;
-          },
-          []
-        );
+        const namedConstraints: NamedConstraint[] = constraints.reduce<
+          NamedConstraint[]
+        >((acc, constraint: Constraint) => {
+          const layer = layers.find((l) => l.id === constraint.datalayer);
+          if (layer) {
+            this.dataLayersStateService.addSelectedLayer(layer);
+            acc.push({
+              ...constraint,
+              name: getConstraintDisplayName(constraint, layer),
+            });
+          }
+          return acc;
+        }, []);
 
         this.selectedConstraints$.next(namedConstraints);
       });
@@ -139,11 +178,13 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
     private mapModuleService: MapModuleService,
     private moduleService: ModuleService,
     private scenarioState: ScenarioState,
-    private newScenarioState: NewScenarioState,
     private planState: PlanState,
     private dataLayersStateService: DataLayersStateService,
-    @Host() @SkipSelf() private parentContainer: ControlContainer
+    private newScenarioState: NewScenarioState,
+    private forsysService: ForsysService
   ) {
+    super();
+
     this.scenarioState.currentScenario$
       .pipe(
         take(1),
@@ -160,8 +201,73 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Directly attach to the parent form
-    this.parentFormGroup.addControl(this.keyName, this.form);
+    this.forsysService.forsysData$
+      .pipe(
+        take(1),
+        switchMap((forsysData) =>
+          this.form.valueChanges.pipe(
+            debounceTime(300),
+            distinctUntilChanged(),
+            map((data: any) => {
+              if (this.form.valid) {
+                const constraints: Constraint[] = [];
+                if (!(data.max_slope === null || data.max_slope === '')) {
+                  constraints.push({
+                    datalayer: forsysData.thresholds.slope.id,
+                    operator: 'lte',
+                    value: data.max_slope,
+                  });
+                }
+                if (
+                  !(
+                    data.min_distance_from_road === null ||
+                    data.min_distance_from_road === ''
+                  )
+                ) {
+                  constraints.push({
+                    datalayer: forsysData.thresholds.distance_from_roads.id,
+                    operator: 'lte',
+                    value: data.min_distance_from_road,
+                  });
+                }
+                this.newScenarioState.setConstraints(constraints);
+              }
+            })
+          )
+        )
+      )
+      .subscribe();
+
+    this.newScenarioState.scenarioConfig$
+      .pipe(
+        untilDestroyed(this),
+        filter((c) => !!c?.constraints),
+        take(1),
+        switchMap((config) =>
+          this.forsysService.forsysData$.pipe(
+            map((data) => {
+              const slope = config.constraints?.find(
+                (c) => c.datalayer === data.thresholds.slope.id
+              );
+              if (slope) {
+                this.form.get('max_slope')?.setValue(Number(slope.value));
+              }
+
+              const distance = config.constraints?.find(
+                (c) => c.datalayer === data.thresholds.distance_from_roads.id
+              );
+              if (distance) {
+                this.form
+                  .get('min_distance_from_road')
+                  ?.setValue(Number(distance.value));
+              }
+
+              return config;
+            })
+          )
+        )
+      )
+      .subscribe((config) => {});
 
     // keep form control in sync with selectedConstraints$
     this.selectedConstraints$
@@ -174,15 +280,8 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // reset dataLayersStateService to normal:
     this.dataLayersStateService.setSelectionMode('AUTOMATIC');
-
-    // Clean up parent form and RxJS subscriptions
-    this.parentFormGroup.removeControl(this.keyName);
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  private get parentFormGroup(): FormGroup {
-    return this.parentContainer?.control as FormGroup;
   }
 
   public handleConstraintAdded(constraint: NamedConstraint): void {
@@ -307,5 +406,33 @@ export class AdvStandLevelConstraintsComponent implements OnInit, OnDestroy {
           this.removeSelectionById(closeResult.payload.id);
         }
       });
+  }
+
+  getData(): Partial<ScenarioDraftConfiguration> {
+    const formValues = this.form.getRawValue();
+    const formData = {
+      max_slope: formValues.max_slope ?? null,
+      min_distance_from_road: formValues.min_distance_from_road ?? null,
+      adv_constraints: formValues.constraints ?? [],
+    };
+    return formData;
+  }
+
+  override beforeStepLoad() {
+    this.dataLayersStateService.updateSelectedLayers([]);
+    this.dataLayersStateService.setMaxSelectedLayers(MAX_SELECTABLE_LAYERS);
+    this.dataLayersStateService.setSelectionMode('MANUAL');
+    this.dataLayersStateService.clearUnselectableLayers();
+    this.dataLayersStateService.setModuleNameOverride(
+      'advanced_stand_level_constraint'
+    );
+    this.mapConfigToUI();
+  }
+
+  override beforeStepExit() {
+    this.dataLayersStateService.setSelectionMode('AUTOMATIC');
+    this.dataLayersStateService.setModuleNameOverride(null);
+    this.dataLayersStateService.resetAll();
+    this.dataLayersStateService.updateSelectedLayers([]);
   }
 }
