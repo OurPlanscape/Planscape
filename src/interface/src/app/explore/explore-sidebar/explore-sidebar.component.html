@@ -33,6 +33,9 @@
   <div class="panel-content">
     <app-map-tabs
       *ngIf="selectedTab === SidebarTabs.DATA_LAYERS"></app-map-tabs>
+    <app-map-tabs
+      panel="favorites"
+      *ngIf="selectedTab === SidebarTabs.FAVORITES"></app-map-tabs>
     <app-base-layers
       *ngIf="selectedTab === SidebarTabs.BASE_LAYERS"></app-base-layers>
   </div>

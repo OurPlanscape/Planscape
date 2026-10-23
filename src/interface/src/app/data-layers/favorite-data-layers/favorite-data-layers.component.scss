@@ -1,0 +1,61 @@
+@import 'mixins';
+@import 'colors';
+
+$search-container-height: 79px;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.scrollable {
+  overflow-y: auto;
+  flex: 1;
+  padding-bottom: 10px;
+}
+
+// the same row as the tree, without the category indentation
+.data-layer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-height: 36px;
+  padding: 4px 16px;
+}
+
+.toggle {
+  flex: 1;
+  min-width: 0;
+}
+
+.loader {
+  margin: 28px auto;
+}
+
+.side-search-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: $search-container-height;
+  padding: 4px 16px;
+  border-bottom: 1px $color-soft-gray solid;
+  background: $color-white;
+  box-sizing: border-box;
+}
+
+:host {
+  ::ng-deep .search-bar .input-wrapper {
+    width: 100%;
+    background-color: $color-light-gray;
+    height: 42px;
+  }
+
+  ::ng-deep .search-bar input {
+    @include xs-label();
+    font-weight: 400;
+    font-family: 'Public Sans';
+    width: 100%;
+  }
+}

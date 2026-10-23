@@ -21,6 +21,7 @@
     <app-dynamic-data-layers
       *ngIf="(selectedMapId$ | async) === mapId"
       [mapId]="mapId"
+      [panel]="panel"
       [showSelectionHeader]="false"
       [belowSearch]="
         (layoutMode$ | async)! > 1 ? mapTabs : undefined
