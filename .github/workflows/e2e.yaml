@@ -80,27 +80,9 @@ jobs:
         working-directory: src/interface
         run: npm ci
 
-      - name: Get Playwright version
-        id: playwright-version
-        working-directory: src/interface
-        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
-
-      - name: Cache Playwright browsers
-        id: playwright-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
-
       - name: Install Playwright Chromium
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
         working-directory: src/interface
         run: npx playwright install --with-deps chromium
-
-      - name: Install Playwright system dependencies
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        working-directory: src/interface
-        run: npx playwright install-deps chromium
 
       - name: Run Playwright E2E tests
         working-directory: src/interface
