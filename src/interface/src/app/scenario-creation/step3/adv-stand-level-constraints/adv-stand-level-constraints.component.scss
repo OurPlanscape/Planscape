@@ -2,7 +2,6 @@
 @import 'variables';
 @import 'mixins';
 
-
 .stand-label {
     @include xs-label();
     margin: 0 0 16px 0;
@@ -12,29 +11,30 @@
     display: block;
     margin-bottom: 8px;
     flex: 1;
-}
 
-.stand-level-input ::ng-deep .mat-mdc-form-field-required-marker {
-    color: $color-error;
-}
+    ::ng-deep {
+        .mat-mdc-form-field-required-marker {
+            color: $color-error;
+        }
 
-.stand-level-input ::ng-deep .mdc-floating-label {
-    height: 100%;
+        .mdc-floating-label {
+            height: 100%;
+        }
+
+        .mat-mdc-form-field-error-wrapper {
+            padding: 0;
+        }
+
+        .mat-mdc-form-field-infix {
+            display: flex;
+            align-items: center;
+        }
+    }
 }
 
 .step3-input {
     vertical-align: sub;
 }
-
-.stand-level-input ::ng-deep .mat-mdc-form-field-error-wrapper {
-    padding: 0;
-}
-
-.stand-level-input ::ng-deep .mat-mdc-form-field-infix {
-    display: flex;
-    align-items: center;
-}
-
 
 ::ng-deep .constraints-step {
     margin-bottom: 16px;
@@ -51,18 +51,6 @@
     .mat-mdc-form-field-subscript-wrapper {
         font-size: 14px;
     }
-
-}
-
-.slc-section {
-    padding: 0 16px;
-}
-
-
-.alsc-right-header {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
 }
 
 .constraints-form {
@@ -71,8 +59,7 @@
     gap: 8px;
 }
 
-/* keep this after ADV_STAND_LEVEL_CONSTRAINTS flag is removed
-*/
+// Keep this after the ADV_STAND_LEVEL_CONSTRAINTS flag is removed
 .apply-constraints-form {
     display: flex;
     flex-direction: row;
@@ -82,6 +69,26 @@
     .field-area {
         flex-grow: 1;
     }
+}
+
+.num-constraints-line {
+    @include xs-label();
+    color: $color-text-gray;
+    padding: 16px 0;
+}
+
+.slc-section {
+    padding: 0 16px;
+}
+
+.padded-section {
+    padding: 0 16px 16px;
+}
+
+.alsc-right-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 .flex {
@@ -95,25 +102,7 @@
     margin-bottom: 8px;
     font-weight: 500;
     line-height: 22px;
-    color: $color-dark-gray
-}
-
-
-:host ::ng-deep {
-
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-    }
-
-    input[type="number"] {
-        -moz-appearance: textfield;
-    }
-
-    .mat-expansion-panel-body {
-    padding: 0;
-}
-
+    color: $color-dark-gray;
 }
 
 .legend {
@@ -121,22 +110,38 @@
     margin-left: 4px;
 }
 
-.num-constraints-line {
-    @include xs-label();
-    color: $color-text-gray;
-    padding-bottom: 16px;
-    padding-top: 16px;
-}
+:host ::ng-deep {
+    // Hide number input spinners
+    input[type='number']::-webkit-inner-spin-button,
+    input[type='number']::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+    }
 
-.padded-section {
-    padding: 0 16px 16px;
+    input[type='number'] {
+        -moz-appearance: textfield;
+    }
+
+    .mat-expansion-panel-body {
+        padding: 0;
+    }
 }
 
 .datalayers-section {
     box-shadow: none;
-    border-top: $color-soft-gray 1px solid;
+    border-top: 1px solid $color-soft-gray;
     line-height: 14px;
     padding: 0;
+
+    ::ng-deep {
+        .mat-expansion-panel-header {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .mat-expansion-panel-body {
+            padding: 0;
+        }
+    }
 
     .advslc-header {
         --mat-expansion-header-expanded-state-height: auto;
@@ -144,21 +149,14 @@
 
         .datalayers-header {
             display: flex;
+            justify-content: space-between;
             padding: 0;
 
-            justify-content: space-between;
-
-            ::ng-deep {
-                .mat-content {
-                    flex-grow: 1;
-                    display: flex;
-                }
+            ::ng-deep .mat-content {
+                flex-grow: 1;
+                display: flex;
             }
         }
-    }
-
-    ::ng-deep .mat-expansion-panel-body {
-        padding: 0;
     }
 
     app-data-layers-rail {
@@ -172,21 +170,12 @@
         align-items: center;
         gap: 8px;
         justify-content: space-between;
-        padding-top: 0;
-        padding-right: 0;
-        padding-bottom: 8px;
-        padding-left: 16px;
+        padding: 0 0 8px 16px;
 
         .mat-icon {
             height: 16px;
         }
     }
-}
-
-.datalayers-section ::ng-deep .mat-expansion-panel-header {
-    padding-left: 0;
-    padding-right: 0;
-    
 }
 
 .advslc-header ::ng-deep .mat-content {
