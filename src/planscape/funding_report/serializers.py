@@ -35,6 +35,8 @@ class FundingOpportunityReportSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "status",
+            "calculation_status",
+            "burn_simulation_status",
             "results",
             "treatment_datalayer",
             "aet_datalayer",

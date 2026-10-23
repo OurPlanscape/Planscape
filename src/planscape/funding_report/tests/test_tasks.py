@@ -252,12 +252,13 @@ class FundingOpportunityReportTaskTest(TestCase):
     ):
         clipped_datalayer = DataLayerFactory.create(type=DataLayerType.RASTER)
 
-        async_finalize_funding_report_results(
-            project_results=[
-                {"kind": "aet_datalayer", "datalayer_id": clipped_datalayer.pk},
-            ],
-            funding_opportunity_report_id=self.report.pk,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            async_finalize_funding_report_results(
+                project_results=[
+                    {"kind": "aet_datalayer", "datalayer_id": clipped_datalayer.pk},
+                ],
+                funding_opportunity_report_id=self.report.pk,
+            )
 
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.SUCCESS)
@@ -270,19 +271,20 @@ class FundingOpportunityReportTaskTest(TestCase):
         email_task_mock,
         geopackage_task_mock,
     ):
-        async_finalize_funding_report_results(
-            project_results=[
-                {
-                    "variable": FundingReportMetric.ABOVEGROUND_TOTAL,
-                    "project_id": self.project_area.pk,
-                    "year": 2026,
-                    "value": 10,
-                    "baseline": 8,
-                    "delta": 1.2,
-                }
-            ],
-            funding_opportunity_report_id=self.report.pk,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            async_finalize_funding_report_results(
+                project_results=[
+                    {
+                        "variable": FundingReportMetric.ABOVEGROUND_TOTAL,
+                        "project_id": self.project_area.pk,
+                        "year": 2026,
+                        "value": 10,
+                        "baseline": 8,
+                        "delta": 1.2,
+                    }
+                ],
+                funding_opportunity_report_id=self.report.pk,
+            )
 
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.SUCCESS)
@@ -318,37 +320,38 @@ class FundingOpportunityReportTaskTest(TestCase):
         email_task_mock,
         geopackage_task_mock,
     ):
-        async_finalize_funding_report_results(
-            project_results=[
-                {
-                    "variable": FundingReportMetric.TOTAL_FLAME_SEVERITY,
-                    "project_id": self.project_area.pk,
-                    "year": 2026,
-                    "value": 10,
-                    "baseline": 40,
-                    "delta": 25.0,
-                    "interval": {"from": 7.0, "to": 4.0},
-                },
-                {
-                    "variable": FundingReportMetric.TOTAL_FLAME_SEVERITY,
-                    "project_id": self.project_area.pk,
-                    "year": 2026,
-                    "value": 5,
-                    "baseline": 40,
-                    "delta": 12.5,
-                    "interval": {"from": 6.0, "to": 4.0},
-                },
-                {
-                    "variable": FundingReportMetric.ABOVEGROUND_TOTAL,
-                    "project_id": self.project_area.pk,
-                    "year": 2026,
-                    "value": 10,
-                    "baseline": 8,
-                    "delta": 1.2,
-                },
-            ],
-            funding_opportunity_report_id=self.report.pk,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            async_finalize_funding_report_results(
+                project_results=[
+                    {
+                        "variable": FundingReportMetric.TOTAL_FLAME_SEVERITY,
+                        "project_id": self.project_area.pk,
+                        "year": 2026,
+                        "value": 10,
+                        "baseline": 40,
+                        "delta": 25.0,
+                        "interval": {"from": 7.0, "to": 4.0},
+                    },
+                    {
+                        "variable": FundingReportMetric.TOTAL_FLAME_SEVERITY,
+                        "project_id": self.project_area.pk,
+                        "year": 2026,
+                        "value": 5,
+                        "baseline": 40,
+                        "delta": 12.5,
+                        "interval": {"from": 6.0, "to": 4.0},
+                    },
+                    {
+                        "variable": FundingReportMetric.ABOVEGROUND_TOTAL,
+                        "project_id": self.project_area.pk,
+                        "year": 2026,
+                        "value": 10,
+                        "baseline": 8,
+                        "delta": 1.2,
+                    },
+                ],
+                funding_opportunity_report_id=self.report.pk,
+            )
 
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.SUCCESS)
@@ -396,26 +399,27 @@ class FundingOpportunityReportTaskTest(TestCase):
         email_task_mock,
         geopackage_task_mock,
     ):
-        async_finalize_funding_report_results(
-            project_results=[
-                {
-                    "variable": FundingReportMetric.ABOVEGROUND_TOTAL,
-                    "project_id": self.project_area.pk,
-                    "year": 2026,
-                    "value": 10,
-                    "baseline": 8,
-                    "delta": 1.2,
-                },
-                {
-                    "error": "boom",
-                    "project_id": self.project_area.pk,
-                    "variable": FundingReportMetric.ABOVEGROUND_TOTAL.value,
-                    "year": 2031,
-                },
-                None,
-            ],
-            funding_opportunity_report_id=self.report.pk,
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            async_finalize_funding_report_results(
+                project_results=[
+                    {
+                        "variable": FundingReportMetric.ABOVEGROUND_TOTAL,
+                        "project_id": self.project_area.pk,
+                        "year": 2026,
+                        "value": 10,
+                        "baseline": 8,
+                        "delta": 1.2,
+                    },
+                    {
+                        "error": "boom",
+                        "project_id": self.project_area.pk,
+                        "variable": FundingReportMetric.ABOVEGROUND_TOTAL.value,
+                        "year": 2031,
+                    },
+                    None,
+                ],
+                funding_opportunity_report_id=self.report.pk,
+            )
 
         self.report.refresh_from_db()
         self.assertEqual(self.report.status, FundingOpportunityReportStatus.FAILED)

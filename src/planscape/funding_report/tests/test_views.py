@@ -5,6 +5,7 @@ from uuid import uuid4
 from collaboration.models import Permissions, Role
 from collaboration.tests.factories import UserObjectRoleFactory
 from django.conf import settings
+from django.test import override_settings
 from django.urls import reverse
 from planning.models import GeoPackageStatus, ScenarioPlanningApproach
 from planning.services import get_acreage
@@ -49,8 +50,14 @@ def _create_scenario_role_permissions():
         )
 
 
+@override_settings(FEATURE_FLAGS=[])
 class RunReportTest(APITestCase):
     def setUp(self):
+        self.burn_task_mock = self.enterContext(
+            mock.patch(
+                "planning.views_v2.run_funding_opportunity_report_with_burn_emmulator"
+            )
+        )
         self.user = UserFactory.create()
         self.planning_area = PlanningAreaFactory.create(user=self.user)
         self.scenario = ScenarioFactory.create(
@@ -87,6 +94,7 @@ class RunReportTest(APITestCase):
         self.assertEqual(report_run.email, self.user.email)
 
         task_mock.delay.assert_called_once_with(report.pk)
+        self.burn_task_mock.delay.assert_not_called()
 
     @mock.patch("planning.views_v2.run_funding_opportunity_report")
     def test_run_report_reuses_existing_report_and_tracks_new_run(self, task_mock):
@@ -108,6 +116,7 @@ class RunReportTest(APITestCase):
         self.assertEqual(report_run.email, self.user.email)
 
         task_mock.delay.assert_called_once_with(existing.pk)
+        self.burn_task_mock.delay.assert_not_called()
 
     @mock.patch("planning.views_v2.run_funding_opportunity_report")
     def test_run_report_reuses_existing_report(self, task_mock):
@@ -121,10 +130,12 @@ class RunReportTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
         self.assertEqual(FundingOpportunityReport.objects.count(), 1)
         task_mock.delay.assert_called_once_with(existing.pk)
+        self.burn_task_mock.delay.assert_not_called()
 
     def test_run_report_requires_authentication(self):
         response = self.client.post(self.url, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.burn_task_mock.delay.assert_not_called()
 
     @mock.patch("planning.views_v2.run_funding_opportunity_report")
     def test_run_report_response_contains_expected_fields(self, task_mock):
@@ -156,6 +167,7 @@ class RunReportTest(APITestCase):
         self.assertEqual(report.created_by, owner)
 
         task_mock.delay.assert_called_once_with(report.pk)
+        self.burn_task_mock.delay.assert_not_called()
 
     @mock.patch("planning.views_v2.run_funding_opportunity_report")
     def test_run_report_allows_collaborator(self, task_mock):
@@ -172,6 +184,7 @@ class RunReportTest(APITestCase):
         self.assertEqual(report.created_by, collaborator)
 
         task_mock.delay.assert_called_once_with(report.pk)
+        self.burn_task_mock.delay.assert_not_called()
 
     @mock.patch("planning.views_v2.run_funding_opportunity_report")
     def test_run_report_denies_viewer(self, task_mock):
@@ -184,6 +197,42 @@ class RunReportTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(FundingOpportunityReport.objects.count(), 0)
         task_mock.delay.assert_not_called()
+        self.burn_task_mock.delay.assert_not_called()
+
+    @override_settings(FEATURE_FLAGS=["FOR_WITH_BURN_EMULATOR"])
+    @mock.patch("planning.views_v2.run_funding_opportunity_report")
+    def test_run_report_with_burn_enabled_creates_report(self, legacy_task_mock):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(self.url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        report = FundingOpportunityReport.objects.get(scenario=self.scenario)
+        self.assertEqual(report.created_by, self.user)
+        self.assertEqual(response.json()["id"], report.pk)
+        report_run = FundingOpportunityReportRun.objects.get(report=report)
+        self.assertEqual(report_run.user, self.user)
+        self.assertEqual(report_run.email, self.user.email)
+        self.burn_task_mock.delay.assert_called_once_with(report.pk)
+        legacy_task_mock.delay.assert_not_called()
+
+    @override_settings(FEATURE_FLAGS=["FOR_WITH_BURN_EMULATOR"])
+    @mock.patch("planning.views_v2.run_funding_opportunity_report")
+    def test_run_report_with_burn_enabled_reuses_report(self, legacy_task_mock):
+        existing = FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.user,
+        )
+        self.client.force_authenticate(self.user)
+        response = self.client.post(self.url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(FundingOpportunityReport.objects.count(), 1)
+        self.assertEqual(response.json()["id"], existing.pk)
+        report_run = FundingOpportunityReportRun.objects.get()
+        self.assertEqual(report_run.report, existing)
+        self.assertEqual(report_run.user, self.user)
+        self.burn_task_mock.delay.assert_called_once_with(existing.pk)
+        legacy_task_mock.delay.assert_not_called()
 
 
 class GetReportTest(APITestCase):

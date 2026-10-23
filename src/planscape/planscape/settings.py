@@ -789,3 +789,10 @@ RETURNING_USER_THRESHOLD_DAYS = config(
 DELETE_ENTRIES_AFTER_LAST_RESTORE = config(
     "DELETE_ENTRIES_AFTER_LAST_RESTORE", default=False, cast=bool
 )
+
+# BURN EMULATOR
+
+BURN_EMULATOR_API_URL = config(
+    "BURN_EMULATOR_API_URL",
+    default="https://burn-emulator-test-537855483895.us-central1.run.app/",
+)
