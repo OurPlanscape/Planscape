@@ -37,12 +37,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up Node.js
+        id: setup-node
         uses: actions/setup-node@v4
         with:
           node-version-file: src/interface/.node-version
-          cache: 'npm'
-          cache-dependency-path: src/interface/package-lock.json
-      - run: npm ci
+      - name: Cache node_modules
+        id: node-modules-cache
+        uses: actions/cache@v4
+        with:
+          path: src/interface/node_modules
+          key: node-modules-${{ runner.os }}-node${{ steps.setup-node.outputs.node-version }}-${{ hashFiles('src/interface/package-lock.json', 'src/interface/patches/**') }}
+      - if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: npm ci
       - run: npm run lint
 
   build-frontend:
@@ -56,12 +62,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up Node.js
+        id: setup-node
         uses: actions/setup-node@v4
         with:
           node-version-file: src/interface/.node-version
-          cache: 'npm'
-          cache-dependency-path: src/interface/package-lock.json
-      - run: npm ci
+      - name: Cache node_modules
+        id: node-modules-cache
+        uses: actions/cache@v4
+        with:
+          path: src/interface/node_modules
+          key: node-modules-${{ runner.os }}-node${{ steps.setup-node.outputs.node-version }}-${{ hashFiles('src/interface/package-lock.json', 'src/interface/patches/**') }}
+      - if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: npm ci
       - run: npm run test:prod
 
   storybook:
@@ -75,10 +87,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up Node.js
+        id: setup-node
         uses: actions/setup-node@v4
         with:
           node-version-file: src/interface/.node-version
-          cache: 'npm'
-          cache-dependency-path: src/interface/package-lock.json
-      - run: npm ci
+      - name: Cache node_modules
+        id: node-modules-cache
+        uses: actions/cache@v4
+        with:
+          path: src/interface/node_modules
+          key: node-modules-${{ runner.os }}-node${{ steps.setup-node.outputs.node-version }}-${{ hashFiles('src/interface/package-lock.json', 'src/interface/patches/**') }}
+      - if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: npm ci
       - run: npm run build-storybook
