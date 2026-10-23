@@ -41,6 +41,9 @@
                 </mat-option>
               }
             </mat-select>
+            <mat-hint class="hint-blurb" *ngIf="isMultiOperator"
+              >This operator accepts comma-separated values.</mat-hint
+            >
           </mat-form-field>
         </div>
 
@@ -51,8 +54,10 @@
             label="{{ showSecondValue ? 'Min' : 'Value' }}"
             showSupportMessage="on-error"
             size="full"
+            [supportMessage]="valueOneErrorMsg"
             [error]="
-              form.hasError('requiredOne') &&
+              (form.hasError('requiredOne') &&
+                form.hasError('invalidNumberList')) ||
               form.get('constraintValueOne')?.touched === true
             ">
             <input
@@ -63,7 +68,7 @@
               formControlName="constraintValueOne"
               required
               id="constraintValueOne"
-              type="number" />
+              type="text" />
           </sg-input-field>
         </div>
 
@@ -75,6 +80,7 @@
               label="Max"
               required
               showSupportMessage="on-error"
+              [supportMessage]="valueTwoErrorMsg"
               [error]="
                 form.hasError('requiredTwo') &&
                 form.get('constraintValueTwo')?.touched === true

@@ -51,7 +51,7 @@ describe('AdvStandLevelConstraintsModalComponent', () => {
 
   it('should invalidate the form if valueOne is empty', () => {
     component.form.patchValue({
-      constraintOperator: 'eq',
+      constraintOperator: 'in',
       constraintValueOne: null,
     });
     expect(component.form.valid).toBeFalse();
@@ -60,11 +60,29 @@ describe('AdvStandLevelConstraintsModalComponent', () => {
 
   it('should validate the form if valueOne is present for standard operators', () => {
     component.form.patchValue({
-      constraintOperator: 'eq',
-      constraintValueOne: 42,
+      constraintOperator: 'in',
+      constraintValueOne: '42',
     });
     expect(component.form.valid).toBeTrue();
     expect(component.isButtonDisabled).toBeFalse();
+  });
+
+  it('should validate the form if operator is "in" and valueOne has commas or spaces', () => {
+    component.form.patchValue({
+      constraintOperator: 'in',
+      constraintValueOne: '12,1231, 12, 321,',
+    });
+    expect(component.form.valid).toBeTrue();
+    expect(component.isButtonDisabled).toBeFalse();
+  });
+
+  it('should validate the form if operator is "lt" and valueOne has commas or spaces', () => {
+    component.form.patchValue({
+      constraintOperator: 'lt',
+      constraintValueOne: '12,1231, 12, 321,',
+    });
+    expect(component.form.valid).toBeFalse();
+    expect(component.isButtonDisabled).toBeTrue();
   });
 
   it('should toggle showSecondValue and enable/disable constraintValueTwo when operator changes', () => {
@@ -76,7 +94,7 @@ describe('AdvStandLevelConstraintsModalComponent', () => {
     expect(valTwoControl?.enabled).toBeTrue();
 
     // Switch back to 'eq'
-    component.form.patchValue({ constraintOperator: 'eq' });
+    component.form.patchValue({ constraintOperator: 'in' });
     expect(component.showSecondValue).toBeFalse();
     expect(valTwoControl?.disabled).toBeTrue();
     expect(valTwoControl?.value).toBeNull();
@@ -85,7 +103,7 @@ describe('AdvStandLevelConstraintsModalComponent', () => {
   it('should require both valueOne and value2 when operator is "btw"', () => {
     component.form.patchValue({
       constraintOperator: 'btw',
-      constraintValueOne: 10,
+      constraintValueOne: '10',
       constraintValueTwo: null,
     });
     expect(component.form.valid).toBeFalse();
@@ -97,7 +115,7 @@ describe('AdvStandLevelConstraintsModalComponent', () => {
   it('should close dialog with correct payload including value2 on handleApply for "btw"', () => {
     component.form.patchValue({
       constraintOperator: 'btw',
-      constraintValueOne: 10,
+      constraintValueOne: '10',
       constraintValueTwo: 50,
     });
 
@@ -117,7 +135,7 @@ describe('AdvStandLevelConstraintsModalComponent', () => {
   it('should close dialog without value2 on handleApply for standard operators', () => {
     component.form.patchValue({
       constraintOperator: 'gte',
-      constraintValueOne: 25,
+      constraintValueOne: '25',
     });
 
     component.handleApply();
