@@ -10,9 +10,17 @@ $search-container-height: 79px;
 }
 
 .scrollable {
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   flex: 1;
   padding-bottom: 10px;
+}
+
+sg-empty-state,
+sg-no-results {
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 // the same row as the tree, without the category indentation
@@ -22,6 +30,7 @@ $search-container-height: 79px;
   align-items: center;
   min-height: 36px;
   padding: 4px 16px;
+  flex-shrink: 0;
 }
 
 .toggle {

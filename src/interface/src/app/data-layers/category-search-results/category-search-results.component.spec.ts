@@ -19,6 +19,7 @@ describe('CategorySearchResultsComponent', () => {
         MockProvider(DataLayersStateService, {
           viewedDataLayer$: of(null),
           selectedDataLayers$: of([]),
+          canEditFavorites$: of(true),
         }),
       ],
     }).compileComponents();

@@ -51,6 +51,14 @@ export class FavoriteDataLayersComponent {
 
   hasResults$ = this.results$.pipe(map((layers) => layers.length > 0));
 
+  emptyStateDescription$ = this.dataLayersStateService.canEditFavorites$.pipe(
+    map((canEdit) =>
+      canEdit
+        ? 'Favoriting data layers will help you define priority areas later in your planning process.'
+        : 'There are no favorited layers in this workspace. Favorites added by owner and editors will appear here.'
+    )
+  );
+
   loadingDataLayer$ = this.dataLayersStateService.loadingLayer$;
 
   viewedDataLayerId$ = this.dataLayersStateService.viewedDataLayer$.pipe(
