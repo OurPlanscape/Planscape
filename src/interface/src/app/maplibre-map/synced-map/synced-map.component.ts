@@ -27,12 +27,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MapConfigState } from '../map-config.state';
 import { baseMapStyles } from '../map-base-layers';
 import { MapBaseLayersComponent } from '@maplibre-map/map-base-layers/map-base-layers.component';
-import { TerraDrawPolygonMode, TerraDrawSelectMode } from 'terra-draw';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { firstValueFrom, map, switchMap, take, tap } from 'rxjs';
 import { MapDrawingToolboxComponent } from '@maplibre-map/map-drawing-toolbox/map-drawing-toolbox.component';
-import { DefaultSelectConfig, DrawService } from '../draw.service';
+import { DrawService } from '../draw.service';
 import { MapTooltipComponent } from '@treatments/map-tooltip/map-tooltip.component';
 import { FeatureId } from 'terra-draw/dist/extend';
 import { MapDataLayerComponent } from '@maplibre-map/map-data-layer/map-data-layer.component';
@@ -284,27 +283,6 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
         this.enablePolygonDrawingMode();
       }
     });
-  }
-
-  initDrawingModes() {
-    const polygonMode = new TerraDrawPolygonMode({
-      styles: {
-        fillColor: '#A5C8D7',
-        fillOpacity: 0.5,
-        outlineColor: '#000000',
-        outlineWidth: 2,
-        closingPointColor: '#ffffff',
-        closingPointWidth: 6,
-        closingPointOutlineColor: '#0000ee',
-        closingPointOutlineWidth: 2,
-      },
-      pointerDistance: 10, // reduce snap distance / auto-finish sensitivity
-    });
-    const selectMode = new TerraDrawSelectMode(DefaultSelectConfig);
-    this.drawService.initializeTerraDraw(this.mapLibreMap, [
-      polygonMode,
-      selectMode,
-    ]);
   }
 
   onMapMouseMove(event: MapMouseEvent): void {

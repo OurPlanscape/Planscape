@@ -10,8 +10,7 @@ import { SyncedMapComponent } from '@maplibre-map/synced-map/synced-map.componen
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MULTIMAP_STORAGE } from '@app/services/multimap-storage.token';
-import { TerraDrawPolygonMode, TerraDrawSelectMode } from 'terra-draw';
-import { DefaultSelectConfig, DrawService } from '../draw.service';
+import { DrawService } from '../draw.service';
 
 @UntilDestroy()
 @Component({
@@ -57,23 +56,8 @@ export class SyncedMapsComponent implements OnDestroy {
     this.cleanupFn = syncMaps(...this.maps.values());
   }
 
-  initDrawingModel(map: MapLibreMap) {
-    // designate this map instance as the drawing reference
-    const polygonMode = new TerraDrawPolygonMode({
-      styles: {
-        fillColor: '#A5C8D7',
-        fillOpacity: 0.5,
-        outlineColor: '#000000',
-        outlineWidth: 2,
-        closingPointColor: '#ffffff',
-        closingPointWidth: 6,
-        closingPointOutlineColor: '#0000ee',
-        closingPointOutlineWidth: 2,
-      },
-      pointerDistance: 10, // reduce snap distance / auto-finish sensitivity
-    });
-    const selectMode = new TerraDrawSelectMode(DefaultSelectConfig);
-    this.drawService.initializeTerraDraw(map, [polygonMode, selectMode]);
+  initDrawingMap(map: MapLibreMap) {
+    this.drawService.initializeTerraDraw(map);
   }
 
   ngOnDestroy() {

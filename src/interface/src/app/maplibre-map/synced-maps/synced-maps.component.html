@@ -1,7 +1,7 @@
 <section class="maps" [ngClass]="{ 'single-view': layoutMode === 1 }">
   <app-synced-map
     [mapNumber]="1"
-    (mapCreated)="mapCreated($event); initDrawingModel($event.map)"
+    (mapCreated)="mapCreated($event); initDrawingMap($event.map)"
     [showMapNumber]="layoutMode !== 1"></app-synced-map>
   <app-synced-map
     *ngIf="layoutMode > 1"
