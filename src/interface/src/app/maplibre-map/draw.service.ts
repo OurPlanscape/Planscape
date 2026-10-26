@@ -1,5 +1,9 @@
 import { Injectable } from '@angular/core';
-import { TerraDraw, TerraDrawPolygonMode, TerraDrawSelectMode } from 'terra-draw';
+import {
+  TerraDraw,
+  TerraDrawPolygonMode,
+  TerraDrawSelectMode,
+} from 'terra-draw';
 import { FeatureId, TerraDrawBaseDrawMode } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
@@ -64,8 +68,7 @@ export class DrawService {
 
   private _uploadedShape: GeoJSON.GeoJSON | null = null;
 
-  constructor(private http: HttpClient) { }
-
+  constructor(private http: HttpClient) {}
 
   createDefaultModes(): TerraDrawBaseDrawMode<any>[] {
     const polygonMode = new TerraDrawPolygonMode({

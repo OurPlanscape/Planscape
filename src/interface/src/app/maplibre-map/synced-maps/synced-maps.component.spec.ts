@@ -23,8 +23,9 @@ describe('SyncedMapsComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [SyncedMapsComponent],
-      providers: [MockProvider(MultiMapConfigState, state),
-      MockProvider(DrawService),
+      providers: [
+        MockProvider(MultiMapConfigState, state),
+        MockProvider(DrawService),
       ],
       declarations: [MockDeclaration(SyncedMapComponent)],
     }).compileComponents();
