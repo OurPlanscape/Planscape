@@ -36,7 +36,7 @@ export class SyncedMapsComponent implements OnDestroy {
     private multiMapConfigState: MultiMapConfigState,
     @Inject(MULTIMAP_STORAGE)
     private readonly multiDataLayerView: boolean,
-    private drawService: DrawService,
+    private drawService: DrawService
   ) {
     // This logic only applies when multiDataLayerView is enabled
     if (this.multiDataLayerView) {
@@ -49,11 +49,7 @@ export class SyncedMapsComponent implements OnDestroy {
   }
 
   async mapCreated(event: { map: MapLibreMap; mapNumber: number }) {
-
     this.maps.set(event.mapNumber, event.map);
-    console.log('we are creating a map:', event.map);
-    console.log('and it is map number:', event.mapNumber);
-    console.log('the current collection of maps is:', this.maps);
     if (this.cleanupFn) {
       this.cleanupFn();
     }
@@ -62,27 +58,23 @@ export class SyncedMapsComponent implements OnDestroy {
   }
 
   initDrawingModel(map: MapLibreMap) {
-   // designate this map instance as the drawing reference
-        const polygonMode = new TerraDrawPolygonMode({
-          styles: {
-            fillColor: '#A5C8D7',
-            fillOpacity: 0.5,
-            outlineColor: '#000000',
-            outlineWidth: 2,
-            closingPointColor: '#ffffff',
-            closingPointWidth: 6,
-            closingPointOutlineColor: '#0000ee',
-            closingPointOutlineWidth: 2,
-          },
-          pointerDistance: 10, // reduce snap distance / auto-finish sensitivity
-        });
-        const selectMode = new TerraDrawSelectMode(DefaultSelectConfig);
-        this.drawService.initializeTerraDraw(map, [
-          polygonMode,
-          selectMode,
-        ]);
-      }
-  
+    // designate this map instance as the drawing reference
+    const polygonMode = new TerraDrawPolygonMode({
+      styles: {
+        fillColor: '#A5C8D7',
+        fillOpacity: 0.5,
+        outlineColor: '#000000',
+        outlineWidth: 2,
+        closingPointColor: '#ffffff',
+        closingPointWidth: 6,
+        closingPointOutlineColor: '#0000ee',
+        closingPointOutlineWidth: 2,
+      },
+      pointerDistance: 10, // reduce snap distance / auto-finish sensitivity
+    });
+    const selectMode = new TerraDrawSelectMode(DefaultSelectConfig);
+    this.drawService.initializeTerraDraw(map, [polygonMode, selectMode]);
+  }
 
   ngOnDestroy() {
     this.saveState();

@@ -170,10 +170,6 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private scenarioState: ScenarioState
   ) {
-
-    console.log('calling constructor on a synced map, with what info?');
-    console.log(' constructor on a synced map, has this instsance:', this.mapLibreMap);
-
     this.mapConfigState.mapInteractionMode$
       .pipe(untilDestroyed(this))
       .subscribe((mode) => {
@@ -196,8 +192,6 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    console.log('we are initing a map, with mapnmber:', this.mapNumber);
-
     this.registry.set(this.mapNumber, this.dataLayersStateService);
     // Loading layer from the storage if exists
     if (this.multiDataLayerView) {
@@ -252,7 +246,6 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
           layers: [...newStyle.layers, ...customLayers],
         };
         //set the whole map style
-        console.log('we are updating the base map?', fullNewMapStyle);
         this.mapLibreMap.setStyle(fullNewMapStyle);
       })
       .catch((error) => {
@@ -278,7 +271,6 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    console.log('we are ddestroying this map:', this.mapNumber);
     this.registry.clear(this.mapNumber);
   }
 

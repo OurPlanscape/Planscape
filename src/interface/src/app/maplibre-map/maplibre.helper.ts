@@ -86,7 +86,6 @@ function getCamera(map: MapLibreMap) {
 
 export function syncMaps(...maps: MapLibreMap[]): Cleanup {
   // 0) initial sync on load
-  console.log('and we are syncing these maps?', maps);
   const leaderCam = getCamera(maps[0]);
   maps.slice(1).forEach((m) => {
     if (m.loaded()) {

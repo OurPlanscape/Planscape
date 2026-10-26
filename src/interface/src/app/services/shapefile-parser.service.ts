@@ -76,7 +76,6 @@ export class ShapefileParserService {
     ) {
       return e.message;
     }
-    console.log('in parser service:', e);
     return 'The zip file does not appear to contain a valid shapefile.';
   }
 }
