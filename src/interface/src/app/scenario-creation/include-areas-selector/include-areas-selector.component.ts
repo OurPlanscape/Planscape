@@ -55,6 +55,8 @@ export class IncludeAreasSelectorComponent
   );
   loadingAreas$ = this.baseLayersStateService.loadingLayers$;
   selectedAreas: BaseLayer[] = [];
+  // Whether the step was left once, so the prefill is no longer in charge
+  private leftWithPendingSelection = false;
   viewingAreas: BaseLayer[] = [];
 
   ngOnInit() {
@@ -131,7 +133,21 @@ export class IncludeAreasSelectorComponent
     return this.selectedAreas.map((s) => s.id);
   }
 
+  /**
+   * The content of a step is built once and only moved around, so the
+   * selection the user left here is still on screen when they come back,
+   * while `beforeStepExit` sent the state back to what was saved. Put it back,
+   * or the areas stay checked while the stands stop counting them in.
+   */
+  override beforeStepLoad(): void {
+    if (!this.leftWithPendingSelection) {
+      return;
+    }
+    this.newScenarioState.setIncludedAreas(this.getSelectedIncludedAreaIds());
+  }
+
   override beforeStepExit(): void {
+    this.leftWithPendingSelection = true;
     this.clearViewedLayers(); // clears layer selection after step in completed
     // Revert any unsaved selection so going back doesn't persist changes.
     // On save this is a no-op since the config was already updated.

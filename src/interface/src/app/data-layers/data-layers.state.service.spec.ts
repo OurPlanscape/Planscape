@@ -4,7 +4,13 @@ import { DataLayersStateService } from './data-layers.state.service';
 import { MockProvider } from 'ng-mocks';
 import { DataLayersService } from '@services/data-layers.service';
 import { of, Subject, throwError } from 'rxjs';
-import { DataLayer, DataSet, Pagination } from '@types';
+import {
+  DataLayer,
+  DataSet,
+  Pagination,
+  Workspace,
+  WorkspaceRole,
+} from '@types';
 import { MapModuleService } from '@services/map-module.service';
 import { FeaturesModule } from '@features/features.module';
 import { overrideFeatureFlags } from '@features/testing';
@@ -23,6 +29,7 @@ describe('DataLayersStateService', () => {
   let dataLayersService: jasmine.SpyObj<DataLayersService>;
   let workspacesService: jasmine.SpyObj<WorkspacesService>;
   let currentWorkspaceId: number | null;
+  let currentWorkspace$: Subject<Workspace>;
 
   const layer = {
     id: 1,
@@ -55,6 +62,7 @@ describe('DataLayersStateService', () => {
     dataLayersService.browseFavorites.and.returnValue(of([]));
 
     currentWorkspaceId = null;
+    currentWorkspace$ = new Subject<Workspace>();
     workspacesService = jasmine.createSpyObj<WorkspacesService>(
       'WorkspacesService',
       ['favoriteDataLayer', 'unfavoriteDataLayer']
@@ -88,6 +96,9 @@ describe('DataLayersStateService', () => {
           useValue: {
             get currentWorkspaceIdValue() {
               return currentWorkspaceId;
+            },
+            get currentWorkspace$() {
+              return currentWorkspace$;
             },
           },
         },
@@ -286,6 +297,59 @@ describe('DataLayersStateService', () => {
       createService(...flags);
     }
 
+    describe('who is allowed to change them', () => {
+      const workspaceOf = (role: WorkspaceRole) =>
+        ({ role }) as unknown as Workspace;
+
+      function editingFlags() {
+        const seen: boolean[] = [];
+        service.canEditFavorites$.subscribe((canEdit) => seen.push(canEdit));
+        return seen;
+      }
+
+      it('holds off until the workspace is known', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+
+        expect(editingFlags()).toEqual([false]);
+      });
+
+      it('lets an owner change them', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        const seen = editingFlags();
+
+        currentWorkspace$.next(workspaceOf('OWNER'));
+
+        expect(seen).toEqual([false, true]);
+      });
+
+      it('lets a collaborator change them', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        const seen = editingFlags();
+
+        currentWorkspace$.next(workspaceOf('COLLABORATOR'));
+
+        expect(seen).toEqual([false, true]);
+      });
+
+      it('leaves a viewer with nothing to change', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        const seen = editingFlags();
+
+        currentWorkspace$.next(workspaceOf('VIEWER'));
+
+        expect(seen).toEqual([false]);
+      });
+
+      it('changes nothing for a workspace that fails to load', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        const seen = editingFlags();
+
+        currentWorkspace$.error(new Error('nope'));
+
+        expect(seen).toEqual([false]);
+      });
+    });
+
     it('follows the payload for a layer nobody touched', () => {
       createInWorkspace('DATA_ORGANIZATION');
 
@@ -322,6 +386,48 @@ describe('DataLayersStateService', () => {
       service.toggleFavorite(inTree);
 
       expect(isFavorite(inSearch)).toBe(true);
+    });
+
+    it('confirms the layer joined the favorites', () => {
+      createInWorkspace('DATA_ORGANIZATION');
+      const toast = spyOn(TestBed.inject(MatSnackBar), 'open');
+
+      service.toggleFavorite(notFavorited);
+
+      expect(toast).toHaveBeenCalledWith(
+        'Layer added to favorites.',
+        'Dismiss',
+        jasmine.objectContaining({ verticalPosition: 'bottom' })
+      );
+    });
+
+    it('confirms the layer left the favorites', () => {
+      createInWorkspace('DATA_ORGANIZATION');
+      const toast = spyOn(TestBed.inject(MatSnackBar), 'open');
+
+      service.toggleFavorite(favorited);
+
+      expect(toast).toHaveBeenCalledWith(
+        'Layer removed from favorites.',
+        'Dismiss',
+        jasmine.objectContaining({ verticalPosition: 'bottom' })
+      );
+    });
+
+    it('keeps the confirmation back until the backend takes it', () => {
+      createInWorkspace('DATA_ORGANIZATION');
+      const toast = spyOn(TestBed.inject(MatSnackBar), 'open');
+      workspacesService.favoriteDataLayer.and.returnValue(
+        throwError(() => new Error('nope'))
+      );
+
+      service.toggleFavorite(notFavorited);
+
+      expect(toast).not.toHaveBeenCalledWith(
+        'Layer added to favorites.',
+        'Dismiss',
+        jasmine.anything()
+      );
     });
 
     it('puts the star back and warns when favoriting fails', () => {
@@ -473,6 +579,7 @@ describe('DataLayersStateService', () => {
 
       it('does not ask outside a workspace', () => {
         currentWorkspaceId = null;
+        currentWorkspace$ = new Subject<Workspace>();
         createService('DATA_ORGANIZATION');
 
         service.favorites$.subscribe();
@@ -483,6 +590,7 @@ describe('DataLayersStateService', () => {
 
     it('offers no favoriting outside a workspace', () => {
       currentWorkspaceId = null;
+      currentWorkspace$ = new Subject<Workspace>();
       createService('DATA_ORGANIZATION');
 
       expect(service.favoritesEnabled()).toBe(false);

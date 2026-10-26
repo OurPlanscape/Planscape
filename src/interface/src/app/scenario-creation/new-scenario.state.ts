@@ -202,7 +202,9 @@ export class NewScenarioState {
             step?.includeExcludedAreas ? excludedAreas : undefined,
             step?.includeConstraints ? constraints : undefined,
             step?.includeSubUnits ? subUnits?.id : undefined,
-            step?.withIncludes && includedAreas ? includedAreas : undefined
+            step?.includeExcludedAreas && includedAreas
+              ? includedAreas
+              : undefined
           )
           .pipe(
             catchError(() => {
