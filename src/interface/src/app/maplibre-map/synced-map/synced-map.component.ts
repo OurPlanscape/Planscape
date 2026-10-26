@@ -284,9 +284,8 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
 
   mapLoaded(map: MapLibreMap) {
     this.mapLibreMap = map;
-    console.log('the map is loaded and here is the maplibre ref:', this.mapLibreMap);
     this.mapCreated.emit({ map: map, mapNumber: this.mapNumber });
-    this.initDrawingModes();
+
     // the draw mode may have been entered before terra draw was initialized
     this.mapConfigState.mapInteractionMode$.pipe(take(1)).subscribe((mode) => {
       if (mode === 'draw') {

@@ -10,6 +10,8 @@ import { SyncedMapComponent } from '@maplibre-map/synced-map/synced-map.componen
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MULTIMAP_STORAGE } from '@app/services/multimap-storage.token';
+import { TerraDrawPolygonMode, TerraDrawSelectMode } from 'terra-draw';
+import { DefaultSelectConfig, DrawService } from '../draw.service';
 
 @UntilDestroy()
 @Component({
@@ -33,7 +35,8 @@ export class SyncedMapsComponent implements OnDestroy {
   constructor(
     private multiMapConfigState: MultiMapConfigState,
     @Inject(MULTIMAP_STORAGE)
-    private readonly multiDataLayerView: boolean
+    private readonly multiDataLayerView: boolean,
+    private drawService: DrawService,
   ) {
     // This logic only applies when multiDataLayerView is enabled
     if (this.multiDataLayerView) {
@@ -57,6 +60,29 @@ export class SyncedMapsComponent implements OnDestroy {
 
     this.cleanupFn = syncMaps(...this.maps.values());
   }
+
+  initDrawingModel(map: MapLibreMap) {
+   // designate this map instance as the drawing reference
+        const polygonMode = new TerraDrawPolygonMode({
+          styles: {
+            fillColor: '#A5C8D7',
+            fillOpacity: 0.5,
+            outlineColor: '#000000',
+            outlineWidth: 2,
+            closingPointColor: '#ffffff',
+            closingPointWidth: 6,
+            closingPointOutlineColor: '#0000ee',
+            closingPointOutlineWidth: 2,
+          },
+          pointerDistance: 10, // reduce snap distance / auto-finish sensitivity
+        });
+        const selectMode = new TerraDrawSelectMode(DefaultSelectConfig);
+        this.drawService.initializeTerraDraw(map, [
+          polygonMode,
+          selectMode,
+        ]);
+      }
+  
 
   ngOnDestroy() {
     this.saveState();
