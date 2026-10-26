@@ -62,7 +62,7 @@ export class StandsComponent implements OnInit, AfterViewInit {
 
   /** true when the current step corresponds to the "with includes" flow */
   useIncludes$ = this.newScenarioState.currentStep$.pipe(
-    map((step) => !!step?.withIncludes),
+    map((step) => !!step?.includeExcludedAreas),
     distinctUntilChanged()
   );
 
