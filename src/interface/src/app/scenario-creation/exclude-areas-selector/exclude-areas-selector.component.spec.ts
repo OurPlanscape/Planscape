@@ -61,6 +61,23 @@ describe('ExcludeAreasSelectorComponent', () => {
     expect(state.setExcludedAreas).toHaveBeenCalledWith([1, 2]);
   });
 
+  it('leaves the state alone the first time the step loads', () => {
+    component.beforeStepLoad();
+
+    expect(state.setExcludedAreas).not.toHaveBeenCalled();
+  });
+
+  it('puts the pending selection back on the map when the step is re-entered', () => {
+    scenarioConfig$.next({ excluded_areas: [1, 2] });
+    component.handleSelectedItemsChange([{ id: 9 } as BaseLayer]);
+    component.beforeStepExit();
+    (state.setExcludedAreas as jasmine.Spy).calls.reset();
+
+    component.beforeStepLoad();
+
+    expect(state.setExcludedAreas).toHaveBeenCalledWith([9]);
+  });
+
   it('reverts to an empty list when the saved config has no excluded areas', () => {
     scenarioConfig$.next({});
 

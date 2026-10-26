@@ -37,7 +37,7 @@ export class ScenarioLegendComponent {
 
   showPotentialTreatableArea$ = this.newScenarioState.currentStep$.pipe(
     map((step) => {
-      return !!step?.includePotentialTreatableArea;
+      return !!step?.includeExcludedAreas;
     })
   );
 
@@ -55,7 +55,7 @@ export class ScenarioLegendComponent {
   );
 
   showAvailablePercent$ = this.newScenarioState.currentStep$.pipe(
-    map((s) => !!s?.includeExcludedAreas && s.includePercentageTreatable)
+    map((s) => !!s?.includeExcludedAreas && s.includeConstraints)
   );
 
   constructor(private newScenarioState: NewScenarioState) {}
