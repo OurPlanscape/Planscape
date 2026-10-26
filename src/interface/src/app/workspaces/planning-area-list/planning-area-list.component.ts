@@ -1,5 +1,5 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { AuthService, PlanService } from '@app/services';
+import { AuthService, PlanService, WebSocketService } from '@app/services';
 import { PlanningAreasDataSource } from '@app/standalone/planning-areas/planning-areas.datasource';
 import {
   DEFAULT_SORT_OPTIONS,
@@ -26,8 +26,13 @@ import { PlanningAreaEmptyStateComponent } from '../planning-area-empty-state/pl
 import { PlanningAreaCreationModalComponent } from '../planning-area-creation-modal/planning-area-creation-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
-import { catchError, EMPTY, exhaustMap, interval, map } from 'rxjs';
+import { catchError, EMPTY, exhaustMap, map, merge } from 'rxjs';
+import {
+  PLANNING_AREA_CREATED_EVENT,
+  REALTIME_CONNECTED_EVENT,
+  PLANNING_AREA_DELETED_EVENT,
+  PLANNING_AREA_MAP_STATUS_EVENT,
+} from '@types';
 import { WorkspaceState } from '../workspace.state';
 
 @UntilDestroy()
@@ -88,6 +93,7 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private dialog = inject(MatDialog);
   private workspaceState = inject(WorkspaceState);
+  private webSocketService = inject(WebSocketService);
 
   planningAreas$ = this.dataSource.data();
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
@@ -112,16 +118,21 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.dataSource.loadData();
     this.mapConfigState.setShowMapControls(false);
-    this.pollForChanges();
+    this.refreshOnWorkspaceEvents();
   }
 
-  private pollForChanges() {
-    interval(POLLING_INTERVAL)
+  private refreshOnWorkspaceEvents() {
+    merge(
+      this.webSocketService.on(REALTIME_CONNECTED_EVENT),
+      this.webSocketService.on(PLANNING_AREA_CREATED_EVENT),
+      this.webSocketService.on(PLANNING_AREA_DELETED_EVENT),
+      this.webSocketService.on(PLANNING_AREA_MAP_STATUS_EVENT)
+    )
       .pipe(
-        // refresh in the background; ignore ticks while a refresh is in flight
+        // refresh in the background
         exhaustMap(() =>
           this.dataSource.refresh().pipe(
-            // keep the poller alive on errors
+            // one failed refresh must not stop us listening
             catchError(() => EMPTY)
           )
         ),

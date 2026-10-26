@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { distinctUntilChanged, filter, take } from 'rxjs';
+import { distinctUntilChanged, take } from 'rxjs';
 import { AuthService, WebSocketService } from '@services';
 import { OverlayLoaderService } from '@services/overlay-loader.service';
 
@@ -8,6 +8,7 @@ import { ForsysService } from '@services/forsys.service';
 import { MapModuleService } from '@services/map-module.service';
 import { ProductAnalyticsService } from '@services/product-analytics.service';
 import { WorkspaceDeletedListenerService } from '@app/workspaces/workspace-deleted-listener.service';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
 
 @Component({
   selector: 'app-root',
@@ -28,6 +29,7 @@ export class AppComponent implements OnInit {
     private mapModuleService: MapModuleService,
     private productAnalyticsService: ProductAnalyticsService,
     private webSocketService: WebSocketService,
+    private workspaceState: WorkspaceState,
     private workspaceDeletedListener: WorkspaceDeletedListenerService
   ) {}
 
@@ -45,21 +47,20 @@ export class AppComponent implements OnInit {
     // Refresh the user's logged in status when the app initializes.
     this.authService.refreshLoggedInUser().pipe(take(1)).subscribe();
     this.productAnalyticsService.init();
-    this.connectWebSocketWhileLoggedIn();
+    this.followCurrentWorkspace();
     this.workspaceDeletedListener.start();
   }
 
-  private connectWebSocketWhileLoggedIn() {
-    this.authService.isLoggedIn$
-      .pipe(
-        filter((loggedIn) => loggedIn !== null),
-        distinctUntilChanged()
-      )
-      .subscribe((loggedIn) => {
-        if (loggedIn) {
-          this.webSocketService.connect();
-        } else {
+  // There is one connection per workspace, and everything inside a workspace
+  // listens to it so it is open for as long as we are in one
+  private followCurrentWorkspace() {
+    this.workspaceState.currentWorkspaceId$
+      .pipe(distinctUntilChanged())
+      .subscribe((workspaceId) => {
+        if (workspaceId === null) {
           this.webSocketService.disconnect();
+        } else {
+          this.webSocketService.connect(workspaceId);
         }
       });
   }
