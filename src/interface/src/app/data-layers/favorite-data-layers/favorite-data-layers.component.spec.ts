@@ -10,6 +10,7 @@ describe('FavoriteDataLayersComponent', () => {
   let component: FavoriteDataLayersComponent;
   let fixture: ComponentFixture<FavoriteDataLayersComponent>;
   let favorites$: BehaviorSubject<Resource<DataLayer[]>>;
+  let canEditFavorites$: BehaviorSubject<boolean>;
 
   function create() {
     fixture = TestBed.createComponent(FavoriteDataLayersComponent);
@@ -29,6 +30,7 @@ describe('FavoriteDataLayersComponent', () => {
       isLoading: false,
       data: [],
     });
+    canEditFavorites$ = new BehaviorSubject(true);
     const changes$ = new BehaviorSubject<ReadonlyMap<number, boolean>>(
       new Map()
     );
@@ -45,6 +47,7 @@ describe('FavoriteDataLayersComponent', () => {
             selectDataLayer: jasmine.createSpy('selectDataLayer'),
             toggleFavorite: jasmine.createSpy('toggleFavorite'),
             favoritesEnabled: () => true,
+            canEditFavorites$,
             isFavorite$: (l: DataLayer) =>
               changes$.pipe(map((c) => c.get(l.id) ?? true)),
           },
@@ -97,6 +100,19 @@ describe('FavoriteDataLayersComponent', () => {
     const el = create();
 
     expect(el.textContent).toContain('No favorite data layers yet');
+    expect(el.textContent).toContain('will help you define priority areas');
+  });
+
+  it('tells a viewer where the favorites would come from', () => {
+    canEditFavorites$.next(false);
+
+    const el = create();
+
+    expect(el.textContent).toContain('No favorite data layers yet');
+    expect(el.textContent).toContain(
+      'Favorites added by owner and editors will appear here'
+    );
+    expect(el.textContent).not.toContain('will help you define priority areas');
   });
 
   it('says there are no results when the search matches nothing', () => {

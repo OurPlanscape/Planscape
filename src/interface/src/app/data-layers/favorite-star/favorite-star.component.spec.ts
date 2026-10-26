@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { MatTooltip } from '@angular/material/tooltip';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, map } from 'rxjs';
 import { DataLayer } from '@types';
 import { ToggleComponent } from '@styleguide';
@@ -34,6 +36,7 @@ describe('FavoriteStarComponent', () => {
   let favorites: Set<number>;
   let changes$: BehaviorSubject<ReadonlyMap<number, boolean>>;
   let enabled: boolean;
+  let canEditFavorites$: BehaviorSubject<boolean>;
   let toggleFavorite: jasmine.Spy;
 
   function create() {
@@ -43,19 +46,27 @@ describe('FavoriteStarComponent', () => {
     return fixture.debugElement.query(By.css('.favorite-star'));
   }
 
+  function tooltip() {
+    return fixture.debugElement
+      .query(By.directive(MatTooltip))
+      .injector.get(MatTooltip);
+  }
+
   beforeEach(async () => {
     favorites = new Set<number>();
     enabled = true;
     changes$ = new BehaviorSubject<ReadonlyMap<number, boolean>>(new Map());
+    canEditFavorites$ = new BehaviorSubject(true);
     toggleFavorite = jasmine.createSpy('toggleFavorite');
 
     await TestBed.configureTestingModule({
-      imports: [FavoriteStarComponent, RowHostComponent],
+      imports: [FavoriteStarComponent, RowHostComponent, NoopAnimationsModule],
       providers: [
         {
           provide: DataLayersStateService,
           useValue: {
             toggleFavorite,
+            canEditFavorites$,
             favoritesEnabled: () => enabled,
             isFavorite$: (l: DataLayer) =>
               changes$.pipe(map((c) => c.get(l.id) ?? favorites.has(l.id))),
@@ -101,6 +112,79 @@ describe('FavoriteStarComponent', () => {
     enabled = false;
 
     expect(create()).toBeNull();
+  });
+
+  describe('for a member who cannot change the favorites', () => {
+    beforeEach(() => canEditFavorites$.next(false));
+
+    it('still shows the favorite state', () => {
+      favorites.add(layer.id);
+      const star = create();
+
+      expect(star).not.toBeNull();
+      expect(star.nativeElement.classList).toContain('favorited');
+    });
+
+    it('leaves the star inert', () => {
+      const star = create();
+
+      expect(star.nativeElement.disabled).toBe(true);
+
+      star.nativeElement.click();
+
+      expect(toggleFavorite).not.toHaveBeenCalled();
+    });
+
+    it('explains why the star does nothing', () => {
+      create();
+
+      expect(tooltip().message).toBe(
+        "You don't have permission to modify favorites"
+      );
+    });
+
+    it('keeps saying so for a layer that is already a favorite', () => {
+      favorites.add(layer.id);
+      create();
+
+      expect(tooltip().message).toBe(
+        "You don't have permission to modify favorites"
+      );
+    });
+
+    it('does not turn the layer on the map when the star is clicked', () => {
+      const host = TestBed.createComponent(RowHostComponent);
+      host.detectChanges();
+
+      host.debugElement
+        .query(By.css('.favorite-star-slot'))
+        .nativeElement.click();
+      host.detectChanges();
+
+      expect(host.componentInstance.viewed).toBe(false);
+    });
+  });
+
+  it('offers to favorite a layer that is not one yet', () => {
+    create();
+
+    expect(tooltip().message).toBe('Add to favorites');
+  });
+
+  it('offers to take a favorite layer out', () => {
+    favorites.add(layer.id);
+    create();
+
+    expect(tooltip().message).toBe('Remove from favorites');
+  });
+
+  it('follows the state of the layer', () => {
+    create();
+
+    changes$.next(new Map([[layer.id, true]]));
+    fixture.detectChanges();
+
+    expect(tooltip().message).toBe('Remove from favorites');
   });
 
   it('does not turn the layer on the map when the star is clicked', () => {
