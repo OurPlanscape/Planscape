@@ -1,5 +1,10 @@
 @import 'colors';
 
+.favorite-star-slot {
+  display: flex;
+  flex-shrink: 0;
+}
+
 .favorite-star {
   display: flex;
   align-items: center;
@@ -23,5 +28,9 @@
 
   &.favorited {
     color: $color-standard-blue;
+  }
+
+  &:disabled {
+    cursor: default;
   }
 }

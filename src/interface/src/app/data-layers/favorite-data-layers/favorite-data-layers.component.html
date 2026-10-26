@@ -50,7 +50,7 @@
       icon="star"
       [outlined]="true"
       title="No favorite data layers yet"
-      description="Favoriting data layers will help you define priority areas later in your planning process."></sg-empty-state>
+      [description]="(emptyStateDescription$ | async) || ''"></sg-empty-state>
 
     <!-- there are favorites, they just do not match what was typed -->
     <sg-no-results

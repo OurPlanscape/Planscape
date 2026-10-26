@@ -8,7 +8,7 @@ import { AuthService, DataLayersService } from '@services';
 import { WorkspacesService } from '@services/workspaces.service';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
 import { DrawService } from '../draw.service';
-import { BehaviorSubject, firstValueFrom, of } from 'rxjs';
+import { BehaviorSubject, EMPTY, firstValueFrom, of } from 'rxjs';
 import { PlanState } from '@plan/plan.state';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { MapModuleService } from '@services/map-module.service';
@@ -28,7 +28,10 @@ describe('SyncedMapComponent', () => {
       providers: [
         MockProvider(DataLayersService),
         MockProvider(WorkspacesService),
-        MockProvider(WorkspaceState, { currentWorkspaceIdValue: null }),
+        MockProvider(WorkspaceState, {
+          currentWorkspaceIdValue: null,
+          currentWorkspace$: EMPTY,
+        }),
         MockProviders(MultiMapConfigState, AuthService, DrawService),
         // alias the abstract token
         { provide: MapConfigState, useExisting: MultiMapConfigState },
