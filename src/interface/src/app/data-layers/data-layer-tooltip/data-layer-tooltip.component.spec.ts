@@ -97,16 +97,7 @@ describe('DataLayerTooltipComponent', () => {
       const values = Array.from(el.querySelectorAll('dd')).map((dd) =>
         dd.textContent?.trim()
       );
-      const [datasetName, dataCreator, coverage, units, vintage] = values;
-
-      expect([datasetName, dataCreator, units, vintage]).toEqual([
-        '--',
-        '--',
-        '--',
-        '--',
-      ]);
-      // placeholder until the API sends geographic coverage
-      expect(coverage).toBe('Insert location');
+      expect(values).toEqual(['--', '--', '--', '--', '--']);
     });
 
     it('does not show the value range', () => {
@@ -147,6 +138,12 @@ describe('DataLayerTooltipComponent', () => {
       fixture.detectChanges();
 
       expect(el.querySelector('.description')).not.toBeNull();
+    });
+
+    it('leaves the description out when the layer does not carry one', () => {
+      const el = create({ id: 9, name: 'Bare' } as unknown as DataLayer);
+
+      expect(el.querySelector('.description')).toBeNull();
     });
 
     it('highlights the search text on the text fields', () => {
