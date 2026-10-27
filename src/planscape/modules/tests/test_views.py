@@ -181,7 +181,11 @@ class ModuleAPITests(TestCase):
     def _create_map_category(self, outline, **kwargs):
         category = SimpleCategoryFactory.create()
         dataset = kwargs.pop(
-            "dataset", DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
+            "dataset",
+            DatasetFactory.create(
+                visibility=VisibilityOptions.PUBLIC,
+                preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+            ),
         )
         datalayer = DataLayerFactory.create(
             dataset=dataset,
@@ -202,6 +206,7 @@ class ModuleAPITests(TestCase):
             inside,
             dataset=DatasetFactory.create(
                 visibility=VisibilityOptions.PRIVATE,
+                preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
                 created_by=UserFactory.create(),
             ),
         )

@@ -7,7 +7,9 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     PreferredDisplayType,
+    SearchTab,
     SimpleCategory,
+    WorkspaceFavoriteDataLayer,
 )
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
@@ -27,6 +29,7 @@ from planning.models import (
     ScenarioPlanningApproach,
     TreatmentGoalUsageType,
 )
+from workspaces.models import Workspace
 
 RunnableItem = Union[PlanningArea, Scenario]
 
@@ -40,6 +43,58 @@ def with_datalayer_option_relations(
         "dataset__organization",
         "category",
     ).prefetch_related("styles", "simple_categories")
+
+
+PREFERRED_DISPLAY_TYPE_BY_LAYER_TYPE = {
+    DataLayerType.RASTER: PreferredDisplayType.MAIN_DATALAYERS,
+    DataLayerType.VECTOR: PreferredDisplayType.BASE_DATALAYERS,
+}
+
+
+def filter_datalayers(
+    queryset: QuerySet[DataLayer],
+    type: Optional[DataLayerType] = None,
+    module: Optional[str] = None,
+    geometry: Optional[GEOSGeometry] = None,
+    search_tab: str = SearchTab.GENERAL,
+    user: Optional[User] = None,
+    workspace: Optional[Workspace] = None,
+) -> QuerySet[DataLayer]:
+    """
+    Narrows `queryset` to the datalayers a user can browse or find. Shared by
+    browse, find anything and the module options, so all of them agree on
+    which datalayers exist for a module, type and geometry.
+    """
+    queryset = queryset.accessible_by(user).filter(status=DataLayerStatus.READY)
+
+    if type is not None:
+        queryset = queryset.filter(type=type)
+
+    if module:
+        datasets = get_module(module).get_datasets(user=user)
+        if type is not None:
+            datasets = datasets.filter(
+                preferred_display_type=PREFERRED_DISPLAY_TYPE_BY_LAYER_TYPE[type]
+            )
+        queryset = queryset.filter(
+            dataset_id__in=datasets.values("pk"),
+            **{f"metadata__modules__{module}__enabled": True},
+        )
+
+    if geometry is not None:
+        queryset = queryset.by_outline_intersects(geometry)
+
+    if search_tab == SearchTab.FAVORITES:
+        queryset = queryset.filter(
+            id__in=WorkspaceFavoriteDataLayer.objects.filter(
+                workspace=workspace
+            ).values("datalayer_id")
+        )
+    elif search_tab == SearchTab.UPLOADED:
+        # TODO: narrow to uploaded datalayers once uploaded filtering is defined.
+        pass
+
+    return queryset
 
 
 class BaseModule:
@@ -235,15 +290,12 @@ class MapModule(BaseModule):
 
         # Same filters the client sends when browsing a category, so only
         # categories that would list at least one datalayer are returned.
-        datalayers = (
-            DataLayer.objects.all()
-            .accessible_by(user)
-            .by_outline_intersects(geometry)
-            .filter(
-                status=DataLayerStatus.READY,
-                type=DataLayerType.RASTER,
-                **{f"metadata__modules__{self.name}__enabled": True},
-            )
+        datalayers = filter_datalayers(
+            DataLayer.objects.all(),
+            type=DataLayerType.RASTER,
+            module=self.name,
+            geometry=geometry,
+            user=user,
         )
         return queryset.filter(datalayers__in=datalayers).distinct()
 
