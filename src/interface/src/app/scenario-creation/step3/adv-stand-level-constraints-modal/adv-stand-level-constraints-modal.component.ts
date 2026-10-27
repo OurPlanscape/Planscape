@@ -68,6 +68,7 @@ export const splitValueValidator: ValidatorFn = (
   if (!DIGITS_AND_COMMAS.test(valueOne)) {
     return { invalidNumberList: true };
   }
+
   if (valueOne.includes(',') && !LIST_OPERATORS.includes(operator)) {
     return { multipleNotAllowed: true };
   }
@@ -109,6 +110,26 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
     ? [Validators.min(this.minValue), Validators.max(this.maxValue)]
     : [];
 
+  minMaxSplitValidator: ValidatorFn = (
+    control: AbstractControl
+  ): ValidationErrors | null => {
+    const valueOne = control.get('constraintValueOne')?.value;
+
+    if (!valueOne) {
+      return null;
+    }
+
+    const outOfRange = valueOne
+      .split(',')
+      .map((s: string) => s.trim())
+      .filter((s: string) => s !== '')
+      .some((s: string) => {
+        const n = Number(s);
+        return Number.isNaN(n) || n < this.minValue || n > this.maxValue;
+      });
+    return outOfRange ? { valueNotInRange: true } : null;
+  };
+
   form = new FormGroup(
     {
       constraintOperator: new FormControl<CONSTRAINT_OPERATOR | null>(
@@ -126,7 +147,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
         this.rangeValidators
       ),
     },
-    { validators: [betweenValidator, splitValueValidator] }
+    { validators: [betweenValidator, splitValueValidator, this.minMaxSplitValidator] }
   );
 
   get showSecondValue(): boolean {
@@ -179,6 +200,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
     requiredOne: 'A value is required.',
     invalidNumberList: 'Enter numbers only, separated by commas.',
     multipleNotAllowed: 'This operator requires single values.',
+    valueNotInRange: 'Some values are outisde of a valid range.'
   };
 
   private readonly VALUE_TWO_ERROR_MESSAGES: Record<string, string> = {
