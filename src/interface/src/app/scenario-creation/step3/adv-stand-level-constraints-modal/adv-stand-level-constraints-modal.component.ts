@@ -103,30 +103,27 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
   minValue = this.data?.dataLayer?.info?.stats[0]?.min;
   maxValue = this.data?.dataLayer?.info?.stats[0]?.max;
 
-  private readonly hasRange = this.minValue != null && this.maxValue != null;
-
-  // confirm that minValue and maxValue exist
-  rangeValidators = this.hasRange
-    ? [Validators.min(this.minValue), Validators.max(this.maxValue)]
-    : [];
-
   minMaxSplitValidator: ValidatorFn = (
     control: AbstractControl
   ): ValidationErrors | null => {
-    const valueOne = control.get('constraintValueOne')?.value;
+    const raw = control.value;
 
-    if (!valueOne) {
+    if (raw === null || raw === undefined || raw === '') {
       return null;
     }
-
-    const outOfRange = valueOne
+    // check for whether we have bounds at all
+    if (this.minValue === null || this.maxValue === null) {
+      return null;
+    }
+    const outOfRange = String(raw)
       .split(',')
-      .map((s: string) => s.trim())
-      .filter((s: string) => s !== '')
-      .some((s: string) => {
+      .map((s) => s.trim())
+      .filter((s) => s !== '')
+      .some((s) => {
         const n = Number(s);
         return Number.isNaN(n) || n < this.minValue || n > this.maxValue;
       });
+
     return outOfRange ? { valueNotInRange: true } : null;
   };
 
@@ -140,14 +137,14 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
       ),
       constraintValueOne: new FormControl<string | null>(
         this.data.valueOne ?? null,
-        [Validators.required, ...this.rangeValidators]
+        [Validators.required, this.minMaxSplitValidator]
       ),
       constraintValueTwo: new FormControl<number | null>(
         this.data.valueTwo ?? null,
-        this.rangeValidators
+        this.minMaxSplitValidator
       ),
     },
-    { validators: [betweenValidator, splitValueValidator, this.minMaxSplitValidator] }
+    { validators: [betweenValidator, splitValueValidator] }
   );
 
   get showSecondValue(): boolean {
@@ -200,11 +197,12 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
     requiredOne: 'A value is required.',
     invalidNumberList: 'Enter numbers only, separated by commas.',
     multipleNotAllowed: 'This operator requires single values.',
-    valueNotInRange: 'Some values are outisde of a valid range.'
+    valueNotInRange: 'Values must be within the valid range.',
   };
 
   private readonly VALUE_TWO_ERROR_MESSAGES: Record<string, string> = {
     requiredTwo: 'Please enter a number.',
+    valueNotInRange: 'Values must be within the valid range.',
   };
 
   private errorsFor(ctrlName: 'constraintValueOne' | 'constraintValueTwo') {
