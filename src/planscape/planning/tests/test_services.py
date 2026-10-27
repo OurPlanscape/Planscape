@@ -217,6 +217,57 @@ class BuildRunConfigurationTest(TestCase):
             TreatmentGoalUsageType.SECONDARY_METRIC,
         )
 
+    def test_build_run_configuration_renders_in_and_nin_operators(self):
+        in_datalayer = DataLayerFactory.create(type=DataLayerType.RASTER)
+        nin_datalayer = DataLayerFactory.create(type=DataLayerType.RASTER)
+        priority = DataLayerFactory.create(type=DataLayerType.RASTER)
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=None,
+            type=ScenarioType.CUSTOM,
+            configuration={
+                "stand_size": StandSizeChoices.LARGE,
+                "targets": {"max_area": 1000},
+                "priorities": [{"datalayer": priority.pk, "weight": 2}],
+                "constraints": [
+                    {
+                        "datalayer": in_datalayer.pk,
+                        "operator": "in",
+                        "value": "1, 2,abc",
+                    },
+                    {
+                        "datalayer": nin_datalayer.pk,
+                        "operator": "nin",
+                        "value": "-1.5,forest",
+                    },
+                    {
+                        "datalayer": priority.pk,
+                        "operator": "in",
+                        "value": "3",
+                    },
+                ],
+            },
+        )
+
+        run_configuration = build_run_configuration(scenario)
+
+        datalayers = {
+            datalayer["id"]: datalayer
+            for datalayer in run_configuration["datalayers"]
+        }
+        self.assertEqual(
+            datalayers[in_datalayer.pk]["threshold"],
+            'value %in% c(1, 2, "abc")',
+        )
+        self.assertEqual(
+            datalayers[nin_datalayer.pk]["threshold"],
+            '!(value %in% c(-1.5, "forest"))',
+        )
+        self.assertEqual(
+            datalayers[priority.pk]["threshold"],
+            "value %in% c(3)",
+        )
+
 
 class ValidateScenarioTreatmentRatioTest(TestCase):
     def setUp(self) -> None:

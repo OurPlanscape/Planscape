@@ -4,6 +4,7 @@ import json
 import logging
 import math
 import os
+import re
 import zipfile
 from collections.abc import Collection
 from datetime import date, datetime, time
@@ -866,6 +867,13 @@ def calculate_child_project_areas(scenario: Scenario) -> list[ProjectArea]:
     return project_areas
 
 
+def _format_in_value(value: str) -> str:
+    # numbers are kept as is, words are quoted
+    if re.match(r"^-?\d+(\.\d+)?$", value):
+        return value
+    return f'"{value}"'
+
+
 def _get_operation(operator: str, value: str) -> str:
     match operator:
         case "btw":
@@ -873,6 +881,11 @@ def _get_operation(operator: str, value: str) -> str:
             values.sort()
             min_value, max_value = values
             return f"value >= {min_value} & value <= {max_value}"
+        case "in" | "nin":
+            items = [item.strip() for item in value.split(",") if item.strip()]
+            rendered = ", ".join(_format_in_value(item) for item in items)
+            expression = f"value %in% c({rendered})"
+            return expression if operator == "in" else f"!({expression})"
         case _:
             # normal cases
             # constraints datalayers from scenario configuration
