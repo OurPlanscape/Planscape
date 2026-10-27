@@ -55,11 +55,7 @@
             showSupportMessage="on-error"
             size="full"
             [supportMessage]="valueOneErrorMsg"
-            [error]="
-              (form.hasError('requiredOne') &&
-                form.hasError('invalidNumberList')) ||
-              form.get('constraintValueOne')?.touched === true
-            ">
+            [error]="valueOneHasErrors">
             <input
               sgInput
               placeholder="Value"
@@ -81,10 +77,7 @@
               required
               showSupportMessage="on-error"
               [supportMessage]="valueTwoErrorMsg"
-              [error]="
-                form.hasError('requiredTwo') &&
-                form.get('constraintValueTwo')?.touched === true
-              "
+              [error]="valueTwoHasErrors"
               size="full">
               <input
                 sgInput

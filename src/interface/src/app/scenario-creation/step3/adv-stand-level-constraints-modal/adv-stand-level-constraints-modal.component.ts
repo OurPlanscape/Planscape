@@ -153,12 +153,25 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
   };
 
   private readonly VALUE_TWO_ERROR_MESSAGES: Record<string, string> = {
-    requiredTwo: 'A second value is required.',
+    requiredTwo: 'Please enter a number.',
   };
 
+  private errorsFor(ctrlName: 'constraintValueOne' | 'constraintValueTwo') {
+    return {
+      ...(this.form.controls[ctrlName].errors ?? {}),
+      ...(this.form.errors ?? {}),
+    };
+  }
+
+  get valueOneHasErrors(): boolean {
+    const ctrl = this.form.controls.constraintValueOne;
+    const errors = this.errorsFor('constraintValueOne');
+    const keys = Object.keys(errors).filter((k) => k !== 'requiredTwo');
+    return ctrl.touched && keys.length > 0;
+  }
+
   get valueOneErrorMsg(): string {
-    const errors = this.form.errors;
-    if (!errors) return '';
+    const errors = this.errorsFor('constraintValueOne');
     if (typeof errors['conflict'] === 'string') return errors['conflict'];
     const key = Object.keys(errors).find(
       (k) => this.VALUE_ONE_ERROR_MESSAGES[k]
@@ -166,9 +179,14 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
     return key ? this.VALUE_ONE_ERROR_MESSAGES[key] : '';
   }
 
+  get valueTwoHasErrors(): boolean {
+    const ctrl = this.form.controls.constraintValueTwo;
+    const errors = this.errorsFor('constraintValueTwo');
+    const keys = Object.keys(errors).filter((k) => k !== 'requiredOne');
+    return ctrl.touched && keys.length > 0;
+  }
   get valueTwoErrorMsg(): string {
-    const errors = this.form.errors;
-    if (!errors) return '';
+    const errors = this.errorsFor('constraintValueTwo');
     if (typeof errors['conflict'] === 'string') return errors['conflict'];
     const key = Object.keys(errors).find(
       (k) => this.VALUE_TWO_ERROR_MESSAGES[k]
