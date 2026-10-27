@@ -1,6 +1,11 @@
 from unittest import mock
 
-from datasets.models import DataLayerType, PreferredDisplayType, VisibilityOptions
+from datasets.models import (
+    DataLayerStatus,
+    DataLayerType,
+    PreferredDisplayType,
+    VisibilityOptions,
+)
 from datasets.tests.factories import (
     DataLayerFactory,
     DatasetFactory,
@@ -12,6 +17,7 @@ from django.test import TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from planning.models import TreatmentGoalUsageType
+from planscape.tests.factories import UserFactory
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -170,6 +176,63 @@ class ModuleAPITests(TestCase):
         self.assertNotIn(
             excluded.id,
             {item["id"] for item in response.data["options"]["datalayers"]},
+        )
+
+    def _create_map_category(self, outline, **kwargs):
+        category = SimpleCategoryFactory.create()
+        dataset = kwargs.pop(
+            "dataset", DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
+        )
+        datalayer = DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            outline=outline,
+            metadata={"modules": {"map": {"enabled": True}}},
+            **kwargs,
+        )
+        datalayer.simple_categories.add(category)
+        return category
+
+    def test_map_details_filters_categories_by_geometry(self):
+        inside = "MULTIPOLYGON(((0 0, 2 0, 2 2, 0 2, 0 0)))"
+        outside = "MULTIPOLYGON(((3 3, 4 3, 4 4, 3 4, 3 3)))"
+        included = self._create_map_category(inside)
+        not_intersecting = self._create_map_category(outside)
+        private = self._create_map_category(
+            inside,
+            dataset=DatasetFactory.create(
+                visibility=VisibilityOptions.PRIVATE,
+                created_by=UserFactory.create(),
+            ),
+        )
+        not_ready = self._create_map_category(inside, status=DataLayerStatus.FAILED)
+        url = reverse("api:modules:modules-details", kwargs={"pk": "map"})
+        geometry = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 1], [2, 1], [2, 2], [1, 2], [1, 1]]]],
+        }
+
+        response = self.client.post(url, data={"geometry": geometry}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        category_ids = {
+            item["id"] for item in response.data["options"]["datasets"]["categories"]
+        }
+        self.assertIn(included.id, category_ids)
+        self.assertNotIn(not_intersecting.id, category_ids)
+        self.assertNotIn(private.id, category_ids)
+        self.assertNotIn(not_ready.id, category_ids)
+
+    def test_map_retrieve_returns_all_categories(self):
+        category = SimpleCategoryFactory.create()
+        url = reverse("api:modules:modules-detail", kwargs={"pk": "map"})
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn(
+            category.id,
+            {item["id"] for item in response.data["options"]["datasets"]["categories"]},
         )
 
     def test_retrieve_forsys_prefetches_styled_datalayer_options(self):

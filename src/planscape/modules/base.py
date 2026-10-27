@@ -89,6 +89,14 @@ class BaseModule:
             .distinct()
         )
 
+    def get_categories(
+        self,
+        geometry: Optional[GEOSGeometry] = None,
+        user: Optional[User] = None,
+        **kwargs,
+    ) -> QuerySet[SimpleCategory]:
+        return SimpleCategory.objects.all()
+
     def _get_options(self, **kwargs) -> Dict[str, Any]:
         # Single query for both lists: filtering by geometry is expensive.
         datasets = list(self.get_datasets(**kwargs))
@@ -107,7 +115,7 @@ class BaseModule:
                     if dataset.preferred_display_type
                     == PreferredDisplayType.BASE_DATALAYERS
                 ],
-                "categories": list(SimpleCategory.objects.all()),
+                "categories": list(self.get_categories(**kwargs)),
             },
         }
 
@@ -214,6 +222,30 @@ class MapModule(BaseModule):
             .select_related("organization")
             .distinct()
         )
+
+    def get_categories(
+        self,
+        geometry: Optional[GEOSGeometry] = None,
+        user: Optional[User] = None,
+        **kwargs,
+    ) -> QuerySet[SimpleCategory]:
+        queryset = SimpleCategory.objects.all()
+        if not geometry:
+            return queryset
+
+        # Same filters the client sends when browsing a category, so only
+        # categories that would list at least one datalayer are returned.
+        datalayers = (
+            DataLayer.objects.all()
+            .accessible_by(user)
+            .by_outline_intersects(geometry)
+            .filter(
+                status=DataLayerStatus.READY,
+                type=DataLayerType.RASTER,
+                **{f"metadata__modules__{self.name}__enabled": True},
+            )
+        )
+        return queryset.filter(datalayers__in=datalayers).distinct()
 
     def get_serializer_class(self, **kwargs) -> Type[BaseModuleSerializer]:
         return MapModuleSerializer
