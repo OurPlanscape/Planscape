@@ -77,6 +77,15 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
   public constraintOperators = CONSTRAINT_OPERATORS;
   editMode = false;
   dataLayerName = this.data?.dataLayerName;
+  minValue = this.data?.dataLayer?.info?.stats[0]?.min;
+  maxValue = this.data?.dataLayer?.info?.stats[0]?.max;
+
+  private readonly hasRange = this.minValue != null && this.maxValue != null;
+
+  // confirm that minValue and maxValue exist
+  rangeValidators = this.hasRange
+    ? [Validators.min(this.minValue), Validators.max(this.maxValue)]
+    : [];
 
   form = new FormGroup(
     {
@@ -88,10 +97,11 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
       ),
       constraintValueOne: new FormControl<number | null>(
         this.data.valueOne ?? null,
-        [Validators.required]
+        [Validators.required, ...this.rangeValidators]
       ),
       constraintValueTwo: new FormControl<number | null>(
-        this.data.valueTwo ?? null
+        this.data.valueTwo ?? null,
+        this.rangeValidators
       ),
     },
     { validators: [betweenValidator] }
@@ -102,6 +112,25 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
   }
   get isButtonDisabled(): boolean {
     return this.form.invalid;
+  }
+
+  get valueOneLabel() {
+    if (this.showSecondValue) {
+      if (this.minValue && this.maxValue) {
+        return `Min (${this.minValue})`;
+      }
+      return 'Min';
+    } else if (this.minValue && this.maxValue) {
+      return `Value (${this.minValue}-${this.maxValue})`;
+    }
+    return 'Value';
+  }
+
+  get valueTwoLabel() {
+    if (this.minValue && this.maxValue) {
+      return `Max (${this.maxValue})`;
+    }
+    return 'Max';
   }
 
   ngOnInit() {
