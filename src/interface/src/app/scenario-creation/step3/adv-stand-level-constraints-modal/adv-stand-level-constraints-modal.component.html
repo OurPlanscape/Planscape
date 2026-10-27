@@ -41,6 +41,9 @@
                 </mat-option>
               }
             </mat-select>
+            <mat-hint class="hint-blurb" *ngIf="isMultiOperator"
+              >This operator accepts comma-separated values.</mat-hint
+            >
           </mat-form-field>
         </div>
 
@@ -51,10 +54,8 @@
             [label]="valueOneLabel"
             showSupportMessage="on-error"
             size="full"
-            [error]="
-              form.hasError('requiredOne') &&
-              form.get('constraintValueOne')?.touched === true
-            ">
+            [supportMessage]="valueOneErrorMsg"
+            [error]="valueOneHasErrors">
             <input
               sgInput
               placeholder="Value"
@@ -63,7 +64,7 @@
               formControlName="constraintValueOne"
               required
               id="constraintValueOne"
-              type="number" />
+              type="text" />
           </sg-input-field>
         </div>
 
@@ -75,10 +76,8 @@
               [label]="valueTwoLabel"
               required
               showSupportMessage="on-error"
-              [error]="
-                form.hasError('requiredTwo') &&
-                form.get('constraintValueTwo')?.touched === true
-              "
+              [supportMessage]="valueTwoErrorMsg"
+              [error]="valueTwoHasErrors"
               size="full">
               <input
                 sgInput

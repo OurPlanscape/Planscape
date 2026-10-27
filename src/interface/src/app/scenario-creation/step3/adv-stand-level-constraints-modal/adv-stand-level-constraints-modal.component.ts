@@ -52,6 +52,28 @@ export const betweenValidator: ValidatorFn = (
   return Object.keys(errors).length > 0 ? errors : null;
 };
 
+const DIGITS_AND_COMMAS = /^\s*\d+(?:\s*,\s*\d+)*\s*(?:,\s*)?$/; // allows '999', '9, 9999', '9999,9999,'
+const LIST_OPERATORS = ['in', 'nin']; // operators that accept multi values
+
+// This allows us to enter numbers and the separator/delimiter for multi valued fields
+export const splitValueValidator: ValidatorFn = (
+  control: AbstractControl
+): ValidationErrors | null => {
+  const operator = control.get('constraintOperator')?.value;
+  const valueOne = control.get('constraintValueOne')?.value;
+  if (valueOne === null || valueOne === undefined || valueOne === '') {
+    return null; // required checks live in betweenValidator / required attr
+  }
+
+  if (!DIGITS_AND_COMMAS.test(valueOne)) {
+    return { invalidNumberList: true };
+  }
+  if (valueOne.includes(',') && !LIST_OPERATORS.includes(operator)) {
+    return { multipleNotAllowed: true };
+  }
+  return null;
+};
+
 @Component({
   selector: 'app-adv-stand-level-constraints-modal',
   standalone: true,
@@ -90,12 +112,12 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
   form = new FormGroup(
     {
       constraintOperator: new FormControl<CONSTRAINT_OPERATOR | null>(
-        this.data.operator ?? 'eq',
+        this.data.operator ?? 'in',
         {
           nonNullable: false,
         }
       ),
-      constraintValueOne: new FormControl<number | null>(
+      constraintValueOne: new FormControl<string | null>(
         this.data.valueOne ?? null,
         [Validators.required, ...this.rangeValidators]
       ),
@@ -104,7 +126,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
         this.rangeValidators
       ),
     },
-    { validators: [betweenValidator] }
+    { validators: [betweenValidator, splitValueValidator] }
   );
 
   get showSecondValue(): boolean {
@@ -145,6 +167,7 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
         valTwoControl?.enable();
       } else {
         valTwoControl?.disable();
+
         // clear it, so it doesn't get submitted
         valTwoControl?.setValue(null);
         valTwoControl?.markAsUntouched();
@@ -152,10 +175,58 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
     });
   }
 
+  private readonly VALUE_ONE_ERROR_MESSAGES: Record<string, string> = {
+    requiredOne: 'A value is required.',
+    invalidNumberList: 'Enter numbers only, separated by commas.',
+    multipleNotAllowed: 'This operator requires single values.',
+  };
+
+  private readonly VALUE_TWO_ERROR_MESSAGES: Record<string, string> = {
+    requiredTwo: 'Please enter a number.',
+  };
+
+  private errorsFor(ctrlName: 'constraintValueOne' | 'constraintValueTwo') {
+    return {
+      ...(this.form.controls[ctrlName].errors ?? {}),
+      ...(this.form.errors ?? {}),
+    };
+  }
+
+  get valueOneHasErrors(): boolean {
+    const ctrl = this.form.controls.constraintValueOne;
+    const errors = this.errorsFor('constraintValueOne');
+    const keys = Object.keys(errors).filter((k) => k !== 'requiredTwo');
+    return ctrl.touched && keys.length > 0;
+  }
+
+  get valueOneErrorMsg(): string {
+    const errors = this.errorsFor('constraintValueOne');
+    if (typeof errors['conflict'] === 'string') return errors['conflict'];
+    const key = Object.keys(errors).find(
+      (k) => this.VALUE_ONE_ERROR_MESSAGES[k]
+    );
+    return key ? this.VALUE_ONE_ERROR_MESSAGES[key] : '';
+  }
+
+  get valueTwoHasErrors(): boolean {
+    const ctrl = this.form.controls.constraintValueTwo;
+    const errors = this.errorsFor('constraintValueTwo');
+    const keys = Object.keys(errors).filter((k) => k !== 'requiredOne');
+    return ctrl.touched && keys.length > 0;
+  }
+  get valueTwoErrorMsg(): string {
+    const errors = this.errorsFor('constraintValueTwo');
+    if (typeof errors['conflict'] === 'string') return errors['conflict'];
+    const key = Object.keys(errors).find(
+      (k) => this.VALUE_TWO_ERROR_MESSAGES[k]
+    );
+    return key ? this.VALUE_TWO_ERROR_MESSAGES[key] : '';
+  }
+
   handleApply() {
     if (this.form.valid) {
       const formVal = this.form.value;
-      const operator = formVal.constraintOperator ?? 'eq';
+      const operator = formVal.constraintOperator ?? 'in';
 
       const constraintSelection: NamedConstraint = {
         name: `${this.data.dataLayer.name}: ${getOperatorDisplayText(operator)} ${formVal.constraintValueOne}`,
@@ -175,6 +246,13 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
       }
       this.dialogRef.close({ action: 'SAVE', payload: constraintSelection });
     }
+  }
+
+  get isMultiOperator() {
+    return (
+      this.form.value.constraintOperator === 'in' ||
+      this.form.value.constraintOperator === 'nin'
+    );
   }
 
   handleRemove() {

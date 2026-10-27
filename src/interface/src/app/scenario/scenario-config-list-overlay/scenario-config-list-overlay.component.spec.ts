@@ -64,7 +64,7 @@ const makeConfig = (
   advanced_stand_level_constraints: [
     {
       datalayer: { id: 2827, name: 'Some Adv Constraint Layer' },
-      operator: 'dne',
+      operator: 'nin',
       value: '1000',
     },
   ],
