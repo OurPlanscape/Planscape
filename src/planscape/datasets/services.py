@@ -14,6 +14,7 @@ from core.gcs import create_upload_url as create_upload_url_gcs
 from core.gcs import is_gcs_file
 from core.s3 import create_upload_url as create_upload_url_s3
 from core.s3 import is_s3_file, s3_filename
+from datasets.events import publish_datalayer_favorited, publish_datalayer_unfavorited
 from datasets.models import (
     Category,
     DataLayer,
@@ -681,6 +682,7 @@ def add_favorite_datalayer(
         defaults={"created_by": user},
     )
     if created:
+        publish_datalayer_favorited(workspace, datalayer, actor=user)
         track_event(
             name="datasets.datalayer.favorited",
             properties={
@@ -723,6 +725,7 @@ def remove_favorite_datalayer(
     if not deleted:
         raise NotFound("DataLayer is not a favorite of this workspace.")
 
+    publish_datalayer_unfavorited(workspace, datalayer_id, actor=user)
     track_event(
         name="datasets.datalayer.unfavorited",
         properties={

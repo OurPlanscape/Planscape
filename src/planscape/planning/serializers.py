@@ -126,6 +126,24 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
         model = PlanningArea
 
 
+class RealtimePlanningAreaSerializer(ListPlanningAreaSerializer):
+    """
+    Planning area as pushed over the workspace socket. `role` and
+    `permissions` depend on who is looking, so the socket adds them per
+    connection.
+    """
+
+    role = None
+    permissions = None
+
+    class Meta(ListPlanningAreaSerializer.Meta):
+        fields = tuple(
+            field
+            for field in ListPlanningAreaSerializer.Meta.fields
+            if field not in ("role", "permissions")
+        )
+
+
 class CreatePlanningAreaSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     geometry = serializers.JSONField()
@@ -349,6 +367,9 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
         model = ScenarioResult
 
     def get_result(self, instance):
+        # the project area GeoJSON is too large to push over the socket
+        if self.context.get("exclude_result"):
+            return None
         result = instance.result
         if not result:
             return None
