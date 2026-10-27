@@ -63,7 +63,12 @@ from stands.models import (
 from stands.services import get_datalayer_metric, get_stand_grid_key_search_precision
 from utils.geometry import to_multi
 
-from planning.events import publish_planning_area_event, publish_scenario_event
+from planning.events import (
+    publish_planning_area_deleted,
+    publish_planning_area_event,
+    publish_scenario_deleted,
+    publish_scenario_event,
+)
 from planning.geometry import (
     coerce_geojson,
     coerce_geometry,
@@ -231,9 +236,7 @@ def delete_planning_area(
     right_now = now()
     action.send(user, verb="deleted", action_object=planning_area)
     planning_area.delete()
-    publish_planning_area_event(
-        "planning.planning_area.deleted", planning_area, actor=user
-    )
+    publish_planning_area_deleted(planning_area, actor=user)
     Scenario.objects.filter(planning_area__pk=planning_area.pk).update(
         deleted_at=right_now
     )
@@ -417,9 +420,7 @@ def clone_scenario(
 
     clone = Scenario.objects.create(**copied, **overrides)
     ScenarioResult.objects.create(scenario=clone, status=ScenarioResultStatus.DRAFT)
-    publish_scenario_event(
-        "planning.scenario.created", clone, actor=user, cloned_from=original.pk
-    )
+    publish_scenario_event("planning.scenario.created", clone, actor=user)
 
     return clone
 
@@ -690,7 +691,7 @@ def delete_scenario(
     planning_area: PlanningArea = scenario.planning_area
 
     scenario.delete()
-    publish_scenario_event("planning.scenario.deleted", scenario, actor=user)
+    publish_scenario_deleted(scenario, actor=user)
 
     planning_area.updated_at = right_now
     planning_area.save(update_fields=["updated_at"])
@@ -1966,11 +1967,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
 
         scenario.geopackage_status = GeoPackageStatus.PROCESSING
         scenario.save(update_fields=["geopackage_status", "updated_at"])
-        publish_scenario_event(
-            "planning.scenario.geopackage_status_changed",
-            scenario,
-            geopackage_url=scenario.geopackage_url,
-        )
+        publish_scenario_event("planning.scenario.geopackage_status_changed", scenario)
 
         export_planning_area_to_geopackage(scenario.planning_area, temp_file)
         if feature_enabled("ADD_INCLUDES"):
@@ -2024,11 +2021,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
         scenario.save(
             update_fields=["geopackage_url", "geopackage_status", "updated_at"]
         )
-        publish_scenario_event(
-            "planning.scenario.geopackage_status_changed",
-            scenario,
-            geopackage_url=scenario.geopackage_url,
-        )
+        publish_scenario_event("planning.scenario.geopackage_status_changed", scenario)
 
         return str(geopackage_path)
     except Exception:
@@ -2038,11 +2031,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
         scenario.save(
             update_fields=["geopackage_url", "geopackage_status", "updated_at"]
         )
-        publish_scenario_event(
-            "planning.scenario.geopackage_status_changed",
-            scenario,
-            geopackage_url=scenario.geopackage_url,
-        )
+        publish_scenario_event("planning.scenario.geopackage_status_changed", scenario)
 
 
 @transaction.atomic()

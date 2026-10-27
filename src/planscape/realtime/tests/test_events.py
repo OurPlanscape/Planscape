@@ -120,3 +120,38 @@ class PublishWorkspaceEventTest(TestCase):
             with self.assertLogs("realtime.events", level="ERROR"):
                 with self.captureOnCommitCallbacks(execute=True):
                     publish_workspace_event(5, "x.y.z", obj={"kind": "x", "id": 1})
+
+    def test_callable_data_is_built_after_commit(self):
+        build = mock.Mock(return_value={"name": "after commit"})
+        with mock.patch("realtime.events._send") as send:
+            with self.captureOnCommitCallbacks(execute=True):
+                publish_workspace_event(
+                    5, "x.y.z", obj={"kind": "x", "id": 1}, data=build
+                )
+                build.assert_not_called()
+
+        build.assert_called_once_with()
+        (event,) = [call.args[0] for call in send.call_args_list]
+        self.assertEqual(event["data"], {"name": "after commit"})
+
+    def test_callable_data_returning_none_drops_the_event(self):
+        with mock.patch("realtime.events._send") as send:
+            with self.captureOnCommitCallbacks(execute=True):
+                publish_workspace_event(
+                    5, "x.y.z", obj={"kind": "x", "id": 1}, data=lambda: None
+                )
+
+        send.assert_not_called()
+
+    def test_callable_data_errors_are_logged_not_raised(self):
+        def build():
+            raise RuntimeError("gone")
+
+        with mock.patch("realtime.events._send") as send:
+            with self.assertLogs("realtime.events", level="ERROR"):
+                with self.captureOnCommitCallbacks(execute=True):
+                    publish_workspace_event(
+                        5, "x.y.z", obj={"kind": "x", "id": 1}, data=build
+                    )
+
+        send.assert_not_called()
