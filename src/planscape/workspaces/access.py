@@ -115,6 +115,22 @@ def get_planning_area_role(
     return entry.role if entry else None
 
 
+def get_workspace_planning_area_access(
+    is_creator: bool,
+    workspace_role: Optional[str],
+) -> tuple[Optional[str], list[str]]:
+    """Role and permissions on a workspace planning area, from whether the user
+    created it and their workspace role. Same answer as
+    `get_planning_area_role` and `get_planning_area_permissions`, without
+    touching the database."""
+    if is_creator:
+        return CREATOR_ROLE, list(OWNER_PERMISSIONS)
+    role = PLANNING_AREA_ROLES.get(workspace_role)
+    if role is None:
+        return None, []
+    return role, list(PLANNING_AREA_PERMISSIONS[role])
+
+
 def get_planning_area_permissions(
     user: AbstractUser,
     planning_area: PlanningArea,

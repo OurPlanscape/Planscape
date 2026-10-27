@@ -54,6 +54,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
+from planning.events import publish_planning_area_event, publish_scenario_event
 from planning.filters import (
     PlanningAreaFilter,
     PlanningAreaOrderingFilter,
@@ -187,6 +188,11 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         instance.updated_at = timezone.now()
         instance.save(update_fields=["updated_at"])
         super().perform_update(serializer)
+        publish_planning_area_event(
+            "planning.planning_area.updated",
+            serializer.instance,
+            actor=self.request.user,
+        )
 
     @extend_schema(description="Create Planning Area.")
     def create(self, request, *args, **kwargs):
@@ -378,12 +384,14 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
             )
 
-        scenario = create_scenario(**validated_data)
+        # one transaction, so the created event carries the draft status
+        with transaction.atomic():
+            scenario = create_scenario(**validated_data)
 
-        if hasattr(scenario, "result_status"):
-            scenario.results.status = ScenarioResultStatus.DRAFT
-            scenario.results.save()
-            scenario.refresh_from_db()
+            if hasattr(scenario, "result_status"):
+                scenario.results.status = ScenarioResultStatus.DRAFT
+                scenario.results.save()
+                scenario.refresh_from_db()
 
         out_serializer = ScenarioV3Serializer(instance=scenario)
 
@@ -399,6 +407,13 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             user=self.request.user,
             scenario=instance,
         )
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        publish_scenario_event(
+            "planning.scenario.updated", self.get_object(), actor=request.user
+        )
+        return response
 
     def get_serializer_class(self):
         return (
@@ -481,6 +496,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         planning_area = instance.planning_area
         planning_area.updated_at = timezone.now()
         planning_area.save(update_fields=["updated_at"])
+        publish_scenario_event(
+            "planning.scenario.updated", instance, actor=request.user
+        )
         return Response(response_serializer.data)
 
     @extend_schema(
@@ -553,6 +571,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         planning_area = instance.planning_area
         planning_area.updated_at = timezone.now()
         planning_area.save(update_fields=["updated_at"])
+        publish_scenario_event(
+            "planning.scenario.updated", instance, actor=request.user
+        )
         return Response(response_serializer.data)
 
     @extend_schema(
@@ -880,6 +901,11 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
             scenario.geopackage_status = GeoPackageStatus.PENDING
             scenario.save(update_fields=["geopackage_status", "updated_at"])
+            publish_scenario_event(
+                "planning.scenario.geopackage_status_changed",
+                scenario,
+                actor=request.user,
+            )
 
             # `async_generate_scenario_geopackage` only proceeds for scenarios
             # already in PENDING status unless told to regenerate - force it
