@@ -5,6 +5,7 @@ from datasets.models import (
     DataLayer,
     DataLayerStatus,
     DataLayerType,
+    PreferredDisplayType,
     SearchTab,
     VisibilityOptions,
     WorkspaceFavoriteDataLayer,
@@ -1038,7 +1039,10 @@ class TestSimpleCategoryViewSet(APITestCase):
     def test_browse_filters_by_module(self):
         self.client.force_authenticate(user=self.normal)
         category = SimpleCategoryFactory.create()
-        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        dataset = DatasetFactory(
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        )
         included = DataLayerFactory.create(
             dataset=dataset,
             type=DataLayerType.RASTER,
