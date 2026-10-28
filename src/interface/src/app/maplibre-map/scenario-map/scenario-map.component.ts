@@ -38,12 +38,14 @@ import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { StandsComponent } from '../stands/stands.component';
 import { TreatedStandsToggleComponent } from '../treated-stands-toggle/treated-stands-toggle.component';
 import { TreatedStandsComponent } from '../treated-stands/treated-stands.component';
+import { AllTreatableStandsToggleComponent } from '../all-treatable-stands-toggle/all-treatable-stands-toggle.component';
 
 @UntilDestroy()
 @Component({
   selector: 'app-scenario-map',
   standalone: true,
   imports: [
+    AllTreatableStandsToggleComponent,
     CommonModule,
     MapComponent,
     MapNavbarComponent,
