@@ -73,4 +73,20 @@ export const FUNDING_TOOLTIPS: Record<string, FundingTooltip> = {
       },
     ],
   },
+  'Catastrophic Fire Reduction Info': {
+    copy: `Catastrophic Wildfire Reduction is an active crown fire reduction to surface fire.
+    <br/><br/>
+    Wildfires that burn into individual tree crowns, or spread from tree crown to tree crown, can cause catastrophic ecological damage because large patches of trees may be uniformly killed, leading to slow forest recovery. This metric quantifies the total acreage within the planning area where fuel treatments are expected to cause a change in fire behavior from crown fire to surface fire, relative to the total area treated.
+    <br/><br/>The result is calculated over the entire planning area because fuel treatments can also influence fire behavior in adjacent, untreated areas. A low value may simply indicate that the planning area has a low risk of catastrophic fire even without fuel treatments.`,
+    links: [
+      {
+        label: 'Pyretechnics Github',
+        url: 'https://github.com/pyregence/pyretechnics',
+      },
+      {
+        label: 'Knowledge Base',
+        url: '',
+      },
+    ],
+  },
 };
