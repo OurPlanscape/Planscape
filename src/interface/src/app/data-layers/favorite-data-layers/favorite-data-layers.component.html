@@ -11,7 +11,7 @@
 
 <div class="scrollable" *ngIf="favorites$ | async as favorites">
   <mat-spinner
-    *ngIf="favorites.isLoading"
+    *ngIf="favorites.isLoading && !favorites.data"
     diameter="20"
     class="loader"></mat-spinner>
 
@@ -22,7 +22,7 @@
     title="We couldn't load your favorites"
     description="The server could not return the favorites of this workspace. Try again later."></sg-empty-state>
 
-  <ng-container *ngIf="!favorites.isLoading && !favorites.error">
+  <ng-container *ngIf="favorites.data && !favorites.error">
     <div
       class="data-layer"
       *ngFor="let layer of results$ | async; trackBy: trackById">

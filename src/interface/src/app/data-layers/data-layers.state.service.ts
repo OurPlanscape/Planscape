@@ -1,24 +1,30 @@
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, OnDestroy } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
 import {
   BehaviorSubject,
   catchError,
   combineLatest,
   distinctUntilChanged,
+  filter,
   map,
+  merge,
   Observable,
   of,
   shareReplay,
   startWith,
   Subject,
+  Subscription,
   switchMap,
   tap,
 } from 'rxjs';
 import {
   BaseDataSet,
   DataLayer,
+  DATALAYER_FAVORITED_EVENT,
+  DATALAYER_UNFAVORITED_EVENT,
   IdNamePair,
   Pagination,
+  REALTIME_CONNECTED_EVENT,
   Resource,
   SearchResult,
   SimpleCategory,
@@ -42,6 +48,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { FeatureService } from '@features/feature.service';
 import { WorkspacesService } from '@services/workspaces.service';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { WebSocketService } from '@services/websocket.service';
 
 /** The dataset or category whose layers are being browsed. */
 export interface BrowseSelection {
@@ -57,7 +64,7 @@ export interface unselectableLayer {
 }
 
 @Injectable()
-export class DataLayersStateService {
+export class DataLayersStateService implements OnDestroy {
   readonly limit = 20;
 
   private moduleNameOverride$ = new BehaviorSubject<string | null>(null);
@@ -302,9 +309,7 @@ export class DataLayersStateService {
     }
     const wanted = !this.isFavorite(layer);
     const previous = this._favoriteChanges$.value;
-    const changes = new Map(previous);
-    changes.set(layer.id, wanted);
-    this._favoriteChanges$.next(changes);
+    this.setFavorite(layer.id, wanted);
 
     const request = wanted
       ? this.workspacesService.favoriteDataLayer(workspaceId, layer.id)
@@ -334,7 +339,37 @@ export class DataLayersStateService {
     });
   }
 
+  private setFavorite(layerId: number, isFavorite: boolean) {
+    const changes = new Map(this._favoriteChanges$.value);
+    changes.set(layerId, isFavorite);
+    this._favoriteChanges$.next(changes);
+  }
+
+  private followFavoriteEvents(): Subscription {
+    const changed$ = merge(
+      this.webSocketService
+        .on(DATALAYER_FAVORITED_EVENT)
+        .pipe(map((event) => ({ id: event.object?.id, isFavorite: true }))),
+      this.webSocketService
+        .on(DATALAYER_UNFAVORITED_EVENT)
+        .pipe(map((event) => ({ id: event.object?.id, isFavorite: false })))
+    ).pipe(
+      filter(
+        (change): change is { id: number; isFavorite: boolean } =>
+          change.id !== undefined
+      ),
+      tap(({ id, isFavorite }) => this.setFavorite(id, isFavorite))
+    );
+
+    return merge(
+      changed$,
+      this.webSocketService.on(REALTIME_CONNECTED_EVENT)
+    ).subscribe(() => this._reloadFavorites$.next());
+  }
+
   private _reloadFavorites$ = new BehaviorSubject<void>(undefined);
+
+  private lastFavorites: DataLayer[] | undefined;
 
   private favoritesFromServer$: Observable<Resource<DataLayer[]>> =
     this._reloadFavorites$.pipe(
@@ -346,6 +381,7 @@ export class DataLayersStateService {
         return this.service
           .browseFavorites(workspaceId, this.mapModuleService.moduleName)
           .pipe(
+            tap((layers) => (this.lastFavorites = layers)),
             map(
               (layers) =>
                 ({ isLoading: false, data: layers }) as Resource<DataLayer[]>
@@ -353,7 +389,10 @@ export class DataLayersStateService {
             catchError((error) =>
               of({ isLoading: false, error } as Resource<DataLayer[]>)
             ),
-            startWith({ isLoading: true } as Resource<DataLayer[]>)
+            startWith({
+              isLoading: true,
+              data: this.lastFavorites,
+            } as Resource<DataLayer[]>)
           );
       }),
       shareReplay(1)
@@ -387,6 +426,8 @@ export class DataLayersStateService {
       : null;
   }
 
+  private subscriptions = new Subscription();
+
   private _paths$ = new BehaviorSubject<string[]>([]);
   paths$ = this._paths$.asObservable();
 
@@ -404,8 +445,15 @@ export class DataLayersStateService {
     private matSnackBar: MatSnackBar,
     private featureService: FeatureService,
     private workspacesService: WorkspacesService,
-    private workspaceState: WorkspaceState
-  ) {}
+    private workspaceState: WorkspaceState,
+    private webSocketService: WebSocketService
+  ) {
+    this.subscriptions.add(this.followFavoriteEvents());
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+  }
 
   // determines whether we interject anything when the user makes a selection
   selectionMode: 'AUTOMATIC' | 'MANUAL' = 'AUTOMATIC';

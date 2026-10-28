@@ -88,6 +88,14 @@ describe('FavoriteDataLayersComponent', () => {
     expect(el.querySelector('sg-empty-state')).toBeNull();
   });
 
+  it('keeps the rows while the list refreshes behind an event', () => {
+    favorites$.next({ isLoading: true, data: [layer(1, 'SNV Heavy Fuels')] });
+    const el = create();
+
+    expect(rowNames(el)).toEqual(['SNV Heavy Fuels']);
+    expect(el.querySelector('mat-spinner')).toBeNull();
+  });
+
   it('says so when the favorites cannot be loaded', () => {
     favorites$.next({ isLoading: false, error: new Error('400') });
     const el = create();

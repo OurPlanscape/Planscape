@@ -28,6 +28,10 @@ export const PLANNING_AREA_DELETED_EVENT = 'planning.planning_area.deleted';
 export const PLANNING_AREA_MAP_STATUS_EVENT =
   'planning.planning_area.map_status_changed';
 
+// A data layer joined or left the favorites, which the workspace shares
+export const DATALAYER_FAVORITED_EVENT = 'datasets.datalayer.favorited';
+export const DATALAYER_UNFAVORITED_EVENT = 'datasets.datalayer.unfavorited';
+
 // The workspace itself is gone the backend closes the socket right after
 export const WORKSPACE_DELETED_EVENT = 'workspace.workspace.deleted';
 
