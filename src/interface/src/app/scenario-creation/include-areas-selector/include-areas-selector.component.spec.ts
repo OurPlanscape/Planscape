@@ -63,6 +63,23 @@ describe('IncludeAreasSelectorComponent', () => {
     expect(state.setIncludedAreas).toHaveBeenCalledWith([1, 2]);
   });
 
+  it('leaves the state alone the first time the step loads', () => {
+    component.beforeStepLoad();
+
+    expect(state.setIncludedAreas).not.toHaveBeenCalled();
+  });
+
+  it('puts the pending selection back on the map when the step is re-entered', () => {
+    scenarioConfig$.next({ included_areas: [1, 2] });
+    component.handleSelectedItemsChange([{ id: 9 } as BaseLayer]);
+    component.beforeStepExit();
+    (state.setIncludedAreas as jasmine.Spy).calls.reset();
+
+    component.beforeStepLoad();
+
+    expect(state.setIncludedAreas).toHaveBeenCalledWith([9]);
+  });
+
   it('reverts to an empty list when the saved config has no included areas', () => {
     scenarioConfig$.next({});
 

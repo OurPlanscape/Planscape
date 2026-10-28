@@ -19,6 +19,7 @@ import {
   DataLayer,
   IdNamePair,
   Pagination,
+  Resource,
   SearchResult,
   SimpleCategory,
 } from '@types';
@@ -32,7 +33,11 @@ import { MapModuleService } from '@services/map-module.service';
 import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-datalayers.token';
 import { PlanState } from '@plan/plan.state';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
-import { SNACK_ERROR_CONFIG, UnselectableType } from '@app/shared';
+import {
+  SNACK_BOTTOM_NOTICE_CONFIG,
+  SNACK_ERROR_CONFIG,
+  UnselectableType,
+} from '@app/shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FeatureService } from '@features/feature.service';
 import { WorkspacesService } from '@services/workspaces.service';
@@ -271,6 +276,18 @@ export class DataLayersStateService {
     );
   }
 
+  canEditFavorites$: Observable<boolean> =
+    this.workspaceState.currentWorkspace$.pipe(
+      map(
+        (workspace) =>
+          workspace.role === 'OWNER' || workspace.role === 'COLLABORATOR'
+      ),
+      catchError(() => of(false)),
+      startWith(false),
+      distinctUntilChanged(),
+      shareReplay(1)
+    );
+
   favoritesEnabled(): boolean {
     return (
       this.featureService.isFeatureEnabled('DATA_ORGANIZATION') &&
@@ -294,6 +311,16 @@ export class DataLayersStateService {
       : this.workspacesService.unfavoriteDataLayer(workspaceId, layer.id);
 
     request.subscribe({
+      next: () => {
+        this._reloadFavorites$.next();
+        this.matSnackBar.open(
+          wanted
+            ? 'Layer added to favorites.'
+            : 'Layer removed from favorites.',
+          'Dismiss',
+          SNACK_BOTTOM_NOTICE_CONFIG
+        );
+      },
       error: () => {
         this._favoriteChanges$.next(previous);
         this.matSnackBar.open(
@@ -306,6 +333,53 @@ export class DataLayersStateService {
       },
     });
   }
+
+  private _reloadFavorites$ = new BehaviorSubject<void>(undefined);
+
+  private favoritesFromServer$: Observable<Resource<DataLayer[]>> =
+    this._reloadFavorites$.pipe(
+      switchMap(() => {
+        const workspaceId = this.favoritesWorkspaceId();
+        if (workspaceId === null) {
+          return of({ isLoading: false, data: [] } as Resource<DataLayer[]>);
+        }
+        return this.service
+          .browseFavorites(workspaceId, this.mapModuleService.moduleName)
+          .pipe(
+            map(
+              (layers) =>
+                ({ isLoading: false, data: layers }) as Resource<DataLayer[]>
+            ),
+            catchError((error) =>
+              of({ isLoading: false, error } as Resource<DataLayer[]>)
+            ),
+            startWith({ isLoading: true } as Resource<DataLayer[]>)
+          );
+      }),
+      shareReplay(1)
+    );
+
+  /**
+   * What the panel shows: the server's list, minus whatever was unfavorited
+   * here since, so a row leaves the moment its star is emptied instead of
+   * waiting for the refetch.
+   */
+  favorites$: Observable<Resource<DataLayer[]>> = combineLatest([
+    this.favoritesFromServer$,
+    this._favoriteChanges$,
+  ]).pipe(
+    map(([resource, changes]) =>
+      resource.data
+        ? {
+            ...resource,
+            data: resource.data.filter(
+              (layer) => changes.get(layer.id) !== false
+            ),
+          }
+        : resource
+    ),
+    shareReplay(1)
+  );
 
   private favoritesWorkspaceId(): number | null {
     return this.favoritesEnabled()

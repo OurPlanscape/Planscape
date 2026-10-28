@@ -68,6 +68,7 @@ export const splitValueValidator: ValidatorFn = (
   if (!DIGITS_AND_COMMAS.test(valueOne)) {
     return { invalidNumberList: true };
   }
+
   if (valueOne.includes(',') && !LIST_OPERATORS.includes(operator)) {
     return { multipleNotAllowed: true };
   }
@@ -99,6 +100,32 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
   public constraintOperators = CONSTRAINT_OPERATORS;
   editMode = false;
   dataLayerName = this.data?.dataLayerName;
+  minValue = this.data?.dataLayer?.info?.stats[0]?.min;
+  maxValue = this.data?.dataLayer?.info?.stats[0]?.max;
+
+  minMaxSplitValidator: ValidatorFn = (
+    control: AbstractControl
+  ): ValidationErrors | null => {
+    const raw = control.value;
+
+    if (raw === null || raw === undefined || raw === '') {
+      return null;
+    }
+    // check for whether we have bounds at all
+    if (this.minValue === null || this.maxValue === null) {
+      return null;
+    }
+    const outOfRange = String(raw)
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s !== '')
+      .some((s) => {
+        const n = Number(s);
+        return Number.isNaN(n) || n < this.minValue || n > this.maxValue;
+      });
+
+    return outOfRange ? { valueNotInRange: true } : null;
+  };
 
   form = new FormGroup(
     {
@@ -110,10 +137,11 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
       ),
       constraintValueOne: new FormControl<string | null>(
         this.data.valueOne ?? null,
-        [Validators.required]
+        [Validators.required, this.minMaxSplitValidator]
       ),
       constraintValueTwo: new FormControl<number | null>(
-        this.data.valueTwo ?? null
+        this.data.valueTwo ?? null,
+        this.minMaxSplitValidator
       ),
     },
     { validators: [betweenValidator, splitValueValidator] }
@@ -124,6 +152,25 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
   }
   get isButtonDisabled(): boolean {
     return this.form.invalid;
+  }
+
+  get valueOneLabel() {
+    if (this.showSecondValue) {
+      if (this.minValue && this.maxValue) {
+        return `Min (${this.minValue})`;
+      }
+      return 'Min';
+    } else if (this.minValue && this.maxValue) {
+      return `Value (${this.minValue}-${this.maxValue})`;
+    }
+    return 'Value';
+  }
+
+  get valueTwoLabel() {
+    if (this.minValue && this.maxValue) {
+      return `Max (${this.maxValue})`;
+    }
+    return 'Max';
   }
 
   ngOnInit() {
@@ -150,10 +197,12 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
     requiredOne: 'A value is required.',
     invalidNumberList: 'Enter numbers only, separated by commas.',
     multipleNotAllowed: 'This operator requires single values.',
+    valueNotInRange: 'Values must be within the valid range.',
   };
 
   private readonly VALUE_TWO_ERROR_MESSAGES: Record<string, string> = {
     requiredTwo: 'Please enter a number.',
+    valueNotInRange: 'Values must be within the valid range.',
   };
 
   private errorsFor(ctrlName: 'constraintValueOne' | 'constraintValueTwo') {

@@ -33,7 +33,13 @@ describe('AdvStandLevelConstraintsModalComponent', () => {
           provide: MAT_DIALOG_DATA,
           useValue: {
             dataLayerName: 'Test Layer Alpha',
-            dataLayer: { id: 'layer-1', name: 'Test Layer Alpha' },
+            dataLayer: {
+              id: 'layer-1',
+              name: 'Test Layer Alpha',
+              info: {
+                stats: [{ min: 0, max: 10000 }],
+              },
+            },
           },
         },
       ],
@@ -67,13 +73,31 @@ describe('AdvStandLevelConstraintsModalComponent', () => {
     expect(component.isButtonDisabled).toBeFalse();
   });
 
-  it('should validate the form if operator is "in" and valueOne has commas or spaces', () => {
+  it('should validate the form if operator is "in" and valueOne is within the valid range', () => {
     component.form.patchValue({
       constraintOperator: 'in',
-      constraintValueOne: '12,1231, 12, 321,',
+      constraintValueOne: '10,11,120',
     });
     expect(component.form.valid).toBeTrue();
     expect(component.isButtonDisabled).toBeFalse();
+  });
+
+  it('should invalidate the form if operator is "in" and valueOne is outside the valid range', () => {
+    component.form.patchValue({
+      constraintOperator: 'in',
+      constraintValueOne: '0,10,123,-1000',
+    });
+    expect(component.form.valid).toBeFalse();
+    expect(component.isButtonDisabled).toBeTrue();
+  });
+
+  it('should validate the form if operator is "in" and valueOne is outside the valid range', () => {
+    component.form.patchValue({
+      constraintOperator: 'in',
+      constraintValueOne: '12,1231, 12, 321,-100',
+    });
+    expect(component.form.valid).toBeFalse();
+    expect(component.isButtonDisabled).toBeTrue();
   });
 
   it('should validate the form if operator is "lt" and valueOne has commas or spaces', () => {

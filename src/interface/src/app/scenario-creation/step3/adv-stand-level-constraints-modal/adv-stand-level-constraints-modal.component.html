@@ -51,7 +51,7 @@
           <sg-input-field
             [disabled]="false"
             class="value-input"
-            label="{{ showSecondValue ? 'Min' : 'Value' }}"
+            [label]="valueOneLabel"
             showSupportMessage="on-error"
             size="full"
             [supportMessage]="valueOneErrorMsg"
@@ -73,7 +73,7 @@
             <sg-input-field
               [disabled]="false"
               class="value-input"
-              label="Max"
+              [label]="valueTwoLabel"
               required
               showSupportMessage="on-error"
               [supportMessage]="valueTwoErrorMsg"

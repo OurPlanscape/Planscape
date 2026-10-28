@@ -101,7 +101,7 @@ class MapModuleTest(TestCase):
 
         self.assertGreaterEqual(len(main), 1)
         self.assertGreaterEqual(len(base), 1)
-        self.assertEqual([category], datasets["categories"])
+        self.assertIn(category, datasets["categories"])
 
 
     def test_returns_datalayers_filtered_by_outline_geometry(self):

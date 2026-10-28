@@ -1,5 +1,5 @@
 <ng-container *ngIf="(loadError$ | async) !== true; else loadError">
-  <div class="side-search-container">
+  <div class="side-search-container" [class.no-border]="belowSearch">
     <sg-search-bar
       class="search-bar"
       [debounceInterval]="160"

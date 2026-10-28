@@ -68,6 +68,25 @@ export class DataLayersService {
     );
   }
 
+  browseFavorites(
+    workspaceId: number,
+    module?: string,
+    geometry?: Geometry,
+    type: 'RASTER' | 'VECTOR' = 'RASTER'
+  ) {
+    return this.http.post<DataLayer[]>(
+      `${environment.backend_endpoint}/v2/datalayers/browse/`,
+      {
+        search_tab: 'favorites',
+        workspace_id: workspaceId,
+        type,
+        ...(module ? { module } : {}),
+        ...(geometry ? { geometry } : {}),
+      },
+      { withCredentials: true }
+    );
+  }
+
   search(query: SearchQuery) {
     let body = {
       term: query.term,
