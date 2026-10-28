@@ -3,13 +3,17 @@ import { fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 import { DataLayersStateService } from './data-layers.state.service';
 import { MockProvider } from 'ng-mocks';
 import { DataLayersService } from '@services/data-layers.service';
-import { defer, of, Subject, throwError } from 'rxjs';
+import { defer, filter, of, Subject, throwError } from 'rxjs';
 import {
+  DATALAYER_FAVORITED_EVENT,
+  DATALAYER_UNFAVORITED_EVENT,
   DataLayer,
   DataSet,
   Pagination,
   Plan,
+  REALTIME_CONNECTED_EVENT,
   Workspace,
+  WorkspaceEvent,
   WorkspaceRole,
 } from '@types';
 import { MapModuleService } from '@services/map-module.service';
@@ -24,6 +28,7 @@ import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token
 import { TreeNode } from '@data-layers/data-layers/tree-node';
 import { WorkspacesService } from '@services/workspaces.service';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { WebSocketService } from '@services/websocket.service';
 
 describe('DataLayersStateService', () => {
   let service: DataLayersStateService;
@@ -32,6 +37,7 @@ describe('DataLayersStateService', () => {
   let currentWorkspaceId: number | null;
   let currentWorkspace$: Subject<Workspace>;
   let currentPlan: Plan | null;
+  let workspaceEvents$: Subject<WorkspaceEvent>;
 
   const layer = {
     id: 1,
@@ -66,6 +72,7 @@ describe('DataLayersStateService', () => {
     currentWorkspaceId = null;
     currentPlan = null;
     currentWorkspace$ = new Subject<Workspace>();
+    workspaceEvents$ = new Subject<WorkspaceEvent>();
     workspacesService = jasmine.createSpyObj<WorkspacesService>(
       'WorkspacesService',
       ['favoriteDataLayer', 'unfavoriteDataLayer']
@@ -94,6 +101,13 @@ describe('DataLayersStateService', () => {
           currentPlanOrNull$: defer(() => of(currentPlan)),
         }),
         { provide: WorkspacesService, useValue: workspacesService },
+        {
+          provide: WebSocketService,
+          useValue: {
+            on: (type: string) =>
+              workspaceEvents$.pipe(filter((event) => event.type === type)),
+          },
+        },
         {
           provide: WorkspaceState,
           useValue: {
@@ -460,6 +474,89 @@ describe('DataLayersStateService', () => {
       expect(isFavorite(inSearch)).toBe(true);
     });
 
+    describe('when another member changes them', () => {
+      const favoriteEvent = (type: string, layerId: number) =>
+        ({
+          type,
+          workspace_id: 7,
+          object: { kind: 'datalayer', id: layerId },
+          actor_id: 99,
+        }) as WorkspaceEvent;
+
+      it('fills the star of a layer somebody else favorited', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+
+        workspaceEvents$.next(
+          favoriteEvent(DATALAYER_FAVORITED_EVENT, notFavorited.id)
+        );
+
+        expect(isFavorite(notFavorited)).toBe(true);
+      });
+
+      it('empties the star of a layer somebody else took out', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+
+        workspaceEvents$.next(
+          favoriteEvent(DATALAYER_UNFAVORITED_EVENT, favorited.id)
+        );
+
+        expect(isFavorite(favorited)).toBe(false);
+      });
+
+      it('asks for the list again, since the event says nothing about the module', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        service.favorites$.subscribe();
+        dataLayersService.browseFavorites.calls.reset();
+
+        workspaceEvents$.next(
+          favoriteEvent(DATALAYER_FAVORITED_EVENT, notFavorited.id)
+        );
+
+        expect(dataLayersService.browseFavorites).toHaveBeenCalledTimes(1);
+      });
+
+      it('asks for the list again whenever the connection is made', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        service.favorites$.subscribe();
+        dataLayersService.browseFavorites.calls.reset();
+
+        // events are not replayed, so a reconnection can hide a change
+        workspaceEvents$.next({ type: REALTIME_CONNECTED_EVENT });
+
+        expect(dataLayersService.browseFavorites).toHaveBeenCalledTimes(1);
+      });
+
+      it('leaves the list on screen while it refreshes', () => {
+        dataLayersService.browseFavorites.and.returnValue(of([favorited]));
+        createInWorkspace('DATA_ORGANIZATION');
+        const seen: (DataLayer[] | undefined)[] = [];
+        service.favorites$.subscribe((resource) =>
+          seen.push(resource.isLoading ? resource.data : undefined)
+        );
+
+        workspaceEvents$.next(
+          favoriteEvent(DATALAYER_FAVORITED_EVENT, notFavorited.id)
+        );
+
+        // the loading emission carries what the panel already had
+        expect(seen).toContain([favorited]);
+      });
+
+      it('ignores the events of the workspace that are not about favorites', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        service.favorites$.subscribe();
+        dataLayersService.browseFavorites.calls.reset();
+
+        workspaceEvents$.next({
+          type: 'planning.planning_area.created',
+          workspace_id: 7,
+        });
+
+        expect(dataLayersService.browseFavorites).not.toHaveBeenCalled();
+        expect(isFavorite(notFavorited)).toBe(false);
+      });
+    });
+
     it('confirms the layer joined the favorites', () => {
       createInWorkspace('DATA_ORGANIZATION');
       const toast = spyOn(TestBed.inject(MatSnackBar), 'open');
@@ -680,6 +777,7 @@ describe('DataLayersStateService', () => {
       it('does not ask outside a workspace', () => {
         currentWorkspaceId = null;
         currentWorkspace$ = new Subject<Workspace>();
+        workspaceEvents$ = new Subject<WorkspaceEvent>();
         createService('DATA_ORGANIZATION');
 
         service.favorites$.subscribe();
@@ -691,6 +789,7 @@ describe('DataLayersStateService', () => {
     it('offers no favoriting outside a workspace', () => {
       currentWorkspaceId = null;
       currentWorkspace$ = new Subject<Workspace>();
+      workspaceEvents$ = new Subject<WorkspaceEvent>();
       createService('DATA_ORGANIZATION');
 
       expect(service.favoritesEnabled()).toBe(false);
