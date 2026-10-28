@@ -100,11 +100,11 @@ describe('DataLayerTooltipComponent', () => {
       expect(values).toEqual(['--', '--', '--', '--', '--']);
     });
 
-    it('does not show the value range', () => {
+    it('show the value range', () => {
       const el = create();
 
-      expect(el.textContent).not.toContain('Value Range');
-      expect(el.textContent).not.toContain('0-71');
+      expect(el.textContent).toContain('Value Range');
+      expect(el.textContent).toContain('0-71');
     });
 
     it('links Learn More to the source url', () => {
