@@ -10,7 +10,7 @@ alike) can import it without creating import cycles.
 import logging
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Optional
+from typing import Any, Callable, Optional, Union
 from uuid import UUID
 
 from asgiref.sync import async_to_sync
@@ -24,6 +24,8 @@ GROUP_PREFIX = "workspace"
 # `type` of the channel-layer message; Channels dispatches it to
 # `WorkspaceConsumer.workspace_event`. The domain event lives under "event".
 CHANNEL_MESSAGE_TYPE = "workspace.event"
+
+EventData = Union[dict[str, Any], Callable[[], Optional[dict[str, Any]]]]
 
 
 def workspace_group_name(workspace_id: int) -> str:
@@ -71,7 +73,7 @@ def publish_workspace_event(
     event_type: str,
     *,
     obj: dict[str, Any],
-    data: Optional[dict[str, Any]] = None,
+    data: Optional[EventData] = None,
     actor_id: Optional[int] = None,
 ) -> None:
     """
@@ -80,11 +82,35 @@ def publish_workspace_event(
     No-op when `workspace_id` is None (legacy planning areas without a
     workspace). The send happens after the current transaction commits, so
     clients that refetch on the event see the committed state; outside a
-    transaction it happens right away. It never raises: losing an event must
-    not break the request or task that produced it.
+    transaction it happens right away. `data` may be a callable, called at
+    send time so it can serialize the committed object; returning None drops
+    the event. It never raises: losing an event must not break the request or
+    task that produced it.
     """
     if workspace_id is None:
         return
+    transaction.on_commit(
+        lambda: _publish(workspace_id, event_type, obj, data, actor_id)
+    )
+
+
+def _publish(
+    workspace_id: int,
+    event_type: str,
+    obj: dict[str, Any],
+    data: Optional[EventData],
+    actor_id: Optional[int],
+) -> None:
+    if callable(data):
+        try:
+            data = data()
+        except Exception:
+            log.exception(
+                "Failed to build %s for workspace %s", event_type, workspace_id
+            )
+            return
+        if data is None:
+            return
     event = build_event(
         workspace_id,
         event_type,
@@ -92,7 +118,7 @@ def publish_workspace_event(
         data=data,
         actor_id=actor_id,
     )
-    transaction.on_commit(lambda: _send(event))
+    _send(event)
 
 
 def _send(event: dict[str, Any]) -> None:
