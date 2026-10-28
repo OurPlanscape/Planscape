@@ -14,9 +14,11 @@ RUN apt-get update && \
 
 WORKDIR /app/src/interface
 
-COPY src/interface/package.json src/interface/package-lock.json ./
+RUN npm install -g npm@11.21.1
+
+COPY src/interface/package.json src/interface/package-lock.json src/interface/.npmrc ./
 COPY src/interface/patches ./patches
-RUN npm ci
+RUN npm ci && npm run postinstall
 
 COPY src/interface/ ./
 COPY docker/frontend-job/entrypoint.sh /entrypoint.sh

@@ -116,6 +116,9 @@ dev = [
 max-line-length = 88
 
 [tool.uv]
+required-version = ">=0.9.17"
+# Supply-chain cooldown: ignore releases newer than 7 days when resolving.
+exclude-newer = "7 days"
 package = false
 
 [build-system]
