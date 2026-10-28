@@ -61,7 +61,7 @@ jobs:
         ports:
           - 6379:6379
       postgres:
-        image: postgis/postgis:14-3.3
+        image: postgis/postgis:15-3.4
         env:
           # must specify password for PG Docker container image
           # see: https://registry.hub.docker.com/_/postgres?tab=description&page=1&name=10
