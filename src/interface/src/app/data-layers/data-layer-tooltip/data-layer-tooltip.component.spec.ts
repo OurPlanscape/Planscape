@@ -97,7 +97,7 @@ describe('DataLayerTooltipComponent', () => {
       const values = Array.from(el.querySelectorAll('dd')).map((dd) =>
         dd.textContent?.trim()
       );
-      expect(values).toEqual(['--', '--', '--', '--', '--']);
+      expect(values).toEqual(['--', '--', '--', '--', '--', '--']);
     });
 
     it('show the value range', () => {
