@@ -3,7 +3,7 @@ name = "planscape"
 version = "0.1.0"
 description = "planscape"
 authors = [{ name = "SIG-GIS" }]
-requires-python = ">=3.10, <3.11"
+requires-python = ">=3.12, <3.13"
 dependencies = [
     "dj-rest-auth>=5.0.2,<5.1.0",
     "django>=5.2.18,<6.0.0",
@@ -76,7 +76,7 @@ dependencies = [
 
 [tool.isort]
 profile = "black"
-py_version = 310
+py_version = 312
 color_output = false
 
 [dependency-groups]
@@ -105,7 +105,6 @@ dev = [
     "types-python-dateutil>=2.8.18,<3",
     "pytest-dotenv>=0.5.2,<0.6",
     "types-cachetools>=5.2.1,<6",
-    "typed-ast>=1.5.4,<2",
     "factory-boy>=3.3.0,<4",
     "drf-spectacular>=0.27.2,<0.28",
     "celery-types>=0.22.0,<0.23",
@@ -139,7 +138,7 @@ python_files = "tests.py test_*.py tests_*.py *_tests.py"
 [tool.pyright]
 include = ["src/planscape"]
 exclude = ["**/__pycache__", "**/tests/"]
-pythonVersion = "3.10"
+pythonVersion = "3.12"
 pythonPlatform = "Linux"
 reportMissingImports = "error"
 reportMissingTypeStubs = false
@@ -147,7 +146,7 @@ reportIncompatibleMethodOverride = "warning"
 reportIncompatibleVariableOverride = "none"
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
 warn_return_any = true
 exclude = [
     'base',

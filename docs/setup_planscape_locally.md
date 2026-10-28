@@ -95,12 +95,12 @@ First you must install Python and GDAL. On MacOS,
   echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/$USER/.profile
   ```
 
-* Install Python 3.10 (or later):
+* Install Python 3.12:
   ```bash
-  brew reinstall python@3.10
+  brew reinstall python@3.12
   ```
 
-Please read the install output carefully since most of the installs are dependent on python 3.10+. You can check to see if it installed properly in
+Please read the install output carefully since most of the installs are dependent on python 3.12. You can check to see if it installed properly in
 /usr/local/bin/.
 
 * Install GDAL (necessary for processing raster GIS data):
@@ -146,9 +146,9 @@ In a terminal window,
 
 * Check that the file env/pyvenv.cfg has the following or similar contents:
   ```bash
-  home = /opt/homebrew/opt/python@3.10/bin
+  home = /opt/homebrew/opt/python@3.12/bin
   include-system-site-packages = false
-  version = 3.10.6
+  version = 3.12.12
   ```
 
 * Use the following command to start using Python in the environment:

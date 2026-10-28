@@ -2,7 +2,7 @@ FROM ghcr.io/astral-sh/uv:latest AS builder
 
 FROM google/cloud-sdk:alpine AS gcloud-sdk
 
-FROM python:3.10-slim-bookworm
+FROM python:3.12-slim-bookworm
 COPY --from=builder /uv /uvx /bin/
 COPY --from=gcloud-sdk /google-cloud-sdk /opt/google-cloud-sdk
 
