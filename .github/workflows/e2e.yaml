@@ -64,12 +64,19 @@ jobs:
           EOF
 
       - uses: actions/setup-node@v4
+        id: setup-node
         with:
           node-version-file: src/interface/.node-version
-          cache: npm
-          cache-dependency-path: src/interface/package-lock.json
+
+      - name: Cache node_modules
+        id: node-modules-cache
+        uses: actions/cache@v4
+        with:
+          path: src/interface/node_modules
+          key: node-modules-${{ runner.os }}-node${{ steps.setup-node.outputs.node-version }}-${{ hashFiles('src/interface/package-lock.json', 'src/interface/patches/**') }}
 
       - name: Install frontend dependencies
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
         working-directory: src/interface
         run: npm ci
 
