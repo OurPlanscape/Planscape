@@ -379,7 +379,7 @@ class SummaryTest(TestCase):
         self.assertEqual(proj_area_2, [])
         self.assertEqual(proj_area_3, [])
 
-        self.assertEquals(len(summary["prescriptions"]), 1)
+        self.assertEqual(len(summary["prescriptions"]), 1)
         precription = summary["prescriptions"][0]
 
         self.assertEqual(precription["stand_count"], 4)

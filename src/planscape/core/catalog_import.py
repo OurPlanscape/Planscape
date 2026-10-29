@@ -402,11 +402,10 @@ class CatalogImporter:
             source_keys = {self._source_identity(model, pk) for pk in self.rows[model]}
             if not source_keys:
                 continue
-            for obj in (
-                manager(model)
-                .select_related(*self._identity_relations(model))
-                .iterator()
-            ):
+            queryset = manager(model).all()
+            if relations := self._identity_relations(model):
+                queryset = queryset.select_related(*relations)
+            for obj in queryset.iterator():
                 # Private workspace records must not match default catalog identities.
                 if not self._is_catalog_record(obj):
                     continue

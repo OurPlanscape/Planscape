@@ -20,7 +20,7 @@ def drop_z(geometry: GEOSGeometry) -> GEOSGeometry:
         return geometry
 
     ogr_geometry = geometry.ogr.clone()
-    ogr_geometry.coord_dim = 2
+    ogr_geometry.set_3d(False)
     return GEOSGeometry(ogr_geometry.wkt, srid=geometry.srid)
 
 
