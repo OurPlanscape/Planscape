@@ -8,15 +8,19 @@ import { FeaturesModule } from '@features/features.module';
 import { MockDeclaration, MockProvider } from 'ng-mocks';
 import { TopBarComponent } from '@shared/top-bar/top-bar.component';
 import { WorkspaceDeletedListenerService } from '@app/workspaces/workspace-deleted-listener.service';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
 
 describe('AppComponent', () => {
   let component: AppComponent;
   let fixture: ComponentFixture<AppComponent>;
   let isLoggedIn$: BehaviorSubject<boolean | null>;
-  let webSocketService: WebSocketService;
+  let currentWorkspaceId$: BehaviorSubject<number | null>;
+  let connect: jasmine.Spy;
+  let disconnect: jasmine.Spy;
 
   beforeEach(async () => {
     isLoggedIn$ = new BehaviorSubject<boolean | null>(null);
+    currentWorkspaceId$ = new BehaviorSubject<number | null>(null);
     const fakeAuthService = jasmine.createSpyObj<AuthService>(
       'AuthService',
       { refreshLoggedInUser: of({ username: 'username' }) },
@@ -28,14 +32,14 @@ describe('AppComponent', () => {
       providers: [
         { provide: AuthService, useValue: fakeAuthService },
         MockProvider(WebSocketService),
+        MockProvider(WorkspaceState, { currentWorkspaceId$ }),
         MockProvider(WorkspaceDeletedListenerService),
       ],
     }).compileComponents();
 
-    webSocketService = TestBed.inject(WebSocketService);
-    spyOn(webSocketService, 'connect');
-    spyOn(webSocketService, 'disconnect');
     spyOn(TestBed.inject(WorkspaceDeletedListenerService), 'start');
+    connect = spyOn(TestBed.inject(WebSocketService), 'connect');
+    disconnect = spyOn(TestBed.inject(WebSocketService), 'disconnect');
 
     fixture = TestBed.createComponent(AppComponent);
     component = fixture.componentInstance;
@@ -53,20 +57,26 @@ describe('AppComponent', () => {
       expect(authServiceStub.refreshLoggedInUser).toHaveBeenCalled();
     });
 
+    it('opens the connection of the workspace we walk into', () => {
+      expect(connect).not.toHaveBeenCalled();
+
+      currentWorkspaceId$.next(5);
+
+      expect(connect).toHaveBeenCalledWith(5);
+    });
+
+    it('closes it on the way out of the workspace', () => {
+      currentWorkspaceId$.next(5);
+
+      currentWorkspaceId$.next(null);
+
+      expect(disconnect).toHaveBeenCalled();
+    });
+
     it('starts listening for deleted workspaces', () => {
       expect(
         TestBed.inject(WorkspaceDeletedListenerService).start
       ).toHaveBeenCalled();
-    });
-
-    it('connects the websocket while logged in and disconnects on logout', () => {
-      expect(webSocketService.connect).not.toHaveBeenCalled();
-
-      isLoggedIn$.next(true);
-      expect(webSocketService.connect).toHaveBeenCalledTimes(1);
-
-      isLoggedIn$.next(false);
-      expect(webSocketService.disconnect).toHaveBeenCalledTimes(1);
     });
   });
 });
