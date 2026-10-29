@@ -10,6 +10,7 @@ import { SyncedMapComponent } from '@maplibre-map/synced-map/synced-map.componen
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MULTIMAP_STORAGE } from '@app/services/multimap-storage.token';
+import { DrawService } from '../draw.service';
 
 @UntilDestroy()
 @Component({
@@ -33,7 +34,8 @@ export class SyncedMapsComponent implements OnDestroy {
   constructor(
     private multiMapConfigState: MultiMapConfigState,
     @Inject(MULTIMAP_STORAGE)
-    private readonly multiDataLayerView: boolean
+    private readonly multiDataLayerView: boolean,
+    private drawService: DrawService
   ) {
     // This logic only applies when multiDataLayerView is enabled
     if (this.multiDataLayerView) {
@@ -47,12 +49,15 @@ export class SyncedMapsComponent implements OnDestroy {
 
   async mapCreated(event: { map: MapLibreMap; mapNumber: number }) {
     this.maps.set(event.mapNumber, event.map);
-
     if (this.cleanupFn) {
       this.cleanupFn();
     }
 
     this.cleanupFn = syncMaps(...this.maps.values());
+  }
+
+  initDrawingMap(map: MapLibreMap) {
+    this.drawService.initializeTerraDraw(map);
   }
 
   ngOnDestroy() {
