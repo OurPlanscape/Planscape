@@ -217,10 +217,28 @@ h5 {
   color: $color-black;
 }
 
+.stat-value-sm {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: $color-black;
+}
+
 .stat-unit {
   margin-left: 6px;
   font-size: 14px;
   font-weight: 400;
+}
+
+.catastrophic-reduction {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.no-catastrophic-data-card {
+  margin-top: 0;
+
 }
 
 .biomass-intro {
