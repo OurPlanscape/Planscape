@@ -25,7 +25,8 @@ import {
   ToggleComponent,
 } from '@styleguide';
 import { BaseLayer, MapDataDataSet } from '@types';
-import { catchError, map, of, tap } from 'rxjs';
+import { catchError, map, of, switchMap, take, tap } from 'rxjs';
+import { injectBaseLayersRequestScope } from '@base-layers/base-layers-request-scope';
 
 /**
  * One base layer dataset in the panel: a collapsible header with its layers
@@ -76,6 +77,7 @@ export class BaseLayersGroupComponent implements OnChanges, OnInit {
   baseLayers: BaseLayer[] = [];
   loaded = false;
   private fetchStarted = false;
+  private requestScope$ = injectBaseLayersRequestScope();
 
   constructor(
     private baseLayersStateService: BaseLayersStateService,
@@ -131,39 +133,50 @@ export class BaseLayersGroupComponent implements OnChanges, OnInit {
   private fetchLayers(afterLoad?: () => void) {
     const module = this.mapModuleService.moduleName;
     this.fetchStarted = true;
-    const cached = this.baseLayersStateService.getCachedDataSetLayers(
-      module,
-      this.dataSet.id
-    );
-    if (cached) {
-      this.baseLayers = cached;
-      this.loaded = true;
-      afterLoad?.();
-      return;
-    }
     this.loaded = false;
-    this.dataLayersService
-      .listBaseLayersByDataSet(this.dataSet.id, module)
+    this.requestScope$
       .pipe(
-        map((layers) => sortByName(layers)),
-        tap((layers) => {
-          this.loaded = true;
-          this.baseLayersStateService.cacheDataSetLayers(
+        take(1),
+        switchMap((scope) => {
+          const cached = this.baseLayersStateService.getCachedDataSetLayers(
             module,
-            this.dataSet.id,
-            layers
+            scope.key,
+            this.dataSet.id
           );
-        }),
-        catchError(() => {
-          this.loaded = true;
-          // let the next expand retry
-          this.fetchStarted = false;
-          this.matSnackBar.open(
-            `Error: Could not load layers for ${this.dataSet.name}`,
-            'Dismiss',
-            SNACK_ERROR_CONFIG
-          );
-          return of([]);
+          if (cached) {
+            this.loaded = true;
+            return of(cached);
+          }
+          return this.dataLayersService
+            .listBaseLayersByDataSet(
+              this.dataSet.id,
+              module,
+              scope.geometry,
+              scope.workspaceId
+            )
+            .pipe(
+              map((layers) => sortByName(layers)),
+              tap((layers) => {
+                this.loaded = true;
+                this.baseLayersStateService.cacheDataSetLayers(
+                  module,
+                  scope.key,
+                  this.dataSet.id,
+                  layers
+                );
+              }),
+              catchError(() => {
+                this.loaded = true;
+                // let the next expand retry
+                this.fetchStarted = false;
+                this.matSnackBar.open(
+                  `Error: Could not load layers for ${this.dataSet.name}`,
+                  'Dismiss',
+                  SNACK_ERROR_CONFIG
+                );
+                return of([]);
+              })
+            );
         })
       )
       .subscribe((layers) => {

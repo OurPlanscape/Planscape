@@ -19,6 +19,7 @@ import {
   DataLayer,
   IdNamePair,
   Pagination,
+  Plan,
   Resource,
   SearchResult,
   SimpleCategory,
@@ -42,6 +43,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { FeatureService } from '@features/feature.service';
 import { WorkspacesService } from '@services/workspaces.service';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { Geometry } from 'geojson';
 
 /** The dataset or category whose layers are being browsed. */
 export interface BrowseSelection {
@@ -142,21 +144,20 @@ export class DataLayersStateService {
 
   dataTree$ = combineLatest([
     this.selection$,
-    // Setting an initial value when there is no plan
-    this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
+    this.planState.currentPlanOrNull$,
     this.moduleNameOverride$,
   ]).pipe(
     tap(() => this.loadingSubject.next(true)),
-    switchMap(([selection, planningAreaGeometry, override]) => {
+    switchMap(([selection, plan, override]) => {
       if (!selection) {
         this.loadingSubject.next(false);
         return of(null);
       }
       const module = override ?? this.mapModuleService.moduleName;
-      const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
+      const geometry = this.planGeometry(plan);
       // categories list their layers flat; datasets nest them by path
       const isCategory = selection.type === 'category';
-      const workspaceId = this.favoritesWorkspaceId();
+      const workspaceId = this.requestWorkspaceId(plan);
       const layers$ = isCategory
         ? this.service.listCategoryDataLayers(
             selection.id,
@@ -216,11 +217,10 @@ export class DataLayersStateService {
   searchResults$: Observable<Pagination<SearchResult> | null> = combineLatest([
     this.searchTerm$,
     this._offset,
-    // Setting an initial value when there is no plan
-    this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
+    this.planState.currentPlanOrNull$,
     this.moduleNameOverride$,
   ]).pipe(
-    switchMap(([term, offset, planningAreaGeometry, override]) => {
+    switchMap(([term, offset, plan, override]) => {
       if (!term) {
         return of(null);
       }
@@ -228,16 +228,14 @@ export class DataLayersStateService {
 
       const module = override ?? this.mapModuleService.moduleName;
 
-      const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
-
       return this.service
         .search({
           term,
           limit: this.limit,
           offset,
           module,
-          geometry,
-          workspaceId: this.favoritesWorkspaceId(),
+          geometry: this.planGeometry(plan),
+          workspaceId: this.requestWorkspaceId(plan),
         })
         .pipe(
           startWith(null),
@@ -385,6 +383,21 @@ export class DataLayersStateService {
     return this.favoritesEnabled()
       ? this.workspaceState.currentWorkspaceIdValue
       : null;
+  }
+
+  private planGeometry(plan: Plan | null): Geometry | undefined {
+    return this.sendGeometry && plan ? (plan.geometry as Geometry) : undefined;
+  }
+
+  // Off the workspace route (a plan's map viewer) we still send the plan's
+  // workspace, but favorites stay gated on favoritesEnabled().
+  private requestWorkspaceId(plan: Plan | null): number | null {
+    if (!this.featureService.isFeatureEnabled('DATA_ORGANIZATION')) {
+      return null;
+    }
+    return (
+      this.workspaceState.currentWorkspaceIdValue ?? plan?.workspace ?? null
+    );
   }
 
   private _paths$ = new BehaviorSubject<string[]>([]);
