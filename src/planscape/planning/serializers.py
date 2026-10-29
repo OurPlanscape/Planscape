@@ -1,4 +1,5 @@
 import json
+import re
 from typing import List, Optional  # noqa
 
 import markdown
@@ -123,6 +124,24 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
             "workspace",
         )
         model = PlanningArea
+
+
+class RealtimePlanningAreaSerializer(ListPlanningAreaSerializer):
+    """
+    Planning area as pushed over the workspace socket. `role` and
+    `permissions` depend on who is looking, so the socket adds them per
+    connection.
+    """
+
+    role = None
+    permissions = None
+
+    class Meta(ListPlanningAreaSerializer.Meta):
+        fields = tuple(
+            field
+            for field in ListPlanningAreaSerializer.Meta.fields
+            if field not in ("role", "permissions")
+        )
 
 
 class CreatePlanningAreaSerializer(serializers.ModelSerializer):
@@ -348,6 +367,9 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
         model = ScenarioResult
 
     def get_result(self, instance):
+        # the project area GeoJSON is too large to push over the socket
+        if self.context.get("exclude_result"):
+            return None
         result = instance.result
         if not result:
             return None
@@ -556,6 +578,19 @@ class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
         return instance
 
 
+CONSTRAINT_OPERATORS = ["eq", "dne", "lt", "lte", "gt", "gte", "btw", "in", "nin"]
+CONSTRAINT_NUMBER_RE = re.compile(r"^-?\d+(\.\d+)?$")
+CONSTRAINT_WORD_RE = re.compile(r"^\w+$")
+
+
+def _is_number(value: str) -> bool:
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
 class ConstraintSerializer(serializers.Serializer):
     datalayer = serializers.PrimaryKeyRelatedField(
         queryset=DataLayer.objects.all(),
@@ -563,40 +598,63 @@ class ConstraintSerializer(serializers.Serializer):
     )
 
     operator = serializers.ChoiceField(
-        choices=["eq", "dne", "lt", "lte", "gt", "gte", "btw"],
+        choices=CONSTRAINT_OPERATORS,
         required=True,
     )
 
     value = serializers.CharField(
-        max_length=32,
+        max_length=256,
         required=True,
     )
 
-    def validate_value(self, value):
-        if "," in str(value):
-            values = value.strip().replace(" ", "").split(",", maxsplit=1)
-            values.sort()
-            min_value, max_value = values
-            try:
-                float(min_value)
-                float(max_value)
-                return f"{min_value},{max_value}"
-            except ValueError:
-                raise serializers.ValidationError("Invalid constraint value(s)")
-        else:
-            try:
-                float(value)
-                return value
-            except ValueError:
-                raise serializers.ValidationError("Invalid constraint value")
+    def validate(self, attrs):
+        operator = attrs.get("operator")
+        value = str(attrs.get("value"))
+
+        match operator:
+            case "btw":
+                attrs["value"] = self._validate_between_value(value)
+            case "in" | "nin":
+                attrs["value"] = self._validate_list_value(value)
+            case _:
+                attrs["value"] = self._validate_single_value(value)
+
+        return attrs
+
+    def _validate_between_value(self, value):
+        if "," not in value:
+            return self._validate_single_value(value)
+
+        values = value.strip().replace(" ", "").split(",", maxsplit=1)
+        values.sort()
+        min_value, max_value = values
+        try:
+            float(min_value)
+            float(max_value)
+            return f"{min_value},{max_value}"
+        except ValueError:
+            raise serializers.ValidationError({"value": "Invalid constraint value(s)"})
+
+    def _validate_list_value(self, value):
+        # numbers or words separated by comma, e.g. "1, 2,abc"
+        items = [item.strip() for item in value.split(",")]
+        for item in items:
+            if not (CONSTRAINT_NUMBER_RE.match(item) or CONSTRAINT_WORD_RE.match(item)):
+                raise serializers.ValidationError(
+                    {"value": "Invalid constraint value(s)"}
+                )
+        return ",".join(items)
+
+    def _validate_single_value(self, value):
+        if not _is_number(value):
+            raise serializers.ValidationError({"value": "Invalid constraint value"})
+        return value
 
 
 class ConstraintReadSerializer(serializers.Serializer):
     datalayer = serializers.IntegerField()
-    operator = serializers.ChoiceField(
-        choices=["eq", "dne", "lt", "lte", "gt", "gte", "btw"]
-    )
-    value = serializers.CharField(max_length=32)
+    operator = serializers.ChoiceField(choices=CONSTRAINT_OPERATORS)
+    value = serializers.CharField(max_length=256)
 
 
 class TargetsSerializer(serializers.Serializer):
@@ -1186,11 +1244,12 @@ class WeightedDataLayerSerializer(IdNameSerializer):
 
 class ConstraintDetailsSerializer(serializers.Serializer):
     datalayer = IdNameSerializer()
-    operator = serializers.ChoiceField(
-        choices=["eq", "dne", "lt", "lte", "gt", "gte", "btw"]
-    )
+    operator = serializers.ChoiceField(choices=CONSTRAINT_OPERATORS)
     value = serializers.CharField(
-        help_text="Constraint value. For `btw`, a comma separated `min,max` pair."
+        help_text=(
+            "Constraint value. For `btw`, a comma separated `min,max` pair. "
+            "For `in` and `nin`, a comma separated list of numbers or words."
+        )
     )
 
 

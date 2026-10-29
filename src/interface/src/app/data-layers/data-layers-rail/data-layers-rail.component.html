@@ -1,8 +1,9 @@
 <app-sidebar-icon-rail
   [items]="railItems"
-  activeId="data-layers"></app-sidebar-icon-rail>
+  [activeId]="activePanel"
+  (itemSelected)="selectItem($event)"></app-sidebar-icon-rail>
 
-<div class="panel">
+<div class="panel" *ngIf="activePanel === 'data-layers'">
   <div class="panel-header">
     <ng-container *ngIf="selection$ | async as selection; else title">
       <button
@@ -23,4 +24,11 @@
     [useClearFooter]="useClearFooter"
     [showSelectionHeader]="false"
     [class.sticky-search]="stickySearch"></app-data-layers>
+</div>
+
+<div class="panel" *ngIf="activePanel === 'base-layers'">
+  <div class="panel-header">
+    <h4>Base Layers</h4>
+  </div>
+  <app-base-layers></app-base-layers>
 </div>

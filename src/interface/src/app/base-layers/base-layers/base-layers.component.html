@@ -1,4 +1,21 @@
-<app-base-layers-panel
-  *appFeatureFlag="'DATA_ORGANIZATION'"></app-base-layers-panel>
-<app-legacy-base-layers
-  *appFeatureFlag="'DATA_ORGANIZATION'; hide: true"></app-legacy-base-layers>
+<ng-container *ngIf="(loadError$ | async) !== true; else loadError">
+  <app-base-layers-panel
+    *appFeatureFlag="'DATA_ORGANIZATION'"></app-base-layers-panel>
+  <app-legacy-base-layers
+    *appFeatureFlag="'DATA_ORGANIZATION'; hide: true"></app-legacy-base-layers>
+</ng-container>
+
+<ng-template #loadError>
+  <sg-message-card
+    class="load-error"
+    cardType="error"
+    cardTitle="We couldn't load base layers"
+    [withBorders]="false">
+    Something went wrong. Please try again.
+    <div class="load-error-actions">
+      <button sg-button variant="primary" (click)="retryLoad()">
+        Try Again
+      </button>
+    </div>
+  </sg-message-card>
+</ng-template>

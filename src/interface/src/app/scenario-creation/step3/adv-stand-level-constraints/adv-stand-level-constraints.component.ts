@@ -346,7 +346,9 @@ export class AdvStandLevelConstraintsComponent
         .afterClosed()
         .pipe(take(1))
         .subscribe((closeResult) => {
-          if (closeResult.action === 'SAVE') {
+          if (!closeResult) {
+            this.removeSelectionById(dl.id);
+          } else if (closeResult.action === 'SAVE') {
             this.handleConstraintAdded(closeResult.payload);
           } else if (closeResult.action === 'DELETE') {
             this.removeSelectionById(closeResult.payload);
@@ -376,7 +378,7 @@ export class AdvStandLevelConstraintsComponent
     let valueOne = e.value;
     let valueTwo = null;
 
-    if (e.value.includes(',')) {
+    if (e.operator === 'btw' && e.value.includes(',')) {
       const [num1, num2] = e.value.split(',').map(Number);
       // guard against values being out of numeric order
       valueOne = String(Math.min(num1, num2));
@@ -400,9 +402,9 @@ export class AdvStandLevelConstraintsComponent
       .pipe(take(1))
       .subscribe((closeResult) => {
         this.activeConstraint$.next(null);
-        if (closeResult.action === 'SAVE') {
+        if (closeResult?.action === 'SAVE') {
           this.handleUpdateConstraint(closeResult.payload);
-        } else if (closeResult.action === 'DELETE') {
+        } else if (closeResult?.action === 'DELETE') {
           this.removeSelectionById(closeResult.payload.id);
         }
       });

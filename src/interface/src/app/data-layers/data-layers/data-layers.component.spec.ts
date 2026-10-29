@@ -15,9 +15,11 @@ describe('DataLayersComponent', () => {
   let fixture: ComponentFixture<DataLayersComponent>;
 
   let selection$: BehaviorSubject<BrowseSelection | null>;
+  let loadError$: BehaviorSubject<boolean>;
 
   async function setup(dataOrganization = false) {
     selection$ = new BehaviorSubject<BrowseSelection | null>(null);
+    loadError$ = new BehaviorSubject(false);
     await TestBed.configureTestingModule({
       imports: [DataLayersComponent, FeaturesModule],
       providers: [
@@ -28,6 +30,7 @@ describe('DataLayersComponent', () => {
           dataTree$: of(null),
           searchResults$: of(null),
           loading$: new BehaviorSubject(false),
+          loadError$,
         }),
       ],
     })
@@ -66,6 +69,37 @@ describe('DataLayersComponent', () => {
   it('searches "in data layers" with DATA_ORGANIZATION on', async () => {
     await setup(true);
     expect(component.searchPlaceholder).toBe('Search in data layers');
+  });
+
+  describe('when the map module fails to load', () => {
+    beforeEach(async () => {
+      await setup();
+      loadError$.next(true);
+      fixture.detectChanges();
+    });
+
+    it('replaces the search and list with an error', () => {
+      const el: HTMLElement = fixture.nativeElement;
+      expect(el.querySelector('sg-search-bar')).toBeNull();
+      expect(el.querySelector('.scrollable')).toBeNull();
+      expect(el.querySelector('sg-message-card')?.textContent).toContain(
+        "We couldn't load data layers"
+      );
+    });
+
+    it('retries the load', () => {
+      const state = TestBed.inject(DataLayersStateService);
+      spyOn(state, 'retryLoad');
+      fixture.nativeElement.querySelector('sg-message-card button').click();
+      expect(state.retryLoad).toHaveBeenCalled();
+    });
+
+    it('shows the panel again once the load succeeds', () => {
+      loadError$.next(false);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('sg-search-bar')).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('sg-message-card')).toBeNull();
+    });
   });
 
   describe('selection header', () => {

@@ -1,5 +1,5 @@
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { delay, map, shareReplay, startWith } from 'rxjs';
 import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
@@ -18,6 +18,9 @@ import { DataLayersRegistryService } from '../data-layers-registry';
   styleUrl: './map-tabs.component.scss',
 })
 export class MapTabsComponent {
+  // Which data layer panel each map shows
+  @Input() panel: 'browse' | 'favorites' = 'browse';
+
   layoutMode$ = this.multiMapConfigState.layoutMode$;
   mapsArray$ = this.dataLayersRegistryService.size$.pipe(
     startWith(0),

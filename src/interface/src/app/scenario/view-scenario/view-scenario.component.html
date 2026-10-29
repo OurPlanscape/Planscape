@@ -21,17 +21,19 @@
         </app-scenario-results>
       </div>
     </mat-tab>
-    <mat-tab label="Data Layers">
+    <mat-tab label="Map Layers" *appFeatureFlag="'DATA_ORGANIZATION'">
       <app-data-layers-rail
-        *appFeatureFlag="'DATA_ORGANIZATION'"
-        class="white-background data-layers-rail"></app-data-layers-rail>
-      <app-data-layers
-        *appFeatureFlag="'DATA_ORGANIZATION'; hide: true"
-        class="white-background"></app-data-layers>
+        class="white-background data-layers-rail"
+        [showBaseLayers]="true"></app-data-layers-rail>
     </mat-tab>
-    <mat-tab label="Base Layers">
-      <app-base-layers class="white-background"></app-base-layers>
-    </mat-tab>
+    <ng-container *appFeatureFlag="'DATA_ORGANIZATION'; hide: true">
+      <mat-tab label="Data Layers">
+        <app-data-layers class="white-background"></app-data-layers>
+      </mat-tab>
+      <mat-tab label="Base Layers">
+        <app-base-layers class="white-background"></app-base-layers>
+      </mat-tab>
+    </ng-container>
   </mat-tab-group>
 
   <app-scenario-failure

@@ -22,6 +22,8 @@ from datasets.models import (
     WorkspaceFavoriteDataLayer,
 )
 from datasets.services import (
+    browse,
+    browse_simple_category,
     create_dataset,
     create_datalayer,
     create_upload_url_for_org,
@@ -559,7 +561,7 @@ class TestSearch(TestCase):
     @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
     def test_simple_category_is_dropped_when_its_datalayers_are_returned(self):
         dataset = DatasetFactory(visibility="PUBLIC")
-        forest = SimpleCategoryFactory.create(name="Forest")
+        forest = SimpleCategoryFactory.create(name="Conifers")
         canopy = DataLayerFactory.create(
             dataset=dataset,
             name="Canopy cover",
@@ -575,7 +577,7 @@ class TestSearch(TestCase):
             simple_categories=[forest],
         )
 
-        results = find_anything("forest", type=DataLayerType.RASTER)
+        results = find_anything("conifer", type=DataLayerType.RASTER)
 
         self.assertEqual(
             set(results),
@@ -885,6 +887,105 @@ class TestSearchFavorites(TestCase):
 
         self.assertIn(f"DATALAYER:{favorite.pk}", results)
         self.assertNotIn(f"DATALAYER:{not_favorite.pk}", results)
+
+
+class TestBrowseFindAnythingParity(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.geometry = GEOSGeometry(
+            "MULTIPOLYGON(((0 0, 2 0, 2 2, 0 2, 0 0)))", srid=4269
+        )
+        self.category = SimpleCategoryFactory.create(name="Sequoia groves")
+        self.dataset = self._dataset(PreferredDisplayType.MAIN_DATALAYERS)
+        self.visible = self._datalayer(self.dataset, name="Sequoia visible")
+        self.not_intersecting = self._datalayer(
+            self.dataset,
+            name="Sequoia far away",
+            outline="MULTIPOLYGON(((5 5, 6 5, 6 6, 5 6, 5 5)))",
+        )
+        self.not_ready = self._datalayer(
+            self.dataset, name="Sequoia failed", status=DataLayerStatus.FAILED
+        )
+        self.base_dataset = self._dataset(PreferredDisplayType.BASE_DATALAYERS)
+        self.wrong_display_type = self._datalayer(self.base_dataset)
+        self.outside_module_dataset = self._dataset(None)
+        self.outside_module = self._datalayer(self.outside_module_dataset)
+        self.private_dataset = self._dataset(
+            PreferredDisplayType.MAIN_DATALAYERS,
+            visibility=VisibilityOptions.PRIVATE,
+            created_by=UserFactory.create(),
+        )
+        self.private = self._datalayer(self.private_dataset)
+        self.datasets = [
+            self.dataset,
+            self.base_dataset,
+            self.outside_module_dataset,
+            self.private_dataset,
+        ]
+
+    def _dataset(self, preferred_display_type, **kwargs):
+        kwargs.setdefault("visibility", VisibilityOptions.PUBLIC)
+        return DatasetFactory.create(
+            name="Sequoia dataset",
+            preferred_display_type=preferred_display_type,
+            **kwargs,
+        )
+
+    def _datalayer(self, dataset, **kwargs):
+        kwargs.setdefault("name", "Sequoia layer")
+        kwargs.setdefault("outline", "MULTIPOLYGON(((0 0, 1 0, 1 1, 0 1, 0 0)))")
+        return DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            metadata={
+                "modules": {"map": {"enabled": True}, "impacts": {"enabled": True}}
+            },
+            simple_categories=[self.category],
+            **kwargs,
+        )
+
+    def _filters(self, **kwargs):
+        return {
+            "type": DataLayerType.RASTER,
+            "module": "map",
+            "geometry": self.geometry,
+            "user": self.user,
+            **kwargs,
+        }
+
+    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
+    def test_browse_and_find_anything_return_the_same_datalayers(self):
+        by_category = {
+            datalayer.pk
+            for datalayer in browse_simple_category(self.category, **self._filters())
+        }
+        by_dataset = {
+            datalayer.pk
+            for dataset in self.datasets
+            for datalayer in browse(dataset, **self._filters())
+        }
+        found = {
+            result.id
+            for result in find_anything("sequoia", **self._filters()).values()
+            if result.type == "DATALAYER"
+        }
+
+        self.assertEqual(by_category, {self.visible.pk})
+        self.assertEqual(by_dataset, {self.visible.pk})
+        self.assertEqual(found, {self.visible.pk})
+
+    def test_find_anything_hides_datasets_without_visible_datalayers(self):
+        results = find_anything("sequoia dataset", **self._filters())
+
+        self.assertIn(f"DATASET:{self.dataset.pk}", results)
+        self.assertNotIn(f"DATASET:{self.base_dataset.pk}", results)
+        self.assertNotIn(f"DATASET:{self.outside_module_dataset.pk}", results)
+        self.assertNotIn(f"DATASET:{self.private_dataset.pk}", results)
+
+    def test_find_anything_returns_nothing_for_module_without_datasets(self):
+        results = find_anything("sequoia", **self._filters(module="impacts"))
+
+        self.assertEqual(results, {})
 
 
 class TestStorageURL(TestCase):

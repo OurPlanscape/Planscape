@@ -1,7 +1,6 @@
 <ng-template #mapTabs>
   <nav
     mat-tab-nav-bar
-    *ngIf="(layoutMode$ | async)! > 1"
     class="map-tabs"
     [tabPanel]="mapPanel"
     mat-stretch-tabs="false"
@@ -22,7 +21,10 @@
     <app-dynamic-data-layers
       *ngIf="(selectedMapId$ | async) === mapId"
       [mapId]="mapId"
+      [panel]="panel"
       [showSelectionHeader]="false"
-      [belowSearch]="mapTabs"></app-dynamic-data-layers>
+      [belowSearch]="
+        (layoutMode$ | async)! > 1 ? mapTabs : undefined
+      "></app-dynamic-data-layers>
   </ng-container>
 </mat-tab-nav-panel>

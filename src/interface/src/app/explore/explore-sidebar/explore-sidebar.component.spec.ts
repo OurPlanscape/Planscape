@@ -105,13 +105,23 @@ describe('ExploreSidebarComponent', () => {
     expect(component.expandedChange.emit).toHaveBeenCalledWith(true);
   });
 
-  it('ignores rail items that have no panel yet', () => {
-    spyOn(component.expandedChange, 'emit');
+  it('switches to the favorites panel when that rail item is picked', () => {
     spyOn(component.selectedTabChange, 'emit');
     component.selectItem(component.railItems[2]);
 
-    expect(component.expandedChange.emit).not.toHaveBeenCalled();
-    expect(component.selectedTabChange.emit).not.toHaveBeenCalled();
+    expect(component.selectedTabChange.emit).toHaveBeenCalledWith(
+      SidebarTabs.FAVORITES
+    );
+  });
+
+  it('shows the favorites panel when that tab is selected', () => {
+    component.selectedTab = SidebarTabs.FAVORITES;
+    fixture.detectChanges();
+
+    const panels = fixture.debugElement.queryAll(By.css('app-map-tabs'));
+
+    expect(panels.length).toBe(1);
+    expect(panels[0].attributes['panel']).toBe('favorites');
   });
 
   describe('when a category is open in the data layers panel', () => {

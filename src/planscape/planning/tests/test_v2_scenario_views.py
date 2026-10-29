@@ -1330,6 +1330,82 @@ class PatchScenarioConfigurationTest(APITestCase):
             ],
         )
 
+    def test_patch_scenario_configuration_accepts_in_and_nin_constraints(self):
+        in_datalayer = DataLayerFactory(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        nin_datalayer = DataLayerFactory(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        payload = {
+            "configuration": {
+                "constraints": [
+                    {
+                        "datalayer": in_datalayer.pk,
+                        "operator": "in",
+                        "value": "1, 2,abc",
+                    },
+                    {
+                        "datalayer": nin_datalayer.pk,
+                        "operator": "nin",
+                        "value": "-1.5,forest_type",
+                    },
+                ],
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        config = response.data.get("configuration", {})
+        self.assertEqual(
+            config["constraints"],
+            [
+                {
+                    "datalayer": in_datalayer.pk,
+                    "operator": "in",
+                    "value": "1,2,abc",
+                },
+                {
+                    "datalayer": nin_datalayer.pk,
+                    "operator": "nin",
+                    "value": "-1.5,forest_type",
+                },
+            ],
+        )
+
+    def test_patch_scenario_configuration_rejects_invalid_constraint_values(self):
+        datalayer = DataLayerFactory(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        invalid_constraints = [
+            {"operator": "in", "value": "1,,2"},
+            {"operator": "in", "value": 'a"b'},
+            {"operator": "nin", "value": "a)"},
+            {"operator": "nin", "value": "1,2 3"},
+            {"operator": "eq", "value": "1,2"},
+            {"operator": "eq", "value": "abc"},
+            {"operator": "btw", "value": "1,abc"},
+        ]
+
+        self.client.force_authenticate(self.user)
+        for constraint in invalid_constraints:
+            with self.subTest(constraint=constraint):
+                payload = {
+                    "configuration": {
+                        "constraints": [{"datalayer": datalayer.pk, **constraint}]
+                    }
+                }
+                response = self.client.patch(self.url, payload, format="json")
+
+                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+                error_data = response.json()["errors"]["configuration"]["constraints"]
+                self.assertIn("value", error_data["0"])
+
     # Test sequential patches, ensure we retain values as expected
     @mock.patch(
         "planning.serializers.calculate_scenario_treatable_area",

@@ -81,6 +81,10 @@ $search-container-height: 79px;
   box-sizing: border-box;
 }
 
+.side-search-container.no-border {
+  border-bottom: none;
+}
+
 :host {
   ::ng-deep .search-bar .input-wrapper {
     width: 100%;
@@ -139,4 +143,13 @@ $search-container-height: 79px;
   .sticky {
     top: calc($search-container-height - 16px);
   }
+}
+
+.load-error {
+  padding: 16px;
+  border-top: 1px solid $color-soft-gray;
+}
+
+.load-error-actions {
+  margin-top: 16px;
 }
