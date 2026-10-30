@@ -1,11 +1,19 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { WebSocketStatus, WorkspaceEvent } from '@types';
+import { EMPTY, of, Subject, throwError } from 'rxjs';
+import {
+  REALTIME_CONNECTED_EVENT,
+  WebSocketStatus,
+  WorkspaceEvent,
+} from '@types';
 import { environment } from '@env/environment';
 import {
   HEARTBEAT_INTERVAL,
+  MAX_RECONNECT_DELAY,
   RECONNECT_DELAY,
+  REPORT_AFTER_ATTEMPTS,
   WebSocketService,
 } from './websocket.service';
+import { AuthService } from './auth.service';
 import { WINDOW } from './window.service';
 
 /** Stand-in for the browser WebSocket; tests drive its events by hand. */
@@ -34,9 +42,14 @@ class FakeWebSocket {
   }
 
   // helpers to simulate the server side
-  open() {
+  accept() {
     this.readyState = WebSocket.OPEN;
     this.onopen?.({});
+  }
+
+  open() {
+    this.accept();
+    this.receive({ type: REALTIME_CONNECTED_EVENT });
   }
 
   receive(event: WorkspaceEvent) {
@@ -46,6 +59,11 @@ class FakeWebSocket {
   dropped(code = 1006) {
     this.readyState = WebSocket.CLOSED;
     this.onclose?.({ wasClean: false, code });
+  }
+
+  closedByServer(code: number) {
+    this.readyState = WebSocket.CLOSED;
+    this.onclose?.({ wasClean: true, code });
   }
 }
 
@@ -63,6 +81,7 @@ const planningAreaCreated: WorkspaceEvent = {
 describe('WebSocketService', () => {
   let service: WebSocketService;
   let logErrorSpy: jasmine.Spy;
+  let refreshToken: jasmine.Spy;
   let endpoint: string;
 
   function socket(): FakeWebSocket {
@@ -77,8 +96,11 @@ describe('WebSocketService', () => {
     // spy on our own method, not on Sentry
     logErrorSpy = spyOn(WebSocketService.prototype as any, 'logError' as any);
 
+    refreshToken = jasmine.createSpy('refreshToken').and.returnValue(of({}));
+
     TestBed.configureTestingModule({
       providers: [
+        { provide: AuthService, useValue: { refreshToken } },
         {
           provide: WINDOW,
           useValue: { WebSocket: FakeWebSocket },
@@ -109,7 +131,10 @@ describe('WebSocketService', () => {
       expect(socket().url).toBe('/planscape-backend/ws/workspaces/7/');
       expect(service.status).toBe('connecting');
 
-      socket().open();
+      socket().accept();
+      expect(service.status).toBe('connecting');
+
+      socket().receive({ type: REALTIME_CONNECTED_EVENT });
 
       expect(service.status).toBe('connected');
       expect(statuses).toEqual(['disconnected', 'connecting', 'connected']);
@@ -231,6 +256,52 @@ describe('WebSocketService', () => {
       service.disconnect();
     }));
 
+    it('keeps a connection that answers', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+
+      tick(HEARTBEAT_INTERVAL);
+      socket().receive({ type: 'pong' });
+      tick(HEARTBEAT_INTERVAL);
+
+      expect(FakeWebSocket.instances.length).toBe(1);
+      expect(socket().sent.length).toBe(2);
+
+      service.disconnect();
+    }));
+
+    it('takes any frame as a sign of life', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+
+      tick(HEARTBEAT_INTERVAL);
+      socket().receive(planningAreaCreated);
+      tick(HEARTBEAT_INTERVAL);
+
+      expect(service.status).toBe('connected');
+
+      service.disconnect();
+    }));
+
+    it('dials again when a ping goes unanswered', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+      const dead = socket();
+
+      tick(HEARTBEAT_INTERVAL * 2);
+
+      expect(dead.closed).toBeTrue();
+      expect(service.status).toBe('error');
+
+      tick(RECONNECT_DELAY);
+      expect(FakeWebSocket.instances.length).toBe(2);
+
+      socket().open();
+      expect(service.status).toBe('connected');
+
+      service.disconnect();
+    }));
+
     it('stops pinging once the connection is gone', fakeAsync(() => {
       service.connect(workspaceId);
       socket().open();
@@ -244,14 +315,14 @@ describe('WebSocketService', () => {
   });
 
   describe('when the connection drops', () => {
-    it('reports the error and dials again', fakeAsync(() => {
+    it('dials again without reporting it', fakeAsync(() => {
       service.connect(workspaceId);
       socket().open();
 
       socket().dropped();
 
       expect(service.status).toBe('error');
-      expect(logErrorSpy).toHaveBeenCalled();
+      expect(logErrorSpy).not.toHaveBeenCalled();
 
       tick(RECONNECT_DELAY);
 
@@ -273,7 +344,21 @@ describe('WebSocketService', () => {
       socket().open();
       socket().receive(planningAreaCreated);
 
-      expect(received).toEqual([planningAreaCreated]);
+      expect(received).toContain(planningAreaCreated);
+
+      service.disconnect();
+    }));
+
+    it('reports once when it cannot get back in', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+
+      for (let attempt = 0; attempt <= REPORT_AFTER_ATTEMPTS; attempt++) {
+        socket().dropped();
+        tick(MAX_RECONNECT_DELAY);
+      }
+
+      expect(logErrorSpy).toHaveBeenCalledTimes(1);
 
       service.disconnect();
     }));
@@ -311,6 +396,52 @@ describe('WebSocketService', () => {
       service.disconnect();
     }));
 
+    it('dials again when the server closes cleanly', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+
+      // 1012: the worker restarted
+      socket().closedByServer(1012);
+
+      expect(service.status).toBe('disconnected');
+      expect(logErrorSpy).not.toHaveBeenCalled();
+
+      tick(RECONNECT_DELAY);
+
+      expect(FakeWebSocket.instances.length).toBe(2);
+
+      service.disconnect();
+    }));
+
+    it('backs off when sockets are accepted but never get through', fakeAsync(() => {
+      service.connect(workspaceId);
+
+      socket().accept();
+      socket().dropped();
+      tick(RECONNECT_DELAY);
+      expect(FakeWebSocket.instances.length).toBe(2);
+
+      socket().accept();
+      socket().dropped();
+      tick(RECONNECT_DELAY);
+      expect(FakeWebSocket.instances.length).toBe(2);
+
+      tick(RECONNECT_DELAY);
+      expect(FakeWebSocket.instances.length).toBe(3);
+
+      service.disconnect();
+    }));
+
+    it('gives up when the server closes cleanly with a final code', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+
+      socket().closedByServer(4404);
+      tick(RECONNECT_DELAY);
+
+      expect(FakeWebSocket.instances.length).toBe(1);
+    }));
+
     it('gives up when the backend turns us away', fakeAsync(() => {
       service.connect(workspaceId);
       socket().open();
@@ -329,6 +460,92 @@ describe('WebSocketService', () => {
 
       socket().dropped();
       service.disconnect();
+      tick(RECONNECT_DELAY);
+
+      expect(FakeWebSocket.instances.length).toBe(1);
+    }));
+  });
+
+  describe('when the token expired', () => {
+    it('refreshes it and dials again', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().accept();
+
+      socket().closedByServer(4401);
+
+      expect(refreshToken).toHaveBeenCalledTimes(1);
+
+      tick(RECONNECT_DELAY);
+      expect(FakeWebSocket.instances.length).toBe(2);
+
+      socket().open();
+      expect(service.status).toBe('connected');
+
+      service.disconnect();
+    }));
+
+    it('stops if the fresh token is rejected too', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().accept();
+      socket().closedByServer(4401);
+      tick(RECONNECT_DELAY);
+
+      socket().accept();
+      socket().closedByServer(4401);
+      tick(RECONNECT_DELAY * 2);
+
+      expect(refreshToken).toHaveBeenCalledTimes(1);
+      expect(FakeWebSocket.instances.length).toBe(2);
+    }));
+
+    it('refreshes again on a later expiry', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().accept();
+      socket().closedByServer(4401);
+      tick(RECONNECT_DELAY);
+      socket().open();
+
+      socket().closedByServer(4401);
+
+      expect(refreshToken).toHaveBeenCalledTimes(2);
+
+      tick(RECONNECT_DELAY);
+      service.disconnect();
+    }));
+
+    it('stays down when the session is over', fakeAsync(() => {
+      refreshToken.and.returnValue(EMPTY);
+      service.connect(workspaceId);
+      socket().accept();
+
+      socket().closedByServer(4401);
+      tick(RECONNECT_DELAY);
+
+      expect(FakeWebSocket.instances.length).toBe(1);
+    }));
+
+    it('dials again if the refresh itself fails', fakeAsync(() => {
+      refreshToken.and.returnValue(throwError(() => new Error('offline')));
+      service.connect(workspaceId);
+      socket().accept();
+
+      socket().closedByServer(4401);
+      tick(RECONNECT_DELAY);
+
+      expect(FakeWebSocket.instances.length).toBe(2);
+
+      service.disconnect();
+    }));
+
+    it('does not dial if we left while refreshing', fakeAsync(() => {
+      const refreshed$ = new Subject<void>();
+      refreshToken.and.returnValue(refreshed$);
+      service.connect(workspaceId);
+      socket().accept();
+      socket().closedByServer(4401);
+
+      service.disconnect();
+      refreshed$.next();
       tick(RECONNECT_DELAY);
 
       expect(FakeWebSocket.instances.length).toBe(1);
