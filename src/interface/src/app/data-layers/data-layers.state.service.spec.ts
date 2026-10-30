@@ -582,7 +582,35 @@ describe('DataLayersStateService', () => {
 
         expect(dataLayersService.browseFavorites).toHaveBeenCalledWith(
           7,
-          'map'
+          'map',
+          undefined
+        );
+      });
+
+      it('sends the plan geometry when USE_GEOMETRY is on', () => {
+        currentPlan = { ...MOCK_PLAN, geometry: MOCK_GEOMETRY };
+        TestBed.overrideProvider(USE_GEOMETRY, { useValue: true });
+        createInWorkspace('DATA_ORGANIZATION');
+
+        service.favorites$.subscribe();
+
+        expect(dataLayersService.browseFavorites).toHaveBeenCalledWith(
+          7,
+          'map',
+          MOCK_GEOMETRY
+        );
+      });
+
+      it('leaves the geometry out when USE_GEOMETRY is off', () => {
+        currentPlan = { ...MOCK_PLAN, geometry: MOCK_GEOMETRY };
+        createInWorkspace('DATA_ORGANIZATION');
+
+        service.favorites$.subscribe();
+
+        expect(dataLayersService.browseFavorites).toHaveBeenCalledWith(
+          7,
+          'map',
+          undefined
         );
       });
 

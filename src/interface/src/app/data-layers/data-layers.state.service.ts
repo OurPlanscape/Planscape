@@ -335,14 +335,21 @@ export class DataLayersStateService {
   private _reloadFavorites$ = new BehaviorSubject<void>(undefined);
 
   private favoritesFromServer$: Observable<Resource<DataLayer[]>> =
-    this._reloadFavorites$.pipe(
-      switchMap(() => {
+    combineLatest([
+      this._reloadFavorites$,
+      this.planState.currentPlanOrNull$,
+    ]).pipe(
+      switchMap(([_, plan]) => {
         const workspaceId = this.favoritesWorkspaceId();
         if (workspaceId === null) {
           return of({ isLoading: false, data: [] } as Resource<DataLayer[]>);
         }
         return this.service
-          .browseFavorites(workspaceId, this.mapModuleService.moduleName)
+          .browseFavorites(
+            workspaceId,
+            this.mapModuleService.moduleName,
+            this.planGeometry(plan)
+          )
           .pipe(
             map(
               (layers) =>
