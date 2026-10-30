@@ -35,7 +35,7 @@ from django.contrib.gis.db.models.functions import Area, Centroid, Transform
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.contrib.gis.measure import A
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import Exists, OuterRef, QuerySet, Subquery
 from django.db.models.aggregates import Sum
 from django.db.models.functions import Substr
 from django.utils.text import slugify
@@ -2094,12 +2094,11 @@ def get_constrained_stands(
     match usage_type:
         case TreatmentGoalUsageType.THRESHOLD:
             metrics = StandMetric.objects.filter(
+                stand_id=OuterRef("pk"),
                 datalayer_id=datalayer.pk,
-                stand_id__in=stands_qs,
                 **{metric_filter: value},
             )
-            excluded_ids = list(metrics.values_list("stand_id", flat=True))
-            stands_qs = stands_qs.exclude(pk__in=excluded_ids)
+            stands_qs = stands_qs.exclude(Exists(metrics))
         case _:
             raise ValueError("Invalid usage_type for get_constrainted_stands.")
 
@@ -2156,13 +2155,16 @@ def get_available_stands(
     planning_area = scenario.planning_area
     area_transform = Area(Transform("geometry", settings.AREA_SRID))
     if feature_enabled("ADD_INCLUDES") and scenario.treatable_area is not None:
-        stands = scenario.get_treatable_area_stands(stand_size=stand_size)
+        geometry = Scenario.objects.filter(pk=scenario.pk).values("treatable_area")
     else:
-        stands = planning_area.get_stands(stand_size)
+        geometry = PlanningArea.objects.filter(pk=planning_area.pk).values("geometry")
 
+    # the database reads the geometry, so it is not sent with every query below
+    stands = Stand.objects.within_geometry(Subquery(geometry[:1]), stand_size)
     stands = stands.annotate(area=area_transform)
 
     total_area = stands.aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+    potential_area = total_area
 
     if is_project_areas_child(scenario):
         project_area_stand_ids = get_project_areas_child_stand_ids(
@@ -2170,8 +2172,7 @@ def get_available_stands(
             stand_size=stand_size,
         )
         stands = stands.filter(id__in=project_area_stand_ids)
-
-    potential_area = stands.aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+        potential_area = stands.aggregate(total_area_m2=Sum("area"))["total_area_m2"]
 
     excluded_ids = []
     constrained_ids = []
