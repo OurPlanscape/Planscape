@@ -168,7 +168,7 @@ export class AuthService {
       );
   }
 
-  private refreshToken() {
+  refreshToken() {
     const token = this.cookieService.get(this.authTokenRefreshKey);
     if (!token) {
       this.loggedInStatus$.next(false);
@@ -340,6 +340,7 @@ export class AuthService {
             username: response.username,
             firstName: response.first_name,
             lastName: response.last_name,
+            id: response.pk,
           };
           this.loggedInUser$.next(user);
           return user;
