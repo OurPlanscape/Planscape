@@ -45,7 +45,6 @@ from funding_report.services import (
     generate_aet_clip_datalayer,
     generate_treatment_clip_datalayer,
     get_aet_percentual_datalayer,
-    get_project_areas_union,
     get_treatment_datalayer,
     merge_aet_improvement_into_results,
     treatment_layer_has_valid_data,
@@ -780,7 +779,12 @@ def async_call_burn_emulator(
             burn_simulation_status=FundingOpportunityReportStatus.RUNNING,
         )
     try:
-        geometry = get_project_areas_union(report.scenario).transform(4326, clone=True)
+        geometry = report.scenario.planning_area.geometry
+        if geometry is None:
+            raise ValueError(
+                f"Planning area for scenario {report.scenario_id} has no geometry."
+            )
+        geometry = geometry.transform(4326, clone=True)
         response = request_job("POST", geometry=json.loads(geometry.geojson))
         apply_burn_response(report.pk, run_started_at, response)
     except BurnEmulatorTransientError as exc:
