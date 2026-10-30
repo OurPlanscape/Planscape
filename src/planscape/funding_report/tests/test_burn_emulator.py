@@ -176,9 +176,14 @@ class BurnEmulatorTaskTest(TestCase):
             scenario=self.scenario, geometry=geometry.transform(3857, clone=True)
         )
 
-    def test_submission_unions_and_transforms_geometries(self):
-        self.project((-121, 38, -120, 39))
-        self.project((-120.5, 38, -119.5, 39))
+    def set_planning_area_geometry(self, geometry):
+        planning_area = self.scenario.planning_area
+        planning_area.geometry = geometry
+        planning_area.save(update_fields=["geometry"])
+
+    def test_submission_uses_planning_area_geometry(self):
+        geometry = MultiPolygon(Polygon.from_bbox((-122, 38, -120, 40)), srid=4326)
+        self.set_planning_area_geometry(geometry.transform(3857, clone=True))
         self.project((-118, 38, -117, 39))
         async_call_burn_emulator(self.report.pk, self.run_id)
         data = self.api.call_args.kwargs["geometry"]
@@ -186,9 +191,9 @@ class BurnEmulatorTaskTest(TestCase):
 
         from django.contrib.gis.geos import GEOSGeometry
 
-        merged = GEOSGeometry(json.dumps(data), srid=4326)
-        self.assertAlmostEqual(merged.area, 2.5)
-        self.assertEqual(merged.geom_type, "MultiPolygon")
+        submitted = GEOSGeometry(json.dumps(data), srid=4326)
+        self.assertAlmostEqual(submitted.area, 4.0, places=4)
+        self.assertEqual(submitted.geom_type, "MultiPolygon")
         self.assertEqual(self.refresh().burn_simulation_job_id, JOB_ID)
         self.assertEqual(self.report.burn_simulation_status, S.RUNNING)
 
@@ -220,6 +225,7 @@ class BurnEmulatorTaskTest(TestCase):
         self.assertEqual(self.refresh().burn_simulation_status, S.FAILED)
 
     def test_submission_validation_failure(self):
+        self.set_planning_area_geometry(None)
         async_call_burn_emulator(self.report.pk, self.run_id)
         self.assertEqual(self.refresh().burn_simulation_status, S.FAILED)
         self.api.assert_not_called()

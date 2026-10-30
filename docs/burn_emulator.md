@@ -1,7 +1,7 @@
 # Funding-report burn simulations
 
-Normal funding-report requests submit the union of the scenario's project areas
-as EPSG:4326 GeoJSON to `POST /v1/jobs`. Celery Beat enqueues status checks every
+Normal funding-report requests submit the scenario's planning area geometry as
+EPSG:4326 GeoJSON to `POST /v1/jobs`. Celery Beat enqueues status checks every
 60 seconds. Run both Celery workers and Beat for simulations to progress.
 
 Set `BURN_EMULATOR_API_URL` to the Cloud Run service URL. The default is the
