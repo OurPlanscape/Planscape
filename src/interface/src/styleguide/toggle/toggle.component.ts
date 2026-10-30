@@ -25,6 +25,7 @@ export class ToggleComponent implements ControlValueAccessor {
   @Input() checked = false;
   @Input() disabled = false;
   @Input() size: 'small' | 'large' = 'small';
+  @Input() align: 'center' | 'top' = 'center';
 
   @Output() changed = new EventEmitter<boolean>();
 

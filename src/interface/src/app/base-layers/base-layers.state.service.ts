@@ -33,26 +33,33 @@ export class BaseLayersStateService {
   } | null = null;
   private dataSetLayers = new Map<string, BaseLayer[]>();
 
-  getCachedSearch(module: string, term: string) {
-    return this.lastSearch?.key === `${module}|${term}`
+  // `scope` is BaseLayersRequestScope.key, so another plan or workspace refetches.
+  getCachedSearch(module: string, scope: string, term: string) {
+    return this.lastSearch?.key === `${module}|${scope}|${term}`
       ? this.lastSearch.response
       : null;
   }
 
   cacheSearch(
     module: string,
+    scope: string,
     term: string,
     response: Pagination<SearchResult>
   ) {
-    this.lastSearch = { key: `${module}|${term}`, response };
+    this.lastSearch = { key: `${module}|${scope}|${term}`, response };
   }
 
-  getCachedDataSetLayers(module: string, dataSetId: number) {
-    return this.dataSetLayers.get(`${module}|${dataSetId}`) ?? null;
+  getCachedDataSetLayers(module: string, scope: string, dataSetId: number) {
+    return this.dataSetLayers.get(`${module}|${scope}|${dataSetId}`) ?? null;
   }
 
-  cacheDataSetLayers(module: string, dataSetId: number, layers: BaseLayer[]) {
-    this.dataSetLayers.set(`${module}|${dataSetId}`, layers);
+  cacheDataSetLayers(
+    module: string,
+    scope: string,
+    dataSetId: number,
+    layers: BaseLayer[]
+  ) {
+    this.dataSetLayers.set(`${module}|${scope}|${dataSetId}`, layers);
   }
 
   setSearchTerm(term: string) {

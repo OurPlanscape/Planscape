@@ -136,10 +136,20 @@ export class DataLayersService {
       .pipe(map((response) => response.results));
   }
 
-  listBaseLayersByDataSet(dataSetId: number, module: string) {
+  listBaseLayersByDataSet(
+    dataSetId: number,
+    module: string,
+    geometry?: Geometry,
+    workspaceId?: number | null
+  ) {
     return this.http.post<BaseLayer[]>(
       environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse/',
-      { type: 'VECTOR', module: module },
+      {
+        type: 'VECTOR',
+        module: module,
+        ...(geometry ? { geometry } : {}),
+        ...(workspaceId ? { workspace_id: workspaceId } : {}),
+      },
       {
         withCredentials: true,
       }

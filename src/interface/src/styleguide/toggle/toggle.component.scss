@@ -27,6 +27,15 @@ $color-on-disabled: rgba($color-brand-green, 0.5);
     --toggle-track-height: 24px;
     --toggle-handle-size: 20px;
   }
+
+  // keeps the track on the first line of a label that wraps
+  &--top {
+    align-items: flex-start;
+
+    .sg-toggle__track {
+      margin-top: calc((22px - var(--toggle-track-height)) / 2);
+    }
+  }
 }
 
 .sg-toggle__input {
