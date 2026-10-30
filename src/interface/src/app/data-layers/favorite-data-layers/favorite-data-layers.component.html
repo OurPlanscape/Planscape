@@ -27,6 +27,7 @@
       class="data-layer"
       *ngFor="let layer of results$ | async; trackBy: trackById">
       <sg-toggle
+        align="top"
         class="toggle"
         [ngModel]="(viewedDataLayerId$ | async) === layer.id"
         (change)="selectDataLayer(layer, $event)">

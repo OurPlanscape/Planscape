@@ -39,6 +39,7 @@
             (click)="toggleDataLayerSelection(node.item)"></mat-checkbox>
         </span>
         <sg-toggle
+          align="top"
           class="toggle"
           [ngModel]="treeContainerModel.value === node.item.id"
           (change)="selectDataLayer(node.item, $event)">

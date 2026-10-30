@@ -1,5 +1,9 @@
 @import 'colors';
 
+:host-context(.sg-toggle--top) {
+  margin-top: 1px;
+}
+
 .favorite-star-slot {
   display: flex;
   flex-shrink: 0;

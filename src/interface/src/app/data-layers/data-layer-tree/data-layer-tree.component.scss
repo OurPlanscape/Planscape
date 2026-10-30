@@ -68,6 +68,11 @@
 
 .data-layer {
   min-height: 36px;
+  align-items: flex-start;
+
+  mat-spinner {
+    margin-top: 9px;
+  }
 }
 
 // Lines toggles up with the arrows of sibling categories.
@@ -150,4 +155,5 @@
 .toggle {
   margin-right: auto;
   flex: 1;
+  padding: 8px 0;
 }
