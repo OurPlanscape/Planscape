@@ -85,6 +85,17 @@
             </dd>
           </ng-container>
         </ng-container>
+
+        <ng-container *ngIf="config.treatment_goal_constraints.length">
+          <dt>Treatment Goal Constraints</dt>
+          <dd>
+            <ul class="list-element">
+              <li *ngFor="let c of config.treatment_goal_constraints">
+                {{ c.datalayer?.name }} {{ c.threshold }}
+              </li>
+            </ul>
+          </dd>
+        </ng-container>
       </ng-template>
 
       <ng-template #standardLayout>
