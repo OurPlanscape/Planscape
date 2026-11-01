@@ -19,6 +19,7 @@ from typing import (  # noqa
     Type,
     Union,
 )
+
 import fiona
 from actstream import action
 from cacheops import cached
@@ -330,53 +331,59 @@ def _get_unique_clone_name(planning_area_id: int, base_name: str) -> str:
         counter += 1
     return f"{base_name} ({counter})"
 
-def migrate_configuration(old_config: dict[str, Any], current_version: ScenarioVersion) -> dict[str, Any]:    
+
+def migrate_configuration(
+    old_config: dict[str, Any], current_version: ScenarioVersion
+) -> dict[str, Any]:
     new_config = copy.deepcopy(old_config or {})
-    new_config['constraints'] = []
-    new_config['targets'] = {}
+    new_config["constraints"] = []
+    new_config["targets"] = {}
 
     # old configs that become targets
     for old_key, new_key in (
-        ('est_cost', 'estimated_cost'),
-        ('estimated_cost', 'estimated_cost'),
-        ('max_project_count', 'max_project_count'),
+        ("est_cost", "estimated_cost"),
+        ("estimated_cost", "estimated_cost"),
+        ("max_project_count", "max_project_count"),
     ):
         if old_key in new_config:
-            new_config['targets'][new_key] = new_config.pop(old_key)
+            new_config["targets"][new_key] = new_config.pop(old_key)
 
     # old configs that become constraint items
-    if 'max_slope' in new_config:
-        slope_value = new_config.pop('max_slope')
+    if "max_slope" in new_config:
+        slope_value = new_config.pop("max_slope")
         slope_layer = DataLayer.objects.all().by_meta_name("slope")
         if slope_layer is None:
             logger.warning("slope layer not found")
         else:
-            new_config['constraints'].append({
-                "datalayer": slope_layer.pk,
-                "operator": "lt",
-                "value": slope_value,
-            })
+            new_config["constraints"].append(
+                {
+                    "datalayer": slope_layer.pk,
+                    "operator": "lt",
+                    "value": slope_value,
+                }
+            )
 
-    if 'min_distance_from_road' in new_config:
-        roads_value = new_config.pop('min_distance_from_road')
+    if "min_distance_from_road" in new_config:
+        roads_value = new_config.pop("min_distance_from_road")
         roads_layer = DataLayer.objects.all().by_meta_name("distance_from_roads")
         if roads_layer is None:
             logger.warning("min_distance_from_road layer not found")
         else:
-            new_config['constraints'].append({
-                "datalayer": roads_layer.pk,
-                "operator": "lte",
-                "value": roads_value,
-            })
+            new_config["constraints"].append(
+                {
+                    "datalayer": roads_layer.pk,
+                    "operator": "lte",
+                    "value": roads_value,
+                }
+            )
 
     return new_config
+
 
 # Clones the scenario configuration and sets to DRAFT
 @transaction.atomic
 def clone_scenario(
-    original_scenario_id: int,
-    user: User,
-    name: str | None = None
+    original_scenario_id: int, user: User, name: str | None = None
 ) -> Scenario:
 
     original = Scenario.objects.select_for_update().get(pk=original_scenario_id)
@@ -392,21 +399,26 @@ def clone_scenario(
     else:
         new_config = copy.deepcopy(original.configuration)
 
-
     # never clone these fields
-    _CLONE_EXCLUDE = {"uuid", "created_at", "updated_at", 
-        "geopackage_url", "ready_email_sent_at"}
+    _CLONE_EXCLUDE = {
+        "uuid",
+        "created_at",
+        "updated_at",
+        "geopackage_url",
+        "ready_email_sent_at",
+    }
 
     # Fields that are replaced or reset rather than copied
     overrides = {
-        "user": user, # whoever copies the scenario is the new owner
+        "user": user,  # whoever copies the scenario is the new owner
         "name": new_name,
+        "forsys_input": None,
         "configuration": new_config,
         "treatable_area": (
             original.treatable_area.clone() if original.treatable_area else None
         ),
         "status": ScenarioStatus.ACTIVE,
-        "result_status": ScenarioResultStatus.PENDING, # remember this is not results.status
+        "result_status": ScenarioResultStatus.PENDING,  # remember this is not results.status
         "geopackage_status": GeoPackageStatus.PENDING,
         "post_process_status": ScenarioPostProcessingStatus.PENDING,
     }
@@ -423,6 +435,7 @@ def clone_scenario(
     publish_scenario_event("planning.scenario.created", clone, actor=user)
 
     return clone
+
 
 @transaction.atomic()
 def create_scenario(user: User, **kwargs) -> Scenario:
@@ -489,7 +502,9 @@ def create_scenario(user: User, **kwargs) -> Scenario:
                 "origin": scenario.origin,
                 "treatment_goal_id": treatment_goal.pk if treatment_goal else None,
                 "treatment_goal_category": (
-                    treatment_goal.category.name if treatment_goal and treatment_goal.category else None
+                    treatment_goal.category.name
+                    if treatment_goal and treatment_goal.category
+                    else None
                 ),
                 "treatment_goal_name": treatment_goal.name if treatment_goal else None,
                 "email": user.email if user else None,
@@ -1216,7 +1231,14 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
 
     capabilities = compute_scenario_capabilities(scenario)
     scenario.capabilities = capabilities
-    scenario.save(update_fields=["capabilities"])
+    scenario.forsys_input = None
+    scenario.save(
+        update_fields=[
+            "capabilities",
+            "forsys_input",
+            "updated_at",
+        ]
+    )
 
     if hasattr(scenario, "results"):
         scenario.results.status = ScenarioResultStatus.PENDING
@@ -1503,7 +1525,9 @@ def export_scenario_stand_outputs_to_geopackage(
         and not is_project_areas_child(scenario)
     )
 
-    sub_units_lookup_table = _get_sub_units_lookup_table(scenario=scenario) if is_sub_units else None
+    sub_units_lookup_table = (
+        _get_sub_units_lookup_table(scenario=scenario) if is_sub_units else None
+    )
 
     with open(stnd_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
@@ -1772,7 +1796,7 @@ def export_scenario_sub_units_outputs_to_geopackage(
     geojson = get_flatten_geojson(scenario)
 
     is_child_scenario = is_project_areas_child(scenario)
-    
+
     schema_geojson = copy.deepcopy(geojson)
     if not is_child_scenario:
         # rename proj_id to subunit_id on schema
@@ -2303,6 +2327,43 @@ def get_available_stand_ids(
 
     stand_ids = set(stand_ids) - set(excluded_ids)
     return list(stand_ids)
+
+
+def get_forsys_input_stands(
+    scenario: Scenario,
+) -> dict[str, Any] | None:
+    completed_statuses = {
+        ScenarioResultStatus.SUCCESS,
+        ScenarioResultStatus.FAILURE,
+        ScenarioResultStatus.PANIC,
+        ScenarioResultStatus.TIMED_OUT,
+    }
+
+    if scenario.result_status not in completed_statuses:
+        return None
+
+    forsys_input = scenario.forsys_input or {}
+    stand_ids = forsys_input.get("stand_ids")
+
+    if not isinstance(stand_ids, list):
+        return None
+
+    stand_ids = sorted(set(stand_ids))
+
+    total_area_m2 = (
+        Stand.objects.filter(id__in=stand_ids).aggregate(total=Sum("area_m2"))["total"]
+        or 0.0
+    )
+
+    return {
+        "stand_ids": stand_ids,
+        "stand_count": len(stand_ids),
+        "stand_size": scenario.get_stand_size(),
+        "total_area_acres": round(
+            total_area_m2 / settings.CONVERSION_SQM_ACRES,
+            2,
+        ),
+    }
 
 
 def calculate_scenario_treatable_area(
