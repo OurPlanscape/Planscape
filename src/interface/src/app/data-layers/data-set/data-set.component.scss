@@ -95,10 +95,14 @@
 .data-layer {
   display: flex;
   width: 100%;
-  align-items: center;
+  align-items: flex-start;
 
   &.with-add-button {
     gap: 16px;
+  }
+
+  mat-spinner {
+    margin-top: 9px;
   }
 }
 
@@ -163,4 +167,5 @@
 .toggle {
   margin-right: auto;
   flex: 1;
+  padding: 8px 0;
 }

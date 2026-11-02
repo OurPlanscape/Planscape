@@ -12,6 +12,7 @@ import { overrideFeatureFlags } from '@features/testing';
 import { SyncedMapsComponent } from '@maplibre-map/synced-maps/synced-maps.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { ExploreStorageService } from '@services/local-storage.service';
+import { MapModuleService } from '@services/map-module.service';
 import { SharedModule } from '@shared';
 import { Geometry } from '@turf/helpers';
 import {
@@ -27,6 +28,8 @@ describe('ExploreComponent', () => {
   let fixture: ComponentFixture<ExploreComponent>;
   let breadcrumbService: BreadcrumbService;
   let currentPlanId$: BehaviorSubject<number | null>;
+  let currentPlanOrNull$: BehaviorSubject<Plan | null>;
+  let loadMapModule: jasmine.Spy;
 
   const mockRouteSnapshotData: { planId?: number; scenarioId?: number } = {};
 
@@ -65,6 +68,8 @@ describe('ExploreComponent', () => {
     mockRouteSnapshotData.planId = 24;
     mockRouteSnapshotData.scenarioId = 1234;
     currentPlanId$ = new BehaviorSubject<number | null>(24);
+    currentPlanOrNull$ = new BehaviorSubject<Plan | null>(mockPlan);
+    loadMapModule = jasmine.createSpy('loadMapModule').and.returnValue(of({}));
 
     await TestBed.configureTestingModule({
       imports: [ExploreComponent, SharedModule, BrowserAnimationsModule],
@@ -73,7 +78,9 @@ describe('ExploreComponent', () => {
         MockProvider(PlanState, {
           currentPlanId$,
           currentPlan$: of(mockPlan),
+          currentPlanOrNull$,
         }),
+        MockProvider(MapModuleService, { loadMapModule }),
         MockProvider(ScenarioState, {
           currentScenario$: of(mockScenario),
         }),
@@ -93,6 +100,25 @@ describe('ExploreComponent', () => {
         },
       })
       .compileComponents();
+  });
+
+  describe('map module', () => {
+    it("loads it narrowed to the plan's geometry", () => {
+      setupComponent();
+      expect(loadMapModule).toHaveBeenCalledOnceWith(mockPlan.geometry);
+    });
+
+    it('loads it unfiltered without a plan', () => {
+      currentPlanOrNull$.next(null);
+      setupComponent();
+      expect(loadMapModule).toHaveBeenCalledOnceWith(undefined);
+    });
+
+    it('does not reload when the same plan emits again', () => {
+      setupComponent();
+      currentPlanOrNull$.next({ ...mockPlan });
+      expect(loadMapModule).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('renders the legacy sidebar when DATA_ORGANIZATION is off', () => {
