@@ -12,6 +12,7 @@ import { WorkspaceState } from '../workspace.state';
 import {
   PLANNING_AREA_CREATED_EVENT,
   PLANNING_AREA_DELETED_EVENT,
+  PLANNING_AREA_UPDATED_EVENT,
   PLANNING_AREA_MAP_STATUS_EVENT,
   REALTIME_CONNECTED_EVENT,
   Workspace,
@@ -119,8 +120,14 @@ describe('PlanningAreaListComponent', () => {
             {
               provide: WebSocketService,
               useValue: {
-                on: (type: string) =>
-                  workspaceEvents$.pipe(filter((event) => event.type === type)),
+                workspaceUpdates$: (types: string[]) =>
+                  workspaceEvents$.pipe(
+                    filter(
+                      (event) =>
+                        types.includes(event.type) ||
+                        event.type === REALTIME_CONNECTED_EVENT
+                    )
+                  ),
               },
             },
             {
@@ -201,19 +208,21 @@ describe('PlanningAreaListComponent', () => {
       expect(dataSourceMock.refresh).not.toHaveBeenCalled();
     });
 
-    it('does not ask again while a refresh is in flight', () => {
-      const longRefresh$ = new Subject<any>();
-      dataSourceMock.refresh.and.returnValue(longRefresh$);
-
-      workspaceEvents$.next(event(PLANNING_AREA_CREATED_EVENT));
-      workspaceEvents$.next(event(PLANNING_AREA_CREATED_EVENT));
+    it('asks for the list again when one is renamed', () => {
+      workspaceEvents$.next(event(PLANNING_AREA_UPDATED_EVENT));
 
       expect(dataSourceMock.refresh.calls.count()).toBe(1);
+    });
 
-      longRefresh$.complete();
+    it('never misses a change that lands while a refresh is in flight', () => {
+      const inFlight$ = new Subject<any>();
+      dataSourceMock.refresh.and.returnValue(inFlight$);
+
       workspaceEvents$.next(event(PLANNING_AREA_CREATED_EVENT));
+      workspaceEvents$.next(event(PLANNING_AREA_MAP_STATUS_EVENT));
 
       expect(dataSourceMock.refresh.calls.count()).toBe(2);
+      expect(inFlight$.observed).toBeTrue();
     });
 
     it('keeps listening after a refresh fails', () => {

@@ -1,3 +1,4 @@
+import { getMapViewerPath } from './plan-helpers';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
@@ -18,6 +19,23 @@ import {
 import { Feature, Polygon, MultiPolygon } from 'geojson';
 import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
 import { GeoJSONStoreFeatures } from 'terra-draw';
+
+describe('getMapViewerPath', () => {
+  const route = (params: Record<string, string>) =>
+    ({
+      pathFromRoot: [{ paramMap: convertToParamMap(params) }],
+    }) as unknown as ActivatedRouteSnapshot;
+
+  it('stays inside the workspace', () => {
+    expect(getMapViewerPath(9, route({ workspaceId: '5' }))).toBe(
+      '/workspace/5/map-viewer/9'
+    );
+  });
+
+  it('uses the root path outside one', () => {
+    expect(getMapViewerPath(9, route({}))).toBe('/map-viewer/9');
+  });
+});
 
 describe('getPlanPath', () => {
   function routeWithParams(...params: Record<string, string>[]) {

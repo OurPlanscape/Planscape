@@ -21,6 +21,7 @@ import {
 } from '@resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from '@resolvers/scenario-loader.resolver';
 import { numberResolver } from './resolvers/number.resolver';
+import { workspacePlanGuard } from '@plan/workspace-plan.guard';
 import { TreatmentEffectsHomeComponent } from './treatments/treatment-effects-home/treatment-effects-home.component';
 import {
   workspaceLoaderResolver,
@@ -28,6 +29,32 @@ import {
 } from './resolvers/workspace-loader.resolver';
 
 const planRoutes: Routes = [
+  {
+    path: 'map-viewer/:planId',
+    title: 'Map Viewer',
+    loadComponent: () =>
+      import('@explore/explore/explore.component').then(
+        (m) => m.ExploreComponent
+      ),
+
+    resolve: {
+      planInit: planLoaderResolver,
+    },
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'map-viewer/:planId/:scenarioId',
+    title: 'Map Viewer',
+    loadComponent: () =>
+      import('@explore/explore/explore.component').then(
+        (m) => m.ExploreComponent
+      ),
+    resolve: {
+      planInit: planLoaderResolver,
+      scenarioId: scenarioLoaderResolver,
+    },
+    canActivate: [AuthGuard],
+  },
   {
     path: 'plan',
 
@@ -179,7 +206,7 @@ const routes: Routes = [
         pathMatch: 'full',
       },
       // Declared before `map-viewer/:planId` so `workspace` is never read as a
-      // plan id. Plans will move under the workspace later.
+      // plan id.
       {
         path: 'map-viewer/workspace/:workspaceId',
         title: 'Map Viewer',
@@ -194,32 +221,6 @@ const routes: Routes = [
         },
       },
       {
-        path: 'map-viewer/:planId',
-        title: 'Map Viewer',
-        loadComponent: () =>
-          import('@explore/explore/explore.component').then(
-            (m) => m.ExploreComponent
-          ),
-
-        resolve: {
-          planInit: planLoaderResolver,
-        },
-        canActivate: [AuthGuard],
-      },
-      {
-        path: 'map-viewer/:planId/:scenarioId',
-        title: 'Map Viewer',
-        loadComponent: () =>
-          import('@explore/explore/explore.component').then(
-            (m) => m.ExploreComponent
-          ),
-        resolve: {
-          planInit: planLoaderResolver,
-          scenarioId: scenarioLoaderResolver,
-        },
-        canActivate: [AuthGuard],
-      },
-      {
         path: 'forsys',
         canActivate: [RedirectGuard],
         component: RedirectGuard,
@@ -227,7 +228,11 @@ const routes: Routes = [
           externalUrl: 'https://www.forsysplanning.org/',
         },
       },
-      ...planRoutes,
+      // Old links, and plans outside a workspace
+      ...planRoutes.map((route) => ({
+        ...route,
+        canActivate: [workspacePlanGuard, ...(route.canActivate ?? [])],
+      })),
       {
         path: 'funding-report/:id',
         title: 'Funding Opportunity Report',

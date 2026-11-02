@@ -2,10 +2,16 @@ import { Inject, Injectable } from '@angular/core';
 import {
   BehaviorSubject,
   distinctUntilChanged,
+  EMPTY,
   filter,
+  interval,
+  map,
+  merge,
   Observable,
   Subject,
   Subscription,
+  switchMap,
+  throttleTime,
 } from 'rxjs';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import * as Sentry from '@sentry/angular';
@@ -32,6 +38,12 @@ export const REPORT_AFTER_ATTEMPTS = 5;
 // unanswered at the next beat means the connection is dead.
 export const HEARTBEAT_INTERVAL = 30000;
 
+// How often pages refresh while the socket can't tell them what changed
+export const FALLBACK_POLL_INTERVAL = 3000;
+
+// Collapses a burst of events into a first and a last refresh
+export const UPDATES_THROTTLE = 300;
+
 // The token expired: worth one refresh before dialling again
 const UNAUTHENTICATED_CLOSE_CODE = 4401;
 
@@ -40,6 +52,12 @@ const UNAUTHENTICATED_CLOSE_CODE = 4401;
  * workspace is gone. Dialling again would only repeat them.
  */
 const FINAL_CLOSE_CODES = [4403, 4404];
+
+function isAboutPlan(event: WorkspaceEvent, planId: number): boolean {
+  return event.object?.kind === 'planning_area'
+    ? event.object.id === planId
+    : event.object?.['planning_area_id'] === planId;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -105,6 +123,52 @@ export class WebSocketService {
     return this.messages$.pipe(
       filter((event) => event.type === type)
     ) as Observable<WorkspaceEvent<T>>;
+  }
+
+  /**
+   * Emits whenever the workspace may have changed: the event that says so, or
+   * `realtime.connected` as events are not replayed, or null on a timer while
+   * there is no connection, which is also the case for plans outside a
+   * workspace.
+   */
+  workspaceUpdates$(types: string[]): Observable<WorkspaceEvent | null> {
+    return this.updates$(
+      this.messages$.pipe(filter((event) => types.includes(event.type)))
+    );
+  }
+
+  /** Same as `workspaceUpdates$`, for the events about a single plan. */
+  planUpdates$(
+    planId: number,
+    types: string[]
+  ): Observable<WorkspaceEvent | null> {
+    return this.updates$(
+      this.messages$.pipe(
+        filter(
+          (event) => types.includes(event.type) && isAboutPlan(event, planId)
+        )
+      )
+    );
+  }
+
+  private updates$(
+    events$: Observable<WorkspaceEvent>
+  ): Observable<WorkspaceEvent | null> {
+    return merge(
+      events$,
+      this.on(REALTIME_CONNECTED_EVENT),
+      this.status$.pipe(
+        switchMap((status) =>
+          status === 'connected' ? EMPTY : interval(FALLBACK_POLL_INTERVAL)
+        ),
+        map(() => null)
+      )
+    ).pipe(
+      throttleTime(UPDATES_THROTTLE, undefined, {
+        leading: true,
+        trailing: true,
+      })
+    );
   }
 
   private open(workspaceId: number): void {

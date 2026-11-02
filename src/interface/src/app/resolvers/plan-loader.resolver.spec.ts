@@ -6,7 +6,7 @@ import {
 } from '@angular/router';
 import { PlanState } from '@plan/plan.state';
 import { planLoaderResolver } from './plan-loader.resolver';
-import { PlanService } from '@services';
+import { AuthService, PlanService, WebSocketService } from '@services';
 import { MockProvider } from 'ng-mocks';
 
 /**
@@ -27,6 +27,8 @@ describe('planLoaderResolver', () => {
         PlanState,
         // Provide a mocked PlanService so we don't need HttpClient
         MockProvider(PlanService),
+        MockProvider(WebSocketService),
+        MockProvider(AuthService),
       ],
     });
   });
