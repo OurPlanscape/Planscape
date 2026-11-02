@@ -284,13 +284,13 @@ describe('ScenarioConfigListOverlayComponent', () => {
           treatment_goal_constraints: [
             {
               datalayer: { id: 1, name: 'Tx Goal Layer' },
-              threshold: 'value > 100',
+              threshold: '> 100',
             },
           ],
         })
       );
       const rows = items('Stand-Level Constraints');
-      expect(rows).toContain('Tx Goal Layer value > 100');
+      expect(rows).toContain('Tx Goal Layer > 100');
       expect(rows).toContain('Distance from roads is less than (<) 1,000 yds');
       expect(rows).toContain('Slope less than or equal to (<=) 99 %');
     });
