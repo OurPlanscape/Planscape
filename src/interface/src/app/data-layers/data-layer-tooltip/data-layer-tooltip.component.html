@@ -47,6 +47,9 @@
         [sgHighlighter]="searchText"
         [sgHighlighterText]="geographicCoverage"></dd>
 
+      <dt>Value Range</dt>
+      <dd>{{ valueRange || '--' }}</dd>
+
       <dt>Units</dt>
       <dd [sgHighlighter]="searchText" [sgHighlighterText]="getUnits()"></dd>
 

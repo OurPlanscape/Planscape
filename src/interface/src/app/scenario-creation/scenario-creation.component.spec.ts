@@ -22,7 +22,6 @@ import { MOCK_SCENARIO } from '@services/mocks';
 import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
 import { StandLevelConstraintsComponent } from '@scenario-creation/step3/stand-level-constraints.component';
-import { ConstraintsStepComponent } from './constraints-step/constraints-step.component';
 import { TreatmentTargetComponent } from '@scenario-creation/treatment-target/treatment-target.component';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { FeatureService } from '@app/features/feature.service';
@@ -60,7 +59,6 @@ describe('ScenarioCreationComponent', () => {
           Step1WithOverviewComponent,
           DataLayersComponent,
           StandLevelConstraintsComponent,
-          ConstraintsStepComponent,
           TreatmentTargetComponent,
           BaseLayersComponent
         ),

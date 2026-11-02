@@ -169,4 +169,25 @@ describe('NewScenarioState', () => {
       expectRequestFor(null as unknown as ScenarioStepConfig, null);
     });
   });
+
+  describe('repeated requests', () => {
+    it('does not ask again when an input the step ignores changes', () => {
+      state.setCurrentStep(SCENARIO_OVERVIEW_STEPS[1]); // Include Areas
+      scenarioService.getExcludedStands.calls.reset();
+
+      state.setIncludedAreas([23]);
+      state.setIncludedAreas([]);
+
+      expect(scenarioService.getExcludedStands).not.toHaveBeenCalled();
+    });
+
+    it('asks again when an input the step sends changes', () => {
+      state.setCurrentStep(SCENARIO_OVERVIEW_STEPS[2]); // Exclude Areas
+      scenarioService.getExcludedStands.calls.reset();
+
+      state.setIncludedAreas([23]);
+
+      expect(scenarioService.getExcludedStands).toHaveBeenCalledTimes(1);
+    });
+  });
 });

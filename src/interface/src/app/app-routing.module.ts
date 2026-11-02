@@ -22,7 +22,10 @@ import {
 import { scenarioLoaderResolver } from '@resolvers/scenario-loader.resolver';
 import { numberResolver } from './resolvers/number.resolver';
 import { TreatmentEffectsHomeComponent } from './treatments/treatment-effects-home/treatment-effects-home.component';
-import { workspaceLoaderResolver } from './resolvers/workspace-loader.resolver';
+import {
+  workspaceLoaderResolver,
+  workspaceResetResolver,
+} from './resolvers/workspace-loader.resolver';
 
 const planRoutes: Routes = [
   {
@@ -107,6 +110,7 @@ const routes: Routes = [
         path: 'home',
         title: 'Home',
         canMatch: [loggedInMatchGuard],
+        resolve: { workspaceInit: workspaceResetResolver },
         loadComponent: () =>
           import('@app/workspaces/workspaces.component').then(
             (m) => m.WorkspacesComponent

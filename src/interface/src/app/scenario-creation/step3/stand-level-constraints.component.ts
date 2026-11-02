@@ -1,14 +1,6 @@
 import { CommonModule } from '@angular/common';
+import { Component, Input, OnInit } from '@angular/core';
 import {
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-  Optional,
-  SkipSelf,
-} from '@angular/core';
-import {
-  ControlContainer,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
@@ -50,7 +42,7 @@ import { NewScenarioState } from '../new-scenario.state';
 })
 export class StandLevelConstraintsComponent
   extends StepDirective<ScenarioDraftConfiguration>
-  implements OnInit, OnDestroy
+  implements OnInit
 {
   @Input() keyName = 'standLevelConstraints';
 
@@ -68,8 +60,7 @@ export class StandLevelConstraintsComponent
   constructor(
     private newScenarioState: NewScenarioState,
     private forsysService: ForsysService,
-    private featureService: FeatureService,
-    @Optional() @SkipSelf() private parentContainer: ControlContainer
+    private featureService: FeatureService
   ) {
     super();
   }
@@ -79,11 +70,6 @@ export class StandLevelConstraintsComponent
   }
 
   ngOnInit(): void {
-    // attach to parent form if wrapped in a parent <form> or [formGroup]
-    if (this.parentContainer?.control) {
-      const parentGroup = this.parentContainer.control as FormGroup;
-      parentGroup.addControl(this.keyName, this.form);
-    }
     this.forsysService.forsysData$
       .pipe(
         take(1),
@@ -151,13 +137,6 @@ export class StandLevelConstraintsComponent
         )
       )
       .subscribe((config) => {});
-  }
-
-  // Detach form control if component unmounts
-  ngOnDestroy(): void {
-    if (this.parentContainer?.control) {
-      (this.parentContainer.control as FormGroup).removeControl(this.keyName);
-    }
   }
 
   get isAdvSLCEnabled() {

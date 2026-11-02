@@ -95,12 +95,12 @@ First you must install Python and GDAL. On MacOS,
   echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> /Users/$USER/.profile
   ```
 
-* Install Python 3.10 (or later):
+* Install Python 3.12:
   ```bash
-  brew reinstall python@3.10
+  brew reinstall python@3.12
   ```
 
-Please read the install output carefully since most of the installs are dependent on python 3.10+. You can check to see if it installed properly in
+Please read the install output carefully since most of the installs are dependent on python 3.12. You can check to see if it installed properly in
 /usr/local/bin/.
 
 * Install GDAL (necessary for processing raster GIS data):
@@ -146,9 +146,9 @@ In a terminal window,
 
 * Check that the file env/pyvenv.cfg has the following or similar contents:
   ```bash
-  home = /opt/homebrew/opt/python@3.10/bin
+  home = /opt/homebrew/opt/python@3.12/bin
   include-system-site-packages = false
-  version = 3.10.6
+  version = 3.12.12
   ```
 
 * Use the following command to start using Python in the environment:
@@ -287,6 +287,9 @@ can be found [here](https://www.geeksforgeeks.org/how-to-install-pip-in-macos/).
 
 ## [Install UV](https://docs.astral.sh/uv/getting-started/installation/)
 
+uv 0.9.17 or newer is required (`uv self update`). `pyproject.toml` sets `exclude-newer = "7 days"`,
+so `uv lock`/`uv add` ignore releases published in the last 7 days.
+
 ## Download the Python dependencies:
 
 ```bash
@@ -319,9 +322,13 @@ node -v   # should print v20.19.0
 
 ### Frontend dependencies
 
+npm 11.10 or newer is required (`npm install -g npm@11`). `src/interface/.npmrc` sets
+`min-release-age=7` (skip releases published in the last 7 days) and `ignore-scripts=true`
+(dependency install scripts don't run), so our `postinstall` (patch-package) must be run explicitly:
+
 ```bash
 cd src/interface
-npm install
+npm install && npm run postinstall
 ```
 
 ## Linting & Formatting (Python)
@@ -511,7 +518,7 @@ Quit the server with CONTROL-C.
 In another shell, start the Angular frontend from the `src/interface` directory:
 
 ```bash
-npm install
+npm install && npm run postinstall
 npm start
 ```
 

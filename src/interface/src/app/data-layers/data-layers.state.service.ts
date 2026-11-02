@@ -1,24 +1,31 @@
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, OnDestroy } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
 import {
   BehaviorSubject,
   catchError,
   combineLatest,
   distinctUntilChanged,
+  filter,
   map,
+  merge,
   Observable,
   of,
   shareReplay,
   startWith,
   Subject,
+  Subscription,
   switchMap,
   tap,
 } from 'rxjs';
 import {
   BaseDataSet,
   DataLayer,
+  DATALAYER_FAVORITED_EVENT,
+  DATALAYER_UNFAVORITED_EVENT,
   IdNamePair,
   Pagination,
+  Plan,
+  REALTIME_CONNECTED_EVENT,
   Resource,
   SearchResult,
   SimpleCategory,
@@ -42,6 +49,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { FeatureService } from '@features/feature.service';
 import { WorkspacesService } from '@services/workspaces.service';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { WebSocketService } from '@services/websocket.service';
+import { Geometry } from 'geojson';
 
 /** The dataset or category whose layers are being browsed. */
 export interface BrowseSelection {
@@ -57,7 +66,7 @@ export interface unselectableLayer {
 }
 
 @Injectable()
-export class DataLayersStateService {
+export class DataLayersStateService implements OnDestroy {
   readonly limit = 20;
 
   private moduleNameOverride$ = new BehaviorSubject<string | null>(null);
@@ -142,21 +151,20 @@ export class DataLayersStateService {
 
   dataTree$ = combineLatest([
     this.selection$,
-    // Setting an initial value when there is no plan
-    this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
+    this.planState.currentPlanOrNull$,
     this.moduleNameOverride$,
   ]).pipe(
     tap(() => this.loadingSubject.next(true)),
-    switchMap(([selection, planningAreaGeometry, override]) => {
+    switchMap(([selection, plan, override]) => {
       if (!selection) {
         this.loadingSubject.next(false);
         return of(null);
       }
       const module = override ?? this.mapModuleService.moduleName;
-      const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
+      const geometry = this.planGeometry(plan);
       // categories list their layers flat; datasets nest them by path
       const isCategory = selection.type === 'category';
-      const workspaceId = this.favoritesWorkspaceId();
+      const workspaceId = this.requestWorkspaceId(plan);
       const layers$ = isCategory
         ? this.service.listCategoryDataLayers(
             selection.id,
@@ -216,11 +224,10 @@ export class DataLayersStateService {
   searchResults$: Observable<Pagination<SearchResult> | null> = combineLatest([
     this.searchTerm$,
     this._offset,
-    // Setting an initial value when there is no plan
-    this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
+    this.planState.currentPlanOrNull$,
     this.moduleNameOverride$,
   ]).pipe(
-    switchMap(([term, offset, planningAreaGeometry, override]) => {
+    switchMap(([term, offset, plan, override]) => {
       if (!term) {
         return of(null);
       }
@@ -228,16 +235,14 @@ export class DataLayersStateService {
 
       const module = override ?? this.mapModuleService.moduleName;
 
-      const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
-
       return this.service
         .search({
           term,
           limit: this.limit,
           offset,
           module,
-          geometry,
-          workspaceId: this.favoritesWorkspaceId(),
+          geometry: this.planGeometry(plan),
+          workspaceId: this.requestWorkspaceId(plan),
         })
         .pipe(
           startWith(null),
@@ -302,9 +307,7 @@ export class DataLayersStateService {
     }
     const wanted = !this.isFavorite(layer);
     const previous = this._favoriteChanges$.value;
-    const changes = new Map(previous);
-    changes.set(layer.id, wanted);
-    this._favoriteChanges$.next(changes);
+    this.setFavorite(layer.id, wanted);
 
     const request = wanted
       ? this.workspacesService.favoriteDataLayer(workspaceId, layer.id)
@@ -334,18 +337,56 @@ export class DataLayersStateService {
     });
   }
 
+  private setFavorite(layerId: number, isFavorite: boolean) {
+    const changes = new Map(this._favoriteChanges$.value);
+    changes.set(layerId, isFavorite);
+    this._favoriteChanges$.next(changes);
+  }
+
+  private followFavoriteEvents(): Subscription {
+    const changed$ = merge(
+      this.webSocketService
+        .on(DATALAYER_FAVORITED_EVENT)
+        .pipe(map((event) => ({ id: event.object?.id, isFavorite: true }))),
+      this.webSocketService
+        .on(DATALAYER_UNFAVORITED_EVENT)
+        .pipe(map((event) => ({ id: event.object?.id, isFavorite: false })))
+    ).pipe(
+      filter(
+        (change): change is { id: number; isFavorite: boolean } =>
+          change.id !== undefined
+      ),
+      tap(({ id, isFavorite }) => this.setFavorite(id, isFavorite))
+    );
+
+    return merge(
+      changed$,
+      this.webSocketService.on(REALTIME_CONNECTED_EVENT)
+    ).subscribe(() => this._reloadFavorites$.next());
+  }
+
   private _reloadFavorites$ = new BehaviorSubject<void>(undefined);
 
+  private lastFavorites: DataLayer[] | undefined;
+
   private favoritesFromServer$: Observable<Resource<DataLayer[]>> =
-    this._reloadFavorites$.pipe(
-      switchMap(() => {
+    combineLatest([
+      this._reloadFavorites$,
+      this.planState.currentPlanOrNull$,
+    ]).pipe(
+      switchMap(([_, plan]) => {
         const workspaceId = this.favoritesWorkspaceId();
         if (workspaceId === null) {
           return of({ isLoading: false, data: [] } as Resource<DataLayer[]>);
         }
         return this.service
-          .browseFavorites(workspaceId, this.mapModuleService.moduleName)
+          .browseFavorites(
+            workspaceId,
+            this.mapModuleService.moduleName,
+            this.planGeometry(plan)
+          )
           .pipe(
+            tap((layers) => (this.lastFavorites = layers)),
             map(
               (layers) =>
                 ({ isLoading: false, data: layers }) as Resource<DataLayer[]>
@@ -353,7 +394,10 @@ export class DataLayersStateService {
             catchError((error) =>
               of({ isLoading: false, error } as Resource<DataLayer[]>)
             ),
-            startWith({ isLoading: true } as Resource<DataLayer[]>)
+            startWith({
+              isLoading: true,
+              data: this.lastFavorites,
+            } as Resource<DataLayer[]>)
           );
       }),
       shareReplay(1)
@@ -387,6 +431,23 @@ export class DataLayersStateService {
       : null;
   }
 
+  private planGeometry(plan: Plan | null): Geometry | undefined {
+    return this.sendGeometry && plan ? (plan.geometry as Geometry) : undefined;
+  }
+
+  // Off the workspace route (a plan's map viewer) we still send the plan's
+  // workspace, but favorites stay gated on favoritesEnabled().
+  private requestWorkspaceId(plan: Plan | null): number | null {
+    if (!this.featureService.isFeatureEnabled('DATA_ORGANIZATION')) {
+      return null;
+    }
+    return (
+      this.workspaceState.currentWorkspaceIdValue ?? plan?.workspace ?? null
+    );
+  }
+
+  private subscriptions = new Subscription();
+
   private _paths$ = new BehaviorSubject<string[]>([]);
   paths$ = this._paths$.asObservable();
 
@@ -404,8 +465,15 @@ export class DataLayersStateService {
     private matSnackBar: MatSnackBar,
     private featureService: FeatureService,
     private workspacesService: WorkspacesService,
-    private workspaceState: WorkspaceState
-  ) {}
+    private workspaceState: WorkspaceState,
+    private webSocketService: WebSocketService
+  ) {
+    this.subscriptions.add(this.followFavoriteEvents());
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+  }
 
   // determines whether we interject anything when the user makes a selection
   selectionMode: 'AUTOMATIC' | 'MANUAL' = 'AUTOMATIC';

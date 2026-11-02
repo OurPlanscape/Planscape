@@ -183,7 +183,7 @@ export class NewScenarioState {
     filter(([standsLoaded]) => !!standsLoaded),
     // only trigger/refresh on the steps that interact with the map
     filter(([_, step]) => step?.refreshAvailableStands ?? false),
-    switchMap(
+    map(
       ([
         _,
         step,
@@ -192,29 +192,42 @@ export class NewScenarioState {
         constraints,
         subUnits,
         includedAreas,
-      ]) => {
-        this.setAvailableStandsLoading(true);
-
-        return this.scenarioService
-          .getExcludedStands(
-            this.scenarioId,
-            standSize,
-            step?.includeExcludedAreas ? excludedAreas : undefined,
-            step?.includeConstraints ? constraints : undefined,
-            step?.includeSubUnits ? subUnits?.id : undefined,
-            step?.includeExcludedAreas && includedAreas
-              ? includedAreas
-              : undefined
-          )
-          .pipe(
-            catchError(() => {
-              this.showMapError();
-              return EMPTY;
-            }),
-            finalize(() => this.setAvailableStandsLoading(false))
-          );
-      }
+      ]) =>
+        [
+          standSize,
+          step?.includeExcludedAreas ? excludedAreas : undefined,
+          step?.includeConstraints ? constraints : undefined,
+          step?.includeSubUnits ? subUnits?.id : undefined,
+          step?.includeExcludedAreas && includedAreas
+            ? includedAreas
+            : undefined,
+        ] as const
     ),
+    // inputs the current step doesn't send (e.g. included areas on the
+    // Include Areas step) would otherwise re-fire the same request
+    distinctUntilChanged(
+      (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
+    ),
+    switchMap(([standSize, excludes, constraints, subUnit, includes]) => {
+      this.setAvailableStandsLoading(true);
+
+      return this.scenarioService
+        .getExcludedStands(
+          this.scenarioId,
+          standSize,
+          excludes,
+          constraints,
+          subUnit,
+          includes
+        )
+        .pipe(
+          catchError(() => {
+            this.showMapError();
+            return EMPTY;
+          }),
+          finalize(() => this.setAvailableStandsLoading(false))
+        );
+    }),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 

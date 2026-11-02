@@ -123,6 +123,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             module=module,
             geometry=geometry,
             search_tab=search_tab,
+            user=self.request.user,
             workspace=workspace,
         )
         return list(datalayers.all())

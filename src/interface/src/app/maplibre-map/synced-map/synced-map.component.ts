@@ -350,12 +350,12 @@ export class SyncedMapComponent implements OnInit, OnDestroy {
       this.multiMapConfigState.allowClickOnMap$.pipe(take(1))
     );
     if (mode === 'view' && enabled) {
-      this.multiMapConfigState.setSelectedMap(this.mapNumber);
+      this.multiMapConfigState.selectClickedMap(this.mapNumber);
     }
   }
 
   goToSelectedLayer(layer: DataLayer) {
-    this.multiMapConfigState.setSelectedMap(this.mapNumber);
+    this.multiMapConfigState.goToLayerOnMap(this.mapNumber);
     this.dataLayersStateService.goToSelectedLayer(layer);
   }
 

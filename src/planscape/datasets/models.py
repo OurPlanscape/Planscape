@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 from uuid import uuid4
 
@@ -316,6 +316,9 @@ class DataLayerQuerySet(models.QuerySet):
         query = {"modules": {"forsys": {"capabilities": [capability]}}}
         return self.all().filter(metadata__contains=query)
 
+    def by_outline_intersects(self, geometry: GEOSGeometry) -> models.QuerySet:
+        return self.all().filter(pk__in=get_datalayer_ids_intersecting(geometry))
+
     def accessible_by(self, user) -> models.QuerySet:
         accessible_datasets_ids = (
             Dataset.objects.all().accessible_by(user).values_list("id", flat=True)
@@ -628,6 +631,23 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 def get_dataset_ids_intersecting(geometry: GEOSGeometry) -> List[int]:
     """
     IDs of datasets with at least one datalayer whose outline intersects
+    `geometry`.
+    """
+    return sorted(
+        {dataset_id for _, dataset_id in _get_datalayers_intersecting(geometry)}
+    )
+
+
+def get_datalayer_ids_intersecting(geometry: GEOSGeometry) -> List[int]:
+    """
+    IDs of datalayers whose outline intersects `geometry`.
+    """
+    return [datalayer_id for datalayer_id, _ in _get_datalayers_intersecting(geometry)]
+
+
+def _get_datalayers_intersecting(geometry: GEOSGeometry) -> List[Tuple[int, int]]:
+    """
+    (datalayer_id, dataset_id) pairs of datalayers whose outline intersects
     `geometry`. Testing detailed outlines is expensive, so the result is cached
     by the geometry's EWKT plus a fingerprint of the datalayers table: any
     datalayer save or delete changes the fingerprint, invalidating the cache.
@@ -636,7 +656,7 @@ def get_dataset_ids_intersecting(geometry: GEOSGeometry) -> List[int]:
         count=Count("id"),
         last_updated_at=Max("updated_at"),
     )
-    return _get_dataset_ids_intersecting(
+    return _get_cached_datalayers_intersecting(
         str(geometry),
         fingerprint["count"],
         fingerprint["last_updated_at"],
@@ -644,17 +664,16 @@ def get_dataset_ids_intersecting(geometry: GEOSGeometry) -> List[int]:
 
 
 @cached(timeout=settings.MODULE_DATASETS_TTL)
-def _get_dataset_ids_intersecting(
+def _get_cached_datalayers_intersecting(
     geometry_ewkt: str,
     # Not used in the body: only part of the cache key.
     datalayer_count: int,
     datalayer_last_updated_at: Optional[datetime],
-) -> List[int]:
+) -> List[Tuple[int, int]]:
     return list(
         DataLayer.objects.filter(outline__intersects=GEOSGeometry(geometry_ewkt))
-        .order_by()
-        .values_list("dataset_id", flat=True)
-        .distinct()
+        .order_by("id")
+        .values_list("id", "dataset_id")
     )
 
 

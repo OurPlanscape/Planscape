@@ -1,35 +1,120 @@
+<!-- Stand levels constraints -->
 <sg-section
-  headline="Advanced Stand-Level Constraints (OPTIONAL)"
-  class="adv-stand-level-constraints"
-  [tooltipTemplate]="tooltipContent">
-  <div class="padded-section">
+  [headline]="'Apply Stand-Level Constraints (OPTIONAL)'"
+  class="constraints-step"
+  tooltipContent="<b>What are stand-level constraints?</b>
+Stand-level constraints set the conditions a stand must meet to be eligible for treatment by ForSys. These are based on operational factors that define where treatments can realistically occur.
+
+<b>How do constraints affect treatment eligibility?</b>
+Only stands that meet your defined criteria are included in the % Treatable.  ForSys targets these stands when identifying opportunities for treatment in your scenario results.
+
+<b>Why use constraints?</b>
+They help ensure that only feasible and operationally suitable areas are targeted for treatment.">
+  <div class="slc-section">
     <p class="stand-label">
-      Choose from any data layers in Planscape to define eligible stands for
+      Set the conditions that must be met for ForSys to select stands for
       treatment.
     </p>
-    <div class="num-constraints-line">
-      {{ (selectedConstraints$ | async)?.length || 0 }} Applied (No Limit)
+    <div [formGroup]="form" class="apply-constraints-form">
+      <div class="field-area">
+        <label for="max_slope" class="input-label">Max Slope</label>
+        <div class="flex">
+          <mat-form-field
+            class="stand-level-input"
+            appearance="outline"
+            floatLabel="always">
+            <input
+              id="max_slope"
+              class="step3-input"
+              formControlName="max_slope"
+              placeholder="Enter Value"
+              min="0"
+              max="100"
+              matInput
+              type="number" />
+            <span class="legend">%</span>
+            <mat-error
+              *ngIf="
+                form.get('max_slope')?.touched &&
+                form.get('max_slope')?.hasError('max')
+              ">
+              Slope cannot exceed 100
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="field-area">
+        <label for="min_distance_from_road" class="input-label">
+          Max Distance From Roads</label
+        >
+        <div class="flex">
+          <mat-form-field
+            class="stand-level-input"
+            appearance="outline"
+            floatLabel="always">
+            <input
+              id="min_distance_from_road"
+              class="step3-input"
+              formControlName="min_distance_from_road"
+              placeholder="Enter Value"
+              matInput
+              type="text"
+              mask="separator"
+              thousandSeparator=","
+              [value]="" />
+            <span class="legend">yds</span>
+            <mat-error
+              *ngIf="
+                form.get('min_distance_from_road')?.touched &&
+                form.get('min_distance_from_road')?.hasError('max')
+              ">
+              Max Distance From Roads cannot exceed 100,000 yards
+            </mat-error>
+          </mat-form-field>
+        </div>
+      </div>
     </div>
-    <sg-chip-selector
-      *ngIf="layersLoaded$ | async"
-      [items]="(selectedConstraints$ | async) ?? []"
-      (itemClicked)="handleConstraintChipClicked($event)"
-      [hoverable]="true"
-      [selectedItem]="activeConstraint$ | async"
-      [showClose]="false"
-      [showEdit]="true"></sg-chip-selector>
   </div>
+
   <mat-expansion-panel
     class="datalayers-section"
     (opened)="toggleLayersSection()"
     (closed)="toggleLayersSection()"
     [hideToggle]="true">
-    <mat-expansion-panel-header class="datalayers-header">
+    <mat-expansion-panel-header class="advslc-header datalayers-header">
       <div class="header-content">
-        <span>Advanced Stand-Level Constraints</span>
-        <mat-icon>{{
-          showLayersPanel ? 'expand_less' : 'expand_more'
-        }}</mat-icon>
+        <div class="alsc-left-header">
+          <span>Advanced Stand-Level Constraints</span>
+          <mat-icon>{{
+            showLayersPanel ? 'expand_less' : 'expand_more'
+          }}</mat-icon>
+        </div>
+
+        <div class="alsc-right-header">
+          <span class="num-constraints-line">
+            {{ (selectedConstraints$ | async)?.length || 0 }} Applied (No Limit)
+          </span>
+          <sg-popover
+            panelSize="medium"
+            [contentTemplate]="aslcTooltipContent"></sg-popover>
+        </div>
+      </div>
+
+      <div class="padded-section" (click)="$event.stopPropagation()">
+        <p class="stand-label">
+          Choose from any data layers in Planscape to define eligible stands for
+          treatment.
+        </p>
+
+        <sg-chip-selector
+          *ngIf="layersLoaded$ | async"
+          [items]="(selectedConstraints$ | async) ?? []"
+          (itemClicked)="handleConstraintChipClicked($event)"
+          [hoverable]="true"
+          [selectedItem]="activeConstraint$ | async"
+          [showClose]="false"
+          [showEdit]="true"></sg-chip-selector>
       </div>
     </mat-expansion-panel-header>
 
@@ -46,7 +131,7 @@
   </mat-expansion-panel>
 </sg-section>
 
-<ng-template #tooltipContent>
+<ng-template #aslcTooltipContent>
   <b>What are Advanced Stand-Level Constraints?</b>
   <p>
     Advanced stand-level constraints let you define conditions that stands must

@@ -176,7 +176,7 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
                 metadata=action_metadata,
                 type=DataLayerType.RASTER,
             )
-            self.assertEquals(TreatmentResult.objects.count(), 0)
+            self.assertEqual(TreatmentResult.objects.count(), 0)
 
             async_calculate_impacts_for_variable_action_year(
                 self.plan.id,
@@ -187,8 +187,8 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
             )
 
             self.assertGreater(TreatmentResult.objects.count(), 0)
-            self.assertEquals(ProjectAreaTreatmentResult.objects.count(), 0)
-            self.assertEquals(len(self.stands), TreatmentResult.objects.count())
+            self.assertEqual(ProjectAreaTreatmentResult.objects.count(), 0)
+            self.assertEqual(len(self.stands), TreatmentResult.objects.count())
 
     def test_trigger_task_with_delted_tx_plan(self):
         with self.settings(
@@ -231,7 +231,7 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
                 metadata=action_metadata,
                 type=DataLayerType.RASTER,
             )
-            self.assertEquals(TreatmentResult.objects.count(), 0)
+            self.assertEqual(TreatmentResult.objects.count(), 0)
 
             self.plan.delete()
             async_calculate_impacts_for_variable_action_year(
@@ -242,8 +242,8 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
                 stand_ids=[stand.id for stand in self.stands],
             )
 
-            self.assertEquals(TreatmentResult.objects.count(), 0)
-            self.assertEquals(ProjectAreaTreatmentResult.objects.count(), 0)
+            self.assertEqual(TreatmentResult.objects.count(), 0)
+            self.assertEqual(ProjectAreaTreatmentResult.objects.count(), 0)
 
 
 class AsyncCalculateBaselineMetricsForVariableYearTest(TestCase):
