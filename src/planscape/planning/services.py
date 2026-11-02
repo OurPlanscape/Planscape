@@ -891,7 +891,7 @@ def _get_operation(operator: str, value: str) -> str:
             # normal cases
             # constraints datalayers from scenario configuration
             OPERATOR_MAP = {
-                "eq": "=",
+                "eq": "==",
                 "dne": "!=",
                 "lt": "<",
                 "lte": "<=",
