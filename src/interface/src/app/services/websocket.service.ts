@@ -10,7 +10,12 @@ import {
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import * as Sentry from '@sentry/angular';
 import { environment } from '@env/environment';
-import { WebSocketStatus, WorkspaceEvent } from '@types';
+import {
+  REALTIME_CONNECTED_EVENT,
+  WebSocketStatus,
+  WorkspaceEvent,
+} from '@types';
+import { AuthService } from './auth.service';
 import { WINDOW } from './window.service';
 
 // How long to wait before dialling again after the connection drops
@@ -19,14 +24,22 @@ export const RECONNECT_DELAY = 3000;
 // The backoff never grows past this
 export const MAX_RECONNECT_DELAY = 60000;
 
-// Idle sockets get dropped on the way, so we keep them busy
+// Drops are routine (sleep, network changes, Cloud Run's request timeout), so
+// we only report once this many attempts in a row have failed
+export const REPORT_AFTER_ATTEMPTS = 5;
+
+// Idle sockets get dropped on the way, so we keep them busy. A ping still
+// unanswered at the next beat means the connection is dead.
 export const HEARTBEAT_INTERVAL = 30000;
 
+// The token expired: worth one refresh before dialling again
+const UNAUTHENTICATED_CLOSE_CODE = 4401;
+
 /**
- * Close codes the consumer uses to turn us away: unauthenticated, no longer a
- * member, or the workspace is gone. Dialling again would only repeat them.
+ * Close codes the consumer uses to turn us away: no longer a member, or the
+ * workspace is gone. Dialling again would only repeat them.
  */
-const FINAL_CLOSE_CODES = [4401, 4403, 4404];
+const FINAL_CLOSE_CODES = [4403, 4404];
 
 @Injectable({
   providedIn: 'root',
@@ -37,6 +50,8 @@ export class WebSocketService {
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempts = 0;
   private heartbeat: ReturnType<typeof setInterval> | null = null;
+  private awaitingPong = false;
+  private tokenRefreshed = false;
 
   private workspaceId: number | null = null;
 
@@ -48,7 +63,10 @@ export class WebSocketService {
   /** Every event received from the backend. */
   messages$ = this._messages$.asObservable();
 
-  constructor(@Inject(WINDOW) private window: Window & typeof globalThis) {}
+  constructor(
+    @Inject(WINDOW) private window: Window & typeof globalThis,
+    private authService: AuthService
+  ) {}
 
   get status(): WebSocketStatus {
     return this._status$.value;
@@ -97,12 +115,9 @@ export class WebSocketService {
       WebSocketCtor: this.window.WebSocket,
       openObserver: {
         next: () => {
-          if (this.socket$ !== socket$) {
-            return;
+          if (this.socket$ === socket$) {
+            this.startHeartbeat(socket$, workspaceId);
           }
-          this.reconnectAttempts = 0;
-          this.startHeartbeat(socket$);
-          this._status$.next('connected');
         },
       },
       closeObserver: {
@@ -110,15 +125,10 @@ export class WebSocketService {
           if (this.socket$ !== socket$) {
             return;
           }
-          if (event.wasClean) {
-            this.cleanup(socket$, 'disconnected');
-            return;
-          }
-          this.logError(
-            new Error(`WebSocket closed unexpectedly (code ${event.code})`)
-          );
-          this.cleanup(socket$, 'error');
-          if (!FINAL_CLOSE_CODES.includes(event.code)) {
+          this.cleanup(socket$, event.wasClean ? 'disconnected' : 'error');
+          if (event.code === UNAUTHENTICATED_CLOSE_CODE) {
+            this.refreshTokenAndReconnect(workspaceId);
+          } else if (!FINAL_CLOSE_CODES.includes(event.code)) {
             this.scheduleReconnect(workspaceId);
           }
         },
@@ -126,12 +136,35 @@ export class WebSocketService {
     });
     this.socket$ = socket$;
     this.socketSubscription = socket$.subscribe({
-      next: (event) => this._messages$.next(event),
-      error: (error) => {
-        this.logError(error);
+      next: (event) => this.handleMessage(event),
+      error: () => {
         this.cleanup(socket$, 'error');
         this.scheduleReconnect(workspaceId);
       },
+    });
+  }
+
+  private handleMessage(event: WorkspaceEvent): void {
+    this.awaitingPong = false;
+    // The server accepts every socket before it checks who is calling, so
+    // only this says the connection is good.
+    if (event.type === REALTIME_CONNECTED_EVENT) {
+      this.reconnectAttempts = 0;
+      this.tokenRefreshed = false;
+      this._status$.next('connected');
+    }
+    this._messages$.next(event);
+  }
+
+  // Logged out sessions complete without emitting, and we stay down
+  private refreshTokenAndReconnect(workspaceId: number): void {
+    if (this.tokenRefreshed) {
+      return;
+    }
+    this.tokenRefreshed = true;
+    this.authService.refreshToken().subscribe({
+      next: () => this.scheduleReconnect(workspaceId),
+      error: () => this.scheduleReconnect(workspaceId),
     });
   }
 
@@ -144,6 +177,11 @@ export class WebSocketService {
       MAX_RECONNECT_DELAY
     );
     this.reconnectAttempts++;
+    if (this.reconnectAttempts === REPORT_AFTER_ATTEMPTS) {
+      this.logError(
+        new Error(`WebSocket failed to reconnect to workspace ${workspaceId}`)
+      );
+    }
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
       if (this.workspaceId === workspaceId && !this.socket$) {
@@ -158,15 +196,29 @@ export class WebSocketService {
       this.reconnectTimer = null;
     }
     this.reconnectAttempts = 0;
+    this.tokenRefreshed = false;
   }
 
-  // Keeps the connection from being dropped for being idle
-  private startHeartbeat(socket$: WebSocketSubject<WorkspaceEvent>): void {
+  // Keeps the connection from being dropped for being idle, and notices when
+  // it died without a close, which a sleeping laptop never gets to see
+  private startHeartbeat(
+    socket$: WebSocketSubject<WorkspaceEvent>,
+    workspaceId: number
+  ): void {
     this.stopHeartbeat();
+    this.awaitingPong = false;
     this.heartbeat = setInterval(() => {
-      if (this.socket$ === socket$) {
-        socket$.next({ type: 'ping' });
+      if (this.socket$ !== socket$) {
+        return;
       }
+      if (this.awaitingPong) {
+        socket$.complete();
+        this.cleanup(socket$, 'error');
+        this.scheduleReconnect(workspaceId);
+        return;
+      }
+      this.awaitingPong = true;
+      socket$.next({ type: 'ping' });
     }, HEARTBEAT_INTERVAL);
   }
 
