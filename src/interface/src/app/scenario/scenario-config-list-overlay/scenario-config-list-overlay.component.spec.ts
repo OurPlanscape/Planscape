@@ -277,6 +277,23 @@ describe('ScenarioConfigListOverlayComponent', () => {
         'Layer: 10-20',
       ]);
     });
+
+    it('includes treatment goal constraints in slc results list, if they exist', () => {
+      emitConfig(
+        makeConfig({
+          treatment_goal_constraints: [
+            {
+              datalayer: { id: 1, name: 'Tx Goal Layer' },
+              threshold: '> 100',
+            },
+          ],
+        })
+      );
+      const rows = items('Stand-Level Constraints');
+      expect(rows).toContain('Tx Goal Layer > 100');
+      expect(rows).toContain('Distance from roads is less than (<) 1,000 yds');
+      expect(rows).toContain('Slope less than or equal to (<=) 99 %');
+    });
   });
 
   describe('treatment target', () => {
