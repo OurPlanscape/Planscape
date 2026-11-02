@@ -6,6 +6,7 @@ import { MultiMapConfigState } from '../multi-map-config.state';
 import { of } from 'rxjs';
 import { LngLatBounds } from 'maplibre-gl';
 import { createMapLibreMock } from '@testing/maplibre-gl.mock';
+import { DrawService } from '../draw.service';
 
 describe('SyncedMapsComponent', () => {
   let fixture: ComponentFixture<SyncedMapsComponent>;
@@ -22,7 +23,10 @@ describe('SyncedMapsComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [SyncedMapsComponent],
-      providers: [MockProvider(MultiMapConfigState, state)],
+      providers: [
+        MockProvider(MultiMapConfigState, state),
+        MockProvider(DrawService),
+      ],
       declarations: [MockDeclaration(SyncedMapComponent)],
     }).compileComponents();
 
