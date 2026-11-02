@@ -91,6 +91,42 @@ describe('PlanState', () => {
     sub.unsubscribe();
   });
 
+  describe('the workspace of the plan', () => {
+    function workspaceIdsOf(plan: Plan, id: number) {
+      planService.getPlan.and.returnValue(of(plan));
+      const emitted: (number | null)[] = [];
+      const sub = planState.currentPlanWorkspaceId$.subscribe((workspaceId) =>
+        emitted.push(workspaceId)
+      );
+      planState.setPlanId(id);
+      sub.unsubscribe();
+      return emitted;
+    }
+
+    it('is the one the planning area belongs to', () => {
+      const plan = { id: 31, workspace: 7 } as Plan;
+
+      expect(workspaceIdsOf(plan, 31)).toEqual([7]);
+    });
+
+    it('is none for a planning area that lives outside a workspace', () => {
+      const plan = { id: 31, workspace: null } as Plan;
+
+      expect(workspaceIdsOf(plan, 31)).toEqual([null]);
+    });
+
+    // whoever is not in a planning area keeps the workspace they are in
+    it('says nothing while no plan is loaded', () => {
+      const emitted: (number | null)[] = [];
+      const sub = planState.currentPlanWorkspaceId$.subscribe((workspaceId) =>
+        emitted.push(workspaceId)
+      );
+
+      expect(emitted).toEqual([]);
+      sub.unsubscribe();
+    });
+  });
+
   it('should emit initial false, then true, then false with error when getPlan fails', () => {
     planService.getPlan.and.returnValue(
       throwError(() => new Error('network error'))
