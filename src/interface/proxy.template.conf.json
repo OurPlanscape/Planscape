@@ -1,4 +1,11 @@
 {
+  "/planscape-backend/ws": {
+    "target": "your-backend-url",
+    "ws": true,
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
   "/planscape-backend": {
     "_notes": "copy this file and rename to proxy.conf.json with your backend URL for target",
     "target": "your-backend-url",
