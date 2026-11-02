@@ -8,6 +8,7 @@ import { AppComponent } from './app.component';
 import { FeaturesModule } from '@features/features.module';
 import { MockDeclaration, MockProvider } from 'ng-mocks';
 import { TopBarComponent } from '@shared/top-bar/top-bar.component';
+import { PlanDeletedListenerService } from '@plan/plan-deleted-listener.service';
 import { WorkspaceDeletedListenerService } from '@app/workspaces/workspace-deleted-listener.service';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
 
@@ -40,10 +41,12 @@ describe('AppComponent', () => {
         MockProvider(WebSocketService),
         MockProvider(WorkspaceState, { currentWorkspaceId$ }),
         MockProvider(WorkspaceDeletedListenerService),
+        MockProvider(PlanDeletedListenerService),
       ],
     }).compileComponents();
 
     spyOn(TestBed.inject(WorkspaceDeletedListenerService), 'start');
+    spyOn(TestBed.inject(PlanDeletedListenerService), 'start');
     connect = spyOn(TestBed.inject(WebSocketService), 'connect');
     disconnect = spyOn(TestBed.inject(WebSocketService), 'disconnect');
 
@@ -120,6 +123,12 @@ describe('AppComponent', () => {
 
       expect(disconnect).not.toHaveBeenCalled();
       expect(connect).not.toHaveBeenCalled();
+    });
+
+    it('starts listening for deleted plans', () => {
+      expect(
+        TestBed.inject(PlanDeletedListenerService).start
+      ).toHaveBeenCalled();
     });
 
     it('starts listening for deleted workspaces', () => {

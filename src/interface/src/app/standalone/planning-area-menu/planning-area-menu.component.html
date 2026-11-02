@@ -8,13 +8,13 @@
     <mat-icon>more_vert</mat-icon>
   </button>
   <mat-menu #menu="matMenu" class="planning-area-menu">
-    <a mat-menu-item [routerLink]="['/plan', plan.id]" *ngIf="showOpen">
+    <a mat-menu-item [routerLink]="planPath" *ngIf="showOpen">
       <mat-icon class="material-symbols-outlined">folder_open</mat-icon>
       <span>Open</span>
     </a>
     <a
       mat-menu-item
-      [routerLink]="['/map-viewer', plan.id]"
+      [routerLink]="mapViewerPath"
       (click)="saveBreadcrumbs()"
       *ngIf="showViewMap">
       <mat-icon class="material-symbols-outlined">map</mat-icon>

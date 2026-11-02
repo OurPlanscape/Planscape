@@ -1,5 +1,5 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { EMPTY, of, Subject, throwError } from 'rxjs';
+import { EMPTY, Observable, of, Subject, throwError } from 'rxjs';
 import {
   REALTIME_CONNECTED_EVENT,
   WebSocketStatus,
@@ -7,10 +7,12 @@ import {
 } from '@types';
 import { environment } from '@env/environment';
 import {
+  FALLBACK_POLL_INTERVAL,
   HEARTBEAT_INTERVAL,
   MAX_RECONNECT_DELAY,
   RECONNECT_DELAY,
   REPORT_AFTER_ATTEMPTS,
+  UPDATES_THROTTLE,
   WebSocketService,
 } from './websocket.service';
 import { AuthService } from './auth.service';
@@ -222,6 +224,125 @@ describe('WebSocketService', () => {
 
       expect(received).toEqual([planningAreaCreated]);
     });
+  });
+
+  describe('updates', () => {
+    const scenarioEvent = (planningAreaId: number): WorkspaceEvent => ({
+      type: 'planning.scenario.created',
+      object: {
+        kind: 'scenario',
+        id: 1,
+        planning_area_id: planningAreaId,
+      },
+    });
+    const planEvent = (id: number): WorkspaceEvent => ({
+      type: 'planning.planning_area.updated',
+      object: { kind: 'planning_area', id },
+    });
+
+    function collect(updates$: Observable<WorkspaceEvent | null>) {
+      const received: (WorkspaceEvent | null)[] = [];
+      return {
+        received,
+        subscription: updates$.subscribe((u) => received.push(u)),
+      };
+    }
+
+    it('emits the scenario events of the plan and no others', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+      const { received, subscription } = collect(
+        service.planUpdates$(3, ['planning.scenario.created'])
+      );
+
+      socket().receive(scenarioEvent(4));
+      socket().receive({ ...scenarioEvent(3), type: 'other.event' });
+      socket().receive(scenarioEvent(3));
+      tick(UPDATES_THROTTLE);
+
+      expect(received).toEqual([scenarioEvent(3)]);
+
+      subscription.unsubscribe();
+      service.disconnect();
+    }));
+
+    it('matches planning area events by their own id', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+      const { received, subscription } = collect(
+        service.planUpdates$(3, ['planning.planning_area.updated'])
+      );
+
+      socket().receive(planEvent(4));
+      socket().receive(planEvent(3));
+      tick(UPDATES_THROTTLE);
+
+      expect(received).toEqual([planEvent(3)]);
+
+      subscription.unsubscribe();
+      service.disconnect();
+    }));
+
+    it('emits on every connection, as events are not replayed', fakeAsync(() => {
+      const { received, subscription } = collect(service.workspaceUpdates$([]));
+      service.connect(workspaceId);
+
+      socket().open();
+      tick(UPDATES_THROTTLE);
+
+      expect(received).toEqual([{ type: REALTIME_CONNECTED_EVENT }]);
+
+      subscription.unsubscribe();
+      service.disconnect();
+    }));
+
+    it('collapses a burst, keeping the first and the last', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+      const { received, subscription } = collect(
+        service.workspaceUpdates$(['planning.planning_area.updated'])
+      );
+
+      socket().receive(planEvent(1));
+      socket().receive(planEvent(2));
+      socket().receive(planEvent(3));
+      tick(UPDATES_THROTTLE);
+
+      expect(received).toEqual([planEvent(1), planEvent(3)]);
+
+      tick(UPDATES_THROTTLE);
+      subscription.unsubscribe();
+      service.disconnect();
+    }));
+
+    it('polls while there is no connection', fakeAsync(() => {
+      const { received, subscription } = collect(service.workspaceUpdates$([]));
+
+      tick(FALLBACK_POLL_INTERVAL);
+      tick(UPDATES_THROTTLE);
+
+      expect(received).toEqual([null]);
+
+      subscription.unsubscribe();
+    }));
+
+    it('stops polling once connected, and starts again if it drops', fakeAsync(() => {
+      const { received, subscription } = collect(service.workspaceUpdates$([]));
+      service.connect(workspaceId);
+      socket().open();
+      tick(UPDATES_THROTTLE);
+      received.length = 0;
+
+      tick(FALLBACK_POLL_INTERVAL * 3);
+      expect(received).toEqual([]);
+
+      socket().closedByServer(4403);
+      tick(FALLBACK_POLL_INTERVAL);
+      tick(UPDATES_THROTTLE);
+      expect(received).toEqual([null]);
+
+      subscription.unsubscribe();
+    }));
   });
 
   describe('disconnect', () => {

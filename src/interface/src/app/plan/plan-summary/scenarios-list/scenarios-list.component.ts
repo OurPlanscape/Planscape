@@ -1,26 +1,23 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthService, ScenarioService } from '@services';
+import { AuthService, ScenarioService, WebSocketService } from '@services';
 import {
   catchError,
   EMPTY,
-  exhaustMap,
   merge,
+  startWith,
   Subject,
   switchMap,
   take,
-  takeUntil,
   tap,
-  timer,
 } from 'rxjs';
-import { Plan, Scenario, SCENARIO_TYPE } from '@types';
+import { Plan, Scenario, SCENARIO_LIST_EVENTS, SCENARIO_TYPE } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   getPlanPath,
   isValidTotalArea,
   planningAreaMetricsAreReady,
   planningAreaMetricsFailed,
-  POLLING_INTERVAL,
 } from '@plan/plan-helpers';
 import { MatDialog } from '@angular/material/dialog';
 import { SNACK_ERROR_CONFIG } from '@shared';
@@ -98,7 +95,8 @@ export class ScenariosListComponent implements OnInit {
     private dialog: MatDialog,
     private treatmentsService: TreatmentsService,
     private breadcrumbService: BreadcrumbService,
-    private planState: PlanState
+    private planState: PlanState,
+    private webSocketService: WebSocketService
   ) {}
 
   ngOnInit(): void {
@@ -114,26 +112,24 @@ export class ScenariosListComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe((plan) => (this.plan = plan));
 
-    this.pollForChanges();
+    this.listenForChanges();
   }
 
-  private pollForChanges() {
-    const poll$ = timer(0, POLLING_INTERVAL).pipe(
-      // start a fetch if not already running; ignore extra poll ticks while active
-      exhaustMap(() =>
-        this.fetchScenarios$().pipe(
-          // if a manual trigger arrives, cancel the current poll request
-          takeUntil(this.manualFetch$)
-        )
+  private listenForChanges() {
+    merge(
+      this.manualFetch$,
+      this.webSocketService.planUpdates$(
+        Number(this.planId),
+        SCENARIO_LIST_EVENTS
       )
-    );
-
-    const manual$ = this.manualFetch$.pipe(
-      // run immediately; ignore extra manual clicks while one is running
-      switchMap(() => this.fetchScenarios$())
-    );
-
-    merge(poll$, manual$).pipe(untilDestroyed(this)).subscribe();
+    )
+      .pipe(
+        startWith(null),
+        // always for the latest change
+        switchMap(() => this.fetchScenarios$()),
+        untilDestroyed(this)
+      )
+      .subscribe();
   }
 
   handleSortChange() {
@@ -173,7 +169,7 @@ export class ScenariosListComponent implements OnInit {
         this.loading = false;
       }),
 
-      // keep the poller alive on errors
+      // keep listening on errors
       catchError(() => {
         this.loading = false;
         return EMPTY;

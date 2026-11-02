@@ -1,23 +1,17 @@
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import {
-  ComponentFixture,
-  discardPeriodicTasks,
-  fakeAsync,
-  TestBed,
-  tick,
-} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
-import { BehaviorSubject, of, Subject } from 'rxjs';
+import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
 import { LegacyMaterialModule } from '@material/legacy-material.module';
-import { POLLING_INTERVAL } from '@plan/plan-helpers';
 import { By } from '@angular/platform-browser';
 import { SectionLoaderComponent, TypeSafeMatCellDef } from '@shared';
 import { CurrencyPipe } from '@angular/common';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
-import { AuthService, ScenarioService } from '@services';
+import { AuthService, ScenarioService, WebSocketService } from '@services';
+import { SCENARIO_LIST_EVENTS, WorkspaceEvent } from '@types';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { FeaturesModule } from '@features/features.module';
 import { MOCK_PLAN } from '@services/mocks';
@@ -44,7 +38,13 @@ function makeScenario(id: number) {
     geopackage_url: null,
   } as any;
 }
-describe('ScenariosListComponent (updated polling/manual preemption)', () => {
+const updates$ = new Subject<WorkspaceEvent | null>();
+const planUpdatesSpy = jasmine.createSpy('planUpdates$');
+const webSocketServiceMock = () => ({
+  planUpdates$: planUpdatesSpy.and.returnValue(updates$),
+});
+
+describe('ScenariosListComponent (live updates)', () => {
   let component: ScenariosListComponent;
   let fixture: ComponentFixture<ScenariosListComponent>;
   let scenarioSvcSpy: jasmine.SpyObj<ScenarioService>;
@@ -92,6 +92,7 @@ describe('ScenariosListComponent (updated polling/manual preemption)', () => {
       providers: [
         CurrencyPipe,
         MockProvider(AuthService),
+        { provide: WebSocketService, useValue: webSocketServiceMock() },
         { provide: ActivatedRoute, useValue: fakeRoute },
         { provide: ScenarioService, useValue: scenarioSvcSpy },
         MockProvider(PlanState, {
@@ -116,7 +117,8 @@ describe('ScenariosListComponent (updated polling/manual preemption)', () => {
 
   it('manual fetch triggers a request and populates lists', () => {
     fixture.detectChanges();
-    // trigger AFTER poll subscriptions are wired up
+    scenarioSvcSpy.getScenariosForPlan.calls.reset();
+
     component.fetchScenarios();
 
     expect(scenarioSvcSpy.getScenariosForPlan).toHaveBeenCalledTimes(1);
@@ -127,118 +129,56 @@ describe('ScenariosListComponent (updated polling/manual preemption)', () => {
     expect(component.activeScenarios.length).toBe(1);
   });
 
-  it('should poll after the first interval immediately', fakeAsync(() => {
+  it('fetches once on load and stays quiet until something changes', () => {
     fixture.detectChanges();
-    // no call until first interval tick
-    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(0);
 
-    // before first interval tick → no call
-    tick(POLLING_INTERVAL - 1);
     expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(1);
+  });
 
-    // first poll tick
-    tick(1);
+  it('listens to the scenarios of this plan', () => {
+    fixture.detectChanges();
+
+    expect(planUpdatesSpy).toHaveBeenCalledWith(24, SCENARIO_LIST_EVENTS);
+  });
+
+  it('fetches again when the scenarios change', () => {
+    fixture.detectChanges();
+
+    updates$.next(null);
+
     expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(2);
+  });
 
-    // second poll tick
-    tick(POLLING_INTERVAL);
-    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(3);
+  it('keeps listening after a fetch fails', () => {
+    fixture.detectChanges();
 
-    discardPeriodicTasks();
-  }));
-
-  it('skips poll ticks while a previous poll request is in flight (exhaustMap)', fakeAsync(() => {
-    // Call #1 (manual): immediate
-    // Call #2 (first poll): long-running
-    // Subsequent polls while #2 active should be ignored
-
-    const longPoll$ = new Subject<any[]>();
-
-    // Return specific observables in strict order per invocation
-    scenarioSvcSpy.getScenariosForPlan.and.returnValues(
-      of([makeScenario(1)]), // 1) manual
-      longPoll$.asObservable(), // 2) first poll (in-flight)
-      of([makeScenario(1)]) // 3) later poll after completion
+    scenarioSvcSpy.getScenariosForPlan.and.returnValue(
+      throwError(() => new Error('nope'))
     );
+    updates$.next(null);
 
-    fixture.detectChanges();
+    scenarioSvcSpy.getScenariosForPlan.and.returnValue(of([]));
+    updates$.next(null);
 
-    // trigger manual fetch so we have an initial state and to align call indices
-    component.fetchScenarios();
-    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(1); // manual
-
-    // first poll tick → starts long-running poll
-    tick(POLLING_INTERVAL);
-    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(2);
-
-    // another full interval passes but longPoll$ still active → NO new call
-    tick(POLLING_INTERVAL);
-    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(2);
-
-    // complete the long request now
-    longPoll$.next([makeScenario(1)]);
-    longPoll$.complete();
-
-    // next interval should trigger a new poll
-    tick(POLLING_INTERVAL);
     expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(3);
+  });
 
-    discardPeriodicTasks();
-  }));
-
-  it('manual fetch preempts an in-flight poll and prevents stale overwrite', fakeAsync(() => {
-    // Sequence:
-    // 1) manual: returns [1]
-    // 2) first poll: in-flight (Subject)
-    // 3) manual trigger: returns [] and should cancel #2
-    // 4) if #2 later emits [1], it MUST NOT overwrite state
-
-    const pollSubject = new Subject<any[]>();
-
-    let callIndex = 0;
-    scenarioSvcSpy.getScenariosForPlan.and.callFake(() => {
-      callIndex++;
-      if (callIndex === 1) {
-        return of([makeScenario(1)]); // manual
-      }
-      if (callIndex === 2) {
-        return pollSubject.asObservable(); // first poll (in-flight)
-      }
-      if (callIndex === 3) {
-        return of([]); // manual refresh result after removal
-      }
-      return of([]);
-    });
-
+  it('a newer fetch cancels one in flight so stale results never land', () => {
     fixture.detectChanges();
-
-    // Do an explicit manual fetch to populate initial list
-    component.fetchScenarios();
-
-    // After manual call
     expect(component.activeScenarios.map((s) => s.id)).toEqual([1]);
 
-    // Let the poll start
-    tick(POLLING_INTERVAL);
-    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(2);
+    const inFlight$ = new Subject<any[]>();
+    scenarioSvcSpy.getScenariosForPlan.and.returnValue(inFlight$);
+    updates$.next(null);
 
-    // Simulate user removal → locally remove + manual refresh
-    component.removeScenarioFromList(makeScenario(1), 'activeScenarios');
-    // manual refresh subscribes immediately
-    expect(scenarioSvcSpy.getScenariosForPlan.calls.count()).toBe(3);
-
-    // After manual completes, list should be []
+    scenarioSvcSpy.getScenariosForPlan.and.returnValue(of([]));
+    component.fetchScenarios();
     expect(component.activeScenarios.length).toBe(0);
 
-    // Now, if the *old poll* emits, it should not overwrite (because it was canceled)
-    pollSubject.next([makeScenario(1)]);
-    pollSubject.complete();
+    inFlight$.next([makeScenario(1)]);
 
-    // No change expected — still []
     expect(component.activeScenarios.length).toBe(0);
-
-    discardPeriodicTasks();
-  }));
+  });
 
   it('permission gating: shows New Scenario with add_scenario', () => {
     component.activeScenarios.length = 1; // button header won't appear unless we have at least 1 scenario
@@ -312,6 +252,7 @@ describe('ScenariosListComponent should support various modes', () => {
       providers: [
         CurrencyPipe,
         MockProvider(AuthService),
+        { provide: WebSocketService, useValue: webSocketServiceMock() },
         { provide: ActivatedRoute, useValue: fakeRoute },
         { provide: ScenarioService, useValue: scenarioSvcSpy },
         { provide: Router, useValue: routerSpy },
