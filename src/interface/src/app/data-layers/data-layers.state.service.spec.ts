@@ -3,11 +3,12 @@ import { fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 import { DataLayersStateService } from './data-layers.state.service';
 import { MockProvider } from 'ng-mocks';
 import { DataLayersService } from '@services/data-layers.service';
-import { of, Subject, throwError } from 'rxjs';
+import { defer, of, Subject, throwError } from 'rxjs';
 import {
   DataLayer,
   DataSet,
   Pagination,
+  Plan,
   Workspace,
   WorkspaceRole,
 } from '@types';
@@ -30,6 +31,7 @@ describe('DataLayersStateService', () => {
   let workspacesService: jasmine.SpyObj<WorkspacesService>;
   let currentWorkspaceId: number | null;
   let currentWorkspace$: Subject<Workspace>;
+  let currentPlan: Plan | null;
 
   const layer = {
     id: 1,
@@ -62,6 +64,7 @@ describe('DataLayersStateService', () => {
     dataLayersService.browseFavorites.and.returnValue(of([]));
 
     currentWorkspaceId = null;
+    currentPlan = null;
     currentWorkspace$ = new Subject<Workspace>();
     workspacesService = jasmine.createSpyObj<WorkspacesService>(
       'WorkspacesService',
@@ -88,7 +91,7 @@ describe('DataLayersStateService', () => {
         MockProvider(PlanState, {
           currentPlan$: of(MOCK_PLAN),
           currentPlanId$: of(123),
-          planningAreaGeometry$: of(MOCK_GEOMETRY),
+          currentPlanOrNull$: defer(() => of(currentPlan)),
         }),
         { provide: WorkspacesService, useValue: workspacesService },
         {
@@ -157,10 +160,10 @@ describe('DataLayersStateService', () => {
   });
 
   describe('loading$', () => {
-    it('stops once the categories load, even if the plan geometry arrives later', fakeAsync(() => {
-      const geometry$ = new Subject<any>();
+    it('stops once the categories load, even if the plan arrives later', fakeAsync(() => {
+      const plan$ = new Subject<Plan | null>();
       TestBed.overrideProvider(PlanState, {
-        useValue: { planningAreaGeometry$: geometry$ },
+        useValue: { currentPlanOrNull$: plan$ },
       });
       service = TestBed.inject(DataLayersStateService);
       let loading: boolean | undefined;
@@ -172,11 +175,80 @@ describe('DataLayersStateService', () => {
       flushMicrotasks();
       expect(loading).toBeFalse();
 
-      geometry$.next(MOCK_GEOMETRY);
+      plan$.next(MOCK_PLAN);
       flushMicrotasks();
 
       expect(loading).toBeFalse();
     }));
+  });
+
+  describe('scoping requests to the plan', () => {
+    const plan = { ...MOCK_PLAN, geometry: MOCK_GEOMETRY, workspace: 9 };
+    const dataSet = {
+      id: 10,
+      name: 'Dataset',
+      organization: layer.organization,
+    };
+
+    beforeEach(() => {
+      dataLayersService.search.and.returnValue(
+        of({ count: 0, results: [] } as unknown as Pagination<any>)
+      );
+      currentPlan = plan;
+    });
+
+    it('sends the plan geometry and workspace when USE_GEOMETRY is on', () => {
+      TestBed.overrideProvider(USE_GEOMETRY, { useValue: true });
+      createService('DATA_ORGANIZATION');
+      service.searchResults$.subscribe();
+
+      service.selectDataSet(dataSet);
+      service.search('fire');
+
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        MOCK_GEOMETRY,
+        9
+      );
+      expect(dataLayersService.search).toHaveBeenCalledWith(
+        jasmine.objectContaining({ geometry: MOCK_GEOMETRY, workspaceId: 9 })
+      );
+    });
+
+    it('leaves the geometry out when USE_GEOMETRY is off', () => {
+      createService('DATA_ORGANIZATION');
+      service.selectDataSet(dataSet);
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        undefined,
+        9
+      );
+    });
+
+    it("prefers the workspace route's id over the plan's", () => {
+      currentWorkspaceId = 7;
+      createService('DATA_ORGANIZATION');
+      service.selectDataSet(dataSet);
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        undefined,
+        7
+      );
+    });
+
+    it('sends no workspace with DATA_ORGANIZATION off', () => {
+      createService();
+      service.selectDataSet(dataSet);
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        undefined,
+        null
+      );
+    });
   });
 
   describe('goToDataLayerCategory', () => {
@@ -510,7 +582,35 @@ describe('DataLayersStateService', () => {
 
         expect(dataLayersService.browseFavorites).toHaveBeenCalledWith(
           7,
-          'map'
+          'map',
+          undefined
+        );
+      });
+
+      it('sends the plan geometry when USE_GEOMETRY is on', () => {
+        currentPlan = { ...MOCK_PLAN, geometry: MOCK_GEOMETRY };
+        TestBed.overrideProvider(USE_GEOMETRY, { useValue: true });
+        createInWorkspace('DATA_ORGANIZATION');
+
+        service.favorites$.subscribe();
+
+        expect(dataLayersService.browseFavorites).toHaveBeenCalledWith(
+          7,
+          'map',
+          MOCK_GEOMETRY
+        );
+      });
+
+      it('leaves the geometry out when USE_GEOMETRY is off', () => {
+        currentPlan = { ...MOCK_PLAN, geometry: MOCK_GEOMETRY };
+        createInWorkspace('DATA_ORGANIZATION');
+
+        service.favorites$.subscribe();
+
+        expect(dataLayersService.browseFavorites).toHaveBeenCalledWith(
+          7,
+          'map',
+          undefined
         );
       });
 

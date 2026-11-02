@@ -51,6 +51,7 @@
         (change)="toggleDataLayerSelection(layer.data)"></mat-checkbox>
     </span>
     <sg-toggle
+      align="top"
       class="toggle"
       [ngModel]="(selectedDataLayerId$ | async) === layer.id"
       (change)="selectDataLayer(layer.data, $event)">

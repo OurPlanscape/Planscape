@@ -82,6 +82,18 @@ export class PlanState {
     map((plan) => plan.geometry as Geometry)
   );
 
+  /**
+   * The current plan, or null right away when there is none (or it failed to
+   * load), so consumers don't wait on a plan that will never arrive.
+   */
+  currentPlanOrNull$: Observable<Plan | null> = this._currentPlanId$.pipe(
+    distinctUntilChanged(),
+    switchMap((id) =>
+      id == null ? of(null) : this.currentPlan$.pipe(catchError(() => of(null)))
+    ),
+    shareReplay(1)
+  );
+
   setPlanId(id: number) {
     this._currentPlanId$.next(id);
   }
