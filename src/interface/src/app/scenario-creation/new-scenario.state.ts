@@ -73,6 +73,10 @@ export class NewScenarioState {
   private _displayTreatedStands$ = new BehaviorSubject(false);
   public displayTreatedStands$ = this._displayTreatedStands$.asObservable();
 
+  private _displayAllTreatableStands$ = new BehaviorSubject(false);
+  public displayAllTreatableStands$ =
+    this._displayAllTreatableStands$.asObservable();
+
   public priorityObjectivesDetails$ = this.scenarioConfig$.pipe(
     map((config) => {
       const draft = config as Partial<ScenarioDraftConfiguration>;
@@ -371,6 +375,10 @@ export class NewScenarioState {
 
   setDisplayTreatedStands(show: boolean): void {
     this._displayTreatedStands$.next(show);
+  }
+
+  setDisplayAllTreatableStands(show: boolean): void {
+    this._displayAllTreatableStands$.next(show);
   }
 
   showMapError() {

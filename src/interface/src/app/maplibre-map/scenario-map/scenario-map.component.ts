@@ -39,12 +39,14 @@ import { StandsComponent } from '../stands/stands.component';
 import { TreatedStandsToggleComponent } from '../treated-stands-toggle/treated-stands-toggle.component';
 import { TreatedStandsComponent } from '../treated-stands/treated-stands.component';
 import { AllTreatableStandsToggleComponent } from '../all-treatable-stands-toggle/all-treatable-stands-toggle.component';
+import { AllTreatableStandsComponent } from '../all-treatable-stands/all-treatable-stands.component';
 
 @UntilDestroy()
 @Component({
   selector: 'app-scenario-map',
   standalone: true,
   imports: [
+    AllTreatableStandsComponent,
     AllTreatableStandsToggleComponent,
     CommonModule,
     MapComponent,
@@ -162,6 +164,14 @@ export class ScenarioMapComponent implements OnDestroy {
   ]).pipe(
     map(([displayTreatedStands, showSubUnitsOnResults]) => {
       return displayTreatedStands && showSubUnitsOnResults;
+    })
+  );
+
+  showAllTreatableStands$ = combineLatest([
+    this.newScenarioState.displayTreatedStands$,
+  ]).pipe(
+    map(([displayTreatedStands]) => {
+      return displayTreatedStands;
     })
   );
 

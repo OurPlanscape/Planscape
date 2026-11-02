@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { PopoverComponent, ToggleComponent } from '@styleguide';
 
 @Component({
@@ -9,4 +10,14 @@ import { PopoverComponent, ToggleComponent } from '@styleguide';
   templateUrl: './all-treatable-stands-toggle.component.html',
   styleUrl: './all-treatable-stands-toggle.component.scss',
 })
-export class AllTreatableStandsToggleComponent {}
+export class AllTreatableStandsToggleComponent {
+  showTreatableStands = false;
+
+  constructor(private newScenarioState: NewScenarioState) {}
+
+  toggleTreatedStands() {
+    this.newScenarioState.setDisplayAllTreatableStands(
+      this.showTreatableStands
+    );
+  }
+}
