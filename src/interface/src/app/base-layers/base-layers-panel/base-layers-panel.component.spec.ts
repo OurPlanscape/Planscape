@@ -7,11 +7,15 @@ import {
 } from './base-layers-panel.component';
 import { MockProvider } from 'ng-mocks';
 import { BaseLayersStateService } from '../base-layers.state.service';
-import { of, Subject } from 'rxjs';
+import { BehaviorSubject, of, Subject } from 'rxjs';
 import { MapModuleService } from '@services/map-module.service';
 import { DataLayersService } from '@services/data-layers.service';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { BaseLayer, MapDataDataSet, SearchResult } from '@types';
+import { BaseLayer, MapDataDataSet, Plan, SearchResult } from '@types';
+import { PlanState } from '@plan/plan.state';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
+import { MOCK_GEOMETRY, MOCK_PLAN } from '@services/mocks';
 
 const wildfires = { id: 1, name: 'Wildfires' } as MapDataDataSet;
 const roads = { id: 2, name: 'Roads' } as MapDataDataSet;
@@ -39,8 +43,10 @@ describe('BaseLayersPanelComponent', () => {
   let fixture: ComponentFixture<BaseLayersPanelComponent>;
   let searchSpy: jasmine.Spy;
   let listSpy: jasmine.Spy;
+  let plan$: BehaviorSubject<Plan | null>;
 
   beforeEach(async () => {
+    plan$ = new BehaviorSubject<Plan | null>(null);
     searchSpy = jasmine
       .createSpy('search')
       .and.returnValue(of({ count: 0, results: [] }));
@@ -64,6 +70,12 @@ describe('BaseLayersPanelComponent', () => {
           listBaseLayersByDataSet: listSpy,
         }),
         BaseLayersStateService,
+        MockProvider(PlanState, { currentPlanOrNull$: plan$ }),
+        {
+          provide: WorkspaceState,
+          useValue: { currentWorkspaceIdValue: null },
+        },
+        { provide: USE_GEOMETRY, useValue: true },
       ],
     }).compileComponents();
 
@@ -111,6 +123,25 @@ describe('BaseLayersPanelComponent', () => {
     expect(searchSpy).toHaveBeenCalledWith(
       jasmine.objectContaining({ term: 'fire', type: 'VECTOR', module: 'map' })
     );
+  });
+
+  it("scopes the search to the plan's area and workspace", () => {
+    plan$.next({ ...MOCK_PLAN, geometry: MOCK_GEOMETRY, workspace: 9 });
+    component.search('fire');
+    fixture.detectChanges();
+
+    expect(searchSpy).toHaveBeenCalledWith(
+      jasmine.objectContaining({ geometry: MOCK_GEOMETRY, workspaceId: 9 })
+    );
+  });
+
+  it('searches again when the plan changes instead of reusing the cache', () => {
+    component.search('fire');
+    fixture.detectChanges();
+    plan$.next({ ...MOCK_PLAN, geometry: MOCK_GEOMETRY, workspace: 9 });
+    fixture.detectChanges();
+
+    expect(searchSpy).toHaveBeenCalledTimes(2);
   });
 
   it('shows one list per dataset with matching layers', () => {

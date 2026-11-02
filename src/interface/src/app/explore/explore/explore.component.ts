@@ -9,7 +9,10 @@ import { SyncedMapsComponent } from '@maplibre-map/synced-maps/synced-maps.compo
 import { MultiMapControlComponent } from '@maplibre-map/multi-map-control/multi-map-control.component';
 import { OpacitySliderComponent } from '@styleguide';
 import {
+  catchError,
   combineLatest,
+  distinctUntilChanged,
+  EMPTY,
   firstValueFrom,
   map,
   of,
@@ -26,6 +29,8 @@ import { DrawService } from '@maplibre-map/draw.service';
 import { HttpClientModule } from '@angular/common/http';
 import { MapConfigService } from '@maplibre-map/map-config.service';
 import { PlanState } from '@plan/plan.state';
+import { MapModuleService } from '@services/map-module.service';
+import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
 import { getPlanPath, getWorkspaceId } from '@plan/plan-helpers';
 
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -70,6 +75,8 @@ const PER_MAP_TABS = [SidebarTabs.DATA_LAYERS, SidebarTabs.FAVORITES];
     // 2. Alias its own type to that same instance
     { provide: MultiMapConfigState, useExisting: MapConfigState },
     MapConfigService,
+    // Narrow layers to the planning area when the viewer has one
+    { provide: USE_GEOMETRY, useValue: true },
   ],
 })
 export class ExploreComponent implements OnDestroy, OnInit {
@@ -99,7 +106,8 @@ export class ExploreComponent implements OnDestroy, OnInit {
     private scenarioState: ScenarioState,
     private drawService: DrawService,
     private route: ActivatedRoute,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private mapModuleService: MapModuleService
   ) {
     this.loadStateFromLocalStorage();
 
@@ -120,6 +128,20 @@ export class ExploreComponent implements OnDestroy, OnInit {
 
   ngOnInit() {
     const scenarioId = this.route.snapshot.data['scenarioId'];
+
+    // Categories are narrowed to the planning area. Without a plan, reload
+    // unfiltered in case another view left the module filtered.
+    this.planState.currentPlanOrNull$
+      .pipe(
+        distinctUntilChanged((a, b) => a?.id === b?.id),
+        switchMap((plan) =>
+          this.mapModuleService
+            .loadMapModule(plan?.geometry)
+            .pipe(catchError(() => EMPTY))
+        ),
+        untilDestroyed(this)
+      )
+      .subscribe();
 
     this.planState.currentPlanId$
       .pipe(
