@@ -1,3 +1,4 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BehaviorSubject, map, of } from 'rxjs';
 import { DataLayer, Resource } from '@types';
@@ -5,6 +6,18 @@ import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { FavoriteDataLayersComponent } from './favorite-data-layers.component';
 
 const layer = (id: number, name: string) => ({ id, name }) as DataLayer;
+
+/** Stands in for the map viewer, which puts its map tabs under the search. */
+@Component({
+  standalone: true,
+  imports: [FavoriteDataLayersComponent],
+  template: `
+    <app-favorite-data-layers
+      [belowSearch]="mapTabs"></app-favorite-data-layers>
+    <ng-template #mapTabs><nav class="map-tabs">Map 1</nav></ng-template>
+  `,
+})
+class PanelHostComponent {}
 
 describe('FavoriteDataLayersComponent', () => {
   let component: FavoriteDataLayersComponent;
@@ -88,6 +101,14 @@ describe('FavoriteDataLayersComponent', () => {
     expect(el.querySelector('sg-empty-state')).toBeNull();
   });
 
+  it('keeps the rows while the list refreshes behind an event', () => {
+    favorites$.next({ isLoading: true, data: [layer(1, 'SNV Heavy Fuels')] });
+    const el = create();
+
+    expect(rowNames(el)).toEqual(['SNV Heavy Fuels']);
+    expect(el.querySelector('mat-spinner')).toBeNull();
+  });
+
   it('says so when the favorites cannot be loaded', () => {
     favorites$.next({ isLoading: false, error: new Error('400') });
     const el = create();
@@ -123,5 +144,38 @@ describe('FavoriteDataLayersComponent', () => {
     fixture.detectChanges();
 
     expect(el.querySelector('sg-no-results')).not.toBeNull();
+  });
+
+  describe('in a map viewer with more than one map', () => {
+    function createInHost() {
+      const host = TestBed.createComponent(PanelHostComponent);
+      host.detectChanges();
+      return host.nativeElement as HTMLElement;
+    }
+
+    it('shows the map tabs between the search bar and the list', () => {
+      const el = createInHost();
+      const panel = el.querySelector('app-favorite-data-layers')!;
+
+      expect(
+        Array.from(panel.children).map((child) => child.className)
+      ).toEqual(['side-search-container no-border', 'map-tabs', 'scrollable']);
+    });
+
+    it('lets the tabs carry the line under the search bar', () => {
+      const el = createInHost();
+
+      expect(el.querySelector('.side-search-container')?.classList).toContain(
+        'no-border'
+      );
+    });
+
+    it('keeps the line when there are no tabs to show', () => {
+      const el = create();
+
+      expect(
+        el.querySelector('.side-search-container')?.classList
+      ).not.toContain('no-border');
+    });
   });
 });

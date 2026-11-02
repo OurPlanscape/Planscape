@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
+import { Component, Input, TemplateRef } from '@angular/core';
+import { AsyncPipe, NgForOf, NgIf, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -22,6 +22,7 @@ import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.
     AsyncPipe,
     NgIf,
     NgForOf,
+    NgTemplateOutlet,
     FormsModule,
     MatIconModule,
     MatProgressSpinnerModule,
@@ -36,6 +37,8 @@ import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.
   styleUrl: './favorite-data-layers.component.scss',
 })
 export class FavoriteDataLayersComponent {
+  @Input() belowSearch?: TemplateRef<unknown>;
+
   private _searchTerm$ = new BehaviorSubject('');
   searchTerm$ = this._searchTerm$.asObservable();
 

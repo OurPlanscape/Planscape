@@ -57,6 +57,10 @@ sg-no-results {
   box-sizing: border-box;
 }
 
+.side-search-container.no-border {
+  border-bottom: none;
+}
+
 :host {
   ::ng-deep .search-bar .input-wrapper {
     width: 100%;
