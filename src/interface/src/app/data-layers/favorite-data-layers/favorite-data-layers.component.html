@@ -1,4 +1,4 @@
-<div class="side-search-container">
+<div class="side-search-container" [class.no-border]="belowSearch">
   <sg-search-bar
     class="search-bar"
     [debounceInterval]="160"
@@ -8,6 +8,7 @@
     (searchString)="search($event)"
     (clearSearch)="clearSearch()"></sg-search-bar>
 </div>
+<ng-container *ngTemplateOutlet="belowSearch ?? null"></ng-container>
 
 <div class="scrollable" *ngIf="favorites$ | async as favorites">
   <mat-spinner

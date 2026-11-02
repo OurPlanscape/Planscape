@@ -16,7 +16,6 @@ import {
   firstValueFrom,
   map,
   of,
-  skip,
   switchMap,
   take,
 } from 'rxjs';
@@ -111,16 +110,19 @@ export class ExploreComponent implements OnDestroy, OnInit {
   ) {
     this.loadStateFromLocalStorage();
 
-    // expand panel automatically when the selected map change
-    // (when the user clicks on the data layer name on the map)
-    this.multiMapConfigState.selectedMapId$
-      .pipe(untilDestroyed(this), skip(1))
-      .subscribe((id) => {
+    // Each map has its own panel including favorites.
+    // Selecting a map updates selectedMapId$ without closing other panels
+    this.multiMapConfigState.mapClicked$
+      .pipe(untilDestroyed(this))
+      .subscribe(() => {
         this.panelExpanded = true;
-        // if I have a selected map, go to data layer tab
-        if (id) {
-          this.tabIndex = SidebarTabs.DATA_LAYERS;
-        }
+      });
+
+    // Clicking a map layer name opens it in the Data Layers panel
+    this.multiMapConfigState.layerNameClicked$
+      .pipe(untilDestroyed(this))
+      .subscribe(() => {
+        this.tabIndex = SidebarTabs.DATA_LAYERS;
       });
 
     this.mapConfigService.initialize();

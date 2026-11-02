@@ -22,6 +22,8 @@ import {
   MockProviders,
 } from 'ng-mocks';
 import { BehaviorSubject, of } from 'rxjs';
+import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
+import { SidebarTabs } from '@explore/sidebar-tabs';
 import { ExploreComponent } from './explore.component';
 
 describe('ExploreComponent', () => {
@@ -169,6 +171,74 @@ describe('ExploreComponent', () => {
     const config = lastBreadcrumbConfig();
     expect(config.label).toEqual('New Plan');
     expect(config.backUrl).toEqual('/');
+  });
+
+  describe('the side panel', () => {
+    function mapState() {
+      return fixture.debugElement.injector.get(MultiMapConfigState);
+    }
+
+    beforeEach(() => overrideFeatureFlags('DATA_ORGANIZATION'));
+
+    it('stays on the favorites panel picked from the data layers one', () => {
+      setupComponent();
+
+      fixture.componentInstance.onTabIndexChange(SidebarTabs.FAVORITES);
+
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.FAVORITES);
+    });
+
+    it('stays on the favorites panel picked from the base layers one', () => {
+      setupComponent();
+      fixture.componentInstance.onTabIndexChange(SidebarTabs.BASE_LAYERS);
+
+      fixture.componentInstance.onTabIndexChange(SidebarTabs.FAVORITES);
+
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.FAVORITES);
+    });
+
+    it('stays on the favorites panel with no map picked yet', () => {
+      setupComponent();
+      // a session that ended on the base layers comes back without one
+      mapState().setSelectedMap(null);
+
+      fixture.componentInstance.onTabIndexChange(SidebarTabs.FAVORITES);
+
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.FAVORITES);
+    });
+
+    it('keeps the favorites panel when its tabs pick another map', () => {
+      setupComponent();
+      fixture.componentInstance.onTabIndexChange(SidebarTabs.FAVORITES);
+
+      // the tabs under the search bar show that map's favorites
+      mapState().setSelectedMap(2);
+
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.FAVORITES);
+    });
+
+    it('opens the panel of the map the user clicks on, where it was', () => {
+      setupComponent();
+      fixture.componentInstance.onTabIndexChange(SidebarTabs.FAVORITES);
+      fixture.componentInstance.setPanelExpanded(false);
+
+      mapState().selectClickedMap(2);
+
+      expect(fixture.componentInstance.panelExpanded).toBe(true);
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.FAVORITES);
+    });
+
+    it('browses to the layer whose name is clicked on a map', () => {
+      setupComponent();
+      fixture.componentInstance.onTabIndexChange(SidebarTabs.FAVORITES);
+      fixture.componentInstance.setPanelExpanded(false);
+
+      // only the data layers panel shows where a layer comes from
+      mapState().goToLayerOnMap(2);
+
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.DATA_LAYERS);
+      expect(fixture.componentInstance.panelExpanded).toBe(true);
+    });
   });
 
   it('points "New Plan" back to the workspace in the workspace map viewer', () => {
