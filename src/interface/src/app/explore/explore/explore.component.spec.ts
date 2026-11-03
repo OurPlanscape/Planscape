@@ -114,9 +114,17 @@ describe('ExploreComponent', () => {
   });
 
   describe('map module', () => {
+    beforeEach(() => overrideFeatureFlags('DATA_ORGANIZATION'));
+
     it("loads it narrowed to the plan's geometry", () => {
       setupComponent();
       expect(loadMapModule).toHaveBeenCalledOnceWith(mockPlan.geometry);
+    });
+
+    it('loads it unfiltered when DATA_ORGANIZATION is off', () => {
+      overrideFeatureFlags();
+      setupComponent();
+      expect(loadMapModule).toHaveBeenCalledOnceWith(undefined);
     });
 
     it('loads it unfiltered without a plan', () => {
