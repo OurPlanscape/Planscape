@@ -22,6 +22,7 @@ import { ScenarioService } from '@services';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MapModuleService } from '@services/map-module.service';
+import { overrideFeatureFlags } from '@features/testing';
 
 describe('ViewScenarioComponent (polling)', () => {
   let fixture: ComponentFixture<ViewScenarioComponent>;
@@ -90,11 +91,20 @@ describe('ViewScenarioComponent (polling)', () => {
   }));
 
   describe('map module', () => {
-    beforeEach(() => scenario$.next(makeScenario('SUCCESS')));
+    beforeEach(() => {
+      scenario$.next(makeScenario('SUCCESS'));
+      overrideFeatureFlags('DATA_ORGANIZATION');
+    });
 
     it("loads it narrowed to the plan's geometry", () => {
       createComponent();
       expect(loadMapModule).toHaveBeenCalledOnceWith(MOCK_PLAN.geometry);
+    });
+
+    it('loads it unfiltered when DATA_ORGANIZATION is off', () => {
+      overrideFeatureFlags();
+      createComponent();
+      expect(loadMapModule).toHaveBeenCalledOnceWith(undefined);
     });
 
     it('does not reload when the same plan emits again', () => {

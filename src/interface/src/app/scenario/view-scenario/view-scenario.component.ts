@@ -46,6 +46,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScenarioService } from '@services';
 import { MapModuleService } from '@services/map-module.service';
+import { FeatureService } from '@features/feature.service';
 
 enum ScenarioTabs {
   RESULTS,
@@ -122,15 +123,19 @@ export class ViewScenarioComponent {
     private dataLayersStateService: DataLayersStateService,
     private breadcrumbService: BreadcrumbService,
     private dialog: MatDialog,
-    private mapModuleService: MapModuleService
+    private mapModuleService: MapModuleService,
+    private featureService: FeatureService
   ) {
-    // Narrow data layer categories to the planning area
+    const dataOrganizationEnabled =
+      this.featureService.isFeatureEnabled('DATA_ORGANIZATION');
+    // Narrowed to the planning area under DATA_ORGANIZATION. Otherwise reload
+    // unfiltered in case another view left the module filtered.
     this.planState.currentPlanOrNull$
       .pipe(
         distinctUntilChanged((a, b) => a?.id === b?.id),
         switchMap((plan) =>
           this.mapModuleService
-            .loadMapModule(plan?.geometry)
+            .loadMapModule(dataOrganizationEnabled ? plan?.geometry : undefined)
             .pipe(catchError(() => EMPTY))
         ),
         untilDestroyed(this)
