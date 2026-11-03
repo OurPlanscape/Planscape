@@ -1,12 +1,9 @@
 import { Injectable } from '@angular/core';
 import {
   LoadedResult,
-  MEMBER_ROLE_CHANGED_EVENT,
-  MemberRoleChangedPayload,
   Plan,
   PLANNING_AREA_DATA_EVENTS,
   Resource,
-  WorkspaceEvent,
 } from '@types';
 import { Geometry } from 'geojson';
 import {
@@ -27,7 +24,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { AuthService, PlanService, WebSocketService } from '@services';
+import { PlanService, WebSocketService } from '@services';
 
 // Events are best effort, so a plan that is still processing checks on itself
 export const PROCESSING_CHECK_INTERVAL = 60000;
@@ -40,8 +37,7 @@ const PROCESSING_MAP_STATUSES = ['PENDING', 'IN_PROGRESS', 'STANDS_DONE'];
 export class PlanState {
   constructor(
     private planService: PlanService,
-    private webSocketService: WebSocketService,
-    private authService: AuthService
+    private webSocketService: WebSocketService
   ) {}
 
   // The ID of the current plan
@@ -140,7 +136,7 @@ export class PlanState {
 
     const changes$ = merge(
       this.webSocketService.planUpdates$(initial.id, PLANNING_AREA_DATA_EVENTS),
-      this.ownRoleChanged$(),
+      this.webSocketService.ownRoleChanged$(),
       interval(PROCESSING_CHECK_INTERVAL).pipe(map(() => null))
     ).pipe(
       // null is a timer, which only matters for what events would report, and
@@ -154,16 +150,6 @@ export class PlanState {
     );
 
     return merge(of(initial), changes$).pipe(tap((next) => (plan = next)));
-  }
-
-  private ownRoleChanged$(): Observable<WorkspaceEvent<unknown>> {
-    return this.webSocketService
-      .on<MemberRoleChangedPayload>(MEMBER_ROLE_CHANGED_EVENT)
-      .pipe(
-        filter(
-          (event) => event.data?.user_id === this.authService.currentUser()?.id
-        )
-      );
   }
 
   private isProcessing(plan: Plan): boolean {

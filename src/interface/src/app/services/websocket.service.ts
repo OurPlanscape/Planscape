@@ -17,6 +17,8 @@ import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import * as Sentry from '@sentry/angular';
 import { environment } from '@env/environment';
 import {
+  MEMBER_ROLE_CHANGED_EVENT,
+  MemberRoleChangedPayload,
   REALTIME_CONNECTED_EVENT,
   WebSocketStatus,
   WorkspaceEvent,
@@ -123,6 +125,18 @@ export class WebSocketService {
     return this.messages$.pipe(
       filter((event) => event.type === type)
     ) as Observable<WorkspaceEvent<T>>;
+  }
+
+  /**
+   * Emits when an admin changes the role of the current user, which changes
+   * the permissions we were given on everything in the workspace.
+   */
+  ownRoleChanged$(): Observable<WorkspaceEvent<MemberRoleChangedPayload>> {
+    return this.on<MemberRoleChangedPayload>(MEMBER_ROLE_CHANGED_EVENT).pipe(
+      filter(
+        (event) => event.data?.user_id === this.authService.currentUser()?.id
+      )
+    );
   }
 
   /**

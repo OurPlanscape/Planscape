@@ -1,7 +1,7 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { of, Subject, throwError } from 'rxjs';
 import { PlanState, PROCESSING_CHECK_INTERVAL } from './plan.state';
-import { AuthService, PlanService, WebSocketService } from '@services';
+import { PlanService, WebSocketService } from '@services';
 import { MockProvider } from 'ng-mocks';
 import {
   MEMBER_ROLE_CHANGED_EVENT,
@@ -32,10 +32,7 @@ describe('PlanState', () => {
         }),
         MockProvider(WebSocketService, {
           planUpdates$: planUpdates,
-          on: (() => roleChanges$) as any,
-        }),
-        MockProvider(AuthService, {
-          currentUser: () => ({ id: 7 }) as any,
+          ownRoleChanged$: () => roleChanges$,
         }),
       ],
     });
@@ -334,17 +331,6 @@ describe('PlanState', () => {
       });
 
       expect(planService.getPlan).toHaveBeenCalledTimes(1);
-    });
-
-    it('ignores the role changes of others', () => {
-      follow();
-
-      roleChanges$.next({
-        type: MEMBER_ROLE_CHANGED_EVENT,
-        data: { user_id: 8, role: 'VIEWER' },
-      });
-
-      expect(planService.getPlan).not.toHaveBeenCalled();
     });
 
     it('stops following a plan once it is gone', () => {
