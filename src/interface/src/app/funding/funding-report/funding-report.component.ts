@@ -90,6 +90,7 @@ import { ScenarioState } from '@scenario/scenario.state';
 import { ShareFundingReportDialogComponent } from '../share-funding-report-dialog/share-funding-report-dialog.component';
 import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
 import { FundingReportService } from '@app/services/funding-report.service';
+import { FeaturesModule } from '@features/features.module';
 
 /** Pause after the last keystroke before recalculating water availability. */
 const WATER_DEBOUNCE_MS = 300;
@@ -120,6 +121,7 @@ export type ReportInteractivity = boolean | 'readonly';
   standalone: true,
   imports: [
     CommonModule,
+    FeaturesModule,
     FundingReportFooterComponent,
     FundingReportMapComponent,
     MatButtonModule,
@@ -196,6 +198,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
 
   INITIAL_AET_PERCENTAGE = 25;
 
+  protected readonly SUPPORT_URL = SUPPORT_URL;
+
   pollForNewGeoPackage() {
     this.pollingForGeopackage$.next(true);
     this.pollForNewGeopackage()
@@ -240,6 +244,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   sectionLayers: Record<string, MapLayer[]> = {
     carbon: [],
     wildfire: [],
+    cat_reduction: [],
     water: [],
     biomass: [],
   };
@@ -736,6 +741,21 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
           },
         });
     }
+  }
+
+  get catastrophicWildfireResults() {
+    return true;
+  }
+
+  get catastrophicFire() {
+    /// TODO: these are placeholders
+    const acresReduced: number = 18000;
+    const projectAreaAcres: number = 24000;
+
+    return {
+      acresReduced: acresReduced,
+      percentBeyond: Math.round((acresReduced / projectAreaAcres) * 100) / 10,
+    };
   }
 
   /**
