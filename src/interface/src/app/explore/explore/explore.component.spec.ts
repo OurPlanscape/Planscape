@@ -21,9 +21,10 @@ import {
   MockProvider,
   MockProviders,
 } from 'ng-mocks';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, of, Subject } from 'rxjs';
 import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
 import { SidebarTabs } from '@explore/sidebar-tabs';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
 import { ExploreComponent } from './explore.component';
 
 describe('ExploreComponent', () => {
@@ -31,7 +32,10 @@ describe('ExploreComponent', () => {
   let breadcrumbService: BreadcrumbService;
   let currentPlanId$: BehaviorSubject<number | null>;
   let currentPlanOrNull$: BehaviorSubject<Plan | null>;
+  let currentPlanWorkspaceId$: Subject<number | null>;
   let loadMapModule: jasmine.Spy;
+  let setWorkspaceId: jasmine.Spy;
+  let resetWorkspaceId: jasmine.Spy;
 
   const mockRouteSnapshotData: { planId?: number; scenarioId?: number } = {};
 
@@ -71,7 +75,10 @@ describe('ExploreComponent', () => {
     mockRouteSnapshotData.scenarioId = 1234;
     currentPlanId$ = new BehaviorSubject<number | null>(24);
     currentPlanOrNull$ = new BehaviorSubject<Plan | null>(mockPlan);
+    currentPlanWorkspaceId$ = new Subject<number | null>();
     loadMapModule = jasmine.createSpy('loadMapModule').and.returnValue(of({}));
+    setWorkspaceId = jasmine.createSpy('setWorkspaceId');
+    resetWorkspaceId = jasmine.createSpy('resetWorkspaceId');
 
     await TestBed.configureTestingModule({
       imports: [ExploreComponent, SharedModule, BrowserAnimationsModule],
@@ -79,10 +86,12 @@ describe('ExploreComponent', () => {
         MockProviders(BreadcrumbService, ExploreStorageService),
         MockProvider(PlanState, {
           currentPlanId$,
+          currentPlanWorkspaceId$,
           currentPlan$: of(mockPlan),
           currentPlanOrNull$,
         }),
         MockProvider(MapModuleService, { loadMapModule }),
+        MockProvider(WorkspaceState, { setWorkspaceId, resetWorkspaceId }),
         MockProvider(ScenarioState, {
           currentScenario$: of(mockScenario),
         }),
@@ -171,6 +180,35 @@ describe('ExploreComponent', () => {
     const config = lastBreadcrumbConfig();
     expect(config.label).toEqual('New Plan');
     expect(config.backUrl).toEqual('/');
+  });
+
+  describe('the favorites of a planning area', () => {
+    // they are the favorites of the workspace the area belongs to
+    it('come from the workspace of the plan', () => {
+      setupComponent();
+
+      currentPlanWorkspaceId$.next(42);
+
+      expect(setWorkspaceId).toHaveBeenCalledOnceWith(42);
+      expect(resetWorkspaceId).not.toHaveBeenCalled();
+    });
+
+    it('are none for a planning area outside a workspace', () => {
+      setupComponent();
+
+      currentPlanWorkspaceId$.next(null);
+
+      expect(resetWorkspaceId).toHaveBeenCalled();
+      expect(setWorkspaceId).not.toHaveBeenCalled();
+    });
+
+    // the workspace map viewer gets its id from the route
+    it('leave the workspace alone where there is no plan', () => {
+      setupComponent();
+
+      expect(setWorkspaceId).not.toHaveBeenCalled();
+      expect(resetWorkspaceId).not.toHaveBeenCalled();
+    });
   });
 
   describe('the side panel', () => {
