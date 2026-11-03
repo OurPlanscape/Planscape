@@ -1,6 +1,7 @@
 from datetime import date
 from unittest import mock
 
+import msgpack
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.test import TestCase
@@ -37,6 +38,17 @@ class ToPlainTest(TestCase):
             },
         )
         self.assertIs(type(value["status"]), str)
+
+    def test_integers_msgpack_cannot_pack_become_floats(self):
+        nodata = -340282306073709650000000000000000000000
+        value = to_plain({"nodata": nodata, "max": 2**64 - 1, "min": -(2**63)})
+
+        self.assertEqual(
+            value,
+            {"nodata": float(nodata), "max": 2**64 - 1, "min": -(2**63)},
+        )
+        self.assertIs(type(value["max"]), int)
+        msgpack.packb(value)
 
 
 class BuildEventTest(TestCase):

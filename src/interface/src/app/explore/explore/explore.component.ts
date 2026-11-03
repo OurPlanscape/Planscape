@@ -24,12 +24,13 @@ import { ExploreModesToggleComponent } from '@maplibre-map/explore-modes-toggle/
 import { ExploreSidebarComponent } from '@explore/explore-sidebar/explore-sidebar.component';
 import { LegacySidebarComponent } from '@explore/legacy-sidebar/legacy-sidebar.component';
 import { SidebarTabs } from '@explore/sidebar-tabs';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
 import { DrawService } from '@maplibre-map/draw.service';
 import { HttpClientModule } from '@angular/common/http';
 import { MapConfigService } from '@maplibre-map/map-config.service';
 import { PlanState } from '@plan/plan.state';
 import { MapModuleService } from '@services/map-module.service';
-import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
+import { provideDataOrganizationGeometry } from '@data-layers/data-layers/geometry-datalayers.token';
 import { getPlanPath, getWorkspaceId } from '@plan/plan-helpers';
 
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -74,8 +75,7 @@ const PER_MAP_TABS = [SidebarTabs.DATA_LAYERS, SidebarTabs.FAVORITES];
     // 2. Alias its own type to that same instance
     { provide: MultiMapConfigState, useExisting: MapConfigState },
     MapConfigService,
-    // Narrow layers to the planning area when the viewer has one
-    { provide: USE_GEOMETRY, useValue: true },
+    provideDataOrganizationGeometry(),
   ],
 })
 export class ExploreComponent implements OnDestroy, OnInit {
@@ -106,7 +106,8 @@ export class ExploreComponent implements OnDestroy, OnInit {
     private drawService: DrawService,
     private route: ActivatedRoute,
     private featureService: FeatureService,
-    private mapModuleService: MapModuleService
+    private mapModuleService: MapModuleService,
+    private workspaceState: WorkspaceState
   ) {
     this.loadStateFromLocalStorage();
 
@@ -125,20 +126,32 @@ export class ExploreComponent implements OnDestroy, OnInit {
         this.tabIndex = SidebarTabs.DATA_LAYERS;
       });
 
+    this.planState.currentPlanWorkspaceId$
+      .pipe(untilDestroyed(this))
+      .subscribe((workspaceId) => {
+        if (workspaceId === null) {
+          this.workspaceState.resetWorkspaceId();
+        } else {
+          this.workspaceState.setWorkspaceId(workspaceId);
+        }
+      });
+
     this.mapConfigService.initialize();
   }
 
   ngOnInit() {
     const scenarioId = this.route.snapshot.data['scenarioId'];
 
-    // Categories are narrowed to the planning area. Without a plan, reload
+    // Narrowed to the planning area under DATA_ORGANIZATION. Otherwise reload
     // unfiltered in case another view left the module filtered.
     this.planState.currentPlanOrNull$
       .pipe(
         distinctUntilChanged((a, b) => a?.id === b?.id),
         switchMap((plan) =>
           this.mapModuleService
-            .loadMapModule(plan?.geometry)
+            .loadMapModule(
+              this.dataOrganizationEnabled ? plan?.geometry : undefined
+            )
             .pipe(catchError(() => EMPTY))
         ),
         untilDestroyed(this)
