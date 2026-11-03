@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import {
   catchError,
   combineLatest,
+  distinctUntilChanged,
   EMPTY,
   interval,
   map,
@@ -44,6 +45,7 @@ import { ScenarioSetupModalComponent } from '@scenario/scenario-setup-modal/scen
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ScenarioService } from '@services';
+import { MapModuleService } from '@services/map-module.service';
 
 enum ScenarioTabs {
   RESULTS,
@@ -119,8 +121,22 @@ export class ViewScenarioComponent {
     private router: Router,
     private dataLayersStateService: DataLayersStateService,
     private breadcrumbService: BreadcrumbService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private mapModuleService: MapModuleService
   ) {
+    // Narrow data layer categories to the planning area
+    this.planState.currentPlanOrNull$
+      .pipe(
+        distinctUntilChanged((a, b) => a?.id === b?.id),
+        switchMap((plan) =>
+          this.mapModuleService
+            .loadMapModule(plan?.geometry)
+            .pipe(catchError(() => EMPTY))
+        ),
+        untilDestroyed(this)
+      )
+      .subscribe();
+
     // go to data layers tab when the user clicks the data layer name legend on the map
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
