@@ -94,6 +94,13 @@ export class PlanState {
     shareReplay(1)
   );
 
+  currentPlanWorkspaceId$: Observable<number | null> =
+    this.currentPlanOrNull$.pipe(
+      filter((plan): plan is Plan => !!plan),
+      map((plan) => plan.workspace ?? null),
+      distinctUntilChanged()
+    );
+
   setPlanId(id: number) {
     this._currentPlanId$.next(id);
   }
