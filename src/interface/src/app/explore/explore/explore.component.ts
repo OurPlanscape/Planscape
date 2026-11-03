@@ -24,6 +24,7 @@ import { ExploreModesToggleComponent } from '@maplibre-map/explore-modes-toggle/
 import { ExploreSidebarComponent } from '@explore/explore-sidebar/explore-sidebar.component';
 import { LegacySidebarComponent } from '@explore/legacy-sidebar/legacy-sidebar.component';
 import { SidebarTabs } from '@explore/sidebar-tabs';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
 import { DrawService } from '@maplibre-map/draw.service';
 import { HttpClientModule } from '@angular/common/http';
 import { MapConfigService } from '@maplibre-map/map-config.service';
@@ -106,7 +107,8 @@ export class ExploreComponent implements OnDestroy, OnInit {
     private drawService: DrawService,
     private route: ActivatedRoute,
     private featureService: FeatureService,
-    private mapModuleService: MapModuleService
+    private mapModuleService: MapModuleService,
+    private workspaceState: WorkspaceState
   ) {
     this.loadStateFromLocalStorage();
 
@@ -123,6 +125,16 @@ export class ExploreComponent implements OnDestroy, OnInit {
       .pipe(untilDestroyed(this))
       .subscribe(() => {
         this.tabIndex = SidebarTabs.DATA_LAYERS;
+      });
+
+    this.planState.currentPlanWorkspaceId$
+      .pipe(untilDestroyed(this))
+      .subscribe((workspaceId) => {
+        if (workspaceId === null) {
+          this.workspaceState.resetWorkspaceId();
+        } else {
+          this.workspaceState.setWorkspaceId(workspaceId);
+        }
       });
 
     this.mapConfigService.initialize();
