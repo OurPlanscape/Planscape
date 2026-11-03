@@ -1,4 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Component, OnInit } from '@angular/core';
+import {
+  ComponentFixture,
+  fakeAsync,
+  flushMicrotasks,
+  TestBed,
+} from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { MapTabsComponent } from '@explore/map-tabs/map-tabs.component';
@@ -50,6 +56,7 @@ describe('ExploreSidebarComponent', () => {
     fixture = TestBed.createComponent(ExploreSidebarComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('shows the data layers panel by default', () => {
@@ -158,4 +165,76 @@ describe('ExploreSidebarComponent', () => {
       ).toBeNull();
     });
   });
+});
+
+// Stands in for a synced map: registers its data layers state and restores
+// the stored selection on init, after the sidebar header has been checked.
+@Component({
+  selector: 'app-restoring-map',
+  standalone: true,
+  template: '',
+})
+class RestoringMapComponent implements OnInit {
+  constructor(private registry: DataLayersRegistryService) {}
+
+  ngOnInit() {
+    const selection$ = new BehaviorSubject<BrowseSelection | null>(null);
+    this.registry.set(1, { selection$ } as unknown as DataLayersStateService);
+    selection$.next({ type: 'category', id: 5, name: 'Fire-Adapted' });
+  }
+}
+
+@Component({
+  selector: 'app-restoring-maps',
+  standalone: true,
+  imports: [RestoringMapComponent],
+  template: '<app-restoring-map></app-restoring-map>',
+})
+class RestoringMapsComponent {}
+
+@Component({
+  standalone: true,
+  imports: [ExploreSidebarComponent, RestoringMapsComponent],
+  template: `
+    <app-explore-sidebar></app-explore-sidebar>
+    <app-restoring-maps></app-restoring-maps>
+  `,
+})
+class ExploreHostComponent {}
+
+describe('ExploreSidebarComponent with a map restored after it', () => {
+  let fixture: ComponentFixture<ExploreHostComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [ExploreHostComponent],
+      providers: [
+        {
+          provide: MultiMapConfigState,
+          useValue: { selectedMapId$: new BehaviorSubject(1) },
+        },
+      ],
+    })
+      .overrideComponent(ExploreSidebarComponent, {
+        remove: { imports: [MapTabsComponent, BaseLayersComponent] },
+        add: {
+          imports: MockComponents(MapTabsComponent, BaseLayersComponent),
+        },
+      })
+      .compileComponents();
+
+    fixture = TestBed.createComponent(ExploreHostComponent);
+  });
+
+  it('shows the restored category without changing the header mid-check', fakeAsync(() => {
+    expect(() => fixture.detectChanges()).not.toThrow();
+
+    flushMicrotasks();
+    fixture.detectChanges();
+
+    expect(
+      fixture.debugElement.query(By.css('.panel-header h4')).nativeElement
+        .textContent
+    ).toContain('Fire-Adapted');
+  }));
 });
