@@ -52,7 +52,8 @@ export const betweenValidator: ValidatorFn = (
   return Object.keys(errors).length > 0 ? errors : null;
 };
 
-const DECIMALS_AND_COMMAS = /^\s*-?\d+(?:\.\d+)?(?:\s*,\s*-?\d+(?:\.\d+)?)*\s*(?:,\s*)?$/; // allows '999', '9, 9999', '9999,9999,'
+const DECIMALS_AND_COMMAS =
+  /^\s*-?\d+(?:\.\d+)?(?:\s*,\s*-?\d+(?:\.\d+)?)*\s*(?:,\s*)?$/; // allows '999', '9, 9999', '9999,9999,'
 const LIST_OPERATORS = ['in', 'nin']; // operators that accept multi values
 
 // This allows us to enter numbers and the separator/delimiter for multi valued fields
@@ -165,7 +166,9 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
 
   get valueOneLabel() {
     if (this.showSecondValue) {
-      return this.hasRange ? `Min (${this.formatRounded(this.minValue)})` : 'Min';
+      return this.hasRange
+        ? `Min (${this.formatRounded(this.minValue)})`
+        : 'Min';
     }
     return this.hasRange
       ? `Value (${this.formatRounded(this.minValue)}-${this.formatRounded(this.maxValue)})`
