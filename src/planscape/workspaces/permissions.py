@@ -11,6 +11,7 @@ VIEWER_PERMISSIONS = [
 ]
 COLLABORATOR_PERMISSIONS = VIEWER_PERMISSIONS + [
     "add_planningarea",
+    "add_favorite_datalayer",
 ]
 OWNER_PERMISSIONS = COLLABORATOR_PERMISSIONS + [
     "change_workspace",
