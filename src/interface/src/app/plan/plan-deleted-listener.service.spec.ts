@@ -15,6 +15,7 @@ describe('PlanDeletedListenerService', () => {
   let navigate: jasmine.Spy;
   let closed$: Subject<boolean>;
   let plan: Partial<Plan>;
+  let router: { navigate: jasmine.Spy; url: string };
 
   const deleted = (id: number, actor = 8): WorkspaceEvent => ({
     type: PLANNING_AREA_DELETED_EVENT,
@@ -30,13 +31,14 @@ describe('PlanDeletedListenerService', () => {
       .createSpy('open')
       .and.returnValue({ afterClosed: () => closed$ });
     navigate = jasmine.createSpy('navigate');
+    router = { navigate, url: '/workspace/5/plan/3' };
 
     TestBed.configureTestingModule({
       providers: [
         MockProvider(WebSocketService, { on: (() => events$) as any }),
         MockProvider(AuthService, { currentUser: () => ({ id: 7 }) as any }),
         MockProvider(MatDialog, { open }),
-        MockProvider(Router, { navigate }),
+        { provide: Router, useValue: router },
         {
           provide: PlanState,
           useFactory: () => ({
@@ -74,6 +76,27 @@ describe('PlanDeletedListenerService', () => {
 
   it('ignores other plans', () => {
     events$.next(deleted(4));
+
+    expect(open).not.toHaveBeenCalled();
+  });
+
+  it('tells whoever is on a page under the plan', () => {
+    router.url = '/workspace/5/map-viewer/3?layer=1';
+    events$.next(deleted(3));
+
+    expect(open).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores a plan we already left', () => {
+    router.url = '/workspace/5';
+    events$.next(deleted(3));
+
+    expect(open).not.toHaveBeenCalled();
+  });
+
+  it('ignores a plan whose id only starts the same', () => {
+    router.url = '/workspace/5/plan/31';
+    events$.next(deleted(3));
 
     expect(open).not.toHaveBeenCalled();
   });

@@ -8,7 +8,7 @@ import {
   MockProviders,
 } from 'ng-mocks';
 import { RouterTestingModule } from '@angular/router/testing';
-import { AuthService, WebSocketService } from '@services';
+import { WebSocketService } from '@services';
 import { TreatmentsState } from '../treatments.state';
 import { TreatedStandsState } from '@treatments/treatment-map/treated-stands.state';
 import { ProjectAreasTabComponent } from '@treatments/project-areas-tab/project-areas-tab.component';
@@ -45,7 +45,6 @@ describe('TreatmentOverviewComponent', () => {
       ],
       providers: [
         MockProvider(WebSocketService),
-        MockProvider(AuthService),
         MockProviders(MapConfigState, TreatedStandsState),
         MockProvider(TreatmentsState),
       ],

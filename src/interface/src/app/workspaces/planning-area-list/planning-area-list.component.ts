@@ -26,7 +26,7 @@ import { PlanningAreaEmptyStateComponent } from '../planning-area-empty-state/pl
 import { PlanningAreaCreationModalComponent } from '../planning-area-creation-modal/planning-area-creation-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { catchError, EMPTY, map, switchMap } from 'rxjs';
+import { catchError, EMPTY, map, merge, switchMap } from 'rxjs';
 import { PLANNING_AREA_LIST_EVENTS } from '@types';
 import { WorkspaceState } from '../workspace.state';
 
@@ -117,8 +117,11 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   }
 
   private refreshOnWorkspaceEvents() {
-    this.webSocketService
-      .workspaceUpdates$(PLANNING_AREA_LIST_EVENTS)
+    merge(
+      this.webSocketService.workspaceUpdates$(PLANNING_AREA_LIST_EVENTS),
+      // rows carry our permissions on each planning area
+      this.webSocketService.ownRoleChanged$()
+    )
       .pipe(
         // refresh in the background, always for the latest change
         switchMap(() =>

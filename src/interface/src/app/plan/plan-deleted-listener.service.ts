@@ -39,7 +39,11 @@ export class PlanDeletedListenerService {
           (event) => event.actor_id !== this.authService.currentUser()?.id
         ),
         withLatestFrom(this.planState.currentPlanId$),
-        filter(([event, planId]) => event.object?.id === planId),
+        // the plan stays current after we leave its pages
+        filter(
+          ([event, planId]) =>
+            event.object?.id === planId && this.isOnPlan(planId)
+        ),
         switchMap(() =>
           this.planState.currentPlan$.pipe(
             take(1),
@@ -50,6 +54,12 @@ export class PlanDeletedListenerService {
         exhaustMap((plan) => this.showDeletedModal(plan))
       )
       .subscribe();
+  }
+
+  private isOnPlan(planId: number): boolean {
+    return new RegExp(`/(plan|map-viewer)/${planId}(/|\\?|$)`).test(
+      this.router.url
+    );
   }
 
   private showDeletedModal(plan: Plan): Observable<unknown> {

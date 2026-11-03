@@ -10,6 +10,7 @@ import { MapService } from '@maplibre/ngx-maplibre-gl';
 import { ActivatedRoute, Router } from '@angular/router';
 import { WorkspaceState } from '../workspace.state';
 import {
+  MEMBER_ROLE_CHANGED_EVENT,
   PLANNING_AREA_CREATED_EVENT,
   PLANNING_AREA_DELETED_EVENT,
   PLANNING_AREA_UPDATED_EVENT,
@@ -29,6 +30,7 @@ describe('PlanningAreaListComponent', () => {
   let authServiceMock: jasmine.SpyObj<AuthService>;
   let currentWorkspace$: BehaviorSubject<Workspace>;
   let workspaceEvents$: Subject<WorkspaceEvent>;
+  let roleChanges$: Subject<WorkspaceEvent<any>>;
 
   const workspaceWith = (permissions: string[]) =>
     ({ permissions }) as unknown as Workspace;
@@ -89,6 +91,7 @@ describe('PlanningAreaListComponent', () => {
 
     // the page around the list owns the connection; here we just feed events
     workspaceEvents$ = new Subject<WorkspaceEvent>();
+    roleChanges$ = new Subject();
 
     await TestBed.configureTestingModule({
       imports: [PlanningAreaListComponent],
@@ -120,6 +123,7 @@ describe('PlanningAreaListComponent', () => {
             {
               provide: WebSocketService,
               useValue: {
+                ownRoleChanged$: () => roleChanges$,
                 workspaceUpdates$: (types: string[]) =>
                   workspaceEvents$.pipe(
                     filter(
@@ -210,6 +214,15 @@ describe('PlanningAreaListComponent', () => {
 
     it('asks for the list again when one is renamed', () => {
       workspaceEvents$.next(event(PLANNING_AREA_UPDATED_EVENT));
+
+      expect(dataSourceMock.refresh.calls.count()).toBe(1);
+    });
+
+    it('asks for the list again when my role changes', () => {
+      roleChanges$.next({
+        type: MEMBER_ROLE_CHANGED_EVENT,
+        data: { user_id: 7, role: 'VIEWER' },
+      });
 
       expect(dataSourceMock.refresh.calls.count()).toBe(1);
     });

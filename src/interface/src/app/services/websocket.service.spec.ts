@@ -1,6 +1,7 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { EMPTY, Observable, of, Subject, throwError } from 'rxjs';
 import {
+  MEMBER_ROLE_CHANGED_EVENT,
   REALTIME_CONNECTED_EVENT,
   WebSocketStatus,
   WorkspaceEvent,
@@ -102,7 +103,10 @@ describe('WebSocketService', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        { provide: AuthService, useValue: { refreshToken } },
+        {
+          provide: AuthService,
+          useValue: { refreshToken, currentUser: () => ({ id: 3 }) },
+        },
         {
           provide: WINDOW,
           useValue: { WebSocket: FakeWebSocket },
@@ -223,6 +227,23 @@ describe('WebSocketService', () => {
       socket().receive(planningAreaCreated);
 
       expect(received).toEqual([planningAreaCreated]);
+    });
+
+    it('tells us when our own role changes, and only ours', () => {
+      const ours: WorkspaceEvent = {
+        type: MEMBER_ROLE_CHANGED_EVENT,
+        data: { user_id: 3, role: 'VIEWER' },
+      };
+      const received: WorkspaceEvent<unknown>[] = [];
+      service.ownRoleChanged$().subscribe((event) => received.push(event));
+
+      socket().receive({
+        type: MEMBER_ROLE_CHANGED_EVENT,
+        data: { user_id: 4, role: 'VIEWER' },
+      });
+      socket().receive(ours);
+
+      expect(received).toEqual([ours]);
     });
   });
 
