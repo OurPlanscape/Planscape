@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { catchError, map, Observable, of, switchMap, take, tap } from 'rxjs';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
-import { WorkspacesService } from '@services';
+import { AuthService, WorkspacesService } from '@services';
 import { Workspace } from '@types';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 import { CreateWorkspaceModalComponent } from './create-workspace-modal/create-workspace-modal.component';
@@ -21,6 +21,7 @@ export class WorkspaceActionsService {
   private router = inject(Router);
   private snackbar = inject(MatSnackBar);
   private workspacesService = inject(WorkspacesService);
+  private authService = inject(AuthService);
 
   /**
    * Opens the "New Workspace" modal, then redirects and welcomes the user, or
@@ -98,6 +99,51 @@ export class WorkspaceActionsService {
           confirmed ? this.runDelete(workspace) : of(false)
         )
       );
+  }
+
+  leaveWorkspace(workspace: Workspace): Observable<boolean> {
+    const userId = this.authService.currentUser()?.id;
+    if (!userId) {
+      return of(false);
+    }
+    return this.dialog
+      .open(DeleteDialogComponent, {
+        data: {
+          title: `Leave "${workspace.name}"?`,
+          body: `This workspace, along with all associated planning areas,
+                 scenarios, and data, will be removed. This action cannot be
+                 undone unless you are invited again by an Owner.`,
+          confirmText: 'Leave',
+        },
+      })
+      .afterClosed()
+      .pipe(
+        take(1),
+        switchMap((confirmed) =>
+          confirmed ? this.runLeave(workspace, userId) : of(false)
+        )
+      );
+  }
+
+  private runLeave(workspace: Workspace, userId: number): Observable<boolean> {
+    return this.workspacesService.removeMember(workspace.id, userId).pipe(
+      map(() => true),
+      tap(() =>
+        this.snackbar.open(
+          `You left workspace: ${workspace.name}`,
+          'Dismiss',
+          SNACK_NOTICE_CONFIG
+        )
+      ),
+      catchError(() => {
+        this.snackbar.open(
+          `Unable to leave workspace: ${workspace.name}`,
+          'Dismiss',
+          SNACK_ERROR_CONFIG
+        );
+        return of(false);
+      })
+    );
   }
 
   private runDelete(workspace: Workspace): Observable<boolean> {

@@ -4,12 +4,14 @@ from unittest import mock
 
 from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
+from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.test import TestCase
 from django.urls import reverse
 from modules.base import compute_scenario_capabilities
 from rest_framework import status
 from rest_framework.test import APITestCase
+from stands.models import Stand, StandSizeChoices
 
 from planning.models import (
     GeoPackageStatus,
@@ -24,6 +26,7 @@ from planning.models import (
     TreatmentGoalUsageType,
 )
 from planning.serializers import ListScenarioSerializer, ScenarioV2Serializer
+from planning.services import clone_scenario, trigger_scenario_run
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -2526,6 +2529,7 @@ class CreateScenarioForDraftsTest(APITestCase):
             Scenario.objects.filter(name="invalid child scenario").exists()
         )
 
+
 class CloneScenariosTest(APITestCase):
     def setUp(self):
         self.creator = UserFactory()
@@ -2558,7 +2562,6 @@ class CloneScenariosTest(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-
     def test_collaborators_can_clone(self):
         self.client.force_authenticate(self.collaborator)
         response = self.client.post(
@@ -2568,7 +2571,6 @@ class CloneScenariosTest(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-
     def test_clone_requires_create_priv(self):
         self.client.force_authenticate(self.viewer)
         response = self.client.post(
@@ -2577,7 +2579,6 @@ class CloneScenariosTest(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
 
     def test_clone_requires_pa_access(self):
         self.client.force_authenticate(self.other_user)
@@ -3540,3 +3541,192 @@ class GetScenarioConfigurationTest(APITestCase):
         response = self._get(scenario, user=self.viewer)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class TreatableStandsEndpointTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+
+        geometry = Polygon(
+            (
+                (-121, 38),
+                (-121, 38.01),
+                (-120.99, 38.01),
+                (-120.99, 38),
+                (-121, 38),
+            ),
+            srid=4269,
+        )
+
+        self.stand1 = Stand.objects.create(
+            size=StandSizeChoices.LARGE,
+            geometry=geometry,
+            area_m2=1_000_000,
+            grid_key="plan4153-a",
+        )
+        self.stand2 = Stand.objects.create(
+            size=StandSizeChoices.LARGE,
+            geometry=geometry.clone(),
+            area_m2=2_000_000,
+            grid_key="plan4153-b",
+        )
+
+        self.scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.PRESET,
+            planning_approach=(ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS),
+            result_status=ScenarioResultStatus.SUCCESS,
+            configuration={
+                "stand_size": StandSizeChoices.LARGE,
+                "targets": {
+                    "max_project_count": 1,
+                },
+            },
+            forsys_input={
+                "stand_ids": [
+                    self.stand2.pk,
+                    self.stand1.pk,
+                    self.stand1.pk,
+                ],
+                "datalayers": [],
+                "variables": {},
+            },
+        )
+
+        self.url = reverse(
+            "api:planning:scenarios-treatable-stands",
+            kwargs={"pk": self.scenario.pk},
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_returns_forsys_input_stands(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.json()
+
+        self.assertEqual(
+            data["stand_ids"],
+            [self.stand1.pk, self.stand2.pk],
+        )
+        self.assertEqual(data["stand_count"], 2)
+        self.assertEqual(data["stand_size"], "LARGE")
+
+        expected_acres = round(
+            3_000_000 / settings.CONVERSION_SQM_ACRES,
+            2,
+        )
+        self.assertEqual(
+            data["total_area_acres"],
+            expected_acres,
+        )
+
+    def test_does_not_include_other_stands(self):
+        other_stand = Stand.objects.create(
+            size=StandSizeChoices.LARGE,
+            geometry=self.stand1.geometry.clone(),
+            area_m2=1_000_000,
+            grid_key="plan4153-c",
+        )
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn(
+            other_stand.pk,
+            response.json()["stand_ids"],
+        )
+
+    def test_returns_stands_when_scenario_fails(self):
+        failure_statuses = [
+            ScenarioResultStatus.FAILURE,
+            ScenarioResultStatus.PANIC,
+            ScenarioResultStatus.TIMED_OUT,
+        ]
+
+        for result_status in failure_statuses:
+            with self.subTest(result_status=result_status):
+                self.scenario.result_status = result_status
+                self.scenario.save(update_fields=["result_status"])
+
+                response = self.client.get(self.url)
+
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                self.assertEqual(response.json()["stand_count"], 2)
+
+    def test_no_forsys_inputs(self):
+        self.scenario.forsys_input = None
+        self.scenario.save(update_fields=["forsys_input"])
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+
+    def test_empty_stand_ids(self):
+        self.scenario.forsys_input = {"stand_ids": []}
+        self.scenario.save(update_fields=["forsys_input"])
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["stand_ids"], [])
+        self.assertEqual(response.json()["stand_count"], 0)
+        self.assertEqual(response.json()["total_area_acres"], 0)
+
+    def test_pending_scenario(self):
+        self.scenario.result_status = ScenarioResultStatus.PENDING
+        self.scenario.save(update_fields=["result_status"])
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+
+    def test_unauthenticated_user(self):
+        self.client.force_authenticate(user=None)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_other_user_cannot_access_scenario(self):
+        other_user = UserFactory.create()
+        self.client.force_authenticate(user=other_user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_clone_does_not_retain_forsys_inputs(self):
+        with mock.patch("planning.services.publish_scenario_event"):
+            clone = clone_scenario(
+                original_scenario_id=self.scenario.pk,
+                user=self.user,
+            )
+
+        self.assertIsNone(clone.forsys_input)
+        self.assertEqual(
+            clone.result_status,
+            ScenarioResultStatus.PENDING,
+        )
+
+    def test_trigger_run_clears_previous_inputs(self):
+        with (
+            mock.patch(
+                "planning.services.compute_scenario_capabilities",
+                return_value=[],
+            ),
+            mock.patch("planning.services.track_event"),
+            mock.patch("planning.services.action.send"),
+            mock.patch("planning.services.publish_scenario_event"),
+            self.captureOnCommitCallbacks(execute=False),
+        ):
+            trigger_scenario_run(
+                scenario=self.scenario,
+                user=self.user,
+            )
+
+        self.scenario.refresh_from_db()
+        self.assertIsNone(self.scenario.forsys_input)

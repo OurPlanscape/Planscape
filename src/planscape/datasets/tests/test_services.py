@@ -584,6 +584,24 @@ class TestSearch(TestCase):
             {f"DATALAYER:{canopy.pk}", f"DATALAYER:{height.pk}"},
         )
 
+    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
+    def test_datasets_are_not_returned_with_flag(self):
+        organization = OrganizationFactory.create(name="Manzanita Org")
+        dataset = DatasetFactory(
+            organization=organization, name="Manzanita dataset", visibility="PUBLIC"
+        )
+        datalayer = DataLayerFactory.create(
+            organization=organization,
+            dataset=dataset,
+            name="Manzanita cover",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+        )
+
+        results = find_anything("manzanita", type=DataLayerType.RASTER)
+
+        self.assertEqual(set(results), {f"DATALAYER:{datalayer.pk}"})
+
     @override_settings(FEATURE_FLAGS=[])
     def test_simple_categories_are_not_searched_without_flag(self):
         dataset = DatasetFactory(visibility="PUBLIC")

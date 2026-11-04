@@ -35,6 +35,14 @@
         </button>
         <button
           mat-menu-item
+          class="action-button"
+          *ngIf="userCanLeave"
+          (click)="leave.emit()">
+          <mat-icon class="material-symbols-outlined">logout</mat-icon>
+          <span>Leave Workspace</span>
+        </button>
+        <button
+          mat-menu-item
           class="action-button delete"
           *ngIf="userCanDelete"
           (click)="delete.emit()">
