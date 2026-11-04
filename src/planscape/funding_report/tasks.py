@@ -5,12 +5,14 @@ from collections import Counter
 from datetime import timedelta
 
 from celery import chord
-from datasets.models import DataLayer
+from datasets.models import DataLayer, DataLayerStatus
+from datasets.tasks import datalayer_uploaded
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils import timezone
+from google.api_core.exceptions import NotFound
 from core.flags import feature_enabled
 from funding_report.burn_emulator import (
     BurnEmulatorError,
@@ -43,6 +45,7 @@ from funding_report.services import (
     calculate_treatment_pixel_areas,
     export_funding_report_to_geopackage,
     generate_aet_clip_datalayer,
+    generate_burn_simulation_datalayer,
     generate_treatment_clip_datalayer,
     get_aet_percentual_datalayer,
     get_treatment_datalayer,
@@ -711,6 +714,9 @@ def apply_burn_response(
         "cached": FundingOpportunityReportStatus.SUCCESS,
         "failed": FundingOpportunityReportStatus.FAILED,
     }
+    if response["status"] == "cached":
+        apply_burn_output(report_id, run_started_at, response, expected_job_id)
+        return
     update_report_components(
         report_id,
         run_started_at=run_started_at,
@@ -719,6 +725,56 @@ def apply_burn_response(
         burn_simulation_status=statuses[response["status"]],
         burn_simulation_job_id=response["job_id"],
         burn_simulation_response=response,
+    )
+
+
+def apply_burn_output(
+    report_id: int, run_started_at: str, response: dict, expected_job_id=None
+):
+    """Register the burn output as a DataLayer before marking the burn successful.
+
+    Transient failures keep the job running so the next status poll retries.
+    """
+    try:
+        datalayer = generate_burn_simulation_datalayer(
+            FundingOpportunityReport(pk=report_id), response["output_path"]
+        )
+    except (NotFound, ValueError) as exc:
+        log.exception("Burn output registration failed for report %s", report_id)
+        fail_burn_job(
+            report_id, run_started_at, str(exc)[:1000], expected_job_id=expected_job_id
+        )
+        return
+    except Exception:
+        log.exception(
+            "Burn output registration will be retried for report %s", report_id
+        )
+        update_report_components(
+            report_id,
+            run_started_at=run_started_at,
+            expected_job_id=expected_job_id,
+            active_burn_only=True,
+            burn_simulation_status=FundingOpportunityReportStatus.RUNNING,
+            burn_simulation_job_id=response["job_id"],
+            burn_simulation_response=response,
+        )
+        return
+
+    linked = update_report_components(
+        report_id,
+        run_started_at=run_started_at,
+        expected_job_id=expected_job_id,
+        active_burn_only=True,
+        burn_simulation_status=FundingOpportunityReportStatus.SUCCESS,
+        burn_simulation_job_id=response["job_id"],
+        burn_simulation_response=response,
+        burn_simulation_datalayer=datalayer,
+    )
+    if not linked:
+        DataLayer.dead_or_alive.filter(pk=datalayer.pk).delete()
+        return
+    transaction.on_commit(
+        lambda: datalayer_uploaded.delay(datalayer.pk, status=DataLayerStatus.READY)
     )
 
 
@@ -853,7 +909,7 @@ def poll_burn_emulator_jobs() -> None:
     if not feature_enabled("FOR_WITH_BURN_EMULATOR"):
         log.info("Feature FOR_WITH_BURN_EMULATOR disabled.")
         return
-    
+
     report_ids = FundingOpportunityReport.objects.filter(
         burn_simulation_status=FundingOpportunityReportStatus.RUNNING,
         burn_simulation_started_at__isnull=False,
