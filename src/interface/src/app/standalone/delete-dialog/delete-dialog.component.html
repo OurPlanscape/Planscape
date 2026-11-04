@@ -3,7 +3,7 @@
   [shortHeader]="true"
   [showBorders]="false"
   [showClose]="false"
-  primaryButtonText="Delete"
+  [primaryButtonText]="data.confirmText || 'Delete'"
   primaryButtonVariant="negative"
   (clickedSecondary)="cancel()"
   (clickedPrimary)="confirm()">

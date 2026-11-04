@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
-import { WorkspacesService } from '@services';
+import { AuthService, WorkspacesService } from '@services';
 import { Workspace } from '@types';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 import { WorkspaceActionsService } from './workspace-actions.service';
@@ -32,7 +32,10 @@ describe('WorkspaceActionsService', () => {
     permissions: ['view_workspace'],
   };
 
-  function setUp(closedWith: Workspace | boolean | undefined) {
+  function setUp(
+    closedWith: Workspace | boolean | undefined,
+    currentUser: { id: number } | null = { id: 9 }
+  ) {
     dialog = jasmine.createSpyObj('MatDialog', ['open']);
     dialog.open.and.returnValue({
       afterClosed: () => of(closedWith),
@@ -42,8 +45,10 @@ describe('WorkspaceActionsService', () => {
     snackbar = jasmine.createSpyObj('MatSnackBar', ['open']);
     workspacesService = jasmine.createSpyObj('WorkspacesService', [
       'deleteWorkspace',
+      'removeMember',
     ]);
     workspacesService.deleteWorkspace.and.returnValue(of(undefined));
+    workspacesService.removeMember.and.returnValue(of(undefined));
 
     TestBed.configureTestingModule({
       providers: [
@@ -52,6 +57,7 @@ describe('WorkspaceActionsService', () => {
         { provide: Router, useValue: router },
         { provide: MatSnackBar, useValue: snackbar },
         { provide: WorkspacesService, useValue: workspacesService },
+        { provide: AuthService, useValue: { currentUser: () => currentUser } },
       ],
     });
     service = TestBed.inject(WorkspaceActionsService);
@@ -224,6 +230,74 @@ describe('WorkspaceActionsService', () => {
         'Dismiss',
         SNACK_ERROR_CONFIG
       );
+    });
+  });
+
+  describe('leaving', () => {
+    it('asks for confirmation first, naming the workspace', () => {
+      setUp(undefined);
+
+      service.leaveWorkspace(workspace).subscribe();
+
+      const [component, config] = dialog.open.calls.first().args;
+      const data = config?.data as { title: string; confirmText: string };
+      expect(component).toBe(DeleteDialogComponent);
+      expect(data.title).toBe('Leave "My workspace"?');
+      expect(data.confirmText).toBe('Leave');
+      expect(workspacesService.removeMember).not.toHaveBeenCalled();
+    });
+
+    it('does nothing when the user backs out', () => {
+      setUp(undefined);
+      const emitted: boolean[] = [];
+
+      service.leaveWorkspace(workspace).subscribe((l) => emitted.push(l));
+
+      expect(emitted).toEqual([false]);
+      expect(snackbar.open).not.toHaveBeenCalled();
+    });
+
+    // leaving is taking yourself off the members of the workspace
+    it('removes the logged in user once confirmed', () => {
+      setUp(true);
+      const emitted: boolean[] = [];
+
+      service.leaveWorkspace(workspace).subscribe((l) => emitted.push(l));
+
+      expect(workspacesService.removeMember).toHaveBeenCalledWith(5, 9);
+      expect(emitted).toEqual([true]);
+      expect(snackbar.open).toHaveBeenCalledWith(
+        'You left workspace: My workspace',
+        'Dismiss',
+        SNACK_NOTICE_CONFIG
+      );
+    });
+
+    it('reports a failed leave without emitting success', () => {
+      setUp(true);
+      workspacesService.removeMember.and.returnValue(
+        throwError(() => new Error('nope'))
+      );
+      const emitted: boolean[] = [];
+
+      service.leaveWorkspace(workspace).subscribe((l) => emitted.push(l));
+
+      expect(emitted).toEqual([false]);
+      expect(snackbar.open).toHaveBeenCalledWith(
+        'Unable to leave workspace: My workspace',
+        'Dismiss',
+        SNACK_ERROR_CONFIG
+      );
+    });
+
+    it('does not even ask when there is no session to leave with', () => {
+      setUp(true, null);
+      const emitted: boolean[] = [];
+
+      service.leaveWorkspace(workspace).subscribe((l) => emitted.push(l));
+
+      expect(dialog.open).not.toHaveBeenCalled();
+      expect(emitted).toEqual([false]);
     });
   });
 });
