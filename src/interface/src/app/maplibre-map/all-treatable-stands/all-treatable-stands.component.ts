@@ -24,7 +24,7 @@ export class AllTreatableStandsComponent {
 
   scenarioId = this.route.snapshot.data['scenarioId'];
 
-  readonly vectorLayer = // TODO: grab standsize
+  readonly vectorLayer =
     this.martinSource.tilesUrl + `?scenario_id=${this.scenarioId}`;
 
   readonly standPaint = {
