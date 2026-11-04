@@ -20,25 +20,24 @@ import { Map as MapLibreMap } from 'maplibre-gl';
 export class AllTreatableStandsComponent {
   @Input() mapLibreMap!: MapLibreMap;
 
-  readonly martinSource = MARTIN_SOURCES.standsByPlanningArea;
+  readonly martinSource = MARTIN_SOURCES.treatableStandsByScenario;
 
-  readonly planId = this.route.snapshot.data['planId'];
+  scenarioId = this.route.snapshot.data['scenarioId'];
 
   readonly vectorLayer = // TODO: grab standsize
-    this.martinSource.tilesUrl +
-    `?planning_area_id=${this.planId}&stand_size=MEDIUM`;
+    this.martinSource.tilesUrl + `?scenario_id=${this.scenarioId}`;
 
   readonly standPaint = {
     'fill-color': BASE_COLORS.dark_magenta,
     'fill-opacity-transition': { duration: 0 },
-    'fill-opacity': 0.10,
+    'fill-opacity': 0.1,
   };
 
   readonly standOutlinePaint = {
-  'line-color': BASE_COLORS.dark_magenta,
-  'line-width': 1.5,
-  'line-opacity': 1,
-};
+    'line-color': BASE_COLORS.dark_magenta,
+    'line-width': 1.5,
+    'line-opacity': 1,
+  };
 
   constructor(private readonly route: ActivatedRoute) {}
 }

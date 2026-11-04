@@ -8,7 +8,7 @@
   id="projectAreasFill"
   type="fill"
   source="scenarioProjectAreasLayer"
-  [sourceLayer]="martinSource.sources.standsByPlanningArea"
+  [sourceLayer]="martinSource.sources.treatableStandsByScenario"
   [paint]="standPaint">
 </mgl-layer>
 
@@ -16,6 +16,6 @@
   id="projectAreasOutline"
   type="line"
   source="scenarioProjectAreasLayer"
-  [sourceLayer]="martinSource.sources.standsByPlanningArea"
+  [sourceLayer]="martinSource.sources.treatableStandsByScenario"
   [paint]="standOutlinePaint">
 </mgl-layer>
