@@ -1,4 +1,6 @@
-<sg-toggle>
+<sg-toggle
+  [(ngModel)]="showAllTreatableStands"
+  (change)="toggleTreatedStands()">
   All Treatable Stands
   <sg-popover
     panelSize="medium"

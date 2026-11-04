@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { FrontendConstants } from '@app/map/map.constants';
 import { MARTIN_SOURCES } from '@app/treatments/map.sources';
 import { BASE_COLORS } from '@app/treatments/map.styles';
 import {
@@ -21,19 +20,25 @@ import { Map as MapLibreMap } from 'maplibre-gl';
 export class AllTreatableStandsComponent {
   @Input() mapLibreMap!: MapLibreMap;
 
-  readonly martinSource = MARTIN_SOURCES.projectAreasByScenario;
+  readonly martinSource = MARTIN_SOURCES.standsByPlanningArea;
 
-  readonly scenarioId = this.route.snapshot.data['scenarioId'];
+  readonly planId = this.route.snapshot.data['planId'];
 
-  readonly vectorLayer =
-    this.martinSource.tilesUrl + `?scenario_id=${this.scenarioId}`;
+  readonly vectorLayer = // TODO: grab standsize
+    this.martinSource.tilesUrl +
+    `?planning_area_id=${this.planId}&stand_size=MEDIUM`;
 
   readonly standPaint = {
-    'fill-color': BASE_COLORS.yellow,
-    'fill-outline-color': BASE_COLORS.yellow,
+    'fill-color': BASE_COLORS.dark_magenta,
     'fill-opacity-transition': { duration: 0 },
-    'fill-opacity': FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY,
+    'fill-opacity': 0.10,
   };
+
+  readonly standOutlinePaint = {
+  'line-color': BASE_COLORS.dark_magenta,
+  'line-width': 1.5,
+  'line-opacity': 1,
+};
 
   constructor(private readonly route: ActivatedRoute) {}
 }

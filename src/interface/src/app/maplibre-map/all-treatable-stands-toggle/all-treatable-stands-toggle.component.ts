@@ -11,13 +11,13 @@ import { PopoverComponent, ToggleComponent } from '@styleguide';
   styleUrl: './all-treatable-stands-toggle.component.scss',
 })
 export class AllTreatableStandsToggleComponent {
-  showTreatableStands = false;
+  showAllTreatableStands = false;
 
   constructor(private newScenarioState: NewScenarioState) {}
 
   toggleTreatedStands() {
     this.newScenarioState.setDisplayAllTreatableStands(
-      this.showTreatableStands
+      this.showAllTreatableStands
     );
   }
 }

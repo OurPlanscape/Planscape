@@ -168,10 +168,10 @@ export class ScenarioMapComponent implements OnDestroy {
   );
 
   showAllTreatableStands$ = combineLatest([
-    this.newScenarioState.displayTreatedStands$,
+    this.newScenarioState.displayAllTreatableStands$,
   ]).pipe(
-    map(([displayTreatedStands]) => {
-      return displayTreatedStands;
+    map(([displayAllTreatableStands]) => {
+      return displayAllTreatableStands;
     })
   );
 
