@@ -45,9 +45,11 @@ $side-padding: 16px;
 }
 
 .group-name {
-  @include standard-label();
   flex: 1;
   color: $color-text-dark;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
 }
 
 .chevron {
