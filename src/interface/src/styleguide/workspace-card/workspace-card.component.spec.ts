@@ -197,4 +197,55 @@ describe('WorkspaceCardComponent', () => {
     ).map((el) => el.textContent?.trim());
     expect(labels).toEqual(['Rename', 'Share', 'Delete']);
   });
+
+  describe('leaving a workspace', () => {
+    function openMenu() {
+      fixture.detectChanges();
+      fixture.nativeElement.querySelector('.more-menu-button').click();
+      fixture.detectChanges();
+      return Array.from(
+        document.querySelectorAll('.action-button .mat-mdc-menu-item-text')
+      ).map((el) => el.textContent?.trim());
+    }
+
+    // the only thing a viewer can do, so it has to bring the menu with it
+    it('is the whole menu for someone who can do nothing else', () => {
+      component.userCanLeave = true;
+
+      expect(openMenu()).toEqual(['Leave Workspace']);
+    });
+
+    it('sits between sharing and deleting', () => {
+      component.userCanRename = true;
+      component.userCanShare = true;
+      component.userCanLeave = true;
+      component.userCanDelete = true;
+
+      expect(openMenu()).toEqual([
+        'Rename',
+        'Share',
+        'Leave Workspace',
+        'Delete',
+      ]);
+    });
+
+    it('asks the page to handle it', () => {
+      component.userCanLeave = true;
+      let asked = 0;
+      component.leave.subscribe(() => asked++);
+      openMenu();
+
+      document.querySelector<HTMLElement>('.action-button')!.click();
+
+      expect(asked).toBe(1);
+    });
+
+    it('is not offered to the creator', () => {
+      component.userCanRename = true;
+      component.userCanShare = true;
+      component.userCanDelete = true;
+
+      expect(openMenu()).not.toContain('Leave Workspace');
+    });
+  });
 });

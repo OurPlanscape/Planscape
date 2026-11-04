@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { distinctUntilChanged, take } from 'rxjs';
+import { combineLatest, distinctUntilChanged, map, take } from 'rxjs';
 import { AuthService, WebSocketService } from '@services';
 import { OverlayLoaderService } from '@services/overlay-loader.service';
 
@@ -52,14 +52,22 @@ export class AppComponent implements OnInit {
   }
 
   // There is one connection per workspace, and everything inside a workspace
-  // listens to it so it is open for as long as we are in one
+  // listens to it so it is open for as long as we are in one. A socket keeps
+  // the user it was opened with, so it is also tied to the session.
   private followCurrentWorkspace() {
-    this.workspaceState.currentWorkspaceId$
-      .pipe(distinctUntilChanged())
-      .subscribe((workspaceId) => {
-        if (workspaceId === null) {
-          this.webSocketService.disconnect();
-        } else {
+    combineLatest([
+      this.workspaceState.currentWorkspaceId$,
+      this.authService.loggedInUser$.pipe(map((user) => user?.id ?? null)),
+    ])
+      .pipe(
+        distinctUntilChanged(
+          ([workspaceA, userA], [workspaceB, userB]) =>
+            workspaceA === workspaceB && userA === userB
+        )
+      )
+      .subscribe(([workspaceId, userId]) => {
+        this.webSocketService.disconnect();
+        if (workspaceId !== null && userId !== null) {
           this.webSocketService.connect(workspaceId);
         }
       });

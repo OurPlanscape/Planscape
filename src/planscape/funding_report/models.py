@@ -61,6 +61,7 @@ FUNDING_REPORT_DATALAYER_NAME_REGEX = re.compile(
 TREATMENT_VARIABLE = "TREATMENT"
 TREATMENT_ROLE = "treatment"
 TREATMENT_CLIP_ROLE = "treatment_clip"
+BURN_SIMULATION_ROLE = "burn_simulation"
 
 BIOMASS_VARIABLE = "BIOMASS"
 
@@ -195,6 +196,10 @@ class FundingOpportunityReport(CreatedAtMixin, UpdatedAtMixin, models.Model):
         default=FundingOpportunityReportStatus.PENDING,
         help_text="Status of the burn simulation.",
     )
+
+    burn_simulation_job_id = models.TextField(null=True, blank=True)
+    burn_simulation_response = models.JSONField(null=True, blank=True)
+    burn_simulation_started_at = models.DateTimeField(null=True, blank=True)
 
     results = models.JSONField(
         null=True,

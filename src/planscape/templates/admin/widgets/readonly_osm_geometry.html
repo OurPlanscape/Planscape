@@ -1,6 +1,7 @@
-<div id="{{ id }}_div_map" class="dj_map_wrapper">
-  <div id="{{ id }}_map" class="dj_map"></div>
-  <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}"{% if widget.attrs.disabled %} disabled{% endif %} hidden></textarea>
+{# Not .dj_map_wrapper: Django's OLMapWidget.js auto-initializes those as editable maps. #}
+<div id="{{ widget.attrs.id }}_div_map" class="readonly_map_wrapper" style="position: relative; float: left;">
+  <div id="{{ widget.attrs.id }}_map" class="dj_map"></div>
+  <textarea id="{{ widget.attrs.id }}" class="vSerializedField required" cols="150" rows="10" name="{{ widget.name }}"{% if widget.attrs.disabled %} disabled{% endif %} hidden></textarea>
   <script>
     (function () {
       "use strict";

@@ -215,8 +215,8 @@ export interface ScenarioGoal {
 
 // Backend constraint definition (thresholds for stands).
 export type CONSTRAINT_OPERATOR =
-  | 'eq'
-  | 'dne'
+  | 'in'
+  | 'nin'
   | 'lt'
   | 'lte'
   | 'gt'
@@ -236,8 +236,8 @@ export interface OperatorDefinition {
 }
 
 export const CONSTRAINT_OPERATORS: OperatorDefinition[] = [
-  { value: 'eq', label: 'Equal to', symbol: '=' },
-  { value: 'dne', label: 'Does not equal', symbol: '!=' },
+  { value: 'in', label: 'Equal to', symbol: '=' },
+  { value: 'nin', label: 'Does not equal', symbol: '!=' },
   { value: 'gt', label: 'Greater than', symbol: '>' },
   { value: 'gte', label: 'Greater than or equal to', symbol: '≥' },
   { value: 'lt', label: 'Less than', symbol: '<' },

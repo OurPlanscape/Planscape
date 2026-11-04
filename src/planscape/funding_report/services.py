@@ -11,6 +11,7 @@ from uuid import uuid4
 import fiona
 import numpy as np
 import rasterio
+from core.gcs import copy_file
 from datasets.models import (
     DataLayer,
     DataLayerHasStyle,
@@ -18,7 +19,11 @@ from datasets.models import (
     DataLayerType,
     StorageTypeChoices,
 )
-from datasets.services import geometry_from_info, get_storage_url_and_path
+from datasets.services import (
+    geometry_from_info,
+    get_storage_url,
+    get_storage_url_and_path,
+)
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db.models import Union as UnionOp
@@ -40,6 +45,7 @@ from utils.geometry import to_multi
 from funding_report.events import publish_report_event
 from funding_report.models import (
     BIOMASS_VARIABLE,
+    BURN_SIMULATION_ROLE,
     FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
     FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
     FUNDING_REPORT_LAYER_CATEGORIES,
@@ -878,6 +884,66 @@ def generate_aet_clip_datalayer(report: FundingOpportunityReport) -> DataLayer:
 
     datalayer_uploaded.delay(datalayer.pk, status=DataLayerStatus.READY)
     return datalayer
+
+
+def generate_burn_simulation_datalayer(
+    report: FundingOpportunityReport, output_path: str
+) -> DataLayer:
+    """Copy the burn emulator output into Planscape's bucket and register it.
+
+    Replaces the scenario's previous burn layer. The caller links the new layer
+    to the report and starts its post-processing.
+    """
+    source = get_treatment_datalayer()
+    if source is None:
+        raise ValueError("Missing funding report treatment datalayer.")
+
+    report = FundingOpportunityReport.objects.select_related("scenario").get(
+        pk=report.pk
+    )
+    scenario = report.scenario
+    organization = source.organization
+    uuid_value = str(uuid4())
+    original_name = f"funding_report_burn_simulation_scenario_{scenario.pk}.tif"
+    storage_url = get_storage_url(
+        organization_id=organization.pk,
+        uuid=uuid_value,
+        original_name=original_name,
+        mimetype="image/tiff",
+    )
+    copy_file(output_path, storage_url)
+
+    vsi_output = with_vsi_prefix(storage_url)
+    layer_type, layer_info = get_layer_info(input_file=vsi_output)
+    mimetype = detect_mimetype(input_file=vsi_output) or "image/tiff"
+    geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
+
+    user_model = get_user_model()
+    created_by = user_model.objects.get(email=settings.DEFAULT_ADMIN_EMAIL)
+
+    name = f"Funding Report Burn Simulation - Scenario {scenario.pk}"
+    DataLayer.dead_or_alive.filter(dataset=source.dataset, name=name).delete()
+
+    return DataLayer.objects.create(
+        name=name,
+        uuid=uuid_value,
+        dataset=source.dataset,
+        category=source.category,
+        organization=organization,
+        workspace=source.workspace,
+        created_by=created_by,
+        original_name=original_name,
+        url=storage_url,
+        type=layer_type,
+        storage_type=StorageTypeChoices.DATABASE,
+        geometry_type=geometry_type,
+        geometry=geometry_from_info(layer_info, datalayer_type=layer_type),
+        info=layer_info,
+        mimetype=mimetype,
+        metadata=_clip_metadata(source.metadata, BURN_SIMULATION_ROLE),
+        map_service_type=source.map_service_type,
+        status=DataLayerStatus.PENDING,
+    )
 
 
 def calculate_treatment_pixel_areas(report: FundingOpportunityReport) -> Dict[str, Any]:

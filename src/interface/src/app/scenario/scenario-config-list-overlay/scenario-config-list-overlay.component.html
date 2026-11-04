@@ -67,9 +67,16 @@
         </ng-container>
 
         <ng-container *ngIf="standLevelConstraints$ | async as slcs">
-          <ng-container *ngIf="slcs.length">
+          <ng-container
+            *ngIf="slcs.length || config.treatment_goal_constraints.length">
             <dt>Stand-Level Constraints</dt>
             <dd>
+              <!-- Treatment goal constraints are also listed here, if they exist -->
+              <ul class="list-element">
+                <li *ngFor="let c of config.treatment_goal_constraints">
+                  {{ c.datalayer.name }} {{ c.threshold }}
+                </li>
+              </ul>
               <ul class="list-element">
                 <li *ngFor="let item of slcs" [ngSwitch]="item.kind">
                   <ng-container *ngSwitchCase="'slope'">

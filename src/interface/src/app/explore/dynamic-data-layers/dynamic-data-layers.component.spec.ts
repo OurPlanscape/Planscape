@@ -4,17 +4,32 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
+import { Component, TemplateRef, ViewChild } from '@angular/core';
+import { of } from 'rxjs';
+import { FavoriteDataLayersComponent } from '@data-layers/favorite-data-layers/favorite-data-layers.component';
 import { DynamicDataLayersComponent } from './dynamic-data-layers.component';
 import { DataLayersRegistryService } from '../data-layers-registry';
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { MockDeclaration } from 'ng-mocks';
 
+/** Stands in for the map viewer, which owns the map tabs template. */
+@Component({ standalone: true, template: `<ng-template #tabs></ng-template>` })
+class TabsHostComponent {
+  @ViewChild('tabs', { static: true }) tabs!: TemplateRef<unknown>;
+}
+
 describe('DynamicDataLayersComponent', () => {
   let fixture: ComponentFixture<DynamicDataLayersComponent>;
   let component: DynamicDataLayersComponent;
 
-  const mockStateService = {} as DataLayersStateService;
+  // what the favorites panel reads as soon as it is created
+  const mockStateService = {
+    favorites$: of({ isLoading: false, data: [] }),
+    canEditFavorites$: of(false),
+    loadingLayer$: of(false),
+    viewedDataLayer$: of(null),
+  } as unknown as DataLayersStateService;
   const mockRegistry = {
     get: jasmine.createSpy('get').and.returnValue(mockStateService),
   };
@@ -66,4 +81,20 @@ describe('DynamicDataLayersComponent', () => {
     component.ngOnDestroy();
     expect(destroySpy).toHaveBeenCalled();
   });
+
+  it('hands the map tabs to the favorites panel too', fakeAsync(() => {
+    const host = TestBed.createComponent(TabsHostComponent);
+    host.detectChanges();
+    component.mapId = 1;
+    component.panel = 'favorites';
+    component.belowSearch = host.componentInstance.tabs;
+
+    fixture.detectChanges();
+    tick();
+
+    const panel = component['componentRef']
+      ?.instance as FavoriteDataLayersComponent;
+    expect(panel instanceof FavoriteDataLayersComponent).toBeTrue();
+    expect(panel.belowSearch).toBe(host.componentInstance.tabs);
+  }));
 });

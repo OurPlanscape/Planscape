@@ -24,6 +24,7 @@ import {
 } from '@styleguide';
 import { BaseLayer, MapDataDataSet, Pagination, SearchResult } from '@types';
 import { BaseLayersGroupComponent } from './base-layers-group/base-layers-group.component';
+import { injectBaseLayersRequestScope } from '@base-layers/base-layers-request-scope';
 
 export interface BaseLayerSearchGroup {
   dataSet: MapDataDataSet;
@@ -85,8 +86,9 @@ export class BaseLayersPanelComponent {
   searchResults$: Observable<BaseLayerSearchResults | null> = combineLatest([
     this.searchTerm$,
     this.baseDataSets$,
+    injectBaseLayersRequestScope(),
   ]).pipe(
-    switchMap(([term, dataSets]) => {
+    switchMap(([term, dataSets, scope]) => {
       if (!term) {
         return of(null);
       }
@@ -95,7 +97,11 @@ export class BaseLayersPanelComponent {
         groups: groupSearchResults(response.results, dataSets, term),
         truncated: response.count > response.results.length,
       });
-      const cached = this.baseLayersStateService.getCachedSearch(module, term);
+      const cached = this.baseLayersStateService.getCachedSearch(
+        module,
+        scope.key,
+        term
+      );
       if (cached) {
         return of(toResults(cached));
       }
@@ -105,10 +111,17 @@ export class BaseLayersPanelComponent {
           type: 'VECTOR',
           limit: SEARCH_LIMIT,
           module,
+          geometry: scope.geometry,
+          workspaceId: scope.workspaceId,
         })
         .pipe(
           tap((response) =>
-            this.baseLayersStateService.cacheSearch(module, term, response)
+            this.baseLayersStateService.cacheSearch(
+              module,
+              scope.key,
+              term,
+              response
+            )
           ),
           map(toResults),
           catchError(() => {

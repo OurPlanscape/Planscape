@@ -47,11 +47,9 @@
               (hasParent$ | async) ?? false
             "></app-step1-with-overview>
         </sg-step>
-
         <sg-step *ngIf="subUnitsPrioritized && (hasParent$ | async) === false">
           <app-sub-unit-selector></app-sub-unit-selector>
         </sg-step>
-
         <sg-step>
           <app-treatment-goal-step></app-treatment-goal-step>
         </sg-step>
@@ -67,10 +65,10 @@
               'ADV_STAND_LEVEL_CONSTRAINTS';
               hide: true
             "></app-stand-level-constraints>
-          <app-constraints-step
+          <app-adv-stand-level-constraints
             *appFeatureFlag="
               'ADV_STAND_LEVEL_CONSTRAINTS'
-            "></app-constraints-step>
+            "></app-adv-stand-level-constraints>
         </sg-step>
         <sg-step>
           <app-treatment-target
@@ -111,10 +109,10 @@
               'ADV_STAND_LEVEL_CONSTRAINTS';
               hide: true
             "></app-stand-level-constraints>
-          <app-constraints-step
+          <app-adv-stand-level-constraints
             *appFeatureFlag="
               'ADV_STAND_LEVEL_CONSTRAINTS'
-            "></app-constraints-step>
+            "></app-adv-stand-level-constraints>
         </sg-step>
         <sg-step>
           <app-treatment-target
