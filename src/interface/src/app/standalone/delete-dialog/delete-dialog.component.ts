@@ -12,7 +12,8 @@ import { ModalComponent } from '@styleguide';
 })
 export class DeleteDialogComponent {
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: { title: string; body: string },
+    @Inject(MAT_DIALOG_DATA)
+    public data: { title: string; body: string; confirmText?: string },
     public dialogRef: MatDialogRef<DeleteDialogComponent>
   ) {}
 

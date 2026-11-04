@@ -3,7 +3,6 @@ import re
 from typing import List, Optional  # noqa
 
 import markdown
-from workspaces.access import get_planning_area_permissions, get_planning_area_role
 from datasets.models import DataLayer, DataLayerStatus, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
@@ -13,6 +12,7 @@ from planscape.exceptions import InvalidGeometry
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from stands.models import Stand, StandSizeChoices
+from workspaces.access import get_planning_area_permissions, get_planning_area_role
 from workspaces.models import Workspace, WorkspaceKind
 from workspaces.permissions import WorkspacePermission
 
@@ -1812,6 +1812,18 @@ class AvailableStandsSerializer(serializers.Serializer):
     unavailable = UnavailableStandsSerializer()
 
     summary = AvailableStandsSummarySerializer()
+
+
+class TreatableStandsSerializer(serializers.Serializer):
+    stand_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        help_text="Stand IDs saved in the ForSys inputs.",
+    )
+    stand_count = serializers.IntegerField()
+    stand_size = serializers.ChoiceField(
+        choices=StandSizeChoices.choices,
+    )
+    total_area_acres = serializers.FloatField()
 
 
 class SubUnitsDetailsParamsSerializer(serializers.Serializer):
