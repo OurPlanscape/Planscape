@@ -606,6 +606,8 @@ def find_anything(
     simple_categories = SimpleCategory.objects.none()
     simple_category_datalayers = DataLayer.objects.none()
     if feature_enabled("DATA_ORGANIZATION"):
+        # simple categories replace datasets as the way to browse datalayers
+        datasets = Dataset.objects.none()
         simple_categories = SimpleCategory.objects.filter(
             name__icontains=term,
             id__in=datalayers.values("simple_categories"),
