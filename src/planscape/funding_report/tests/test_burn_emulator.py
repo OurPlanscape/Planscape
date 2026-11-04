@@ -22,6 +22,9 @@ from funding_report.tasks import (
     run_funding_opportunity_report_with_burn_emmulator,
     update_report_components,
 )
+from datasets.models import DataLayer, DataLayerStatus, DataLayerType
+from datasets.tests.factories import DataLayerFactory
+from google.api_core.exceptions import NotFound
 from google.auth.exceptions import DefaultCredentialsError, TransportError
 from planning.tests.factories import ProjectAreaFactory, ScenarioFactory
 
@@ -161,6 +164,16 @@ class BurnEmulatorTaskTest(TestCase):
         self.events = self.enterContext(
             mock.patch("funding_report.tasks.publish_report_status_by_id")
         )
+        self.datalayer = DataLayerFactory.create(type=DataLayerType.RASTER)
+        self.generate = self.enterContext(
+            mock.patch(
+                "funding_report.tasks.generate_burn_simulation_datalayer",
+                return_value=self.datalayer,
+            )
+        )
+        self.uploaded = self.enterContext(
+            mock.patch("funding_report.tasks.datalayer_uploaded.delay")
+        )
 
     def refresh(self):
         self.report.refresh_from_db()
@@ -197,17 +210,70 @@ class BurnEmulatorTaskTest(TestCase):
         self.assertEqual(self.refresh().burn_simulation_job_id, JOB_ID)
         self.assertEqual(self.report.burn_simulation_status, S.RUNNING)
 
-    def test_cached_submission_stores_output_separately(self):
+    def test_cached_submission_registers_output_datalayer(self):
         self.project((-121, 38, -120, 39))
         self.api.return_value = job("cached", output_path="gs://outputs/output.tif")
-        async_call_burn_emulator(self.report.pk, self.run_id)
+        with self.captureOnCommitCallbacks(execute=True):
+            async_call_burn_emulator(self.report.pk, self.run_id)
         self.assertEqual(self.refresh().burn_simulation_status, S.SUCCESS)
         self.assertEqual(self.report.status, S.RUNNING)
         self.assertEqual(
             self.report.burn_simulation_response["output_path"],
             "gs://outputs/output.tif",
         )
+        self.assertEqual(self.generate.call_args.args[1], "gs://outputs/output.tif")
+        self.assertEqual(self.report.burn_simulation_datalayer, self.datalayer)
+        self.uploaded.assert_called_once_with(
+            self.datalayer.pk, status=DataLayerStatus.READY
+        )
+
+    def test_transient_output_copy_error_is_retried_by_next_poll(self):
+        self.set_job()
+        self.api.return_value = job("cached", output_path="gs://outputs/output.tif")
+        self.generate.side_effect = ConnectionError("gcs unavailable")
+        check_burn_emulator_status(self.report.pk)
+        self.assertEqual(self.refresh().burn_simulation_status, S.RUNNING)
+        self.assertEqual(self.report.burn_simulation_job_id, JOB_ID)
         self.assertIsNone(self.report.burn_simulation_datalayer_id)
+
+        self.generate.side_effect = None
+        check_burn_emulator_status(self.report.pk)
+        self.assertEqual(self.refresh().burn_simulation_status, S.SUCCESS)
+        self.assertEqual(self.report.burn_simulation_datalayer, self.datalayer)
+
+    def test_transient_output_copy_error_on_submission_stores_job(self):
+        self.project((-121, 38, -120, 39))
+        self.api.return_value = job("cached", output_path="gs://outputs/output.tif")
+        self.generate.side_effect = ConnectionError("gcs unavailable")
+        async_call_burn_emulator(self.report.pk, self.run_id)
+        self.assertEqual(self.refresh().burn_simulation_status, S.RUNNING)
+        self.assertEqual(self.report.burn_simulation_job_id, JOB_ID)
+
+    def test_missing_output_fails_burn(self):
+        self.set_job()
+        self.api.return_value = job("cached", output_path="gs://outputs/output.tif")
+        self.generate.side_effect = NotFound("no such object")
+        check_burn_emulator_status(self.report.pk)
+        self.assertEqual(self.refresh().burn_simulation_status, S.FAILED)
+        self.assertIsNone(self.report.burn_simulation_datalayer_id)
+        self.uploaded.assert_not_called()
+
+    def test_stale_run_discards_registered_output(self):
+        self.set_job()
+        self.api.return_value = job("cached", output_path="gs://outputs/output.tif")
+
+        def rerun(*args):
+            FundingOpportunityReport.objects.filter(pk=self.report.pk).update(
+                burn_simulation_started_at=timezone.now()
+            )
+            return self.datalayer
+
+        self.generate.side_effect = rerun
+        check_burn_emulator_status(self.report.pk)
+        self.assertEqual(self.refresh().burn_simulation_status, S.RUNNING)
+        self.assertIsNone(self.report.burn_simulation_datalayer_id)
+        self.assertFalse(DataLayer.dead_or_alive.filter(pk=self.datalayer.pk).exists())
+        self.uploaded.assert_not_called()
 
     def test_submission_transient_retry_and_exhaustion(self):
         self.project((-121, 38, -120, 39))
@@ -265,6 +331,8 @@ class BurnEmulatorTaskTest(TestCase):
             check_burn_emulator_status(self.report.pk)
             check_burn_emulator_status(self.report.pk)
         self.assertEqual(self.refresh().status, S.SUCCESS)
+        self.assertEqual(self.report.burn_simulation_datalayer, self.datalayer)
+        self.generate.assert_called_once()
         self.email.assert_called_once_with(self.report.pk)
         self.export.assert_called_once_with(self.report.pk)
         self.events.assert_called_with(self.report.pk, S.SUCCESS, S.SUCCESS, S.SUCCESS)
