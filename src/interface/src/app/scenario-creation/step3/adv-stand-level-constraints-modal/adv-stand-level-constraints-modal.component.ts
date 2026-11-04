@@ -52,7 +52,8 @@ export const betweenValidator: ValidatorFn = (
   return Object.keys(errors).length > 0 ? errors : null;
 };
 
-const DIGITS_AND_COMMAS = /^\s*\d+(?:\s*,\s*\d+)*\s*(?:,\s*)?$/; // allows '999', '9, 9999', '9999,9999,'
+const DECIMALS_AND_COMMAS =
+  /^\s*-?\d+(?:\.\d+)?(?:\s*,\s*-?\d+(?:\.\d+)?)*\s*(?:,\s*)?$/; // allows '999', '9, 9999', '9999,9999,'
 const LIST_OPERATORS = ['in', 'nin']; // operators that accept multi values
 
 // This allows us to enter numbers and the separator/delimiter for multi valued fields
@@ -65,7 +66,7 @@ export const splitValueValidator: ValidatorFn = (
     return null; // required checks live in betweenValidator / required attr
   }
 
-  if (!DIGITS_AND_COMMAS.test(valueOne)) {
+  if (!DECIMALS_AND_COMMAS.test(valueOne)) {
     return { invalidNumberList: true };
   }
 
@@ -154,23 +155,28 @@ export class AdvStandLevelConstraintsModalComponent implements OnInit {
     return this.form.invalid;
   }
 
+  // allows two decimals
+  private formatRounded(n: number): string {
+    return String(Math.round(n * 100) / 100);
+  }
+
+  get hasRange(): boolean {
+    return this.minValue != null && this.maxValue != null;
+  }
+
   get valueOneLabel() {
     if (this.showSecondValue) {
-      if (this.minValue && this.maxValue) {
-        return `Min (${this.minValue})`;
-      }
-      return 'Min';
-    } else if (this.minValue && this.maxValue) {
-      return `Value (${this.minValue}-${this.maxValue})`;
+      return this.hasRange
+        ? `Min (${this.formatRounded(this.minValue)})`
+        : 'Min';
     }
-    return 'Value';
+    return this.hasRange
+      ? `Value (${this.formatRounded(this.minValue)}-${this.formatRounded(this.maxValue)})`
+      : 'Value';
   }
 
   get valueTwoLabel() {
-    if (this.minValue && this.maxValue) {
-      return `Max (${this.maxValue})`;
-    }
-    return 'Max';
+    return this.hasRange ? `Max (${this.formatRounded(this.maxValue)})` : 'Max';
   }
 
   ngOnInit() {
