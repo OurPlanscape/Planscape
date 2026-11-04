@@ -206,6 +206,11 @@ class FundingOpportunityReport(CreatedAtMixin, UpdatedAtMixin, models.Model):
         help_text="Funding opportunity report calculation results.",
     )
 
+    burn_simulation_results = models.JSONField(
+        null=True,
+        help_text="Burn-emulator post-processing results."
+    )
+
     treatment_datalayer_id: int | None
     treatment_datalayer = models.ForeignKey(
         "datasets.DataLayer",
