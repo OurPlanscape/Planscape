@@ -10,6 +10,7 @@ import {
   ScenarioConfigurationDetails,
   ScenarioV3Payload,
   SubUnitsDetail,
+  TreatableStandsDetails,
 } from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
@@ -273,6 +274,15 @@ export class ScenarioService {
     return this.http.get<Scenario[]>(path, {
       withCredentials: true,
       params: params,
+    });
+  }
+
+  getAllTreatableStands(scenarioId: number) {
+    const url =
+      environment.backend_endpoint +
+      `/v2/scenarios/${scenarioId}/treatable-stands/`;
+    return this.http.get<TreatableStandsDetails>(url, {
+      withCredentials: true,
     });
   }
 }

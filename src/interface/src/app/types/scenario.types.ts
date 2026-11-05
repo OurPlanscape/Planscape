@@ -340,3 +340,10 @@ export interface ScenarioConfigurationDetails {
   advanced_stand_level_constraints: StandLevelConstraint[];
   targets: Targets;
 }
+
+export interface TreatableStandsDetails {
+  stand_ids: number[];
+  stand_count: number;
+  stand_size: STAND_SIZE,
+  total_area_acres: number;
+}
