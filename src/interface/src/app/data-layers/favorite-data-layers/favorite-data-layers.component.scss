@@ -27,18 +27,38 @@ sg-no-results {
 .data-layer {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: center;
   padding: 8px 16px;
   flex-shrink: 0;
 
-  mat-spinner {
-    margin-top: 1px;
+  &.with-add-button {
+    gap: 16px;
   }
 }
 
 .toggle {
   flex: 1;
   min-width: 0;
+}
+
+.info-icon {
+  color: $color-standard-blue;
+}
+
+.button-column,
+.select-column {
+  width: 42px;
+}
+
+.nodes-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 16px;
+  color: $color-md-gray;
+  padding: 8px 16px;
+  flex-shrink: 0;
 }
 
 .loader {

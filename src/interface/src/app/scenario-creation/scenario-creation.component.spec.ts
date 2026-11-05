@@ -4,7 +4,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxMaskModule } from 'ngx-mask';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, EMPTY, Observable, of, Subject } from 'rxjs';
 import { MockComponents, MockModule, MockProvider } from 'ng-mocks';
 
 import { ScenarioCreationComponent } from './scenario-creation.component';
@@ -25,22 +25,29 @@ import { StandLevelConstraintsComponent } from '@scenario-creation/step3/stand-l
 import { TreatmentTargetComponent } from '@scenario-creation/treatment-target/treatment-target.component';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { FeatureService } from '@app/features/feature.service';
+import { PlanState } from '@plan/plan.state';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { SHOW_FAVORITE_STAR } from '@data-layers/favorite-star/favorite-star.token';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
   let fixture: ComponentFixture<ScenarioCreationComponent>;
+  let setWorkspaceId: jasmine.Spy;
+  let resetWorkspaceId: jasmine.Spy;
 
   async function setUpComponent(
     options: {
       flags?: string[];
       currentScenario$?: Observable<Scenario>;
       scenarioConfig$?: Observable<ScenarioV3Config>;
+      currentPlanWorkspaceId$?: Observable<number | null>;
     } = {}
   ) {
     const {
       flags = [],
       currentScenario$ = of(MOCK_SCENARIO),
       scenarioConfig$ = of({} as ScenarioV3Config),
+      currentPlanWorkspaceId$ = EMPTY,
     } = options;
 
     TestBed.resetTestingModule();
@@ -79,11 +86,21 @@ describe('ScenarioCreationComponent', () => {
           scenarioConfig$,
           priorityObjectivesDetails$: of([]),
         }),
+        MockProvider(PlanState, {
+          currentPlanWorkspaceId$,
+          currentPlan$: EMPTY,
+        }),
       ],
     }).compileComponents();
 
     overrideFeatureFlags(); // explicit clear, no args
     overrideFeatureFlags(...flags);
+
+    setWorkspaceId = spyOn(TestBed.inject(WorkspaceState), 'setWorkspaceId');
+    resetWorkspaceId = spyOn(
+      TestBed.inject(WorkspaceState),
+      'resetWorkspaceId'
+    );
 
     fixture = TestBed.createComponent(ScenarioCreationComponent);
     component = fixture.componentInstance;
@@ -96,6 +113,35 @@ describe('ScenarioCreationComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('does not invite favoriting while a scenario is being configured', () => {
+    expect(fixture.debugElement.injector.get(SHOW_FAVORITE_STAR)).toBeFalse();
+  });
+
+  // the data layers panel of these steps offers the favorites of a
+  // workspace, and this route only carries the planning area
+  describe('the workspace we are configuring in', () => {
+    let currentPlanWorkspaceId$: Subject<number | null>;
+
+    beforeEach(async () => {
+      currentPlanWorkspaceId$ = new Subject<number | null>();
+      await setUpComponent({ currentPlanWorkspaceId$ });
+    });
+
+    it('is the one the planning area belongs to', () => {
+      currentPlanWorkspaceId$.next(42);
+
+      expect(setWorkspaceId).toHaveBeenCalledOnceWith(42);
+      expect(resetWorkspaceId).not.toHaveBeenCalled();
+    });
+
+    it('is none for a planning area outside a workspace', () => {
+      currentPlanWorkspaceId$.next(null);
+
+      expect(resetWorkspaceId).toHaveBeenCalled();
+      expect(setWorkspaceId).not.toHaveBeenCalled();
+    });
   });
 
   describe('Step Calculation Logic', () => {

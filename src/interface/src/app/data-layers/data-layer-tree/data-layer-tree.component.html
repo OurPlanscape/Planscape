@@ -6,7 +6,8 @@
     <div
       *ngIf="displayAddButton && !hasAnyNestedNodes(treeData)"
       class="nodes-header">
-      <span class="select-column">Select</span><span>View Layer</span>
+      <span class="select-column">Select</span
+      ><span>{{ dataLayersStateService.viewColumnLabel }}</span>
     </div>
 
     <mat-tree
@@ -84,7 +85,8 @@
           <div
             *ngIf="displayAddButton && hasLeafChildren(node)"
             class="nodes-header nested">
-            <span class="select-column">Select</span><span>View Layer</span>
+            <span class="select-column">Select</span
+            ><span>{{ dataLayersStateService.viewColumnLabel }}</span>
           </div>
           <ng-container matTreeNodeOutlet></ng-container>
         </div>
