@@ -448,7 +448,10 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
           // not the module's water layers.
           water: this.waterMapLayers(),
           biomass: this.toBaseMapLayers(datalayers.biomass),
+          burn_simulation_results: this.toMapLayers(datalayers.burn_simulation_results),
         };
+        // TODO: complete wiring-up of burn_simulation_results when available
+
         // Raster sections drive the single-select data-layer state.
         this.layersById = new Map(
           [...datalayers.carbon, ...datalayers.wildfire_risk_reduction].map(
