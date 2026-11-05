@@ -1,0 +1,15 @@
+<div class="all-treatable-stands-legend">
+  <div class="acres-section">
+    <div class="static-section">
+      <div class="static-row">
+        <div class="legend-line">
+          <div class="swatch-box total-acres"></div>
+          <div class="swatch-label">All Treatable Area</div>
+        </div>
+        <div *ngIf="totalAcres" class="acres-line">
+          {{ totalAcres | number: '1.0-0' }} ac
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
