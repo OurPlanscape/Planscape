@@ -152,7 +152,7 @@ export class DataLayerTooltipComponent {
 
   private formatValue(value: number) {
     return Number(value).toLocaleString('en-US', {
-      maximumFractionDigits: 0,
+      maximumFractionDigits: 2,
     });
   }
 

@@ -18,3 +18,5 @@ The name and value of the flag will be shared by frontend and backend.
 `DATA_ORGANIZATION`: Enables Data Organization
 
 `DATA_UPLOAD`: Enables the user to upload data
+
+`CATASTROPHIC_REDUCTION`: Features related to Catastrophic Fire Reduction stats in FoR
