@@ -10,6 +10,8 @@ import {
   DataLayersStateService,
 } from '../data-layers.state.service';
 import { DataLayersRailComponent } from './data-layers-rail.component';
+import { FEATURES_JSON } from '@features/features-config';
+import { FeaturesModule } from '@features/features.module';
 
 describe('DataLayersRailComponent', () => {
   let fixture: ComponentFixture<DataLayersRailComponent>;
@@ -17,6 +19,7 @@ describe('DataLayersRailComponent', () => {
   let paths$: BehaviorSubject<string[]>;
   let favoritesEnabled$: BehaviorSubject<boolean>;
   let state: jasmine.SpyObj<DataLayersStateService>;
+  let dataUploadEnabled = false;
 
   beforeEach(async () => {
     selection$ = new BehaviorSubject<BrowseSelection | null>(null);
@@ -32,12 +35,16 @@ describe('DataLayersRailComponent', () => {
       imports: [DataLayersRailComponent],
       providers: [{ provide: DataLayersStateService, useValue: state }],
     })
+      .overrideProvider(FEATURES_JSON, {
+        useValue: { DATA_UPLOAD: dataUploadEnabled },
+      })
       .overrideComponent(DataLayersRailComponent, {
         remove: {
           imports: [
             DataLayersComponent,
             BaseLayersComponent,
             FavoriteDataLayersComponent,
+            FeaturesModule,
           ],
         },
         add: {
@@ -45,6 +52,7 @@ describe('DataLayersRailComponent', () => {
             MockComponent(DataLayersComponent),
             MockComponent(BaseLayersComponent),
             MockComponent(FavoriteDataLayersComponent),
+            FeaturesModule,
           ],
         },
       })
@@ -62,7 +70,7 @@ describe('DataLayersRailComponent', () => {
 
   it('shows the rail with only data layers selectable', () => {
     const buttons = fixture.debugElement.queryAll(By.css('.rail-button'));
-    expect(buttons.length).toBe(3);
+    expect(buttons.length).toBe(2);
     expect(buttons[0].nativeElement.classList).toContain('active');
     expect(
       buttons
@@ -94,19 +102,43 @@ describe('DataLayersRailComponent', () => {
     expect(layers.nativeElement.classList).toContain('sticky-search');
   });
 
+  const icons = () =>
+    fixture.debugElement
+      .queryAll(By.css('.rail-button mat-icon'))
+      .map((icon) => icon.nativeElement.textContent.trim());
+
+  it('hides the uploaded item without DATA_UPLOAD', () => {
+    expect(icons()).not.toContain('drive_folder_upload');
+  });
+
+  describe('with DATA_UPLOAD', () => {
+    beforeAll(() => (dataUploadEnabled = true));
+    afterAll(() => (dataUploadEnabled = false));
+
+    it('shows the uploaded item, still disabled', () => {
+      expect(icons()).toEqual(['category', 'drive_folder_upload', 'star']);
+      expect(
+        fixture.debugElement.queryAll(By.css('.rail-button'))[1].nativeElement
+          .classList
+      ).toContain('disabled');
+    });
+  });
+
   describe('favorites', () => {
     const buttons = () => fixture.debugElement.queryAll(By.css('.rail-button'));
 
     function openFavorites() {
       favoritesEnabled$.next(true);
       fixture.detectChanges();
-      buttons()[2].nativeElement.click();
+      buttons()[buttons().length - 1].nativeElement.click();
       fixture.detectChanges();
     }
 
     // there is no list to show outside a workspace
     it('stay out of reach where they do not apply', () => {
-      expect(buttons()[2].nativeElement.classList).toContain('disabled');
+      expect(buttons()[buttons().length - 1].nativeElement.classList).toContain(
+        'disabled'
+      );
     });
 
     it('open as a panel of their own', () => {
@@ -154,7 +186,7 @@ describe('DataLayersRailComponent', () => {
     });
 
     it('adds base layers to the rail after data layers', () => {
-      expect(buttons().length).toBe(4);
+      expect(buttons().length).toBe(3);
       expect(buttons()[1].nativeElement.classList).not.toContain('disabled');
     });
 
