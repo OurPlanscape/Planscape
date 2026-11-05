@@ -157,6 +157,18 @@ export class ScenarioMapComponent implements OnDestroy {
     )
   );
 
+  showAllTreatableStandsToggleOnResults$ = combineLatest([
+    this.scenarioState.hasScenarioCompleted$,
+    this.scenarioState.currentScenario$,
+  ]).pipe(
+    map(
+      ([hasCompleted, scenario]) =>
+        hasCompleted &&
+        !!scenario.planning_approach &&
+        !isPlanningApproachSubUnits(scenario.planning_approach)
+    )
+  );
+
   // We are showing treated stands if the scenario is completed and we have subunits
   showTreatedStands$ = combineLatest([
     this.newScenarioState.displayTreatedStands$,
@@ -167,7 +179,14 @@ export class ScenarioMapComponent implements OnDestroy {
     })
   );
 
-  displayAllTreatableStands$ = this.newScenarioState.displayAllTreatableStands$;
+  showAllTreatableStands$ = combineLatest([
+    this.newScenarioState.displayAllTreatableStands$,
+    this.showAllTreatableStandsToggleOnResults$,
+  ]).pipe(
+    map(([displayTreatedStands, showSubUnitsOnResults]) => {
+      return displayTreatedStands && showSubUnitsOnResults;
+    })
+  );
 
   private showSubUnitToggle$ = combineLatest([
     this.showSubUnitToggleOnDrafts$,

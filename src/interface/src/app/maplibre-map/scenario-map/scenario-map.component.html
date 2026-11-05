@@ -17,7 +17,7 @@
     *ngIf="showSubUnitToggleOnResults$ | async"></app-treated-stands-toggle>
 
   <app-all-treatable-stands-toggle
-    *ngIf="(planningApproach$ | async) === 'OPTIMIZE_PROJECT_AREAS'">
+    *ngIf="showAllTreatableStandsToggleOnResults$ | async">
   </app-all-treatable-stands-toggle>
 </app-map-nav-bar>
 
@@ -95,7 +95,7 @@
       [mapLibreMap]="mapLibreMap"></app-treated-stands>
   </ng-container>
 
-  <ng-container *ngIf="displayAllTreatableStands$ | async">
+  <ng-container *ngIf="showAllTreatableStands$ | async">
     <app-all-treatable-stands
       *ngIf="mapLibreMap"
       [mapLibreMap]="mapLibreMap"></app-all-treatable-stands>

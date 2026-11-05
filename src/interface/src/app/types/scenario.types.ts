@@ -344,6 +344,6 @@ export interface ScenarioConfigurationDetails {
 export interface TreatableStandsDetails {
   stand_ids: number[];
   stand_count: number;
-  stand_size: STAND_SIZE,
+  stand_size: STAND_SIZE;
   total_area_acres: number;
 }

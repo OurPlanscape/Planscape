@@ -81,3 +81,21 @@ b {
   border: 1px solid $color-soft-gray;
   box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.16);
 }
+
+.info-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: $color-soft-light-blue;
+  color: $color-main-blue;
+  @include small-input-label();
+  padding: 16px;
+  border-radius: 4px;
+
+  .heading {
+    @include standard-input-label();
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 14px;
+  }
+}
