@@ -10,6 +10,8 @@ import {
   SidebarIconRailComponent,
   SidebarRailItem,
 } from '@explore/sidebar-icon-rail/sidebar-icon-rail.component';
+import { FeatureService } from '@features/feature.service';
+import { FeaturesModule } from '@features/features.module';
 import { DataLayersStateService } from '../data-layers.state.service';
 
 type RailPanel = 'data-layers' | 'base-layers' | 'favorites';
@@ -52,6 +54,7 @@ const FAVORITES_ITEM: SidebarRailItem = {
     BaseLayersComponent,
     DataLayersComponent,
     FavoriteDataLayersComponent,
+    FeaturesModule,
     SidebarIconRailComponent,
   ],
   templateUrl: './data-layers-rail.component.html',
@@ -76,7 +79,13 @@ export class DataLayersRailComponent {
 
   selection$ = this.dataLayersStateService.selection$;
 
-  constructor(private dataLayersStateService: DataLayersStateService) {
+  private readonly uploadEnabled =
+    this.featureService.isFeatureEnabled('DATA_UPLOAD');
+
+  constructor(
+    private dataLayersStateService: DataLayersStateService,
+    private featureService: FeatureService
+  ) {
     this.buildRailItems();
 
     this.dataLayersStateService.favoritesEnabled$
@@ -103,7 +112,7 @@ export class DataLayersRailComponent {
     this.railItems = [
       DATA_LAYERS_ITEM,
       ...(this._showBaseLayers ? [BASE_LAYERS_ITEM] : []),
-      UPLOADED_ITEM,
+      ...(this.uploadEnabled ? [UPLOADED_ITEM] : []),
       { ...FAVORITES_ITEM, disabled: !this.favoritesEnabled },
     ];
   }
