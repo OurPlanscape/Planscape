@@ -40,14 +40,15 @@ from planning.models import (
     TreatmentGoalUsageType,
 )
 from planning.services import (
+    STAND_LEVEL_CONSTRAINT_LAYERS,
     build_run_configuration,
     calculate_and_update_scenario_result,
     create_metrics_task,
     export_to_geopackage,
     get_acreage,
     get_available_stand_ids,
+    get_eligible_stand_ids,
     get_forsys_name,
-    STAND_LEVEL_CONSTRAINT_LAYERS,
 )
 
 log = logging.getLogger(__name__)
@@ -488,6 +489,25 @@ def async_scenario_post_processing(scenario_id):
         scenario.post_process_status = ScenarioPostProcessingStatus.FAILURE
     else:
         scenario.post_process_status = ScenarioPostProcessingStatus.SUCCESS
+
+    if scenario.result_status == ScenarioResultStatus.SUCCESS:
+        try:
+            eligible_ids = get_eligible_stand_ids(scenario)
+
+            with transaction.atomic():
+                current = Scenario.objects.select_for_update().get(pk=scenario_id)
+
+                forsys_input = dict(current.forsys_input or {})
+                forsys_input["eligible_stand_ids"] = eligible_ids
+
+                current.forsys_input = forsys_input
+                current.save(update_fields=["forsys_input"])
+
+        except Exception:
+            log.exception(
+                "Failed to save eligible stands for scenario %s",
+                scenario_id,
+            )
 
     scenario.save(update_fields=["post_process_status"])
     publish_scenario_event("planning.scenario.status_changed", scenario)

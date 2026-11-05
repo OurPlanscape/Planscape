@@ -3590,6 +3590,10 @@ class TreatableStandsEndpointTest(APITestCase):
                     self.stand1.pk,
                     self.stand1.pk,
                 ],
+                "eligible_stand_ids": [
+                    self.stand1.pk,
+                    self.stand1.pk,
+                ],
                 "datalayers": [],
                 "variables": {},
             },
@@ -3608,21 +3612,15 @@ class TreatableStandsEndpointTest(APITestCase):
 
         data = response.json()
 
-        self.assertEqual(
-            data["stand_ids"],
-            [self.stand1.pk, self.stand2.pk],
-        )
-        self.assertEqual(data["stand_count"], 2)
+        self.assertEqual(data["stand_ids"], [self.stand1.pk])
+        self.assertEqual(data["stand_count"], 1)
         self.assertEqual(data["stand_size"], "LARGE")
 
         expected_acres = round(
-            3_000_000 / settings.CONVERSION_SQM_ACRES,
+            1_000_000 / settings.CONVERSION_SQM_ACRES,
             2,
         )
-        self.assertEqual(
-            data["total_area_acres"],
-            expected_acres,
-        )
+        self.assertEqual(data["total_area_acres"], expected_acres)
 
     def test_does_not_include_other_stands(self):
         other_stand = Stand.objects.create(
@@ -3637,6 +3635,10 @@ class TreatableStandsEndpointTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotIn(
             other_stand.pk,
+            response.json()["stand_ids"],
+        )
+        self.assertNotIn(
+            self.stand2.pk,
             response.json()["stand_ids"],
         )
 
@@ -3654,8 +3656,10 @@ class TreatableStandsEndpointTest(APITestCase):
 
                 response = self.client.get(self.url)
 
-                self.assertEqual(response.status_code, status.HTTP_200_OK)
-                self.assertEqual(response.json()["stand_count"], 2)
+                self.assertEqual(
+                    response.status_code,
+                    status.HTTP_409_CONFLICT,
+                )
 
     def test_no_forsys_inputs(self):
         self.scenario.forsys_input = None
@@ -3666,7 +3670,10 @@ class TreatableStandsEndpointTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
     def test_empty_stand_ids(self):
-        self.scenario.forsys_input = {"stand_ids": []}
+        self.scenario.forsys_input = {
+            "stand_ids": [self.stand1.pk, self.stand2.pk],
+            "eligible_stand_ids": [],
+        }
         self.scenario.save(update_fields=["forsys_input"])
 
         response = self.client.get(self.url)
@@ -3730,3 +3737,16 @@ class TreatableStandsEndpointTest(APITestCase):
 
         self.scenario.refresh_from_db()
         self.assertIsNone(self.scenario.forsys_input)
+
+    def test_missing_eligible_stand_ids(self):
+        self.scenario.forsys_input = {
+            "stand_ids": [self.stand1.pk, self.stand2.pk],
+        }
+        self.scenario.save(update_fields=["forsys_input"])
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_409_CONFLICT,
+        )
