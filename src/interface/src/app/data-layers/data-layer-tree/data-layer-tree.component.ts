@@ -55,7 +55,7 @@ import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.
 export class DataLayerTreeComponent {
   @Input() displayAddButton = false;
 
-  constructor(private dataLayersStateService: DataLayersStateService) {
+  constructor(protected dataLayersStateService: DataLayersStateService) {
     this.dataLayersStateService.paths$
       .pipe(
         untilDestroyed(this),

@@ -7,6 +7,7 @@ import { BehaviorSubject, map } from 'rxjs';
 import { DataLayer } from '@types';
 import { ToggleComponent } from '@styleguide';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { SHOW_FAVORITE_STAR } from './favorite-star.token';
 import { FavoriteStarComponent } from './favorite-star.component';
 
 const layer = { id: 5, name: 'SNV Heavy Fuels' } as DataLayer;
@@ -110,6 +111,12 @@ describe('FavoriteStarComponent', () => {
 
   it('is not rendered where favoriting does not apply', () => {
     enabled = false;
+
+    expect(create()).toBeNull();
+  });
+
+  it('is not rendered where the surrounding flow does not offer it', () => {
+    TestBed.overrideProvider(SHOW_FAVORITE_STAR, { useValue: false });
 
     expect(create()).toBeNull();
   });

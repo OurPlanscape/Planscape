@@ -1,10 +1,11 @@
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { combineLatest, map, Observable, of } from 'rxjs';
 import { DataLayer } from '@types';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { SHOW_FAVORITE_STAR } from '@data-layers/favorite-star/favorite-star.token';
 
 const NO_PERMISSION_TOOLTIP = "You don't have permission to modify favorites";
 
@@ -52,8 +53,10 @@ export class FavoriteStarComponent {
 
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
+  private showStar = inject(SHOW_FAVORITE_STAR);
+
   get enabled(): boolean {
-    return this.dataLayersStateService.favoritesEnabled();
+    return this.showStar && this.dataLayersStateService.favoritesEnabled();
   }
 
   blockClick(event: Event) {

@@ -30,6 +30,7 @@ describe('SyncedMapComponent', () => {
         MockProvider(WorkspacesService),
         MockProvider(WorkspaceState, {
           currentWorkspaceIdValue: null,
+          currentWorkspaceId$: of(null),
           currentWorkspace$: EMPTY,
         }),
         MockProviders(MultiMapConfigState, AuthService, DrawService),

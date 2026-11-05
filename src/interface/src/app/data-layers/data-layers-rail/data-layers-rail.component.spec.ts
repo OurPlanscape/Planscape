@@ -4,6 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { MockComponent } from 'ng-mocks';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { FavoriteDataLayersComponent } from '@data-layers/favorite-data-layers/favorite-data-layers.component';
 import {
   BrowseSelection,
   DataLayersStateService,
@@ -14,15 +15,17 @@ describe('DataLayersRailComponent', () => {
   let fixture: ComponentFixture<DataLayersRailComponent>;
   let selection$: BehaviorSubject<BrowseSelection | null>;
   let paths$: BehaviorSubject<string[]>;
+  let favoritesEnabled$: BehaviorSubject<boolean>;
   let state: jasmine.SpyObj<DataLayersStateService>;
 
   beforeEach(async () => {
     selection$ = new BehaviorSubject<BrowseSelection | null>(null);
     paths$ = new BehaviorSubject<string[]>([]);
+    favoritesEnabled$ = new BehaviorSubject(false);
     state = jasmine.createSpyObj<DataLayersStateService>(
       'DataLayersStateService',
       ['goBackToSearchResults'],
-      { selection$, paths$ }
+      { selection$, paths$, favoritesEnabled$ }
     );
 
     await TestBed.configureTestingModule({
@@ -30,11 +33,18 @@ describe('DataLayersRailComponent', () => {
       providers: [{ provide: DataLayersStateService, useValue: state }],
     })
       .overrideComponent(DataLayersRailComponent, {
-        remove: { imports: [DataLayersComponent, BaseLayersComponent] },
+        remove: {
+          imports: [
+            DataLayersComponent,
+            BaseLayersComponent,
+            FavoriteDataLayersComponent,
+          ],
+        },
         add: {
           imports: [
             MockComponent(DataLayersComponent),
             MockComponent(BaseLayersComponent),
+            MockComponent(FavoriteDataLayersComponent),
           ],
         },
       })
@@ -82,6 +92,57 @@ describe('DataLayersRailComponent', () => {
     expect(instance.displayAddButton).toBeTrue();
     expect(instance.showSelectionHeader).toBeFalse();
     expect(layers.nativeElement.classList).toContain('sticky-search');
+  });
+
+  describe('favorites', () => {
+    const buttons = () => fixture.debugElement.queryAll(By.css('.rail-button'));
+
+    function openFavorites() {
+      favoritesEnabled$.next(true);
+      fixture.detectChanges();
+      buttons()[2].nativeElement.click();
+      fixture.detectChanges();
+    }
+
+    // there is no list to show outside a workspace
+    it('stay out of reach where they do not apply', () => {
+      expect(buttons()[2].nativeElement.classList).toContain('disabled');
+    });
+
+    it('open as a panel of their own', () => {
+      openFavorites();
+
+      expect(title()).toContain('Favorite Data Layers');
+      expect(
+        fixture.debugElement.query(By.css('app-favorite-data-layers'))
+      ).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('app-data-layers'))).toBeNull();
+    });
+
+    // the point of favoriting a layer is reaching for it while configuring
+    it('let the step pick a layer, like the browse list', () => {
+      openFavorites();
+
+      const panel = fixture.debugElement.query(
+        By.css('app-favorite-data-layers')
+      ).componentInstance as FavoriteDataLayersComponent;
+
+      expect(panel.displayAddButton).toBeTrue();
+    });
+
+    it('give way to the data layers when they stop applying', () => {
+      openFavorites();
+
+      favoritesEnabled$.next(false);
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.query(By.css('app-data-layers'))
+      ).toBeTruthy();
+      expect(
+        fixture.debugElement.query(By.css('app-favorite-data-layers'))
+      ).toBeNull();
+    });
   });
 
   describe('with base layers', () => {

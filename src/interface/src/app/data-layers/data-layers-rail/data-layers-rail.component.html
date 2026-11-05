@@ -26,6 +26,14 @@
     [class.sticky-search]="stickySearch"></app-data-layers>
 </div>
 
+<div class="panel" *ngIf="activePanel === 'favorites'">
+  <div class="panel-header">
+    <h4>Favorite Data Layers</h4>
+  </div>
+  <app-favorite-data-layers
+    [displayAddButton]="displayAddButton"></app-favorite-data-layers>
+</div>
+
 <div class="panel" *ngIf="activePanel === 'base-layers'">
   <div class="panel-header">
     <h4>Base Layers</h4>
