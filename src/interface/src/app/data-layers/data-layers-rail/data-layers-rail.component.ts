@@ -5,13 +5,16 @@ import { filter, skip } from 'rxjs';
 import { ButtonComponent } from '@styleguide';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { FavoriteDataLayersComponent } from '@data-layers/favorite-data-layers/favorite-data-layers.component';
 import {
   SidebarIconRailComponent,
   SidebarRailItem,
 } from '@explore/sidebar-icon-rail/sidebar-icon-rail.component';
+import { FeatureService } from '@features/feature.service';
+import { FeaturesModule } from '@features/features.module';
 import { DataLayersStateService } from '../data-layers.state.service';
 
-type RailPanel = 'data-layers' | 'base-layers';
+type RailPanel = 'data-layers' | 'base-layers' | 'favorites';
 
 const DATA_LAYERS_ITEM: SidebarRailItem = {
   id: 'data-layers',
@@ -23,21 +26,17 @@ const BASE_LAYERS_ITEM: SidebarRailItem = {
   icon: 'layers',
   label: 'Base Layers',
 };
-const DISABLED_ITEMS: SidebarRailItem[] = [
-  {
-    id: 'uploaded',
-    icon: 'drive_folder_upload',
-    label: 'Uploaded',
-    disabled: true,
-  },
-  { id: 'favorites', icon: 'star', label: 'Favorites', disabled: true },
-];
-const ITEMS = [DATA_LAYERS_ITEM, ...DISABLED_ITEMS];
-const ITEMS_WITH_BASE_LAYERS = [
-  DATA_LAYERS_ITEM,
-  BASE_LAYERS_ITEM,
-  ...DISABLED_ITEMS,
-];
+const UPLOADED_ITEM: SidebarRailItem = {
+  id: 'uploaded',
+  icon: 'drive_folder_upload',
+  label: 'Uploaded',
+  disabled: true,
+};
+const FAVORITES_ITEM: SidebarRailItem = {
+  id: 'favorites',
+  icon: 'star',
+  label: 'Favorite Data Layers',
+};
 
 /**
  * Data layers with the icon rail, and optionally base layers, for pages
@@ -54,6 +53,8 @@ const ITEMS_WITH_BASE_LAYERS = [
     ButtonComponent,
     BaseLayersComponent,
     DataLayersComponent,
+    FavoriteDataLayersComponent,
+    FeaturesModule,
     SidebarIconRailComponent,
   ],
   templateUrl: './data-layers-rail.component.html',
@@ -68,12 +69,31 @@ export class DataLayersRailComponent {
   activePanel: RailPanel = 'data-layers';
 
   get railItems(): SidebarRailItem[] {
-    return this.showBaseLayers ? ITEMS_WITH_BASE_LAYERS : ITEMS;
+    return this.showBaseLayers ? this.itemsWithBaseLayers : this.items;
   }
+
+  private items: SidebarRailItem[];
+  private itemsWithBaseLayers: SidebarRailItem[];
 
   selection$ = this.dataLayersStateService.selection$;
 
-  constructor(private dataLayersStateService: DataLayersStateService) {
+  constructor(
+    private dataLayersStateService: DataLayersStateService,
+    featureService: FeatureService
+  ) {
+    const optionalItems = [
+      ...(featureService.isFeatureEnabled('DATA_UPLOAD')
+        ? [UPLOADED_ITEM]
+        : []),
+      FAVORITES_ITEM,
+    ];
+    this.items = [DATA_LAYERS_ITEM, ...optionalItems];
+    this.itemsWithBaseLayers = [
+      DATA_LAYERS_ITEM,
+      BASE_LAYERS_ITEM,
+      ...optionalItems,
+    ];
+
     // the map's layer name legend browses to its layer, so bring the data layers back
     this.dataLayersStateService.paths$
       .pipe(

@@ -32,3 +32,10 @@
   </div>
   <app-base-layers></app-base-layers>
 </div>
+
+<div class="panel" *ngIf="activePanel === 'favorites'">
+  <div class="panel-header">
+    <h4>Favorite Data Layers</h4>
+  </div>
+  <app-favorite-data-layers></app-favorite-data-layers>
+</div>
