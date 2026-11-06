@@ -1531,6 +1531,10 @@ def export_project_areas_results_to_geopackage(
         raise e
 
 
+# The burn emulator output is multi-band; only this band (1-based) is exported.
+BURN_SIMULATION_EXPORT_BAND = 3
+
+
 def _set_gpkg_raster_nodata(
     dst: rasterio.io.DatasetWriter, nodata: Optional[float], raster_table: str
 ) -> None:
@@ -1559,7 +1563,12 @@ def _export_raster_datalayer_to_geopackage(
     datalayer: Optional[DataLayer],
     raster_table: str,
     geopackage_path: Path,
+    band: Optional[int] = None,
 ) -> None:
+    """
+    Copies the datalayer raster into `raster_table` of the geopackage. When
+    `band` (1-based) is given, only that band is exported.
+    """
     if datalayer is None or not datalayer.url:
         log.warning(
             "Funding report %s has no datalayer for %s. Skipping %s "
@@ -1573,17 +1582,28 @@ def _export_raster_datalayer_to_geopackage(
     try:
         with rasterio.Env(**get_gdal_env(allowed_extensions=".tif")):
             with rasterio.open(with_vsi_prefix(datalayer.url)) as src:
-                data = src.read()
+                if band is None:
+                    data = src.read()
+                    dtype = src.dtypes[0]
+                    nodata = src.nodata
+                else:
+                    if not 1 <= band <= src.count:
+                        raise ValueError(
+                            f"{raster_table} raster has {src.count} band(s); "
+                            f"band {band} requested."
+                        )
+                    data = src.read([band])
+                    dtype = src.dtypes[band - 1]
+                    nodata = src.nodatavals[band - 1]
                 profile = {
                     "driver": "GPKG",
                     "height": src.height,
                     "width": src.width,
-                    "count": src.count,
-                    "dtype": src.dtypes[0],
+                    "count": data.shape[0],
+                    "dtype": dtype,
                     "crs": src.crs,
                     "transform": src.transform,
                 }
-                nodata = src.nodata
 
         with rasterio.open(
             str(geopackage_path),
@@ -1616,7 +1636,11 @@ def export_burn_simulation_raster_to_geopackage(
     report: FundingOpportunityReport, geopackage_path: Path
 ) -> None:
     _export_raster_datalayer_to_geopackage(
-        report, report.burn_simulation_datalayer, "burn_simulation", geopackage_path
+        report,
+        report.burn_simulation_datalayer,
+        "burn_simulation",
+        geopackage_path,
+        band=BURN_SIMULATION_EXPORT_BAND,
     )
 
 

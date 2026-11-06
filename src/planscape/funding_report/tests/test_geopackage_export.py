@@ -49,23 +49,32 @@ def write_categorical_treatment_raster(path: Path) -> None:
         dst.write(values, 1)
 
 
-def write_burn_simulation_raster(path: Path) -> None:
-    """Mimics the burn emulator output: single-band float values with nodata."""
-    values = np.array([[0.5, 1.25], [-9999.0, 3.75]], dtype=np.float32)
+BURN_BAND_3_VALUES = np.array([[0.5, 1.25], [-9999.0, 3.75]], dtype=np.float32)
+
+
+def write_burn_simulation_raster(path: Path, count: int = 3) -> None:
+    """
+    Mimics the burn emulator output: multi-band float values with nodata. Each
+    band has distinct values so tests can tell which band was exported.
+    """
+    bands = [BURN_BAND_3_VALUES + 10.0 * (3 - i) for i in range(1, count + 1)]
+    for values in bands:
+        values[1, 0] = -9999.0
+    values = np.stack(bands)
     transform = from_origin(-121.0, 39.0, 0.0003, 0.0003)
     with rasterio.open(
         path,
         "w",
         driver="GTiff",
-        height=values.shape[0],
-        width=values.shape[1],
-        count=1,
+        height=values.shape[1],
+        width=values.shape[2],
+        count=count,
         dtype=values.dtype,
         crs="EPSG:4269",
         transform=transform,
         nodata=-9999.0,
     ) as dst:
-        dst.write(values, 1)
+        dst.write(values)
 
 
 class GeopackageExportTest(TestCase):
@@ -221,9 +230,9 @@ class GeopackageExportTest(TestCase):
         self.assertIn("planning_area", layers)
         self.assertIn("project_areas", layers)
 
-    def _add_burn_simulation_datalayer(self):
+    def _add_burn_simulation_datalayer(self, count: int = 3):
         burn_path = self.out_path.parent / "burn_simulation.tif"
-        write_burn_simulation_raster(burn_path)
+        write_burn_simulation_raster(burn_path, count=count)
         self.burn_datalayer = DataLayerFactory.create(
             name="burn simulation",
             type=DataLayerType.RASTER,
@@ -251,6 +260,7 @@ class GeopackageExportTest(TestCase):
             self.assertEqual(data[0, 1], 2)
 
         with rasterio.open(str(self.out_path), TABLE="burn_simulation") as src:
+            self.assertEqual(src.count, 1)
             self.assertEqual(src.width, 2)
             self.assertEqual(src.height, 2)
             self.assertEqual(src.nodata, -9999.0)
@@ -259,6 +269,12 @@ class GeopackageExportTest(TestCase):
             self.assertAlmostEqual(float(data[0, 1]), 1.25)
             self.assertAlmostEqual(float(data[1, 1]), 3.75)
             self.assertTrue(src.read(1, masked=True).mask[1, 0])
+
+    def test_burn_simulation_raster_with_too_few_bands_raises(self):
+        self._add_burn_simulation_datalayer(count=1)
+
+        with self.assertRaises(ValueError):
+            export_burn_simulation_raster_to_geopackage(self.report, self.out_path)
 
     def test_skips_burn_raster_when_no_burn_datalayer(self):
         export_planning_area_results_to_geopackage(self.report, self.out_path)
