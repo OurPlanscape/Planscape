@@ -959,6 +959,61 @@ def generate_burn_simulation_datalayer(
     )
 
 
+def calculate_burn_simulation_results(
+    report: FundingOpportunityReport, datalayer: DataLayer
+) -> Dict[str, Any]:
+    """Estimate the catastrophic wildfire reduction acres from the burn
+    simulation raster.
+
+    Counts every pixel whose center falls inside the planning area (nodata
+    included) and the subset whose value is greater than zero, then scales
+    the planning area acreage by that proportion.
+    """
+    report = FundingOpportunityReport.objects.select_related(
+        "scenario__planning_area"
+    ).get(pk=report.pk)
+    planning_area_geometry = report.scenario.planning_area.geometry
+    planning_area_acres = get_acreage(planning_area_geometry)
+
+    total_pixels = 0
+    burned_pixels = 0
+    with rasterio.open(_datalayer_path(datalayer)) as src:
+        raster_srid = src.crs.to_epsg() if src.crs else None
+        if raster_srid is None:
+            raise ValueError(f"Raster CRS {src.crs} does not resolve to an EPSG SRID.")
+
+        geometry = json.loads(
+            maybe_transform(planning_area_geometry, raster_srid).geojson
+        )
+        try:
+            data, transform = mask(src, [geometry], crop=True, filled=False)
+        except ValueError:
+            # planning area does not overlap the burn simulation raster
+            data = None
+
+        if data is not None:
+            pixels = data[0]
+            inside_geometry = ~geometry_mask(
+                [geometry],
+                out_shape=pixels.shape,
+                transform=transform,
+                invert=False,
+            )
+            values = np.ma.getdata(pixels)
+            valid = ~np.ma.getmaskarray(pixels)
+            total_pixels = int(inside_geometry.sum())
+            burned_pixels = int((inside_geometry & valid & (values > 0)).sum())
+
+    ratio = burned_pixels / total_pixels if total_pixels else 0.0
+    return {
+        "catastrophic_wildfire_reduction_acres": planning_area_acres * ratio,
+        "catastrophic_wildfire_reduction_percent": ratio * 100,
+        "planning_area_acres": planning_area_acres,
+        "total_pixels": total_pixels,
+        "burned_pixels": burned_pixels,
+    }
+
+
 def calculate_treatment_pixel_areas(report: FundingOpportunityReport) -> Dict[str, Any]:
     source = get_treatment_datalayer()
     if source is None:

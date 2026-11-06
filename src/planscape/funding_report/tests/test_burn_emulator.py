@@ -174,6 +174,13 @@ class BurnEmulatorTaskTest(TestCase):
         self.uploaded = self.enterContext(
             mock.patch("funding_report.tasks.datalayer_uploaded.delay")
         )
+        self.burn_results = {"catastrophic_wildfire_reduction_acres": 123.4}
+        self.calculate_burn = self.enterContext(
+            mock.patch(
+                "funding_report.tasks.calculate_burn_simulation_results",
+                return_value=self.burn_results,
+            )
+        )
 
     def refresh(self):
         self.report.refresh_from_db()
@@ -223,6 +230,8 @@ class BurnEmulatorTaskTest(TestCase):
         )
         self.assertEqual(self.generate.call_args.args[1], "gs://outputs/output.tif")
         self.assertEqual(self.report.burn_simulation_datalayer, self.datalayer)
+        self.assertEqual(self.report.burn_simulation_results, self.burn_results)
+        self.assertEqual(self.calculate_burn.call_args.args[1], self.datalayer)
         self.uploaded.assert_called_once_with(
             self.datalayer.pk, status=DataLayerStatus.READY
         )
@@ -257,6 +266,25 @@ class BurnEmulatorTaskTest(TestCase):
         self.assertEqual(self.refresh().burn_simulation_status, S.FAILED)
         self.assertIsNone(self.report.burn_simulation_datalayer_id)
         self.uploaded.assert_not_called()
+
+    def test_burn_results_error_fails_burn_and_discards_datalayer(self):
+        self.set_job()
+        self.api.return_value = job("cached", output_path="gs://outputs/output.tif")
+        self.calculate_burn.side_effect = ValueError("bad raster CRS")
+        check_burn_emulator_status(self.report.pk)
+        self.assertEqual(self.refresh().burn_simulation_status, S.FAILED)
+        self.assertIsNone(self.report.burn_simulation_datalayer_id)
+        self.assertIsNone(self.report.burn_simulation_results)
+        self.assertFalse(DataLayer.dead_or_alive.filter(pk=self.datalayer.pk).exists())
+        self.uploaded.assert_not_called()
+
+    def test_transient_burn_results_error_is_retried_by_next_poll(self):
+        self.set_job()
+        self.api.return_value = job("cached", output_path="gs://outputs/output.tif")
+        self.calculate_burn.side_effect = ConnectionError("gcs unavailable")
+        check_burn_emulator_status(self.report.pk)
+        self.assertEqual(self.refresh().burn_simulation_status, S.RUNNING)
+        self.assertIsNone(self.report.burn_simulation_results)
 
     def test_stale_run_discards_registered_output(self):
         self.set_job()
