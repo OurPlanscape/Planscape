@@ -1,4 +1,4 @@
-<div class="side-search-container">
+<div class="side-search-container" [class.no-border]="belowSearch">
   <sg-search-bar
     class="search-bar"
     [debounceInterval]="160"
@@ -8,10 +8,11 @@
     (searchString)="search($event)"
     (clearSearch)="clearSearch()"></sg-search-bar>
 </div>
+<ng-container *ngTemplateOutlet="belowSearch ?? null"></ng-container>
 
 <div class="scrollable" *ngIf="favorites$ | async as favorites">
   <mat-spinner
-    *ngIf="favorites.isLoading"
+    *ngIf="favorites.isLoading && !favorites.data"
     diameter="20"
     class="loader"></mat-spinner>
 
@@ -22,10 +23,32 @@
     title="We couldn't load your favorites"
     description="The server could not return the favorites of this workspace. Try again later."></sg-empty-state>
 
-  <ng-container *ngIf="!favorites.isLoading && !favorites.error">
+  <ng-container *ngIf="favorites.data && !favorites.error">
+    <div *ngIf="displayAddButton && (hasResults$ | async)" class="nodes-header">
+      <span class="select-column">Select</span
+      ><span>{{ dataLayersStateService.viewColumnLabel }}</span>
+    </div>
+
     <div
       class="data-layer"
+      [class.with-add-button]="displayAddButton"
       *ngFor="let layer of results$ | async; trackBy: trackById">
+      <span
+        class="button-column"
+        *ngIf="displayAddButton"
+        [matTooltip]="getTooltipText(layer, isSelectionCompleted$ | async)"
+        [matTooltipDisabled]="
+          !isUnselectable(layer) && (isSelectionCompleted$ | async) === false
+        ">
+        <mat-checkbox
+          class="view-checkbox"
+          [checked]="isSelected(layer)"
+          [disabled]="
+            !isSelected(layer) &&
+            (isUnselectable(layer) || (isSelectionCompleted$ | async))
+          "
+          (click)="toggleSelection(layer)"></mat-checkbox>
+      </span>
       <sg-toggle
         class="toggle"
         [ngModel]="(viewedDataLayerId$ | async) === layer.id"
@@ -42,6 +65,20 @@
           (viewedDataLayerId$ | async) === layer.id &&
           (loadingDataLayer$ | async)
         "></mat-spinner>
+      <button
+        sg-button
+        variant="icon-only"
+        icon="info"
+        class="info-icon"
+        [outlined]="true"
+        [matMenuTriggerFor]="popoverMenu"
+        (menuOpened)="infoMenuOpen = true"
+        (menuClosed)="infoMenuOpen = false"></button>
+      <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
+        <app-data-layer-tooltip
+          [layer]="layer"
+          *ngIf="infoMenuOpen"></app-data-layer-tooltip>
+      </mat-menu>
     </div>
 
     <!-- nothing favorited yet -->

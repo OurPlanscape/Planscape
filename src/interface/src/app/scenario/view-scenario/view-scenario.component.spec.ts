@@ -11,9 +11,9 @@ import { MockDeclarations, MockProvider, MockProviders } from 'ng-mocks';
 import { ScenarioState } from '../scenario.state';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { BehaviorSubject, of } from 'rxjs';
-import { MOCK_SCENARIO } from '@services/mocks';
+import { MOCK_PLAN, MOCK_SCENARIO } from '@services/mocks';
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
-import { Scenario, ScenarioResult } from '@types';
+import { Plan, Scenario, ScenarioResult } from '@types';
 import { ScenarioResultsComponent } from '@scenario/scenario-results/scenario-results.component';
 import { TreatmentsTabComponent } from '@scenario/treatments-tab/treatments-tab.component';
 import { PlanState } from '@plan/plan.state';
@@ -21,6 +21,8 @@ import { POLLING_INTERVAL } from '@plan/plan-helpers';
 import { ScenarioService } from '@services';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MapModuleService } from '@services/map-module.service';
+import { overrideFeatureFlags } from '@features/testing';
 
 describe('ViewScenarioComponent (polling)', () => {
   let fixture: ComponentFixture<ViewScenarioComponent>;
@@ -28,6 +30,8 @@ describe('ViewScenarioComponent (polling)', () => {
 
   let scenario$!: BehaviorSubject<Scenario>;
   let scenarioStateSpy!: { reloadScenario: jasmine.Spy; currentScenario$: any };
+  let currentPlanOrNull$!: BehaviorSubject<Plan | null>;
+  let loadMapModule!: jasmine.Spy;
 
   const baseScenario: Scenario = {
     ...MOCK_SCENARIO,
@@ -45,6 +49,8 @@ describe('ViewScenarioComponent (polling)', () => {
       reloadScenario: jasmine.createSpy('reloadScenario'),
       currentScenario$: scenario$.asObservable(),
     };
+    currentPlanOrNull$ = new BehaviorSubject<Plan | null>(MOCK_PLAN);
+    loadMapModule = jasmine.createSpy('loadMapModule').and.returnValue(of({}));
 
     await TestBed.configureTestingModule({
       declarations: [
@@ -58,7 +64,9 @@ describe('ViewScenarioComponent (polling)', () => {
         ViewScenarioComponent,
       ],
       providers: [
-        MockProviders(PlanState, ScenarioService),
+        MockProvider(PlanState, { currentPlanOrNull$ }),
+        MockProviders(ScenarioService),
+        MockProvider(MapModuleService, { loadMapModule }),
         MockProvider(DataLayersStateService, { paths$: of([]) }),
         { provide: ScenarioState, useValue: scenarioStateSpy },
       ],
@@ -81,6 +89,30 @@ describe('ViewScenarioComponent (polling)', () => {
       discardPeriodicTasks();
     } catch {}
   }));
+
+  describe('map module', () => {
+    beforeEach(() => {
+      scenario$.next(makeScenario('SUCCESS'));
+      overrideFeatureFlags('DATA_ORGANIZATION');
+    });
+
+    it("loads it narrowed to the plan's geometry", () => {
+      createComponent();
+      expect(loadMapModule).toHaveBeenCalledOnceWith(MOCK_PLAN.geometry);
+    });
+
+    it('loads it unfiltered when DATA_ORGANIZATION is off', () => {
+      overrideFeatureFlags();
+      createComponent();
+      expect(loadMapModule).toHaveBeenCalledOnceWith(undefined);
+    });
+
+    it('does not reload when the same plan emits again', () => {
+      createComponent();
+      currentPlanOrNull$.next({ ...MOCK_PLAN });
+      expect(loadMapModule).toHaveBeenCalledTimes(1);
+    });
+  });
 
   it('starts polling when scenario is PENDING', fakeAsync(() => {
     scenario$.next(makeScenario('PENDING'));

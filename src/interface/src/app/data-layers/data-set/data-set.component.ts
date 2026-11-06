@@ -90,7 +90,7 @@ export class DataSetComponent {
     return '';
   }
 
-  constructor(private dataLayersStateService: DataLayersStateService) {}
+  constructor(protected dataLayersStateService: DataLayersStateService) {}
 
   selectDataLayer(dataLayer: DataLayer, event: Event) {
     const target = event.target as HTMLInputElement;

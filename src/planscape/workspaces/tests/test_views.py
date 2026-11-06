@@ -230,6 +230,34 @@ class RetrieveWorkspaceTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["creator"], self.user.get_full_name())
 
+    def test_only_owners_and_collaborators_can_favorite_datalayers(self):
+        collaborator = UserFactory.create()
+        viewer = UserFactory.create()
+        UserAccessWorkspaceFactory.create(
+            user=collaborator,
+            workspace=self.workspace,
+            role=WorkspaceRole.COLLABORATOR,
+        )
+        UserAccessWorkspaceFactory.create(
+            user=viewer, workspace=self.workspace, role=WorkspaceRole.VIEWER
+        )
+
+        for user, can_favorite in (
+            (self.user, True),
+            (collaborator, True),
+            (viewer, False),
+        ):
+            self.client.force_authenticate(user=user)
+            response = self.client.get(
+                reverse(DETAIL_URL, kwargs={"pk": self.workspace.pk})
+            )
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                "add_favorite_datalayer" in response.json()["permissions"],
+                can_favorite,
+            )
+
 
 class UpdateWorkspaceTest(APITestCase):
     def setUp(self):

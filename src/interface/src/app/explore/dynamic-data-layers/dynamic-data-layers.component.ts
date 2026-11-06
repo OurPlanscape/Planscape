@@ -59,14 +59,17 @@ export class DynamicDataLayersComponent
         FavoriteDataLayersComponent,
         { injector: customInjector }
       );
-      return;
+    } else {
+      this.componentRef = this.outlet.createComponent(DataLayersComponent, {
+        injector: customInjector,
+      });
+      // only the browse panel takes this one
+      this.componentRef.setInput(
+        'showSelectionHeader',
+        this.showSelectionHeader
+      );
     }
-
-    this.componentRef = this.outlet.createComponent(DataLayersComponent, {
-      injector: customInjector,
-    });
-    // only the browse panel takes these
-    this.componentRef.setInput('showSelectionHeader', this.showSelectionHeader);
+    // both panels are a map's own so both show the tabs that pick the map
     this.componentRef.setInput('belowSearch', this.belowSearch);
   }
 

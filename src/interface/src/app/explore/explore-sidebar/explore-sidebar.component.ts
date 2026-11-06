@@ -16,7 +16,15 @@ import {
 import { SidebarTabs } from '@explore/sidebar-tabs';
 import { DataLayersRegistryService } from '@explore/data-layers-registry';
 import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
-import { combineLatest, map, of, switchMap, take } from 'rxjs';
+import {
+  asapScheduler,
+  combineLatest,
+  map,
+  observeOn,
+  of,
+  switchMap,
+  take,
+} from 'rxjs';
 
 const PANEL_BY_RAIL_ITEM: Record<string, SidebarTabs> = {
   'data-layers': SidebarTabs.DATA_LAYERS,
@@ -56,6 +64,8 @@ export class ExploreSidebarComponent {
   );
 
   dataLayersSelection$ = this.dataLayersState$.pipe(
+    // Maps register and restore their state on init, after this header was checked
+    observeOn(asapScheduler),
     switchMap((state) => state?.selection$ ?? of(null))
   );
 

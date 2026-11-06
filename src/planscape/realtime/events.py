@@ -27,6 +27,10 @@ CHANNEL_MESSAGE_TYPE = "workspace.event"
 
 EventData = Union[dict[str, Any], Callable[[], Optional[dict[str, Any]]]]
 
+# msgpack (used by the Redis channel layer) only packs 64-bit integers.
+MSGPACK_MIN_INT = -(2**63)
+MSGPACK_MAX_INT = 2**64 - 1
+
 
 def workspace_group_name(workspace_id: int) -> str:
     return f"{GROUP_PREFIX}.{int(workspace_id)}"
@@ -34,7 +38,12 @@ def workspace_group_name(workspace_id: int) -> str:
 
 def to_plain(value: Any) -> Any:
     """Converts enums, dates and other rich values into msgpack/JSON-safe ones."""
-    if value is None or isinstance(value, (bool, int, float)):
+    if value is None or isinstance(value, (bool, float)):
+        return value
+    if isinstance(value, int):
+        # e.g. float32 nodata values stored as integers in raster info
+        if not MSGPACK_MIN_INT <= value <= MSGPACK_MAX_INT:
+            return float(value)
         return value
     if isinstance(value, str):
         # TextChoices are str subclasses; msgpack and json want plain str.

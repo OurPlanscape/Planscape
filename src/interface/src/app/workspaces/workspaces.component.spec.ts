@@ -5,6 +5,7 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -13,16 +14,22 @@ import { MockProvider } from 'ng-mocks';
 
 import { WorkspacesComponent } from '@app/workspaces/workspaces.component';
 import { WorkspaceActionsService } from '@app/workspaces/workspace-actions.service';
-import { ListWorkspacesOptions, WorkspacesService } from '@services';
+import {
+  AuthService,
+  ListWorkspacesOptions,
+  WorkspacesService,
+} from '@services';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { POLLING_INTERVAL } from '@plan/plan-helpers';
-import { Workspace } from '@types';
+import { User, Workspace } from '@types';
+import { WorkspaceCardComponent } from '@styleguide';
 
 describe('WorkspacesComponent', () => {
   let fixture: ComponentFixture<WorkspacesComponent>;
   let actionsService: WorkspaceActionsService;
   let workspacesService: WorkspacesService;
   let snackbar: MatSnackBar;
+  let currentUser: User | null;
 
   const workspace: Workspace = {
     id: 7,
@@ -55,20 +62,88 @@ describe('WorkspacesComponent', () => {
 
     actionsService = TestBed.inject(WorkspaceActionsService);
     snackbar = TestBed.inject(MatSnackBar);
+    spyOn(TestBed.inject(AuthService), 'currentUser').and.callFake(
+      () => currentUser
+    );
 
     fixture = TestBed.createComponent(WorkspacesComponent);
     fixture.detectChanges();
   }
 
   beforeEach(async () => {
+    // someone the workspace was shared with, not its creator
+    currentUser = { id: 9 } as User;
+
     await TestBed.configureTestingModule({
       imports: [WorkspacesComponent, NoopAnimationsModule, RouterTestingModule],
       providers: [
         MockProvider(WorkspaceActionsService),
         MockProvider(WorkspacesService),
         MockProvider(MatSnackBar),
+        MockProvider(AuthService),
       ],
     }).compileComponents();
+  });
+
+  describe('leaving a workspace', () => {
+    function card() {
+      return fixture.debugElement.query(By.directive(WorkspaceCardComponent))
+        .componentInstance as WorkspaceCardComponent;
+    }
+
+    it('is offered on a workspace someone else created', () => {
+      setup();
+
+      expect(card().userCanLeave).toBe(true);
+    });
+
+    it('is not offered to the creator', () => {
+      currentUser = { id: 3 } as User;
+
+      setup();
+
+      expect(card().userCanLeave).toBe(false);
+    });
+
+    it('waits for the session before offering it', () => {
+      currentUser = null;
+
+      setup();
+
+      expect(card().userCanLeave).toBe(false);
+    });
+
+    it('drops the card and keeps the grid up while the list reloads', () => {
+      setup(of({ count: 2, results: [workspace, otherWorkspace] }));
+      (workspacesService.listWorkspaces as jasmine.Spy).and.returnValue(
+        new Subject<any>()
+      );
+      spyOn(actionsService, 'leaveWorkspace').and.returnValue(of(true));
+
+      fixture.componentInstance.leaveWorkspace(workspace);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).not.toContain('Wildfire North');
+      expect(fixture.nativeElement.textContent).toContain('Southern Sierra');
+    });
+
+    it('reloads the list once the user is out', () => {
+      setup();
+      spyOn(actionsService, 'leaveWorkspace').and.returnValue(of(true));
+
+      fixture.componentInstance.leaveWorkspace(workspace);
+
+      expect(workspacesService.listWorkspaces).toHaveBeenCalledTimes(2);
+    });
+
+    it('leaves the list alone when the user backs out', () => {
+      setup();
+      spyOn(actionsService, 'leaveWorkspace').and.returnValue(of(false));
+
+      fixture.componentInstance.leaveWorkspace(workspace);
+
+      expect(workspacesService.listWorkspaces).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('should create', () => {

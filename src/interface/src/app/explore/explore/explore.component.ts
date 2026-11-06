@@ -9,11 +9,13 @@ import { SyncedMapsComponent } from '@maplibre-map/synced-maps/synced-maps.compo
 import { MultiMapControlComponent } from '@maplibre-map/multi-map-control/multi-map-control.component';
 import { OpacitySliderComponent } from '@styleguide';
 import {
+  catchError,
   combineLatest,
+  distinctUntilChanged,
+  EMPTY,
   firstValueFrom,
   map,
   of,
-  skip,
   switchMap,
   take,
 } from 'rxjs';
@@ -22,10 +24,13 @@ import { ExploreModesToggleComponent } from '@maplibre-map/explore-modes-toggle/
 import { ExploreSidebarComponent } from '@explore/explore-sidebar/explore-sidebar.component';
 import { LegacySidebarComponent } from '@explore/legacy-sidebar/legacy-sidebar.component';
 import { SidebarTabs } from '@explore/sidebar-tabs';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
 import { DrawService } from '@maplibre-map/draw.service';
 import { HttpClientModule } from '@angular/common/http';
 import { MapConfigService } from '@maplibre-map/map-config.service';
 import { PlanState } from '@plan/plan.state';
+import { MapModuleService } from '@services/map-module.service';
+import { provideDataOrganizationGeometry } from '@data-layers/data-layers/geometry-datalayers.token';
 import { getPlanPath, getWorkspaceId } from '@plan/plan-helpers';
 
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -70,6 +75,7 @@ const PER_MAP_TABS = [SidebarTabs.DATA_LAYERS, SidebarTabs.FAVORITES];
     // 2. Alias its own type to that same instance
     { provide: MultiMapConfigState, useExisting: MapConfigState },
     MapConfigService,
+    provideDataOrganizationGeometry(),
   ],
 })
 export class ExploreComponent implements OnDestroy, OnInit {
@@ -99,19 +105,34 @@ export class ExploreComponent implements OnDestroy, OnInit {
     private scenarioState: ScenarioState,
     private drawService: DrawService,
     private route: ActivatedRoute,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private mapModuleService: MapModuleService,
+    private workspaceState: WorkspaceState
   ) {
     this.loadStateFromLocalStorage();
 
-    // expand panel automatically when the selected map change
-    // (when the user clicks on the data layer name on the map)
-    this.multiMapConfigState.selectedMapId$
-      .pipe(untilDestroyed(this), skip(1))
-      .subscribe((id) => {
+    // Each map has its own panel including favorites.
+    // Selecting a map updates selectedMapId$ without closing other panels
+    this.multiMapConfigState.mapClicked$
+      .pipe(untilDestroyed(this))
+      .subscribe(() => {
         this.panelExpanded = true;
-        // if I have a selected map, go to data layer tab
-        if (id) {
-          this.tabIndex = SidebarTabs.DATA_LAYERS;
+      });
+
+    // Clicking a map layer name opens it in the Data Layers panel
+    this.multiMapConfigState.layerNameClicked$
+      .pipe(untilDestroyed(this))
+      .subscribe(() => {
+        this.tabIndex = SidebarTabs.DATA_LAYERS;
+      });
+
+    this.planState.currentPlanWorkspaceId$
+      .pipe(untilDestroyed(this))
+      .subscribe((workspaceId) => {
+        if (workspaceId === null) {
+          this.workspaceState.resetWorkspaceId();
+        } else {
+          this.workspaceState.setWorkspaceId(workspaceId);
         }
       });
 
@@ -120,6 +141,22 @@ export class ExploreComponent implements OnDestroy, OnInit {
 
   ngOnInit() {
     const scenarioId = this.route.snapshot.data['scenarioId'];
+
+    // Narrowed to the planning area under DATA_ORGANIZATION. Otherwise reload
+    // unfiltered in case another view left the module filtered.
+    this.planState.currentPlanOrNull$
+      .pipe(
+        distinctUntilChanged((a, b) => a?.id === b?.id),
+        switchMap((plan) =>
+          this.mapModuleService
+            .loadMapModule(
+              this.dataOrganizationEnabled ? plan?.geometry : undefined
+            )
+            .pipe(catchError(() => EMPTY))
+        ),
+        untilDestroyed(this)
+      )
+      .subscribe();
 
     this.planState.currentPlanId$
       .pipe(

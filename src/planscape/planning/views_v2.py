@@ -38,9 +38,11 @@ from funding_report.services import (
     calculate_funding_report_flame_length_reduction,
     merge_aet_improvement_into_results,
 )
+from core.flags import feature_enabled
 from funding_report.tasks import (
     async_generate_funding_report_geopackage,
     run_funding_opportunity_report,
+    run_funding_opportunity_report_with_burn_emmulator,
     send_funding_opportunity_report_shared_link,
 )
 from modules.base import compute_scenario_capabilities
@@ -91,6 +93,7 @@ from planning.serializers import (
     ScenarioV2Serializer,
     ScenarioV3Serializer,
     SubUnitsDetailsParamsSerializer,
+    TreatableStandsSerializer,
     TreatmentGoalSerializer,
     UpdatePlanningAreaSerializer,
     UploadedScenarioDataSerializer,
@@ -107,6 +110,7 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
     get_available_stands,
+    get_forsys_input_stands,
     get_scenario_configuration_details,
     get_sub_units_details,
     is_project_areas_child,
@@ -455,14 +459,12 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @extend_schema(description="Clone a scenario by id")
     @action(methods=["POST"], detail=True, url_path="clone")
     def clone(self, request, pk=None):
-        source = self.get_object()  
+        source = self.get_object()
 
         name = request.data.get("name")
 
         new_scenario = clone_scenario(
-            original_scenario_id=source.pk,
-            user=request.user,
-            name=name
+            original_scenario_id=source.pk, user=request.user, name=name
         )
 
         out = ScenarioV3Serializer(
@@ -602,7 +604,10 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             "funding_report.report.created", report, actor=request.user
         )
 
-        run_funding_opportunity_report.delay(report.pk)
+        if feature_enabled("FOR_WITH_BURN_EMULATOR"):
+            run_funding_opportunity_report_with_burn_emmulator.delay(report.pk)
+        else:
+            run_funding_opportunity_report.delay(report.pk)
         track_event(
             name="planning.funding_report.run",
             properties={
@@ -850,7 +855,10 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         },
     )
     @action(
-        methods=["get"], detail=True, url_path="download-geopackage", filterset_class=None
+        methods=["get"],
+        detail=True,
+        url_path="download-geopackage",
+        filterset_class=None,
     )
     def download_geopackage(self, request, pk=None):
         scenario = self.get_object()
@@ -1020,6 +1028,41 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         out_serializer = AvailableStandsSerializer(instance=result)
         return Response(
             out_serializer.data,
+            status=status.HTTP_200_OK,
+        )
+
+    @extend_schema(
+        description=(
+            "Return the stand IDs saved in a "
+            "scenario's ForSys inputs, together "
+            "with their count and acreage."
+        ),
+        responses={200: TreatableStandsSerializer},
+    )
+    @action(
+        methods=["get"],
+        detail=True,
+        url_path="treatable-stands",
+        serializer_class=TreatableStandsSerializer,
+    )
+    def treatable_stands(self, request, pk=None):
+        scenario = self.get_object()
+
+        result = get_forsys_input_stands(scenario)
+
+        if result is None:
+            return Response(
+                {
+                    "detail": (
+                        "ForSys input stands are not available for this scenario."
+                    )
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        serializer = TreatableStandsSerializer(instance=result)
+        return Response(
+            serializer.data,
             status=status.HTTP_200_OK,
         )
 

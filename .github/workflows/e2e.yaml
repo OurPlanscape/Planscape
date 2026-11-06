@@ -9,7 +9,7 @@ on:
 
 jobs:
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
 
     steps:
@@ -91,7 +91,7 @@ jobs:
         run: npx playwright test
 
       - name: Generate test summary
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && hashFiles('src/interface/e2e-results.json') != '' }}
         working-directory: src/interface
         run: |
           node -e "
