@@ -5,7 +5,7 @@ from datasets.models import DataLayer
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Centroid, Transform
 from django.contrib.gis.geos import MultiPolygon, Polygon
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Subquery
 from django_stubs_ext.db.models import TypedModelMeta
 
 
@@ -76,6 +76,17 @@ class StandQuerySet(models.QuerySet):
         if not geometry.valid:
             raise ValueError("Invalid geometry")
 
+        return self.within_geometry(geometry, size)
+
+    def within_geometry(
+        self,
+        geometry: Union[Polygon, MultiPolygon, Subquery],
+        size: StandSizeChoices,
+    ) -> "QuerySet[Stand]":
+        """
+        Same as `within_polygon`, but also accepts a subquery, so the database
+        reads the geometry instead of receiving it with every query.
+        """
         return (
             self.filter(geometry__bboverlaps=geometry)
             .annotate(centroid=Centroid("geometry"))

@@ -16,6 +16,7 @@ from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import connection
 from django.test import TestCase, override_settings
+from django.test.utils import CaptureQueriesContext
 from fiona.crs import to_string
 from stands.models import Stand, StandSizeChoices
 from stands.services import calculate_stand_vector_stats_with_stand_list
@@ -1437,6 +1438,66 @@ class TestRemoveExcludes(TestCase):
         )
 
         self.assertEqual(0, len(result["unavailable"]["by_thresholds"]))
+
+    def _setup_treatable_area_with_constraints(self):
+        avg_datalayer = DataLayerFactory.create(
+            type=DataLayerType.RASTER,
+            metadata={"modules": {"forsys": {"enabled": True}}},
+        )
+        min_datalayer = DataLayerFactory.create(
+            type=DataLayerType.RASTER,
+            metadata={"modules": {"forsys": {"enabled": True, "metric_column": "min"}}},
+        )
+        for i, stand in enumerate(self.stands):
+            StandMetricFactory.create(stand=stand, datalayer=avg_datalayer, avg=i)
+            StandMetricFactory.create(stand=stand, datalayer=min_datalayer, min=i % 4)
+        extent = MultiPolygon(
+            [stand.geometry for stand in self.stands[:8]], srid=4269
+        ).extent
+        self.scenario.treatable_area = MultiPolygon(
+            Polygon.from_bbox(extent), srid=4269
+        )
+        self.scenario.save(update_fields=["treatable_area"])
+        return {
+            "stand_size": StandSizeChoices.LARGE,
+            "excludes": [self.datalayer],
+            "constraints": [
+                {"datalayer": avg_datalayer, "operator": "lte", "value": 12},
+                {"datalayer": min_datalayer, "operator": "gte", "value": 1},
+            ],
+        }
+
+    @override_settings(FEATURE_FLAGS="ADD_INCLUDES")
+    def test_get_available_stands_with_treatable_area(self):
+        kwargs = self._setup_treatable_area_with_constraints()
+        result = get_available_stands(self.scenario, **kwargs)
+
+        index_by_id = {stand.id: i for i, stand in enumerate(self.stands)}
+        unavailable = result["unavailable"]
+        self.assertEqual(
+            [0, 1, 2, 3, 4, 5, 7, 8, 9],
+            sorted(index_by_id[i] for i in unavailable["by_exclusions"]),
+        )
+        self.assertEqual(
+            [0, 4, 8, 12, 13],
+            sorted(index_by_id[i] for i in unavailable["by_thresholds"]),
+        )
+        summary = result["summary"]
+        self.assertAlmostEqual(7118.095268765973, summary["total_area"])
+        self.assertAlmostEqual(1779.5074267977302, summary["available_area"])
+        self.assertAlmostEqual(593.0808673452595, summary["treatable_area"])
+        self.assertAlmostEqual(6525.0144014207135, summary["unavailable_area"])
+        self.assertEqual(1, summary["treatable_stand_count"])
+
+    @override_settings(FEATURE_FLAGS="ADD_INCLUDES")
+    def test_get_available_stands_does_not_send_geometry_in_queries(self):
+        kwargs = self._setup_treatable_area_with_constraints()
+        with CaptureQueriesContext(connection) as context:
+            get_available_stands(self.scenario, **kwargs)
+
+        geometry_hex = self.scenario.treatable_area.ewkb.hex()
+        for query in context.captured_queries:
+            self.assertNotIn(geometry_hex, query["sql"].lower())
 
 
 class ValidateScenarioConfigurationTest(TestCase):
