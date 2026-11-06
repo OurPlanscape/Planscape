@@ -44,6 +44,7 @@ from funding_report.services import (
     build_project_area_features,
     calculate_aet_improvement,
     calculate_biomass_volumes,
+    calculate_burn_simulation_results,
     calculate_funding_report_flame_length_reduction,
     calculate_pixel_deltas,
     calculate_project_area_aet_improvement,
@@ -1723,3 +1724,70 @@ class GenerateBurnSimulationDatalayerTest(TestCase):
             generate_burn_simulation_datalayer(self.report, "gs://burn-output/a.tif")
         self.extract.assert_not_called()
         self.reproject.assert_not_called()
+
+
+class CalculateBurnSimulationResultsTest(TestCase):
+    NODATA = -9999
+
+    def setUp(self):
+        tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp_dir.cleanup)
+        self.raster_path = Path(tmp_dir.name) / "burn.tif"
+        profile = dict(
+            driver="GTiff",
+            height=3,
+            width=3,
+            count=1,
+            crs="EPSG:3857",
+            transform=from_origin(-13_400_000, 4_600_000, 100, 100),
+            nodata=self.NODATA,
+            dtype=np.float32,
+        )
+        # 4 pixels > 0, 3 zero, 2 nodata -> 4 / 9 of the planning area
+        values = np.array(
+            [[0, 5, self.NODATA], [1, 0, 2], [self.NODATA, 0, 3]],
+            dtype=np.float32,
+        )
+        with rasterio.open(self.raster_path, "w", **profile) as dst:
+            dst.write(values, 1)
+
+        self.datalayer = DataLayerFactory.create(
+            type=DataLayerType.RASTER, url=str(self.raster_path)
+        )
+
+    def _report(self, geometry):
+        planning_area = PlanningAreaFactory.create(
+            with_stands=False, geometry=geometry
+        )
+        scenario = ScenarioFactory.create(planning_area=planning_area)
+        return FundingOpportunityReport.objects.create(
+            scenario=scenario, created_by=scenario.user
+        )
+
+    def test_scales_planning_area_acres_by_burned_pixel_ratio(self):
+        geometry = raster_bounds_geometry(self.raster_path)
+        report = self._report(geometry)
+
+        results = calculate_burn_simulation_results(report, self.datalayer)
+
+        planning_area_acres = get_acreage(geometry)
+        self.assertEqual(results["total_pixels"], 9)
+        self.assertEqual(results["burned_pixels"], 4)
+        self.assertAlmostEqual(results["planning_area_acres"], planning_area_acres)
+        self.assertAlmostEqual(
+            results["catastrophic_wildfire_reduction_percent"], 4 / 9 * 100
+        )
+        self.assertAlmostEqual(
+            results["catastrophic_wildfire_reduction_acres"],
+            planning_area_acres * 4 / 9,
+        )
+
+    def test_planning_area_outside_raster_returns_zero(self):
+        geometry = MultiPolygon(Polygon.from_bbox((-100, 30, -99, 31)), srid=4269)
+        report = self._report(geometry)
+
+        results = calculate_burn_simulation_results(report, self.datalayer)
+
+        self.assertEqual(results["total_pixels"], 0)
+        self.assertEqual(results["burned_pixels"], 0)
+        self.assertEqual(results["catastrophic_wildfire_reduction_acres"], 0.0)
