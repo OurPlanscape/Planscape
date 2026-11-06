@@ -62,6 +62,8 @@ TREATMENT_VARIABLE = "TREATMENT"
 TREATMENT_ROLE = "treatment"
 TREATMENT_CLIP_ROLE = "treatment_clip"
 BURN_SIMULATION_ROLE = "burn_simulation"
+# Band of the burn-emulator output that becomes the burn simulation datalayer.
+BURN_SIMULATION_BAND = 3
 
 BIOMASS_VARIABLE = "BIOMASS"
 

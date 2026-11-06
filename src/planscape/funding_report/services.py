@@ -32,7 +32,7 @@ from gis.core import fetch_geometry_type, get_layer_info, with_vsi_prefix
 from gis.geometry import maybe_transform
 from gis.info import get_gdal_env
 from gis.io import detect_mimetype
-from gis.rasters import to_cog_streaming, to_planscape_streaming
+from gis.rasters import extract_band, to_cog_streaming, to_planscape_streaming
 from planning.models import GeoPackageStatus, ProjectArea, Scenario
 from planning.services import get_acreage, map_property_for_numeric_export
 from pyproj import Geod, Transformer
@@ -44,6 +44,7 @@ from utils.geometry import to_multi
 from funding_report.events import publish_report_event
 from funding_report.models import (
     BIOMASS_VARIABLE,
+    BURN_SIMULATION_BAND,
     BURN_SIMULATION_ROLE,
     FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
     FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
@@ -888,8 +889,9 @@ def generate_aet_clip_datalayer(report: FundingOpportunityReport) -> DataLayer:
 def generate_burn_simulation_datalayer(
     report: FundingOpportunityReport, output_path: str
 ) -> DataLayer:
-    """Reproject the burn emulator output to Planscape's CRS (as a COG) in
-    Planscape's bucket and register it.
+    """Extract the burn band from the multi-band burn emulator output,
+    reproject it to Planscape's CRS (as a COG) in Planscape's bucket and
+    register it.
 
     Replaces the scenario's previous burn layer. The caller links the new layer
     to the report and starts its post-processing.
@@ -911,11 +913,18 @@ def generate_burn_simulation_datalayer(
         original_name=original_name,
         mimetype="image/tiff",
     )
-    # The emulator writes EPSG:5070; Planscape rasters must be EPSG:3857 COGs.
-    to_planscape_streaming(
-        input_file=with_vsi_prefix(output_path),
-        output_file=storage_path or storage_url,
-    )
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        band_file = str(Path(tmp_dir) / "burn_band.tif")
+        extract_band(
+            input_file=with_vsi_prefix(output_path),
+            output_file=band_file,
+            band=BURN_SIMULATION_BAND,
+        )
+        # The emulator writes EPSG:5070; Planscape rasters must be EPSG:3857 COGs.
+        to_planscape_streaming(
+            input_file=band_file,
+            output_file=storage_path or storage_url,
+        )
 
     vsi_output = with_vsi_prefix(storage_url)
     layer_type, layer_info = get_layer_info(input_file=vsi_output)
