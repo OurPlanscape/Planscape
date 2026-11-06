@@ -7,13 +7,13 @@ import {
   LayerComponent,
   MapComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { AuthService } from '@services';
+import { AuthService, ScenarioService } from '@services';
 import { ModuleService } from '@app/services/module.service';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import { addRequestHeaders, getBoundsFromGeometry } from '../maplibre.helper';
 import { MapConfigState } from '../map-config.state';
 import { PlanningAreaLayerComponent } from '@maplibre-map/planning-area-layer/planning-area-layer.component';
-import { combineLatest, map, mergeMap, of, switchMap, tap } from 'rxjs';
+import { combineLatest, distinctUntilChanged, filter, map, mergeMap, of, shareReplay, switchMap, tap } from 'rxjs';
 import { isPlanningApproachSubUnits } from '@scenario/scenario-helper';
 import { MapNavbarComponent } from '@maplibre-map/map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
@@ -90,7 +90,8 @@ export class ScenarioMapComponent implements OnDestroy {
     private mapConfigService: MapConfigService,
     private newScenarioState: NewScenarioState,
     private moduleService: ModuleService,
-    private baseLayersStateService: BaseLayersStateService
+    private baseLayersStateService: BaseLayersStateService,
+    private scenarioService: ScenarioService,
   ) {
     this.mapConfigService.initialize();
   }
@@ -165,13 +166,27 @@ export class ScenarioMapComponent implements OnDestroy {
     this.scenarioState.hasScenarioCompleted$,
     this.scenarioState.currentScenario$,
   ]).pipe(
-    map(
-      ([hasCompleted, scenario]) =>
-        hasCompleted &&
-        !!scenario.planning_approach &&
-        !isPlanningApproachSubUnits(scenario.planning_approach)
-    )
+    map(([hasCompleted, scenario]) => this.hasTreatableStands(hasCompleted, scenario))
   );
+
+  allTreatableStandsData$ = combineLatest([
+    this.scenarioState.hasScenarioCompleted$,
+    this.scenarioState.currentScenario$,
+  ]).pipe(
+    filter(([hasCompleted, scenario]) => this.hasTreatableStands(hasCompleted, scenario)),
+    map(([, scenario]) => scenario.id),
+    distinctUntilChanged(),
+    switchMap(id => this.scenarioService.getAllTreatableStands(id)),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
+
+  private hasTreatableStands(hasCompleted: boolean, scenario: Scenario | null): boolean {
+    return (
+      hasCompleted &&
+      !!scenario?.planning_approach &&
+      !isPlanningApproachSubUnits(scenario.planning_approach)
+    );
+  }
 
   // We are showing treated stands if the scenario is completed and we have subunits
   showTreatedStands$ = combineLatest([

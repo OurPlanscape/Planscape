@@ -112,9 +112,11 @@
   </mgl-control>
 
   <mgl-control position="top-right" *ngIf="hasScenarioCompleted$ | async">
+    <ng-container *ngIf="allTreatableStandsData$ | async as treatableStandsData">
     <app-all-treatable-stands-legend
     *ngIf="showAllTreatableStands$ | async"
-    [totalAcres]="21389271"></app-all-treatable-stands-legend>
+    [totalAcres]="treatableStandsData.total_area_acres"></app-all-treatable-stands-legend>
+    </ng-container>
   </mgl-control>
 
 </mgl-map>
