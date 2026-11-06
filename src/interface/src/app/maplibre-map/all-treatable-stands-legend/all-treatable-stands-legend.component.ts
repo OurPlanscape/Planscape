@@ -1,9 +1,10 @@
+import { DecimalPipe } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-all-treatable-stands-legend',
   standalone: true,
-  imports: [],
+  imports: [DecimalPipe],
   templateUrl: './all-treatable-stands-legend.component.html',
   styleUrl: './all-treatable-stands-legend.component.scss',
 })

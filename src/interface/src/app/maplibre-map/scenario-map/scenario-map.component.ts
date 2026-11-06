@@ -40,6 +40,7 @@ import { TreatedStandsToggleComponent } from '../treated-stands-toggle/treated-s
 import { TreatedStandsComponent } from '../treated-stands/treated-stands.component';
 import { AllTreatableStandsToggleComponent } from '../all-treatable-stands-toggle/all-treatable-stands-toggle.component';
 import { AllTreatableStandsComponent } from '../all-treatable-stands/all-treatable-stands.component';
+import { AllTreatableStandsLegendComponent } from '../all-treatable-stands-legend/all-treatable-stands-legend.component';
 
 @UntilDestroy()
 @Component({
@@ -48,6 +49,7 @@ import { AllTreatableStandsComponent } from '../all-treatable-stands/all-treatab
   imports: [
     AllTreatableStandsComponent,
     AllTreatableStandsToggleComponent,
+    AllTreatableStandsLegendComponent,
     CommonModule,
     MapComponent,
     MapNavbarComponent,
@@ -119,6 +121,8 @@ export class ScenarioMapComponent implements OnDestroy {
       );
     })
   );
+
+  hasScenarioCompleted$ = this.scenarioState.hasScenarioCompleted$;
 
   hasParent$ = this.scenarioState.currentScenario$.pipe(
     map((scenario) => !!scenario?.parent)

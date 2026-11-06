@@ -108,6 +108,13 @@
   <mgl-control position="top-right" *ngIf="showScenarioStands$ | async">
     <app-scenario-legend></app-scenario-legend>
   </mgl-control>
+
+  <mgl-control position="top-right" *ngIf="hasScenarioCompleted$ | async">
+    <app-all-treatable-stands-legend
+    *ngIf="showAllTreatableStands$ | async"
+    [totalAcres]="21389271"></app-all-treatable-stands-legend>
+  </mgl-control>
+
 </mgl-map>
 
 <div
