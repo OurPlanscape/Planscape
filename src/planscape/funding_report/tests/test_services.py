@@ -1650,8 +1650,8 @@ class GenerateBurnSimulationDatalayerTest(TestCase):
                 }
             },
         )
-        self.copy = self.enterContext(
-            mock.patch("funding_report.services.copy_file")
+        self.reproject = self.enterContext(
+            mock.patch("funding_report.services.to_planscape_streaming")
         )
         info = {"bounds": [-121.0, 38.0, -120.0, 39.0], "crs": "EPSG:4326"}
         self.enterContext(
@@ -1666,13 +1666,14 @@ class GenerateBurnSimulationDatalayerTest(TestCase):
             )
         )
 
-    def test_copies_output_and_registers_raster(self):
+    def test_reprojects_output_and_registers_raster(self):
         datalayer = generate_burn_simulation_datalayer(
             self.report, "gs://burn-output/job/output.tif"
         )
 
-        self.copy.assert_called_once_with(
-            "gs://burn-output/job/output.tif", datalayer.url
+        self.reproject.assert_called_once_with(
+            input_file="/vsigs/burn-output/job/output.tif",
+            output_file=datalayer.url,
         )
         self.assertEqual(
             datalayer.url,
@@ -1711,4 +1712,4 @@ class GenerateBurnSimulationDatalayerTest(TestCase):
         self.treatment.delete()
         with self.assertRaises(ValueError):
             generate_burn_simulation_datalayer(self.report, "gs://burn-output/a.tif")
-        self.copy.assert_not_called()
+        self.reproject.assert_not_called()
