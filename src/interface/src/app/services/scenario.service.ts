@@ -276,13 +276,4 @@ export class ScenarioService {
       params: params,
     });
   }
-
-  getAllTreatableStands(scenarioId: number) {
-    const url =
-      environment.backend_endpoint +
-      `/v2/scenarios/${scenarioId}/treatable-stands/`;
-    return this.http.get<TreatableStandsDetails>(url, {
-      withCredentials: true,
-    });
-  }
 }
