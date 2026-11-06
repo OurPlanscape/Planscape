@@ -11,7 +11,7 @@ from uuid import uuid4
 import fiona
 import numpy as np
 import rasterio
-from core.gcs import copy_file
+from core.flags import feature_enabled
 from datasets.models import (
     DataLayer,
     DataLayerHasStyle,
@@ -21,7 +21,6 @@ from datasets.models import (
 )
 from datasets.services import (
     geometry_from_info,
-    get_storage_url,
     get_storage_url_and_path,
 )
 from django.conf import settings
@@ -33,7 +32,7 @@ from gis.core import fetch_geometry_type, get_layer_info, with_vsi_prefix
 from gis.geometry import maybe_transform
 from gis.info import get_gdal_env
 from gis.io import detect_mimetype
-from gis.rasters import to_cog_streaming
+from gis.rasters import to_cog_streaming, to_planscape_streaming
 from planning.models import GeoPackageStatus, ProjectArea, Scenario
 from planning.services import get_acreage, map_property_for_numeric_export
 from pyproj import Geod, Transformer
@@ -889,7 +888,8 @@ def generate_aet_clip_datalayer(report: FundingOpportunityReport) -> DataLayer:
 def generate_burn_simulation_datalayer(
     report: FundingOpportunityReport, output_path: str
 ) -> DataLayer:
-    """Copy the burn emulator output into Planscape's bucket and register it.
+    """Reproject the burn emulator output to Planscape's CRS (as a COG) in
+    Planscape's bucket and register it.
 
     Replaces the scenario's previous burn layer. The caller links the new layer
     to the report and starts its post-processing.
@@ -905,13 +905,17 @@ def generate_burn_simulation_datalayer(
     organization = source.organization
     uuid_value = str(uuid4())
     original_name = f"funding_report_burn_simulation_scenario_{scenario.pk}.tif"
-    storage_url = get_storage_url(
+    storage_url, storage_path = get_storage_url_and_path(
         organization_id=organization.pk,
         uuid=uuid_value,
         original_name=original_name,
         mimetype="image/tiff",
     )
-    copy_file(output_path, storage_url)
+    # The emulator writes EPSG:5070; Planscape rasters must be EPSG:3857 COGs.
+    to_planscape_streaming(
+        input_file=with_vsi_prefix(output_path),
+        output_file=storage_path or storage_url,
+    )
 
     vsi_output = with_vsi_prefix(storage_url)
     layer_type, layer_info = get_layer_info(input_file=vsi_output)
@@ -1527,15 +1531,42 @@ def export_project_areas_results_to_geopackage(
         raise e
 
 
-def export_treatment_raster_to_geopackage(
-    report: FundingOpportunityReport, geopackage_path: Path
+def _set_gpkg_raster_nodata(
+    dst: rasterio.io.DatasetWriter, nodata: Optional[float], raster_table: str
 ) -> None:
-    datalayer = report.treatment_datalayer
+    """
+    GDAL's GPKG driver drops a creation-time nodata for non-Byte rasters
+    (gpkg_2d_gridded_coverage_ancillary.data_null stays NULL), so nodata is set
+    on the open dataset instead. GDAL may report a failure while still storing
+    the value, so the stored value is verified instead of trusting the error.
+    """
+    if nodata is None:
+        return
+    try:
+        dst.nodata = nodata
+    except ValueError:
+        pass
+    if dst.nodata != nodata:
+        log.warning(
+            "Could not set nodata %s on %s geopackage raster layer.",
+            nodata,
+            raster_table,
+        )
+
+
+def _export_raster_datalayer_to_geopackage(
+    report: FundingOpportunityReport,
+    datalayer: Optional[DataLayer],
+    raster_table: str,
+    geopackage_path: Path,
+) -> None:
     if datalayer is None or not datalayer.url:
         log.warning(
-            "Funding report %s has no treatment datalayer. Skipping treatment_clip "
+            "Funding report %s has no datalayer for %s. Skipping %s "
             "geopackage raster layer.",
             report.pk,
+            raster_table,
+            raster_table,
         )
         return
 
@@ -1551,31 +1582,49 @@ def export_treatment_raster_to_geopackage(
                     "dtype": src.dtypes[0],
                     "crs": src.crs,
                     "transform": src.transform,
-                    "nodata": src.nodata,
                 }
+                nodata = src.nodata
 
         with rasterio.open(
             str(geopackage_path),
             "w",
-            RASTER_TABLE="treatment_clip",
+            RASTER_TABLE=raster_table,
             APPEND_SUBDATASET="YES",
             **profile,
         ) as dst:
             dst.write(data)
+            _set_gpkg_raster_nodata(dst, nodata, raster_table)
     except Exception as e:
         log.exception(
-            "Error exporting treatment raster for funding report %s to geopackage: %s",
+            "Error exporting %s raster for funding report %s to geopackage: %s",
+            raster_table,
             report.pk,
             e,
         )
         raise e
 
 
+def export_treatment_raster_to_geopackage(
+    report: FundingOpportunityReport, geopackage_path: Path
+) -> None:
+    _export_raster_datalayer_to_geopackage(
+        report, report.treatment_datalayer, "treatment_clip", geopackage_path
+    )
+
+
+def export_burn_simulation_raster_to_geopackage(
+    report: FundingOpportunityReport, geopackage_path: Path
+) -> None:
+    _export_raster_datalayer_to_geopackage(
+        report, report.burn_simulation_datalayer, "burn_simulation", geopackage_path
+    )
+
+
 def export_funding_report_to_geopackage(
     report: FundingOpportunityReport,
 ) -> Optional[str]:
     report = FundingOpportunityReport.objects.select_related(
-        "scenario__planning_area", "treatment_datalayer"
+        "scenario__planning_area", "treatment_datalayer", "burn_simulation_datalayer"
     ).get(pk=report.pk)
     try:
         report.geopackage_status = GeoPackageStatus.PROCESSING
@@ -1595,6 +1644,8 @@ def export_funding_report_to_geopackage(
         export_planning_area_results_to_geopackage(report, temp_file)
         export_project_areas_results_to_geopackage(report, temp_file)
         export_treatment_raster_to_geopackage(report, temp_file)
+        if feature_enabled("FOR_WITH_BURN_EMULATOR"):
+            export_burn_simulation_raster_to_geopackage(report, temp_file)
 
         object_name = f"{settings.GEOPACKAGES_FOLDER}/funding_report_{report.pk}.gpkg"
         if settings.PROVIDER == "gcp":

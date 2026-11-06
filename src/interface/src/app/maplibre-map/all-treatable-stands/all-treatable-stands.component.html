@@ -1,21 +1,21 @@
 <mgl-vector-source
-  id="scenarioProjectAreasLayer"
+  id="allTreatableStandsLayer"
   [tiles]="[vectorLayer]"
   promoteId="id">
 </mgl-vector-source>
 
 <mgl-layer
-  id="projectAreasFill"
+  id="treatableStandsFill"
   type="fill"
-  source="scenarioProjectAreasLayer"
+  source="allTreatableStandsLayer"
   [sourceLayer]="martinSource.sources.treatableStandsByScenario"
   [paint]="standPaint">
 </mgl-layer>
 
 <mgl-layer
-  id="projectAreasOutline"
+  id="treatableStandsOutline"
   type="line"
-  source="scenarioProjectAreasLayer"
+  source="allTreatableStandsLayer"
   [sourceLayer]="martinSource.sources.treatableStandsByScenario"
   [paint]="standOutlinePaint">
 </mgl-layer>

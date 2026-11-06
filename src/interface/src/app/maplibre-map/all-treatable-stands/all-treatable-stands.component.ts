@@ -15,7 +15,6 @@ import { Map as MapLibreMap } from 'maplibre-gl';
   standalone: true,
   imports: [LayerComponent, VectorSourceComponent],
   templateUrl: './all-treatable-stands.component.html',
-  styleUrl: './all-treatable-stands.component.scss',
 })
 export class AllTreatableStandsComponent {
   @Input() mapLibreMap!: MapLibreMap;
