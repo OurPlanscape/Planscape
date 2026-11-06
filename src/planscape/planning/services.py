@@ -2329,21 +2329,39 @@ def get_available_stand_ids(
     return list(stand_ids)
 
 
+def get_eligible_stand_ids(scenario: Scenario) -> list[int]:
+    forsys_input = scenario.forsys_input or {}
+    original_ids = forsys_input.get("stand_ids")
+
+    if not isinstance(original_ids, list):
+        raise ValueError("ForSys input stands are missing.")
+
+    constraints = [
+        {
+            **constraint,
+            "datalayer": DataLayer.objects.get(pk=constraint["datalayer"]),
+        }
+        for constraint in ((scenario.configuration or {}).get("constraints") or [])
+    ]
+
+    unavailable = get_available_stands(
+        scenario,
+        stand_size=scenario.get_stand_size(),
+        constraints=constraints,
+    )["unavailable"]
+
+    return sorted(set(original_ids) - set(unavailable["by_thresholds"]))
+
+
 def get_forsys_input_stands(
     scenario: Scenario,
 ) -> dict[str, Any] | None:
-    completed_statuses = {
-        ScenarioResultStatus.SUCCESS,
-        ScenarioResultStatus.FAILURE,
-        ScenarioResultStatus.PANIC,
-        ScenarioResultStatus.TIMED_OUT,
-    }
 
-    if scenario.result_status not in completed_statuses:
+    if scenario.result_status != ScenarioResultStatus.SUCCESS:
         return None
 
     forsys_input = scenario.forsys_input or {}
-    stand_ids = forsys_input.get("stand_ids")
+    stand_ids = forsys_input.get("eligible_stand_ids")
 
     if not isinstance(stand_ids, list):
         return None
