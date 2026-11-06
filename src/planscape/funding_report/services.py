@@ -12,7 +12,6 @@ import fiona
 import numpy as np
 import rasterio
 from core.flags import feature_enabled
-from core.gcs import copy_file
 from datasets.models import (
     DataLayer,
     DataLayerHasStyle,
@@ -22,7 +21,6 @@ from datasets.models import (
 )
 from datasets.services import (
     geometry_from_info,
-    get_storage_url,
     get_storage_url_and_path,
 )
 from django.conf import settings
@@ -34,7 +32,7 @@ from gis.core import fetch_geometry_type, get_layer_info, with_vsi_prefix
 from gis.geometry import maybe_transform
 from gis.info import get_gdal_env
 from gis.io import detect_mimetype
-from gis.rasters import to_cog_streaming
+from gis.rasters import to_cog_streaming, to_planscape_streaming
 from planning.models import GeoPackageStatus, ProjectArea, Scenario
 from planning.services import get_acreage, map_property_for_numeric_export
 from pyproj import Geod, Transformer
@@ -890,7 +888,8 @@ def generate_aet_clip_datalayer(report: FundingOpportunityReport) -> DataLayer:
 def generate_burn_simulation_datalayer(
     report: FundingOpportunityReport, output_path: str
 ) -> DataLayer:
-    """Copy the burn emulator output into Planscape's bucket and register it.
+    """Reproject the burn emulator output to Planscape's CRS (as a COG) in
+    Planscape's bucket and register it.
 
     Replaces the scenario's previous burn layer. The caller links the new layer
     to the report and starts its post-processing.
@@ -906,13 +905,17 @@ def generate_burn_simulation_datalayer(
     organization = source.organization
     uuid_value = str(uuid4())
     original_name = f"funding_report_burn_simulation_scenario_{scenario.pk}.tif"
-    storage_url = get_storage_url(
+    storage_url, storage_path = get_storage_url_and_path(
         organization_id=organization.pk,
         uuid=uuid_value,
         original_name=original_name,
         mimetype="image/tiff",
     )
-    copy_file(output_path, storage_url)
+    # The emulator writes EPSG:5070; Planscape rasters must be EPSG:3857 COGs.
+    to_planscape_streaming(
+        input_file=with_vsi_prefix(output_path),
+        output_file=storage_path or storage_url,
+    )
 
     vsi_output = with_vsi_prefix(storage_url)
     layer_type, layer_info = get_layer_info(input_file=vsi_output)
