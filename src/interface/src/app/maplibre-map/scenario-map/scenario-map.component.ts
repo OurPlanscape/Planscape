@@ -38,12 +38,16 @@ import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { StandsComponent } from '../stands/stands.component';
 import { TreatedStandsToggleComponent } from '../treated-stands-toggle/treated-stands-toggle.component';
 import { TreatedStandsComponent } from '../treated-stands/treated-stands.component';
+import { AllTreatableStandsToggleComponent } from '../all-treatable-stands-toggle/all-treatable-stands-toggle.component';
+import { AllTreatableStandsComponent } from '../all-treatable-stands/all-treatable-stands.component';
 
 @UntilDestroy()
 @Component({
   selector: 'app-scenario-map',
   standalone: true,
   imports: [
+    AllTreatableStandsComponent,
+    AllTreatableStandsToggleComponent,
     CommonModule,
     MapComponent,
     MapNavbarComponent,
@@ -153,10 +157,31 @@ export class ScenarioMapComponent implements OnDestroy {
     )
   );
 
+  showAllTreatableStandsToggleOnResults$ = combineLatest([
+    this.scenarioState.hasScenarioCompleted$,
+    this.scenarioState.currentScenario$,
+  ]).pipe(
+    map(
+      ([hasCompleted, scenario]) =>
+        hasCompleted &&
+        !!scenario.planning_approach &&
+        !isPlanningApproachSubUnits(scenario.planning_approach)
+    )
+  );
+
   // We are showing treated stands if the scenario is completed and we have subunits
   showTreatedStands$ = combineLatest([
     this.newScenarioState.displayTreatedStands$,
     this.showSubUnitToggleOnResults$,
+  ]).pipe(
+    map(([displayTreatedStands, showSubUnitsOnResults]) => {
+      return displayTreatedStands && showSubUnitsOnResults;
+    })
+  );
+
+  showAllTreatableStands$ = combineLatest([
+    this.newScenarioState.displayAllTreatableStands$,
+    this.showAllTreatableStandsToggleOnResults$,
   ]).pipe(
     map(([displayTreatedStands, showSubUnitsOnResults]) => {
       return displayTreatedStands && showSubUnitsOnResults;
