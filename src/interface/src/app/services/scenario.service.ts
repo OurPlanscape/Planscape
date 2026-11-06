@@ -10,7 +10,6 @@ import {
   ScenarioConfigurationDetails,
   ScenarioV3Payload,
   SubUnitsDetail,
-  TreatableStandsDetails,
 } from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';

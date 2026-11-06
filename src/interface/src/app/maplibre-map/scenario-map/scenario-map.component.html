@@ -16,9 +16,11 @@
   <app-treated-stands-toggle
     *ngIf="showSubUnitToggleOnResults$ | async"></app-treated-stands-toggle>
 
-  <app-all-treatable-stands-toggle
-    *ngIf="showAllTreatableStandsToggleOnResults$ | async">
-  </app-all-treatable-stands-toggle>
+  <ng-container *appFeatureFlag="'ADV_STAND_LEVEL_CONSTRAINTS'">
+    <app-all-treatable-stands-toggle
+      *ngIf="showAllTreatableStandsToggleOnResults$ | async">
+    </app-all-treatable-stands-toggle>
+  </ng-container>
 </app-map-nav-bar>
 
 <mgl-map
