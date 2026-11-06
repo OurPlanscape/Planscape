@@ -60,5 +60,4 @@ export interface FundingReportDataLayers {
   /** Vector layers (mills) shown as multi-select base layers. */
   biomass: BaseLayer[];
   wildfire_risk_reduction: DataLayer[];
-  burn_simulation_results: DataLayer[];
 }
