@@ -9,7 +9,7 @@ from fiona.transform import transform_geom
 from rasterio.transform import Affine
 from typing import Any, Dict
 
-from gis.rasters import get_profile, warp
+from gis.rasters import extract_band, get_profile, warp
 
 
 def get_geojson_test_features():
@@ -117,3 +117,44 @@ class WarpNodataPropagationTest(SimpleTestCase):
             # untagged 0 that would be indistinguishable from real data.
             self.assertEqual(data[0, 0], -9999.0)
             self.assertEqual(data[data.shape[0] // 2, data.shape[1] // 2], 7.0)
+
+
+class ExtractBandTest(SimpleTestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.input = str(Path(self.tmp.name) / "multi.tif")
+        self.transform = Affine(30.0, 0.0, -2000000.0, 0.0, -30.0, 2000000.0)
+        self.data = np.stack(
+            [np.full((40, 60), value, dtype="float32") for value in (1, 2, 3)]
+        )
+        self.data[2, 0, 0] = -9999
+        with rasterio.open(
+            self.input,
+            "w",
+            driver="GTiff",
+            width=60,
+            height=40,
+            count=3,
+            dtype="float32",
+            crs="EPSG:5070",
+            transform=self.transform,
+            nodata=-9999,
+        ) as dst:
+            dst.write(self.data)
+
+    def test_extracts_single_band(self):
+        output = str(Path(self.tmp.name) / "band3.tif")
+        extract_band(self.input, output, band=3)
+
+        with rasterio.open(output) as src:
+            self.assertEqual(src.count, 1)
+            self.assertEqual(src.crs.to_epsg(), 5070)
+            self.assertEqual(src.transform, self.transform)
+            self.assertEqual(src.nodata, -9999)
+            np.testing.assert_array_equal(src.read(1), self.data[2])
+
+    def test_band_out_of_range(self):
+        output = str(Path(self.tmp.name) / "band4.tif")
+        with self.assertRaises(ValueError):
+            extract_band(self.input, output, band=4)

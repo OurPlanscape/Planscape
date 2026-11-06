@@ -1650,6 +1650,9 @@ class GenerateBurnSimulationDatalayerTest(TestCase):
                 }
             },
         )
+        self.extract = self.enterContext(
+            mock.patch("funding_report.services.extract_band")
+        )
         self.reproject = self.enterContext(
             mock.patch("funding_report.services.to_planscape_streaming")
         )
@@ -1671,8 +1674,14 @@ class GenerateBurnSimulationDatalayerTest(TestCase):
             self.report, "gs://burn-output/job/output.tif"
         )
 
+        self.extract.assert_called_once()
+        extract_kwargs = self.extract.call_args.kwargs
+        self.assertEqual(
+            extract_kwargs["input_file"], "/vsigs/burn-output/job/output.tif"
+        )
+        self.assertEqual(extract_kwargs["band"], 3)
         self.reproject.assert_called_once_with(
-            input_file="/vsigs/burn-output/job/output.tif",
+            input_file=extract_kwargs["output_file"],
             output_file=datalayer.url,
         )
         self.assertEqual(
@@ -1712,4 +1721,5 @@ class GenerateBurnSimulationDatalayerTest(TestCase):
         self.treatment.delete()
         with self.assertRaises(ValueError):
             generate_burn_simulation_datalayer(self.report, "gs://burn-output/a.tif")
+        self.extract.assert_not_called()
         self.reproject.assert_not_called()
