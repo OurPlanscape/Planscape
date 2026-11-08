@@ -2109,24 +2109,58 @@ def get_constrained_stands(
             .get("forsys", {})
             .get("metric_column", "avg")
         )
-    if not operator:
-        metric_filter = f"{metric_column}"
+
+    if usage_type != TreatmentGoalUsageType.THRESHOLD:
+        raise ValueError("Invalid usage_type for get_constrained_stands.")
+
+    metrics = StandMetric.objects.filter(
+        stand_id=OuterRef("pk"),
+        datalayer_id=datalayer.pk,
+    )
+
+    if operator == "btw":
+        values = [v.strip() for v in str(value).split(",")]
+        if len(values) != 2:
+            raise ValueError("Between operator requires two values.")
+
+        lower, upper = sorted(float(v) for v in values)
+        matching_metrics = metrics.filter(**{f"{metric_column}__range": (lower, upper)})
+
+    elif operator in ("in", "nin"):
+        values = [v.strip() for v in str(value).split(",") if v.strip()]
+        if not values:
+            raise ValueError("In operator requires at least one value.")
+
+        lookup = {f"{metric_column}__in": values}
+
+        if operator == "nin":
+            matching_metrics = metrics.filter(
+                **{f"{metric_column}__isnull": False}
+            ).exclude(**lookup)
+        else:
+            matching_metrics = metrics.filter(**lookup)
+
+    elif operator == "dne":
+        matching_metrics = metrics.filter(
+            **{f"{metric_column}__isnull": False}
+        ).exclude(**{f"{metric_column}__exact": value})
+
     else:
-        metric_filter = f"{metric_column}__{operator}"
-    logger.info(f"processing metric_filter {metric_filter} with value {value}")
+        operator_map = {
+            "eq": "exact",
+            "gt": "gt",
+            "gte": "gte",
+            "lt": "lt",
+            "lte": "lte",
+        }
 
-    match usage_type:
-        case TreatmentGoalUsageType.THRESHOLD:
-            metrics = StandMetric.objects.filter(
-                stand_id=OuterRef("pk"),
-                datalayer_id=datalayer.pk,
-                **{metric_filter: value},
-            )
-            stands_qs = stands_qs.exclude(Exists(metrics))
-        case _:
-            raise ValueError("Invalid usage_type for get_constrainted_stands.")
+        lookup = operator_map.get(operator or "eq")
+        if lookup is None:
+            raise ValueError(f"Unsupported operator: {operator}")
 
-    return stands_qs.values_list("id", flat=True)
+        matching_metrics = metrics.filter(**{f"{metric_column}__{lookup}": value})
+
+    return stands_qs.exclude(Exists(matching_metrics)).values_list("id", flat=True)
 
 
 @cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
