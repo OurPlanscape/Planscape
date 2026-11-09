@@ -69,6 +69,13 @@ def clean_text(value: str) -> Optional[str]:
     return value
 
 
+def vintage_date(vintage: str) -> str:
+    # existing metadata stores the vintage as a full date
+    if len(vintage) == 4 and vintage.isdigit():
+        return f"{vintage}-01-01"
+    return vintage
+
+
 def any_or_none(*values: Optional[bool]) -> Optional[bool]:
     known = [value for value in values if value is not None]
     return any(known) if known else None
@@ -139,11 +146,13 @@ def apply_update(metadata: Any, update: Dict[str, Any]) -> Dict[str, Any]:
                     identification[key] = identification_update[key]
             if "units" in identification_update:
                 keywords = get_dict(identification, "keywords")
-                keywords["units"] = {"keywords": [identification_update["units"]]}
-            if "vintage" in identification_update:
-                get_dict(identification, "date")["date"] = identification_update[
-                    "vintage"
+                get_dict(keywords, "units")["keywords"] = [
+                    identification_update["units"]
                 ]
+            if "vintage" in identification_update:
+                get_dict(identification, "date")["date"] = vintage_date(
+                    identification_update["vintage"]
+                )
         if update["learn_more"]:
             download = get_dict(get_dict(source, "distribution"), "download")
             download["url"] = update["learn_more"]
