@@ -158,6 +158,12 @@ def apply_update(metadata: Any, update: Dict[str, Any]) -> Dict[str, Any]:
             download["url"] = update["learn_more"]
             download.setdefault("name", update["data_creator"] or "Source")
 
+    if update["clear_description"]:
+        source = metadata.get("metadata")
+        identification = source.get("identification") if isinstance(source, dict) else None
+        if isinstance(identification, dict) and identification.get("description"):
+            identification["description"] = None
+
     return metadata
 
 
@@ -194,6 +200,12 @@ class Command(BaseCommand):
             default=False,
             action="store_true",
             help="Report what would change without saving.",
+        )
+        parser.add_argument(
+            "--no-description",
+            default=False,
+            action="store_true",
+            help="Set the description of every matched datalayer to null instead of copying it from the CSV.",
         )
 
     def open_csv(self, csv_path: str) -> TextIO:
@@ -274,13 +286,16 @@ class Command(BaseCommand):
             "metric": self.parse_metric(row),
             "category": clean_text(row[CATEGORY]),
             "identification": {
-                "description": clean_text(row[DESCRIPTION]),
+                "description": (
+                    None if self.no_description else clean_text(row[DESCRIPTION])
+                ),
                 "geographicCoverage": clean_text(row[GEOGRAPHIC_COVERAGE]),
                 "units": clean_text(row[UNITS]),
                 "vintage": clean_text(row[VINTAGE]),
             },
             "learn_more": clean_text(row[LEARN_MORE]),
             "data_creator": clean_text(row[DATA_CREATOR]),
+            "clear_description": self.no_description,
         }
 
     def build_mapping(self, rows):
@@ -327,6 +342,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         dry_run: bool = options["dry_run"]
+        self.no_description: bool = options["no_description"]
         mapping, display_names = self.build_mapping(
             self.read_rows(options["csv_path"])
         )
