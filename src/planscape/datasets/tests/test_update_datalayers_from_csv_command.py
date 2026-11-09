@@ -157,6 +157,26 @@ class UpdateDataLayersFromCSVCommandTest(TestCase):
             },
         )
 
+    def test_no_description_sets_descriptions_to_null(self):
+        datalayer = DataLayerFactory.create(
+            name="Annual Burn Probability",
+            metadata={"metadata": {"identification": {"description": "Old"}}},
+        )
+        without_description = DataLayerFactory.create(
+            name="Canopy Height", metadata={"metadata": {"identification": {}}}
+        )
+
+        self._run(no_description=True)
+
+        datalayer.refresh_from_db()
+        without_description.refresh_from_db()
+        identification = datalayer.metadata["metadata"]["identification"]
+        self.assertIsNone(identification["description"])
+        self.assertEqual(identification["geographicCoverage"], "California")
+        self.assertEqual(
+            without_description.metadata["metadata"]["identification"], {}
+        )
+
     def test_assigns_simple_category(self):
         old_category = SimpleCategoryFactory.create(name="Old")
         datalayer = DataLayerFactory.create(
