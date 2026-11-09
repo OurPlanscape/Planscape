@@ -149,6 +149,12 @@ export interface FundingReport {
    * section (the module's water layers are not used there).
    */
   aet_datalayer: number | null;
+  burn_simulation_status?:
+    | 'SUCCESS'
+    | 'EMPTY'
+    | 'PENDING'
+    | 'RUNNING'
+    | 'FAILED';
   burn_simulation_datalayer?: number | null; // optional for backward compatibiity
   burn_simulation_results?: {
     // optional for backward compatibiity
@@ -205,6 +211,12 @@ export interface FundingReportPublic {
   creator: string;
   status: FundingReport['status'];
   results: FundingReportResults | null;
+  burn_simulation_status?:
+    | 'SUCCESS'
+    | 'EMPTY'
+    | 'PENDING'
+    | 'RUNNING'
+    | 'FAILED';
   burn_simulation_datalayer?: number | null; // optional for backward compatibiity
   burn_simulation_results?: {
     // optional for backward compatibiity

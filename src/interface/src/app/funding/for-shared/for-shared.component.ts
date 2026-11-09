@@ -145,6 +145,7 @@ export class ForSharedComponent implements OnInit {
       results: report.results,
       treatment_datalayer: report.treatment_datalayer,
       aet_datalayer: report.aet_datalayer,
+      burn_simulation_status: report.burn_simulation_status,
       burn_simulation_datalayer: report.burn_simulation_datalayer,
       burn_simulation_results: report.burn_simulation_results,
       geopackage_status: report.geopackage_status,

@@ -754,8 +754,13 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  get catastrophicWildfireResults() {
-    return !!this.report.burn_simulation_results;
+  get hasBurnSimulationResults() {
+    // Note: PENDING is the default state on the BE,
+    // so this will be the case for old FoR reports w/o burn results
+    return (
+      !!this.report.burn_simulation_status &&
+      this.report.burn_simulation_status !== 'PENDING'
+    );
   }
 
   get catastrophicFire() {
