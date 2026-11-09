@@ -29,6 +29,8 @@ describe('DynamicDataLayersComponent', () => {
     canEditFavorites$: of(false),
     loadingLayer$: of(false),
     viewedDataLayer$: of(null),
+    selectedDataLayers$: of([]),
+    getMaxSelectedLayers: () => 3,
   } as unknown as DataLayersStateService;
   const mockRegistry = {
     get: jasmine.createSpy('get').and.returnValue(mockStateService),

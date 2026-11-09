@@ -114,6 +114,9 @@ describe('DataLayersStateService', () => {
             get currentWorkspaceIdValue() {
               return currentWorkspaceId;
             },
+            get currentWorkspaceId$() {
+              return of(currentWorkspaceId);
+            },
             get currentWorkspace$() {
               return currentWorkspace$;
             },
@@ -171,6 +174,21 @@ describe('DataLayersStateService', () => {
     service.selectCategory({ id: 20, name: 'Fire', icon: null });
 
     expect(tree!).toEqual([{ name: 'Layer', item: layer }]);
+  });
+
+  // the rail's panel is narrower than the legacy one it replaces
+  describe('the label of the view column', () => {
+    it('is short where the panel is narrow', () => {
+      createService('DATA_ORGANIZATION');
+
+      expect(service.viewColumnLabel).toBe('View');
+    });
+
+    it('spells the column out in the legacy panel', () => {
+      createService();
+
+      expect(service.viewColumnLabel).toBe('View Layer');
+    });
   });
 
   describe('loading$', () => {

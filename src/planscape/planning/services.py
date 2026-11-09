@@ -36,7 +36,7 @@ from django.contrib.gis.db.models.functions import Area, Centroid, Transform
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.contrib.gis.measure import A
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import Exists, OuterRef, QuerySet, Subquery
 from django.db.models.aggregates import Sum
 from django.db.models.functions import Substr
 from django.utils.text import slugify
@@ -2109,25 +2109,58 @@ def get_constrained_stands(
             .get("forsys", {})
             .get("metric_column", "avg")
         )
-    if not operator:
-        metric_filter = f"{metric_column}"
+
+    if usage_type != TreatmentGoalUsageType.THRESHOLD:
+        raise ValueError("Invalid usage_type for get_constrained_stands.")
+
+    metrics = StandMetric.objects.filter(
+        stand_id=OuterRef("pk"),
+        datalayer_id=datalayer.pk,
+    )
+
+    if operator == "btw":
+        values = [v.strip() for v in str(value).split(",")]
+        if len(values) != 2:
+            raise ValueError("Between operator requires two values.")
+
+        lower, upper = sorted(float(v) for v in values)
+        matching_metrics = metrics.filter(**{f"{metric_column}__range": (lower, upper)})
+
+    elif operator in ("in", "nin"):
+        values = [v.strip() for v in str(value).split(",") if v.strip()]
+        if not values:
+            raise ValueError("In operator requires at least one value.")
+
+        lookup = {f"{metric_column}__in": values}
+
+        if operator == "nin":
+            matching_metrics = metrics.filter(
+                **{f"{metric_column}__isnull": False}
+            ).exclude(**lookup)
+        else:
+            matching_metrics = metrics.filter(**lookup)
+
+    elif operator == "dne":
+        matching_metrics = metrics.filter(
+            **{f"{metric_column}__isnull": False}
+        ).exclude(**{f"{metric_column}__exact": value})
+
     else:
-        metric_filter = f"{metric_column}__{operator}"
-    logger.info(f"processing metric_filter {metric_filter} with value {value}")
+        operator_map = {
+            "eq": "exact",
+            "gt": "gt",
+            "gte": "gte",
+            "lt": "lt",
+            "lte": "lte",
+        }
 
-    match usage_type:
-        case TreatmentGoalUsageType.THRESHOLD:
-            metrics = StandMetric.objects.filter(
-                datalayer_id=datalayer.pk,
-                stand_id__in=stands_qs,
-                **{metric_filter: value},
-            )
-            excluded_ids = list(metrics.values_list("stand_id", flat=True))
-            stands_qs = stands_qs.exclude(pk__in=excluded_ids)
-        case _:
-            raise ValueError("Invalid usage_type for get_constrainted_stands.")
+        lookup = operator_map.get(operator or "eq")
+        if lookup is None:
+            raise ValueError(f"Unsupported operator: {operator}")
 
-    return stands_qs.values_list("id", flat=True)
+        matching_metrics = metrics.filter(**{f"{metric_column}__{lookup}": value})
+
+    return stands_qs.exclude(Exists(matching_metrics)).values_list("id", flat=True)
 
 
 @cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
@@ -2180,13 +2213,16 @@ def get_available_stands(
     planning_area = scenario.planning_area
     area_transform = Area(Transform("geometry", settings.AREA_SRID))
     if feature_enabled("ADD_INCLUDES") and scenario.treatable_area is not None:
-        stands = scenario.get_treatable_area_stands(stand_size=stand_size)
+        geometry = Scenario.objects.filter(pk=scenario.pk).values("treatable_area")
     else:
-        stands = planning_area.get_stands(stand_size)
+        geometry = PlanningArea.objects.filter(pk=planning_area.pk).values("geometry")
 
+    # the database reads the geometry, so it is not sent with every query below
+    stands = Stand.objects.within_geometry(Subquery(geometry[:1]), stand_size)
     stands = stands.annotate(area=area_transform)
 
     total_area = stands.aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+    potential_area = total_area
 
     if is_project_areas_child(scenario):
         project_area_stand_ids = get_project_areas_child_stand_ids(
@@ -2194,8 +2230,7 @@ def get_available_stands(
             stand_size=stand_size,
         )
         stands = stands.filter(id__in=project_area_stand_ids)
-
-    potential_area = stands.aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+        potential_area = stands.aggregate(total_area_m2=Sum("area"))["total_area_m2"]
 
     excluded_ids = []
     constrained_ids = []
@@ -2329,21 +2364,39 @@ def get_available_stand_ids(
     return list(stand_ids)
 
 
+def get_eligible_stand_ids(scenario: Scenario) -> list[int]:
+    forsys_input = scenario.forsys_input or {}
+    original_ids = forsys_input.get("stand_ids")
+
+    if not isinstance(original_ids, list):
+        raise ValueError("ForSys input stands are missing.")
+
+    constraints = [
+        {
+            **constraint,
+            "datalayer": DataLayer.objects.get(pk=constraint["datalayer"]),
+        }
+        for constraint in ((scenario.configuration or {}).get("constraints") or [])
+    ]
+
+    unavailable = get_available_stands(
+        scenario,
+        stand_size=scenario.get_stand_size(),
+        constraints=constraints,
+    )["unavailable"]
+
+    return sorted(set(original_ids) - set(unavailable["by_thresholds"]))
+
+
 def get_forsys_input_stands(
     scenario: Scenario,
 ) -> dict[str, Any] | None:
-    completed_statuses = {
-        ScenarioResultStatus.SUCCESS,
-        ScenarioResultStatus.FAILURE,
-        ScenarioResultStatus.PANIC,
-        ScenarioResultStatus.TIMED_OUT,
-    }
 
-    if scenario.result_status not in completed_statuses:
+    if scenario.result_status != ScenarioResultStatus.SUCCESS:
         return None
 
     forsys_input = scenario.forsys_input or {}
-    stand_ids = forsys_input.get("stand_ids")
+    stand_ids = forsys_input.get("eligible_stand_ids")
 
     if not isinstance(stand_ids, list):
         return None

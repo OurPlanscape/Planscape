@@ -293,6 +293,23 @@ export class DataLayersStateService implements OnDestroy {
       shareReplay(1)
     );
 
+  favoritesEnabled$: Observable<boolean> =
+    this.workspaceState.currentWorkspaceId$.pipe(
+      map(
+        (workspaceId) =>
+          workspaceId !== null &&
+          this.featureService.isFeatureEnabled('DATA_ORGANIZATION')
+      ),
+      distinctUntilChanged(),
+      shareReplay(1)
+    );
+
+  get viewColumnLabel(): string {
+    return this.featureService.isFeatureEnabled('DATA_ORGANIZATION')
+      ? 'View'
+      : 'View Layer';
+  }
+
   favoritesEnabled(): boolean {
     return (
       this.featureService.isFeatureEnabled('DATA_ORGANIZATION') &&

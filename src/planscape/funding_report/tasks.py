@@ -41,6 +41,7 @@ from funding_report.services import (
     build_funding_report_results,
     calculate_aet_improvement,
     calculate_biomass_volumes,
+    calculate_burn_simulation_results,
     calculate_project_area_delta,
     calculate_treatment_pixel_areas,
     export_funding_report_to_geopackage,
@@ -728,6 +729,11 @@ def apply_burn_response(
     )
 
 
+def discard_datalayer(datalayer: DataLayer | None) -> None:
+    if datalayer is not None:
+        DataLayer.dead_or_alive.filter(pk=datalayer.pk).delete()
+
+
 def apply_burn_output(
     report_id: int, run_started_at: str, response: dict, expected_job_id=None
 ):
@@ -735,12 +741,17 @@ def apply_burn_output(
 
     Transient failures keep the job running so the next status poll retries.
     """
+    datalayer = None
     try:
         datalayer = generate_burn_simulation_datalayer(
             FundingOpportunityReport(pk=report_id), response["output_path"]
         )
+        results = calculate_burn_simulation_results(
+            FundingOpportunityReport(pk=report_id), datalayer
+        )
     except (NotFound, ValueError) as exc:
         log.exception("Burn output registration failed for report %s", report_id)
+        discard_datalayer(datalayer)
         fail_burn_job(
             report_id, run_started_at, str(exc)[:1000], expected_job_id=expected_job_id
         )
@@ -749,6 +760,7 @@ def apply_burn_output(
         log.exception(
             "Burn output registration will be retried for report %s", report_id
         )
+        discard_datalayer(datalayer)
         update_report_components(
             report_id,
             run_started_at=run_started_at,
@@ -769,9 +781,10 @@ def apply_burn_output(
         burn_simulation_job_id=response["job_id"],
         burn_simulation_response=response,
         burn_simulation_datalayer=datalayer,
+        burn_simulation_results=results,
     )
     if not linked:
-        DataLayer.dead_or_alive.filter(pk=datalayer.pk).delete()
+        discard_datalayer(datalayer)
         return
     transaction.on_commit(
         lambda: datalayer_uploaded.delay(datalayer.pk, status=DataLayerStatus.READY)
