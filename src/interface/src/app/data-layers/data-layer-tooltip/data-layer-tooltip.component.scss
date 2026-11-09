@@ -5,6 +5,8 @@
   padding: 0;
 
   h3.header {
+    @include h4();
+    color: $color-black;
     margin: 0;
     padding: 16px 24px;
     display: flex;
@@ -18,45 +20,50 @@
 
     .layer-name-toggle {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin: 0;
       cursor: pointer;
     }
 
     .layer-name {
-      @include h4();
+      @include small-input-label();
+      font-weight: 600;
       color: $color-black;
-      margin-bottom: 8px;
     }
 
     .description {
       @include small-paragraph();
       color: $color-dark-gray;
-      margin: 0 0 16px;
+      margin: 8px 0 0;
     }
 
     dl {
       display: grid;
-      grid-template-columns: max-content 1fr;
-      gap: 0.5rem 1rem;
+      grid-template-columns: 108px 1fr;
+      gap: 16px;
       align-items: baseline;
       margin: 0;
+
+      &.metadata {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid $color-soft-gray;
+      }
     }
 
-    dt {
-      font-weight: bold;
-    }
-
+    dt,
     dd {
+      @include small-paragraph();
       margin: 0;
     }
 
     dt {
-      @include small-input-label();
       color: $color-dark-gray;
     }
 
     dd {
-      @include small-input-label();
+      font-weight: 500;
       color: $color-black;
     }
   }
@@ -95,7 +102,7 @@
 
 // This is safe because .datalayer-tooltip-panel is a class we added to the menu panel
 ::ng-deep .datalayer-tooltip-panel {
-  min-width: 400px;
+  min-width: 456px;
 
   .mat-mdc-menu-content {
     padding: 0;
