@@ -118,7 +118,16 @@ class UpdateDataLayersFromCSVCommandTest(TestCase):
     def test_writes_descriptive_metadata(self):
         datalayer = DataLayerFactory.create(
             name="Annual Burn Probability",
-            metadata={"metadata": {"identification": {"title": "Burn"}}},
+            metadata={
+                "metadata": {
+                    "identification": {
+                        "title": "Burn",
+                        "keywords": {
+                            "units": {"keywords": ["old"], "keywords_type": "unit"}
+                        },
+                    }
+                }
+            },
         )
 
         self._run()
@@ -131,8 +140,13 @@ class UpdateDataLayersFromCSVCommandTest(TestCase):
                     "title": "Burn",
                     "description": "Burn description",
                     "geographicCoverage": "California",
-                    "keywords": {"units": {"keywords": ["Probability"]}},
-                    "date": {"date": "2020"},
+                    "keywords": {
+                        "units": {
+                            "keywords": ["Probability"],
+                            "keywords_type": "unit",
+                        }
+                    },
+                    "date": {"date": "2020-01-01"},
                 },
                 "distribution": {
                     "download": {
