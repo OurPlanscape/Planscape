@@ -200,7 +200,7 @@
             <app-funding-map-layers
               heading="Map Layers"
               [loading]="loadingSectionLayers"
-              [layers]="sectionLayers['catreduction']"
+              [layers]="sectionLayers['burn_simulation']"
               [selectedLayerId]="viewedLayerId$ | async"
               [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
               (selectedLayer)="onLayerSelected($event)"
@@ -210,26 +210,11 @@
             <div class="stat-cards">
               <div class="stat-card">
                 <div class="stat-value">
-                  {{ catastrophicFire.acresReduced | number: '1.0-1'
+                  {{ catastrophicFire.acresReduced | number: '1.0-0'
                   }}<span class="stat-unit">acres</span>
                 </div>
                 <div class="stat-label">
                   where Catastrophic Wildfire was reduced
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="stat-cards-wrapper">
-            <div class="stat-cards">
-              <div class="stat-card">
-                <div class="stat-label">
-                  Treatment benefits extend an additional
-                  <span class="stat-value-sm"
-                    >{{
-                      catastrophicFire.percentBeyond | number: '1.0-1'
-                    }}%</span
-                  >
-                  beyond the acreage of the project areas
                 </div>
               </div>
             </div>

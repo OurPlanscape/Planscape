@@ -99,6 +99,10 @@ const WATER_DEBOUNCE_MS = 300;
 const AET_LAYER_NAME =
   'Percentage change in water availability after treatment';
 
+/** Display name for the report's Burn Simulation (aka Catastrophic Fire Reduction) data layer. */
+const BURN_SIMULATION_LAYER_NAME =
+  'Catastrophic Wildfire Avoided after Treatment';
+
 interface ChartConfig {
   data: ChartData<'bar'>;
   options: ChartOptions<'bar'>;
@@ -244,6 +248,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   sectionLayers: Record<string, MapLayer[]> = {
     carbon: [],
     wildfire: [],
+    burn_simulation: [],
     cat_reduction: [],
     water: [],
     biomass: [],
@@ -444,6 +449,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
         this.sectionLayers = {
           carbon: this.toMapLayers(datalayers.carbon),
           wildfire: this.toMapLayers(datalayers.wildfire_risk_reduction),
+          burn_simulation: this.burnSimulationLayers(),
           // The water section shows the report's own AET layer (a bare id),
           // not the module's water layers.
           water: this.waterMapLayers(),
@@ -474,6 +480,11 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   private waterMapLayers(): MapLayer[] {
     const id = this.report?.aet_datalayer;
     return id != null ? [{ id, name: AET_LAYER_NAME }] : [];
+  }
+
+  private burnSimulationLayers(): MapLayer[] {
+    const id = this.report?.burn_simulation_datalayer;
+    return id != null ? [{ id, name: BURN_SIMULATION_LAYER_NAME }] : [];
   }
 
   /** Reduce vector base layers to id/name plus the swatch colors for checkboxes. */
@@ -744,17 +755,16 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   get catastrophicWildfireResults() {
-    return true;
+    return !!this.report.burn_simulation_results;
   }
 
   get catastrophicFire() {
-    /// TODO: these are placeholders
-    const acresReduced: number = 18000;
-    const projectAreaAcres: number = 24000;
+    const burnResults = this.report.burn_simulation_results;
 
+    // This may include several attributes in the near future,
+    //  so keeping this as an object for now.
     return {
-      acresReduced: acresReduced,
-      percentBeyond: Math.round((acresReduced / projectAreaAcres) * 100) / 10,
+      acresReduced: burnResults?.catastrophic_wildfire_reduction_acres,
     };
   }
 
