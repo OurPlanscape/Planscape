@@ -41,6 +41,26 @@
           class="side-spinner"
           diameter="20">
         </mat-spinner>
+
+        <ng-container *ngIf="layer.metadata?.['metadata']">
+          <button
+            sg-button
+            variant="icon-only"
+            icon="info"
+            class="info-icon"
+            [outlined]="true"
+            [matMenuTriggerFor]="popoverMenu"
+            #infoTrigger="matMenuTrigger"></button>
+          <mat-menu
+            #popoverMenu="matMenu"
+            class="datalayer-tooltip-panel"
+            [hasBackdrop]="false">
+            <app-data-layer-tooltip
+              [layer]="layer"
+              [showAllData]="false"
+              (closed)="infoTrigger.closeMenu()"></app-data-layer-tooltip>
+          </mat-menu>
+        </ng-container>
         <ng-template #legend>
           <span
             class="base-layer-legend"
@@ -53,22 +73,9 @@
               BASE_LAYERS_DEFAULT.COLOR
             "></span>
         </ng-template>
-        <button
-          *ngIf="layer.metadata?.['metadata']"
-          sg-button
-          variant="icon-only"
-          icon="info"
-          class="info-icon"
-          [outlined]="true"
-          [matMenuTriggerFor]="popoverMenu"></button>
         <span
           *ngIf="!layer.metadata?.['metadata']"
           class="info-icon-placeholder"></span>
-        <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
-          <app-data-layer-tooltip
-            [layer]="layer"
-            [showAllData]="false"></app-data-layer-tooltip>
-        </mat-menu>
       </span>
     </mat-checkbox>
   </ng-container>
