@@ -39,7 +39,7 @@ export const FUNDING_TOOLTIPS: Record<string, FundingTooltip> = {
     links: [
       {
         label: 'The Wildland Almanac',
-        url: 'https://wildlandalmanac.org.',
+        url: 'https://wildlandalmanac.org',
       },
     ],
   },
