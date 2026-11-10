@@ -21,6 +21,7 @@ import {
 } from '@resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from '@resolvers/scenario-loader.resolver';
 import { numberResolver } from './resolvers/number.resolver';
+import { legacyPlanRoutes } from '@plan/legacy-routes/legacy-plan.routes';
 import { TreatmentEffectsHomeComponent } from './treatments/treatment-effects-home/treatment-effects-home.component';
 import {
   workspaceLoaderResolver,
@@ -199,6 +200,8 @@ const routes: Routes = [
 
       // Keep explore redirect but remove eventually
       { path: 'explore', redirectTo: 'home', pathMatch: 'full' },
+      // Declared before the legacy `map-viewer/:planId` so `workspace` is never
+      // read as a plan id.
       {
         path: 'map-viewer/workspace/:workspaceId',
         title: 'Map Viewer',
@@ -220,6 +223,7 @@ const routes: Routes = [
           externalUrl: 'https://www.forsysplanning.org/',
         },
       },
+      ...legacyPlanRoutes(planRoutes),
       {
         path: 'funding-report/:id',
         title: 'Funding Opportunity Report',
