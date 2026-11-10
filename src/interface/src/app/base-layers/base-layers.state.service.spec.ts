@@ -102,6 +102,18 @@ describe('BaseLayersStateService', () => {
     });
   });
 
+  it('should cancel loading layers when clearing the selection', (done) => {
+    service.updateBaseLayers(makeLayer(1, 'catA'), true);
+    service.updateBaseLayers(makeLayer(2, 'catA'), true);
+
+    service.clearBaseLayer();
+
+    service.loadingLayers$.pipe(take(1)).subscribe((ids) => {
+      expect(ids).toEqual([]);
+      done();
+    });
+  });
+
   describe('addBaseLayer', () => {
     it('should add a layer without removing existing ones', (done) => {
       const layer1 = makeLayer(1, 'catA');
