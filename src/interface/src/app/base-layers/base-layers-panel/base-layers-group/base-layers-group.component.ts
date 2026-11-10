@@ -126,6 +126,10 @@ export class BaseLayersGroupComponent implements OnChanges, OnInit {
     }
   }
 
+  isLayerLoading(loadingLayers: string[] | null, id: number): boolean {
+    return !!loadingLayers?.includes('source_' + id);
+  }
+
   isSelectedLayer(id: number): boolean {
     return this.allSelectedLayersIds.includes(id);
   }

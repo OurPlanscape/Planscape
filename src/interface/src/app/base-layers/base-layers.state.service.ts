@@ -123,6 +123,7 @@ export class BaseLayersStateService {
   }
 
   clearBaseLayer() {
+    this.resetSourceIds();
     this._selectedBaseLayers$.next(null);
   }
 
