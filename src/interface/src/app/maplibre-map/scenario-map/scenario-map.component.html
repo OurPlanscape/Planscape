@@ -16,7 +16,7 @@
   <app-treated-stands-toggle
     *ngIf="showSubUnitToggleOnResults$ | async"></app-treated-stands-toggle>
 
-  <ng-container *appFeatureFlag="'ADV_STAND_LEVEL_CONSTRAINTS'">
+  <ng-container *appFeatureFlag="'ASLC_ALL_TX_STANDS'">
     <app-all-treatable-stands-toggle
       *ngIf="showAllTreatableStandsToggleOnResults$ | async">
     </app-all-treatable-stands-toggle>
