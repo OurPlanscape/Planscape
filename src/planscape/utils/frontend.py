@@ -29,6 +29,12 @@ def get_domain(env: str) -> str:
     return url.replace("https://", "")
 
 
+def get_planning_area_path(planning_area) -> str:
+    if planning_area.workspace_id is None:
+        raise ValueError(f"Planning area {planning_area.pk} has no workspace.")
+    return f"workspace/{planning_area.workspace_id}/plan/{planning_area.pk}"
+
+
 def get_frontend_url(url: str, query_params: Dict[str, Any] = None):
     if url.startswith("/"):
         raise ValueError("URLs should not start with /. This is done internally here.")

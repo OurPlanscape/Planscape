@@ -32,6 +32,7 @@ from planning.tests.factories import (
 )
 from stands.models import Stand, StandMetric, StandSizeChoices
 from stands.tests.factories import StandFactory
+from workspaces.tests.factories import WorkspaceFactory
 
 from planscape.exceptions import ForsysException, ForsysTimeoutException
 from utils.cli_utils import (
@@ -737,21 +738,20 @@ class TriggerGeopackageGenerationTestCase(TestCase):
 @mock.patch("planning.tasks.send_mail")
 class ScenarioEmailLinkTestCase(TestCase):
     def test_ready_email_contains_frontend_link(self, mock_send_mail):
-        scenario = ScenarioFactory.create(user__email="owner@example.com")
+        workspace = WorkspaceFactory.create()
+        scenario = ScenarioFactory.create(
+            user__email="owner@example.com", planning_area__workspace=workspace
+        )
 
         async_send_email_scenario_finished(scenario.pk)
 
         _, kwargs = mock_send_mail.call_args
-        html_body = kwargs["html_message"]
-        txt_body = kwargs["message"]
-
-        expected_base = "https://staging.planscape.org"
-        expected_path = f"/plan/{scenario.planning_area_id}/scenario/{scenario.pk}"
-
-        self.assertIn(expected_base, html_body)
-        self.assertIn(expected_path, html_body)
-        self.assertIn(expected_base, txt_body)
-        self.assertIn(expected_path, txt_body)
+        expected_url = (
+            f"https://staging.planscape.org/workspace/{workspace.pk}"
+            f"/plan/{scenario.planning_area_id}/scenario/{scenario.pk}"
+        )
+        self.assertIn(expected_url, kwargs["html_message"])
+        self.assertIn(expected_url, kwargs["message"])
 
 
 class TriggerScenarioReadyEmailsTestCase(TestCase):
@@ -820,8 +820,9 @@ class TriggerScenarioReadyEmailsTestCase(TestCase):
 )
 class AsyncSendEmailLargePlanningAreaTest(TestCase):
     def setUp(self):
+        self.workspace = WorkspaceFactory.create()
         self.pa = PlanningAreaFactory.create(
-            user__email="owner@example.com", name="Big PA"
+            user__email="owner@example.com", name="Big PA", workspace=self.workspace
         )
 
     @mock.patch("planning.tasks.send_mail", return_value=True)
@@ -840,16 +841,12 @@ class AsyncSendEmailLargePlanningAreaTest(TestCase):
 
         # Inspect email body for correct frontend link
         _, kwargs = send_email_mock.call_args
-        html_body = kwargs["html_message"]
-        txt_body = kwargs["message"]
-
-        expected_base = "https://staging.planscape.org"
-        expected_path = f"/plan/{self.pa.pk}"
-
-        self.assertIn(expected_base, html_body)
-        self.assertIn(expected_path, html_body)
-        self.assertIn(expected_base, txt_body)
-        self.assertIn(expected_path, txt_body)
+        expected_url = (
+            f"https://staging.planscape.org/workspace/{self.workspace.pk}"
+            f"/plan/{self.pa.pk}"
+        )
+        self.assertIn(expected_url, kwargs["html_message"])
+        self.assertIn(expected_url, kwargs["message"])
 
     @mock.patch("planning.tasks.send_mail", return_value=True)
     @mock.patch("planning.tasks.get_acreage", return_value=100)
