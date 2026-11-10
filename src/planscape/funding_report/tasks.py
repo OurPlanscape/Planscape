@@ -54,7 +54,7 @@ from funding_report.services import (
     treatment_layer_has_valid_data,
 )
 from planning.models import ProjectArea
-from utils.frontend import get_frontend_url
+from utils.frontend import get_frontend_url, get_planning_area_path
 
 from planscape.celery import app
 
@@ -410,7 +410,8 @@ def async_send_email_funding_report_finished(
         return
 
     funding_report_link = get_frontend_url(
-        f"plan/{report.scenario.planning_area_id}/scenario/{report.scenario_id}/funding"
+        f"{get_planning_area_path(report.scenario.planning_area)}"
+        f"/scenario/{report.scenario_id}/funding"
     )
 
     context = {
