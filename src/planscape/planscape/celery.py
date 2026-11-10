@@ -1,7 +1,9 @@
 import os
 
+import sentry_sdk
 from celery import Celery
 from celery.schedules import crontab
+from celery.signals import worker_process_shutdown, worker_shutdown
 from django.conf import settings
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "planscape.settings")
@@ -9,6 +11,20 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "planscape.settings")
 app = Celery("planscape")
 app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks()
+
+
+@worker_process_shutdown.connect
+@worker_shutdown.connect
+def flush_sentry_events(**kwargs) -> None:
+    """
+    Send queued Sentry events before a worker process exits.
+
+    Prefork children are recycled (CELERY_WORKER_MAX_TASKS_PER_CHILD) and end
+    with os._exit(), which skips Sentry's atexit flush. Cloud Run also stops
+    instances with SIGTERM. Without this, events still in the in-memory
+    transport queue are lost.
+    """
+    sentry_sdk.flush(timeout=settings.SENTRY_TIMEOUT)
 
 
 def get_catalog_backup_schedule() -> dict[str, dict]:
