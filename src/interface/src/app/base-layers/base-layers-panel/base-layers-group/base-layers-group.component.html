@@ -37,10 +37,22 @@
         [sgHighlighterText]="layer.name"></span>
       <span class="right-items">
         <mat-spinner
+          *ngIf="isLayerLoading(loadingLayers$ | async, layer.id); else legend"
           class="side-spinner"
-          diameter="20"
-          *ngIf="(loadingLayers$ | async)?.includes('source_' + layer.id)">
+          diameter="20">
         </mat-spinner>
+        <ng-template #legend>
+          <span
+            class="base-layer-legend"
+            *ngIf="isSelectedLayer(layer.id)"
+            [style.backgroundColor]="
+              layer.styles[0].data['fill-color'] || BASE_LAYERS_DEFAULT.COLOR
+            "
+            [style.border-color]="
+              layer.styles[0].data['fill-outline-color'] ||
+              BASE_LAYERS_DEFAULT.COLOR
+            "></span>
+        </ng-template>
         <button
           *ngIf="layer.metadata?.['metadata']"
           sg-button
@@ -49,21 +61,14 @@
           class="info-icon"
           [outlined]="true"
           [matMenuTriggerFor]="popoverMenu"></button>
+        <span
+          *ngIf="!layer.metadata?.['metadata']"
+          class="info-icon-placeholder"></span>
         <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
           <app-data-layer-tooltip
             [layer]="layer"
             [showAllData]="false"></app-data-layer-tooltip>
         </mat-menu>
-        <span
-          class="base-layer-legend"
-          *ngIf="isSelectedLayer(layer.id)"
-          [style.backgroundColor]="
-            layer.styles[0].data['fill-color'] || BASE_LAYERS_DEFAULT.COLOR
-          "
-          [style.border-color]="
-            layer.styles[0].data['fill-outline-color'] ||
-            BASE_LAYERS_DEFAULT.COLOR
-          "></span>
       </span>
     </mat-checkbox>
   </ng-container>
