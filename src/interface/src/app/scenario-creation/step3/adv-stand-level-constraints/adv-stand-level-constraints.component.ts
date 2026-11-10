@@ -188,8 +188,8 @@ export class AdvStandLevelConstraintsComponent
     this.scenarioState.currentScenario$
       .pipe(
         take(1),
-        switchMap(() => this.planState.currentPlan$),
-        switchMap((plan) => this.mapModuleService.loadMapModule(plan.geometry))
+        switchMap(() => this.planState.planningAreaGeometry$),
+        switchMap((geometry) => this.mapModuleService.loadMapModule(geometry))
       )
       .subscribe();
 

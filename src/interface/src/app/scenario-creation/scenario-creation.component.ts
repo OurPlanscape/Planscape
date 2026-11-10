@@ -262,8 +262,8 @@ export class ScenarioCreationComponent implements OnInit {
       .pipe(
         take(1),
         filter((s) => isCustomScenario(s.type)),
-        switchMap(() => this.planState.currentPlan$),
-        switchMap((plan) => this.mapModuleService.loadMapModule(plan.geometry))
+        switchMap(() => this.planState.planningAreaGeometry$),
+        switchMap((geometry) => this.mapModuleService.loadMapModule(geometry))
       )
       .subscribe();
 

@@ -6,7 +6,10 @@ import { Plan } from '@app/types';
 import { PlanNotesService } from '@app/services/plan-notes.service';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { PlanState } from '../plan.state';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { distinctUntilChanged, switchMap } from 'rxjs';
 
+@UntilDestroy()
 @Component({
   selector: 'app-notes-expansion-card',
   standalone: true,
@@ -24,11 +27,17 @@ export class NotesExpansionCardComponent {
     private notesService: PlanNotesService,
     private planState: PlanState
   ) {
-    //TODO: unsub, clean this up
-    this.planState.currentPlan$.subscribe((plan) => {
-      this.plan = plan;
-      this.notesService.getNotes(plan.id).subscribe();
-    });
+    this.planState.currentPlan$
+      .pipe(untilDestroyed(this))
+      .subscribe((plan) => (this.plan = plan));
+
+    this.planState.currentPlan$
+      .pipe(
+        distinctUntilChanged((a, b) => a.id === b.id),
+        switchMap((plan) => this.notesService.getNotes(plan.id)),
+        untilDestroyed(this)
+      )
+      .subscribe();
   }
 
   openNotesPanel() {

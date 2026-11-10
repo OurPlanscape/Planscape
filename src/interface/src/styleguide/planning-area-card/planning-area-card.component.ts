@@ -1,5 +1,5 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -29,9 +29,6 @@ export class PlanningAreaCardComponent {
 
   /** Where the card navigates. The whole card is the link. */
   @Input() link: string | any[] = [];
-
-  @Output() afterDelete = new EventEmitter();
-  @Output() afterRename = new EventEmitter();
 
   /** The menu sits inside the card's link, so its clicks must not navigate. */
   handleMenuClick(event: Event) {

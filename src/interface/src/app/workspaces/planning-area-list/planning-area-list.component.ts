@@ -26,13 +26,8 @@ import { PlanningAreaEmptyStateComponent } from '../planning-area-empty-state/pl
 import { PlanningAreaCreationModalComponent } from '../planning-area-creation-modal/planning-area-creation-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { catchError, EMPTY, exhaustMap, map, merge } from 'rxjs';
-import {
-  PLANNING_AREA_CREATED_EVENT,
-  REALTIME_CONNECTED_EVENT,
-  PLANNING_AREA_DELETED_EVENT,
-  PLANNING_AREA_MAP_STATUS_EVENT,
-} from '@types';
+import { catchError, EMPTY, map, merge, switchMap } from 'rxjs';
+import { PLANNING_AREA_LIST_EVENTS } from '@types';
 import { WorkspaceState } from '../workspace.state';
 
 @UntilDestroy()
@@ -123,14 +118,13 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
 
   private refreshOnWorkspaceEvents() {
     merge(
-      this.webSocketService.on(REALTIME_CONNECTED_EVENT),
-      this.webSocketService.on(PLANNING_AREA_CREATED_EVENT),
-      this.webSocketService.on(PLANNING_AREA_DELETED_EVENT),
-      this.webSocketService.on(PLANNING_AREA_MAP_STATUS_EVENT)
+      this.webSocketService.workspaceUpdates$(PLANNING_AREA_LIST_EVENTS),
+      // rows carry our permissions on each planning area
+      this.webSocketService.ownRoleChanged$()
     )
       .pipe(
-        // refresh in the background
-        exhaustMap(() =>
+        // refresh in the background, always for the latest change
+        switchMap(() =>
           this.dataSource.refresh().pipe(
             // one failed refresh must not stop us listening
             catchError(() => EMPTY)
@@ -173,18 +167,11 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
   }
 
   uploadPlanningArea() {
-    this.dialog
-      .open(PlanningAreaCreationModalComponent, {
-        data: {
-          workspaceId: this.workspaceId,
-        },
-      })
-      .afterClosed()
-      .subscribe((reload) => {
-        if (reload === true) {
-          this.reload();
-        }
-      });
+    this.dialog.open(PlanningAreaCreationModalComponent, {
+      data: {
+        workspaceId: this.workspaceId,
+      },
+    });
   }
 
   drawPlanningArea() {
@@ -195,10 +182,6 @@ export class PlanningAreaListComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.dataSource.destroy();
-  }
-
-  reload() {
-    this.dataSource.loadData();
   }
 
   trackById(_index: number, planningArea: PreviewPlan) {
