@@ -1,37 +1,51 @@
-import {
-  ComponentFixture,
-  discardPeriodicTasks,
-  fakeAsync,
-  TestBed,
-  tick,
-} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute } from '@angular/router';
 import { ViewScenarioComponent } from './view-scenario.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MockDeclarations, MockProvider, MockProviders } from 'ng-mocks';
 import { ScenarioState } from '../scenario.state';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
-import { BehaviorSubject, of } from 'rxjs';
 import { MOCK_PLAN, MOCK_SCENARIO } from '@services/mocks';
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
-import { Plan, Scenario, ScenarioResult } from '@types';
+import { BehaviorSubject, of, ReplaySubject, Subject } from 'rxjs';
+import {
+  Plan,
+  Scenario,
+  SCENARIO_DETAIL_EVENTS,
+  ScenarioResult,
+  WorkspaceEvent,
+} from '@types';
 import { ScenarioResultsComponent } from '@scenario/scenario-results/scenario-results.component';
 import { TreatmentsTabComponent } from '@scenario/treatments-tab/treatments-tab.component';
 import { PlanState } from '@plan/plan.state';
-import { POLLING_INTERVAL } from '@plan/plan-helpers';
-import { ScenarioService } from '@services';
+import { ScenarioService, WebSocketService } from '@services';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MapModuleService } from '@services/map-module.service';
 import { overrideFeatureFlags } from '@features/testing';
 
-describe('ViewScenarioComponent (polling)', () => {
+describe('ViewScenarioComponent', () => {
   let fixture: ComponentFixture<ViewScenarioComponent>;
   let component: ViewScenarioComponent;
 
-  let scenario$!: BehaviorSubject<Scenario>;
+  let scenario$!: ReplaySubject<Scenario>;
+  let updates$!: Subject<WorkspaceEvent | null>;
+  let scenarioUpdates$!: jasmine.Spy;
   let scenarioStateSpy!: { reloadScenario: jasmine.Spy; currentScenario$: any };
   let currentPlanOrNull$!: BehaviorSubject<Plan | null>;
   let loadMapModule!: jasmine.Spy;
+
+  const SCENARIO_ID = 7;
+
+  /** What the component reads off the route: the ids of the page it is on. */
+  const routeStub = {
+    snapshot: {
+      data: { scenarioId: SCENARIO_ID },
+      parent: { data: { planId: 3 } },
+      pathFromRoot: [],
+      firstChild: null,
+    },
+  };
 
   const baseScenario: Scenario = {
     ...MOCK_SCENARIO,
@@ -43,8 +57,17 @@ describe('ViewScenarioComponent (polling)', () => {
     return { ...baseScenario, scenario_result: { status } as ScenarioResult };
   }
 
+  /** One event on the channel of this scenario. */
+  function somethingChanged() {
+    updates$.next({ type: 'planning.scenario.status_changed' });
+  }
+
   beforeEach(async () => {
-    scenario$ = new BehaviorSubject<Scenario>(makeScenario('PENDING'));
+    scenario$ = new ReplaySubject<Scenario>(1);
+    updates$ = new Subject<WorkspaceEvent | null>();
+    scenarioUpdates$ = jasmine
+      .createSpy('scenarioUpdates$')
+      .and.returnValue(updates$);
     scenarioStateSpy = {
       reloadScenario: jasmine.createSpy('reloadScenario'),
       currentScenario$: scenario$.asObservable(),
@@ -68,6 +91,8 @@ describe('ViewScenarioComponent (polling)', () => {
         MockProviders(ScenarioService),
         MockProvider(MapModuleService, { loadMapModule }),
         MockProvider(DataLayersStateService, { paths$: of([]) }),
+        MockProvider(WebSocketService, { scenarioUpdates$ }),
+        { provide: ActivatedRoute, useValue: routeStub },
         { provide: ScenarioState, useValue: scenarioStateSpy },
       ],
     }).compileComponents();
@@ -81,14 +106,12 @@ describe('ViewScenarioComponent (polling)', () => {
     fixture.detectChanges();
   }
 
-  it('should create', fakeAsync(() => {
-    scenario$.next(makeScenario('SUCCESS')); // avoid timers
+  it('should create', () => {
+    scenario$.next(makeScenario('SUCCESS'));
     createComponent();
+
     expect(component).toBeTruthy();
-    try {
-      discardPeriodicTasks();
-    } catch {}
-  }));
+  });
 
   describe('map module', () => {
     beforeEach(() => {
@@ -114,103 +137,92 @@ describe('ViewScenarioComponent (polling)', () => {
     });
   });
 
-  it('starts polling when scenario is PENDING', fakeAsync(() => {
+  it('reads the scenario back when an event beats the first read', () => {
+    createComponent();
+
+    somethingChanged();
+
+    expect(scenarioStateSpy.reloadScenario).toHaveBeenCalledTimes(1);
+  });
+
+  it('reads the scenario back when the run reports a change', () => {
     scenario$.next(makeScenario('PENDING'));
     createComponent();
 
     expect(scenarioStateSpy.reloadScenario).not.toHaveBeenCalled();
 
-    tick(POLLING_INTERVAL);
+    somethingChanged();
     expect(scenarioStateSpy.reloadScenario).toHaveBeenCalledTimes(1);
 
-    tick(POLLING_INTERVAL);
+    somethingChanged();
     expect(scenarioStateSpy.reloadScenario).toHaveBeenCalledTimes(2);
+  });
 
-    discardPeriodicTasks();
-  }));
-
-  it('stops polling when scenario transitions to SUCCESS', fakeAsync(() => {
+  it('listens on the channel of this scenario, for what changes its page', () => {
     scenario$.next(makeScenario('PENDING'));
     createComponent();
 
-    tick(POLLING_INTERVAL);
-    tick(POLLING_INTERVAL);
-    expect(scenarioStateSpy.reloadScenario).toHaveBeenCalledTimes(2);
+    expect(scenarioUpdates$).toHaveBeenCalledWith(
+      SCENARIO_ID,
+      SCENARIO_DETAIL_EVENTS
+    );
+  });
 
-    scenario$.next(makeScenario('SUCCESS')); // cancels via takeUntil inside startPolling
-    tick(POLLING_INTERVAL);
-    tick(POLLING_INTERVAL);
-    expect(scenarioStateSpy.reloadScenario).toHaveBeenCalledTimes(2);
+  it('stops reading it back once the run is done', () => {
+    scenario$.next(makeScenario('PENDING'));
+    createComponent();
+    somethingChanged();
 
-    try {
-      discardPeriodicTasks();
-    } catch {}
-  }));
+    scenario$.next(makeScenario('SUCCESS'));
+    somethingChanged();
 
-  it('does not poll when scenario is already SUCCESS at start', fakeAsync(() => {
+    expect(scenarioStateSpy.reloadScenario).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not read it back for a run that was already done', () => {
     scenario$.next(makeScenario('SUCCESS'));
     createComponent();
 
-    tick(POLLING_INTERVAL);
-    tick(POLLING_INTERVAL);
+    somethingChanged();
+
     expect(scenarioStateSpy.reloadScenario).not.toHaveBeenCalled();
+  });
 
-    try {
-      discardPeriodicTasks();
-    } catch {}
-  }));
-
-  it('polls when geopackage_status is PENDING/PROCESSING and feature flag is ON', fakeAsync(() => {
+  it('follows the geopackage while it is being built', () => {
     scenario$.next(makeScenario('SUCCESS'));
     createComponent();
+
     scenario$.next({
       ...makeScenario('SUCCESS'),
       geopackage_status: 'PENDING',
     } as Scenario);
-    tick(POLLING_INTERVAL);
+    somethingChanged();
     expect(scenarioStateSpy.reloadScenario).toHaveBeenCalledTimes(1);
 
     scenario$.next({
       ...makeScenario('SUCCESS'),
       geopackage_status: 'PROCESSING',
     } as Scenario);
-    tick(POLLING_INTERVAL);
+    somethingChanged();
     expect(scenarioStateSpy.reloadScenario).toHaveBeenCalledTimes(2);
 
-    // mark as done (any value other than PENDING/PROCESSING stops)
+    // any value other than PENDING/PROCESSING means there is nothing to wait for
     scenario$.next({
       ...makeScenario('SUCCESS'),
       geopackage_status: 'SUCCEEDED',
     } as Scenario);
-    tick(POLLING_INTERVAL);
+    somethingChanged();
     expect(scenarioStateSpy.reloadScenario).toHaveBeenCalledTimes(2);
+  });
 
-    try {
-      discardPeriodicTasks();
-    } catch {}
-  }));
-
-  it('cleans up polling on component destroy', fakeAsync(() => {
-    // ensure only main polling exists (no geopackage)
+  it('stops listening once it goes away', () => {
     scenario$.next(makeScenario('PENDING'));
     createComponent();
+    somethingChanged();
 
-    // fire once
-    tick(POLLING_INTERVAL);
-    expect(scenarioStateSpy.reloadScenario).toHaveBeenCalledTimes(1);
-
-    // proactively stop polling to avoid any race (switchMap takeUntil)
-    scenario$.next(makeScenario('SUCCESS'));
-
-    // now destroy; there should be no further calls regardless of time advance
     fixture.destroy();
-    tick(0); // flush teardown
-    tick(POLLING_INTERVAL * 3);
+    somethingChanged();
 
     expect(scenarioStateSpy.reloadScenario).toHaveBeenCalledTimes(1);
-
-    try {
-      discardPeriodicTasks();
-    } catch {}
-  }));
+  });
 });
