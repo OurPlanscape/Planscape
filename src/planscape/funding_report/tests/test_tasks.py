@@ -12,6 +12,7 @@ from planning.tests.factories import (
     ScenarioFactory,
 )
 from planscape.tests.factories import UserFactory
+from workspaces.tests.factories import WorkspaceFactory
 
 from funding_report.models import (
     FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
@@ -38,7 +39,10 @@ class FundingOpportunityReportTaskTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = UserFactory.create()
-        cls.planning_area = PlanningAreaFactory.create(user=cls.user)
+        cls.workspace = WorkspaceFactory.create()
+        cls.planning_area = PlanningAreaFactory.create(
+            user=cls.user, workspace=cls.workspace
+        )
         cls.scenario = ScenarioFactory.create(
             user=cls.user,
             planning_area=cls.planning_area,
@@ -609,6 +613,7 @@ class FundingOpportunityReportTaskTest(TestCase):
 
         send_mail_mock.assert_not_called()
 
+    @override_settings(ENV="staging")
     @mock.patch("funding_report.tasks.send_mail")
     def test_send_email_funding_report_finished_sends_to_report_creator(
         self,
@@ -628,3 +633,10 @@ class FundingOpportunityReportTaskTest(TestCase):
         self.assertIn("Funding Opportunity Report", kwargs["subject"])
         self.assertIn("message", kwargs)
         self.assertIn("html_message", kwargs)
+
+        expected_url = (
+            f"https://staging.planscape.org/workspace/{self.workspace.pk}"
+            f"/plan/{self.planning_area.pk}/scenario/{self.scenario.pk}/funding"
+        )
+        self.assertIn(expected_url, kwargs["html_message"])
+        self.assertIn(expected_url, kwargs["message"])

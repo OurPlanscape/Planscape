@@ -31,6 +31,7 @@ from impacts.services import (
 from planning.models import GeoPackageStatus
 from planscape.celery import app
 from planscape.analytics import track_event
+from utils.frontend import get_planning_area_path
 
 User = get_user_model()
 log = logging.getLogger(__name__)
@@ -345,13 +346,13 @@ def async_calculate_persist_impacts_treatment_plan(
 def async_send_email_process_finished(self, treatment_plan_pk, *args, **kwargs):
     try:
         treatment_plan = TreatmentPlan.objects.select_related(
-            "created_by", "scenario"
+            "created_by", "scenario__planning_area"
         ).get(pk=treatment_plan_pk)
         user = treatment_plan.created_by
 
         link = urljoin(
             settings.PLANSCAPE_BASE_URL,
-            f"plan/{treatment_plan.scenario.planning_area_id}/"
+            f"{get_planning_area_path(treatment_plan.scenario.planning_area)}/"
             f"scenario/{treatment_plan.scenario.pk}/treatment/{treatment_plan_pk}/impacts",
         )
 
