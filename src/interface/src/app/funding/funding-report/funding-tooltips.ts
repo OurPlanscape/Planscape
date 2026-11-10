@@ -38,8 +38,8 @@ export const FUNDING_TOOLTIPS: Record<string, FundingTooltip> = {
     copy: `Change in water availability is calculated as the difference between pre- and post-treatment maximum actual evapotranspiration (AETmax) across the planning area. Lower post-treatment AETmax indicates reduced vegetation water use and therefore greater water availability following treatment. The user specifies a percent change threshold. `,
     links: [
       {
-        label: 'Natural Climate Solutions Data Atlas',
-        url: 'https://cecs.ess.uci.edu/data-atlas/',
+        label: 'The Wildland Almanac',
+        url: 'https://wildlandalmanac.org',
       },
     ],
   },
