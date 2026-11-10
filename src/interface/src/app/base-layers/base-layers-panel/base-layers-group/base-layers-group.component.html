@@ -12,7 +12,7 @@
     [sgHighlighter]="searchTerm"
     [sgHighlighterText]="dataSet.name"></span>
   <i class="material-symbols-outlined chevron">{{
-    expanded ? 'expand_less' : 'expand_more'
+    expanded ? 'expand_less' : 'chevron_right'
   }}</i>
 </button>
 
@@ -32,6 +32,7 @@
       (change)="onLayerChange(layer, true)">
       <span
         class="layer-name"
+        [class.selected]="isSelectedLayer(layer.id)"
         [sgHighlighter]="searchTerm"
         [sgHighlighterText]="layer.name"></span>
       <span class="right-items">
@@ -77,6 +78,7 @@
         (changed)="onLayerToggle(layer, $event)"
         ><span
           class="layer-name"
+          [class.selected]="isSelectedLayer(layer.id)"
           [sgHighlighter]="searchTerm"
           [sgHighlighterText]="layer.name"></span>
       </sg-toggle>
