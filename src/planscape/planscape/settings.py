@@ -12,7 +12,7 @@ from corsheaders.defaults import default_headers
 from decouple import Config, RepositoryEmpty, RepositoryEnv
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
-from sentry_sdk.integrations.gcp import GcpIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 from sentry_sdk.transport import HttpTransport
 from utils.logging import NotInTestingFilter
 
@@ -470,7 +470,9 @@ if SENTRY_DSN is not None:
         integrations=[
             DjangoIntegration(),
             CeleryIntegration(),
-            GcpIntegration(),
+            # logger.exception()/logger.error() calls become Sentry events. This is
+            # the only path for errors that are caught and not re-raised in tasks.
+            LoggingIntegration(level=logging.INFO, event_level=logging.ERROR),
         ],
         send_default_pii=True,
         environment=ENV,
@@ -535,7 +537,7 @@ SUB_UNITS_DETAILS_TTL = config("GCS_PUBLIC_URL_TTL", 86400, cast=int)  # 1 day
 # CELERY
 CELERY_BROKER_URL = config("CELERY_BROKER_URL", "redis://localhost:6379/0")
 
-CELERY_RESULT_BACKEND = config("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
 CELERY_RESULT_ACCEPT_CONTENT = ("json",)
 # fetches ONE task at a time
 CELERY_WORKER_PREFETCH_MULTIPLIER = config(

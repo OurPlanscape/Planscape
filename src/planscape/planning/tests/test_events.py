@@ -174,6 +174,28 @@ class PlanningEventsTest(APITestCase):
             events[-1]["data"]["geopackage_url"], "http://example.com/download"
         )
 
+    @mock.patch(
+        "planning.services.export_planning_area_to_geopackage",
+        side_effect=AttributeError("boom"),
+    )
+    def test_geopackage_export_failure_marks_failed_and_reraises(
+        self, _planning_area, send
+    ):
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            geopackage_status=GeoPackageStatus.PENDING,
+        )
+
+        with self.captureOnCommitCallbacks(execute=True):
+            with self.assertRaises(AttributeError):
+                export_to_geopackage(scenario)
+
+        scenario.refresh_from_db()
+        self.assertEqual(scenario.geopackage_status, GeoPackageStatus.FAILED)
+        self.assertIsNone(scenario.geopackage_url)
+        events = self.published(send)
+        self.assertEqual(events[-1]["data"]["geopackage_status"], "FAILED")
+
     @mock.patch("planning.views_v2.async_generate_scenario_geopackage")
     @mock.patch("planning.views_v2.track_event")
     def test_geopackage_download_request_sends_pending(self, _track, _task, send):

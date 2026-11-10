@@ -2056,6 +2056,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
             update_fields=["geopackage_url", "geopackage_status", "updated_at"]
         )
         publish_scenario_event("planning.scenario.geopackage_status_changed", scenario)
+        raise
 
 
 @transaction.atomic()

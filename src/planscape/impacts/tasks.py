@@ -232,7 +232,7 @@ def async_generate_treatment_plan_geopackage(treatment_plan_pk: int) -> str | No
     try:
         return export_and_upload_geopackage(treatment_plan)
     except Exception:
-        log.error(
+        log.exception(
             "Failed to generate Treatment Plan Geopackage",
             extra={"treatment_plan_pk": treatment_plan_pk},
         )
