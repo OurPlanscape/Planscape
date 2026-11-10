@@ -486,6 +486,7 @@ def async_scenario_post_processing(scenario_id):
         if scenario.result_status == ScenarioResultStatus.SUCCESS:
             calculate_and_update_scenario_result(scenario)
     except Exception:
+        log.exception("Failed to post-process scenario %s", scenario_id)
         scenario.post_process_status = ScenarioPostProcessingStatus.FAILURE
     else:
         scenario.post_process_status = ScenarioPostProcessingStatus.SUCCESS

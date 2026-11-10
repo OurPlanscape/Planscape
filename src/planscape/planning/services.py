@@ -1910,7 +1910,7 @@ def export_treatable_area_to_geopackage(
                             ).json
                         )
                         properties = {
-                            p: getattr(feature, p.lower())
+                            p: getattr(feature, p.lower()) if hasattr(feature, p.lower()) else None
                             for p in list(schema.get("properties").keys())
                         }
                         properties["ownership"] = included.name
@@ -2056,6 +2056,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
             update_fields=["geopackage_url", "geopackage_status", "updated_at"]
         )
         publish_scenario_event("planning.scenario.geopackage_status_changed", scenario)
+        raise
 
 
 @transaction.atomic()
