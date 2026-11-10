@@ -148,6 +148,9 @@ class CatalogImporter:
             for name, field in model_fields.items():
                 if name in IGNORED or name == "created_by":
                     continue
+                if name == "uuid" and fields.get(name) is None:
+                    # Older backups lack uuids; keep the destination's own.
+                    continue
                 if name not in fields and not field.null and not field.has_default():
                     raise CommandError(
                         f"Missing {model._meta.label_lower}.{name} in source record {pk}."

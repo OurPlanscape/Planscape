@@ -1,5 +1,6 @@
 import copy
 import json
+import uuid
 
 from django.apps import apps
 from django.core import serializers
@@ -7,7 +8,7 @@ from django.core.management.base import CommandError
 from django.db import IntegrityError
 from django.test import TestCase, override_settings
 
-from core.catalog_import import CatalogImporter
+from core.catalog_import import CatalogImporter, manager
 from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset
 from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
 from planning.models import TreatmentGoalUsesDataLayer
@@ -16,6 +17,16 @@ from planning.tests.factories import (
     TreatmentGoalUsesDataLayerFactory,
 )
 from planscape.tests.factories import UserFactory
+
+UUID_MODELS = (
+    "organizations.organization",
+    "datasets.dataset",
+    "datasets.category",
+    "datasets.style",
+    "datasets.datalayer",
+    "planning.treatmentgoalcategory",
+    "planning.treatmentgoal",
+)
 
 
 @override_settings(DEFAULT_ADMIN_EMAIL="catalog-admin@example.com")
@@ -98,6 +109,35 @@ class CatalogImportTests(TestCase):
                 for counts in second.counts.values()
             )
         )
+
+    def test_source_uuids_are_copied(self):
+        source = {label: uuid.uuid4() for label in UUID_MODELS}
+        for label, value in source.items():
+            self.row(label)["fields"]["uuid"] = str(value)
+        self.importer().merge()
+        for label, value in source.items():
+            model = apps.get_model(label)
+            self.assertTrue(manager(model).filter(uuid=value).exists(), label)
+
+    def test_backup_without_uuids_keeps_destination_uuids(self):
+        before = {
+            label: self.row(label)["fields"].pop("uuid") for label in UUID_MODELS
+        }
+        self.importer().merge()
+        for label, value in before.items():
+            model = apps.get_model(label)
+            self.assertEqual(manager(model).filter(uuid=value).count(), 1, label)
+
+    def test_null_source_uuids_keep_destination_uuids(self):
+        before = {}
+        for label in ("datasets.style", "datasets.datalayer"):
+            fields = self.row(label)["fields"]
+            before[label] = fields["uuid"]
+            fields["uuid"] = None
+        self.importer().merge()
+        for label, value in before.items():
+            model = apps.get_model(label)
+            self.assertEqual(manager(model).filter(uuid=value).count(), 1, label)
 
     def test_source_id_collision_preserves_local_layer_and_remaps_links(self):
         local = DataLayerFactory(
