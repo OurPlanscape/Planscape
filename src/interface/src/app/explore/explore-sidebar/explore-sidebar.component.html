@@ -1,7 +1,20 @@
 <app-sidebar-icon-rail
   [items]="railItems"
   [activeId]="expanded ? activeItemId : null"
-  (itemSelected)="selectItem($event)"></app-sidebar-icon-rail>
+  (itemSelected)="selectItem($event)">
+  <ng-container *ngIf="canUpload$ | async">
+    <button
+      type="button"
+      class="upload-button"
+      aria-label="Upload data"
+      matTooltip="Upload data"
+      matTooltipPosition="right"
+      (click)="openUpload()">
+      <mat-icon class="material-symbols-outlined">upload</mat-icon>
+    </button>
+    <hr class="upload-divider" />
+  </ng-container>
+</app-sidebar-icon-rail>
 
 <div class="panel" *ngIf="expanded">
   <div class="panel-header">

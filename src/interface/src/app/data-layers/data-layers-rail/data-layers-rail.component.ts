@@ -10,33 +10,12 @@ import {
   SidebarIconRailComponent,
   SidebarRailItem,
 } from '@explore/sidebar-icon-rail/sidebar-icon-rail.component';
+import { dataLayersRailItems } from '@explore/sidebar-icon-rail/data-layers-rail-items';
 import { FeatureService } from '@features/feature.service';
 import { FeaturesModule } from '@features/features.module';
 import { DataLayersStateService } from '../data-layers.state.service';
 
-type RailPanel = 'data-layers' | 'base-layers' | 'favorites';
-
-const DATA_LAYERS_ITEM: SidebarRailItem = {
-  id: 'data-layers',
-  icon: 'category',
-  label: 'Data Layers',
-};
-const BASE_LAYERS_ITEM: SidebarRailItem = {
-  id: 'base-layers',
-  icon: 'layers',
-  label: 'Base Layers',
-};
-const UPLOADED_ITEM: SidebarRailItem = {
-  id: 'uploaded',
-  icon: 'drive_folder_upload',
-  label: 'Uploaded',
-  disabled: true,
-};
-const FAVORITES_ITEM: SidebarRailItem = {
-  id: 'favorites',
-  icon: 'star',
-  label: 'Favorite Data Layers',
-};
+type RailPanel = 'data-layers' | 'base-layers' | 'favorites' | 'uploaded';
 
 /**
  * Data layers with the icon rail, and optionally base layers, for pages
@@ -109,12 +88,11 @@ export class DataLayersRailComponent {
   }
 
   private buildRailItems() {
-    this.railItems = [
-      DATA_LAYERS_ITEM,
-      ...(this._showBaseLayers ? [BASE_LAYERS_ITEM] : []),
-      ...(this.uploadEnabled ? [UPLOADED_ITEM] : []),
-      { ...FAVORITES_ITEM, disabled: !this.favoritesEnabled },
-    ];
+    this.railItems = dataLayersRailItems({
+      baseLayers: this._showBaseLayers,
+      uploaded: this.uploadEnabled,
+      favoritesEnabled: this.favoritesEnabled,
+    });
   }
 
   selectItem(item: SidebarRailItem) {

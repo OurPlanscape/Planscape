@@ -224,6 +224,12 @@ export class ExploreComponent implements OnDestroy, OnInit {
     if (options) {
       this.panelExpanded = options.isPanelExpanded || false;
       this.tabIndex = options.tabIndex || SidebarTabs.DATA_LAYERS;
+      if (
+        this.tabIndex === SidebarTabs.UPLOADED &&
+        !this.featureService.isFeatureEnabled('DATA_UPLOAD')
+      ) {
+        this.tabIndex = SidebarTabs.DATA_LAYERS;
+      }
       this.multiMapConfigState.updateDataLayersOpacity(
         options.opacity || FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY
       );

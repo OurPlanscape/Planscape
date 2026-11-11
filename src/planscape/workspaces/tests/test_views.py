@@ -258,6 +258,33 @@ class RetrieveWorkspaceTest(APITestCase):
                 can_favorite,
             )
 
+    def test_only_owners_and_collaborators_can_add_datalayers(self):
+        collaborator = UserFactory.create()
+        viewer = UserFactory.create()
+        UserAccessWorkspaceFactory.create(
+            user=collaborator,
+            workspace=self.workspace,
+            role=WorkspaceRole.COLLABORATOR,
+        )
+        UserAccessWorkspaceFactory.create(
+            user=viewer, workspace=self.workspace, role=WorkspaceRole.VIEWER
+        )
+
+        for user, can_add in (
+            (self.user, True),
+            (collaborator, True),
+            (viewer, False),
+        ):
+            self.client.force_authenticate(user=user)
+            response = self.client.get(
+                reverse(DETAIL_URL, kwargs={"pk": self.workspace.pk})
+            )
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                "add_datalayer" in response.json()["permissions"], can_add
+            )
+
 
 class UpdateWorkspaceTest(APITestCase):
     def setUp(self):

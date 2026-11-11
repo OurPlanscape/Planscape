@@ -115,12 +115,18 @@ describe('DataLayersRailComponent', () => {
     beforeAll(() => (dataUploadEnabled = true));
     afterAll(() => (dataUploadEnabled = false));
 
-    it('shows the uploaded item, still disabled', () => {
+    it('shows the uploaded item', () => {
       expect(icons()).toEqual(['category', 'drive_folder_upload', 'star']);
-      expect(
-        fixture.debugElement.queryAll(By.css('.rail-button'))[1].nativeElement
-          .classList
-      ).toContain('disabled');
+    });
+
+    it('opens the uploaded panel', () => {
+      fixture.debugElement
+        .queryAll(By.css('.rail-button'))[1]
+        .nativeElement.click();
+      fixture.detectChanges();
+
+      expect(title()).toContain('Uploaded');
+      expect(fixture.debugElement.query(By.css('app-data-layers'))).toBeNull();
     });
   });
 
