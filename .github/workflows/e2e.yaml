@@ -4,8 +4,8 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - 'src/interface/**'
-      - '.github/workflows/e2e.yaml'
+      - "src/interface/**"
+      - ".github/workflows/e2e.yaml"
 
 jobs:
   e2e:
@@ -84,7 +84,7 @@ jobs:
 
       - name: Install Playwright Chromium
         working-directory: src/interface
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium || npx playwright install chromium
 
       - name: Run Playwright E2E tests
         working-directory: src/interface

@@ -110,9 +110,7 @@ export class WorkspaceActionsService {
       .open(DeleteDialogComponent, {
         data: {
           title: `Leave "${workspace.name}"?`,
-          body: `This workspace, along with all associated planning areas,
-                 scenarios, and data, will be removed. This action cannot be
-                 undone unless you are invited again by an Owner.`,
+          body: `You will lose access to this workspace and its associated planning areas, scenarios, and data. You will not be able to rejoin unless an owner invites you again.`,
           confirmText: 'Leave',
         },
       })
