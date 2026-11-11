@@ -47,12 +47,50 @@ export const PLANNING_AREA_DATA_EVENTS = [
   PLANNING_AREA_MAP_STATUS_EVENT,
 ];
 
+export const SCENARIO_CREATED_EVENT = 'planning.scenario.created';
+export const SCENARIO_UPDATED_EVENT = 'planning.scenario.updated';
+export const SCENARIO_DELETED_EVENT = 'planning.scenario.deleted';
+export const SCENARIO_STATUS_EVENT = 'planning.scenario.status_changed';
+export const SCENARIO_GEOPACKAGE_EVENT =
+  'planning.scenario.geopackage_status_changed';
+
 // Everything that changes what the list of scenarios of a plan shows
 export const SCENARIO_LIST_EVENTS = [
-  'planning.scenario.created',
-  'planning.scenario.updated',
-  'planning.scenario.deleted',
-  'planning.scenario.status_changed',
+  SCENARIO_CREATED_EVENT,
+  SCENARIO_UPDATED_EVENT,
+  SCENARIO_DELETED_EVENT,
+  SCENARIO_STATUS_EVENT,
+];
+
+export const SCENARIO_DETAIL_EVENTS = [
+  SCENARIO_UPDATED_EVENT,
+  SCENARIO_STATUS_EVENT,
+  SCENARIO_GEOPACKAGE_EVENT,
+];
+
+export const TREATMENT_PLAN_CREATED_EVENT = 'impacts.treatment_plan.created';
+export const TREATMENT_PLAN_DELETED_EVENT = 'impacts.treatment_plan.deleted';
+export const TREATMENT_PLAN_STATUS_EVENT =
+  'impacts.treatment_plan.status_changed';
+export const TREATMENT_PLAN_GEOPACKAGE_EVENT =
+  'impacts.treatment_plan.geopackage_status_changed';
+
+export const TREATMENT_PLAN_LIST_EVENTS = [
+  TREATMENT_PLAN_CREATED_EVENT,
+  TREATMENT_PLAN_DELETED_EVENT,
+  TREATMENT_PLAN_STATUS_EVENT,
+];
+
+export const FUNDING_REPORT_CREATED_EVENT = 'funding_report.report.created';
+export const FUNDING_REPORT_STATUS_EVENT =
+  'funding_report.report.status_changed';
+export const FUNDING_REPORT_GEOPACKAGE_EVENT =
+  'funding_report.report.geopackage_status_changed';
+
+export const FUNDING_REPORT_EVENTS = [
+  FUNDING_REPORT_CREATED_EVENT,
+  FUNDING_REPORT_STATUS_EVENT,
+  FUNDING_REPORT_GEOPACKAGE_EVENT,
 ];
 
 export const MEMBER_ROLE_CHANGED_EVENT = 'workspace.member.role_changed';

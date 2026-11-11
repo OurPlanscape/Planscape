@@ -304,6 +304,55 @@ describe('WebSocketService', () => {
       service.disconnect();
     }));
 
+    it('emits the events of one scenario and no others', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+      const { received, subscription } = collect(
+        service.scenarioUpdates$(1, ['planning.scenario.created'])
+      );
+
+      socket().receive({
+        ...scenarioEvent(3),
+        object: { kind: 'scenario', id: 2, planning_area_id: 3 },
+      });
+      socket().receive(scenarioEvent(3));
+      tick(UPDATES_THROTTLE);
+
+      expect(received).toEqual([scenarioEvent(3)]);
+
+      subscription.unsubscribe();
+      service.disconnect();
+    }));
+
+    it('reaches the scenario from what hangs off it', fakeAsync(() => {
+      const treatmentPlanEvent: WorkspaceEvent = {
+        type: 'impacts.treatment_plan.status_changed',
+        object: {
+          kind: 'treatment_plan',
+          id: 9,
+          scenario_id: 1,
+          planning_area_id: 3,
+        },
+      };
+      service.connect(workspaceId);
+      socket().open();
+      const { received, subscription } = collect(
+        service.scenarioUpdates$(1, ['impacts.treatment_plan.status_changed'])
+      );
+
+      socket().receive({
+        ...treatmentPlanEvent,
+        object: { ...treatmentPlanEvent.object!, scenario_id: 2 },
+      });
+      socket().receive(treatmentPlanEvent);
+      tick(UPDATES_THROTTLE);
+
+      expect(received).toEqual([treatmentPlanEvent]);
+
+      subscription.unsubscribe();
+      service.disconnect();
+    }));
+
     it('emits on every connection, as events are not replayed', fakeAsync(() => {
       const { received, subscription } = collect(service.workspaceUpdates$([]));
       service.connect(workspaceId);
