@@ -1,5 +1,5 @@
 <section [class.dashboard]="variant === 'dashboard'">
-  <ng-container *ngIf="!isSystemError && !isPanic; else systemError">
+  <ng-container *ngIf="isSystemError && !isPanic; else systemError">
     <h4>
       <mat-icon class="material-symbols-filled warning">warning</mat-icon>
       Forsys couldn’t find enough eligible areas for treatment
@@ -30,7 +30,7 @@
       then run the scenario again.
     </p>
 
-    <div class="info-box">
+    <div class="info-box" *appFeatureFlag="'ASLC_ALL_TX_STANDS'">
       <div class="heading">Your Scenario May Be Too Constrained</div>
       <div>
         Turn on “All Treatable Stands” to see which stands meet your
