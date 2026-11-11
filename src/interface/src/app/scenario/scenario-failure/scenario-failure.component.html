@@ -30,7 +30,7 @@
       then run the scenario again.
     </p>
 
-    <div class="info-box">
+    <div class="info-box" *appFeatureFlag="'ASLC_ALL_TX_STANDS'">
       <div class="heading">Your Scenario May Be Too Constrained</div>
       <div>
         Turn on “All Treatable Stands” to see which stands meet your
