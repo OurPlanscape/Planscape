@@ -1,3 +1,4 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import {
@@ -53,5 +54,33 @@ describe('SidebarIconRailComponent', () => {
     railButtons()[1].nativeElement.click();
 
     expect(component.itemSelected.emit).not.toHaveBeenCalled();
+  });
+});
+
+@Component({
+  standalone: true,
+  imports: [SidebarIconRailComponent],
+  template: `
+    <app-sidebar-icon-rail [items]="items">
+      <button class="projected">Upload</button>
+    </app-sidebar-icon-rail>
+  `,
+})
+class RailHostComponent {
+  items: SidebarRailItem[] = [
+    { id: 'data-layers', icon: 'category', label: 'Data Layers' },
+  ];
+}
+
+describe('SidebarIconRailComponent with projected content', () => {
+  it('puts it above the items', () => {
+    const fixture = TestBed.createComponent(RailHostComponent);
+    fixture.detectChanges();
+
+    const rail: HTMLElement = fixture.nativeElement.querySelector(
+      'app-sidebar-icon-rail'
+    );
+    expect(rail.firstElementChild?.classList).toContain('projected');
+    expect(rail.querySelectorAll('.rail-button').length).toBe(1);
   });
 });

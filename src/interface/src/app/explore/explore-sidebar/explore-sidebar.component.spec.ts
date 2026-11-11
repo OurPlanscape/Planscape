@@ -17,13 +17,18 @@ import {
   BrowseSelection,
   DataLayersStateService,
 } from '@data-layers/data-layers.state.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, EMPTY, of } from 'rxjs';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { FEATURES_JSON } from '@features/features-config';
+import { FeaturesModule } from '@features/features.module';
 
 describe('ExploreSidebarComponent', () => {
   let component: ExploreSidebarComponent;
   let fixture: ComponentFixture<ExploreSidebarComponent>;
   let selection$: BehaviorSubject<BrowseSelection | null>;
   let dataLayersState: jasmine.SpyObj<DataLayersStateService>;
+  let dataUploadEnabled = false;
+  let workspacePermissions = ['view_workspace', 'add_datalayer'];
 
   beforeEach(async () => {
     selection$ = new BehaviorSubject<BrowseSelection | null>(null);
@@ -43,12 +48,26 @@ describe('ExploreSidebarComponent', () => {
           useValue: { selectedMapId$: new BehaviorSubject(1) },
         },
         { provide: DataLayersRegistryService, useValue: registry },
+        {
+          provide: WorkspaceState,
+          useValue: {
+            currentWorkspace$: of({ permissions: workspacePermissions }),
+          },
+        },
       ],
     })
+      .overrideProvider(FEATURES_JSON, {
+        useValue: { DATA_UPLOAD: dataUploadEnabled },
+      })
       .overrideComponent(ExploreSidebarComponent, {
-        remove: { imports: [MapTabsComponent, BaseLayersComponent] },
+        remove: {
+          imports: [MapTabsComponent, BaseLayersComponent, FeaturesModule],
+        },
         add: {
-          imports: MockComponents(MapTabsComponent, BaseLayersComponent),
+          imports: [
+            ...MockComponents(MapTabsComponent, BaseLayersComponent),
+            FeaturesModule,
+          ],
         },
       })
       .compileComponents();
@@ -129,6 +148,72 @@ describe('ExploreSidebarComponent', () => {
 
     expect(panels.length).toBe(1);
     expect(panels[0].attributes['panel']).toBe('favorites');
+  });
+
+  const railIcons = () =>
+    fixture.debugElement
+      .queryAll(By.css('.rail-button mat-icon'))
+      .map((icon) => icon.nativeElement.textContent.trim());
+
+  const uploadButton = () =>
+    fixture.debugElement.query(By.css('.upload-button'));
+
+  it('hides upload without DATA_UPLOAD', () => {
+    expect(uploadButton()).toBeNull();
+    expect(railIcons()).not.toContain('drive_folder_upload');
+  });
+
+  describe('with DATA_UPLOAD', () => {
+    beforeAll(() => (dataUploadEnabled = true));
+    afterAll(() => (dataUploadEnabled = false));
+
+    it('shows the upload CTA at the top of the rail', () => {
+      const rail: HTMLElement = fixture.nativeElement.querySelector(
+        'app-sidebar-icon-rail'
+      );
+      expect(rail.firstElementChild).toBe(uploadButton().nativeElement);
+    });
+
+    describe('for a workspace viewer', () => {
+      beforeAll(() => (workspacePermissions = ['view_workspace']));
+      afterAll(
+        () => (workspacePermissions = ['view_workspace', 'add_datalayer'])
+      );
+
+      it('hides the upload CTA', () => {
+        expect(uploadButton()).toBeNull();
+      });
+    });
+
+    it('shows the uploaded item', () => {
+      expect(railIcons()).toEqual([
+        'category',
+        'layers',
+        'drive_folder_upload',
+        'star',
+      ]);
+    });
+
+    it('switches to the uploaded panel when that rail item is picked', () => {
+      spyOn(component.selectedTabChange, 'emit');
+      fixture.debugElement
+        .queryAll(By.css('.rail-button'))[2]
+        .nativeElement.click();
+
+      expect(component.selectedTabChange.emit).toHaveBeenCalledWith(
+        SidebarTabs.UPLOADED
+      );
+    });
+
+    it('titles the uploaded panel', () => {
+      component.selectedTab = SidebarTabs.UPLOADED;
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.query(By.css('.panel-header h4')).nativeElement
+          .textContent
+      ).toContain('Uploaded');
+    });
   });
 
   describe('when a category is open in the data layers panel', () => {
@@ -213,6 +298,7 @@ describe('ExploreSidebarComponent with a map restored after it', () => {
           provide: MultiMapConfigState,
           useValue: { selectedMapId$: new BehaviorSubject(1) },
         },
+        { provide: WorkspaceState, useValue: { currentWorkspace$: EMPTY } },
       ],
     })
       .overrideComponent(ExploreSidebarComponent, {

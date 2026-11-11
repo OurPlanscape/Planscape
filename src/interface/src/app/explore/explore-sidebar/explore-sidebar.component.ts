@@ -13,11 +13,18 @@ import {
   SidebarIconRailComponent,
   SidebarRailItem,
 } from '@explore/sidebar-icon-rail/sidebar-icon-rail.component';
+import { dataLayersRailItems } from '@explore/sidebar-icon-rail/data-layers-rail-items';
 import { SidebarTabs } from '@explore/sidebar-tabs';
 import { DataLayersRegistryService } from '@explore/data-layers-registry';
 import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { FeatureService } from '@features/feature.service';
+import { FeaturesModule } from '@features/features.module';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   asapScheduler,
+  catchError,
   combineLatest,
   map,
   observeOn,
@@ -30,6 +37,7 @@ const PANEL_BY_RAIL_ITEM: Record<string, SidebarTabs> = {
   'data-layers': SidebarTabs.DATA_LAYERS,
   'base-layers': SidebarTabs.BASE_LAYERS,
   favorites: SidebarTabs.FAVORITES,
+  uploaded: SidebarTabs.UPLOADED,
 };
 
 @Component({
@@ -40,7 +48,10 @@ const PANEL_BY_RAIL_ITEM: Record<string, SidebarTabs> = {
     AsyncPipe,
     ButtonComponent,
     BaseLayersComponent,
+    FeaturesModule,
     MapTabsComponent,
+    MatIconModule,
+    MatTooltipModule,
     SidebarIconRailComponent,
   ],
   templateUrl: './explore-sidebar.component.html',
@@ -71,8 +82,21 @@ export class ExploreSidebarComponent {
 
   constructor(
     private multiMapConfigState: MultiMapConfigState,
-    private dataLayersRegistry: DataLayersRegistryService
+    private dataLayersRegistry: DataLayersRegistryService,
+    private featureService: FeatureService,
+    private workspaceState: WorkspaceState
   ) {}
+
+  canUpload$ = this.featureService.isFeatureEnabled('DATA_UPLOAD')
+    ? this.workspaceState.currentWorkspace$.pipe(
+        map((workspace) => workspace.permissions.includes('add_datalayer')),
+        catchError(() => of(false))
+      )
+    : of(false);
+
+  openUpload() {
+    // TODO: open the upload data modal
+  }
 
   goBack() {
     this.dataLayersState$
@@ -84,11 +108,11 @@ export class ExploreSidebarComponent {
     return this.expanded;
   }
 
-  readonly railItems: SidebarRailItem[] = [
-    { id: 'data-layers', icon: 'category', label: 'Data Layers' },
-    { id: 'base-layers', icon: 'layers', label: 'Base Layers' },
-    { id: 'favorites', icon: 'star', label: 'Favorite Data Layers' },
-  ];
+  readonly railItems = dataLayersRailItems({
+    baseLayers: true,
+    uploaded: this.featureService.isFeatureEnabled('DATA_UPLOAD'),
+    favoritesEnabled: true,
+  });
 
   get activeItem() {
     return this.railItems.find(

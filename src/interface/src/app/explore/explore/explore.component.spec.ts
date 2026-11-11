@@ -274,6 +274,28 @@ describe('ExploreComponent', () => {
       expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.FAVORITES);
     });
 
+    function restoreTab(tabIndex: SidebarTabs) {
+      spyOn(TestBed.inject(ExploreStorageService), 'getItem').and.returnValue({
+        tabIndex,
+        isPanelExpanded: true,
+        opacity: 0.5,
+      });
+      setupComponent();
+    }
+
+    it('restores the uploaded panel with DATA_UPLOAD', () => {
+      overrideFeatureFlags('DATA_ORGANIZATION', 'DATA_UPLOAD');
+      restoreTab(SidebarTabs.UPLOADED);
+
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.UPLOADED);
+    });
+
+    it('falls back to the data layers when DATA_UPLOAD went off', () => {
+      restoreTab(SidebarTabs.UPLOADED);
+
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.DATA_LAYERS);
+    });
+
     it('browses to the layer whose name is clicked on a map', () => {
       setupComponent();
       fixture.componentInstance.onTabIndexChange(SidebarTabs.FAVORITES);

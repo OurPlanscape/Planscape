@@ -6,4 +6,5 @@ export enum SidebarTabs {
   DATA_LAYERS,
   BASE_LAYERS,
   FAVORITES,
+  UPLOADED,
 }
