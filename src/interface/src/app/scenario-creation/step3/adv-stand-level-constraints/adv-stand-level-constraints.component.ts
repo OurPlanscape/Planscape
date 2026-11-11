@@ -58,6 +58,7 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatInputModule } from '@angular/material/input';
+import { ASLC_INFO_URL } from '@app/shared';
 
 const MAX_SELECTABLE_LAYERS = Number.POSITIVE_INFINITY;
 
@@ -95,6 +96,8 @@ export class AdvStandLevelConstraintsComponent
   extends StepDirective<ScenarioDraftConfiguration>
   implements OnInit, OnDestroy
 {
+  protected readonly ASLC_INFO_URL = ASLC_INFO_URL;
+
   selectedConstraints$ = new BehaviorSubject<NamedConstraint[]>([]);
   private readonly destroy$ = new Subject<void>();
 
