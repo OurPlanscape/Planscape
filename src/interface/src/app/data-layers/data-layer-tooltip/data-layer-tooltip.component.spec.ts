@@ -35,11 +35,16 @@ describe('DataLayerTooltipComponent', () => {
   } as unknown as DataLayer;
 
   /** Creates the component with the given layer, after the flags are set. */
-  function create(layer: Partial<DataLayer> = fullLayer, searchText = '') {
+  function create(
+    layer: Partial<DataLayer> = fullLayer,
+    searchText = '',
+    showAllData = true
+  ) {
     fixture = TestBed.createComponent(DataLayerTooltipComponent);
     component = fixture.componentInstance;
     component.layer = layer as DataLayer;
     component.searchText = searchText;
+    component.showAllData = showAllData;
     fixture.detectChanges();
     return fixture.nativeElement as HTMLElement;
   }
@@ -64,6 +69,22 @@ describe('DataLayerTooltipComponent', () => {
     create({ name: 'Testing Name' });
 
     expect(component).toBeTruthy();
+  });
+
+  [
+    { name: 'off', flags: [] as string[] },
+    { name: 'on', flags: ['DATA_ORGANIZATION'] },
+  ].forEach(({ name, flags }) => {
+    it(`asks to be closed from the header, with DATA_ORGANIZATION ${name}`, () => {
+      overrideFeatureFlags(...flags);
+      const el = create();
+      const closed = jasmine.createSpy('closed');
+      component.closed.subscribe(closed);
+
+      (el.querySelector('.close-button') as HTMLButtonElement).click();
+
+      expect(closed).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('with DATA_ORGANIZATION off', () => {
@@ -159,6 +180,24 @@ describe('DataLayerTooltipComponent', () => {
       const el = create(fullLayer);
 
       expect(el.querySelectorAll('mark').length).toBe(0);
+    });
+
+    describe('on a base layer', () => {
+      it('shows only the fields a base layer carries', () => {
+        const el = create(fullLayer, '', false);
+        const labels = Array.from(el.querySelectorAll('dt')).map((dt) =>
+          dt.textContent?.trim()
+        );
+
+        expect(labels).toEqual(['Data Creator', 'Vintage']);
+      });
+
+      it('keeps the download and Learn More actions', () => {
+        const el = create(fullLayer, '', false);
+
+        expect(el.querySelector('.download-link')).not.toBeNull();
+        expect(el.querySelector('.learn-more-link')).not.toBeNull();
+      });
     });
   });
 });
