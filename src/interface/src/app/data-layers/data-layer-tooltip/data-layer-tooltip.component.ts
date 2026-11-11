@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   AsyncPipe,
   DatePipe,
@@ -79,6 +79,8 @@ export class DataLayerTooltipComponent {
 
   // We should highlight searchText if provided
   @Input() searchText = '';
+
+  @Output() closed = new EventEmitter<void>();
 
   // The layer name collapses the description, it starts open
   descriptionExpanded = true;

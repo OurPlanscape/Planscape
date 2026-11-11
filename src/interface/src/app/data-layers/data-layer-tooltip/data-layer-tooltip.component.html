@@ -1,4 +1,15 @@
-<h3 class="header">Layer info</h3>
+<h3 class="header">
+  Layer info
+  <button
+    sg-button
+    type="button"
+    variant="icon-only"
+    icon="close"
+    [outlined]="true"
+    class="close-button"
+    aria-label="Close layer info"
+    (click)="closed.emit()"></button>
+</h3>
 
 <!-- DATA_ORGANIZATION metadata card -->
 <ng-container *appFeatureFlag="'DATA_ORGANIZATION'">
@@ -32,33 +43,37 @@
       [sgHighlighterText]="description"></p>
 
     <dl class="metadata">
-      <dt>Dataset Name</dt>
-      <dd
-        [sgHighlighter]="searchText"
-        [sgHighlighterText]="datasetName || '--'"></dd>
+      <ng-container *ngIf="showAllData">
+        <dt>Dataset Name</dt>
+        <dd
+          [sgHighlighter]="searchText"
+          [sgHighlighterText]="datasetName || '--'"></dd>
+      </ng-container>
 
       <dt>Data Creator</dt>
       <dd
         [sgHighlighter]="searchText"
         [sgHighlighterText]="dataCreator || '--'"></dd>
 
-      <dt>Geographic Coverage</dt>
-      <dd
-        [sgHighlighter]="searchText"
-        [sgHighlighterText]="geographicCoverage"></dd>
+      <ng-container *ngIf="showAllData">
+        <dt>Geographic Coverage</dt>
+        <dd
+          [sgHighlighter]="searchText"
+          [sgHighlighterText]="geographicCoverage"></dd>
 
-      <dt>Value Range</dt>
-      <dd>{{ valueRange || '--' }}</dd>
+        <dt>Value Range</dt>
+        <dd>{{ valueRange || '--' }}</dd>
 
-      <dt>Units</dt>
-      <dd [sgHighlighter]="searchText" [sgHighlighterText]="getUnits()"></dd>
+        <dt>Units</dt>
+        <dd [sgHighlighter]="searchText" [sgHighlighterText]="getUnits()"></dd>
+      </ng-container>
 
       <dt>Vintage</dt>
       <dd>{{ vintageDate ? (vintageDate | date: 'yyyy') : '--' }}</dd>
     </dl>
   </div>
 
-  <div class="footer" *ngIf="showAllData">
+  <div class="footer">
     <ng-container *ngTemplateOutlet="downloadAction"></ng-container>
 
     <a
