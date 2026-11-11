@@ -63,7 +63,7 @@ export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
   {
     label: 'Stand-level Constraints',
     description:
-      'Define the minimum or maximum values for key factors to guide decision-making.',
+      'Define the conditions under which a stand is eligible for treatment.',
     icon: '/assets/svg/icons/overview/stand-level.svg',
     includeConstraints: true,
     includeExcludedAreas: true,
@@ -131,7 +131,7 @@ export const CUSTOM_SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
   {
     label: 'Stand-level Constraints',
     description:
-      'Define the minimum or maximum values for key factors to guide decision-making.',
+      'Define the conditions under which a stand is eligible for treatment.',
     icon: '/assets/svg/icons/overview/stand-level.svg',
     includeConstraints: true,
     includeExcludedAreas: true,
