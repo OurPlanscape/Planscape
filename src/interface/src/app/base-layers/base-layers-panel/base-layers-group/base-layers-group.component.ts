@@ -27,6 +27,7 @@ import {
 import { BaseLayer, MapDataDataSet } from '@types';
 import { catchError, map, of, switchMap, take, tap } from 'rxjs';
 import { injectBaseLayersRequestScope } from '@base-layers/base-layers-request-scope';
+import { SingleOpenMenuDirective } from '@standalone/single-open-menu-directive/single-open-menu.directive';
 
 /**
  * One base layer dataset in the panel: a collapsible header with its layers
@@ -41,6 +42,7 @@ import { injectBaseLayersRequestScope } from '@base-layers/base-layers-request-s
     AsyncPipe,
     ButtonComponent,
     DataLayerTooltipComponent,
+    SingleOpenMenuDirective,
     HighlighterDirective,
     MatCheckboxModule,
     MatMenuModule,

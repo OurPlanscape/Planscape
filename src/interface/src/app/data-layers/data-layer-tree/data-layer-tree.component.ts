@@ -21,6 +21,7 @@ import { DataLayer } from '@types';
 import { map, shareReplay, switchMap } from 'rxjs';
 import { DataLayersStateService } from '../data-layers.state.service';
 import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.component';
+import { SingleOpenMenuDirective } from '@standalone/single-open-menu-directive/single-open-menu.directive';
 
 @UntilDestroy()
 @Component({
@@ -38,6 +39,7 @@ import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.
     FormsModule,
     MatMenuModule,
     DataLayerTooltipComponent,
+    SingleOpenMenuDirective,
     MatIconModule,
     MatCheckboxModule,
     ToggleComponent,
