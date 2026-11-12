@@ -18,6 +18,7 @@ from datasets.models import (
     DataLayerStatus,
     DataLayerType,
     StorageTypeChoices,
+    Style,
 )
 from datasets.services import (
     geometry_from_info,
@@ -46,6 +47,7 @@ from funding_report.models import (
     BIOMASS_VARIABLE,
     BURN_SIMULATION_BAND,
     BURN_SIMULATION_ROLE,
+    BURN_SIMULATION_STYLE_NAME,
     FLAME_LENGTH_REDUCTION_DEFAULT_FROM_FT,
     FLAME_LENGTH_REDUCTION_DEFAULT_TO_FT,
     FUNDING_REPORT_LAYER_CATEGORIES,
@@ -937,7 +939,7 @@ def generate_burn_simulation_datalayer(
     name = f"Funding Report Burn Simulation - Scenario {scenario.pk}"
     DataLayer.dead_or_alive.filter(dataset=source.dataset, name=name).delete()
 
-    return DataLayer.objects.create(
+    datalayer = DataLayer.objects.create(
         name=name,
         uuid=uuid_value,
         dataset=source.dataset,
@@ -957,6 +959,24 @@ def generate_burn_simulation_datalayer(
         map_service_type=source.map_service_type,
         status=DataLayerStatus.PENDING,
     )
+
+    style = (
+        Style.objects.filter(
+            name=BURN_SIMULATION_STYLE_NAME,
+            type=DataLayerType.RASTER,
+        )
+        .order_by("id")
+        .first()
+    )
+    if style is None:
+        log.warning("Missing funding report burn simulation style.")
+    else:
+        DataLayerHasStyle.objects.create(
+            datalayer=datalayer,
+            style=style,
+            default=True,
+        )
+    return datalayer
 
 
 def calculate_burn_simulation_results(
