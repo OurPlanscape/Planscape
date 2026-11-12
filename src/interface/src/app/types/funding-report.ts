@@ -131,6 +131,15 @@ export interface FundingReportResults {
     total: Record<string, Record<string, number>>;
     projects: Record<string, Record<string, number>>;
   };
+
+  burn_simulation?: {
+    // optional for backward compatibiity
+    total_pixels: number | null;
+    burned_pixels: number | null;
+    planning_area_acres: number | null;
+    catastrophic_wildfire_reduction_acres: number | null;
+    catastrophic_wildfire_reduction_percent: number | null;
+  };
 }
 
 // TODO full interface
@@ -156,14 +165,6 @@ export interface FundingReport {
     | 'RUNNING'
     | 'FAILED';
   burn_simulation_datalayer?: number | null; // optional for backward compatibiity
-  burn_simulation_results?: {
-    // optional for backward compatibiity
-    total_pixels: number | null;
-    burned_pixels: number | null;
-    planning_area_acres: number | null;
-    catastrophic_wildfire_reduction_acres: number | null;
-    catastrophic_wildfire_reduction_percent: number | null;
-  };
   geopackage_status: null | 'SUCCEEDED' | 'PROCESSING' | 'PENDING' | 'FAILED';
   geopackage_url: null | string;
   /**
@@ -218,14 +219,6 @@ export interface FundingReportPublic {
     | 'RUNNING'
     | 'FAILED';
   burn_simulation_datalayer?: number | null; // optional for backward compatibiity
-  burn_simulation_results?: {
-    // optional for backward compatibiity
-    total_pixels: number | null;
-    burned_pixels: number | null;
-    planning_area_acres: number | null;
-    catastrophic_wildfire_reduction_acres: number | null;
-    catastrophic_wildfire_reduction_percent: number | null;
-  };
   treatment_datalayer: number | null;
   aet_datalayer: number | null;
   geopackage_status: FundingReport['geopackage_status'];

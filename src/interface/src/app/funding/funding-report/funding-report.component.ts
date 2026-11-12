@@ -764,7 +764,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   get catastrophicFire() {
-    const burnResults = this.report.burn_simulation_results;
+    const burnResults = this.report.results?.burn_simulation;
 
     // This may include several attributes in the near future,
     //  so keeping this as an object for now.
