@@ -230,7 +230,7 @@ class BurnEmulatorTaskTest(TestCase):
         )
         self.assertEqual(self.generate.call_args.args[1], "gs://outputs/output.tif")
         self.assertEqual(self.report.burn_simulation_datalayer, self.datalayer)
-        self.assertEqual(self.report.burn_simulation_results, self.burn_results)
+        self.assertEqual(self.report.results, {"burn_simulation": self.burn_results})
         self.assertEqual(self.calculate_burn.call_args.args[1], self.datalayer)
         self.uploaded.assert_called_once_with(
             self.datalayer.pk, status=DataLayerStatus.READY
@@ -274,7 +274,7 @@ class BurnEmulatorTaskTest(TestCase):
         check_burn_emulator_status(self.report.pk)
         self.assertEqual(self.refresh().burn_simulation_status, S.FAILED)
         self.assertIsNone(self.report.burn_simulation_datalayer_id)
-        self.assertIsNone(self.report.burn_simulation_results)
+        self.assertIsNone(self.report.results)
         self.assertFalse(DataLayer.dead_or_alive.filter(pk=self.datalayer.pk).exists())
         self.uploaded.assert_not_called()
 
@@ -284,7 +284,7 @@ class BurnEmulatorTaskTest(TestCase):
         self.calculate_burn.side_effect = ConnectionError("gcs unavailable")
         check_burn_emulator_status(self.report.pk)
         self.assertEqual(self.refresh().burn_simulation_status, S.RUNNING)
-        self.assertIsNone(self.report.burn_simulation_results)
+        self.assertIsNone(self.report.results)
 
     def test_stale_run_discards_registered_output(self):
         self.set_job()
@@ -364,6 +364,45 @@ class BurnEmulatorTaskTest(TestCase):
         self.email.assert_called_once_with(self.report.pk)
         self.export.assert_called_once_with(self.report.pk)
         self.events.assert_called_with(self.report.pk, S.SUCCESS, S.SUCCESS, S.SUCCESS)
+
+    def test_burn_results_survive_later_calculation_results(self):
+        self.set_job()
+        self.api.return_value = job("cached", output_path="gs://outputs/output.tif")
+        with self.captureOnCommitCallbacks(execute=True):
+            check_burn_emulator_status(self.report.pk)
+            async_finalize_funding_report_results([], self.report.pk, self.run_id)
+        results = self.refresh().results
+        self.assertEqual(results["burn_simulation"], self.burn_results)
+        self.assertIn("summary", results)
+        self.assertIn("projects", results)
+
+    def test_calculation_results_survive_later_burn_results(self):
+        self.set_job()
+        with self.captureOnCommitCallbacks(execute=True):
+            async_finalize_funding_report_results([], self.report.pk, self.run_id)
+        calculation_results = self.refresh().results
+        self.api.return_value = job("cached", output_path="gs://outputs/output.tif")
+        with self.captureOnCommitCallbacks(execute=True):
+            check_burn_emulator_status(self.report.pk)
+        self.assertEqual(
+            self.refresh().results,
+            {**calculation_results, "burn_simulation": self.burn_results},
+        )
+
+    def test_merge_results_merges_into_locked_results(self):
+        FundingOpportunityReport.objects.filter(pk=self.report.pk).update(
+            results={"summary": {"A": 1}, "projects": {}}
+        )
+        # in-memory instance is stale; the merge must use the locked DB row
+        self.assertTrue(
+            update_report_components(
+                self.report.pk, merge_results={"burn_simulation": {"x": 1}}
+            )
+        )
+        self.assertEqual(
+            self.refresh().results,
+            {"summary": {"A": 1}, "projects": {}, "burn_simulation": {"x": 1}},
+        )
 
     def test_burn_failure_then_successful_calculations(self):
         self.set_job()
