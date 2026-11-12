@@ -35,9 +35,9 @@ from planning.models import (
 from planning.services import (
     build_run_configuration,
     calculate_and_update_scenario_result,
+    clone_scenario,
     create_planning_area,
     create_scenario,
-    clone_scenario,
     create_scenario_from_upload,
     export_planning_area_to_geopackage,
     export_scenario_inputs_to_geopackage,
@@ -54,8 +54,8 @@ from planning.services import (
     get_max_area_project,
     get_max_treatable_area,
     get_max_treatable_stand_count,
-    get_schema,
     get_scenario_configuration_details,
+    get_schema,
     get_sub_units_details,
     sanitize_shp_field_name,
     trigger_scenario_run,
@@ -154,8 +154,7 @@ class BuildRunConfigurationTest(TestCase):
         run_configuration = build_run_configuration(scenario)
 
         datalayers = {
-            datalayer["id"]: datalayer
-            for datalayer in run_configuration["datalayers"]
+            datalayer["id"]: datalayer for datalayer in run_configuration["datalayers"]
         }
         self.assertEqual(datalayers[dne_datalayer.pk]["threshold"], "value != 10")
         self.assertEqual(
@@ -201,8 +200,7 @@ class BuildRunConfigurationTest(TestCase):
         run_configuration = build_run_configuration(scenario)
 
         datalayers = {
-            datalayer["id"]: datalayer
-            for datalayer in run_configuration["datalayers"]
+            datalayer["id"]: datalayer for datalayer in run_configuration["datalayers"]
         }
         self.assertEqual(datalayers[priority.pk]["threshold"], "value != 10")
         self.assertEqual(
@@ -253,8 +251,7 @@ class BuildRunConfigurationTest(TestCase):
         run_configuration = build_run_configuration(scenario)
 
         datalayers = {
-            datalayer["id"]: datalayer
-            for datalayer in run_configuration["datalayers"]
+            datalayer["id"]: datalayer for datalayer in run_configuration["datalayers"]
         }
         self.assertEqual(
             datalayers[in_datalayer.pk]["threshold"],
@@ -1499,6 +1496,32 @@ class TestRemoveExcludes(TestCase):
         for query in context.captured_queries:
             self.assertNotIn(geometry_hex, query["sql"].lower())
 
+    def test_get_available_stands_applies_aslc_constraint(self):
+        self.datalayer.metadata = {
+            "modules": {
+                "forsys": {
+                    "enabled": False,
+                },
+                "advanced_stand_level_constraint": {
+                    "enabled": True,
+                    "metric_column": "majority",
+                },
+            }
+        }
+        self.datalayer.save(update_fields=["metadata"])
+        result = get_available_stands(
+            self.scenario,
+            stand_size=StandSizeChoices.LARGE,
+            constraints=[
+                {
+                    "datalayer": self.datalayer,
+                    "operator": None,
+                    "value": 1,
+                }
+            ],
+        )
+        self.assertEqual(6, len(result["unavailable"]["by_thresholds"]))
+
 
 class ValidateScenarioConfigurationTest(TestCase):
     def setUp(self):
@@ -1883,36 +1906,48 @@ class CloneScenarioTest(TestCase):
         )
 
     def test_cloning_of_scenario(self):
-        orig_scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
-        cloned_scenario = clone_scenario(orig_scenario.id, self.secondUser, 'some new scenario')
+        orig_scenario = ScenarioFactory.create(
+            planning_area=self.planning_area, user=self.user
+        )
+        cloned_scenario = clone_scenario(
+            orig_scenario.id, self.secondUser, "some new scenario"
+        )
         # assert that some cloned attributes should match
-        self.assertEqual(orig_scenario.planning_area_id, cloned_scenario.planning_area_id)
+        self.assertEqual(
+            orig_scenario.planning_area_id, cloned_scenario.planning_area_id
+        )
         self.assertEqual(orig_scenario.origin, cloned_scenario.origin)
         self.assertEqual(orig_scenario.type, cloned_scenario.type)
         self.assertEqual(orig_scenario.capabilities, cloned_scenario.capabilities)
         self.assertEqual(orig_scenario.treatment_goal, cloned_scenario.treatment_goal)
-       
+
         # assert that clone is associated with user doing the cloning
         self.assertEqual(cloned_scenario.user, self.secondUser)
-        
+
         # assert that some attributes should not be cloned
         self.assertNotEqual(orig_scenario.user, cloned_scenario.user)
         self.assertNotEqual(orig_scenario.uuid, cloned_scenario.uuid)
 
     def test_cloning_of_scenario_but_not_results(self):
-        orig_scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
+        orig_scenario = ScenarioFactory.create(
+            planning_area=self.planning_area, user=self.user
+        )
         ScenarioResultFactory.create(
             scenario=orig_scenario, status=ScenarioResultStatus.SUCCESS
         )
-        cloned_scenario = clone_scenario(orig_scenario.id, self.secondUser, 'some new scenario')
+        cloned_scenario = clone_scenario(
+            orig_scenario.id, self.secondUser, "some new scenario"
+        )
 
         # assert that some cloned attributes should match
-        self.assertEqual(orig_scenario.planning_area_id, cloned_scenario.planning_area_id)
+        self.assertEqual(
+            orig_scenario.planning_area_id, cloned_scenario.planning_area_id
+        )
         self.assertEqual(orig_scenario.origin, cloned_scenario.origin)
         self.assertEqual(orig_scenario.type, cloned_scenario.type)
         self.assertEqual(orig_scenario.capabilities, cloned_scenario.capabilities)
         self.assertEqual(orig_scenario.treatment_goal, cloned_scenario.treatment_goal)
-       
+
         # assert that clone is associated with user doing the cloning
         self.assertEqual(cloned_scenario.user, self.secondUser)
 
@@ -1922,7 +1957,9 @@ class CloneScenarioTest(TestCase):
         self.assertNotEqual(orig_scenario.uuid, cloned_scenario.uuid)
 
         # assert that results are not copied
-        self.assertNotEqual(orig_scenario.results.status, cloned_scenario.results.status)
+        self.assertNotEqual(
+            orig_scenario.results.status, cloned_scenario.results.status
+        )
 
         self.assertEqual(cloned_scenario.results.status, ScenarioResultStatus.DRAFT)
         self.assertEqual(cloned_scenario.results.result, None)
@@ -1932,14 +1969,20 @@ class CloneScenarioTest(TestCase):
 
     def test_cloning_of_scenario_with_name_collisions(self):
         scenarioV3 = ScenarioFactory.create(
-            planning_area=self.planning_area, 
-            user=self.user)
+            planning_area=self.planning_area, user=self.user
+        )
         scenarioV3.version = ScenarioVersion.V3
         scenarioV3.save()
 
-        cloned_scenario = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
-        cloned_scenario_2 = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
-        cloned_scenario_3 = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
+        cloned_scenario = clone_scenario(
+            scenarioV3.id, self.secondUser, "some new scenario"
+        )
+        cloned_scenario_2 = clone_scenario(
+            scenarioV3.id, self.secondUser, "some new scenario"
+        )
+        cloned_scenario_3 = clone_scenario(
+            scenarioV3.id, self.secondUser, "some new scenario"
+        )
         self.assertNotEqual(cloned_scenario.name, cloned_scenario_2.name)
         self.assertNotEqual(cloned_scenario.name, cloned_scenario_3.name)
         self.assertNotEqual(cloned_scenario_2.name, cloned_scenario_3.name)
@@ -1956,10 +1999,10 @@ class CloneScenarioTest(TestCase):
             "constraints": [
                 {"datalayer": 1, "operator": "lt", "value": 25},
             ],
-            "included_areas": [123,456,789],
-            "excluded_areas": [333,222,111],
-            "priorities": [100,200],
-            "cobenefits": [300,400],
+            "included_areas": [123, 456, 789],
+            "excluded_areas": [333, 222, 111],
+            "priorities": [100, 200],
+            "cobenefits": [300, 400],
         }
         tx_goal = TreatmentGoalFactory(name="Some tx goal")
         scenarioV3 = ScenarioFactory.create(
@@ -1971,11 +2014,13 @@ class CloneScenarioTest(TestCase):
         )
         self.assertEqual(scenarioV3.version, ScenarioVersion.V3)
 
-        cloned_scenario = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
+        cloned_scenario = clone_scenario(
+            scenarioV3.id, self.secondUser, "some new scenario"
+        )
 
         self.assertNotEqual(cloned_scenario.pk, scenarioV3.pk)
         self.assertEqual(cloned_scenario.user, self.secondUser)
-        self.assertEqual(cloned_scenario.name, 'some new scenario')
+        self.assertEqual(cloned_scenario.name, "some new scenario")
         self.assertEqual(cloned_scenario.treatment_goal, tx_goal)
         self.assertEqual(
             cloned_scenario.planning_approach,
@@ -2000,7 +2045,9 @@ class CloneScenarioTest(TestCase):
             },
         )
 
-        cloned_scenario = clone_scenario(scenarioV1.id, self.secondUser, 'some new scenario')
+        cloned_scenario = clone_scenario(
+            scenarioV1.id, self.secondUser, "some new scenario"
+        )
 
         config = cloned_scenario.configuration
         self.assertEqual(config["targets"], {"estimated_cost": 2000})
@@ -2029,7 +2076,9 @@ class CloneScenarioTest(TestCase):
             },
         )
 
-        cloned_scenario = clone_scenario(scenarioV2.id, self.secondUser, 'some new scenario')
+        cloned_scenario = clone_scenario(
+            scenarioV2.id, self.secondUser, "some new scenario"
+        )
 
         config = cloned_scenario.configuration
         self.assertEqual(
