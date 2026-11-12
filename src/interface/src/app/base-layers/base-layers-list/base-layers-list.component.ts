@@ -24,6 +24,7 @@ import { MAP_MODULE_NAME } from '@services/map-module.token';
 import { ButtonComponent, ToggleComponent } from '@styleguide';
 import { DataLayerTooltipComponent } from '@data-layers/data-layer-tooltip/data-layer-tooltip.component';
 import { MatMenuModule } from '@angular/material/menu';
+import { SingleOpenMenuDirective } from '@standalone/single-open-menu-directive/single-open-menu.directive';
 
 @Component({
   selector: 'app-base-layers-list',
@@ -37,6 +38,7 @@ import { MatMenuModule } from '@angular/material/menu';
     ButtonComponent,
     ToggleComponent,
     DataLayerTooltipComponent,
+    SingleOpenMenuDirective,
     MatMenuModule,
   ],
   templateUrl: './base-layers-list.component.html',

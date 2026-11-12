@@ -18,6 +18,7 @@ import { unselectableReason } from '@app/shared';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
 import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.component';
+import { SingleOpenMenuDirective } from '@standalone/single-open-menu-directive/single-open-menu.directive';
 
 @Component({
   selector: 'app-data-set',
@@ -34,6 +35,7 @@ import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.
     AsyncPipe,
     MatMenuModule,
     DataLayerTooltipComponent,
+    SingleOpenMenuDirective,
     MatTooltipModule,
     MatCheckboxModule,
     ToggleComponent,
