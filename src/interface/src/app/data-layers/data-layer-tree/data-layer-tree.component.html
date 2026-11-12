@@ -61,6 +61,7 @@
           [outlined]="true"
           [matMenuTriggerFor]="popoverMenu"
           #infoTrigger="matMenuTrigger"
+          appSingleOpenMenu
           (menuOpened)="node.infoMenuOpen = true"
           (menuClosed)="node.infoMenuOpen = false"></button>
         <mat-menu
