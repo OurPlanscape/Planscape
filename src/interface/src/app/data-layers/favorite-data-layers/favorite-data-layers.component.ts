@@ -23,6 +23,7 @@ import { unselectableReason } from '@app/shared';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { DataLayerTooltipComponent } from '@data-layers/data-layer-tooltip/data-layer-tooltip.component';
 import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.component';
+import { SingleOpenMenuDirective } from '@standalone/single-open-menu-directive/single-open-menu.directive';
 
 @Component({
   selector: 'app-favorite-data-layers',
@@ -40,6 +41,7 @@ import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.
     MatTooltipModule,
     ButtonComponent,
     DataLayerTooltipComponent,
+    SingleOpenMenuDirective,
     EmptyStateComponent,
     HighlighterDirective,
     NoResultsComponent,

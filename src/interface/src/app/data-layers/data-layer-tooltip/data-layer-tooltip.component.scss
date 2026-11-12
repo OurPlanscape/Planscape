@@ -2,6 +2,8 @@
 @import 'colors';
 
 :host {
+  // Fills the menu panel so every click inside it reaches the host listener
+  display: block;
   padding: 0;
 
   h3.header {
