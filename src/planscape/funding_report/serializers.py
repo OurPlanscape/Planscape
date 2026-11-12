@@ -88,6 +88,8 @@ class FundingOpportunityReportPublicSerializer(serializers.ModelSerializer):
             "scenario",
             "creator",
             "status",
+            "calculation_status",
+            "burn_simulation_status",
             "results",
             "treatment_datalayer",
             "aet_datalayer",
