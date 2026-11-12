@@ -18,6 +18,8 @@ import { SidebarTabs } from '@explore/sidebar-tabs';
 import { DataLayersRegistryService } from '@explore/data-layers-registry';
 import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { MatDialog } from '@angular/material/dialog';
+import { UploadDataModalComponent } from '@data-layers/upload-data-modal/upload-data-modal.component';
 import { FeatureService } from '@features/feature.service';
 import { FeaturesModule } from '@features/features.module';
 import { MatIconModule } from '@angular/material/icon';
@@ -84,18 +86,21 @@ export class ExploreSidebarComponent {
     private multiMapConfigState: MultiMapConfigState,
     private dataLayersRegistry: DataLayersRegistryService,
     private featureService: FeatureService,
-    private workspaceState: WorkspaceState
+    private workspaceState: WorkspaceState,
+    private dialog: MatDialog
   ) {}
 
   canUpload$ = this.featureService.isFeatureEnabled('DATA_UPLOAD')
     ? this.workspaceState.currentWorkspace$.pipe(
-        map((workspace) => workspace.permissions.includes('add_datalayer')),
+        // TODO: restore once the backend ships add_datalayer
+        // map((workspace) => workspace.permissions.includes('add_datalayer')),
+        map(() => true),
         catchError(() => of(false))
       )
     : of(false);
 
   openUpload() {
-    // TODO: open the upload data modal
+    this.dialog.open(UploadDataModalComponent);
   }
 
   goBack() {
