@@ -45,6 +45,7 @@ from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from modules.base import (
+    AdvancedStandLevelConstraintModule,
     ForsysModule,
     PrioritizeSubUnitsModule,
     compute_planning_area_capabilities,
@@ -2111,7 +2112,9 @@ def get_constrained_stands(
 
         metric_column = (
             modules.get("forsys", {}).get("metric_column")
-            or modules.get("advanced_stand_level_constraint", {}).get("metric_column")
+            or modules.get(AdvancedStandLevelConstraintModule.name, {}).get(
+                "metric_column"
+            )
             or "avg"
         )
 
@@ -2270,7 +2273,7 @@ def get_available_stands(
             (datalayer := constraint.get("datalayer"))
             and (
                 datalayer.has_module(ForsysModule.name)
-                or datalayer.has_module("advanced_stand_level_constraint")
+                or datalayer.has_module(AdvancedStandLevelConstraintModule.name)
             )
         )
     ]
