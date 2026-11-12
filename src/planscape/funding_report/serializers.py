@@ -91,6 +91,7 @@ class FundingOpportunityReportPublicSerializer(serializers.ModelSerializer):
             "results",
             "treatment_datalayer",
             "aet_datalayer",
+            "burn_simulation_datalayer",
             "geopackage_status",
             "geopackage_url",
             "shared_configuration",
