@@ -25,7 +25,7 @@ from stands.services import (
     get_missing_stand_ids_for_datalayer_within_geometry,
 )
 from utils.cli_utils import call_forsys
-from utils.frontend import get_frontend_url
+from utils.frontend import get_frontend_url, get_planning_area_path
 
 from planning.events import publish_planning_area_event, publish_scenario_event
 from planning.models import (
@@ -486,6 +486,7 @@ def async_scenario_post_processing(scenario_id):
         if scenario.result_status == ScenarioResultStatus.SUCCESS:
             calculate_and_update_scenario_result(scenario)
     except Exception:
+        log.exception("Failed to post-process scenario %s", scenario_id)
         scenario.post_process_status = ScenarioPostProcessingStatus.FAILURE
     else:
         scenario.post_process_status = ScenarioPostProcessingStatus.SUCCESS
@@ -610,7 +611,7 @@ def async_send_email_scenario_finished(scenario_id: int) -> None:
             return
 
         link = get_frontend_url(
-            f"plan/{scenario.planning_area_id}/scenario/{scenario.pk}"
+            f"{get_planning_area_path(scenario.planning_area)}/scenario/{scenario.pk}"
         )
 
         context = {
@@ -662,7 +663,7 @@ def async_send_email_large_planning_area(planning_area_id: int) -> None:
     user_email = (
         (planning_area.user.email or "").strip() if planning_area.user else "(unknown)"
     )
-    link = get_frontend_url(f"plan/{planning_area.pk}")
+    link = get_frontend_url(get_planning_area_path(planning_area))
 
     context = {
         "user_email": user_email,

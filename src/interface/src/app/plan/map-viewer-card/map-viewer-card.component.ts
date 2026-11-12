@@ -18,6 +18,7 @@ import { PlanState } from '../plan.state';
 import { map } from 'rxjs';
 import { MapProjectAreasComponent } from '@app/maplibre-map/map-project-areas/map-project-areas.component';
 import { CardLinkComponent, CardLinkHeight } from '@styleguide';
+import { getMapViewerPath } from '@plan/plan-helpers';
 
 @Component({
   selector: 'app-map-viewer-card',
@@ -86,10 +87,7 @@ export class MapViewerCardComponent {
 
   // If we have scenarioId we want to display project areas on explore, if not we just navigate to explore/plan
   navigateToExplore() {
-    this.router.navigate(
-      this.scenarioId
-        ? ['/map-viewer', this.planId, this.scenarioId]
-        : ['/map-viewer', this.planId]
-    );
+    const path = getMapViewerPath(this.planId, this.route.snapshot);
+    this.router.navigate(this.scenarioId ? [path, this.scenarioId] : [path]);
   }
 }

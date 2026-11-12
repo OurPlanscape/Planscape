@@ -8,7 +8,7 @@ from cacheops import cached
 from core.flags import feature_enabled
 from core.gcs import create_download_url as create_gcs_download_url
 from core.gcs import is_gcs_file
-from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin
+from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin, UUIDMixin
 from core.s3 import create_download_url as create_s3_download_url
 from core.s3 import is_s3_file
 from core.schemes import SUPPORTED_SCHEMES
@@ -83,7 +83,7 @@ class DatasetManager(models.Manager):
         return DatasetQuerySet(self.model, using=self._db).filter(deleted_at=None)
 
 
-class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
+class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, UUIDMixin, models.Model):
     id: int
 
     created_by_id: int
@@ -156,7 +156,7 @@ class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         verbose_name_plural = "Datasets"
 
 
-class Category(CreatedAtMixin, UpdatedAtMixin, MP_Node):
+class Category(CreatedAtMixin, UpdatedAtMixin, UUIDMixin, MP_Node):
     id: int
 
     created_by_id: int
@@ -220,7 +220,7 @@ class Category(CreatedAtMixin, UpdatedAtMixin, MP_Node):
         verbose_name_plural = "Categories"
 
 
-class SimpleCategory(CreatedAtMixin, UpdatedAtMixin, models.Model):
+class SimpleCategory(CreatedAtMixin, UpdatedAtMixin, UUIDMixin, models.Model):
     id: int
 
     name = models.CharField(max_length=128)
@@ -340,8 +340,8 @@ class Style(
     id: int
 
     uuid = models.UUIDField(
-        null=True,
         default=uuid4,
+        db_index=True,
     )
 
     created_by_id: int
@@ -411,7 +411,8 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
 
     uuid = models.UUIDField(
-        null=True,
+        default=uuid4,
+        db_index=True,
     )
 
     created_by_id: int

@@ -32,37 +32,51 @@
       (change)="onLayerChange(layer, true)">
       <span
         class="layer-name"
+        [class.selected]="isSelectedLayer(layer.id)"
         [sgHighlighter]="searchTerm"
         [sgHighlighterText]="layer.name"></span>
       <span class="right-items">
         <mat-spinner
+          *ngIf="isLayerLoading(loadingLayers$ | async, layer.id); else legend"
           class="side-spinner"
-          diameter="20"
-          *ngIf="(loadingLayers$ | async)?.includes('source_' + layer.id)">
+          diameter="20">
         </mat-spinner>
-        <button
-          *ngIf="layer.metadata?.['metadata']"
-          sg-button
-          variant="icon-only"
-          icon="info"
-          class="info-icon"
-          [outlined]="true"
-          [matMenuTriggerFor]="popoverMenu"></button>
-        <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
-          <app-data-layer-tooltip
-            [layer]="layer"
-            [showAllData]="false"></app-data-layer-tooltip>
-        </mat-menu>
+
+        <ng-container *ngIf="layer.metadata?.['metadata']">
+          <button
+            sg-button
+            variant="icon-only"
+            icon="info"
+            class="info-icon"
+            [outlined]="true"
+            [matMenuTriggerFor]="popoverMenu"
+            #infoTrigger="matMenuTrigger"
+            appSingleOpenMenu></button>
+          <mat-menu
+            #popoverMenu="matMenu"
+            class="datalayer-tooltip-panel"
+            [hasBackdrop]="false">
+            <app-data-layer-tooltip
+              [layer]="layer"
+              [showAllData]="false"
+              (closed)="infoTrigger.closeMenu()"></app-data-layer-tooltip>
+          </mat-menu>
+        </ng-container>
+        <ng-template #legend>
+          <span
+            class="base-layer-legend"
+            *ngIf="isSelectedLayer(layer.id)"
+            [style.backgroundColor]="
+              layer.styles[0].data['fill-color'] || BASE_LAYERS_DEFAULT.COLOR
+            "
+            [style.border-color]="
+              layer.styles[0].data['fill-outline-color'] ||
+              BASE_LAYERS_DEFAULT.COLOR
+            "></span>
+        </ng-template>
         <span
-          class="base-layer-legend"
-          *ngIf="isSelectedLayer(layer.id)"
-          [style.backgroundColor]="
-            layer.styles[0].data['fill-color'] || BASE_LAYERS_DEFAULT.COLOR
-          "
-          [style.border-color]="
-            layer.styles[0].data['fill-outline-color'] ||
-            BASE_LAYERS_DEFAULT.COLOR
-          "></span>
+          *ngIf="!layer.metadata?.['metadata']"
+          class="info-icon-placeholder"></span>
       </span>
     </mat-checkbox>
   </ng-container>
@@ -77,6 +91,7 @@
         (changed)="onLayerToggle(layer, $event)"
         ><span
           class="layer-name"
+          [class.selected]="isSelectedLayer(layer.id)"
           [sgHighlighter]="searchTerm"
           [sgHighlighterText]="layer.name"></span>
       </sg-toggle>

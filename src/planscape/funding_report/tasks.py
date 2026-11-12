@@ -54,7 +54,7 @@ from funding_report.services import (
     treatment_layer_has_valid_data,
 )
 from planning.models import ProjectArea
-from utils.frontend import get_frontend_url
+from utils.frontend import get_frontend_url, get_planning_area_path
 
 from planscape.celery import app
 
@@ -124,6 +124,9 @@ def send_funding_opportunity_report_shared_link(
         raise
 
 
+BURN_SIMULATION_RESULTS_KEY = "burn_simulation"
+
+
 def update_report_components(
     report_id: int,
     *,
@@ -131,9 +134,16 @@ def update_report_components(
     expected_job_id: str | None = None,
     active_burn_only: bool = False,
     active_calculation_only: bool = False,
+    merge_results: dict | None = None,
     **changes,
 ) -> bool:
-    """Serialize completion decisions and ignore responses from earlier runs."""
+    """Serialize completion decisions and ignore responses from earlier runs.
+
+    `results` is written by both the calculation callback and the burn
+    emulator, so every write happens against the locked row: a full
+    `results` replacement keeps the stored burn simulation entry, and
+    `merge_results` shallow-merges its keys into the stored `results`.
+    """
     with transaction.atomic():
         report = (
             FundingOpportunityReport.objects.select_for_update()
@@ -161,15 +171,28 @@ def update_report_components(
         if active_calculation_only and report.calculation_status not in active:
             return False
         previous_status = report.status
+        current_results = report.results or {}
         for field, value in changes.items():
             setattr(report, field, value)
+        if "results" in changes and BURN_SIMULATION_RESULTS_KEY in current_results:
+            new_results = dict(changes["results"] or {})
+            new_results.setdefault(
+                BURN_SIMULATION_RESULTS_KEY,
+                current_results[BURN_SIMULATION_RESULTS_KEY],
+            )
+            report.results = new_results
+        if merge_results is not None:
+            report.results = {**(report.results or {}), **merge_results}
+        fields = list(changes)
+        if merge_results is not None and "results" not in fields:
+            fields.append("results")
         # Legacy calculation-only callers explicitly supply their overall status.
         if "status" not in changes:
             report.status = report.get_overall_status()
         report.save(
-            update_fields=[*changes, "status", "updated_at"]
+            update_fields=[*fields, "status", "updated_at"]
             if "status" not in changes
-            else [*changes, "updated_at"]
+            else [*fields, "updated_at"]
         )
         status, calculation_status, burn_status = (
             report.status,
@@ -410,7 +433,8 @@ def async_send_email_funding_report_finished(
         return
 
     funding_report_link = get_frontend_url(
-        f"plan/{report.scenario.planning_area_id}/scenario/{report.scenario_id}/funding"
+        f"{get_planning_area_path(report.scenario.planning_area)}"
+        f"/scenario/{report.scenario_id}/funding"
     )
 
     context = {
@@ -781,7 +805,7 @@ def apply_burn_output(
         burn_simulation_job_id=response["job_id"],
         burn_simulation_response=response,
         burn_simulation_datalayer=datalayer,
-        burn_simulation_results=results,
+        merge_results={BURN_SIMULATION_RESULTS_KEY: results},
     )
     if not linked:
         discard_datalayer(datalayer)

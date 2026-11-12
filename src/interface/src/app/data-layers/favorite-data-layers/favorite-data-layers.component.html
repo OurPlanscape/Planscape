@@ -72,12 +72,18 @@
         class="info-icon"
         [outlined]="true"
         [matMenuTriggerFor]="popoverMenu"
+        #infoTrigger="matMenuTrigger"
+        appSingleOpenMenu
         (menuOpened)="infoMenuOpen = true"
         (menuClosed)="infoMenuOpen = false"></button>
-      <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
+      <mat-menu
+        #popoverMenu="matMenu"
+        class="datalayer-tooltip-panel"
+        [hasBackdrop]="false">
         <app-data-layer-tooltip
           [layer]="layer"
-          *ngIf="infoMenuOpen"></app-data-layer-tooltip>
+          *ngIf="infoMenuOpen"
+          (closed)="infoTrigger.closeMenu()"></app-data-layer-tooltip>
       </mat-menu>
     </div>
 

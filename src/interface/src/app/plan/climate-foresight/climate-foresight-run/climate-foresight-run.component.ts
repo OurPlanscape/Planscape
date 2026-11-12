@@ -163,10 +163,14 @@ export class ClimateForesightRunComponent implements OnInit {
 
     this.planState.currentPlan$
       .pipe(untilDestroyed(this))
-      .subscribe((plan: Plan) => {
-        this.mapModuleService.loadMapModule(plan.geometry).subscribe();
-        this.currentPlan = plan;
-      });
+      .subscribe((plan: Plan) => (this.currentPlan = plan));
+
+    this.planState.planningAreaGeometry$
+      .pipe(
+        switchMap((geometry) => this.mapModuleService.loadMapModule(geometry)),
+        untilDestroyed(this)
+      )
+      .subscribe();
   }
 
   private loadRun(): void {

@@ -1,0 +1,12 @@
+<sg-modal
+  [title]="data.planName + ' is no longer available'"
+  [shortHeader]="false"
+  [showBorders]="false"
+  [showClose]="false"
+  [hasSecondaryButton]="false"
+  primaryButtonText="Go Back"
+  (clickedPrimary)="close()">
+  <div modalBodyContent class="modal-body-content">
+    <p>This planning area has been deleted and cannot be recovered.</p>
+  </div>
+</sg-modal>

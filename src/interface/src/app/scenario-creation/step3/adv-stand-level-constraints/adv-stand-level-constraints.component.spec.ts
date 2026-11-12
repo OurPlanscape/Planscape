@@ -69,7 +69,7 @@ describe('AdvStandLevelConstraintsComponent', () => {
   let mapModuleServiceSpy: jasmine.SpyObj<MapModuleService>;
 
   let currentScenario$: Subject<unknown>;
-  let currentPlan$: Subject<unknown>;
+  let planningAreaGeometry$: Subject<unknown>;
   let advConstraints$: BehaviorSubject<Constraint[] | null>;
   let layerClicked$: Subject<DataLayer>;
 
@@ -91,7 +91,7 @@ describe('AdvStandLevelConstraintsComponent', () => {
 
   beforeEach(async () => {
     currentScenario$ = new Subject();
-    currentPlan$ = new Subject();
+    planningAreaGeometry$ = new Subject();
     advConstraints$ = new BehaviorSubject<Constraint[] | null>(null);
     layerClicked$ = new Subject<DataLayer>();
 
@@ -148,7 +148,7 @@ describe('AdvStandLevelConstraintsComponent', () => {
         },
         {
           provide: PlanState,
-          useValue: { currentPlan$, planningAreaGeometry$: new Subject() },
+          useValue: { planningAreaGeometry$ },
         },
       ],
     })
@@ -214,7 +214,7 @@ describe('AdvStandLevelConstraintsComponent', () => {
         expect(mapModuleServiceSpy.loadMapModule).not.toHaveBeenCalled();
 
         currentScenario$.next({ id: 99 });
-        currentPlan$.next({ geometry: { type: 'Polygon' } });
+        planningAreaGeometry$.next({ type: 'Polygon' });
 
         expect(mapModuleServiceSpy.loadMapModule).toHaveBeenCalledOnceWith({
           type: 'Polygon',

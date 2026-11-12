@@ -45,6 +45,7 @@ from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from modules.base import (
+    AdvancedStandLevelConstraintModule,
     ForsysModule,
     PrioritizeSubUnitsModule,
     compute_planning_area_capabilities,
@@ -1911,6 +1912,8 @@ def export_treatable_area_to_geopackage(
                         )
                         properties = {
                             p: getattr(feature, p.lower())
+                            if hasattr(feature, p.lower())
+                            else None
                             for p in list(schema.get("properties").keys())
                         }
                         properties["ownership"] = included.name
@@ -2056,6 +2059,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
             update_fields=["geopackage_url", "geopackage_status", "updated_at"]
         )
         publish_scenario_event("planning.scenario.geopackage_status_changed", scenario)
+        raise
 
 
 @transaction.atomic()
@@ -2104,10 +2108,14 @@ def get_constrained_stands(
     usage_type: TreatmentGoalUsageType = TreatmentGoalUsageType.THRESHOLD,
 ):
     if not metric_column:
+        modules = (datalayer.metadata or {}).get("modules", {})
+
         metric_column = (
-            datalayer.metadata.get("modules", {})
-            .get("forsys", {})
-            .get("metric_column", "avg")
+            modules.get("forsys", {}).get("metric_column")
+            or modules.get(AdvancedStandLevelConstraintModule.name, {}).get(
+                "metric_column"
+            )
+            or "avg"
         )
 
     if usage_type != TreatmentGoalUsageType.THRESHOLD:
@@ -2261,7 +2269,13 @@ def get_available_stands(
     constraints = [
         constraint
         for constraint in constraints
-        if constraint.get("datalayer").has_module(ForsysModule.name)
+        if (
+            (datalayer := constraint.get("datalayer"))
+            and (
+                datalayer.has_module(ForsysModule.name)
+                or datalayer.has_module(AdvancedStandLevelConstraintModule.name)
+            )
+        )
     ]
     for constraint in constraints:
         stands_queryset = stands.all()

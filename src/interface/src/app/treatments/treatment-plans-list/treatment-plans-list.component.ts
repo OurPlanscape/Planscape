@@ -1,7 +1,12 @@
 import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Plan, TreatmentPlan, TreatmentStatus } from '@app/types';
+import {
+  Plan,
+  TREATMENT_PLAN_LIST_EVENTS,
+  TreatmentPlan,
+  TreatmentStatus,
+} from '@app/types';
 import { ButtonComponent, TreatmentPlanCardComponent } from '@styleguide';
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { TreatmentsService } from '@app/services/treatments.service';
@@ -24,15 +29,13 @@ import { DeleteDialogComponent } from '@app/standalone/delete-dialog/delete-dial
 import {
   BehaviorSubject,
   combineLatest,
-  exhaustMap,
   shareReplay,
   startWith,
   switchMap,
   take,
   tap,
-  timer,
 } from 'rxjs';
-import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
+import { WebSocketService } from '@app/services';
 import { CreateTreatmentDialogComponent } from '@app/scenario/create-treatment-dialog/create-treatment-dialog.component';
 import { AnalyticsService } from '@app/services/analytics.service';
 
@@ -63,13 +66,16 @@ export class TreatmentPlansListComponent {
     tap(() => this.loading$.next(true)),
     // Every time sort or manual trigger changes...
     switchMap(([sort]) =>
-      // ...restart the interval...
-      timer(0, POLLING_INTERVAL).pipe(
-        // ...but don't overlap
-        exhaustMap(() =>
-          this.treatmentsService.listTreatmentPlans(this.scenarioId, sort)
+      // listen again, reading the list once to start with
+      this.webSocketService
+        .scenarioUpdates$(this.scenarioId, TREATMENT_PLAN_LIST_EVENTS)
+        .pipe(
+          startWith(null),
+          // always for the latest change
+          switchMap(() =>
+            this.treatmentsService.listTreatmentPlans(this.scenarioId, sort)
+          )
         )
-      )
     ),
     tap(() => this.loading$.next(false)),
     startWith(null),
@@ -91,6 +97,7 @@ export class TreatmentPlansListComponent {
 
   constructor(
     private treatmentsService: TreatmentsService,
+    private webSocketService: WebSocketService,
     private breadcrumbService: BreadcrumbService,
     private analyticsService: AnalyticsService,
     private router: Router,

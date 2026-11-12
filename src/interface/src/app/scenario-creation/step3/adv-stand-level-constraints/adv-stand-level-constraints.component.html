@@ -132,18 +132,32 @@ They help ensure that only feasible and operationally suitable areas are targete
 </sg-section>
 
 <ng-template #aslcTooltipContent>
-  <b>What are Advanced Stand-Level Constraints?</b>
+  <p><b>What are Advanced Stand-Level Constraints?</b></p>
   <p>
-    Advanced stand-level constraints let you define conditions that stands must
-    meet to be eligible for treatment using available data layers.
+    Stand-level constraints define conditions a stand must meet for ForSys to
+    consider it for treatment. Select an available data layer, choose an
+    operator, and enter a value.
   </p>
   <p>
-    For continuous variables, you can set thresholds (e.g., Probability of High
-    Severity Fire > 0) to focus on higher-value stands.
+    For continuous data, set a numeric condition, such as Probability of High
+    Severity Fire > 0.
   </p>
   <p>
-    For categorical variables, you must use the raster values that represent
-    each class. For example, if Owl Habitat is coded as 1 = habitat and 0 =
-    non-habitat, you would set Owl Habitat = 0 to avoid treating habitat areas.
+    For categorical data, enter the numeric category code. For example, if Owl
+    Habitat uses 1 = habitat and 0 = non-habitat, use Owl Habitat = 0 to exclude
+    habitat. Check the layer’s information icon and source documentation to
+    confirm what the codes represent.
+  </p>
+  <p>
+    <b
+      >Advanced constraints apply when the scenario runs and do not update the
+      setup map or treatable percentage.</b
+    >
+    Your scenario may fail if too few eligible stands remain to meet your
+    treatment targets.
+  </p>
+  <p>
+    Learn more about
+    <a [href]="ASLC_INFO_URL" target="_blank">Stand-Level Constraints.</a>
   </p>
 </ng-template>

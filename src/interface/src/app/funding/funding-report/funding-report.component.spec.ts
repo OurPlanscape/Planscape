@@ -3,7 +3,6 @@ import {
   fakeAsync,
   TestBed,
   tick,
-  discardPeriodicTasks,
 } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { FundingReportComponent } from './funding-report.component';
@@ -17,12 +16,20 @@ import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { of, Subject } from 'rxjs';
 import { FundingMapConfigState } from '../funding-map-config-state';
 import { FundingModuleService } from '@services/funding-module.service';
-import { DataLayersService } from '@app/services';
-import { DataLayer, FundingReport, Scenario } from '@types';
+import { DataLayersService, WebSocketService } from '@app/services';
+import {
+  DataLayer,
+  FUNDING_REPORT_GEOPACKAGE_EVENT,
+  FundingReport,
+  Scenario,
+  WorkspaceEvent,
+} from '@types';
 import { MatDialog } from '@angular/material/dialog';
 import { ScenarioState } from '@scenario/scenario.state';
-import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
 import { FundingReportService } from '@app/services/funding-report.service';
+
+/** Matches the component's own pause after the last keystroke. */
+const WATER_DEBOUNCE_MS = 300;
 
 const AET_LAYER_NAME =
   'Percentage change in water availability after treatment';
@@ -58,6 +65,8 @@ describe('FundingReportComponent', () => {
   let selectDataLayer: jasmine.Spy;
   let getDataLayerById: jasmine.Spy;
   let getReport: jasmine.Spy;
+  let updates$: Subject<WorkspaceEvent | null>;
+  let scenarioUpdates$: jasmine.Spy;
 
   beforeEach(async () => {
     selectDataLayer = jasmine.createSpy('selectDataLayer');
@@ -67,6 +76,10 @@ describe('FundingReportComponent', () => {
         of({ id, name: 'fetched layer' } as DataLayer)
       );
     getReport = jasmine.createSpy('getReport');
+    updates$ = new Subject<WorkspaceEvent | null>();
+    scenarioUpdates$ = jasmine
+      .createSpy('scenarioUpdates$')
+      .and.returnValue(updates$);
 
     await TestBed.configureTestingModule({
       imports: [
@@ -96,6 +109,7 @@ describe('FundingReportComponent', () => {
         }),
         MockProvider(FundingReportService, { getReport }),
         MockProvider(DataLayersService, { getDataLayerById }),
+        MockProvider(WebSocketService, { scenarioUpdates$ }),
 
         MockProvider(MatDialog),
         MockProvider(ScenarioState, {
@@ -142,91 +156,83 @@ describe('FundingReportComponent', () => {
     );
   });
 
-  describe('pollForNewGeoPackage', () => {
-    it('sets pollingForGeopackage$ to true immediately on call', fakeAsync(() => {
-      getReport.and.returnValue(of({ geopackage_status: 'PENDING' } as any));
+  describe('rebuilding the geopackage', () => {
+    /** Asks for a new water availability, which rebuilds the geopackage. */
+    function askForRecalculation() {
+      component.waterAvailabilityControl.setValue(42);
+      tick(WATER_DEBOUNCE_MS);
+    }
+
+    /** One geopackage event on the channel of this scenario. */
+    function geopackageChanged() {
+      updates$.next({ type: FUNDING_REPORT_GEOPACKAGE_EVENT });
+    }
+
+    it('listens on the channel of this scenario, for the geopackage only', fakeAsync(() => {
+      getReport.and.returnValue(of({ geopackage_status: 'PROCESSING' } as any));
       fixture.detectChanges();
 
-      component.pollForNewGeoPackage();
+      askForRecalculation();
 
+      expect(scenarioUpdates$).toHaveBeenCalledWith(component.report.scenario, [
+        FUNDING_REPORT_GEOPACKAGE_EVENT,
+      ]);
+    }));
+
+    it('holds the download until the new file is ready', fakeAsync(() => {
+      getReport.and.returnValue(of({ geopackage_status: 'PROCESSING' } as any));
+      fixture.detectChanges();
+
+      askForRecalculation();
       expect(component.pollingForGeopackage$.value).toBeTrue();
 
-      discardPeriodicTasks();
-    }));
+      geopackageChanged();
+      expect(component.pollingForGeopackage$.value).toBeTrue();
 
-    it('calls fundingReportService.getReport with the report scenario on each tick', fakeAsync(() => {
-      getReport.and.returnValue(of({ geopackage_status: 'PENDING' } as any));
-      fixture.detectChanges();
-
-      component.pollForNewGeoPackage();
-      tick(POLLING_INTERVAL);
-      tick(POLLING_INTERVAL);
-
-      expect(getReport).toHaveBeenCalledWith(component.report.scenario);
-      expect(getReport).toHaveBeenCalledTimes(2);
-
-      discardPeriodicTasks();
-    }));
-
-    it('stops polling and resets the flag once status is SUCCEEDED', fakeAsync(() => {
-      getReport.and.returnValues(
-        of({ geopackage_status: 'PENDING' } as any),
-        of({ geopackage_status: 'SUCCEEDED' } as any)
-      );
-      fixture.detectChanges();
-
-      component.pollForNewGeoPackage();
-      tick(POLLING_INTERVAL); // PENDING
-      tick(POLLING_INTERVAL); // SUCCEEDED -> should complete
-
-      expect(getReport).toHaveBeenCalledTimes(2);
+      getReport.and.returnValue(of({ geopackage_status: 'SUCCEEDED' } as any));
+      geopackageChanged();
       expect(component.pollingForGeopackage$.value).toBeFalse();
-
-      // no further ticks should trigger additional calls
-      tick(POLLING_INTERVAL);
-      expect(getReport).toHaveBeenCalledTimes(2);
     }));
 
-    it('stops polling and resets the flag once status is FAILED', fakeAsync(() => {
+    it('gives the download back when the rebuild fails', fakeAsync(() => {
       getReport.and.returnValue(of({ geopackage_status: 'FAILED' } as any));
       fixture.detectChanges();
 
-      component.pollForNewGeoPackage();
-      tick(POLLING_INTERVAL);
+      askForRecalculation();
+      geopackageChanged();
 
-      expect(getReport).toHaveBeenCalledTimes(1);
       expect(component.pollingForGeopackage$.value).toBeFalse();
     }));
 
-    it('resets pollingForGeopackage$ to false on completion even mid-poll', fakeAsync(() => {
+    it('reads the report on every event, and stops once it is ready', fakeAsync(() => {
+      getReport.and.returnValue(of({ geopackage_status: 'PROCESSING' } as any));
+      fixture.detectChanges();
+
+      askForRecalculation();
+      geopackageChanged();
+      geopackageChanged();
+      expect(getReport).toHaveBeenCalledWith(component.report.scenario);
+      expect(getReport).toHaveBeenCalledTimes(2);
+
+      getReport.and.returnValue(of({ geopackage_status: 'SUCCEEDED' } as any));
+      geopackageChanged();
+      geopackageChanged();
+      expect(getReport).toHaveBeenCalledTimes(3);
+    }));
+
+    it('starts over when a second recalculation is asked for', fakeAsync(() => {
       getReport.and.returnValue(of({ geopackage_status: 'SUCCEEDED' } as any));
       fixture.detectChanges();
 
-      component.pollForNewGeoPackage();
-      tick(POLLING_INTERVAL);
-
+      askForRecalculation();
+      geopackageChanged();
       expect(component.pollingForGeopackage$.value).toBeFalse();
-    }));
 
-    it('ignores overlapping ticks while a request is still in flight (exhaustMap)', fakeAsync(() => {
-      const inFlight = new Subject<any>();
-      getReport.and.returnValue(inFlight.asObservable());
-      fixture.detectChanges();
+      getReport.and.returnValue(of({ geopackage_status: 'PROCESSING' } as any));
+      component.waterAvailabilityControl.setValue(43);
+      tick(WATER_DEBOUNCE_MS);
 
-      component.pollForNewGeoPackage();
-      tick(POLLING_INTERVAL); // first request starts, still pending
-
-      // a second interval elapses while the first call hasn't resolved
-      tick(POLLING_INTERVAL);
-
-      // exhaustMap should not have started a second request yet
-      expect(getReport).toHaveBeenCalledTimes(1);
-
-      inFlight.next({ geopackage_status: 'SUCCEEDED' } as any);
-      inFlight.complete();
-      tick();
-
-      expect(component.pollingForGeopackage$.value).toBeFalse();
+      expect(component.pollingForGeopackage$.value).toBeTrue();
     }));
   });
 });
