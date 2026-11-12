@@ -6,21 +6,20 @@ import {
   combineLatest,
   distinctUntilChanged,
   EMPTY,
-  interval,
   map,
   Observable,
   of,
   skip,
+  startWith,
   switchMap,
   take,
-  takeUntil,
-  tap,
+  withLatestFrom,
 } from 'rxjs';
 import { ScenarioState } from '../scenario.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
-import { Scenario } from '@types';
+import { Scenario, SCENARIO_DETAIL_EVENTS } from '@types';
 import { filter } from 'rxjs/operators';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { ScenarioDownloadFooterComponent } from '@scenario/scenario-download-footer/scenario-download-footer.component';
@@ -33,7 +32,7 @@ import { ScenarioFailureComponent } from '@scenario/scenario-failure/scenario-fa
 import { ScenarioResultsComponent } from '@scenario/scenario-results/scenario-results.component';
 import { userCanAddTreatmentPlan } from '@plan/permissions';
 import { PlanState } from '@plan/plan.state';
-import { getPlanPath, POLLING_INTERVAL } from '@plan/plan-helpers';
+import { getPlanPath } from '@plan/plan-helpers';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import {
@@ -44,9 +43,9 @@ import {
 import { ScenarioSetupModalComponent } from '@scenario/scenario-setup-modal/scenario-setup-modal.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ScenarioService } from '@services';
 import { MapModuleService } from '@services/map-module.service';
 import { FeatureService } from '@features/feature.service';
+import { ScenarioService, WebSocketService } from '@services';
 
 enum ScenarioTabs {
   RESULTS,
@@ -124,7 +123,8 @@ export class ViewScenarioComponent {
     private breadcrumbService: BreadcrumbService,
     private dialog: MatDialog,
     private mapModuleService: MapModuleService,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private webSocketService: WebSocketService
   ) {
     const dataOrganizationEnabled =
       this.featureService.isFeatureEnabled('DATA_ORGANIZATION');
@@ -151,41 +151,36 @@ export class ViewScenarioComponent {
         }
       });
 
-    // poll if scenario is pending
-    this.scenario$
-      .pipe(
-        untilDestroyed(this),
-        switchMap((s) => {
-          // On specific scenario
-          let scenarioBackUrl = getPlanPath(this.planId, this.route.snapshot);
-          const status = s.scenario_result?.status;
+    this.scenario$.pipe(untilDestroyed(this)).subscribe((s) => {
+      // On specific scenario
+      let scenarioBackUrl = getPlanPath(this.planId, this.route.snapshot);
+      const status = s.scenario_result?.status;
 
-          // Only modify the URL if it's NOT a failure or panic
-          if (status !== 'FAILURE' && status !== 'PANIC') {
-            const targetId = s.parent || s.id;
-            scenarioBackUrl += `/scenario/${targetId}/dashboard`;
-          }
-          this.breadcrumbService.updateBreadCrumb({
-            label: s.name,
-            backUrl: scenarioBackUrl,
-            icon: 'close',
-            blackText: true,
-          });
+      // Only modify the URL if it's NOT a failure or panic
+      if (status !== 'FAILURE' && status !== 'PANIC') {
+        const targetId = s.parent || s.id;
+        scenarioBackUrl += `/scenario/${targetId}/dashboard`;
+      }
+      this.breadcrumbService.updateBreadCrumb({
+        label: s.name,
+        backUrl: scenarioBackUrl,
+        icon: 'close',
+        blackText: true,
+      });
+    });
 
-          return this.shouldPoll(s) ? this.startPolling() : EMPTY;
-        })
-      )
-      .subscribe();
+    this.listenForChanges();
   }
 
-  private startPolling() {
-    return interval(POLLING_INTERVAL).pipe(
-      tap(() => {
-        this.scenarioState.reloadScenario();
-      }),
-      untilDestroyed(this),
-      takeUntil(this.scenario$.pipe(filter((s) => !this.shouldPoll(s))))
-    );
+  private listenForChanges() {
+    this.webSocketService
+      .scenarioUpdates$(Number(this.scenarioId), SCENARIO_DETAIL_EVENTS)
+      .pipe(
+        withLatestFrom(this.scenario$.pipe(startWith(null))),
+        filter(([, scenario]) => !scenario || this.shouldWatch(scenario)),
+        untilDestroyed(this)
+      )
+      .subscribe(() => this.scenarioState.reloadScenario());
   }
 
   handleTryAgain(scenario: Scenario) {
@@ -223,13 +218,13 @@ export class ViewScenarioComponent {
     this.router.navigate([getPlanPath(this.planId, this.route.snapshot)]);
   }
 
-  private shouldPoll(scenario: Scenario) {
+  private shouldWatch(scenario: Scenario) {
     return (
-      this.scenarioIsPending(scenario) || this.shouldPollForGeoPackage(scenario)
+      this.scenarioIsPending(scenario) || this.shouldWatchGeoPackage(scenario)
     );
   }
 
-  private shouldPollForGeoPackage(scenario: Scenario) {
+  private shouldWatchGeoPackage(scenario: Scenario) {
     const geoPackageStatus = scenario.geopackage_status;
 
     if (!geoPackageStatus) {

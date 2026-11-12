@@ -61,6 +61,12 @@ function isAboutPlan(event: WorkspaceEvent, planId: number): boolean {
     : event.object?.['planning_area_id'] === planId;
 }
 
+function isAboutScenario(event: WorkspaceEvent, scenarioId: number): boolean {
+  return event.object?.kind === 'scenario'
+    ? event.object.id === scenarioId
+    : event.object?.['scenario_id'] === scenarioId;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -160,6 +166,20 @@ export class WebSocketService {
       this.messages$.pipe(
         filter(
           (event) => types.includes(event.type) && isAboutPlan(event, planId)
+        )
+      )
+    );
+  }
+
+  scenarioUpdates$(
+    scenarioId: number,
+    types: string[]
+  ): Observable<WorkspaceEvent | null> {
+    return this.updates$(
+      this.messages$.pipe(
+        filter(
+          (event) =>
+            types.includes(event.type) && isAboutScenario(event, scenarioId)
         )
       )
     );
