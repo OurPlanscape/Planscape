@@ -1910,7 +1910,9 @@ def export_treatable_area_to_geopackage(
                             ).json
                         )
                         properties = {
-                            p: getattr(feature, p.lower()) if hasattr(feature, p.lower()) else None
+                            p: getattr(feature, p.lower())
+                            if hasattr(feature, p.lower())
+                            else None
                             for p in list(schema.get("properties").keys())
                         }
                         properties["ownership"] = included.name
@@ -2105,10 +2107,12 @@ def get_constrained_stands(
     usage_type: TreatmentGoalUsageType = TreatmentGoalUsageType.THRESHOLD,
 ):
     if not metric_column:
+        modules = (datalayer.metadata or {}).get("modules", {})
+
         metric_column = (
-            datalayer.metadata.get("modules", {})
-            .get("forsys", {})
-            .get("metric_column", "avg")
+            modules.get("forsys", {}).get("metric_column")
+            or modules.get("advanced_stand_level_constraint", {}).get("metric_column")
+            or "avg"
         )
 
     if usage_type != TreatmentGoalUsageType.THRESHOLD:
@@ -2262,7 +2266,13 @@ def get_available_stands(
     constraints = [
         constraint
         for constraint in constraints
-        if constraint.get("datalayer").has_module(ForsysModule.name)
+        if (
+            (datalayer := constraint.get("datalayer"))
+            and (
+                datalayer.has_module(ForsysModule.name)
+                or datalayer.has_module("advanced_stand_level_constraint")
+            )
+        )
     ]
     for constraint in constraints:
         stands_queryset = stands.all()
