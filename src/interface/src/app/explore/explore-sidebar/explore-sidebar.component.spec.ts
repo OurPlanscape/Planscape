@@ -19,6 +19,8 @@ import {
 } from '@data-layers/data-layers.state.service';
 import { BehaviorSubject, EMPTY, of } from 'rxjs';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { MatDialog } from '@angular/material/dialog';
+import { UploadDataModalComponent } from '@data-layers/upload-data-modal/upload-data-modal.component';
 import { FEATURES_JSON } from '@features/features-config';
 import { FeaturesModule } from '@features/features.module';
 
@@ -29,6 +31,7 @@ describe('ExploreSidebarComponent', () => {
   let dataLayersState: jasmine.SpyObj<DataLayersStateService>;
   let dataUploadEnabled = false;
   let workspacePermissions = ['view_workspace', 'add_datalayer'];
+  let dialog: jasmine.SpyObj<MatDialog>;
 
   beforeEach(async () => {
     selection$ = new BehaviorSubject<BrowseSelection | null>(null);
@@ -39,6 +42,7 @@ describe('ExploreSidebarComponent', () => {
     );
     const registry = new DataLayersRegistryService();
     registry.set(1, dataLayersState);
+    dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
 
     await TestBed.configureTestingModule({
       imports: [ExploreSidebarComponent],
@@ -54,6 +58,7 @@ describe('ExploreSidebarComponent', () => {
             currentWorkspace$: of({ permissions: workspacePermissions }),
           },
         },
+        { provide: MatDialog, useValue: dialog },
       ],
     })
       .overrideProvider(FEATURES_JSON, {
@@ -172,6 +177,12 @@ describe('ExploreSidebarComponent', () => {
         'app-sidebar-icon-rail'
       );
       expect(rail.firstElementChild).toBe(uploadButton().nativeElement);
+    });
+
+    it('opens the upload modal from the CTA', () => {
+      uploadButton().nativeElement.click();
+
+      expect(dialog.open).toHaveBeenCalledWith(UploadDataModalComponent);
     });
 
     describe('for a workspace viewer', () => {
@@ -299,6 +310,7 @@ describe('ExploreSidebarComponent with a map restored after it', () => {
           useValue: { selectedMapId$: new BehaviorSubject(1) },
         },
         { provide: WorkspaceState, useValue: { currentWorkspace$: EMPTY } },
+        { provide: MatDialog, useValue: {} },
       ],
     })
       .overrideComponent(ExploreSidebarComponent, {
