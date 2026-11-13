@@ -4,10 +4,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { BaseLayersComponent } from '@app/base-layers/base-layers/base-layers.component';
 import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
+import { DataLayersRailComponent } from '@data-layers/data-layers-rail/data-layers-rail.component';
 import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.component';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { MapConfigService } from '@app/maplibre-map/map-config.service';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { FeaturesModule } from '@features/features.module';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { ProjectArea } from '@app/types';
@@ -50,6 +52,8 @@ import { FUNDING_REPORT_INFO_URL } from '@shared';
     NgIf,
     BaseLayersComponent,
     DataLayersComponent,
+    DataLayersRailComponent,
+    FeaturesModule,
     FundingProjectAreasSelectorComponent,
     FundingReportComponent,
     FundingReportMapComponent,
