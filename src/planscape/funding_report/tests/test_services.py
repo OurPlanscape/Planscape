@@ -5,8 +5,8 @@ from unittest import mock
 
 import numpy as np
 import rasterio
-from datasets.models import DataLayer, DataLayerStatus, DataLayerType
-from datasets.tests.factories import DataLayerFactory, DatasetFactory
+from datasets.models import DataLayer, DataLayerStatus, DataLayerType, Style
+from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
 from django.conf import settings
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.test import TestCase, override_settings
@@ -24,6 +24,7 @@ from planscape.tests.factories import UserFactory
 
 from funding_report.models import (
     BURN_SIMULATION_ROLE,
+    BURN_SIMULATION_STYLE_NAME,
     FUNDING_REPORT_YEARS,
     TREATMENT_NO_TREATMENT_LABEL,
     TREATMENT_ROLE,
@@ -1717,6 +1718,29 @@ class GenerateBurnSimulationDatalayerTest(TestCase):
 
         self.assertEqual(datalayer.name, name)
         self.assertFalse(DataLayer.dead_or_alive.filter(pk=previous.pk).exists())
+
+    def test_associates_burn_simulation_style(self):
+        Style.objects.filter(name=BURN_SIMULATION_STYLE_NAME).delete()
+        style = StyleFactory.create(
+            name=BURN_SIMULATION_STYLE_NAME, type=DataLayerType.RASTER
+        )
+
+        datalayer = generate_burn_simulation_datalayer(
+            self.report, "gs://burn-output/job/output.tif"
+        )
+
+        associations = list(datalayer.rel_styles.all())
+        self.assertEqual(len(associations), 1)
+        self.assertEqual(associations[0].style, style)
+        self.assertTrue(associations[0].default)
+
+    def test_without_burn_simulation_style(self):
+        Style.objects.filter(name=BURN_SIMULATION_STYLE_NAME).delete()
+        datalayer = generate_burn_simulation_datalayer(
+            self.report, "gs://burn-output/job/output.tif"
+        )
+
+        self.assertFalse(datalayer.rel_styles.exists())
 
     def test_missing_treatment_datalayer(self):
         self.treatment.delete()

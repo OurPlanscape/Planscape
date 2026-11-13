@@ -179,58 +179,61 @@
         </div>
       </div>
 
-      <div *appFeatureFlag="'CATASTROPHIC_REDUCTION'">
-        <h5>
-          Catastrophic Wildfire Reduction
-          <sg-popover
-            [modal]="true"
-            icon="info"
-            [contentTemplate]="tooltipContent"
-            (opened)="
-              tooltipName = 'Catastrophic Fire Reduction Info'
-            "></sg-popover>
-        </h5>
-        <div
-          class="catastrophic-reduction"
-          *ngIf="catastrophicWildfireResults; else noCatastrophicFireData">
-          <div class="biomass-intro">
-            This data will not change with your project area selection.
-          </div>
-          <div class="summary-card" *ngIf="!isPreview">
-            <app-funding-map-layers
-              heading="Map Layers"
-              [loading]="loadingSectionLayers"
-              [layers]="sectionLayers['catreduction']"
-              [selectedLayerId]="viewedLayerId$ | async"
-              [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
-              (selectedLayer)="onLayerSelected($event)"
-              (clearedLayer)="onLayerCleared()"></app-funding-map-layers>
-          </div>
-          <div class="stat-cards-wrapper">
-            <div class="stat-cards">
-              <div class="stat-card">
-                <div class="stat-value">
-                  {{ catastrophicFire.acresReduced | number: '1.0-1'
-                  }}<span class="stat-unit">acres</span>
-                </div>
-                <div class="stat-label">
-                  where Catastrophic Wildfire was reduced
+      <ng-container *appFeatureFlag="'CATASTROPHIC_REDUCTION'">
+        <div *ngIf="hasBurnSimulationResults">
+          <h5>
+            Catastrophic Wildfire Reduction
+            <sg-popover
+              [modal]="true"
+              icon="info"
+              [contentTemplate]="tooltipContent"
+              (opened)="
+                tooltipName = 'Catastrophic Fire Reduction Info'
+              "></sg-popover>
+          </h5>
+          <div
+            class="catastrophic-reduction"
+            *ngIf="this.report.burn_simulation_status === 'SUCCESS'">
+            <div class="biomass-intro">
+              This data will not change with your project area selection.
+            </div>
+            <div class="summary-card" *ngIf="!isPreview">
+              <app-funding-map-layers
+                heading="Map Layers"
+                [loading]="loadingSectionLayers"
+                [layers]="sectionLayers['burn_simulation']"
+                [selectedLayerId]="viewedLayerId$ | async"
+                [loadingLayerIds]="(loadingLayerIds$ | async) ?? []"
+                (selectedLayer)="onLayerSelected($event)"
+                (clearedLayer)="onLayerCleared()"></app-funding-map-layers>
+            </div>
+            <div class="stat-cards-wrapper">
+              <div class="stat-cards">
+                <div class="stat-card">
+                  <div class="stat-value">
+                    {{ catastrophicFire.acresReduced | number: '1.0-0'
+                    }}<span class="stat-unit">acres</span>
+                  </div>
+                  <div class="stat-label">
+                    where Catastrophic Wildfire was avoided
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+          <ng-container *ngIf="this.report.burn_simulation_status === 'FAILED'">
+            <sg-message-card
+              cardType="warning"
+              cardTitle="Data Unavailable"
+              class="no-catastrophic-data-card"
+              [withBorders]="false">
+              We couldn't generate the burn simulation for your selected area.
+              Please
+              <a [href]="SUPPORT_URL" target="_blank">contact support.</a>
+            </sg-message-card>
+          </ng-container>
         </div>
-        <ng-template #noCatastrophicFireData>
-          <sg-message-card
-            cardType="warning"
-            cardTitle="Data Unavailable"
-            class="no-catastrophic-data-card"
-            [withBorders]="false">
-            We couldn't generate the burn simulation for your selected area.
-            Please <a [href]="SUPPORT_URL" target="_blank">contact support.</a>
-          </sg-message-card>
-        </ng-template>
-      </div>
+      </ng-container>
     </sg-section>
 
     <sg-section
