@@ -131,6 +131,10 @@
   }
 }
 
+.data-layers-rail {
+  height: 100%;
+}
+
 // Make the tab group fill the sidebar height so the tab content (and its
 // own internal scroll container) is properly constrained. Otherwise the
 // tab body wrapper grows to fit its content and the inner scrollbar gutter

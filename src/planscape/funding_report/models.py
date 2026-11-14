@@ -62,6 +62,8 @@ TREATMENT_VARIABLE = "TREATMENT"
 TREATMENT_ROLE = "treatment"
 TREATMENT_CLIP_ROLE = "treatment_clip"
 BURN_SIMULATION_ROLE = "burn_simulation"
+# Style seeded by migration 0014 and linked to every burn simulation datalayer.
+BURN_SIMULATION_STYLE_NAME = "funding-report-burn-simulation"
 # Band of the burn-emulator output that becomes the burn simulation datalayer.
 BURN_SIMULATION_BAND = 3
 
