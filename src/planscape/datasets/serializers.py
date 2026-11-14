@@ -10,6 +10,7 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     MapServiceChoices,
+    SearchGroupBy,
     SearchTab,
     SimpleCategory,
     StorageTypeChoices,
@@ -22,6 +23,7 @@ from datasets.styles import (
     get_default_vector_style,
     get_raster_style,
 )
+from django.conf import settings
 from organizations.models import Organization
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
@@ -748,6 +750,13 @@ class FindAnythingSerializer(SearchTabSerializer):
         choices=DataLayerType.choices,
     )
 
+    group_by = serializers.ChoiceField(
+        choices=SearchGroupBy.choices,
+        required=False,
+        help_text="Group results by simple category or by dataset. "
+        "Defaults to simple category when DATA_ORGANIZATION is on.",
+    )
+
     geometry = GeometryTypeField(
         geometry_type="MultiPolygon",
         destination_srid=4269,
@@ -775,3 +784,68 @@ class WorkspaceFavoriteDataLayerSerializer(
             "created_by",
             "created_at",
         )
+
+
+class CreateWorkspaceDataLayerSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=256)
+    original_name = serializers.CharField(max_length=1024)
+    size = serializers.IntegerField(min_value=1)
+
+    def validate_original_name(self, value: str) -> str:
+        from datasets.services import UPLOAD_EXTENSIONS
+
+        if not value.lower().endswith(UPLOAD_EXTENSIONS):
+            raise serializers.ValidationError(
+                "Only GeoTIFF files (.tif, .tiff) are supported."
+            )
+        return value
+
+    def validate_size(self, value: int) -> int:
+        limit = settings.DATALAYER_UPLOAD_MAX_BYTES
+        if value > limit:
+            raise serializers.ValidationError(
+                f"The file is larger than the {limit / 1024**3:g} GB limit."
+            )
+        return value
+
+    def validate_name(self, value: str) -> str:
+        from datasets.services import workspace_upload_name_taken
+
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Name can't be blank.")
+        if workspace_upload_name_taken(self.context["workspace"], value):
+            raise serializers.ValidationError(
+                "A data layer with this name already exists in this workspace."
+            )
+        return value
+
+
+class WorkspaceDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
+    creator_name = serializers.SerializerMethodField()
+
+    def get_creator_name(self, instance: DataLayer) -> str:
+        return instance.created_by.get_full_name() or instance.created_by.email
+
+    class Meta:
+        model = DataLayer
+        fields = (
+            "id",
+            "uuid",
+            "name",
+            "type",
+            "status",
+            "failure_reason",
+            "original_name",
+            "file_size",
+            "created_at",
+            "updated_at",
+            "created_by",
+            "creator_name",
+        )
+        read_only_fields = fields
+
+
+class WorkspaceDataLayerCreatedSerializer(serializers.Serializer):
+    datalayer = WorkspaceDataLayerSerializer()
+    upload_to = serializers.JSONField()

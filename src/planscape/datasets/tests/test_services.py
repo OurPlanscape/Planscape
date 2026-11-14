@@ -16,6 +16,7 @@ from datasets.models import (
     Dataset,
     GeometryType,
     PreferredDisplayType,
+    SearchGroupBy,
     SearchTab,
     SelectionTypeOptions,
     VisibilityOptions,
@@ -325,6 +326,7 @@ class TestGetTableMask(TestCase):
 
 
 class TestSearch(TestCase):
+    @override_settings(FEATURE_FLAGS=[])
     def test_end_to_end_with_spatial(self):
         unit_square = MultiPolygon(
             GEOSGeometry(
@@ -416,6 +418,7 @@ class TestSearch(TestCase):
         self.assertNotIn(subcategory2.name, names)
         self.assertNotIn(cat1_datalayer3.name, names)
 
+    @override_settings(FEATURE_FLAGS=[])
     def test_end_to_end(self):
         organization = OrganizationFactory.create(name="my cool fire org")
         dataset = DatasetFactory(
@@ -858,6 +861,7 @@ class TestSearchFavorites(TestCase):
         self.assertIn(f"DATALAYER:{self.favorite.pk}", results)
         self.assertNotIn(f"DATALAYER:{self.not_favorite.pk}", results)
 
+    @override_settings(FEATURE_FLAGS=[])
     def test_datasets_restricted_to_ones_with_favorites(self):
         self.favorite_in(self.workspace, self.favorite)
 
@@ -866,6 +870,7 @@ class TestSearchFavorites(TestCase):
         self.assertIn(f"DATASET:{self.favorite_dataset.pk}", results)
         self.assertNotIn(f"DATASET:{self.other_dataset.pk}", results)
 
+    @override_settings(FEATURE_FLAGS=[])
     def test_organization_match_restricted_to_datasets_with_favorites(self):
         self.favorite_in(self.workspace, self.favorite)
 
@@ -992,6 +997,27 @@ class TestBrowseFindAnythingParity(TestCase):
         self.assertEqual(by_dataset, {self.visible.pk})
         self.assertEqual(found, {self.visible.pk})
 
+    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
+    def test_group_by_dataset_overrides_flag(self):
+        results = find_anything(
+            "sequoia dataset", group_by=SearchGroupBy.DATASET, **self._filters()
+        )
+
+        self.assertIn(f"DATASET:{self.dataset.pk}", results)
+        self.assertFalse(
+            any(r.type == "SIMPLE_CATEGORY" for r in results.values())
+        )
+
+    @override_settings(FEATURE_FLAGS=[])
+    def test_group_by_simple_category_overrides_flag(self):
+        results = find_anything(
+            "sequoia", group_by=SearchGroupBy.SIMPLE_CATEGORY, **self._filters()
+        )
+
+        self.assertIn(f"DATALAYER:{self.visible.pk}", results)
+        self.assertFalse(any(r.type == "DATASET" for r in results.values()))
+
+    @override_settings(FEATURE_FLAGS=[])
     def test_find_anything_hides_datasets_without_visible_datalayers(self):
         results = find_anything("sequoia dataset", **self._filters())
 

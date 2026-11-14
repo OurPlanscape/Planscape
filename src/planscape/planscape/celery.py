@@ -92,6 +92,10 @@ beat_schedule = {
         "task": "planning.tasks.trigger_scenario_ready_emails",
         "schedule": 10.0,
     },
+    "expire-stale-datalayer-uploads": {
+        "task": "datasets.tasks.expire_stale_uploads_task",
+        "schedule": crontab(minute=0),
+    },
 }
 
 if settings.WEEKLY_NEW_USERS_REPORT_ENABLED:

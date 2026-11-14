@@ -91,8 +91,7 @@ def filter_datalayers(
             ).values("datalayer_id")
         )
     elif search_tab == SearchTab.UPLOADED:
-        # TODO: narrow to uploaded datalayers once uploaded filtering is defined.
-        pass
+        queryset = queryset.filter(workspace=workspace, raw_url__isnull=False)
 
     return queryset
 

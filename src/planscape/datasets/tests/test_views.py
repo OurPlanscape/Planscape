@@ -463,13 +463,26 @@ class TestDataLayerViewSet(APITestCase):
 
     def test_find_anything_accepts_search_tab(self):
         self.client.force_authenticate(user=self.normal)
+        workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
         DataLayerFactory.create(
             dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
+        )
+        DataLayerFactory.create(
+            dataset=self.dataset,
+            name="Forest upload",
+            type=DataLayerType.RASTER,
+            workspace=workspace,
+            raw_url="gs://bucket/uploads/raw/forest.tif",
         )
         url = reverse("api:datasets:datalayers-find-anything")
         response = self.client.post(
             url,
-            {"term": "forest", "type": "RASTER", "search_tab": "uploaded"},
+            {
+                "term": "forest",
+                "type": "RASTER",
+                "search_tab": "uploaded",
+                "workspace_id": workspace.pk,
+            },
             format="json",
         )
         data = response.json()

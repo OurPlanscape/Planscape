@@ -2,6 +2,7 @@ import itertools
 import json
 import logging
 import mimetypes
+from datetime import timedelta
 from pathlib import Path
 from typing import Any, Collection, Dict, Optional, Set, Tuple
 from uuid import uuid4
@@ -11,10 +12,17 @@ from actstream import action
 from cacheops import cached, invalidate_model
 from core.flags import feature_enabled
 from core.gcs import create_upload_url as create_upload_url_gcs
-from core.gcs import is_gcs_file
+from core.gcs import delete_file as delete_gcs_file
+from core.gcs import get_bucket_and_key, is_gcs_file
 from core.s3 import create_upload_url as create_upload_url_s3
 from core.s3 import is_s3_file, s3_filename
-from datasets.events import publish_datalayer_favorited, publish_datalayer_unfavorited
+from datasets.events import (
+    publish_datalayer_created,
+    publish_datalayer_deleted,
+    publish_datalayer_favorited,
+    publish_datalayer_status_changed,
+    publish_datalayer_unfavorited,
+)
 from datasets.models import (
     Category,
     DataLayer,
@@ -23,6 +31,9 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     GeometryType,
+    MapServiceChoices,
+    PreferredDisplayType,
+    SearchGroupBy,
     SearchResult,
     SearchTab,
     SimpleCategory,
@@ -42,6 +53,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, Polygon
 from django.db import connection, transaction
 from django.db.models import BooleanField, QuerySet
+from django.utils import timezone
 from django.db.models.expressions import RawSQL
 from gis.geometry import geodjango_to_multi, to_geodjango_geometry
 from gis.rasters import get_estimated_mask as get_estimated_mask_raster
@@ -309,6 +321,7 @@ def assign_style(
 
 DATALAYER_TRANSITIONS = {
     DataLayerStatus.PENDING: [DataLayerStatus.FAILED, DataLayerStatus.READY],
+    DataLayerStatus.PROCESSING: [DataLayerStatus.FAILED, DataLayerStatus.READY],
     DataLayerStatus.READY: [DataLayerStatus.READY],
     DataLayerStatus.FAILED: [DataLayerStatus.PENDING, DataLayerStatus.READY],
 }
@@ -585,11 +598,21 @@ def find_anything(
     search_tab: str = SearchTab.GENERAL,
     user: Optional[User] = None,
     workspace: Optional[Workspace] = None,
+    group_by: Optional[str] = None,
     **kwargs,
 ) -> Dict[str, SearchResult]:
     """
-    Given a term, search for anything (datasets / datalayers)
+    Given a term, search for anything (datasets / datalayers).
+
+    `group_by` picks what datalayers are browsed through: simple categories
+    or datasets. Without it, the DATA_ORGANIZATION flag decides.
     """
+    if group_by is None:
+        group_by = (
+            SearchGroupBy.SIMPLE_CATEGORY
+            if feature_enabled("DATA_ORGANIZATION")
+            else SearchGroupBy.DATASET
+        )
     datalayers = filter_datalayers(
         DataLayer.objects.all(),
         type=type or DataLayerType.RASTER,
@@ -605,7 +628,7 @@ def find_anything(
 
     simple_categories = SimpleCategory.objects.none()
     simple_category_datalayers = DataLayer.objects.none()
-    if feature_enabled("DATA_ORGANIZATION"):
+    if group_by == SearchGroupBy.SIMPLE_CATEGORY:
         # simple categories replace datasets as the way to browse datalayers
         datasets = Dataset.objects.none()
         simple_categories = SimpleCategory.objects.filter(
@@ -862,3 +885,183 @@ def enable_datalayer_module(
     datalayer.metadata = metadata
     datalayer.save(update_fields=["metadata", "updated_at"])
     return datalayer
+
+
+UPLOAD_EXTENSIONS = (".tif", ".tiff")
+UPLOAD_MIMETYPE = "image/tiff"
+UPLOADED_DATASET_NAME = "Uploaded"
+
+
+class UploadsNotSupported(Exception):
+    pass
+
+
+def get_upload_raw_url(workspace_id: int, uuid: str, extension: str) -> str:
+    return (
+        f"gs://{settings.GCS_BUCKET}/{settings.UPLOADS_RAW_FOLDER}"
+        f"/workspaces/{workspace_id}/{uuid}{extension}"
+    )
+
+
+def get_upload_final_url(workspace_id: int, uuid: str) -> str:
+    # Must contain "/datalayers/": get_public_url splits on it for the raster proxy.
+    return (
+        f"{get_bucket_url()}/{settings.DATALAYERS_FOLDER}"
+        f"/workspaces/{workspace_id}/{uuid}.tif"
+    )
+
+
+def is_upload_raw_url(gs_url: str) -> bool:
+    prefix = f"gs://{settings.GCS_BUCKET}/{settings.UPLOADS_RAW_FOLDER}/"
+    return gs_url.startswith(prefix)
+
+
+def get_or_create_workspace_upload_dataset(
+    workspace: Workspace,
+    user: User,
+) -> Dataset:
+    """
+    The dataset that holds a workspace's uploaded datalayers. Locks the
+    workspace row so two first uploads can't create two datasets.
+    """
+    Workspace.objects.select_for_update().filter(pk=workspace.pk).first()
+    dataset = (
+        Dataset.objects.filter(workspace=workspace, name=UPLOADED_DATASET_NAME)
+        .order_by("pk")
+        .first()
+    )
+    if dataset:
+        return dataset
+    return Dataset.objects.create(
+        name=UPLOADED_DATASET_NAME,
+        workspace=workspace,
+        created_by=user,
+        visibility=VisibilityOptions.PRIVATE,
+        preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+    )
+
+
+def workspace_upload_name_taken(workspace: Workspace, name: str) -> bool:
+    return DataLayer.objects.filter(
+        dataset__workspace=workspace,
+        dataset__name=UPLOADED_DATASET_NAME,
+        name=name,
+        type=DataLayerType.RASTER,
+    ).exists()
+
+
+@transaction.atomic()
+def create_workspace_upload(
+    workspace: Workspace,
+    created_by: User,
+    name: str,
+    original_name: str,
+    size: int,
+    origin: Optional[str] = None,
+) -> Dict[str, Any]:
+    if settings.PROVIDER != "gcp":
+        raise UploadsNotSupported("Uploads are only supported on GCS storage.")
+
+    dataset = get_or_create_workspace_upload_dataset(workspace, created_by)
+    uuid = str(uuid4())
+    raw_url = get_upload_raw_url(
+        workspace.pk, uuid, Path(original_name).suffix.lower()
+    )
+    datalayer = DataLayer.objects.create(
+        uuid=uuid,
+        name=name,
+        dataset=dataset,
+        workspace=workspace,
+        created_by=created_by,
+        type=DataLayerType.RASTER,
+        geometry_type=GeometryType.RASTER,
+        storage_type=StorageTypeChoices.FILESYSTEM,
+        map_service_type=MapServiceChoices.COG,
+        status=DataLayerStatus.PENDING,
+        original_name=original_name,
+        mimetype=UPLOAD_MIMETYPE,
+        raw_url=raw_url,
+        file_size=size,
+    )
+
+    bucket_name, object_name = get_bucket_and_key(raw_url)
+    upload_to = create_upload_url_gcs(
+        object_name=object_name,
+        bucket_name=bucket_name,
+        content_type=UPLOAD_MIMETYPE,
+        size=size,
+        origin=origin,
+    )
+    if not upload_to:
+        raise ValueError("Could not create upload url.")
+
+    action.send(created_by, verb="uploaded", action_object=datalayer)
+    invalidate_model(DataLayer)
+    publish_datalayer_created(datalayer, actor=created_by)
+    track_event(
+        name="datasets.datalayer.uploaded",
+        properties={
+            "workspace_id": workspace.pk,
+            "size": size,
+            "email": created_by.email,
+        },
+        user_id=created_by.pk,
+    )
+    return {"datalayer": datalayer, "upload_to": upload_to}
+
+
+def delete_raw_upload(datalayer: DataLayer) -> None:
+    if not datalayer.raw_url:
+        return
+    try:
+        delete_gcs_file(datalayer.raw_url)
+    except Exception:
+        log.exception("Could not delete raw upload of datalayer %s", datalayer.pk)
+
+
+@transaction.atomic()
+def delete_workspace_datalayer(datalayer: DataLayer, user: User) -> None:
+    datalayer.delete()
+    transaction.on_commit(lambda: delete_raw_upload(datalayer))
+    action.send(user, verb="deleted", action_object=datalayer)
+    invalidate_model(DataLayer)
+    publish_datalayer_deleted(datalayer, actor=user)
+
+
+def fail_datalayer(datalayer: DataLayer, reason: str) -> None:
+    datalayer.status = DataLayerStatus.FAILED
+    datalayer.failure_reason = reason
+    datalayer.save(update_fields=["status", "failure_reason", "updated_at"])
+    invalidate_model(DataLayer)
+    publish_datalayer_status_changed(datalayer)
+
+
+def expire_stale_uploads() -> int:
+    """
+    Fails uploads whose file never arrived and uploads stuck processing.
+    Returns how many were expired.
+    """
+    now = timezone.now()
+    pending_cutoff = now - timedelta(
+        hours=settings.DATALAYER_UPLOAD_PENDING_TTL_HOURS
+    )
+    processing_cutoff = now - timedelta(
+        hours=settings.DATALAYER_UPLOAD_PROCESSING_TTL_HOURS
+    )
+    uploads = DataLayer.objects.filter(raw_url__isnull=False)
+    stale_pending = uploads.filter(
+        status=DataLayerStatus.PENDING, created_at__lt=pending_cutoff
+    )
+    stale_processing = uploads.filter(
+        status=DataLayerStatus.PROCESSING, updated_at__lt=processing_cutoff
+    )
+
+    expired = 0
+    for datalayer in stale_pending:
+        fail_datalayer(datalayer, "The upload never completed.")
+        delete_raw_upload(datalayer)
+        expired += 1
+    for datalayer in stale_processing:
+        fail_datalayer(datalayer, "Processing timed out.")
+        expired += 1
+    return expired

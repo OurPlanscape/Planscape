@@ -7,7 +7,7 @@ from workspaces.access import (
     get_workspace_planning_area_access,
     get_workspace_role,
 )
-from workspaces.models import Workspace
+from workspaces.models import Workspace, WorkspaceRole
 
 from realtime.events import workspace_group_name
 
@@ -24,6 +24,12 @@ CONNECTED_EVENT = "realtime.connected"
 WORKSPACE_DELETED_EVENT = "workspace.workspace.deleted"
 MEMBERSHIP_REVOKED_EVENTS = ("workspace.member.removed", "workspace.member.left")
 ROLE_CHANGED_EVENT = "workspace.member.role_changed"
+DATALAYER_UPLOAD_EVENTS = (
+    "datasets.datalayer.created",
+    "datasets.datalayer.status_changed",
+    "datasets.datalayer.deleted",
+)
+READY = "READY"
 
 
 @database_sync_to_async
@@ -97,6 +103,8 @@ class WorkspaceConsumer(AsyncJsonWebsocketConsumer):
         """Handler for channel-layer messages of type `workspace.event`."""
         event = message["event"]
         self.track_role_change(event)
+        if self.hides_upload(event):
+            return
         await self.send_json(self.for_viewer(event))
         if self.revokes_access(event):
             await self.close(code=CLOSE_FORBIDDEN)
@@ -108,6 +116,14 @@ class WorkspaceConsumer(AsyncJsonWebsocketConsumer):
         data = event.get("data") or {}
         if user is not None and data.get("user_id") == user.pk:
             self.role = data.get("role")
+
+    def hides_upload(self, event: dict[str, Any]) -> bool:
+        """Viewers only ever see READY uploaded datalayers."""
+        if event.get("type") not in DATALAYER_UPLOAD_EVENTS:
+            return False
+        if self.role != WorkspaceRole.VIEWER:
+            return False
+        return (event.get("data") or {}).get("status") != READY
 
     def for_viewer(self, event: dict[str, Any]) -> dict[str, Any]:
         """
