@@ -22,10 +22,20 @@ import { FeatureService } from '@features/feature.service';
 import { FeaturesModule } from '@features/features.module';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { Router } from '@angular/router';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import {
+  UploadDataLayerComponent,
+  UploadDataLayerData,
+} from '@data-layers/upload-data-layer/upload-data-layer.component';
+import { SNACK_NOTICE_CONFIG } from '@shared';
+import { WorkspaceDataLayer } from '@types';
 import {
   asapScheduler,
   catchError,
   combineLatest,
+  filter,
   map,
   observeOn,
   of,
@@ -50,7 +60,9 @@ const PANEL_BY_RAIL_ITEM: Record<string, SidebarTabs> = {
     BaseLayersComponent,
     FeaturesModule,
     MapTabsComponent,
+    MatDialogModule,
     MatIconModule,
+    MatSnackBarModule,
     MatTooltipModule,
     SidebarIconRailComponent,
   ],
@@ -84,7 +96,10 @@ export class ExploreSidebarComponent {
     private multiMapConfigState: MultiMapConfigState,
     private dataLayersRegistry: DataLayersRegistryService,
     private featureService: FeatureService,
-    private workspaceState: WorkspaceState
+    private workspaceState: WorkspaceState,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
+    private router: Router
   ) {}
 
   canUpload$ = this.featureService.isFeatureEnabled('DATA_UPLOAD')
@@ -95,7 +110,33 @@ export class ExploreSidebarComponent {
     : of(false);
 
   openUpload() {
-    // TODO: open the upload data modal
+    this.workspaceState.currentWorkspace$
+      .pipe(
+        take(1),
+        switchMap((workspace) =>
+          this.dialog
+            .open<
+              UploadDataLayerComponent,
+              UploadDataLayerData,
+              WorkspaceDataLayer
+            >(UploadDataLayerComponent, {
+              data: { workspaceId: workspace.id },
+            })
+            .afterClosed()
+            .pipe(
+              filter((layer): layer is WorkspaceDataLayer => !!layer),
+              map((layer) => ({ layer, workspaceId: workspace.id }))
+            )
+        )
+      )
+      .subscribe(({ layer, workspaceId }) => {
+        this.router.navigate(['/workspace', workspaceId, 'datalayers']);
+        this.snackBar.open(
+          `"${layer.name}" uploaded. We'll let you know when it's ready.`,
+          'Dismiss',
+          SNACK_NOTICE_CONFIG
+        );
+      });
   }
 
   goBack() {

@@ -9,6 +9,7 @@ import { DetailsCardComponent } from '@styleguide/details-card/details-card.comp
 import { WorkspaceState } from '../workspace.state';
 import { WorkspaceActionsService } from '../workspace-actions.service';
 import { AsyncPipe, NgIf } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 import { ResourceUnavailableComponent } from '@app/shared/resource-unavailable/resource-unavailable.component';
 import { PlanningAreaListComponent } from '../planning-area-list/planning-area-list.component';
 import { Workspace } from '@types';
@@ -27,6 +28,7 @@ import { FeatureService } from '@app/features/feature.service';
     OverlayLoaderComponent,
     ResourceUnavailableComponent,
     PlanningAreaListComponent,
+    MatIconModule,
   ],
   templateUrl: './workspace-dashboard.component.html',
   providers: [MapConfigService],
@@ -62,6 +64,17 @@ export class WorkspaceDashboardComponent implements OnInit {
       label: 'Home ',
       backUrl: '/home',
     });
+  }
+
+  canManageDataLayers(workspace: Workspace): boolean {
+    return (
+      this.featureService.isFeatureEnabled('DATA_UPLOAD') &&
+      workspace.permissions.includes('add_datalayer')
+    );
+  }
+
+  goToDataLayers() {
+    this.router.navigate(['/workspace', this.workspaceId, 'datalayers']);
   }
 
   handleNavigation() {

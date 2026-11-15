@@ -126,6 +126,32 @@ export interface DataLayer {
   is_favorite?: boolean | null;
 }
 
+export type WorkspaceDataLayerStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'READY'
+  | 'FAILED';
+
+export interface WorkspaceDataLayer {
+  id: number;
+  uuid: string;
+  name: string;
+  type: string;
+  status: WorkspaceDataLayerStatus;
+  failure_reason: string | null;
+  original_name: string | null;
+  file_size: number | null;
+  created_at: string;
+  updated_at: string;
+  created_by: number;
+  creator_name: string;
+}
+
+export interface WorkspaceDataLayerCreated {
+  datalayer: WorkspaceDataLayer;
+  upload_to: { url: string };
+}
+
 export interface BaseLayer extends Omit<DataLayer, 'styles'> {
   map_url: string;
   storage_type?: string;

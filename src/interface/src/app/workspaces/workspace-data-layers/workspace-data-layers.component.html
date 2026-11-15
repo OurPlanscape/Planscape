@@ -1,0 +1,125 @@
+<sg-overlay-loader *ngIf="isWorkspaceLoading$ | async"></sg-overlay-loader>
+
+<div class="unavailable" *ngIf="workspaceNotFound$ | async">
+  <app-resource-unavailable resource="workspace"></app-resource-unavailable>
+</div>
+
+<ng-container *ngIf="currentWorkspace$ | async as workspace">
+  <app-nav-bar area="SCENARIO"></app-nav-bar>
+
+  <div class="unavailable" *ngIf="!canManage(workspace)">
+    <app-resource-unavailable resource="page"></app-resource-unavailable>
+  </div>
+
+  <main class="page" *ngIf="canManage(workspace)">
+    <header class="page-header">
+      <div>
+        <h3>Data Layers</h3>
+        <p class="page-description">
+          Rasters uploaded to {{ workspace.name }}. Ready layers can be added to
+          the map from the Uploaded tab.
+        </p>
+      </div>
+      <button sg-button variant="primary" icon="upload" (click)="upload()">
+        Upload
+      </button>
+    </header>
+
+    <ng-container *ngIf="dataLayers$ | async as dataLayers; else noData">
+      <sg-empty-state
+        *ngIf="dataLayers.layers.length === 0"
+        icon="drive_folder_upload"
+        [outlined]="true"
+        title="No data layers yet"
+        description="Upload a GeoTIFF to use it on the map of this workspace.">
+      </sg-empty-state>
+
+      <div class="table-wrapper" *ngIf="dataLayers.layers.length > 0">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Uploaded</th>
+              <th>Uploaded by</th>
+              <th class="right">Size</th>
+              <th class="actions">
+                <span class="cdk-visually-hidden">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let layer of dataLayers.layers; trackBy: trackById">
+              <td>
+                <div class="layer-name">{{ layer.name }}</div>
+                <div class="secondary" *ngIf="layer.original_name">
+                  {{ layer.original_name }}
+                </div>
+              </td>
+              <td>
+                <sg-status-chip
+                  [status]="statusChip(layer).status"
+                  [label]="statusChip(layer).label"></sg-status-chip>
+                <div
+                  class="failure-reason"
+                  *ngIf="layer.status === 'FAILED' && layer.failure_reason">
+                  {{ layer.failure_reason }}
+                </div>
+              </td>
+              <td>{{ layer.created_at | date: 'mediumDate' }}</td>
+              <td>{{ layer.creator_name }}</td>
+              <td class="right">{{ formatFileSize(layer.file_size) }}</td>
+              <td class="actions">
+                <button
+                  sg-button
+                  variant="icon-only"
+                  icon="more_vert"
+                  [attr.aria-label]="'Actions for ' + layer.name"
+                  [matMenuTriggerFor]="menu"></button>
+                <mat-menu #menu="matMenu" xPosition="before">
+                  <button
+                    mat-menu-item
+                    *ngIf="layer.status === 'FAILED'"
+                    (click)="upload(layer)">
+                    <mat-icon class="material-symbols-outlined"
+                      >upload</mat-icon
+                    >
+                    Upload again
+                  </button>
+                  <button mat-menu-item (click)="delete(layer)">
+                    <mat-icon class="material-symbols-outlined"
+                      >delete</mat-icon
+                    >
+                    Delete
+                  </button>
+                </mat-menu>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <sg-paginator
+        *ngIf="dataLayers.pageCount > 1"
+        [compact]="true"
+        [currentPage]="page$.value"
+        [pageCount]="dataLayers.pageCount"
+        (pageChanged)="goToPage($event)"></sg-paginator>
+    </ng-container>
+
+    <ng-template #noData>
+      <sg-empty-state
+        *ngIf="loadFailed; else loading"
+        icon="error"
+        title="We couldn't load the data layers"
+        description="Something went wrong. Please try again.">
+        <button sg-button variant="primary" (click)="retry()">Try Again</button>
+      </sg-empty-state>
+      <ng-template #loading>
+        <div class="loading-row">
+          <mat-spinner diameter="40"></mat-spinner>
+        </div>
+      </ng-template>
+    </ng-template>
+  </main>
+</ng-container>

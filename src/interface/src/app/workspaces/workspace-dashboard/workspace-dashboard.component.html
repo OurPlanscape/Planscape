@@ -34,6 +34,20 @@
           src="assets/svg/map_layer.svg"
           alt="map" />
       </sg-card-link>
+
+      <sg-card-link
+        *ngIf="canManageDataLayers(workspace)"
+        class="data-layers-card"
+        label="Data Layers"
+        subLabel="Manage uploaded data"
+        [collapseContentOnSmall]="false"
+        (navigate)="goToDataLayers()">
+        <div class="data-layers-icon" cardContent>
+          <mat-icon class="material-symbols-outlined"
+            >drive_folder_upload</mat-icon
+          >
+        </div>
+      </sg-card-link>
     </div>
     <div right-column class="planing-areas-column">
       <app-planning-area-list></app-planning-area-list>

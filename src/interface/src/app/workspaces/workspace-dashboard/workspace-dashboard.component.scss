@@ -29,3 +29,23 @@
   height: 100%;
   object-fit: cover;
 }
+
+.data-layers-card {
+  flex-shrink: 0;
+}
+
+.data-layers-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 96px;
+  background-color: $color-soft-purple;
+  color: $color-standard-blue;
+
+  mat-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 48px;
+  }
+}

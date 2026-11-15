@@ -21,6 +21,10 @@ import { BehaviorSubject, EMPTY, of } from 'rxjs';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
 import { FEATURES_JSON } from '@features/features-config';
 import { FeaturesModule } from '@features/features.module';
+import { provideRouter, Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { UploadDataLayerComponent } from '@data-layers/upload-data-layer/upload-data-layer.component';
 
 describe('ExploreSidebarComponent', () => {
   let component: ExploreSidebarComponent;
@@ -43,6 +47,7 @@ describe('ExploreSidebarComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ExploreSidebarComponent],
       providers: [
+        provideRouter([]),
         {
           provide: MultiMapConfigState,
           useValue: { selectedMapId$: new BehaviorSubject(1) },
@@ -51,7 +56,7 @@ describe('ExploreSidebarComponent', () => {
         {
           provide: WorkspaceState,
           useValue: {
-            currentWorkspace$: of({ permissions: workspacePermissions }),
+            currentWorkspace$: of({ id: 7, permissions: workspacePermissions }),
           },
         },
       ],
@@ -172,6 +177,51 @@ describe('ExploreSidebarComponent', () => {
         'app-sidebar-icon-rail'
       );
       expect(rail.firstElementChild).toBe(uploadButton().nativeElement);
+    });
+
+    it('opens the upload dialog and goes to the data layers page after', () => {
+      const open = spyOn(
+        fixture.debugElement.injector.get(MatDialog),
+        'open'
+      ).and.returnValue({
+        afterClosed: () => of({ id: 5, name: 'Canopy' }),
+      } as any);
+      const notice = spyOn(
+        fixture.debugElement.injector.get(MatSnackBar),
+        'open'
+      );
+      const navigate = spyOn(TestBed.inject(Router), 'navigate');
+
+      uploadButton().nativeElement.click();
+
+      expect(open).toHaveBeenCalledWith(UploadDataLayerComponent, {
+        data: { workspaceId: 7 },
+      });
+      expect(navigate).toHaveBeenCalledWith(['/workspace', 7, 'datalayers']);
+      expect(notice).toHaveBeenCalledWith(
+        jasmine.stringContaining('"Canopy" uploaded'),
+        'Dismiss',
+        jasmine.anything()
+      );
+    });
+
+    it('stays put when the upload dialog is dismissed', () => {
+      spyOn(
+        fixture.debugElement.injector.get(MatDialog),
+        'open'
+      ).and.returnValue({
+        afterClosed: () => of(undefined),
+      } as any);
+      const notice = spyOn(
+        fixture.debugElement.injector.get(MatSnackBar),
+        'open'
+      );
+      const navigate = spyOn(TestBed.inject(Router), 'navigate');
+
+      uploadButton().nativeElement.click();
+
+      expect(notice).not.toHaveBeenCalled();
+      expect(navigate).not.toHaveBeenCalled();
     });
 
     describe('for a workspace viewer', () => {

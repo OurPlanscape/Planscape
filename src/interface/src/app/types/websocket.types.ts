@@ -33,6 +33,17 @@ export const PLANNING_AREA_MAP_STATUS_EVENT =
 export const DATALAYER_FAVORITED_EVENT = 'datasets.datalayer.favorited';
 export const DATALAYER_UNFAVORITED_EVENT = 'datasets.datalayer.unfavorited';
 
+// Workspace uploads: created, moved through processing, or deleted
+export const DATALAYER_CREATED_EVENT = 'datasets.datalayer.created';
+export const DATALAYER_STATUS_EVENT = 'datasets.datalayer.status_changed';
+export const DATALAYER_DELETED_EVENT = 'datasets.datalayer.deleted';
+
+export const DATALAYER_UPLOAD_EVENTS = [
+  DATALAYER_CREATED_EVENT,
+  DATALAYER_STATUS_EVENT,
+  DATALAYER_DELETED_EVENT,
+];
+
 // Everything that changes what the list of planning areas shows
 export const PLANNING_AREA_LIST_EVENTS = [
   PLANNING_AREA_CREATED_EVENT,
