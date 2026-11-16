@@ -3,7 +3,9 @@ import re
 from typing import List, Optional  # noqa
 
 import markdown
+from core.flags import feature_enabled
 from datasets.models import DataLayer, DataLayerStatus, DataLayerType, GeometryType
+from datasets.serializers import DataLayerSerializer
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.utils import timezone
@@ -912,7 +914,12 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
 
 
 class TreatmentGoalUsageSerializer(serializers.ModelSerializer):
-    datalayer = serializers.CharField(source="datalayer.name", read_only=True)
+    datalayer = serializers.SerializerMethodField()
+
+    def get_datalayer(self, instance):
+        if feature_enabled("IMPROVED_TREATMENT_GOAL"):
+            return DataLayerSerializer(instance.datalayer, context=self.context).data
+        return instance.datalayer.name
 
     class Meta:
         model = TreatmentGoalUsesDataLayer
