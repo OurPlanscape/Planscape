@@ -246,6 +246,11 @@ class SearchTab(models.TextChoices):
     UPLOADED = "uploaded", "Uploaded"
 
 
+class SearchGroupBy(models.TextChoices):
+    SIMPLE_CATEGORY = "simple_category", "Simple category"
+    DATASET = "dataset", "Dataset"
+
+
 class DataLayerStatus(models.TextChoices):
     READY = "READY", "Ready"
     PENDING = "PENDING", "Pending"

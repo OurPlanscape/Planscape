@@ -411,6 +411,27 @@ class TestDataLayerViewSet(APITestCase):
         for row in data["results"]:
             self.assertEqual("RASTER", row["data"]["type"])
 
+    @mock.patch("datasets.views.find_anything", return_value={})
+    def test_find_anything_passes_group_by(self, find_anything_mock):
+        self.client.force_authenticate(user=self.normal)
+        url = reverse("api:datasets:datalayers-find-anything")
+        params = {"term": "foo", "type": "RASTER", "group_by": "dataset"}
+
+        response = self.client.post(url, params, format="json")
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(find_anything_mock.call_args.kwargs["group_by"], "dataset")
+
+    def test_find_anything_rejects_unknown_group_by(self):
+        self.client.force_authenticate(user=self.normal)
+        url = reverse("api:datasets:datalayers-find-anything")
+        params = {"term": "foo", "type": "RASTER", "group_by": "organization"}
+
+        response = self.client.post(url, params, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("group_by", response.json()["errors"])
+
     @mock.patch("datasets.views.track_event")
     def test_find_anything_tracks_search_event(self, track_event_mock):
         self.client.force_authenticate(user=self.normal)

@@ -10,6 +10,7 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     MapServiceChoices,
+    SearchGroupBy,
     SearchTab,
     SimpleCategory,
     StorageTypeChoices,
@@ -746,6 +747,13 @@ class FindAnythingSerializer(SearchTabSerializer):
 
     type = serializers.ChoiceField(
         choices=DataLayerType.choices,
+    )
+
+    group_by = serializers.ChoiceField(
+        choices=SearchGroupBy.choices,
+        required=False,
+        help_text="Group results by simple category or by dataset. "
+        "Defaults to simple category when DATA_ORGANIZATION is on.",
     )
 
     geometry = GeometryTypeField(
