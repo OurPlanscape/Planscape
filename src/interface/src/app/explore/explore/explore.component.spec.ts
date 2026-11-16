@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { PlanState } from '@app/plan/plan.state';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
@@ -36,6 +36,8 @@ describe('ExploreComponent', () => {
   let loadMapModule: jasmine.Spy;
   let setWorkspaceId: jasmine.Spy;
   let resetWorkspaceId: jasmine.Spy;
+  let workspaceNotFound$: BehaviorSubject<boolean>;
+  let currentPlan$: BehaviorSubject<Plan>;
 
   const mockRouteSnapshotData: { planId?: number; scenarioId?: number } = {};
 
@@ -79,6 +81,8 @@ describe('ExploreComponent', () => {
     loadMapModule = jasmine.createSpy('loadMapModule').and.returnValue(of({}));
     setWorkspaceId = jasmine.createSpy('setWorkspaceId');
     resetWorkspaceId = jasmine.createSpy('resetWorkspaceId');
+    workspaceNotFound$ = new BehaviorSubject(false);
+    currentPlan$ = new BehaviorSubject(mockPlan);
 
     await TestBed.configureTestingModule({
       imports: [ExploreComponent, SharedModule, BrowserAnimationsModule],
@@ -87,11 +91,15 @@ describe('ExploreComponent', () => {
         MockProvider(PlanState, {
           currentPlanId$,
           currentPlanWorkspaceId$,
-          currentPlan$: of(mockPlan),
+          currentPlan$,
           currentPlanOrNull$,
         }),
         MockProvider(MapModuleService, { loadMapModule }),
-        MockProvider(WorkspaceState, { setWorkspaceId, resetWorkspaceId }),
+        MockProvider(WorkspaceState, {
+          setWorkspaceId,
+          resetWorkspaceId,
+          workspaceNotFound$,
+        }),
         MockProvider(ScenarioState, {
           currentScenario$: of(mockScenario),
         }),
@@ -319,5 +327,54 @@ describe('ExploreComponent', () => {
     setupComponent();
 
     expect(lastBreadcrumbConfig().backUrl).toEqual('/workspace/7');
+  });
+
+  describe('a link to something the user cannot open', () => {
+    let navigate: jasmine.Spy;
+
+    function onWorkspaceMapViewer(workspaceId: string) {
+      delete mockRouteSnapshotData.planId;
+      delete mockRouteSnapshotData.scenarioId;
+      currentPlanId$.next(null);
+      (TestBed.inject(ActivatedRoute).snapshot as any).pathFromRoot = [
+        { paramMap: convertToParamMap({ workspaceId }) },
+      ];
+    }
+
+    beforeEach(() => {
+      navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    });
+
+    it('goes home when the workspace is not found', () => {
+      onWorkspaceMapViewer('7');
+      setupComponent();
+      expect(navigate).not.toHaveBeenCalled();
+
+      workspaceNotFound$.next(true);
+
+      expect(navigate).toHaveBeenCalledOnceWith(['/home']);
+    });
+
+    it('goes home when the plan fails to load', () => {
+      setupComponent();
+      expect(navigate).not.toHaveBeenCalled();
+
+      currentPlan$.error(new Error('Not found'));
+
+      expect(navigate).toHaveBeenCalledOnceWith(['/home']);
+    });
+
+    it('stays on the map viewer of a plan that loads', () => {
+      setupComponent();
+
+      expect(navigate).not.toHaveBeenCalled();
+    });
+
+    it('ignores the workspace state off the workspace map viewer', () => {
+      workspaceNotFound$.next(true);
+      setupComponent();
+
+      expect(navigate).not.toHaveBeenCalled();
+    });
   });
 });
