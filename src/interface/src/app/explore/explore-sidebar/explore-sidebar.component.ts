@@ -92,9 +92,7 @@ export class ExploreSidebarComponent {
 
   canUpload$ = this.featureService.isFeatureEnabled('DATA_UPLOAD')
     ? this.workspaceState.currentWorkspace$.pipe(
-        // TODO: restore once the backend ships add_datalayer
-        // map((workspace) => workspace.permissions.includes('add_datalayer')),
-        map(() => true),
+        map((workspace) => workspace.permissions.includes('add_datalayer')),
         catchError(() => of(false))
       )
     : of(false);
