@@ -30,7 +30,7 @@ export class DynamicDataLayersComponent
   @Input({ required: true }) mapId!: number;
 
   //Which data layers panel to build for this map
-  @Input() panel: 'browse' | 'favorites' = 'browse';
+  @Input() panel: 'browse' | 'favorites' | 'uploaded' = 'browse';
   @Input() showSelectionHeader = true;
   @Input() belowSearch?: TemplateRef<unknown>;
 
@@ -54,11 +54,12 @@ export class DynamicDataLayersComponent
       parent: this.parentInjector,
     });
 
-    if (this.panel === 'favorites') {
-      this.componentRef = this.outlet.createComponent(
-        FavoriteDataLayersComponent,
-        { injector: customInjector }
-      );
+    if (this.panel === 'favorites' || this.panel === 'uploaded') {
+      const panel = this.outlet.createComponent(FavoriteDataLayersComponent, {
+        injector: customInjector,
+      });
+      panel.setInput('source', this.panel);
+      this.componentRef = panel;
     } else {
       this.componentRef = this.outlet.createComponent(DataLayersComponent, {
         injector: customInjector,

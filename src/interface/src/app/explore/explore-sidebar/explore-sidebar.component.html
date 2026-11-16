@@ -49,6 +49,9 @@
     <app-map-tabs
       panel="favorites"
       *ngIf="selectedTab === SidebarTabs.FAVORITES"></app-map-tabs>
+    <app-map-tabs
+      panel="uploaded"
+      *ngIf="selectedTab === SidebarTabs.UPLOADED"></app-map-tabs>
     <app-base-layers
       *ngIf="selectedTab === SidebarTabs.BASE_LAYERS"></app-base-layers>
   </div>

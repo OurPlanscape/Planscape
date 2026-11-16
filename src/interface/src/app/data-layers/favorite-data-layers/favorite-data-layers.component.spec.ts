@@ -29,6 +29,7 @@ describe('FavoriteDataLayersComponent', () => {
   let component: FavoriteDataLayersComponent;
   let fixture: ComponentFixture<FavoriteDataLayersComponent>;
   let favorites$: BehaviorSubject<Resource<DataLayer[]>>;
+  let uploaded$: BehaviorSubject<Resource<DataLayer[]>>;
   let canEditFavorites$: BehaviorSubject<boolean>;
   let selectedDataLayers$: BehaviorSubject<DataLayer[]>;
   let unselectable: DataLayer | null;
@@ -53,6 +54,10 @@ describe('FavoriteDataLayersComponent', () => {
       isLoading: false,
       data: [],
     });
+    uploaded$ = new BehaviorSubject<Resource<DataLayer[]>>({
+      isLoading: false,
+      data: [],
+    });
     canEditFavorites$ = new BehaviorSubject(true);
     selectedDataLayers$ = new BehaviorSubject<DataLayer[]>([]);
     unselectable = null;
@@ -69,6 +74,7 @@ describe('FavoriteDataLayersComponent', () => {
           provide: DataLayersStateService,
           useValue: {
             favorites$,
+            uploaded$,
             loadingLayer$: of(false),
             viewedDataLayer$: of(null),
             selectDataLayer: jasmine.createSpy('selectDataLayer'),
@@ -244,6 +250,52 @@ describe('FavoriteDataLayersComponent', () => {
   // the favorites of a workspace are meant to be reached for while a
   // scenario is being configured, so this panel picks layers the same way
   // the browse list does
+  describe('listing the uploads', () => {
+    function createUploaded() {
+      fixture = TestBed.createComponent(FavoriteDataLayersComponent);
+      component = fixture.componentInstance;
+      fixture.componentRef.setInput('source', 'uploaded');
+      fixture.detectChanges();
+      return fixture.nativeElement as HTMLElement;
+    }
+
+    it('lists the uploads instead of the favorites', () => {
+      favorites$.next({ isLoading: false, data: [layer(1, 'Favorite')] });
+      uploaded$.next({
+        isLoading: false,
+        data: [layer(2, 'Canopy'), layer(3, 'Aspect')],
+      });
+      const el = createUploaded();
+
+      expect(rowNames(el)).toEqual(['Canopy', 'Aspect']);
+      expect(
+        (el.querySelector('sg-search-bar input') as HTMLInputElement)
+          ?.placeholder
+      ).toBe('Search in uploaded');
+    });
+
+    it('offers the star on each upload', () => {
+      uploaded$.next({ isLoading: false, data: [layer(2, 'Canopy')] });
+      const el = createUploaded();
+
+      expect(el.querySelector('.data-layer app-favorite-star')).toBeTruthy();
+    });
+
+    it('says when there are no uploads yet', () => {
+      const el = createUploaded();
+
+      expect(el.textContent).toContain('No uploaded data layers yet');
+      expect(el.textContent).not.toContain('Favoriting data layers');
+    });
+
+    it('says so when the uploads cannot be loaded', () => {
+      uploaded$.next({ isLoading: false, error: new Error() });
+      const el = createUploaded();
+
+      expect(el.textContent).toContain("We couldn't load the uploaded layers");
+    });
+  });
+
   describe('where the step picks layers', () => {
     const twoLayers = () =>
       favorites$.next({

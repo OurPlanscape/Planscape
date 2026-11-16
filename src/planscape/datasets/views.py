@@ -7,6 +7,7 @@ from datasets.models import (
     DataLayerStatus,
     DataLayerType,
     Dataset,
+    SearchTab,
     SimpleCategory,
     VisibilityOptions,
 )
@@ -213,8 +214,8 @@ class DataLayerViewSet(
         return Response({"layer_url": datalayer.get_map_url()})
 
     @extend_schema(
-        description="Returns the datalayers favorited in a workspace, across "
-        "all datasets.",
+        description="Returns the datalayers favorited in a workspace, or its "
+        "ready uploads, across all datasets.",
         request=BrowseDataLayersSerializer,
         responses={200: BrowseDataLayerSerializer(many=True)},
     )
@@ -226,6 +227,7 @@ class DataLayerViewSet(
         )
         serializer.is_valid(raise_exception=True)
         workspace = serializer.validated_data["workspace"]
+        search_tab = serializer.validated_data["search_tab"]
         results = list(
             browse_favorites(
                 workspace,
@@ -233,13 +235,17 @@ class DataLayerViewSet(
                 module=serializer.validated_data.get("module"),
                 geometry=serializer.validated_data.get("geometry"),
                 user=request.user,
+                search_tab=search_tab,
             )
         )
+        result_ids = {datalayer.pk for datalayer in results}
         serializer = BrowseDataLayerSerializer(
             results,
             many=True,
             context={
-                "favorite_datalayer_ids": {datalayer.pk for datalayer in results},
+                "favorite_datalayer_ids": result_ids
+                if search_tab == SearchTab.FAVORITES
+                else get_favorite_datalayer_ids(workspace, result_ids),
             },
         )
         return Response(serializer.data, status=status.HTTP_200_OK)

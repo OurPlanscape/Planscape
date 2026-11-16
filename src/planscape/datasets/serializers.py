@@ -696,11 +696,12 @@ class SearchTabSerializer(serializers.Serializer):
     )
 
     def validate(self, attrs):
-        if attrs.get("search_tab") == SearchTab.FAVORITES and not attrs.get(
-            "workspace"
-        ):
+        if attrs.get("search_tab") in (
+            SearchTab.FAVORITES,
+            SearchTab.UPLOADED,
+        ) and not attrs.get("workspace"):
             raise serializers.ValidationError(
-                {"workspace_id": "This field is required to search favorites."}
+                {"workspace_id": "This field is required for this tab."}
             )
         return attrs
 
@@ -728,12 +729,16 @@ class BrowseDataSetSerializer(SearchTabSerializer):
 
 class BrowseDataLayersSerializer(BrowseDataSetSerializer):
     """
-    Browse across every dataset. Only the favorites tab is supported, since the
-    general tab would return every accessible datalayer.
+    Browse across every dataset. Only the workspace tabs (favorites, uploaded)
+    are supported, since the general tab would return every accessible
+    datalayer.
     """
 
     search_tab = serializers.ChoiceField(
-        choices=[(SearchTab.FAVORITES.value, SearchTab.FAVORITES.label)],
+        choices=[
+            (SearchTab.FAVORITES.value, SearchTab.FAVORITES.label),
+            (SearchTab.UPLOADED.value, SearchTab.UPLOADED.label),
+        ],
     )
 
 

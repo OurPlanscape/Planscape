@@ -543,16 +543,18 @@ def browse_favorites(
     module: Optional[str] = None,
     geometry: Optional[GEOSGeometry] = None,
     user: Optional[User] = None,
+    search_tab: str = SearchTab.FAVORITES,
 ) -> QuerySet[DataLayer]:
     """
-    Every datalayer favorited in the workspace, across all datasets.
+    Every datalayer of a workspace tab, across all datasets: its favorites,
+    or its READY uploads with `search_tab=uploaded`.
     """
     datalayers = filter_datalayers(
         DataLayer.objects.all(),
         type=type,
         module=module,
         geometry=geometry,
-        search_tab=SearchTab.FAVORITES,
+        search_tab=search_tab,
         user=user,
         workspace=workspace,
     )
@@ -1068,6 +1070,8 @@ def create_workspace_upload(
         mimetype=UPLOAD_MIMETYPE,
         raw_url=raw_url,
         file_size=size,
+        # module lists only include layers enabled for them
+        metadata={"modules": {"map": {"enabled": True}}},
     )
 
     bucket_name, object_name = get_bucket_and_key(raw_url)

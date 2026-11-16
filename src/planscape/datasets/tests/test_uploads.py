@@ -20,6 +20,7 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     Style,
+    WorkspaceFavoriteDataLayer,
 )
 from datasets.services import (
     UPLOADED_DATASET_NAME,
@@ -39,6 +40,7 @@ SESSION = {"url": "https://storage.googleapis.com/upload/session"}
 
 def make_upload(workspace, status=DataLayerStatus.PENDING, **kwargs):
     dataset = get_or_create_workspace_upload_dataset(workspace, workspace.created_by)
+    kwargs.setdefault("metadata", {"modules": {"map": {"enabled": True}}})
     datalayer = DataLayerFactory.create(
         dataset=dataset,
         organization=None,
@@ -95,6 +97,8 @@ class CreateWorkspaceDataLayerTest(APITestCase):
         self.assertEqual(body["upload_to"], SESSION)
         self.assertEqual(body["datalayer"]["status"], "PENDING")
         self.assertEqual(body["datalayer"]["file_size"], self.payload["size"])
+        datalayer = DataLayer.objects.get(pk=body["datalayer"]["id"])
+        self.assertEqual(datalayer.metadata, {"modules": {"map": {"enabled": True}}})
 
         datalayer = DataLayer.objects.get(pk=body["datalayer"]["id"])
         self.assertEqual(datalayer.workspace, self.workspace)
@@ -790,6 +794,63 @@ class UploadStyleTest(APITestCase):
         )
         response = self.client.patch(url, {"style": STYLE}, format="json")
         self.assertEqual(response.status_code, 404)
+
+
+class BrowseUploadedTest(APITestCase):
+    def setUp(self):
+        self.owner = UserFactory.create()
+        self.viewer = UserFactory.create()
+        self.outsider = UserFactory.create()
+        self.workspace = PlanningWorkspaceFactory.create(created_by=self.owner)
+        UserAccessWorkspaceFactory.create(
+            user=self.viewer, workspace=self.workspace, role=WorkspaceRole.VIEWER
+        )
+        self.ready = make_upload(
+            self.workspace, status=DataLayerStatus.READY, name="Canopy"
+        )
+        self.favorite = make_upload(
+            self.workspace, status=DataLayerStatus.READY, name="Aspect"
+        )
+        WorkspaceFavoriteDataLayer.objects.create(
+            workspace=self.workspace, datalayer=self.favorite
+        )
+        make_upload(self.workspace, status=DataLayerStatus.PROCESSING)
+        make_upload(self.workspace, status=DataLayerStatus.FAILED)
+        make_upload(PlanningWorkspaceFactory.create(), status=DataLayerStatus.READY)
+        self.url = reverse("api:datasets:datalayers-browse")
+        self.body = {
+            "search_tab": "uploaded",
+            "workspace_id": self.workspace.pk,
+            "type": "RASTER",
+            "module": "map",
+        }
+
+    def test_lists_ready_uploads_with_favorites_marked(self):
+        self.client.force_authenticate(self.viewer)
+        response = self.client.post(self.url, self.body, format="json")
+
+        self.assertEqual(response.status_code, 200, response.content)
+        rows = {row["name"]: row["is_favorite"] for row in response.json()}
+        self.assertEqual(rows, {"Aspect": True, "Canopy": False})
+
+    def test_requires_a_workspace(self):
+        self.client.force_authenticate(self.owner)
+        body = {**self.body}
+        del body["workspace_id"]
+        response = self.client.post(self.url, body, format="json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_outsiders_cannot_browse_the_workspace(self):
+        self.client.force_authenticate(self.outsider)
+        response = self.client.post(self.url, self.body, format="json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_favorites_tab_still_only_lists_favorites(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.post(
+            self.url, {**self.body, "search_tab": "favorites"}, format="json"
+        )
+        self.assertEqual([row["name"] for row in response.json()], ["Aspect"])
 
 
 class UploadMetadataTest(TestCase):

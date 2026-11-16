@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { BehaviorSubject, combineLatest, map } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, of, switchMap } from 'rxjs';
 import {
   ButtonComponent,
   EmptyStateComponent,
@@ -25,6 +25,30 @@ import { DataLayerTooltipComponent } from '@data-layers/data-layer-tooltip/data-
 import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.component';
 import { SingleOpenMenuDirective } from '@standalone/single-open-menu-directive/single-open-menu.directive';
 
+export type FlatLayersSource = 'favorites' | 'uploaded';
+
+const UPLOADED_COPY = {
+  searchPlaceholder: 'Search in uploaded',
+  errorTitle: "We couldn't load the uploaded layers",
+  errorDescription:
+    'The server could not return the uploads of this workspace. Try again later.',
+  emptyIcon: 'drive_folder_upload',
+  emptyTitle: 'No uploaded data layers yet',
+};
+
+const FAVORITES_COPY = {
+  searchPlaceholder: 'Search in favorites',
+  errorTitle: "We couldn't load your favorites",
+  errorDescription:
+    'The server could not return the favorites of this workspace. Try again later.',
+  emptyIcon: 'star',
+  emptyTitle: 'No favorite data layers yet',
+};
+
+/**
+ * A flat, searchable list of a workspace's layers, one per map: its
+ * favorites, or with `source="uploaded"` its ready uploads.
+ */
 @Component({
   selector: 'app-favorite-data-layers',
   standalone: true,
@@ -62,14 +86,30 @@ export class FavoriteDataLayersComponent {
   @Input() belowSearch?: TemplateRef<unknown>;
 
   @Input() displayAddButton = false;
+
+  @Input() set source(source: FlatLayersSource) {
+    this.source$.next(source);
+  }
+  private source$ = new BehaviorSubject<FlatLayersSource>('favorites');
+
   infoMenuOpen = false;
+
+  copy$ = this.source$.pipe(
+    map((source) => (source === 'uploaded' ? UPLOADED_COPY : FAVORITES_COPY))
+  );
 
   private _searchTerm$ = new BehaviorSubject('');
   searchTerm$ = this._searchTerm$.asObservable();
 
-  favorites$ = this.dataLayersStateService.favorites$;
+  layers$ = this.source$.pipe(
+    switchMap((source) =>
+      source === 'uploaded'
+        ? this.dataLayersStateService.uploaded$
+        : this.dataLayersStateService.favorites$
+    )
+  );
 
-  results$ = combineLatest([this.favorites$, this.searchTerm$]).pipe(
+  results$ = combineLatest([this.layers$, this.searchTerm$]).pipe(
     map(([resource, term]) =>
       (resource.data ?? []).filter((layer) =>
         layer.name.toLowerCase().includes(term.trim().toLowerCase())
@@ -79,11 +119,19 @@ export class FavoriteDataLayersComponent {
 
   hasResults$ = this.results$.pipe(map((layers) => layers.length > 0));
 
-  emptyStateDescription$ = this.dataLayersStateService.canEditFavorites$.pipe(
-    map((canEdit) =>
-      canEdit
-        ? 'Favoriting data layers will help you define priority areas later in your planning process.'
-        : 'There are no favorited layers in this workspace. Favorites added by owner and editors will appear here.'
+  emptyStateDescription$ = this.source$.pipe(
+    switchMap((source) =>
+      source === 'uploaded'
+        ? of(
+            'Layers uploaded to this workspace show up here once they are processed.'
+          )
+        : this.dataLayersStateService.canEditFavorites$.pipe(
+            map((canEdit) =>
+              canEdit
+                ? 'Favoriting data layers will help you define priority areas later in your planning process.'
+                : 'There are no favorited layers in this workspace. Favorites added by owner and editors will appear here.'
+            )
+          )
     )
   );
 

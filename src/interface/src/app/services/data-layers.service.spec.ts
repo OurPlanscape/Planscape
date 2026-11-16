@@ -28,6 +28,23 @@ describe('DatalayersService', () => {
     expect(service).toBeTruthy();
   });
 
+  describe('browseUploaded', () => {
+    it('asks for the ready uploads of the workspace', () => {
+      service.browseUploaded(7, 'map').subscribe();
+
+      const req = httpMock.expectOne(browsePath);
+
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({
+        search_tab: 'uploaded',
+        workspace_id: 7,
+        type: 'RASTER',
+        module: 'map',
+      });
+      req.flush([]);
+    });
+  });
+
   describe('browseFavorites', () => {
     it('asks for the favorites of the workspace', () => {
       let result: DataLayer[] | undefined;

@@ -22,6 +22,7 @@ import {
   DataLayer,
   DATALAYER_FAVORITED_EVENT,
   DATALAYER_UNFAVORITED_EVENT,
+  DATALAYER_UPLOAD_EVENTS,
   IdNamePair,
   Pagination,
   Plan,
@@ -452,6 +453,55 @@ export class DataLayersStateService implements OnDestroy {
     shareReplay(1)
   );
 
+  private _reloadUploaded$ = new BehaviorSubject<void>(undefined);
+
+  private lastUploaded: DataLayer[] | undefined;
+
+  /** The workspace's ready uploads, for the Uploaded tab. */
+  uploaded$: Observable<Resource<DataLayer[]>> = combineLatest([
+    this._reloadUploaded$,
+    this.planState.currentPlanOrNull$,
+  ]).pipe(
+    switchMap(([_, plan]) => {
+      const workspaceId = this.workspaceState.currentWorkspaceIdValue;
+      if (
+        workspaceId === null ||
+        !this.featureService.isFeatureEnabled('DATA_UPLOAD')
+      ) {
+        return of({ isLoading: false, data: [] } as Resource<DataLayer[]>);
+      }
+      return this.service
+        .browseUploaded(
+          workspaceId,
+          this.mapModuleService.moduleName,
+          this.planGeometry(plan)
+        )
+        .pipe(
+          tap((layers) => (this.lastUploaded = layers)),
+          map(
+            (layers) =>
+              ({ isLoading: false, data: layers }) as Resource<DataLayer[]>
+          ),
+          catchError((error) =>
+            of({ isLoading: false, error } as Resource<DataLayer[]>)
+          ),
+          startWith({
+            isLoading: true,
+            data: this.lastUploaded,
+          } as Resource<DataLayer[]>)
+        );
+    }),
+    shareReplay(1)
+  );
+
+  // uploads finish, get renamed or deleted while the panel is open
+  private followUploadEvents(): Subscription {
+    return merge(
+      ...DATALAYER_UPLOAD_EVENTS.map((type) => this.webSocketService.on(type)),
+      this.webSocketService.on(REALTIME_CONNECTED_EVENT)
+    ).subscribe(() => this._reloadUploaded$.next());
+  }
+
   private favoritesWorkspaceId(): number | null {
     return this.favoritesEnabled()
       ? this.workspaceState.currentWorkspaceIdValue
@@ -496,6 +546,7 @@ export class DataLayersStateService implements OnDestroy {
     private webSocketService: WebSocketService
   ) {
     this.subscriptions.add(this.followFavoriteEvents());
+    this.subscriptions.add(this.followUploadEvents());
   }
 
   ngOnDestroy() {

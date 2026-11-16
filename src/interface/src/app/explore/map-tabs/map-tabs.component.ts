@@ -19,7 +19,7 @@ import { DataLayersRegistryService } from '../data-layers-registry';
 })
 export class MapTabsComponent {
   // Which data layer panel each map shows
-  @Input() panel: 'browse' | 'favorites' = 'browse';
+  @Input() panel: 'browse' | 'favorites' | 'uploaded' = 'browse';
 
   layoutMode$ = this.multiMapConfigState.layoutMode$;
   mapsArray$ = this.dataLayersRegistryService.size$.pipe(

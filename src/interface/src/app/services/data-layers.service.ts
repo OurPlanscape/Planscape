@@ -74,10 +74,37 @@ export class DataLayersService {
     geometry?: Geometry,
     type: 'RASTER' | 'VECTOR' = 'RASTER'
   ) {
+    return this.browseWorkspaceTab(
+      'favorites',
+      workspaceId,
+      module,
+      geometry,
+      type
+    );
+  }
+
+  /** The workspace's ready uploads. */
+  browseUploaded(workspaceId: number, module?: string, geometry?: Geometry) {
+    return this.browseWorkspaceTab(
+      'uploaded',
+      workspaceId,
+      module,
+      geometry,
+      'RASTER'
+    );
+  }
+
+  private browseWorkspaceTab(
+    searchTab: 'favorites' | 'uploaded',
+    workspaceId: number,
+    module?: string,
+    geometry?: Geometry,
+    type: 'RASTER' | 'VECTOR' = 'RASTER'
+  ) {
     return this.http.post<DataLayer[]>(
       `${environment.backend_endpoint}/v2/datalayers/browse/`,
       {
-        search_tab: 'favorites',
+        search_tab: searchTab,
         workspace_id: workspaceId,
         type,
         ...(module ? { module } : {}),

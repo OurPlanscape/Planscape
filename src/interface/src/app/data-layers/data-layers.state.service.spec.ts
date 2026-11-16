@@ -61,6 +61,7 @@ describe('DataLayersStateService', () => {
         'listCategoryDataLayers',
         'search',
         'browseFavorites',
+        'browseUploaded',
       ]
     );
     dataLayersService.listDataSets.and.returnValue(
@@ -69,6 +70,7 @@ describe('DataLayersStateService', () => {
     dataLayersService.listDataLayers.and.returnValue(of([]));
     dataLayersService.listCategoryDataLayers.and.returnValue(of([]));
     dataLayersService.browseFavorites.and.returnValue(of([]));
+    dataLayersService.browseUploaded.and.returnValue(of([]));
 
     currentWorkspaceId = null;
     currentPlan = null;
@@ -874,6 +876,59 @@ describe('DataLayersStateService', () => {
       service.selectDataLayer(layer);
 
       expect(legendLabels()).toContain('Own low');
+    });
+  });
+
+  describe('uploaded$', () => {
+    const uploads = [{ id: 4, name: 'Canopy' }] as DataLayer[];
+
+    function latestUploaded() {
+      let data: DataLayer[] | undefined;
+      service.uploaded$
+        .subscribe((resource) => (data = resource.data))
+        .unsubscribe();
+      return data;
+    }
+
+    it('lists the ready uploads of the workspace', () => {
+      currentWorkspaceId = 7;
+      dataLayersService.browseUploaded.and.returnValue(of(uploads));
+      createService('DATA_UPLOAD');
+
+      expect(latestUploaded()).toEqual(uploads);
+      expect(dataLayersService.browseUploaded).toHaveBeenCalledWith(
+        7,
+        'map',
+        undefined
+      );
+    });
+
+    it('is empty without DATA_UPLOAD', () => {
+      currentWorkspaceId = 7;
+      createService();
+
+      expect(latestUploaded()).toEqual([]);
+      expect(dataLayersService.browseUploaded).not.toHaveBeenCalled();
+    });
+
+    it('is empty outside a workspace', () => {
+      createService('DATA_UPLOAD');
+
+      expect(latestUploaded()).toEqual([]);
+      expect(dataLayersService.browseUploaded).not.toHaveBeenCalled();
+    });
+
+    it('refetches when an upload changes', () => {
+      currentWorkspaceId = 7;
+      createService('DATA_UPLOAD');
+      const subscription = service.uploaded$.subscribe();
+      dataLayersService.browseUploaded.calls.reset();
+
+      workspaceEvents$.next({ type: 'datasets.datalayer.status_changed' });
+      workspaceEvents$.next({ type: 'datasets.datalayer.updated' });
+
+      expect(dataLayersService.browseUploaded).toHaveBeenCalledTimes(2);
+      subscription.unsubscribe();
     });
   });
 });
