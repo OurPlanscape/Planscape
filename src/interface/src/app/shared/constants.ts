@@ -156,5 +156,6 @@ export const TREATMENT_EFFECTS_URL =
 export const FUNDING_REPORT_INFO_URL =
   'https://support.planscape.org/support/solutions/folders/32000037369';
 export const FEEDBACK_URL = 'https://www.planscape.org/contact-us/';
+export const QGIS_HELP_URL = 'https://docs.qgis.org/3.44/en/docs/index.html';
 export const ASLC_INFO_URL =
   'https://support.planscape.org/support/solutions/articles/32000037100-stand-level-constraints';

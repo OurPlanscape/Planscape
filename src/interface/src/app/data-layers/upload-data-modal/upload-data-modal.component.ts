@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { ModalComponent } from '@styleguide';
+import { QGIS_HELP_URL } from '@shared';
 
 /**
  * Hands the user off to QGIS, where the Planscape plugin uploads their data.
@@ -17,7 +18,7 @@ export class UploadDataModalComponent {
     inject<MatDialogRef<UploadDataModalComponent>>(MatDialogRef);
 
   openHelp() {
-    // TODO: open the QGIS help documentation
+    window.open(QGIS_HELP_URL, '_blank');
   }
 
   continueToQgis() {
