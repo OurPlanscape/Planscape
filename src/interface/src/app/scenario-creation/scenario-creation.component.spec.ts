@@ -16,7 +16,10 @@ import { ScenarioState } from '@scenario/scenario.state';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { NewScenarioState } from './new-scenario.state';
 import { AvailableStands, Scenario, ScenarioV3Config } from '@types';
-import { SUB_UNITS_STEP } from '@app/scenario/scenario.constants';
+import {
+  SUB_UNITS_STEP,
+  TREATMENT_GOAL_STEP_LABEL,
+} from '@app/scenario/scenario.constants';
 import { MOCK_SCENARIO } from '@services/mocks';
 
 import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
@@ -257,6 +260,57 @@ describe('ScenarioCreationComponent', () => {
         component.steps$.subscribe((steps) => {
           expect(steps).toContain(SUB_UNITS_STEP);
           done();
+        });
+      });
+
+      // the treatment goal step is the only one that has no map of its own
+      describe('the map beside the treatment goal step', () => {
+        function treatmentGoalStep() {
+          return component.steps.find(
+            (step) => step.label === TREATMENT_GOAL_STEP_LABEL
+          );
+        }
+
+        // setUpComponent rebuilds the TestBed, so the flagged runs have to be
+        // handed the same subjects the surrounding describe drives
+        function setUpWithFlag() {
+          return setUpComponent({
+            flags: ['IMPROVED_TREATMENT_GOAL'],
+            currentScenario$: currentScenarioSubject.asObservable(),
+            scenarioConfig$: scenarioConfigSubject.asObservable(),
+          });
+        }
+
+        function configurePresetScenario() {
+          currentScenarioSubject.next({ id: 1, parent: undefined } as Scenario);
+          scenarioConfigSubject.next({
+            type: 'PRESET',
+            planning_approach: 'OPTIMIZE_PROJECT_AREAS',
+          } as ScenarioV3Config);
+        }
+
+        it('is drawn once IMPROVED_TREATMENT_GOAL is on', async () => {
+          await setUpWithFlag();
+          configurePresetScenario();
+
+          expect(treatmentGoalStep()?.hasMap).toBeTrue();
+        });
+
+        it('is left out while the flag is off', () => {
+          configurePresetScenario();
+
+          expect(treatmentGoalStep()?.hasMap).toBeFalse();
+        });
+
+        it('leaves every other step as it was', async () => {
+          await setUpWithFlag();
+          configurePresetScenario();
+
+          const untouched = component.steps.filter(
+            (step) => step.label !== TREATMENT_GOAL_STEP_LABEL
+          );
+
+          expect(untouched.every((step) => step.hasMap)).toBeTrue();
         });
       });
 

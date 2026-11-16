@@ -1,5 +1,7 @@
 export const SUB_UNIT_LAYER_COLOR = '#356A72'; // $color-brand-teal
 
+export const TREATMENT_GOAL_STEP_LABEL = 'Treatment Goal';
+
 export interface ScenarioStepConfig {
   label: string; // label for the step
   description: string; // description for the step
@@ -33,7 +35,7 @@ export const exitModalData = (scenarioName: string) => ({
 
 export const SCENARIO_OVERVIEW_STEPS: ScenarioStepConfig[] = [
   {
-    label: 'Treatment Goal',
+    label: TREATMENT_GOAL_STEP_LABEL,
     description:
       'Select important data layers that will be used throughout the workflow.',
     icon: '/assets/svg/icons/overview/treatment-goal.svg',
