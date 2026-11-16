@@ -51,7 +51,20 @@
           <tbody>
             <tr *ngFor="let layer of dataLayers.layers; trackBy: trackById">
               <td>
-                <div class="layer-name">{{ layer.name }}</div>
+                <a
+                  *ngIf="layer.status === 'READY'; else plainName"
+                  class="layer-name layer-link"
+                  [routerLink]="[
+                    '/workspace',
+                    workspaceId,
+                    'datalayers',
+                    layer.id,
+                  ]"
+                  >{{ layer.name }}</a
+                >
+                <ng-template #plainName>
+                  <div class="layer-name">{{ layer.name }}</div>
+                </ng-template>
                 <div class="secondary" *ngIf="layer.original_name">
                   {{ layer.original_name }}
                 </div>
@@ -71,28 +84,13 @@
               <td class="right">{{ formatFileSize(layer.file_size) }}</td>
               <td class="actions">
                 <button
+                  *ngIf="layer.status === 'FAILED'"
                   sg-button
                   variant="icon-only"
-                  icon="more_vert"
-                  [attr.aria-label]="'Actions for ' + layer.name"
-                  [matMenuTriggerFor]="menu"></button>
-                <mat-menu #menu="matMenu" xPosition="before">
-                  <button
-                    mat-menu-item
-                    *ngIf="layer.status === 'FAILED'"
-                    (click)="upload(layer)">
-                    <mat-icon class="material-symbols-outlined"
-                      >upload</mat-icon
-                    >
-                    Upload again
-                  </button>
-                  <button mat-menu-item (click)="delete(layer)">
-                    <mat-icon class="material-symbols-outlined"
-                      >delete</mat-icon
-                    >
-                    Delete
-                  </button>
-                </mat-menu>
+                  icon="delete"
+                  matTooltip="Delete"
+                  [attr.aria-label]="'Delete ' + layer.name"
+                  (click)="delete(layer)"></button>
               </td>
             </tr>
           </tbody>

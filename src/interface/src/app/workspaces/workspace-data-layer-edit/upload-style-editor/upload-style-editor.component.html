@@ -1,0 +1,123 @@
+<div class="editor" [formGroup]="form">
+  <sg-toggle formControlName="custom" size="large" class="custom-toggle">
+    <span class="toggle-text">
+      <span class="toggle-label">Custom style</span>
+      <span class="hint">
+        {{
+          custom
+            ? 'Pick the colors and breaks used on the map and legend.'
+            : 'Using the automatic color scale. Turn this on to edit it.'
+        }}
+      </span>
+    </span>
+  </sg-toggle>
+
+  <div class="style-fields" [class.disabled]="!custom">
+    <mat-form-field appearance="outline" class="map-type">
+      <mat-label>Map type</mat-label>
+      <mat-select formControlName="map_type">
+        <mat-option *ngFor="let type of mapTypes" [value]="type.value">
+          {{ type.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div class="section">
+      <div class="section-label">Palette</div>
+      <div class="palettes">
+        <button
+          *ngFor="let palette of palettes"
+          type="button"
+          class="palette"
+          [disabled]="!custom"
+          [attr.aria-label]="'Use the ' + palette.name + ' palette'"
+          [matTooltip]="palette.name"
+          (click)="applyPalette(palette)">
+          <span
+            class="palette-swatch"
+            [style.background]="paletteGradient(palette)"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-label">Breaks</div>
+        <button
+          *ngIf="range"
+          sg-button
+          type="button"
+          variant="text"
+          [disabled]="!custom"
+          (click)="applyEvenBreaks()">
+          Even breaks
+        </button>
+      </div>
+
+      <table class="entries" formArrayName="entries">
+        <thead>
+          <tr>
+            <th>Value</th>
+            <th>Color</th>
+            <th>Label</th>
+            <th><span class="cdk-visually-hidden">Remove</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let entry of entries.controls; let i = index"
+            [formGroupName]="i">
+            <td>
+              <input
+                class="value-input"
+                type="number"
+                step="any"
+                formControlName="value"
+                [attr.aria-label]="'Value ' + (i + 1)"
+                [class.invalid]="entry.controls.value.invalid" />
+            </td>
+            <td>
+              <input
+                class="color-input"
+                type="color"
+                formControlName="color"
+                [attr.aria-label]="'Color ' + (i + 1)" />
+            </td>
+            <td>
+              <input
+                class="label-input"
+                type="text"
+                formControlName="label"
+                maxlength="64"
+                [placeholder]="entry.controls.value.value ?? ''"
+                [attr.aria-label]="'Label ' + (i + 1)" />
+            </td>
+            <td class="remove">
+              <button
+                sg-button
+                type="button"
+                variant="icon-only"
+                icon="close"
+                [attr.aria-label]="'Remove break ' + (i + 1)"
+                [disabled]="!custom || entries.length <= minEntries"
+                (click)="removeEntry(i)"></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="error" *ngIf="custom && orderError">{{ orderError }}</div>
+
+      <button
+        sg-button
+        type="button"
+        variant="text"
+        icon="add"
+        class="add-entry"
+        [disabled]="!custom || entries.length >= maxEntries"
+        (click)="addEntry()">
+        Add break
+      </button>
+    </div>
+  </div>
+</div>

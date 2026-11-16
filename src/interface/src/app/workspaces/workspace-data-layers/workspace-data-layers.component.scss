@@ -80,6 +80,16 @@ tbody tr + tr td {
   font-weight: 600;
 }
 
+.layer-link {
+  color: $color-standard-blue;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+}
+
 .secondary,
 .failure-reason {
   @include small-paragraph();

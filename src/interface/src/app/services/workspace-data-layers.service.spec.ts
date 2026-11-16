@@ -33,6 +33,25 @@ describe('WorkspaceDataLayersService', () => {
     req.flush({});
   });
 
+  it('gets a workspace data layer', () => {
+    service.getDataLayer(7, 3).subscribe();
+
+    const req = httpTestingController.expectOne(`${basePath}3/`);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.withCredentials).toBeTrue();
+    req.flush({});
+  });
+
+  it('patches only the given fields', () => {
+    service.updateDataLayer(7, 3, { units: 'Percent' }).subscribe();
+
+    const req = httpTestingController.expectOne(`${basePath}3/`);
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({ units: 'Percent' });
+    expect(req.request.withCredentials).toBeTrue();
+    req.flush({});
+  });
+
   it('deletes a workspace data layer', () => {
     service.deleteDataLayer(7, 3).subscribe();
 

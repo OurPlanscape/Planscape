@@ -37,11 +37,13 @@ export const DATALAYER_UNFAVORITED_EVENT = 'datasets.datalayer.unfavorited';
 export const DATALAYER_CREATED_EVENT = 'datasets.datalayer.created';
 export const DATALAYER_STATUS_EVENT = 'datasets.datalayer.status_changed';
 export const DATALAYER_DELETED_EVENT = 'datasets.datalayer.deleted';
+export const DATALAYER_UPDATED_EVENT = 'datasets.datalayer.updated';
 
 export const DATALAYER_UPLOAD_EVENTS = [
   DATALAYER_CREATED_EVENT,
   DATALAYER_STATUS_EVENT,
   DATALAYER_DELETED_EVENT,
+  DATALAYER_UPDATED_EVENT,
 ];
 
 // Everything that changes what the list of planning areas shows

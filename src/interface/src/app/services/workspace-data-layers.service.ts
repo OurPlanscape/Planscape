@@ -5,6 +5,8 @@ import {
   Pagination,
   WorkspaceDataLayer,
   WorkspaceDataLayerCreated,
+  WorkspaceDataLayerDetail,
+  WorkspaceDataLayerUpdate,
 } from '@types';
 import { filter, map, Observable } from 'rxjs';
 
@@ -30,6 +32,25 @@ export class WorkspaceDataLayersService {
     return this.http.post<WorkspaceDataLayerCreated>(
       this.path(workspaceId),
       body,
+      { withCredentials: true }
+    );
+  }
+
+  getDataLayer(workspaceId: number, dataLayerId: number) {
+    return this.http.get<WorkspaceDataLayerDetail>(
+      `${this.path(workspaceId)}${dataLayerId}/`,
+      { withCredentials: true }
+    );
+  }
+
+  updateDataLayer(
+    workspaceId: number,
+    dataLayerId: number,
+    changes: WorkspaceDataLayerUpdate
+  ) {
+    return this.http.patch<WorkspaceDataLayerDetail>(
+      `${this.path(workspaceId)}${dataLayerId}/`,
+      changes,
       { withCredentials: true }
     );
   }

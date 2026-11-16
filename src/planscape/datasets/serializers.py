@@ -1,3 +1,4 @@
+import math
 import re
 from typing import Any, Collection, Dict, Optional
 
@@ -18,12 +19,15 @@ from datasets.models import (
     VisibilityOptions,
     WorkspaceFavoriteDataLayer,
 )
+from datasets.upload_metadata import read_upload_metadata
 from datasets.styles import (
     get_default_raster_style,
+    get_default_raster_style_for,
     get_default_vector_style,
     get_raster_style,
 )
 from django.conf import settings
+from django.core.validators import URLValidator
 from organizations.models import Organization
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
@@ -844,6 +848,106 @@ class WorkspaceDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "creator_name",
         )
         read_only_fields = fields
+
+
+class WorkspaceDataLayerDetailSerializer(WorkspaceDataLayerSerializer):
+    """
+    The list row, plus the editable metadata, the style the layer is drawn
+    with and the extent to show.
+    """
+
+    def to_representation(self, instance: DataLayer) -> Dict[str, Any]:
+        from datasets.services import get_upload_style
+
+        data = super().to_representation(instance)
+        data.update(read_upload_metadata(instance.metadata))
+        data["bbox"] = list(instance.geometry.extent) if instance.geometry else None
+        custom_style = get_upload_style(instance)
+        default_style = get_default_raster_style_for(instance)["data"]
+        data["custom_style"] = custom_style is not None
+        data["style"] = (
+            get_raster_style(datalayer=instance, style=custom_style)["data"]
+            if custom_style
+            else default_style
+        )
+        # what the layer goes back to when the custom style is turned off
+        data["default_style"] = default_style
+        return data
+
+
+HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+class UploadStyleEntrySerializer(serializers.Serializer):
+    value = serializers.FloatField()
+    color = serializers.RegexField(
+        HEX_COLOR, error_messages={"invalid": "Use a color like #1a2b3c."}
+    )
+    label = serializers.CharField(max_length=64, required=False, allow_blank=True)
+
+    def validate_value(self, value: float) -> float:
+        if not math.isfinite(value):
+            raise serializers.ValidationError("Enter a number.")
+        return value
+
+
+class UploadStyleSerializer(serializers.Serializer):
+    map_type = serializers.ChoiceField(choices=["RAMP", "INTERVALS", "VALUES"])
+    entries = UploadStyleEntrySerializer(many=True, min_length=2, max_length=20)
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        values = [entry["value"] for entry in attrs["entries"]]
+        if attrs["map_type"] == "VALUES":
+            if len(set(values)) != len(values):
+                raise serializers.ValidationError(
+                    {"entries": "Each value can only appear once."}
+                )
+        elif any(a >= b for a, b in zip(values, values[1:])):
+            raise serializers.ValidationError(
+                {"entries": "Values must go from lowest to highest."}
+            )
+        return attrs
+
+
+class UpdateWorkspaceDataLayerSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=256, required=False)
+    description = serializers.CharField(
+        max_length=5000, required=False, allow_blank=True
+    )
+    units = serializers.CharField(max_length=128, required=False, allow_blank=True)
+    vintage = serializers.CharField(max_length=64, required=False, allow_blank=True)
+    geographic_coverage = serializers.CharField(
+        max_length=256, required=False, allow_blank=True
+    )
+    # the tooltip links to it, so nothing but web links
+    source_url = serializers.URLField(
+        max_length=1024,
+        required=False,
+        allow_blank=True,
+        validators=[URLValidator(schemes=["http", "https"])],
+    )
+
+    style = UploadStyleSerializer(required=False, allow_null=True)
+
+    def validate_name(self, value: str) -> str:
+        from datasets.services import workspace_upload_name_taken
+
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Name can't be blank.")
+        datalayer = self.context["datalayer"]
+        if workspace_upload_name_taken(
+            datalayer.workspace, value, exclude_id=datalayer.pk
+        ):
+            raise serializers.ValidationError(
+                "A data layer with this name already exists in this workspace."
+            )
+        return value
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        if self.context["datalayer"].status != DataLayerStatus.READY:
+            raise serializers.ValidationError("Only ready data layers can be edited.")
+        return attrs
 
 
 class WorkspaceDataLayerCreatedSerializer(serializers.Serializer):

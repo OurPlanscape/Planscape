@@ -3,6 +3,7 @@ from datetime import timedelta
 from pathlib import Path
 from unittest import mock
 
+from django.contrib.gis.geos import Polygon
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -13,7 +14,13 @@ from workspaces.tests.factories import (
 )
 from workspaces.models import WorkspaceRole
 
-from datasets.models import DataLayer, DataLayerStatus, DataLayerType, Dataset
+from datasets.models import (
+    DataLayer,
+    DataLayerStatus,
+    DataLayerType,
+    Dataset,
+    Style,
+)
 from datasets.services import (
     UPLOADED_DATASET_NAME,
     create_workspace_upload,
@@ -21,6 +28,7 @@ from datasets.services import (
     get_or_create_workspace_upload_dataset,
 )
 from datasets.tasks import process_uploaded_datalayer
+from datasets.upload_metadata import read_upload_metadata, write_upload_metadata
 from datasets.tests.factories import DataLayerFactory
 from planscape.tests.factories import UserFactory
 
@@ -116,9 +124,7 @@ class CreateWorkspaceDataLayerTest(APITestCase):
     def test_uploads_share_one_dataset(self, upload_url):
         self.client.force_authenticate(self.owner)
         self.client.post(self.url, self.payload, format="json")
-        self.client.post(
-            self.url, {**self.payload, "name": "Other"}, format="json"
-        )
+        self.client.post(self.url, {**self.payload, "name": "Other"}, format="json")
         self.assertEqual(Dataset.objects.filter(workspace=self.workspace).count(), 1)
 
     def test_viewer_is_forbidden(self, upload_url):
@@ -246,9 +252,9 @@ class GCSUploadWebhookTest(APITestCase):
         }
 
     def push(self, object_url=None, event_type="OBJECT_FINALIZE"):
-        bucket, key = (object_url or self.datalayer.raw_url).removeprefix(
-            "gs://"
-        ).split("/", 1)
+        bucket, key = (
+            (object_url or self.datalayer.raw_url).removeprefix("gs://").split("/", 1)
+        )
         return self.client.post(
             self.url,
             {
@@ -494,3 +500,335 @@ class CreateWorkspaceUploadEventsTest(TestCase):
             {"kind": "datalayer", "id": result["datalayer"].pk},
         )
         self.assertEqual(publish.call_args.kwargs["data"]["status"], "PENDING")
+
+
+class EditWorkspaceDataLayerTest(APITestCase):
+    def setUp(self):
+        self.owner = UserFactory.create()
+        self.collaborator = UserFactory.create()
+        self.viewer = UserFactory.create()
+        self.workspace = PlanningWorkspaceFactory.create(created_by=self.owner)
+        UserAccessWorkspaceFactory.create(
+            user=self.collaborator,
+            workspace=self.workspace,
+            role=WorkspaceRole.COLLABORATOR,
+        )
+        UserAccessWorkspaceFactory.create(
+            user=self.viewer, workspace=self.workspace, role=WorkspaceRole.VIEWER
+        )
+        self.datalayer = make_upload(
+            self.workspace,
+            status=DataLayerStatus.READY,
+            name="Canopy",
+            geometry=Polygon.from_bbox((-121.0, 38.0, -120.0, 39.0)),
+            metadata={"modules": {"map": {"enabled": True}}},
+        )
+        self.url = reverse(
+            "api:datasets:workspace-datalayers-detail",
+            kwargs={"workspace_pk": self.workspace.pk, "pk": self.datalayer.pk},
+        )
+
+    def test_retrieve_returns_metadata_and_extent(self):
+        self.client.force_authenticate(self.collaborator)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200, response.content)
+        body = response.json()
+        self.assertEqual(body["name"], "Canopy")
+        self.assertEqual(body["description"], "")
+        self.assertEqual(body["units"], "")
+        self.assertEqual(body["bbox"], [-121.0, 38.0, -120.0, 39.0])
+
+    def test_patch_writes_where_the_tooltip_reads(self):
+        self.client.force_authenticate(self.collaborator)
+        response = self.client.patch(
+            self.url,
+            {
+                "description": "Canopy cover in 2024",
+                "units": "Percent",
+                "vintage": "2024",
+                "geographic_coverage": "California",
+                "source_url": "https://example.org/canopy",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()["units"], "Percent")
+
+        self.datalayer.refresh_from_db()
+        metadata = self.datalayer.metadata
+        identification = metadata["metadata"]["identification"]
+        self.assertEqual(identification["description"], "Canopy cover in 2024")
+        self.assertEqual(
+            identification["keywords"]["units"],
+            {"keywords": ["Percent"], "keywords_type": "unit"},
+        )
+        self.assertEqual(identification["date"]["date"], "2024")
+        self.assertEqual(identification["geographicCoverage"], "California")
+        self.assertEqual(
+            metadata["metadata"]["distribution"]["download"]["url"],
+            "https://example.org/canopy",
+        )
+        self.assertEqual(metadata["modules"], {"map": {"enabled": True}})
+
+    def test_blank_values_remove_keys(self):
+        self.client.force_authenticate(self.owner)
+        self.client.patch(self.url, {"units": "Percent"}, format="json")
+        self.client.patch(self.url, {"units": ""}, format="json")
+
+        self.datalayer.refresh_from_db()
+        self.assertNotIn("metadata", self.datalayer.metadata)
+        self.assertEqual(self.datalayer.metadata["modules"], {"map": {"enabled": True}})
+
+    def test_only_sent_fields_change(self):
+        self.client.force_authenticate(self.owner)
+        self.client.patch(self.url, {"units": "Percent"}, format="json")
+        response = self.client.patch(self.url, {"name": "Canopy 2024"}, format="json")
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()["name"], "Canopy 2024")
+        self.assertEqual(response.json()["units"], "Percent")
+
+    def test_rejects_duplicate_name(self):
+        make_upload(self.workspace, status=DataLayerStatus.READY, name="Taken")
+        self.client.force_authenticate(self.owner)
+        response = self.client.patch(self.url, {"name": "Taken"}, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("name", response.json()["errors"])
+
+    def test_keeping_its_own_name_is_fine(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.patch(self.url, {"name": "Canopy"}, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+
+    def test_rejects_non_web_source_url(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.patch(
+            self.url, {"source_url": "javascript:alert(1)"}, format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+        response = self.client.patch(
+            self.url, {"source_url": "ftp://example.org/file"}, format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_only_ready_layers_can_be_edited(self):
+        self.datalayer.status = DataLayerStatus.PROCESSING
+        self.datalayer.save()
+        self.client.force_authenticate(self.owner)
+        response = self.client.patch(self.url, {"units": "Percent"}, format="json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_viewer_is_forbidden(self):
+        self.client.force_authenticate(self.viewer)
+        self.assertEqual(self.client.get(self.url).status_code, 403)
+        response = self.client.patch(self.url, {"units": "x"}, format="json")
+        self.assertEqual(response.status_code, 403)
+
+    def test_layer_from_another_workspace_is_not_found(self):
+        other = make_upload(
+            PlanningWorkspaceFactory.create(), status=DataLayerStatus.READY
+        )
+        url = reverse(
+            "api:datasets:workspace-datalayers-detail",
+            kwargs={"workspace_pk": self.workspace.pk, "pk": other.pk},
+        )
+        self.client.force_authenticate(self.owner)
+        self.assertEqual(self.client.get(url).status_code, 404)
+        self.assertEqual(
+            self.client.patch(url, {"units": "x"}, format="json").status_code, 404
+        )
+
+    def test_put_is_not_allowed(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.put(self.url, {"name": "x"}, format="json")
+        self.assertEqual(response.status_code, 405)
+
+    def test_publishes_updated(self):
+        self.client.force_authenticate(self.owner)
+        with mock.patch("datasets.events.publish_workspace_event") as publish:
+            self.client.patch(self.url, {"name": "Renamed"}, format="json")
+
+        publish.assert_called_once()
+        self.assertEqual(publish.call_args.args[1], "datasets.datalayer.updated")
+        self.assertEqual(publish.call_args.kwargs["data"]["name"], "Renamed")
+
+
+STYLE = {
+    "map_type": "RAMP",
+    "entries": [
+        {"value": 0, "color": "#ffffff", "label": "Low"},
+        {"value": 50, "color": "#ff0000"},
+        {"value": 100, "color": "#000000", "label": "High"},
+    ],
+}
+
+
+class UploadStyleTest(APITestCase):
+    def setUp(self):
+        self.owner = UserFactory.create()
+        self.workspace = PlanningWorkspaceFactory.create(created_by=self.owner)
+        self.datalayer = make_upload(
+            self.workspace, status=DataLayerStatus.READY, name="Canopy"
+        )
+        self.datalayer.info = {"stats": [{"min": 0, "max": 100}], "nodata": -9999}
+        self.datalayer.save()
+        self.url = reverse(
+            "api:datasets:workspace-datalayers-detail",
+            kwargs={"workspace_pk": self.workspace.pk, "pk": self.datalayer.pk},
+        )
+        self.client.force_authenticate(self.owner)
+
+    def public_styles(self):
+        url = reverse("api:datasets:datalayers-detail", args=[self.datalayer.pk])
+        return self.client.get(url).json()["styles"]
+
+    def test_starts_with_the_automatic_ramp(self):
+        body = self.client.get(self.url).json()
+        self.assertFalse(body["custom_style"])
+        self.assertEqual(body["style"]["map_type"], "RAMP")
+        self.assertEqual(len(body["style"]["entries"]), 7)
+        self.assertEqual(body["default_style"], body["style"])
+
+    def test_sets_a_custom_style(self):
+        response = self.client.patch(self.url, {"style": STYLE}, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        body = response.json()
+        self.assertTrue(body["custom_style"])
+        self.assertEqual(
+            [(e["value"], e["color"], e["label"]) for e in body["style"]["entries"]],
+            [(0, "#ffffff", "Low"), (50, "#ff0000", "50"), (100, "#000000", "High")],
+        )
+
+        self.assertEqual(len(body["default_style"]["entries"]), 7)
+
+        style = Style.objects.get(workspace=self.workspace)
+        self.assertIsNone(style.organization)
+        self.assertEqual(style.name, f"upload-{self.datalayer.uuid}")
+        self.assertEqual(self.public_styles()[0]["id"], style.pk)
+
+    def test_saving_again_updates_the_same_style(self):
+        self.client.patch(self.url, {"style": STYLE}, format="json")
+        recolored = {**STYLE, "map_type": "INTERVALS"}
+        self.client.patch(self.url, {"style": recolored}, format="json")
+
+        self.assertEqual(Style.objects.filter(workspace=self.workspace).count(), 1)
+        self.assertEqual(self.public_styles()[0]["data"]["map_type"], "INTERVALS")
+
+    def test_null_goes_back_to_the_automatic_ramp(self):
+        self.client.patch(self.url, {"style": STYLE}, format="json")
+        response = self.client.patch(self.url, {"style": None}, format="json")
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertFalse(response.json()["custom_style"])
+        self.assertFalse(Style.objects.filter(workspace=self.workspace).exists())
+        self.assertEqual(self.public_styles()[0]["id"], 0)
+
+    def test_keeps_transparency_for_nodata(self):
+        sneaky = {**STYLE, "no_data": {"values": [], "opacity": 1}}
+        self.client.patch(self.url, {"style": sneaky}, format="json")
+
+        no_data = self.public_styles()[0]["data"]["no_data"]
+        self.assertEqual(no_data["opacity"], 0)
+        self.assertEqual(no_data["values"], ["nan", -9999])
+
+    def test_metadata_and_style_in_one_request(self):
+        response = self.client.patch(
+            self.url, {"units": "Percent", "style": STYLE}, format="json"
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()["units"], "Percent")
+        self.assertTrue(response.json()["custom_style"])
+
+    def test_leaving_style_out_keeps_it(self):
+        self.client.patch(self.url, {"style": STYLE}, format="json")
+        self.client.patch(self.url, {"units": "Percent"}, format="json")
+        self.assertTrue(self.client.get(self.url).json()["custom_style"])
+
+    def test_rejects_invalid_styles(self):
+        invalid = [
+            {**STYLE, "map_type": "CATEGORIES"},
+            {**STYLE, "entries": STYLE["entries"][:1]},
+            {**STYLE, "entries": [{"value": i, "color": "#000000"} for i in range(21)]},
+            {
+                **STYLE,
+                "entries": [{**STYLE["entries"][0], "color": "red"}]
+                + STYLE["entries"][1:],
+            },
+            {**STYLE, "entries": list(reversed(STYLE["entries"]))},
+            {
+                "map_type": "VALUES",
+                "entries": [
+                    {"value": 1, "color": "#000000"},
+                    {"value": 1, "color": "#ffffff"},
+                ],
+            },
+        ]
+        for style in invalid:
+            with self.subTest(style=style):
+                response = self.client.patch(self.url, {"style": style}, format="json")
+                self.assertEqual(response.status_code, 400)
+        self.assertFalse(Style.objects.filter(workspace=self.workspace).exists())
+
+    def test_values_style_takes_any_order(self):
+        style = {
+            "map_type": "VALUES",
+            "entries": [
+                {"value": 3, "color": "#000000"},
+                {"value": 1, "color": "#ffffff"},
+            ],
+        }
+        response = self.client.patch(self.url, {"style": style}, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+
+    def test_cannot_style_another_workspace_layer(self):
+        other = make_upload(
+            PlanningWorkspaceFactory.create(), status=DataLayerStatus.READY
+        )
+        url = reverse(
+            "api:datasets:workspace-datalayers-detail",
+            kwargs={"workspace_pk": self.workspace.pk, "pk": other.pk},
+        )
+        response = self.client.patch(url, {"style": STYLE}, format="json")
+        self.assertEqual(response.status_code, 404)
+
+
+class UploadMetadataTest(TestCase):
+    def test_round_trip(self):
+        values = {
+            "description": "About",
+            "units": "Percent",
+            "vintage": "2024",
+            "geographic_coverage": "CA",
+            "source_url": "https://example.org",
+        }
+        self.assertEqual(
+            read_upload_metadata(write_upload_metadata(None, values)), values
+        )
+
+    def test_reads_catalog_shaped_units(self):
+        metadata = {
+            "metadata": {
+                "identification": {
+                    "keywords": {"units": {"keywords": ["", "Fuel Models"]}}
+                }
+            }
+        }
+        self.assertEqual(read_upload_metadata(metadata)["units"], "Fuel Models")
+
+    def test_ignores_unexpected_shapes(self):
+        metadata = {"metadata": {"identification": "not a dict"}}
+        self.assertEqual(read_upload_metadata(metadata)["description"], "")
+
+    def test_does_not_modify_the_input(self):
+        metadata = {"metadata": {"identification": {"description": "Old"}}}
+        write_upload_metadata(metadata, {"description": "New"})
+        self.assertEqual(metadata["metadata"]["identification"]["description"], "Old")
+
+    def test_blank_keeps_siblings(self):
+        metadata = write_upload_metadata(
+            None, {"description": "About", "vintage": "2024"}
+        )
+        metadata = write_upload_metadata(metadata, {"vintage": " "})
+        self.assertEqual(
+            metadata, {"metadata": {"identification": {"description": "About"}}}
+        )

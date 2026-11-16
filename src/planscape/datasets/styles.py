@@ -95,3 +95,21 @@ def get_default_raster_style(
             "entries": entries,
         },
     }
+
+
+# Raster nodata gets merged in on read by `get_raster_style`
+UPLOAD_STYLE_NO_DATA = {
+    "values": [NODATA_NAN],
+    "color": None,
+    "opacity": 0,
+    "label": "",
+}
+
+
+def get_default_raster_style_for(datalayer: DataLayer) -> Dict[str, Any]:
+    """The automatic ramp a raster shows while it has no style of its own."""
+    info = datalayer.info or {}
+    stats = dict((info.get("stats") or [{"min": 0, "max": 1}])[0])
+    if info.get("nodata") is not None:
+        stats["nodata"] = info["nodata"]
+    return get_default_raster_style(**stats)

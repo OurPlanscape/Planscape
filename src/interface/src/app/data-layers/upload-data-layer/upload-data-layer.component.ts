@@ -27,13 +27,10 @@ import {
 import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
 import { WorkspaceDataLayersService } from '@services/workspace-data-layers.service';
 import { WorkspaceDataLayer } from '@types';
-import { filter, merge, of, Subscription, switchMap, tap } from 'rxjs';
+import { filter, merge, Subscription, switchMap, tap } from 'rxjs';
 
 export interface UploadDataLayerData {
   workspaceId: number;
-  name?: string;
-  // A FAILED upload this one replaces, deleted once the new upload starts
-  replaceDataLayerId?: number;
 }
 
 export const MAX_UPLOAD_BYTES = 2 * 1024 ** 3;
@@ -73,7 +70,7 @@ export class UploadDataLayerComponent implements OnDestroy {
   private workspaceDataLayersService = inject(WorkspaceDataLayersService);
 
   form = new FormGroup({
-    name: new FormControl(this.data.name ?? '', {
+    name: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.pattern(/\S/)],
     }),
@@ -86,7 +83,6 @@ export class UploadDataLayerComponent implements OnDestroy {
   progress = 0;
 
   private suggestedName = '';
-  private replaceDataLayerId = this.data.replaceDataLayerId;
   private pendingLayer: WorkspaceDataLayer | null = null;
   private upload?: Subscription;
   private confirmRef?: MatDialogRef<ConfirmationDialogComponent, boolean>;
@@ -138,15 +134,13 @@ export class UploadDataLayerComponent implements OnDestroy {
     this.progress = 0;
     this.form.disable();
 
-    this.upload = this.deleteReplacedLayer()
+    this.upload = this.workspaceDataLayersService
+      .createUpload(this.data.workspaceId, {
+        name: this.form.getRawValue().name.trim(),
+        original_name: file.name,
+        size: file.size,
+      })
       .pipe(
-        switchMap(() =>
-          this.workspaceDataLayersService.createUpload(this.data.workspaceId, {
-            name: this.form.getRawValue().name.trim(),
-            original_name: file.name,
-            size: file.size,
-          })
-        ),
         tap(({ datalayer }) => (this.pendingLayer = datalayer)),
         switchMap(({ upload_to }) =>
           this.workspaceDataLayersService.uploadFile(upload_to.url, file)
@@ -189,16 +183,6 @@ export class UploadDataLayerComponent implements OnDestroy {
       this.cancelUpload();
     }
     this.confirmRef?.close();
-  }
-
-  private deleteReplacedLayer() {
-    const replaced = this.replaceDataLayerId;
-    if (replaced === undefined) {
-      return of(undefined);
-    }
-    return this.workspaceDataLayersService
-      .deleteDataLayer(this.data.workspaceId, replaced)
-      .pipe(tap(() => (this.replaceDataLayerId = undefined)));
   }
 
   private finish() {

@@ -14,8 +14,9 @@ import { environment } from '@env/environment';
 import * as Sentry from '@sentry/browser';
 import { EventData } from '@maplibre/ngx-maplibre-gl';
 import { MapConfigState } from '../map-config.state';
-import { filter, firstValueFrom } from 'rxjs';
+import { combineLatest, filter, firstValueFrom } from 'rxjs';
 import { FrontendConstants } from '@map/map.constants';
+import { StyleJson } from '@types';
 
 @UntilDestroy()
 @Component({
@@ -50,14 +51,20 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
     private dataLayersStateService: DataLayersStateService,
     private matSnackBar: MatSnackBar
   ) {
-    dataLayersStateService.dataLayerWithUrl$
+    // a draft style only recolors: the URL isn't fetched again
+    combineLatest([
+      dataLayersStateService.dataLayerWithUrl$,
+      dataLayersStateService.draftStyle$,
+    ])
       .pipe(untilDestroyed(this))
-      .subscribe((data) => {
+      .subscribe(([data, draftStyle]) => {
         if (data) {
           this.cogUrl = `cog://${data.url}`;
           this.currentLayerId = data.layer?.id ?? null;
-          const colorFn = generateColorFunction(data.layer?.styles[0].data);
-          setColorFunction(data.url, colorFn);
+          this.applyColorFunction(
+            data.url,
+            draftStyle ?? data.layer?.styles[0].data
+          );
           this.tileSize =
             data.layer.info.blockxsize ??
             FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
@@ -68,6 +75,10 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
           this.removeRasterLayer();
         }
       });
+  }
+
+  private applyColorFunction(url: string, style: StyleJson) {
+    setColorFunction(url, generateColorFunction(style));
   }
 
   /** Whether the currently viewed layer is the designated top layer. */

@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
@@ -83,6 +83,7 @@ describe('WorkspaceDataLayersComponent', () => {
     await TestBed.configureTestingModule({
       imports: [WorkspaceDataLayersComponent, NoopAnimationsModule],
       providers: [
+        provideRouter([]),
         { provide: WorkspaceDataLayersService, useValue: service },
         {
           provide: ActivatedRoute,
@@ -173,6 +174,18 @@ describe('WorkspaceDataLayersComponent', () => {
     );
   });
 
+  it('links only ready layers to their edit page', () => {
+    service.listDataLayers.and.returnValue(
+      of(page([layer(1), layer(2, { status: 'PROCESSING' })]))
+    );
+    updates$.next(null);
+    fixture.detectChanges();
+
+    const links = rows().map((row) => row.querySelector('a.layer-link'));
+    expect(links[0]?.getAttribute('href')).toBe('/workspace/7/datalayers/1');
+    expect(links[1]).toBeNull();
+  });
+
   it('refreshes when an upload event arrives', () => {
     service.listDataLayers.calls.reset();
     service.listDataLayers.and.returnValue(of(page([layer(1), layer(2)])));
@@ -230,19 +243,7 @@ describe('WorkspaceDataLayersComponent', () => {
       component.upload();
 
       expect(dialog.open).toHaveBeenCalledWith(UploadDataLayerComponent, {
-        data: {
-          workspaceId: 7,
-          name: undefined,
-          replaceDataLayerId: undefined,
-        },
-      });
-    });
-
-    it('re-uploads a failed layer under the same name', () => {
-      component.upload(layer(3, { status: 'FAILED', name: 'Canopy' }));
-
-      expect(dialog.open).toHaveBeenCalledWith(UploadDataLayerComponent, {
-        data: { workspaceId: 7, name: 'Canopy', replaceDataLayerId: 3 },
+        data: { workspaceId: 7 },
       });
     });
 
@@ -262,6 +263,26 @@ describe('WorkspaceDataLayersComponent', () => {
   });
 
   describe('delete', () => {
+    const deleteButtons = () =>
+      fixture.nativeElement.querySelectorAll('td.actions button');
+
+    it('only offers delete on failed layers', () => {
+      service.listDataLayers.and.returnValue(
+        of(
+          page([
+            layer(1),
+            layer(2, { status: 'PROCESSING' }),
+            layer(3, { status: 'FAILED' }),
+          ])
+        )
+      );
+      updates$.next(null);
+      fixture.detectChanges();
+
+      expect(deleteButtons().length).toBe(1);
+      expect(rows()[2].querySelector('td.actions button')).toBeTruthy();
+    });
+
     it('deletes after confirmation and reloads', () => {
       service.listDataLayers.calls.reset();
       component.delete(layer(1));

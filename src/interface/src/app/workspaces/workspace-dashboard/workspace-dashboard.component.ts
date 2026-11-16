@@ -7,6 +7,7 @@ import { CardLinkComponent, OverlayLoaderComponent } from '@styleguide';
 import { DashboardLayoutComponent } from '@styleguide/dashboard-layout/dashboard-layout.component';
 import { DetailsCardComponent } from '@styleguide/details-card/details-card.component';
 import { WorkspaceState } from '../workspace.state';
+import { canManageDataLayers } from '../data-layer-access';
 import { WorkspaceActionsService } from '../workspace-actions.service';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -67,10 +68,7 @@ export class WorkspaceDashboardComponent implements OnInit {
   }
 
   canManageDataLayers(workspace: Workspace): boolean {
-    return (
-      this.featureService.isFeatureEnabled('DATA_UPLOAD') &&
-      workspace.permissions.includes('add_datalayer')
-    );
+    return canManageDataLayers(workspace, this.featureService);
   }
 
   goToDataLayers() {

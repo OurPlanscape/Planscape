@@ -13,7 +13,6 @@ import {
   MAX_UPLOAD_BYTES,
   nameFromFile,
   UploadDataLayerComponent,
-  UploadDataLayerData,
 } from './upload-data-layer.component';
 
 const layer = { id: 5, name: 'Canopy cover' } as WorkspaceDataLayer;
@@ -35,10 +34,8 @@ describe('UploadDataLayerComponent', () => {
   let created$: Subject<WorkspaceDataLayerCreated>;
   let progress$: Subject<number>;
   let confirmed$: Subject<boolean>;
-  let dialogData: UploadDataLayerData;
 
   beforeEach(async () => {
-    dialogData = { workspaceId: 7 };
     created$ = new Subject();
     progress$ = new Subject();
     confirmed$ = new Subject();
@@ -68,7 +65,7 @@ describe('UploadDataLayerComponent', () => {
       providers: [
         { provide: WorkspaceDataLayersService, useValue: service },
         { provide: MatDialogRef, useValue: dialogRef },
-        { provide: MAT_DIALOG_DATA, useFactory: () => dialogData },
+        { provide: MAT_DIALOG_DATA, useValue: { workspaceId: 7 } },
       ],
     })
       .overrideProvider(MatDialog, { useValue: dialog })
@@ -238,64 +235,6 @@ describe('UploadDataLayerComponent', () => {
       expect(progress$.observed).toBeFalse();
       expect(service.deleteDataLayer).toHaveBeenCalledWith(7, layer.id);
       expect(dialogRef.close).toHaveBeenCalledWith();
-    });
-  });
-
-  describe('uploading again after a failure', () => {
-    let replacing: UploadDataLayerComponent;
-    let deleted$: Subject<void>;
-
-    beforeEach(() => {
-      Object.assign(dialogData, { name: 'Canopy', replaceDataLayerId: 3 });
-      deleted$ = new Subject();
-      service.deleteDataLayer.and.returnValue(deleted$);
-      replacing = TestBed.createComponent(
-        UploadDataLayerComponent
-      ).componentInstance;
-    });
-
-    it('keeps the failed layer name', () => {
-      replacing.handleFile(tif('other_file.tif'));
-
-      expect(replacing.form.controls.name.value).toBe('Canopy');
-    });
-
-    it('deletes the failed layer before creating the new one', () => {
-      replacing.handleFile(tif());
-      replacing.submit();
-
-      expect(service.deleteDataLayer).toHaveBeenCalledWith(7, 3);
-      expect(service.createUpload).not.toHaveBeenCalled();
-
-      deleted$.next();
-      deleted$.complete();
-
-      expect(service.createUpload).toHaveBeenCalledWith(
-        7,
-        jasmine.objectContaining({ name: 'Canopy' })
-      );
-    });
-
-    it('leaves the failed layer alone when closed without uploading', () => {
-      replacing.close();
-
-      expect(service.deleteDataLayer).not.toHaveBeenCalled();
-    });
-
-    it('does not delete it twice when retrying after an error', () => {
-      replacing.handleFile(tif());
-      replacing.submit();
-      deleted$.next();
-      deleted$.complete();
-      created$.error(new HttpErrorResponse({ status: 500 }));
-
-      service.deleteDataLayer.calls.reset();
-      created$ = new Subject();
-      service.createUpload.and.returnValue(created$);
-      replacing.submit();
-
-      expect(service.deleteDataLayer).not.toHaveBeenCalled();
-      expect(service.createUpload).toHaveBeenCalledTimes(2);
     });
   });
 

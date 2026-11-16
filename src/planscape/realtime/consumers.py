@@ -28,6 +28,7 @@ DATALAYER_UPLOAD_EVENTS = (
     "datasets.datalayer.created",
     "datasets.datalayer.status_changed",
     "datasets.datalayer.deleted",
+    "datasets.datalayer.updated",
 )
 READY = "READY"
 

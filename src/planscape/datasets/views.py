@@ -20,7 +20,9 @@ from datasets.serializers import (
     SearchResultsSerializer,
     SimpleCategorySerializer,
     CreateWorkspaceDataLayerSerializer,
+    UpdateWorkspaceDataLayerSerializer,
     WorkspaceDataLayerCreatedSerializer,
+    WorkspaceDataLayerDetailSerializer,
     WorkspaceDataLayerSerializer,
 )
 from datasets.services import (
@@ -30,6 +32,7 @@ from datasets.services import (
     browse_simple_category,
     create_workspace_upload,
     delete_workspace_datalayer,
+    update_workspace_datalayer,
     find_anything,
     get_favorite_datalayer_ids,
 )
@@ -305,9 +308,7 @@ class DataLayerViewSet(
 
         # Workspace uploads only show up elsewhere once they're READY; the
         # workspace datalayers endpoint is where pending and failed ones live.
-        unfinished_uploads = Q(raw_url__isnull=False) & ~Q(
-            status=DataLayerStatus.READY
-        )
+        unfinished_uploads = Q(raw_url__isnull=False) & ~Q(status=DataLayerStatus.READY)
 
         if self.action == "urls":
             workspace_uploads = Q(pk__in=[])
@@ -316,15 +317,19 @@ class DataLayerViewSet(
                     raw_url__isnull=False,
                     workspace__user_access__user=user,
                 )
-            return DataLayer.objects.filter(
-                Q(dataset__visibility=VisibilityOptions.PUBLIC)
-                | Q(dataset_id=settings.CLIMATE_FORESIGHT_DATASET_ID)
-                | Q(dataset__modules__contains=["funding_report"])
-                | workspace_uploads
-            ).exclude(unfinished_uploads).distinct()
+            return (
+                DataLayer.objects.filter(
+                    Q(dataset__visibility=VisibilityOptions.PUBLIC)
+                    | Q(dataset_id=settings.CLIMATE_FORESIGHT_DATASET_ID)
+                    | Q(dataset__modules__contains=["funding_report"])
+                    | workspace_uploads
+                )
+                .exclude(unfinished_uploads)
+                .distinct()
+            )
 
-        queryset = DataLayer.objects.all().accessible_by(user).exclude(
-            unfinished_uploads
+        queryset = (
+            DataLayer.objects.all().accessible_by(user).exclude(unfinished_uploads)
         )
 
         if self.action == "list" and (
@@ -355,11 +360,19 @@ class WorkspaceDataLayerPermission(BasePermission):
         return "add_datalayer" in get_workspace_permissions(request.user, workspace)
 
 
-class WorkspaceDataLayerViewSet(ListModelMixin, DestroyModelMixin, GenericViewSet):
+class WorkspaceDataLayerViewSet(
+    ListModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet
+):
     queryset = DataLayer.objects.none()
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
     permission_classes = [WorkspaceDataLayerPermission]
     pagination_class = LimitOffsetPagination
     serializer_class = WorkspaceDataLayerSerializer
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return WorkspaceDataLayerDetailSerializer
+        return super().get_serializer_class()
 
     def get_workspace(self) -> Workspace:
         if not hasattr(self, "_workspace"):
@@ -411,6 +424,20 @@ class WorkspaceDataLayerViewSet(ListModelMixin, DestroyModelMixin, GenericViewSe
             WorkspaceDataLayerCreatedSerializer(result).data,
             status=status.HTTP_201_CREATED,
         )
+
+    @extend_schema(
+        description="Renames a READY upload and/or edits its metadata.",
+        request=UpdateWorkspaceDataLayerSerializer,
+        responses={200: WorkspaceDataLayerDetailSerializer},
+    )
+    def partial_update(self, request, workspace_pk=None, pk=None):
+        datalayer = self.get_object()
+        serializer = UpdateWorkspaceDataLayerSerializer(
+            data=request.data, context={"datalayer": datalayer}
+        )
+        serializer.is_valid(raise_exception=True)
+        update_workspace_datalayer(datalayer, request.user, **serializer.validated_data)
+        return Response(WorkspaceDataLayerDetailSerializer(datalayer).data)
 
     def perform_destroy(self, instance):
         delete_workspace_datalayer(instance, self.request.user)

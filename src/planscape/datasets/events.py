@@ -91,3 +91,7 @@ def publish_datalayer_status_changed(
 
 def publish_datalayer_deleted(datalayer: DataLayer, *, actor: Any = None) -> None:
     _publish_upload_event("datasets.datalayer.deleted", datalayer, actor)
+
+
+def publish_datalayer_updated(datalayer: DataLayer, *, actor: Any = None) -> None:
+    _publish_upload_event("datasets.datalayer.updated", datalayer, actor)

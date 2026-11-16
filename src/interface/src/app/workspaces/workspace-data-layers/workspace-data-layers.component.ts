@@ -1,9 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { AsyncPipe, DatePipe, NgFor, NgIf } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -46,6 +45,7 @@ import {
   UploadDataLayerData,
 } from '@data-layers/upload-data-layer/upload-data-layer.component';
 import { WorkspaceState } from '../workspace.state';
+import { canManageDataLayers } from '../data-layer-access';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 export const DATA_LAYERS_PAGE_SIZE = 20;
@@ -69,9 +69,9 @@ const STATUS_CHIPS: Record<
     DatePipe,
     NgFor,
     NgIf,
+    RouterLink,
     MatDialogModule,
     MatIconModule,
-    MatMenuModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatTooltipModule,
@@ -161,10 +161,7 @@ export class WorkspaceDataLayersComponent implements OnInit {
   }
 
   canManage(workspace: Workspace) {
-    return (
-      this.featureService.isFeatureEnabled('DATA_UPLOAD') &&
-      workspace.permissions.includes('add_datalayer')
-    );
+    return canManageDataLayers(workspace, this.featureService);
   }
 
   statusChip(layer: WorkspaceDataLayer) {
@@ -180,16 +177,12 @@ export class WorkspaceDataLayersComponent implements OnInit {
     this.page$.next(page);
   }
 
-  upload(replacing?: WorkspaceDataLayer) {
+  upload() {
     this.dialog
       .open<UploadDataLayerComponent, UploadDataLayerData, WorkspaceDataLayer>(
         UploadDataLayerComponent,
         {
-          data: {
-            workspaceId: this.workspaceId,
-            name: replacing?.name,
-            replaceDataLayerId: replacing?.id,
-          },
+          data: { workspaceId: this.workspaceId },
         }
       )
       .afterClosed()

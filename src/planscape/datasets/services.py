@@ -2,6 +2,7 @@ import itertools
 import json
 import logging
 import mimetypes
+from copy import deepcopy
 from datetime import timedelta
 from pathlib import Path
 from typing import Any, Collection, Dict, Optional, Set, Tuple
@@ -22,6 +23,7 @@ from datasets.events import (
     publish_datalayer_favorited,
     publish_datalayer_status_changed,
     publish_datalayer_unfavorited,
+    publish_datalayer_updated,
 )
 from datasets.models import (
     Category,
@@ -48,6 +50,8 @@ from datasets.search import (
     simple_category_to_search_result,
 )
 from datasets.tasks import datalayer_uploaded
+from datasets.upload_metadata import write_upload_metadata
+from datasets.styles import UPLOAD_STYLE_NO_DATA
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, Polygon
@@ -941,13 +945,97 @@ def get_or_create_workspace_upload_dataset(
     )
 
 
-def workspace_upload_name_taken(workspace: Workspace, name: str) -> bool:
-    return DataLayer.objects.filter(
-        dataset__workspace=workspace,
-        dataset__name=UPLOADED_DATASET_NAME,
-        name=name,
-        type=DataLayerType.RASTER,
-    ).exists()
+def workspace_upload_name_taken(
+    workspace: Workspace, name: str, exclude_id: Optional[int] = None
+) -> bool:
+    return (
+        DataLayer.objects.filter(
+            dataset__workspace=workspace,
+            dataset__name=UPLOADED_DATASET_NAME,
+            name=name,
+            type=DataLayerType.RASTER,
+        )
+        .exclude(pk=exclude_id)
+        .exists()
+    )
+
+
+_UNCHANGED = object()
+
+
+@transaction.atomic
+def update_workspace_datalayer(
+    datalayer: DataLayer, user: User, **fields: Any
+) -> DataLayer:
+    """
+    Renames an upload, edits its metadata (see `upload_metadata`) and/or sets
+    its style (`style=None` goes back to the automatic ramp).
+    """
+    name = fields.pop("name", None)
+    style = fields.pop("style", _UNCHANGED)
+    if name is not None:
+        datalayer.name = name
+    if fields:
+        datalayer.metadata = write_upload_metadata(datalayer.metadata, fields)
+    datalayer.save(update_fields=["name", "metadata", "updated_at"])
+    if style is not _UNCHANGED:
+        set_upload_style(datalayer, user, style)
+    invalidate_model(DataLayer)
+    publish_datalayer_updated(datalayer, actor=user)
+    return datalayer
+
+
+def get_upload_style(datalayer: DataLayer) -> Optional[Style]:
+    return Style.objects.filter(
+        workspace_id=datalayer.workspace_id,
+        rel_styles__datalayer=datalayer,
+    ).first()
+
+
+def set_upload_style(
+    datalayer: DataLayer, user: User, style_data: Optional[Dict[str, Any]]
+) -> Optional[Style]:
+    """Gives an upload its own style, or removes it when `style_data` is None."""
+    style = get_upload_style(datalayer)
+    if style_data is None:
+        if style:
+            # styles are soft-deleted, so the link has to go explicitly
+            DataLayerHasStyle.objects.filter(datalayer=datalayer, style=style).delete()
+            style.delete()
+            invalidate_model(Style)
+        return None
+
+    data = {
+        "map_type": style_data["map_type"],
+        "no_data": deepcopy(UPLOAD_STYLE_NO_DATA),
+        "entries": [
+            {
+                "value": entry["value"],
+                "color": entry["color"],
+                "opacity": 1,
+                "label": entry.get("label") or f"{entry['value']:g}",
+            }
+            for entry in style_data["entries"]
+        ],
+    }
+    data_hash = mmh3.hash_bytes(json.dumps(data)).hex()
+    if style:
+        style.data = data
+        style.data_hash = data_hash
+        style.save(update_fields=["data", "data_hash", "updated_at"])
+    else:
+        style = Style.objects.create(
+            name=f"upload-{datalayer.uuid}",
+            workspace_id=datalayer.workspace_id,
+            organization=None,
+            created_by=user,
+            type=DataLayerType.RASTER,
+            data=data,
+            data_hash=data_hash,
+        )
+        DataLayerHasStyle.objects.create(datalayer=datalayer, style=style, default=True)
+    invalidate_model(Style)
+    return style
 
 
 @transaction.atomic()
@@ -964,9 +1052,7 @@ def create_workspace_upload(
 
     dataset = get_or_create_workspace_upload_dataset(workspace, created_by)
     uuid = str(uuid4())
-    raw_url = get_upload_raw_url(
-        workspace.pk, uuid, Path(original_name).suffix.lower()
-    )
+    raw_url = get_upload_raw_url(workspace.pk, uuid, Path(original_name).suffix.lower())
     datalayer = DataLayer.objects.create(
         uuid=uuid,
         name=name,
@@ -1042,9 +1128,7 @@ def expire_stale_uploads() -> int:
     Returns how many were expired.
     """
     now = timezone.now()
-    pending_cutoff = now - timedelta(
-        hours=settings.DATALAYER_UPLOAD_PENDING_TTL_HOURS
-    )
+    pending_cutoff = now - timedelta(hours=settings.DATALAYER_UPLOAD_PENDING_TTL_HOURS)
     processing_cutoff = now - timedelta(
         hours=settings.DATALAYER_UPLOAD_PROCESSING_TTL_HOURS
     )
