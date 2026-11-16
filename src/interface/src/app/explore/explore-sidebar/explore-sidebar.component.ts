@@ -18,6 +18,8 @@ import { SidebarTabs } from '@explore/sidebar-tabs';
 import { DataLayersRegistryService } from '@explore/data-layers-registry';
 import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { MatDialog } from '@angular/material/dialog';
+import { UploadDataModalComponent } from '@data-layers/upload-data-modal/upload-data-modal.component';
 import { FeatureService } from '@features/feature.service';
 import { FeaturesModule } from '@features/features.module';
 import { MatIconModule } from '@angular/material/icon';
@@ -84,7 +86,8 @@ export class ExploreSidebarComponent {
     private multiMapConfigState: MultiMapConfigState,
     private dataLayersRegistry: DataLayersRegistryService,
     private featureService: FeatureService,
-    private workspaceState: WorkspaceState
+    private workspaceState: WorkspaceState,
+    private dialog: MatDialog
   ) {}
 
   canUpload$ = this.featureService.isFeatureEnabled('DATA_UPLOAD')
@@ -94,8 +97,13 @@ export class ExploreSidebarComponent {
       )
     : of(false);
 
-  openUpload() {
-    // TODO: open the upload data modal
+  openUpload(trigger: HTMLElement) {
+    // The dialog aria-hides the page before it takes focus
+    trigger.blur();
+    this.dialog
+      .open(UploadDataModalComponent, { restoreFocus: false })
+      .afterClosed()
+      .subscribe(() => trigger.focus());
   }
 
   goBack() {
