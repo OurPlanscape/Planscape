@@ -97,8 +97,13 @@ export class ExploreSidebarComponent {
       )
     : of(false);
 
-  openUpload() {
-    this.dialog.open(UploadDataModalComponent);
+  openUpload(trigger: HTMLElement) {
+    // The dialog aria-hides the page before it takes focus
+    trigger.blur();
+    this.dialog
+      .open(UploadDataModalComponent, { restoreFocus: false })
+      .afterClosed()
+      .subscribe(() => trigger.focus());
   }
 
   goBack() {

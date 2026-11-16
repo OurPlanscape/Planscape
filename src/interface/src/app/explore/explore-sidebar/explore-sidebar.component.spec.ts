@@ -17,9 +17,9 @@ import {
   BrowseSelection,
   DataLayersStateService,
 } from '@data-layers/data-layers.state.service';
-import { BehaviorSubject, EMPTY, of } from 'rxjs';
+import { BehaviorSubject, EMPTY, of, Subject } from 'rxjs';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { UploadDataModalComponent } from '@data-layers/upload-data-modal/upload-data-modal.component';
 import { FEATURES_JSON } from '@features/features-config';
 import { FeaturesModule } from '@features/features.module';
@@ -32,9 +32,11 @@ describe('ExploreSidebarComponent', () => {
   let dataUploadEnabled = false;
   let workspacePermissions = ['view_workspace', 'add_datalayer'];
   let dialog: jasmine.SpyObj<MatDialog>;
+  let afterClosed$: Subject<void>;
 
   beforeEach(async () => {
     selection$ = new BehaviorSubject<BrowseSelection | null>(null);
+    afterClosed$ = new Subject<void>();
     dataLayersState = jasmine.createSpyObj<DataLayersStateService>(
       'DataLayersStateService',
       ['goBackToSearchResults'],
@@ -43,6 +45,9 @@ describe('ExploreSidebarComponent', () => {
     const registry = new DataLayersRegistryService();
     registry.set(1, dataLayersState);
     dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+    dialog.open.and.returnValue({
+      afterClosed: () => afterClosed$,
+    } as unknown as MatDialogRef<unknown>);
 
     await TestBed.configureTestingModule({
       imports: [ExploreSidebarComponent],
@@ -182,7 +187,21 @@ describe('ExploreSidebarComponent', () => {
     it('opens the upload modal from the CTA', () => {
       uploadButton().nativeElement.click();
 
-      expect(dialog.open).toHaveBeenCalledWith(UploadDataModalComponent);
+      expect(dialog.open).toHaveBeenCalledWith(UploadDataModalComponent, {
+        restoreFocus: false,
+      });
+    });
+
+    it('moves focus off the CTA while the modal is open and back on close', () => {
+      const button: HTMLElement = uploadButton().nativeElement;
+      button.focus();
+      button.click();
+
+      expect(document.activeElement).not.toBe(button);
+
+      afterClosed$.next();
+
+      expect(document.activeElement).toBe(button);
     });
 
     describe('for a workspace viewer', () => {
