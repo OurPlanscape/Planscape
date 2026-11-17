@@ -19,6 +19,4 @@ The name and value of the flag will be shared by frontend and backend.
 
 `CATASTROPHIC_REDUCTION`: Features related to Catastrophic Fire Reduction stats in FoR
 
-`ASLC_ALL_TX_STANDS`: Enables the All Treatment Stands toggle view
-
 `IMPROVED_TREATMENT_GOAL`: Enables the new Improved Treatment Goal step

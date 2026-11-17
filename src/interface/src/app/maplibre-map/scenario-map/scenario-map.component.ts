@@ -28,7 +28,6 @@ import { MapConfigService } from '../map-config.service';
 import { DataLayerNameComponent } from '@data-layers/data-layer-name/data-layer-name.component';
 import { FrontendConstants } from '@map/map.constants';
 import { ScenarioLegendComponent } from '@scenario-creation/scenario-legend/scenario-legend.component';
-import { FeaturesModule } from '@features/features.module';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { MapBaseLayersComponent } from '@maplibre-map/map-base-layers/map-base-layers.component';
@@ -61,7 +60,6 @@ import { AllTreatableStandsComponent } from '../all-treatable-stands/all-treatab
     MapLayerColorLegendComponent,
     DataLayerNameComponent,
     ScenarioLegendComponent,
-    FeaturesModule,
     StandsComponent,
     MatProgressSpinnerModule,
     MapBaseLayersComponent,
