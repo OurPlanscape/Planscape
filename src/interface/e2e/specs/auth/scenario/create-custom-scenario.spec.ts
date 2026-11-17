@@ -1,0 +1,94 @@
+import { test, expect } from '@playwright/test';
+import { geomYosemite } from '../../../fixtures/test-geometries';
+import { createPlanningArea, deletePlanningArea } from '../../../helpers/api-client';
+import { PlanningAreaPage } from '../../../pages/planningarea.page';
+
+
+let planId: number | null = null;
+
+test.beforeAll(async ({ request }) => {
+  const testName = `Test Plan - ${Date.now()}`;
+  const response = await createPlanningArea(request, testName, geomYosemite);
+  const plan = await response.json();
+  planId = plan.id;
+});
+
+test.afterAll(async ({ request }) => {
+  if (planId) {
+    await deletePlanningArea(request, planId);
+  }
+});
+
+test('user can create a Custom Scenario', {tag: ['@smoke'] }, async ({ page }) => {
+
+  // go to the newly created Planning Area
+  if(!planId) {
+    throw new Error('A planning area does not exist for the scenario test.');
+  }
+  const planPage = new PlanningAreaPage(page);
+  await planPage.goto(planId);
+
+  const newScenarioName = `New test scenario - ${Date.now()}`;
+  await page
+  .locator('sg-action-card[title="Create Custom Scenario"]')
+  .getByText('add New Scenario')
+  .click({ timeout: 60000 });
+
+  // create scenario
+  await page.getByRole('textbox').fill(newScenarioName);
+  
+
+  // scenario has a name
+  await page.getByRole('button', { name: 'Get Started' }).click();
+  await page.getByText('Optimize Project Areas Would').click();
+  await page.getByRole('combobox', { name: 'Stand Size' }).locator('span').click();
+  await page.getByRole('option', { name: 'Medium (100 acres)' }).click();
+  await page.getByRole('button', { name: 'Save & Continue' }).click();
+
+
+  // Step 1. Select Priority Objectives
+  await page.locator('app-data-set').filter({ hasText: 'California Landscape' }).click();
+  await page.locator('.icon').first().click();
+  await page.locator('.data-layer-cat > .mat-nested-tree-node > .mat-tree-node > .icon').click();
+  await page.getByRole('button').nth(4).click();
+  await expect(page.locator('#mat-mdc-chip-0').getByText('Potential Avoided Smoke')).toBeVisible();
+  await page.locator('#mat-mdc-chip-0').getByText('Potential Avoided Smoke').click();
+
+  await page.getByText('Prioritize Areas with High Expected Tree Volume Loss from Wildfire').click();
+  await page.getByRole('button', { name: 'Save & Continue' }).click();
+
+  // Step 2. Select Co-Benefits
+  await expect(page.locator('#mat-mdc-checkbox-1')).toContainText('Protection Status 1 – Wilderness areas (natural processes occur freely)');
+  await page.locator('app-data-set').filter({ hasText: 'LANDFIRE 2024' }).click();
+  await page.locator('.icon').first().click();
+  await page.locator('.data-layer-cat > .mat-nested-tree-node > .mat-tree-node > .icon').click();
+  await page.getByText('Forest Canopy Base Height').click();
+  await page.getByRole('button', { name: 'Save & Continue' }).click();
+
+  // Step 3. Select Areas to Exclude
+  await expect(page.locator('#mat-mdc-checkbox-1')).toContainText('Protection Status 1 – Wilderness areas (natural processes occur freely)');
+  await page.getByRole('button').nth(3).click();
+  await page.getByRole('button', { name: 'Save & Continue' }).click({ timeout: 60000 });
+
+  // Step 4. Stand Level Constraints (slope, roads)
+  await page.getByRole('button', { name: 'Save & Continue' }).click({ timeout: 60000 });
+
+  // Step 4. Apply Treatment Target
+  await page.getByRole('textbox', { name: 'Min:' }).fill('100');
+  await page.getByRole('textbox', { name: 'Min:' }).press('Tab');
+  await page.locator('#mat-input-3').fill('10');
+  await page.getByRole('button', { name: 'Save & Run Scenario' }).click({ timeout: 60000 });
+
+  // Confirmation Modal
+  await expect(page.getByText('Ready to run the scenario?')).toBeVisible({ timeout: 60000 });
+  await page.getByRole('button', { name: 'Run Scenario' }).click();
+
+  // After creation - close confirmation
+  await expect(page.getByText('Your Scenario Analysis is in')).toBeVisible();
+  await page.getByRole('button', { name: 'Close' }).click();
+
+  // Confirm that the scenario was created
+  await planPage.goto(planId);
+  await expect(page.locator(`sg-scenario-card`)).toContainText(newScenarioName);
+
+});
