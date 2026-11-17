@@ -99,6 +99,7 @@ describe('DataLayersRailComponent', () => {
 
     expect(instance.displayAddButton).toBeTrue();
     expect(instance.showSelectionHeader).toBeFalse();
+    expect(instance.searchTab).toBe('general');
     expect(layers.nativeElement.classList).toContain('sticky-search');
   });
 
@@ -119,14 +120,59 @@ describe('DataLayersRailComponent', () => {
       expect(icons()).toEqual(['category', 'drive_folder_upload', 'star']);
     });
 
-    it('opens the uploaded panel', () => {
+    const dataLayers = () =>
+      fixture.debugElement.query(By.css('app-data-layers'))
+        .componentInstance as DataLayersComponent;
+
+    function openUploaded() {
       fixture.debugElement
         .queryAll(By.css('.rail-button'))[1]
         .nativeElement.click();
       fixture.detectChanges();
+    }
+
+    it('opens the uploaded panel', () => {
+      openUploaded();
 
       expect(title()).toContain('Uploaded');
-      expect(fixture.debugElement.query(By.css('app-data-layers'))).toBeNull();
+    });
+
+    it('browses the uploads, with the same options as the data layers', () => {
+      openUploaded();
+
+      expect(dataLayers().searchTab).toBe('uploaded');
+      expect(dataLayers().displayAddButton).toBeTrue();
+      expect(dataLayers().showSelectionHeader).toBeFalse();
+    });
+
+    it('browses every layer again back on the data layers', () => {
+      openUploaded();
+      fixture.debugElement
+        .queryAll(By.css('.rail-button'))[0]
+        .nativeElement.click();
+      fixture.detectChanges();
+
+      expect(title()).toContain('Data Layers');
+      expect(dataLayers().searchTab).toBe('general');
+    });
+
+    it('shows the open dataset of the uploads with a way back', () => {
+      openUploaded();
+      selection$.next({ type: 'dataset', id: 10, name: 'My uploads' });
+      fixture.detectChanges();
+
+      expect(title()).toContain('My uploads');
+      fixture.debugElement.query(By.css('.back-button')).nativeElement.click();
+      expect(state.goBackToSearchResults).toHaveBeenCalled();
+    });
+
+    it('stays on the uploads when the map browses to its layer', () => {
+      openUploaded();
+
+      paths$.next(['a']);
+      fixture.detectChanges();
+
+      expect(dataLayers().searchTab).toBe('uploaded');
     });
   });
 
