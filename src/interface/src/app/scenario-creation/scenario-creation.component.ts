@@ -37,7 +37,6 @@ import {
   ScenarioV3Payload,
 } from '@types';
 import { MatDialog } from '@angular/material/dialog';
-import { StandLevelConstraintsComponent } from '@scenario-creation/step3/stand-level-constraints.component';
 import {
   convertOldConfigurationToV3Payload,
   isCustomScenario,
@@ -124,7 +123,6 @@ import { AdvStandLevelConstraintsComponent } from './step3/adv-stand-level-const
     ScenarioMapComponent,
     ScenarioSummaryComponent,
     SharedModule,
-    StandLevelConstraintsComponent,
     Step1WithOverviewComponent,
     Step1WithOverviewComponent,
     StepComponent,
