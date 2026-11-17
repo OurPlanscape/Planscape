@@ -24,6 +24,7 @@ from datasets.models import (
     Dataset,
     GeometryType,
     SearchResult,
+    SearchGroupBy,
     SearchTab,
     SimpleCategory,
     StorageTypeChoices,
@@ -585,11 +586,21 @@ def find_anything(
     search_tab: str = SearchTab.GENERAL,
     user: Optional[User] = None,
     workspace: Optional[Workspace] = None,
+    group_by: Optional[str] = None,
     **kwargs,
 ) -> Dict[str, SearchResult]:
     """
-    Given a term, search for anything (datasets / datalayers)
+    Given a term, search for anything (datasets / datalayers).
+
+    `group_by` picks what datalayers are browsed through: simple categories
+    or datasets. Without it, the DATA_ORGANIZATION flag decides.
     """
+    if group_by is None:
+        group_by = (
+            SearchGroupBy.SIMPLE_CATEGORY
+            if feature_enabled("DATA_ORGANIZATION")
+            else SearchGroupBy.DATASET
+        )
     datalayers = filter_datalayers(
         DataLayer.objects.all(),
         type=type or DataLayerType.RASTER,
@@ -605,7 +616,7 @@ def find_anything(
 
     simple_categories = SimpleCategory.objects.none()
     simple_category_datalayers = DataLayer.objects.none()
-    if feature_enabled("DATA_ORGANIZATION"):
+    if group_by == SearchGroupBy.SIMPLE_CATEGORY:
         # simple categories replace datasets as the way to browse datalayers
         datasets = Dataset.objects.none()
         simple_categories = SimpleCategory.objects.filter(

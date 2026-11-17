@@ -1,0 +1,14 @@
+@import 'colors';
+@import 'mixins';
+
+.placeholder {
+  @include standard-label();
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 160px;
+  border: 1px dashed $color-soft-gray;
+  border-radius: 8px;
+  background-color: $color-white;
+  color: $color-md-gray;
+}

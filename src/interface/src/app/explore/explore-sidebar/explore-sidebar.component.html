@@ -9,7 +9,8 @@
       aria-label="Upload data"
       matTooltip="Upload data"
       matTooltipPosition="right"
-      (click)="openUpload()">
+      #uploadTrigger
+      (click)="openUpload(uploadTrigger)">
       <mat-icon class="material-symbols-outlined">upload</mat-icon>
     </button>
     <hr class="upload-divider" />
