@@ -112,6 +112,14 @@ export class ExploreSidebarComponent {
       .subscribe((state) => state?.goBackToSearchResults());
   }
 
+  // Panels that drill into a dataset or category, and need a way back out
+  get browsesLayers(): boolean {
+    return (
+      this.selectedTab === SidebarTabs.DATA_LAYERS ||
+      this.selectedTab === SidebarTabs.UPLOADED
+    );
+  }
+
   @HostBinding('class.expanded') get hostExpanded() {
     return this.expanded;
   }

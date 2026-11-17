@@ -28,6 +28,7 @@ import {
   REALTIME_CONNECTED_EVENT,
   Resource,
   SearchResult,
+  SearchTab,
   SimpleCategory,
 } from '@types';
 import {
@@ -96,6 +97,30 @@ export class DataLayersStateService implements OnDestroy {
     this.moduleNameOverride$.next(name);
   }
 
+  private _searchTab$ = new BehaviorSubject<SearchTab>('general');
+  searchTab$ = this._searchTab$.asObservable();
+
+  /**
+   * Which tab the browse panel lists: every data layer, or the workspace's
+   * uploads. Uploads are browsed by dataset, since they have no categories.
+   */
+  setSearchTab(tab: SearchTab) {
+    if (tab === this._searchTab$.value) {
+      return;
+    }
+    this.resetPath();
+    this.clearSearch();
+    this._searchTab$.next(tab);
+  }
+
+  /** Whether layers are browsed through simple categories instead of datasets. */
+  browseByCategory(): boolean {
+    return (
+      this.featureService.isFeatureEnabled('DATA_ORGANIZATION') &&
+      this._searchTab$.value !== 'uploaded'
+    );
+  }
+
   private _selectedDataSet$ = new BehaviorSubject<BaseDataSet | null>(null);
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
@@ -156,6 +181,7 @@ export class DataLayersStateService implements OnDestroy {
   ]).pipe(
     tap(() => this.loadingSubject.next(true)),
     switchMap(([selection, plan, override]) => {
+      const searchTab = this._searchTab$.value;
       if (!selection) {
         this.loadingSubject.next(false);
         return of(null);
@@ -164,7 +190,7 @@ export class DataLayersStateService implements OnDestroy {
       const geometry = this.planGeometry(plan);
       // categories list their layers flat; datasets nest them by path
       const isCategory = selection.type === 'category';
-      const workspaceId = this.requestWorkspaceId(plan);
+      const workspaceId = this.requestWorkspaceId(plan, searchTab);
       const layers$ = isCategory
         ? this.service.listCategoryDataLayers(
             selection.id,
@@ -172,12 +198,20 @@ export class DataLayersStateService implements OnDestroy {
             geometry,
             workspaceId
           )
-        : this.service.listDataLayers(
-            selection.id,
-            module,
-            geometry,
-            workspaceId
-          );
+        : searchTab === 'uploaded'
+          ? this.service.listDataLayers(
+              selection.id,
+              module,
+              geometry,
+              workspaceId,
+              searchTab
+            )
+          : this.service.listDataLayers(
+              selection.id,
+              module,
+              geometry,
+              workspaceId
+            );
       return layers$.pipe(
         map((items) =>
           isCategory ? buildFlatTree(items) : buildPathTree(items)
@@ -226,8 +260,9 @@ export class DataLayersStateService implements OnDestroy {
     this._offset,
     this.planState.currentPlanOrNull$,
     this.moduleNameOverride$,
+    this._searchTab$,
   ]).pipe(
-    switchMap(([term, offset, plan, override]) => {
+    switchMap(([term, offset, plan, override, searchTab]) => {
       if (!term) {
         return of(null);
       }
@@ -242,7 +277,10 @@ export class DataLayersStateService implements OnDestroy {
           offset,
           module,
           geometry: this.planGeometry(plan),
-          workspaceId: this.requestWorkspaceId(plan),
+          workspaceId: this.requestWorkspaceId(plan, searchTab),
+          ...(searchTab === 'uploaded'
+            ? { searchTab, groupBy: 'dataset' as const }
+            : {}),
         })
         .pipe(
           startWith(null),
@@ -454,8 +492,14 @@ export class DataLayersStateService implements OnDestroy {
 
   // Off the workspace route (a plan's map viewer) we still send the plan's
   // workspace, but favorites stay gated on favoritesEnabled().
-  private requestWorkspaceId(plan: Plan | null): number | null {
-    if (!this.featureService.isFeatureEnabled('DATA_ORGANIZATION')) {
+  private requestWorkspaceId(
+    plan: Plan | null,
+    searchTab: SearchTab = 'general'
+  ): number | null {
+    if (
+      searchTab !== 'uploaded' &&
+      !this.featureService.isFeatureEnabled('DATA_ORGANIZATION')
+    ) {
       return null;
     }
     return (
@@ -602,10 +646,7 @@ export class DataLayersStateService implements OnDestroy {
 
   private browseSelectionFor(layer: DataLayer): BrowseSelection {
     const categories = layer.simple_categories ?? [];
-    if (
-      this.featureService.isFeatureEnabled('DATA_ORGANIZATION') &&
-      categories.length > 0
-    ) {
+    if (this.browseByCategory() && categories.length > 0) {
       // stay in the current category if the layer belongs to it
       const current = this._selection$.value;
       const category =
