@@ -6,7 +6,7 @@ from datasets.models import DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from modules.base import compute_scenario_capabilities
 from rest_framework import status
@@ -821,6 +821,39 @@ class ScenarioDetailTest(APITestCase):
         for entry in data.get("usage_types"):
             self.assertIn("usage_type", entry)
             self.assertIn("datalayer", entry)
+
+    @override_settings(FEATURE_FLAGS=["IMPROVED_TREATMENT_GOAL"])
+    def test_detail_scenario_v2_with_improved_usage_types(self):
+        self.scenario.treatment_goal = TreatmentGoalFactory.create(with_datalayers=True)
+        self.scenario.save()
+        expected_ids = set(
+            self.scenario.treatment_goal.datalayer_usages.values_list(
+                "datalayer_id", flat=True
+            )
+        )
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data.get("usage_types")), 3)
+        for entry in data.get("usage_types"):
+            self.assertIn("usage_type", entry)
+            self.assertIsInstance(entry["datalayer"], dict)
+            self.assertIn("name", entry["datalayer"])
+            self.assertIn("styles", entry["datalayer"])
+        self.assertEqual(
+            {entry["datalayer"]["id"] for entry in data.get("usage_types")},
+            expected_ids,
+        )
 
     def test_detail_scenario_v3_custom_usage_types(self):
         priority = DataLayerFactory(name="Priority Layer")

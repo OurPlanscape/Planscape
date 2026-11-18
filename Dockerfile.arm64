@@ -36,6 +36,13 @@ RUN wget https://github.com/OSGeo/gdal/archive/refs/tags/v${GDAL_VERSION}.tar.gz
     cmake --build . --target install && \
     rm -rf gdal-${GDAL_VERSION} v${GDAL_VERSION}.tar.gz
 
+# python-magic needs the system library; kept after the GDAL build so adding
+# packages here doesn't invalidate that layer.
+RUN apt-get update && \
+    apt-get -y install libmagic1 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 ENV UV_PROJECT_ENVIRONMENT=/opt/virtualenvs/
 ENV UV_LINK_MODE=copy
 ENV UV_PYTHON_INSTALL_DIR=/opt/uv-python
