@@ -21,8 +21,7 @@
   <div class="panel-header">
     <ng-container
       *ngIf="
-        selectedTab === SidebarTabs.DATA_LAYERS &&
-          (dataLayersSelection$ | async);
+        browsesLayers && (dataLayersSelection$ | async);
         else title;
         let selection
       ">
@@ -50,6 +49,9 @@
     <app-map-tabs
       panel="favorites"
       *ngIf="selectedTab === SidebarTabs.FAVORITES"></app-map-tabs>
+    <app-map-tabs
+      panel="uploaded"
+      *ngIf="selectedTab === SidebarTabs.UPLOADED"></app-map-tabs>
     <app-base-layers
       *ngIf="selectedTab === SidebarTabs.BASE_LAYERS"></app-base-layers>
   </div>
