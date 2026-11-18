@@ -175,6 +175,10 @@ export class ScenarioCreationComponent implements OnInit {
     map((s) => s?.hasMap ?? false)
   );
 
+  showSharedSummary$ = this.newScenarioState.currentStep$.pipe(
+    map((s) => (s?.hasMap ?? false) && !this.isImprovedTreatmentGoalStep(s))
+  );
+
   standSize$ = this.newScenarioState.scenarioConfig$.pipe(
     map((config) => config.stand_size)
   );
@@ -234,6 +238,13 @@ export class ScenarioCreationComponent implements OnInit {
     }),
     shareReplay(1)
   );
+
+  private isImprovedTreatmentGoalStep(step: ScenarioStepConfig | null) {
+    return (
+      step?.label === TREATMENT_GOAL_STEP_LABEL &&
+      this.featureService.isFeatureEnabled('IMPROVED_TREATMENT_GOAL')
+    );
+  }
 
   private withImprovedTreatmentGoal(
     steps: ScenarioStepConfig[]
