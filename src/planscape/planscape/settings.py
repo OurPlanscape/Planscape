@@ -511,9 +511,6 @@ FORSYS_CLOUD_RUN_JOB_NAME = config("FORSYS_CLOUD_RUN_JOB_NAME", "forsys-dev")
 FORSYS_CLOUD_RUN_REGION = config("FORSYS_CLOUD_RUN_REGION", "us-central1")
 FORSYS_CLOUD_RUN_API_TIMEOUT = config("FORSYS_CLOUD_RUN_API_TIMEOUT", 60, cast=int)
 
-# Find Anything settings
-FIND_ANYTHING_METADATA = config("FIND_ANYTHING_METADATA", False, cast=bool)
-
 # TODO: Move this to a conf file that R can read?
 OUTPUT_DIR = config("FORSYS_OUTPUT_DIR", default=BASE_DIR / "output")
 
