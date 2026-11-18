@@ -27,6 +27,7 @@ RUN apt-get update && \
     libgit2-dev libharfbuzz-dev libfribidi-dev libudunits2-dev \
     libcurl4-openssl-dev libssl-dev \
     postgresql-client \
+    libmagic1 \
     python3-pip
 
 RUN groupadd -g ${GID} app && useradd -m -u ${UID} -g ${GID} app \

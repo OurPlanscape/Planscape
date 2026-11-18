@@ -643,13 +643,16 @@ def find_anything(
             for x in datalayers.filter(name__icontains=term)
         ],
         [datalayer_to_search_result(x) for x in simple_category_datalayers],
-        [
-            datalayer_to_search_result(x)
-            for x in datalayers.alias(
-                metadata_match=metadata_values_contain(term)
-            ).filter(metadata_match=True)
-        ],
     ]
+    if settings.FIND_ANYTHING_METADATA:
+        raw_results.append(
+            [
+                datalayer_to_search_result(x)
+                for x in datalayers.alias(
+                    metadata_match=metadata_values_contain(term)
+                ).filter(metadata_match=True)
+            ]
+        )
     search_results = itertools.chain.from_iterable(raw_results)
     results = {}
     for search_result in search_results:
