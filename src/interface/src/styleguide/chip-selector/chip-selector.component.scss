@@ -21,6 +21,25 @@
         padding-top: 8px;
         padding-bottom: 8px;
 
+        &.truncate {
+            max-width: 100%;
+
+            .chip-label {
+                display: block;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            ::ng-deep {
+                .mdc-evolution-chip__action,
+                .mat-mdc-chip-action-label {
+                    min-width: 0;
+                    overflow: hidden;
+                }
+            }
+        }
+
         .mat-chip-remove {
             opacity: 1;
             color: black;

@@ -23,6 +23,7 @@ export class ChipSelectorComponent<T extends HasName> {
   @Input() showEdit = false;
   @Input() showClose = true;
   @Input() hoverable = false;
+  @Input() truncate = false;
 
   @Output() addItem = new EventEmitter<T>();
   @Output() removeItem = new EventEmitter<T>();
