@@ -73,9 +73,9 @@ export async function destroyTestUser(api: APIRequestContext) {
 const PLANNING_AREA_URL = 'planscape-backend/v2/planningareas/'
 
 
-export async function createPlanningArea(api: APIRequestContext, testName: string, testGeom: Geometry) {
+export async function createPlanningArea(api: APIRequestContext, testName: string, testGeom: Geometry, workspaceId: number) {
   const res = await api.post(PLANNING_AREA_URL, {
-    data: { name: testName, geometry: testGeom } // Unique name using timestamp
+    data: { name: testName, geometry: testGeom , workspace: workspaceId } 
   });
   if (!res.ok()) {
     throw new Error(`Plan creation failed: ${res.status()} ${await res.text()}`);

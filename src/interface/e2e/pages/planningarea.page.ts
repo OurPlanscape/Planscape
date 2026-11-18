@@ -5,8 +5,8 @@ export class PlanningAreaPage {
   constructor(private readonly page: Page) {
   }
 
-  async goto(planId: number) {
-    await this.page.goto(`/plan/${planId}`);
+  async goto(workspaceId: number, planId: number) {
+    await this.page.goto(`/workspace/${workspaceId}/plan/${planId}`);
   }
 
 }

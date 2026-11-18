@@ -50,6 +50,33 @@ export default defineConfig({
       },
     },
     {
+      name: 'plan-setup',
+      testMatch: /plan\.setup\.ts/,
+      dependencies: ['auth-setup'],
+      teardown: 'plan-teardown',
+      timeout: 300_000,
+      use: {
+        storageState: 'e2e/.auth/user.json',
+      },
+    },
+    {
+      name: 'scenarios',
+      testMatch: '/scenario/*.spec.ts',
+      dependencies: ['plan-setup'],
+      timeout: 300_000,
+      use: {
+        storageState: 'e2e/.auth/user.json',
+      },
+    },
+
+    {
+      name: 'plan-teardown',
+      testMatch: /plan\.teardown\.ts/,
+      use: {
+        storageState: 'e2e/.auth/user.json',
+      },
+    },
+    {
       name: 'public',
       testDir: './e2e/specs/public',
     },
@@ -66,9 +93,9 @@ export default defineConfig({
   webServer: process.env['E2E_BASE_URL']
     ? undefined
     : {
-        command: 'npx ng serve',
-        url: 'http://localhost:4200',
-        reuseExistingServer: !process.env['CI'],
-        timeout: 120_000,
-      },
+      command: 'npx ng serve',
+      url: 'http://localhost:4200',
+      reuseExistingServer: !process.env['CI'],
+      timeout: 120_000,
+    },
 });

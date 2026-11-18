@@ -1,32 +1,18 @@
-import { test, expect } from '@playwright/test';
-import { geomYosemite } from '../../../fixtures/test-geometries';
-import { createPlanningArea, deletePlanningArea } from '../../../helpers/api-client';
+import { expect } from '@playwright/test';
 import { PlanningAreaPage } from '../../../pages/planningarea.page';
+import { test } from '../../../fixtures/test-planningarea';
 
-
-let planId: number | null = null;
-
-test.beforeAll(async ({ request }) => {
-  const testName = `Test Plan - ${Date.now()}`;
-  const response = await createPlanningArea(request, testName, geomYosemite);
-  const plan = await response.json();
-  planId = plan.id;
-});
-
-test.afterAll(async ({ request }) => {
-  if (planId) {
-    await deletePlanningArea(request, planId);
-  }
-});
-
-test('user can create a Preset Scenario', {tag: ['@smoke'] }, async ({ page }) => {
+test('user can create a Preset Scenario', { tag: ['@smoke'] }, async ({ page, planId, workspaceId }) => {
+  test.setTimeout(60_000);
+  // go to the newly created Planning Area
+  await page.goto(`/workspace/${workspaceId}/plan/${planId}`); // whatever your existing navigation is
 
   // go to the newly created Planning Area
   if(!planId) {
     throw new Error('A planning area does not exist for the scenario test.');
   }
   const planPage = new PlanningAreaPage(page);
-  await planPage.goto(planId);
+  await planPage.goto(workspaceId, planId);
 
   const newScenarioName = `New test scenario - ${Date.now()}`;
   await page
@@ -75,7 +61,7 @@ test('user can create a Preset Scenario', {tag: ['@smoke'] }, async ({ page }) =
   await page.getByRole('button', { name: 'Close' }).click();
 
   // Confirm that the scenario was created
-  await planPage.goto(planId);
+  await planPage.goto(workspaceId, planId);
   await expect(page.locator(`sg-scenario-card`)).toContainText(newScenarioName);
 
 });

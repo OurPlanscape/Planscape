@@ -198,3 +198,6 @@ src/planscape/celerybeat-schedule.db
 
 # R files used to convert to Python
 R/
+
+# e2e resource files
+src/interface/e2e/.support/
