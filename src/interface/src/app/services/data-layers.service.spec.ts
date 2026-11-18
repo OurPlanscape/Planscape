@@ -28,20 +28,46 @@ describe('DatalayersService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('browseUploaded', () => {
-    it('asks for the ready uploads of the workspace', () => {
-      service.browseUploaded(7, 'map').subscribe();
+  describe('the uploaded tab', () => {
+    it('browses the uploads of a dataset', () => {
+      service.listDataLayers(10, 'map', undefined, 7, 'uploaded').subscribe();
 
-      const req = httpMock.expectOne(browsePath);
-
-      expect(req.request.method).toBe('POST');
+      const req = httpMock.expectOne(
+        `${environment.backend_endpoint}/v2/datasets/10/browse/`
+      );
       expect(req.request.body).toEqual({
-        search_tab: 'uploaded',
-        workspace_id: 7,
         type: 'RASTER',
         module: 'map',
+        workspace_id: 7,
+        search_tab: 'uploaded',
       });
       req.flush([]);
+    });
+
+    it('searches the uploads grouped by dataset', () => {
+      service
+        .search({
+          term: 'fire',
+          limit: 20,
+          workspaceId: 7,
+          searchTab: 'uploaded',
+          groupBy: 'dataset',
+        })
+        .subscribe();
+
+      const req = httpMock.expectOne(
+        (r) =>
+          r.url ===
+          `${environment.backend_endpoint}/v2/datalayers/find_anything/`
+      );
+      expect(req.request.body).toEqual({
+        term: 'fire',
+        type: 'RASTER',
+        workspace_id: 7,
+        search_tab: 'uploaded',
+        group_by: 'dataset',
+      });
+      req.flush({ count: 0, results: [] });
     });
   });
 

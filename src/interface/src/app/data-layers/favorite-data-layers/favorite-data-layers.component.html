@@ -1,11 +1,8 @@
-<div
-  class="side-search-container"
-  [class.no-border]="belowSearch"
-  *ngIf="copy$ | async as copy">
+<div class="side-search-container" [class.no-border]="belowSearch">
   <sg-search-bar
     class="search-bar"
     [debounceInterval]="160"
-    [searchPlaceholder]="copy.searchPlaceholder"
+    searchPlaceholder="Search in favorites"
     [showCloseButton]="true"
     [searchValue]="(searchTerm$ | async) || ''"
     (searchString)="search($event)"
@@ -13,20 +10,20 @@
 </div>
 <ng-container *ngTemplateOutlet="belowSearch ?? null"></ng-container>
 
-<div class="scrollable" *ngIf="layers$ | async as list">
+<div class="scrollable" *ngIf="favorites$ | async as favorites">
   <mat-spinner
-    *ngIf="list.isLoading && !list.data"
+    *ngIf="favorites.isLoading && !favorites.data"
     diameter="20"
     class="loader"></mat-spinner>
 
   <sg-empty-state
-    *ngIf="list.error"
+    *ngIf="favorites.error"
     icon="error_outline"
     [outlined]="true"
-    [title]="(copy$ | async)?.errorTitle ?? ''"
-    [description]="(copy$ | async)?.errorDescription ?? ''"></sg-empty-state>
+    title="We couldn't load your favorites"
+    description="The server could not return the favorites of this workspace. Try again later."></sg-empty-state>
 
-  <ng-container *ngIf="list.data && !list.error">
+  <ng-container *ngIf="favorites.data && !favorites.error">
     <div *ngIf="displayAddButton && (hasResults$ | async)" class="nodes-header">
       <span class="select-column">Select</span
       ><span>{{ dataLayersStateService.viewColumnLabel }}</span>
@@ -90,15 +87,15 @@
       </mat-menu>
     </div>
 
-    <!-- nothing in the list yet -->
+    <!-- nothing favorited yet -->
     <sg-empty-state
       *ngIf="(searchTerm$ | async) === '' && (hasResults$ | async) === false"
-      [icon]="(copy$ | async)?.emptyIcon ?? ''"
+      icon="star"
       [outlined]="true"
-      [title]="(copy$ | async)?.emptyTitle ?? ''"
+      title="No favorite data layers yet"
       [description]="(emptyStateDescription$ | async) || ''"></sg-empty-state>
 
-    <!-- there are layers, they just do not match what was typed -->
+    <!-- there are favorites, they just do not match what was typed -->
     <sg-no-results
       *ngIf="
         (searchTerm$ | async) && (hasResults$ | async) === false

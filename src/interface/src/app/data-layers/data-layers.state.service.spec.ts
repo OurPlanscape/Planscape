@@ -61,7 +61,6 @@ describe('DataLayersStateService', () => {
         'listCategoryDataLayers',
         'search',
         'browseFavorites',
-        'browseUploaded',
       ]
     );
     dataLayersService.listDataSets.and.returnValue(
@@ -70,7 +69,6 @@ describe('DataLayersStateService', () => {
     dataLayersService.listDataLayers.and.returnValue(of([]));
     dataLayersService.listCategoryDataLayers.and.returnValue(of([]));
     dataLayersService.browseFavorites.and.returnValue(of([]));
-    dataLayersService.browseUploaded.and.returnValue(of([]));
 
     currentWorkspaceId = null;
     currentPlan = null;
@@ -283,6 +281,100 @@ describe('DataLayersStateService', () => {
         undefined,
         null
       );
+    });
+  });
+
+  describe('the uploaded tab', () => {
+    const dataSet = {
+      id: 10,
+      name: 'Dataset',
+      organization: layer.organization,
+    };
+
+    beforeEach(() => {
+      dataLayersService.search.and.returnValue(
+        of({ count: 0, results: [] } as unknown as Pagination<any>)
+      );
+      currentWorkspaceId = 7;
+    });
+
+    it('browses datasets instead of categories', () => {
+      createService('DATA_ORGANIZATION');
+      service.setSearchTab('uploaded');
+
+      expect(service.browseByCategory()).toBeFalse();
+    });
+
+    it('asks the dataset for its uploads in the workspace', () => {
+      createService();
+      service.setSearchTab('uploaded');
+      service.selectDataSet(dataSet);
+
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        undefined,
+        7,
+        'uploaded'
+      );
+    });
+
+    it('searches the uploads grouped by dataset', () => {
+      createService('DATA_ORGANIZATION');
+      service.searchResults$.subscribe();
+      service.setSearchTab('uploaded');
+      service.search('fire');
+
+      expect(dataLayersService.search).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          term: 'fire',
+          workspaceId: 7,
+          searchTab: 'uploaded',
+          groupBy: 'dataset',
+        })
+      );
+    });
+
+    it('opens the dataset of a layer, even if it has categories', () => {
+      createService('DATA_ORGANIZATION');
+      service.setSearchTab('uploaded');
+      service.goToDataLayerCategory(layer);
+
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        undefined,
+        7,
+        'uploaded'
+      );
+      expect(dataLayersService.listCategoryDataLayers).not.toHaveBeenCalled();
+    });
+
+    it('starts over when switching tabs', () => {
+      createService();
+      let term: string | undefined;
+      service.searchTerm$.subscribe((t) => (term = t));
+      let selection: unknown;
+      service.selection$.subscribe((s) => (selection = s));
+      service.selectDataSet(dataSet);
+      service.search('fire');
+
+      service.setSearchTab('uploaded');
+
+      expect(term).toBe('');
+      expect(selection).toBeNull();
+    });
+
+    it('keeps browsing when the tab is set again', () => {
+      createService();
+      service.setSearchTab('uploaded');
+      let selection: unknown;
+      service.selection$.subscribe((s) => (selection = s));
+      service.selectDataSet(dataSet);
+
+      service.setSearchTab('uploaded');
+
+      expect(selection).not.toBeNull();
     });
   });
 
@@ -876,59 +968,6 @@ describe('DataLayersStateService', () => {
       service.selectDataLayer(layer);
 
       expect(legendLabels()).toContain('Own low');
-    });
-  });
-
-  describe('uploaded$', () => {
-    const uploads = [{ id: 4, name: 'Canopy' }] as DataLayer[];
-
-    function latestUploaded() {
-      let data: DataLayer[] | undefined;
-      service.uploaded$
-        .subscribe((resource) => (data = resource.data))
-        .unsubscribe();
-      return data;
-    }
-
-    it('lists the ready uploads of the workspace', () => {
-      currentWorkspaceId = 7;
-      dataLayersService.browseUploaded.and.returnValue(of(uploads));
-      createService('DATA_UPLOAD');
-
-      expect(latestUploaded()).toEqual(uploads);
-      expect(dataLayersService.browseUploaded).toHaveBeenCalledWith(
-        7,
-        'map',
-        undefined
-      );
-    });
-
-    it('is empty without DATA_UPLOAD', () => {
-      currentWorkspaceId = 7;
-      createService();
-
-      expect(latestUploaded()).toEqual([]);
-      expect(dataLayersService.browseUploaded).not.toHaveBeenCalled();
-    });
-
-    it('is empty outside a workspace', () => {
-      createService('DATA_UPLOAD');
-
-      expect(latestUploaded()).toEqual([]);
-      expect(dataLayersService.browseUploaded).not.toHaveBeenCalled();
-    });
-
-    it('refetches when an upload changes', () => {
-      currentWorkspaceId = 7;
-      createService('DATA_UPLOAD');
-      const subscription = service.uploaded$.subscribe();
-      dataLayersService.browseUploaded.calls.reset();
-
-      workspaceEvents$.next({ type: 'datasets.datalayer.status_changed' });
-      workspaceEvents$.next({ type: 'datasets.datalayer.updated' });
-
-      expect(dataLayersService.browseUploaded).toHaveBeenCalledTimes(2);
-      subscription.unsubscribe();
     });
   });
 });

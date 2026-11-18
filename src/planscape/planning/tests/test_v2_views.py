@@ -5,6 +5,7 @@ from collaboration.models import Role
 from collaboration.tests.factories import UserObjectRoleFactory
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -1411,6 +1412,26 @@ class TreatmentGoalViewSetTest(APITestCase):
                 {"usage_type": "THRESHOLD", "datalayer": "Layer 2"},
             ],
         )
+
+    @override_settings(FEATURE_FLAGS=["IMPROVED_TREATMENT_GOAL"])
+    def test_list_treatment_goals_improved_usage_types(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(
+            reverse("api:planning:treatment-goals-list"),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        first_treatment_goal = response.json()[0]
+        usages = {
+            u["usage_type"]: u["datalayer"] for u in first_treatment_goal["usage_types"]
+        }
+        self.assertEqual(set(usages.keys()), {"PRIORITY", "THRESHOLD"})
+        self.assertIsInstance(usages["PRIORITY"], dict)
+        self.assertEqual(usages["PRIORITY"]["id"], self.dl1.id)
+        self.assertEqual(usages["PRIORITY"]["name"], "Layer 1")
+        self.assertIn("styles", usages["PRIORITY"])
+        self.assertEqual(usages["THRESHOLD"]["id"], self.dl2.id)
+        self.assertEqual(usages["THRESHOLD"]["name"], "Layer 2")
 
     def test_list_inactive_treatment_goals_as_staff(self):
         staff_user = UserFactory.create(is_staff=True)

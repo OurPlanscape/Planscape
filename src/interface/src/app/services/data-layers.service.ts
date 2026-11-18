@@ -8,6 +8,7 @@ import {
   Pagination,
   SearchQuery,
   SearchResult,
+  SearchTab,
 } from '@types';
 import { map, of } from 'rxjs';
 import { Geometry } from 'geojson';
@@ -32,9 +33,17 @@ export class DataLayersService {
     dataSetId: number,
     module: string,
     geometry?: Geometry,
-    workspaceId?: number | null
+    workspaceId?: number | null,
+    searchTab?: SearchTab
   ) {
-    return this.browse('datasets', dataSetId, module, geometry, workspaceId);
+    return this.browse(
+      'datasets',
+      dataSetId,
+      module,
+      geometry,
+      workspaceId,
+      searchTab
+    );
   }
 
   listCategoryDataLayers(
@@ -52,7 +61,8 @@ export class DataLayersService {
     module: string,
     geometry?: Geometry,
     // If we send workspaceId we get is_favorite from backend
-    workspaceId?: number | null
+    workspaceId?: number | null,
+    searchTab?: SearchTab
   ) {
     return this.http.post<DataLayer[]>(
       `${environment.backend_endpoint}/v2/${resource}/${id}/browse/`,
@@ -61,6 +71,7 @@ export class DataLayersService {
         module,
         ...(geometry ? { geometry } : {}),
         ...(workspaceId ? { workspace_id: workspaceId } : {}),
+        ...(searchTab ? { search_tab: searchTab } : {}),
       },
       {
         withCredentials: true,
@@ -74,37 +85,10 @@ export class DataLayersService {
     geometry?: Geometry,
     type: 'RASTER' | 'VECTOR' = 'RASTER'
   ) {
-    return this.browseWorkspaceTab(
-      'favorites',
-      workspaceId,
-      module,
-      geometry,
-      type
-    );
-  }
-
-  /** The workspace's ready uploads. */
-  browseUploaded(workspaceId: number, module?: string, geometry?: Geometry) {
-    return this.browseWorkspaceTab(
-      'uploaded',
-      workspaceId,
-      module,
-      geometry,
-      'RASTER'
-    );
-  }
-
-  private browseWorkspaceTab(
-    searchTab: 'favorites' | 'uploaded',
-    workspaceId: number,
-    module?: string,
-    geometry?: Geometry,
-    type: 'RASTER' | 'VECTOR' = 'RASTER'
-  ) {
     return this.http.post<DataLayer[]>(
       `${environment.backend_endpoint}/v2/datalayers/browse/`,
       {
-        search_tab: searchTab,
+        search_tab: 'favorites',
         workspace_id: workspaceId,
         type,
         ...(module ? { module } : {}),
@@ -121,6 +105,8 @@ export class DataLayersService {
       ...(query.module ? { module: query.module } : {}),
       ...(query.geometry ? { geometry: query.geometry } : {}),
       ...(query.workspaceId ? { workspace_id: query.workspaceId } : {}),
+      ...(query.searchTab ? { search_tab: query.searchTab } : {}),
+      ...(query.groupBy ? { group_by: query.groupBy } : {}),
     };
 
     return this.http.post<Pagination<SearchResult>>(

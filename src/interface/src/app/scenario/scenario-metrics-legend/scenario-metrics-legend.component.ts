@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
-import { getGroupedAttainment } from '@app/chart-helper';
+import { getGroupedAttainment, usageTypeLayerName } from '@app/chart-helper';
 import { ScenarioResult, UsageType } from '@types';
 import {
   MatCheckboxChange,
@@ -65,8 +65,9 @@ export class ScenarioMetricsLegendComponent implements OnInit {
     this.usageTypes
       ?.filter((ut) => ut.usage_type === 'PRIORITY')
       .forEach((ut) => {
-        priorityLayers.add(ut.datalayer);
-        this.priorityWeights[ut.datalayer] = ut.weight ?? 1;
+        const layerName = usageTypeLayerName(ut);
+        priorityLayers.add(layerName);
+        this.priorityWeights[layerName] = ut.weight ?? 1;
       });
     this.metrics.forEach((m: string) => {
       if (priorityLayers.has(m)) {

@@ -1,0 +1,43 @@
+<sg-modal
+  width="medium"
+  [hasHeader]="false"
+  [hasLinkButton]="true"
+  linkButtonText="QGIS help documentation"
+  linkButtonVariant="link"
+  primaryButtonText="Continue To QGIS"
+  (clickedLink)="openHelp()"
+  (clickedSecondary)="close()"
+  (clickedPrimary)="continueToQgis()">
+  <div modalInfoBox class="banner" aria-hidden="true">
+    <img class="logo" src="assets/svg/planscape-icon.svg" alt="" />
+    <span class="arrow"></span>
+    <img class="logo" src="assets/svg/qgis-logo.svg" alt="" />
+  </div>
+
+  <div modalBodyContent>
+    <h2 class="title">Moving to QGIS</h2>
+    <p class="intro">
+      You are now leaving Planscape to open QGIS. To upload your data:
+    </p>
+
+    <ol class="steps">
+      <li>
+        <strong>Click</strong> the ‘Continue to QGIS’ button to open QGIS.
+      </li>
+      <li>
+        <strong>In QGIS, select</strong> Plugins from the top menu bar and
+        choose ‘Planscape Plugin’.
+      </li>
+      <li>
+        <strong>Log in</strong> to QGIS using your Planscape email and password.
+      </li>
+      <li>Workspace selection</li>
+      <li><strong>Upload</strong> and format your data within QGIS.</li>
+      <li>
+        <strong>Return</strong> to Planscape and check the
+        <strong>Uploaded Data Layers</strong> section on the map viewer to see
+        your new layers.
+      </li>
+    </ol>
+  </div>
+</sg-modal>

@@ -13,8 +13,11 @@ import {
   combineLatest,
   distinctUntilChanged,
   EMPTY,
+  filter,
   firstValueFrom,
+  ignoreElements,
   map,
+  merge,
   of,
   switchMap,
   take,
@@ -36,7 +39,7 @@ import { getPlanPath, getWorkspaceId } from '@plan/plan-helpers';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FrontendConstants } from '@map/map.constants';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { FeaturesModule } from '@features/features.module';
 import { FeatureService } from '@features/feature.service';
@@ -111,7 +114,8 @@ export class ExploreComponent implements OnDestroy, OnInit {
     private route: ActivatedRoute,
     private featureService: FeatureService,
     private mapModuleService: MapModuleService,
-    private workspaceState: WorkspaceState
+    private workspaceState: WorkspaceState,
+    private router: Router
   ) {
     this.loadStateFromLocalStorage();
 
@@ -140,7 +144,31 @@ export class ExploreComponent implements OnDestroy, OnInit {
         }
       });
 
+    this.redirectHomeWhenUnavailable();
+
     this.mapConfigService.initialize();
+  }
+
+  // Saved links outlive access, e.g. a link left over from before signing up
+  // as a new user, and would otherwise leave the map viewer empty.
+  private redirectHomeWhenUnavailable() {
+    const workspaceNotFound$ = getWorkspaceId(this.route.snapshot)
+      ? this.workspaceState.workspaceNotFound$.pipe(filter(Boolean))
+      : EMPTY;
+    const planFailed$ = this.planState.currentPlanId$.pipe(
+      switchMap((id) =>
+        id == null
+          ? EMPTY
+          : this.planState.currentPlan$.pipe(
+              ignoreElements(),
+              catchError(() => of(true))
+            )
+      )
+    );
+
+    merge(workspaceNotFound$, planFailed$)
+      .pipe(take(1), untilDestroyed(this))
+      .subscribe(() => this.router.navigate(['/home']));
   }
 
   ngOnInit() {
@@ -175,7 +203,7 @@ export class ExploreComponent implements OnDestroy, OnInit {
             scenario: scenarioId
               ? this.scenarioState.currentScenario$
               : of(null),
-          });
+          }).pipe(catchError(() => EMPTY));
         })
       )
       .subscribe(({ plan, scenario }) => {

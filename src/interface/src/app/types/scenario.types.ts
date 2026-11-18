@@ -198,7 +198,7 @@ export interface FeatureCollection extends GeoJSON.FeatureCollection {
 // Backend usage type entry for scenario outputs.
 export interface UsageType {
   usage_type: string;
-  datalayer: string;
+  datalayer: string | { id: number; name: string };
   weight?: number;
 }
 

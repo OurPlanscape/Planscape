@@ -4,6 +4,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxMaskModule } from 'ngx-mask';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
+import { By } from '@angular/platform-browser';
 import { BehaviorSubject, EMPTY, Observable, of, Subject } from 'rxjs';
 import { MockComponents, MockModule, MockProvider } from 'ng-mocks';
 
@@ -16,7 +17,11 @@ import { ScenarioState } from '@scenario/scenario.state';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { NewScenarioState } from './new-scenario.state';
 import { AvailableStands, Scenario, ScenarioV3Config } from '@types';
-import { SUB_UNITS_STEP } from '@app/scenario/scenario.constants';
+import {
+  ScenarioStepConfig,
+  SUB_UNITS_STEP,
+  TREATMENT_GOAL_STEP_LABEL,
+} from '@app/scenario/scenario.constants';
 import { MOCK_SCENARIO } from '@services/mocks';
 
 import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
@@ -24,6 +29,7 @@ import { DataLayersComponent } from '@data-layers/data-layers/data-layers.compon
 import { StandLevelConstraintsComponent } from '@scenario-creation/step3/stand-level-constraints.component';
 import { TreatmentTargetComponent } from '@scenario-creation/treatment-target/treatment-target.component';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
+import { ScenarioMapComponent } from '@maplibre-map/scenario-map/scenario-map.component';
 import { FeatureService } from '@app/features/feature.service';
 import { PlanState } from '@plan/plan.state';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
@@ -40,6 +46,7 @@ describe('ScenarioCreationComponent', () => {
       flags?: string[];
       currentScenario$?: Observable<Scenario>;
       scenarioConfig$?: Observable<ScenarioV3Config>;
+      currentStep$?: Observable<ScenarioStepConfig | null>;
       currentPlanWorkspaceId$?: Observable<number | null>;
     } = {}
   ) {
@@ -47,6 +54,7 @@ describe('ScenarioCreationComponent', () => {
       flags = [],
       currentScenario$ = of(MOCK_SCENARIO),
       scenarioConfig$ = of({} as ScenarioV3Config),
+      currentStep$ = of(null),
       currentPlanWorkspaceId$ = EMPTY,
     } = options;
 
@@ -67,7 +75,8 @@ describe('ScenarioCreationComponent', () => {
           DataLayersComponent,
           StandLevelConstraintsComponent,
           TreatmentTargetComponent,
-          BaseLayersComponent
+          BaseLayersComponent,
+          ScenarioMapComponent
         ),
       ],
       providers: [
@@ -82,7 +91,7 @@ describe('ScenarioCreationComponent', () => {
         }),
         MockProvider(NewScenarioState, {
           availableStands$: of({ summary: {} } as AvailableStands),
-          currentStep$: of(null),
+          currentStep$,
           scenarioConfig$,
           priorityObjectivesDetails$: of([]),
         }),
@@ -117,6 +126,49 @@ describe('ScenarioCreationComponent', () => {
 
   it('does not invite favoriting while a scenario is being configured', () => {
     expect(fixture.debugElement.injector.get(SHOW_FAVORITE_STAR)).toBeFalse();
+  });
+
+  describe('the overview shared by the steps', () => {
+    let currentStep$: BehaviorSubject<ScenarioStepConfig | null>;
+
+    async function setUpOnStep(
+      step: Partial<ScenarioStepConfig>,
+      flags: string[] = []
+    ) {
+      currentStep$ = new BehaviorSubject<ScenarioStepConfig | null>(null);
+      await setUpComponent({ flags, currentStep$ });
+      currentStep$.next(step as ScenarioStepConfig);
+    }
+
+    function isShown() {
+      fixture.detectChanges();
+      return !!fixture.debugElement.query(By.css('app-scenario-summary'));
+    }
+
+    it('is drawn on the steps that have a map', async () => {
+      await setUpOnStep({ label: 'Include Areas', hasMap: true });
+      expect(isShown()).toBeTrue();
+    });
+
+    it('is left out of the steps that have no map', async () => {
+      await setUpOnStep({ label: 'Include Areas', hasMap: false });
+
+      expect(isShown()).toBeFalse();
+    });
+
+    it('leaves the treatment goal step to itself once the flag is on', async () => {
+      await setUpOnStep({ label: TREATMENT_GOAL_STEP_LABEL, hasMap: true }, [
+        'IMPROVED_TREATMENT_GOAL',
+      ]);
+
+      expect(isShown()).toBeFalse();
+    });
+
+    it('still covers the treatment goal step while the flag is off', async () => {
+      await setUpOnStep({ label: TREATMENT_GOAL_STEP_LABEL, hasMap: true });
+
+      expect(isShown()).toBeTrue();
+    });
   });
 
   // the data layers panel of these steps offers the favorites of a
@@ -257,6 +309,57 @@ describe('ScenarioCreationComponent', () => {
         component.steps$.subscribe((steps) => {
           expect(steps).toContain(SUB_UNITS_STEP);
           done();
+        });
+      });
+
+      // the treatment goal step is the only one that has no map of its own
+      describe('the map beside the treatment goal step', () => {
+        function treatmentGoalStep() {
+          return component.steps.find(
+            (step) => step.label === TREATMENT_GOAL_STEP_LABEL
+          );
+        }
+
+        // setUpComponent rebuilds the TestBed, so the flagged runs have to be
+        // handed the same subjects the surrounding describe drives
+        function setUpWithFlag() {
+          return setUpComponent({
+            flags: ['IMPROVED_TREATMENT_GOAL'],
+            currentScenario$: currentScenarioSubject.asObservable(),
+            scenarioConfig$: scenarioConfigSubject.asObservable(),
+          });
+        }
+
+        function configurePresetScenario() {
+          currentScenarioSubject.next({ id: 1, parent: undefined } as Scenario);
+          scenarioConfigSubject.next({
+            type: 'PRESET',
+            planning_approach: 'OPTIMIZE_PROJECT_AREAS',
+          } as ScenarioV3Config);
+        }
+
+        it('is drawn once IMPROVED_TREATMENT_GOAL is on', async () => {
+          await setUpWithFlag();
+          configurePresetScenario();
+
+          expect(treatmentGoalStep()?.hasMap).toBeTrue();
+        });
+
+        it('is left out while the flag is off', () => {
+          configurePresetScenario();
+
+          expect(treatmentGoalStep()?.hasMap).toBeFalse();
+        });
+
+        it('leaves every other step as it was', async () => {
+          await setUpWithFlag();
+          configurePresetScenario();
+
+          const untouched = component.steps.filter(
+            (step) => step.label !== TREATMENT_GOAL_STEP_LABEL
+          );
+
+          expect(untouched.every((step) => step.hasMap)).toBeTrue();
         });
       });
 

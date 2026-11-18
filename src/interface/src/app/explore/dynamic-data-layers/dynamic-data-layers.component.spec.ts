@@ -26,7 +26,6 @@ describe('DynamicDataLayersComponent', () => {
   // what the favorites panel reads as soon as it is created
   const mockStateService = {
     favorites$: of({ isLoading: false, data: [] }),
-    uploaded$: of({ isLoading: false, data: [] }),
     canEditFavorites$: of(false),
     loadingLayer$: of(false),
     viewedDataLayer$: of(null),
@@ -85,6 +84,26 @@ describe('DynamicDataLayersComponent', () => {
     expect(destroySpy).toHaveBeenCalled();
   });
 
+  it('builds the browse panel on the uploads for the uploaded panel', fakeAsync(() => {
+    component.mapId = 1;
+    component.panel = 'uploaded';
+    fixture.detectChanges();
+    tick();
+
+    const panel = component['componentRef']?.instance as DataLayersComponent;
+    expect(panel instanceof DataLayersComponent).toBeTrue();
+    expect(panel.searchTab).toBe('uploaded');
+  }));
+
+  it('browses every layer in the browse panel', fakeAsync(() => {
+    component.mapId = 1;
+    fixture.detectChanges();
+    tick();
+
+    const panel = component['componentRef']?.instance as DataLayersComponent;
+    expect(panel.searchTab).toBe('general');
+  }));
+
   it('hands the map tabs to the favorites panel too', fakeAsync(() => {
     const host = TestBed.createComponent(TabsHostComponent);
     host.detectChanges();
@@ -99,20 +118,5 @@ describe('DynamicDataLayersComponent', () => {
       ?.instance as FavoriteDataLayersComponent;
     expect(panel instanceof FavoriteDataLayersComponent).toBeTrue();
     expect(panel.belowSearch).toBe(host.componentInstance.tabs);
-  }));
-
-  it('builds the uploaded panel from the favorites one', fakeAsync(() => {
-    component.mapId = 1;
-    component.panel = 'uploaded';
-
-    fixture.detectChanges();
-    tick();
-
-    const panel = component['componentRef']
-      ?.instance as FavoriteDataLayersComponent;
-    expect(panel instanceof FavoriteDataLayersComponent).toBeTrue();
-    let placeholder = '';
-    panel.copy$.subscribe((copy) => (placeholder = copy.searchPlaceholder));
-    expect(placeholder).toBe('Search in uploaded');
   }));
 });

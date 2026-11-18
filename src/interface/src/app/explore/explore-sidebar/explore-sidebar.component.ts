@@ -18,11 +18,12 @@ import { SidebarTabs } from '@explore/sidebar-tabs';
 import { DataLayersRegistryService } from '@explore/data-layers-registry';
 import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { UploadDataModalComponent } from '@data-layers/upload-data-modal/upload-data-modal.component';
 import { FeatureService } from '@features/feature.service';
 import { FeaturesModule } from '@features/features.module';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import {
@@ -35,7 +36,6 @@ import {
   asapScheduler,
   catchError,
   combineLatest,
-  filter,
   map,
   observeOn,
   of,
@@ -60,7 +60,6 @@ const PANEL_BY_RAIL_ITEM: Record<string, SidebarTabs> = {
     BaseLayersComponent,
     FeaturesModule,
     MapTabsComponent,
-    MatDialogModule,
     MatIconModule,
     MatSnackBarModule,
     MatTooltipModule,
@@ -109,7 +108,20 @@ export class ExploreSidebarComponent {
       )
     : of(false);
 
-  openUpload() {
+  openUpload(trigger: HTMLElement) {
+    // The dialog aria-hides the page before it takes focus
+    trigger.blur();
+    if (this.featureService.isFeatureEnabled('FRONTEND_UPLOAD')) {
+      this.uploadInApp(trigger);
+    } else {
+      this.dialog
+        .open(UploadDataModalComponent, { restoreFocus: false })
+        .afterClosed()
+        .subscribe(() => trigger.focus());
+    }
+  }
+
+  private uploadInApp(trigger: HTMLElement) {
     this.workspaceState.currentWorkspace$
       .pipe(
         take(1),
@@ -121,15 +133,17 @@ export class ExploreSidebarComponent {
               WorkspaceDataLayer
             >(UploadDataLayerComponent, {
               data: { workspaceId: workspace.id },
+              restoreFocus: false,
             })
             .afterClosed()
-            .pipe(
-              filter((layer): layer is WorkspaceDataLayer => !!layer),
-              map((layer) => ({ layer, workspaceId: workspace.id }))
-            )
+            .pipe(map((layer) => ({ layer, workspaceId: workspace.id })))
         )
       )
       .subscribe(({ layer, workspaceId }) => {
+        if (!layer) {
+          trigger.focus();
+          return;
+        }
         this.router.navigate(['/workspace', workspaceId, 'datalayers']);
         this.snackBar.open(
           `"${layer.name}" uploaded. We'll let you know when it's ready.`,
@@ -143,6 +157,14 @@ export class ExploreSidebarComponent {
     this.dataLayersState$
       .pipe(take(1))
       .subscribe((state) => state?.goBackToSearchResults());
+  }
+
+  // Panels that drill into a dataset or category, and need a way back out
+  get browsesLayers(): boolean {
+    return (
+      this.selectedTab === SidebarTabs.DATA_LAYERS ||
+      this.selectedTab === SidebarTabs.UPLOADED
+    );
   }
 
   @HostBinding('class.expanded') get hostExpanded() {

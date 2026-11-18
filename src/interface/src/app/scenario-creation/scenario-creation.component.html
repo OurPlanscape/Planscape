@@ -32,7 +32,7 @@
       [disabled]="(loading$ | async) || false">
       <app-scenario-summary
         sharedHeading
-        *ngIf="showMap$ | async"
+        *ngIf="showSharedSummary$ | async"
         [standSize]="(standSize$ | async) || null"
         [treatmentGoal]="(treatmentGoalName$ | async) || ''"
         [priorityObjectives]="
@@ -51,7 +51,15 @@
           <app-sub-unit-selector></app-sub-unit-selector>
         </sg-step>
         <sg-step>
-          <app-treatment-goal-step></app-treatment-goal-step>
+          <app-treatment-goal-step
+            *appFeatureFlag="
+              'IMPROVED_TREATMENT_GOAL';
+              hide: true
+            "></app-treatment-goal-step>
+          <app-improved-treatment-goal-step
+            *appFeatureFlag="
+              'IMPROVED_TREATMENT_GOAL'
+            "></app-improved-treatment-goal-step>
         </sg-step>
         <sg-step>
           <app-include-areas-selector></app-include-areas-selector>

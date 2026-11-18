@@ -18,6 +18,8 @@ import { DataLayersRegistryService } from '../data-layers-registry';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { NgIf } from '@angular/common';
 
+export type DataLayersPanel = 'browse' | 'favorites' | 'uploaded';
+
 @Component({
   selector: 'app-dynamic-data-layers',
   standalone: true,
@@ -30,7 +32,7 @@ export class DynamicDataLayersComponent
   @Input({ required: true }) mapId!: number;
 
   //Which data layers panel to build for this map
-  @Input() panel: 'browse' | 'favorites' | 'uploaded' = 'browse';
+  @Input() panel: DataLayersPanel = 'browse';
   @Input() showSelectionHeader = true;
   @Input() belowSearch?: TemplateRef<unknown>;
 
@@ -54,20 +56,23 @@ export class DynamicDataLayersComponent
       parent: this.parentInjector,
     });
 
-    if (this.panel === 'favorites' || this.panel === 'uploaded') {
-      const panel = this.outlet.createComponent(FavoriteDataLayersComponent, {
-        injector: customInjector,
-      });
-      panel.setInput('source', this.panel);
-      this.componentRef = panel;
+    if (this.panel === 'favorites') {
+      this.componentRef = this.outlet.createComponent(
+        FavoriteDataLayersComponent,
+        { injector: customInjector }
+      );
     } else {
       this.componentRef = this.outlet.createComponent(DataLayersComponent, {
         injector: customInjector,
       });
-      // only the browse panel takes this one
+      // only the browse panel takes these
       this.componentRef.setInput(
         'showSelectionHeader',
         this.showSelectionHeader
+      );
+      this.componentRef.setInput(
+        'searchTab',
+        this.panel === 'uploaded' ? 'uploaded' : 'general'
       );
     }
     // both panels are a map's own so both show the tabs that pick the map
