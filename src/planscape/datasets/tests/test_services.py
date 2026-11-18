@@ -638,6 +638,7 @@ class TestSearch(TestCase):
 
         self.assertEqual(results, {})
 
+    @override_settings(FIND_ANYTHING_METADATA=True)
     def test_metadata_values_return_datalayers(self):
         dataset = DatasetFactory(visibility="PUBLIC")
         abstract_layer = DataLayerFactory.create(
@@ -686,6 +687,28 @@ class TestSearch(TestCase):
         self.assertNotIn(no_match_layer.name, names)
         self.assertNotIn(null_metadata_layer.name, names)
 
+    @override_settings(FIND_ANYTHING_METADATA=False)
+    def test_metadata_is_not_searched_when_setting_disabled(self):
+        dataset = DatasetFactory(visibility="PUBLIC")
+        DataLayerFactory.create(
+            dataset=dataset,
+            name="Layer A",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+            metadata={"identification": {"abstract": "Modeled bitterbrush cover"}},
+        )
+        name_match = DataLayerFactory.create(
+            dataset=dataset,
+            name="Bitterbrush height",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+        )
+
+        results = find_anything("bitterbrush", type=DataLayerType.RASTER)
+
+        self.assertEqual(set(results), {f"DATALAYER:{name_match.pk}"})
+
+    @override_settings(FIND_ANYTHING_METADATA=True)
     def test_metadata_search_ignores_keys_and_modules(self):
         dataset = DatasetFactory(visibility="PUBLIC")
         DataLayerFactory.create(
@@ -702,6 +725,7 @@ class TestSearch(TestCase):
         self.assertEqual(find_anything("abstract", type=DataLayerType.RASTER), {})
         self.assertEqual(find_anything("pinyon", type=DataLayerType.RASTER), {})
 
+    @override_settings(FIND_ANYTHING_METADATA=True)
     def test_metadata_search_escapes_like_wildcards(self):
         dataset = DatasetFactory(visibility="PUBLIC")
         DataLayerFactory.create(
@@ -714,7 +738,7 @@ class TestSearch(TestCase):
 
         self.assertEqual(find_anything("can%height", type=DataLayerType.RASTER), {})
 
-    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
+    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"], FIND_ANYTHING_METADATA=True)
     def test_metadata_and_simple_category_respect_geometry(self):
         unit_square = GEOSGeometry(
             "MULTIPOLYGON (((0 0, 1 0, 1 1, 0 1, 0 0)))", srid=4269
@@ -753,7 +777,7 @@ class TestSearch(TestCase):
         self.assertIn(inside.name, names)
         self.assertNotIn(outside.name, names)
 
-    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
+    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"], FIND_ANYTHING_METADATA=True)
     def test_metadata_and_simple_category_respect_access(self):
         user = UserFactory.create()
         public_dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
@@ -888,6 +912,7 @@ class TestSearchFavorites(TestCase):
         self.assertNotIn(f"SIMPLE_CATEGORY:{self.favorite_category.pk}", results)
         self.assertNotIn(f"SIMPLE_CATEGORY:{self.other_category.pk}", results)
 
+    @override_settings(FIND_ANYTHING_METADATA=True)
     def test_metadata_match_restricted_to_favorites(self):
         metadata = {"identification": {"abstract": "sequoia groves"}}
         favorite = DataLayerFactory.create(
