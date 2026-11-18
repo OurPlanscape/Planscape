@@ -11,7 +11,7 @@ RUN npm ci && npm run postinstall
 COPY src/interface/ ./
 RUN npm run build -- --configuration docker --output-path=dist/out
 
-FROM nginx:1.27-alpine
+FROM nginx:1.30-alpine
 
 COPY docker/frontend/nginx.conf /etc/nginx/templates/default.conf.template
 COPY docker/frontend/entrypoint.sh /entrypoint.sh
