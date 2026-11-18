@@ -4,9 +4,71 @@ import {
   getProjectAreaLabelsFromFeatures,
   CustomChartDataset,
   sortByTypeAndName,
+  usageTypeLayerName,
 } from './chart-helper';
+import { UsageType } from '@types';
 
 describe('Chart helpers', () => {
+  describe('usageTypeLayerName', () => {
+    it('reads the name off the layer the scenario sends', () => {
+      const usage = {
+        usage_type: 'PRIORITY',
+        datalayer: { id: 7, name: 'Fire Severity' },
+      } as UsageType;
+
+      expect(usageTypeLayerName(usage)).toBe('Fire Severity');
+    });
+
+    it('reads a payload that still sends the name on its own', () => {
+      const usage = {
+        usage_type: 'PRIORITY',
+        datalayer: 'Fire Severity',
+      } as UsageType;
+
+      expect(usageTypeLayerName(usage)).toBe('Fire Severity');
+    });
+
+    it('reads no name rather than throwing on a layer that is missing', () => {
+      const usage = { usage_type: 'PRIORITY' } as unknown as UsageType;
+
+      expect(usageTypeLayerName(usage)).toBe('');
+    });
+  });
+
+  describe('getChartDatasetsFromFeatures', () => {
+    const features = [
+      { properties: { attainment: { 'Fire Severity': 1, Carbon: 2 } } },
+    ] as any;
+
+    function usageTypeOf(datasets: CustomChartDataset[], metric: string) {
+      return datasets.find((d) => d.extraInfo === metric)?.usageType;
+    }
+
+    it('tags each metric with the usage type of its layer', () => {
+      const datasets = getChartDatasetsFromFeatures(features, [
+        {
+          usage_type: 'PRIORITY',
+          datalayer: { id: 7, name: 'Fire Severity' },
+        },
+        {
+          usage_type: 'SECONDARY_METRIC',
+          datalayer: { id: 8, name: 'Carbon' },
+        },
+      ] as UsageType[]);
+
+      expect(usageTypeOf(datasets, 'Fire Severity')).toBe('PRIORITY');
+      expect(usageTypeOf(datasets, 'Carbon')).toBe('SECONDARY_METRIC');
+    });
+
+    it('leaves a metric untagged when no layer answers for it', () => {
+      const datasets = getChartDatasetsFromFeatures(features, [
+        { usage_type: 'PRIORITY', datalayer: { id: 9, name: 'Water' } },
+      ] as UsageType[]);
+
+      expect(usageTypeOf(datasets, 'Fire Severity')).toBe('');
+    });
+  });
+
   describe('convertTo2DecimalsNumbers', () => {
     it('should round a number to 2 decimals', () => {
       expect(convertTo2DecimalsNumbers(3.14159)).toBe(3.14);

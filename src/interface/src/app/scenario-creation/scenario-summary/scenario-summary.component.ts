@@ -2,7 +2,7 @@ import { NgIf } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { SectionComponent } from '@styleguide';
 import { STAND_OPTIONS, STAND_SIZE } from '@plan/plan-helpers';
-import { PLANNING_APPROACH } from '@types';
+import { PLANNING_APPROACH, PLANNING_APPROACH_LABELS } from '@types';
 
 @Component({
   selector: 'app-scenario-summary',
@@ -21,4 +21,6 @@ export class ScenarioSummaryComponent {
   @Input() standSize: STAND_SIZE | null = null;
 
   standSizeOptions = STAND_OPTIONS;
+
+  planningApproachLabels = PLANNING_APPROACH_LABELS;
 }

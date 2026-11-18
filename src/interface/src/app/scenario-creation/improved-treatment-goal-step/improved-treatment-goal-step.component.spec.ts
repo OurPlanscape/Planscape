@@ -1,16 +1,36 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { MockComponent, MockProvider } from 'ng-mocks';
+import { BehaviorSubject } from 'rxjs';
 import { StepDirective } from '@styleguide';
+import { ScenarioV3Config } from '@types';
 
 import { ImprovedTreatmentGoalStepComponent } from './improved-treatment-goal-step.component';
+import { NewScenarioState } from '../new-scenario.state';
+import { ScenarioSummaryComponent } from '../scenario-summary/scenario-summary.component';
 
 describe('ImprovedTreatmentGoalStepComponent', () => {
   let component: ImprovedTreatmentGoalStepComponent;
   let fixture: ComponentFixture<ImprovedTreatmentGoalStepComponent>;
+  let scenarioConfig$: BehaviorSubject<Partial<ScenarioV3Config>>;
+
+  function stepOverview() {
+    return fixture.debugElement.query(By.css('app-scenario-summary'))
+      .componentInstance as ScenarioSummaryComponent;
+  }
 
   beforeEach(async () => {
+    scenarioConfig$ = new BehaviorSubject<Partial<ScenarioV3Config>>({});
+
     await TestBed.configureTestingModule({
       imports: [ImprovedTreatmentGoalStepComponent],
-    }).compileComponents();
+      providers: [MockProvider(NewScenarioState, { scenarioConfig$ })],
+    })
+      .overrideComponent(ImprovedTreatmentGoalStepComponent, {
+        remove: { imports: [ScenarioSummaryComponent] },
+        add: { imports: [MockComponent(ScenarioSummaryComponent)] },
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(ImprovedTreatmentGoalStepComponent);
     component = fixture.componentInstance;
@@ -34,5 +54,28 @@ describe('ImprovedTreatmentGoalStepComponent', () => {
 
     expect(component.form.valid).toBeTrue();
     expect(component.getData()).toEqual({ treatment_goal: 7 });
+  });
+
+  describe('the step overview', () => {
+    it('shows what the steps before this one settled', () => {
+      scenarioConfig$.next({
+        planning_approach: 'PRIORITIZE_SUB_UNITS',
+        stand_size: 'LARGE',
+      });
+      fixture.detectChanges();
+
+      expect(stepOverview().planningApproach).toBe('PRIORITIZE_SUB_UNITS');
+      expect(stepOverview().standSize).toBe('LARGE');
+    });
+
+    it('says nothing while the draft is still empty', () => {
+      expect(stepOverview().planningApproach).toBeUndefined();
+      expect(stepOverview().standSize).toBeNull();
+    });
+
+    it('leaves out the rows this step has not reached yet', () => {
+      expect(stepOverview().treatmentGoal).toBeUndefined();
+      expect(stepOverview().priorityObjectives).toBeUndefined();
+    });
   });
 });
