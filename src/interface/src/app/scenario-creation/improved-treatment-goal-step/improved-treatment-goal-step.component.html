@@ -3,4 +3,7 @@
   [planningApproach]="(planningApproach$ | async) ?? undefined"
   [standSize]="(standSize$ | async) ?? null"></app-scenario-summary>
 
-<div class="placeholder">Treatment goal selection</div>
+<app-improved-treatment-goal-selector
+  [control]="
+    form.controls.treatment_goal
+  "></app-improved-treatment-goal-selector>
