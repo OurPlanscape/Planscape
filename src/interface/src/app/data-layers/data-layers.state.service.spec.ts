@@ -283,6 +283,100 @@ describe('DataLayersStateService', () => {
     });
   });
 
+  describe('the uploaded tab', () => {
+    const dataSet = {
+      id: 10,
+      name: 'Dataset',
+      organization: layer.organization,
+    };
+
+    beforeEach(() => {
+      dataLayersService.search.and.returnValue(
+        of({ count: 0, results: [] } as unknown as Pagination<any>)
+      );
+      currentWorkspaceId = 7;
+    });
+
+    it('browses datasets instead of categories', () => {
+      createService('DATA_ORGANIZATION');
+      service.setSearchTab('uploaded');
+
+      expect(service.browseByCategory()).toBeFalse();
+    });
+
+    it('asks the dataset for its uploads in the workspace', () => {
+      createService();
+      service.setSearchTab('uploaded');
+      service.selectDataSet(dataSet);
+
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        undefined,
+        7,
+        'uploaded'
+      );
+    });
+
+    it('searches the uploads grouped by dataset', () => {
+      createService('DATA_ORGANIZATION');
+      service.searchResults$.subscribe();
+      service.setSearchTab('uploaded');
+      service.search('fire');
+
+      expect(dataLayersService.search).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          term: 'fire',
+          workspaceId: 7,
+          searchTab: 'uploaded',
+          groupBy: 'dataset',
+        })
+      );
+    });
+
+    it('opens the dataset of a layer, even if it has categories', () => {
+      createService('DATA_ORGANIZATION');
+      service.setSearchTab('uploaded');
+      service.goToDataLayerCategory(layer);
+
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        undefined,
+        7,
+        'uploaded'
+      );
+      expect(dataLayersService.listCategoryDataLayers).not.toHaveBeenCalled();
+    });
+
+    it('starts over when switching tabs', () => {
+      createService();
+      let term: string | undefined;
+      service.searchTerm$.subscribe((t) => (term = t));
+      let selection: unknown;
+      service.selection$.subscribe((s) => (selection = s));
+      service.selectDataSet(dataSet);
+      service.search('fire');
+
+      service.setSearchTab('uploaded');
+
+      expect(term).toBe('');
+      expect(selection).toBeNull();
+    });
+
+    it('keeps browsing when the tab is set again', () => {
+      createService();
+      service.setSearchTab('uploaded');
+      let selection: unknown;
+      service.selection$.subscribe((s) => (selection = s));
+      service.selectDataSet(dataSet);
+
+      service.setSearchTab('uploaded');
+
+      expect(selection).not.toBeNull();
+    });
+  });
+
   describe('goToDataLayerCategory', () => {
     it("opens the layer's dataset with DATA_ORGANIZATION off", () => {
       createService();

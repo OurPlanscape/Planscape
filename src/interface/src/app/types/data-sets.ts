@@ -161,7 +161,13 @@ export interface SearchQuery {
   module?: string;
   geometry?: Geometry;
   workspaceId?: number | null;
+  searchTab?: SearchTab;
+  groupBy?: SearchGroupBy;
 }
+
+export type SearchTab = 'general' | 'favorites' | 'uploaded';
+
+export type SearchGroupBy = 'simple_category' | 'dataset';
 
 export interface DataSetSearchResult extends SearchResult {
   type: 'DATASET';
