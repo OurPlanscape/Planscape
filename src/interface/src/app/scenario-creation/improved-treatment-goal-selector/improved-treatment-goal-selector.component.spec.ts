@@ -6,6 +6,8 @@ import { ActivatedRoute } from '@angular/router';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject, of } from 'rxjs';
 import { SearchBarComponent } from '@styleguide';
+import { ExpanderItemComponent } from '@styleguide/expander-item/expander-item.component';
+import { DataLayersStateService } from '@data-layers/data-layers.state.service';
 import { TreatmentGoalsService } from '@services';
 import { ScenarioGoal, ScenarioV3Config } from '@types';
 
@@ -55,6 +57,7 @@ describe('ImprovedTreatmentGoalSelectorComponent', () => {
           getTreatmentGoals: () => of(goals),
         }),
         MockProvider(NewScenarioState, { scenarioConfig$ }),
+        MockProvider(DataLayersStateService, { viewedDataLayer$: of(null) }),
         MockProvider(ActivatedRoute, {
           parent: { snapshot: { data: { planId: 24 } } } as any,
         }),
@@ -122,6 +125,17 @@ describe('ImprovedTreatmentGoalSelectorComponent', () => {
       HIGH_INTENSITY_FIRE.name,
       WILDFIRE_HAZARD.name,
     ]);
+  });
+
+  it('offers the goal details behind an icon that stays open while used', () => {
+    openCategory('Fire Dynamics');
+
+    const item = fixture.debugElement.query(By.directive(ExpanderItemComponent))
+      .componentInstance as ExpanderItemComponent;
+
+    expect(item.showTooltip).toBeTrue();
+    expect(item.tooltipInteractive).toBeTrue();
+    expect(item.tooltipTemplate).toBeTruthy();
   });
 
   describe('picking a goal', () => {

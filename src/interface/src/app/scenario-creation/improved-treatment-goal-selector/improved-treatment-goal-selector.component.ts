@@ -33,6 +33,7 @@ import { TreatmentGoalsService } from '@services';
 import { getGroupedGoals } from '@scenario/scenario-helper';
 import { ScenarioGoal } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
+import { TreatmentGoalDetailsComponent } from '../treatment-goal-details/treatment-goal-details.component';
 
 interface GoalResults {
   categories: Record<string, ScenarioGoal[]>;
@@ -57,6 +58,7 @@ interface GoalResults {
     NoResultsComponent,
     SearchBarComponent,
     SectionComponent,
+    TreatmentGoalDetailsComponent,
   ],
   templateUrl: './improved-treatment-goal-selector.component.html',
   styleUrl: './improved-treatment-goal-selector.component.scss',
