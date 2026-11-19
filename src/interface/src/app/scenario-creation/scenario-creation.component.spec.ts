@@ -4,8 +4,16 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxMaskModule } from 'ngx-mask';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
+import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import { By } from '@angular/platform-browser';
-import { BehaviorSubject, EMPTY, Observable, of, Subject } from 'rxjs';
+import {
+  BehaviorSubject,
+  EMPTY,
+  firstValueFrom,
+  Observable,
+  of,
+  Subject,
+} from 'rxjs';
 import { MockComponents, MockModule, MockProvider } from 'ng-mocks';
 
 import { ScenarioCreationComponent } from './scenario-creation.component';
@@ -16,7 +24,7 @@ import { ScenarioService } from '@services';
 import { ScenarioState } from '@scenario/scenario.state';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { NewScenarioState } from './new-scenario.state';
-import { AvailableStands, Scenario, ScenarioV3Config } from '@types';
+import { AvailableStands, DataLayer, Scenario, ScenarioV3Config } from '@types';
 import {
   ScenarioStepConfig,
   SUB_UNITS_STEP,
@@ -168,6 +176,66 @@ describe('ScenarioCreationComponent', () => {
       await setUpOnStep({ label: TREATMENT_GOAL_STEP_LABEL, hasMap: true });
 
       expect(isShown()).toBeTrue();
+    });
+  });
+
+  describe('the layer controls the shell puts around the map', () => {
+    const drawnLayer = { id: 3, name: 'Fire Severity' } as DataLayer;
+
+    let currentStep$: BehaviorSubject<ScenarioStepConfig | null>;
+
+    async function setUpOnStep(
+      step: Partial<ScenarioStepConfig>,
+      flags: string[] = [],
+      layer: DataLayer | null = drawnLayer
+    ) {
+      currentStep$ = new BehaviorSubject<ScenarioStepConfig | null>(null);
+      await setUpComponent({ flags, currentStep$ });
+      currentStep$.next(step as ScenarioStepConfig);
+      if (layer) {
+        fixture.debugElement.injector
+          .get(DataLayersStateService)
+          .selectDataLayer(layer);
+      }
+      fixture.detectChanges();
+    }
+
+    function hasClearMapButton() {
+      return !!fixture.debugElement.query(By.css('.clear-btn'));
+    }
+
+    function mapShowsLayerName() {
+      return fixture.debugElement.query(By.directive(ScenarioMapComponent))
+        .componentInstance.showDataLayerName;
+    }
+
+    it('offers Clear Map and the layer name while a layer is drawn', async () => {
+      await setUpOnStep({ label: 'Include Areas', hasMap: true });
+
+      expect(hasClearMapButton()).toBeTrue();
+      expect(mapShowsLayerName()).toBeTrue();
+    });
+
+    it('leaves both out of the step that has its own layer toggles', async () => {
+      await setUpOnStep({ label: TREATMENT_GOAL_STEP_LABEL, hasMap: true }, [
+        'IMPROVED_TREATMENT_GOAL',
+      ]);
+
+      expect(hasClearMapButton()).toBeFalse();
+      expect(mapShowsLayerName()).toBeFalse();
+    });
+
+    it('keeps both on the treatment goal step while the flag is off', async () => {
+      await setUpOnStep({ label: TREATMENT_GOAL_STEP_LABEL, hasMap: true });
+
+      expect(hasClearMapButton()).toBeTrue();
+      expect(mapShowsLayerName()).toBeTrue();
+    });
+
+    it('offers no Clear Map when no layer is drawn', async () => {
+      await setUpOnStep({ label: 'Include Areas', hasMap: true }, [], null);
+
+      expect(hasClearMapButton()).toBeFalse();
     });
   });
 
@@ -349,6 +417,64 @@ describe('ScenarioCreationComponent', () => {
           configurePresetScenario();
 
           expect(treatmentGoalStep()?.hasMap).toBeFalse();
+        });
+
+        describe('the layer previewed from its tooltip', () => {
+          const previewed = { id: 7, name: 'Wildfire Hazard Potential' };
+
+          function dataLayersState() {
+            return fixture.debugElement.injector.get(DataLayersStateService);
+          }
+
+          function cdkIndexOf(label: string) {
+            return (
+              component.steps.findIndex((step) => step.label === label) + 1
+            );
+          }
+
+          function moveBetween(from: number, to: number) {
+            component.handleStepChangeEvent({
+              previouslySelectedIndex: from,
+              selectedIndex: to,
+            } as StepperSelectionEvent);
+          }
+
+          async function viewedLayer() {
+            return firstValueFrom(dataLayersState().viewedDataLayer$);
+          }
+
+          beforeEach(async () => {
+            await setUpWithFlag();
+            configurePresetScenario();
+            dataLayersState().selectDataLayer(previewed as DataLayer);
+          });
+
+          it('is wiped off the map when the step is left', async () => {
+            moveBetween(
+              cdkIndexOf(TREATMENT_GOAL_STEP_LABEL),
+              cdkIndexOf('Include Areas')
+            );
+
+            expect(await viewedLayer()).toBeNull();
+          });
+
+          it('is wiped off the map when the step is reached', async () => {
+            moveBetween(
+              cdkIndexOf('Include Areas'),
+              cdkIndexOf(TREATMENT_GOAL_STEP_LABEL)
+            );
+
+            expect(await viewedLayer()).toBeNull();
+          });
+
+          it('leaves the layers of the other steps alone', async () => {
+            moveBetween(
+              cdkIndexOf('Include Areas'),
+              cdkIndexOf('Exclude Areas')
+            );
+
+            expect(await viewedLayer()).toBe(previewed as DataLayer);
+          });
         });
 
         it('leaves every other step as it was', async () => {

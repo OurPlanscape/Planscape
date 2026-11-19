@@ -1,10 +1,10 @@
 import logging
 
 from core.serializers import MultiSerializerMixin
-from datasets.models import DataLayer
+from datasets.models import DataLayer, hydrate_category_ancestors
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -74,6 +74,7 @@ from planning.models import (
     ScenarioType,
     ScenarioVersion,
     TreatmentGoal,
+    TreatmentGoalUsesDataLayer,
 )
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
@@ -1253,5 +1254,28 @@ class TreatmentGoalViewSet(
 
     def get_queryset(self):
         user = self.request.user if self.request else None
-        qs = TreatmentGoal.objects.accessible_by(user)
+        usages_qs = TreatmentGoalUsesDataLayer.objects.select_related(
+            "datalayer",
+            "datalayer__category",
+        )
+        qs = (
+            TreatmentGoal.objects.accessible_by(user)
+            .select_related("category")
+            .prefetch_related(
+                Prefetch("datalayer_usages", queryset=usages_qs),
+                "datalayer_usages__datalayer__styles",
+            )
+        )
         return qs
+
+    def get_serializer(self, *args, **kwargs):
+        if args and feature_enabled("IMPROVED_TREATMENT_GOAL"):
+            instance = args[0]
+            goals = list(instance) if kwargs.get("many") else [instance]
+            args = (goals if kwargs.get("many") else instance, *args[1:])
+            hydrate_category_ancestors(
+                usage.datalayer.category
+                for goal in goals
+                for usage in goal.datalayer_usages.all()
+            )
+        return super().get_serializer(*args, **kwargs)

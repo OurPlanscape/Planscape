@@ -6,6 +6,9 @@
   [checked]="checked"
   (click)="optionSelected.emit(value)" />
 <label [for]="'layer-' + value">{{ label }}</label>
-<sg-popover *ngIf="showTooltip">
+<sg-popover
+  *ngIf="showTooltip"
+  [modal]="tooltipInteractive"
+  [contentTemplate]="tooltipTemplate">
   <ng-content></ng-content>
 </sg-popover>

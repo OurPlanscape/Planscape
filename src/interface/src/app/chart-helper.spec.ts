@@ -6,14 +6,18 @@ import {
   sortByTypeAndName,
   usageTypeLayerName,
 } from './chart-helper';
-import { UsageType } from '@types';
+import { DataLayer, UsageType } from '@types';
 
 describe('Chart helpers', () => {
+  function layer(id: number, name: string) {
+    return { id, name } as DataLayer;
+  }
+
   describe('usageTypeLayerName', () => {
     it('reads the name off the layer the scenario sends', () => {
       const usage = {
         usage_type: 'PRIORITY',
-        datalayer: { id: 7, name: 'Fire Severity' },
+        datalayer: layer(7, 'Fire Severity'),
       } as UsageType;
 
       expect(usageTypeLayerName(usage)).toBe('Fire Severity');
@@ -48,11 +52,11 @@ describe('Chart helpers', () => {
       const datasets = getChartDatasetsFromFeatures(features, [
         {
           usage_type: 'PRIORITY',
-          datalayer: { id: 7, name: 'Fire Severity' },
+          datalayer: layer(7, 'Fire Severity'),
         },
         {
           usage_type: 'SECONDARY_METRIC',
-          datalayer: { id: 8, name: 'Carbon' },
+          datalayer: layer(8, 'Carbon'),
         },
       ] as UsageType[]);
 
@@ -62,7 +66,7 @@ describe('Chart helpers', () => {
 
     it('leaves a metric untagged when no layer answers for it', () => {
       const datasets = getChartDatasetsFromFeatures(features, [
-        { usage_type: 'PRIORITY', datalayer: { id: 9, name: 'Water' } },
+        { usage_type: 'PRIORITY', datalayer: layer(9, 'Water') },
       ] as UsageType[]);
 
       expect(usageTypeOf(datasets, 'Fire Severity')).toBe('');

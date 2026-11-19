@@ -8,6 +8,7 @@ import { ScenarioV3Config } from '@types';
 import { ImprovedTreatmentGoalStepComponent } from './improved-treatment-goal-step.component';
 import { NewScenarioState } from '../new-scenario.state';
 import { ScenarioSummaryComponent } from '../scenario-summary/scenario-summary.component';
+import { ImprovedTreatmentGoalSelectorComponent } from '../improved-treatment-goal-selector/improved-treatment-goal-selector.component';
 
 describe('ImprovedTreatmentGoalStepComponent', () => {
   let component: ImprovedTreatmentGoalStepComponent;
@@ -27,8 +28,18 @@ describe('ImprovedTreatmentGoalStepComponent', () => {
       providers: [MockProvider(NewScenarioState, { scenarioConfig$ })],
     })
       .overrideComponent(ImprovedTreatmentGoalStepComponent, {
-        remove: { imports: [ScenarioSummaryComponent] },
-        add: { imports: [MockComponent(ScenarioSummaryComponent)] },
+        remove: {
+          imports: [
+            ImprovedTreatmentGoalSelectorComponent,
+            ScenarioSummaryComponent,
+          ],
+        },
+        add: {
+          imports: [
+            MockComponent(ImprovedTreatmentGoalSelectorComponent),
+            MockComponent(ScenarioSummaryComponent),
+          ],
+        },
       })
       .compileComponents();
 
@@ -54,6 +65,14 @@ describe('ImprovedTreatmentGoalStepComponent', () => {
 
     expect(component.form.valid).toBeTrue();
     expect(component.getData()).toEqual({ treatment_goal: 7 });
+  });
+
+  it('hands the step control to the selector', () => {
+    const selector = fixture.debugElement.query(
+      By.css('app-improved-treatment-goal-selector')
+    ).componentInstance as ImprovedTreatmentGoalSelectorComponent;
+
+    expect(selector.control).toBe(component.form.controls.treatment_goal);
   });
 
   describe('the step overview', () => {

@@ -6,11 +6,16 @@ import { StepDirective } from '@styleguide';
 import { ScenarioDraftConfiguration } from '@types';
 import { NewScenarioState } from '../new-scenario.state';
 import { ScenarioSummaryComponent } from '../scenario-summary/scenario-summary.component';
+import { ImprovedTreatmentGoalSelectorComponent } from '../improved-treatment-goal-selector/improved-treatment-goal-selector.component';
 
 @Component({
   selector: 'app-improved-treatment-goal-step',
   standalone: true,
-  imports: [AsyncPipe, ScenarioSummaryComponent],
+  imports: [
+    AsyncPipe,
+    ImprovedTreatmentGoalSelectorComponent,
+    ScenarioSummaryComponent,
+  ],
   templateUrl: './improved-treatment-goal-step.component.html',
   styleUrl: './improved-treatment-goal-step.component.scss',
   providers: [

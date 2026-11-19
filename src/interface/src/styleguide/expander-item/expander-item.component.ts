@@ -1,4 +1,10 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  TemplateRef,
+} from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { NgIf, NgSwitchCase } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -45,6 +51,8 @@ export class ExpanderItemComponent {
    * Whether it shows the tooltip icon
    */
   @Input() showTooltip = false;
+  @Input() tooltipTemplate: TemplateRef<unknown> | null = null;
+  @Input() tooltipInteractive = false;
   /**
    * Emitted when the user changes the selected option
    */
