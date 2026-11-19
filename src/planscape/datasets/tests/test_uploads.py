@@ -415,6 +415,19 @@ class ProcessUploadedDataLayerTest(TestCase):
         ]
         self.assertEqual(statuses, ["PROCESSING", "READY"])
 
+    def test_status_changes_name_the_uploader(
+        self, size, download, upload, gcs_hash, delete_file, post_process
+    ):
+        with mock.patch("datasets.events.publish_workspace_event") as publish:
+            process_uploaded_datalayer(self.datalayer.pk)
+
+        uploaders = {
+            call.kwargs["data"]["created_by"]
+            for call in publish.call_args_list
+            if call.args[1] == "datasets.datalayer.status_changed"
+        }
+        self.assertEqual(uploaders, {self.datalayer.created_by_id})
+
 
 class ReadPathsTest(APITestCase):
     def setUp(self):

@@ -62,6 +62,7 @@ def serialize_upload_status(datalayer: DataLayer) -> dict[str, Any]:
         "name": datalayer.name,
         "status": datalayer.status,
         "failure_reason": datalayer.failure_reason,
+        "created_by": datalayer.created_by_id,
     }
 
 

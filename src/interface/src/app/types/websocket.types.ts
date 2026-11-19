@@ -1,3 +1,5 @@
+import { WorkspaceDataLayerStatus } from './data-sets';
+
 export type WebSocketStatus =
   | 'disconnected'
   | 'connecting'
@@ -120,4 +122,12 @@ export const WORKSPACE_DELETED_EVENT = 'workspace.workspace.deleted';
 // Data of workspace.workspace.deleted
 export interface WorkspaceDeletedPayload {
   workspace_id: number;
+}
+
+// Data of the datasets.datalayer.* upload events
+export interface DataLayerUploadPayload {
+  name: string;
+  status: WorkspaceDataLayerStatus;
+  failure_reason: string | null;
+  created_by: number;
 }
