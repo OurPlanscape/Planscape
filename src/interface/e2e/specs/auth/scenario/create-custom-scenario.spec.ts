@@ -40,15 +40,24 @@ test('user can create a Custom Scenario', { tag: ['@smoke'] }, async ({ page, wo
   await page.getByRole('button', { name: 'Save & Continue' }).click();
 
   // Step 2. Select Co-Benefits
+  await expect(page.getByRole('region', { name: 'SELECT CO-BENEFITS (OPTIONAL' })).toBeVisible();
+  await page.getByRole('combobox', { name: 'Search in data layers' }).click();
   await page.getByRole('combobox', { name: 'Search in data layers' }).click();
   await page.getByRole('combobox', { name: 'Search in data layers' }).fill('land');
   await page.locator('div:nth-child(13) > .mat-mdc-tooltip-trigger').click();
   await page.locator('div:nth-child(13) > .mat-mdc-tooltip-trigger').click();
   await page.locator('#mat-mdc-checkbox-126-input').check();
+  await expect(page.getByRole('button', { name: 'Save & Continue' })).toBeVisible();
   await page.getByRole('button', { name: 'Save & Continue' }).click();
 
-  // Step 3. Select Areas to Exclude
-  await page.getByRole('button').nth(3).click();
+  // Step: Select Areas to Include
+    await expect(page.getByRole('region', { name: 'Select Areas To Include * 0' })).toBeVisible();
+  await page.getByRole('button', { name: 'Select All' }).click();
+  await page.getByRole('button', { name: 'Save & Continue' }).click();
+
+  // Step. Select Areas to Exclude
+  await expect(page.getByRole('region', { name: 'Select Areas To Exclude (' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save & Continue' })).toBeVisible();
   await page.getByRole('button', { name: 'Save & Continue' }).click({ timeout: 60000 });
 
   // Step 4. Stand Level Constraints (slope, roads)
