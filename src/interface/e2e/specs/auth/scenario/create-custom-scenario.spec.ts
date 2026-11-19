@@ -34,46 +34,44 @@ test('user can create a Custom Scenario', { tag: ['@smoke'] }, async ({ page, wo
 
 
   // Step 1. Select Priority Objectives
-  await page.locator('app-data-set').filter({ hasText: 'California Landscape' }).click();
-  await page.locator('.icon').first().click();
-  await page.locator('.data-layer-cat > .mat-nested-tree-node > .mat-tree-node > .icon').click();
-  await page.getByRole('button').nth(4).click();
-  await expect(page.locator('#mat-mdc-chip-0').getByText('Potential Avoided Smoke')).toBeVisible();
-  await page.locator('#mat-mdc-chip-0').getByText('Potential Avoided Smoke').click();
-
-  await page.getByText('Prioritize Areas with High Expected Tree Volume Loss from Wildfire').click();
+  await page.getByRole('combobox', { name: 'Search in data layers' }).click();
+  await page.getByRole('combobox', { name: 'Search in data layers' }).fill('land');
+  await page.locator('#mat-mdc-checkbox-47-input').check();
   await page.getByRole('button', { name: 'Save & Continue' }).click();
 
   // Step 2. Select Co-Benefits
-  await expect(page.locator('#mat-mdc-checkbox-1')).toContainText('Protection Status 1 – Wilderness areas (natural processes occur freely)');
-  await page.locator('app-data-set').filter({ hasText: 'LANDFIRE 2024' }).click();
-  await page.locator('.icon').first().click();
-  await page.locator('.data-layer-cat > .mat-nested-tree-node > .mat-tree-node > .icon').click();
-  await page.getByText('Forest Canopy Base Height').click();
+  await page.getByRole('combobox', { name: 'Search in data layers' }).click();
+  await page.getByRole('combobox', { name: 'Search in data layers' }).fill('land');
+  await page.locator('div:nth-child(13) > .mat-mdc-tooltip-trigger').click();
+  await page.locator('div:nth-child(13) > .mat-mdc-tooltip-trigger').click();
+  await page.locator('#mat-mdc-checkbox-126-input').check();
   await page.getByRole('button', { name: 'Save & Continue' }).click();
 
   // Step 3. Select Areas to Exclude
-  await expect(page.locator('#mat-mdc-checkbox-1')).toContainText('Protection Status 1 – Wilderness areas (natural processes occur freely)');
   await page.getByRole('button').nth(3).click();
   await page.getByRole('button', { name: 'Save & Continue' }).click({ timeout: 60000 });
 
   // Step 4. Stand Level Constraints (slope, roads)
-  await page.getByRole('button', { name: 'Save & Continue' }).click({ timeout: 60000 });
+  await page.getByRole('spinbutton', { name: 'Max Slope' }).click();
+  await page.getByRole('spinbutton', { name: 'Max Slope' }).fill('99');
+  await page.getByRole('spinbutton', { name: 'Max Slope' }).press('Tab');
+  await page.getByRole('textbox', { name: 'Max Distance From Roads' }).fill('100000');
+  await page.getByRole('button', { name: 'Save & Continue' }).click();
 
   // Step 4. Apply Treatment Target
+  await page.getByRole('textbox', { name: 'Min:' }).click();
   await page.getByRole('textbox', { name: 'Min:' }).fill('100');
   await page.getByRole('textbox', { name: 'Min:' }).press('Tab');
   await page.locator('#mat-input-3').fill('10');
-  await page.getByRole('button', { name: 'Save & Run Scenario' }).click({ timeout: 60000 });
+  await page.getByRole('button', { name: 'Save & Run Scenario' }).click();
 
   // Confirmation Modal
   await expect(page.getByText('Ready to run the scenario?')).toBeVisible({ timeout: 60000 });
   await page.getByRole('button', { name: 'Run Scenario' }).click();
 
   // After creation - close confirmation
-  await expect(page.getByText('Your Scenario Analysis is in')).toBeVisible();
-  await page.getByRole('button', { name: 'Close' }).click();
-
+  await expect(page.getByText('Running')).toBeVisible();
+  
   // Confirm that the scenario was created
   await planPage.goto(workspaceId, planId);
   await expect(page.locator(`sg-scenario-card`)).toContainText(newScenarioName);
