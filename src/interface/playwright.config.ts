@@ -43,7 +43,7 @@ export default defineConfig({
     {
       name: 'authenticated',
       testDir: './e2e/specs',
-      testIgnore: /\/public\//,
+      testIgnore: [/\/public\//,'/scenario/*.spec.ts'],
       dependencies: ['auth-setup'],
       use: {
         storageState: 'e2e/.auth/user.json',

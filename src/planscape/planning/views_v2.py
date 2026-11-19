@@ -1245,13 +1245,14 @@ class TreatmentGoalViewSet(
     """
 
     serializer_class = TreatmentGoalSerializer
-    filterset_class = TreatmentGoalFilter
+    # filterset_class = TreatmentGoalFilter
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [TrackedFilterBackend, OrderingFilter]
     ordering_fields = ["category__name", "name"]
     ordering = ["category__name", "name"]
 
     def get_queryset(self):
-        user = self.request.user if self.request else None
-        qs = TreatmentGoal.objects.accessible_by(user)
-        return qs
+        # user = self.request.user if self.request else None
+        # qs = TreatmentGoal.objects.accessible_by(user)
+        # return qs
+        return TreatmentGoal.objects
