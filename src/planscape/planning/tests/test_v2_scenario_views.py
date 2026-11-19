@@ -857,6 +857,8 @@ class ScenarioDetailTest(APITestCase):
             self.assertIsInstance(entry["datalayer"], dict)
             self.assertIn("name", entry["datalayer"])
             self.assertIn("styles", entry["datalayer"])
+            for field in ("url", "public_url", "map_url"):
+                self.assertNotIn(field, entry["datalayer"])
         self.assertEqual(
             {entry["datalayer"]["id"] for entry in data.get("usage_types")},
             expected_ids,
@@ -3845,12 +3847,11 @@ class ScenarioUsageTypesQueryCountTest(TestCase):
     @override_settings(FEATURE_FLAGS=["IMPROVED_TREATMENT_GOAL"])
     def test_v2_improved_usage_types_constant_queries(self):
         data = self._assert_constant_queries(ScenarioV2Serializer)
-        paths = {tuple(u["datalayer"]["path"]) for u in data["usage_types"]}
-        self.assertIn(("Root", "Child", "Grandchild"), paths)
         nested = next(
             u["datalayer"]
             for u in data["usage_types"]
-            if u["datalayer"]["path"] == ["Root", "Child", "Grandchild"]
+            if u["datalayer"]["category"]
+            and u["datalayer"]["category"]["name"] == "Grandchild"
         )
         self.assertEqual(nested["category"]["parent"]["name"], "Child")
         self.assertEqual(nested["category"]["parent"]["parent"]["name"], "Root")

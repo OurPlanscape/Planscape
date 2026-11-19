@@ -11,7 +11,7 @@ from datasets.models import (
     GeometryType,
     hydrate_category_ancestors,
 )
-from datasets.serializers import DataLayerSerializer
+from datasets.serializers import DataLayerEmbedSerializer
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import models
@@ -950,7 +950,7 @@ class TreatmentGoalUsageSerializer(serializers.ModelSerializer):
 
     def get_datalayer(self, instance):
         if feature_enabled("IMPROVED_TREATMENT_GOAL"):
-            return DataLayerSerializer(instance.datalayer, context=self.context).data
+            return DataLayerEmbedSerializer(instance.datalayer, context=self.context).data
         return instance.datalayer.name
 
     class Meta:
