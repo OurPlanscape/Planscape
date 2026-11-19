@@ -3,11 +3,15 @@ from unittest import mock
 
 from collaboration.models import Role
 from collaboration.tests.factories import UserObjectRoleFactory
-from datasets.tests.factories import DataLayerFactory
+from datasets.models import Category
+from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.renderers import JSONRenderer
 from rest_framework.test import APITestCase
 from workspaces.access import (
     COLLABORATOR_PERMISSIONS,
@@ -27,6 +31,7 @@ from planning.models import (
     TreatmentGoalGroup,
     TreatmentGoalUsesDataLayer,
 )
+from planning.serializers import TreatmentGoalSerializer
 from planning.tests.factories import (
     PlanningAreaFactory,
     ScenarioFactory,
@@ -1528,6 +1533,88 @@ class TreatmentGoalViewSetTest(APITestCase):
         treatment_goals = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(treatment_goals), 1)
+
+    def _add_goals_with_nested_datalayers(self, count):
+        dataset = DatasetFactory.create()
+        category_kwargs = {
+            "organization": dataset.organization,
+            "created_by": dataset.created_by,
+            "dataset": dataset,
+        }
+        root = Category.add_root(name="Root", **category_kwargs)
+        child = root.add_child(name="Child", **category_kwargs)
+        grandchild = child.add_child(name="Grandchild", **category_kwargs)
+        for i in range(count):
+            goal = TreatmentGoalFactory.create(geometry=self.mpoly3)
+            for usage_type, category in (
+                ("PRIORITY", grandchild),
+                ("THRESHOLD", child),
+                ("SECONDARY_METRIC", root),
+            ):
+                datalayer = DataLayerFactory.create(
+                    dataset=dataset,
+                    category=category,
+                    style=StyleFactory.create() if i % 2 else None,
+                )
+                TreatmentGoalUsesDataLayer.objects.create(
+                    usage_type=usage_type,
+                    datalayer=datalayer,
+                    treatment_goal=goal,
+                )
+
+    def _count_list_queries(self):
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(
+                reverse("api:planning:treatment-goals-list"),
+                content_type="application/json",
+            )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        return len(ctx.captured_queries), response.json()
+
+    @override_settings(FEATURE_FLAGS=["IMPROVED_TREATMENT_GOAL"])
+    def test_list_treatment_goals_improved_constant_queries(self):
+        self.client.force_authenticate(self.user)
+        self._add_goals_with_nested_datalayers(2)
+        baseline, _ = self._count_list_queries()
+
+        self._add_goals_with_nested_datalayers(5)
+        after, _ = self._count_list_queries()
+
+        self.assertEqual(baseline, after)
+
+    def test_list_treatment_goals_constant_queries(self):
+        self.client.force_authenticate(self.user)
+        self._add_goals_with_nested_datalayers(2)
+        baseline, _ = self._count_list_queries()
+
+        self._add_goals_with_nested_datalayers(5)
+        after, _ = self._count_list_queries()
+
+        self.assertEqual(baseline, after)
+
+    @override_settings(FEATURE_FLAGS=["IMPROVED_TREATMENT_GOAL"])
+    def test_list_treatment_goals_improved_matches_unoptimized_output(self):
+        self.client.force_authenticate(self.user)
+        self._add_goals_with_nested_datalayers(3)
+        _, data = self._count_list_queries()
+
+        expected = TreatmentGoalSerializer(
+            TreatmentGoal.objects.accessible_by(self.user).order_by(
+                "category__name", "name"
+            ),
+            many=True,
+        ).data
+        self.assertEqual(data, json.loads(JSONRenderer().render(expected)))
+
+        nested = [
+            u["datalayer"]
+            for goal in data
+            for u in goal["usage_types"]
+            if u["datalayer"]["path"] == ["Root", "Child", "Grandchild"]
+        ]
+        self.assertTrue(nested)
+        self.assertEqual(nested[0]["category"]["parent"]["name"], "Child")
+        self.assertEqual(nested[0]["category"]["parent"]["parent"]["name"], "Root")
 
 
 class ListScenarioDraftVisibilityTest(APITestCase):
