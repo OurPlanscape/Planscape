@@ -686,16 +686,17 @@ class SearchTabSerializer(serializers.Serializer):
         queryset=Workspace.objects.none(),
         source="workspace",
         required=False,
-        help_text="Workspace whose favorites are searched. "
-        "Required when `search_tab` is `favorites`.",
+        help_text="Workspace whose favorites or uploads are searched. "
+        "Required when `search_tab` is `favorites` or `uploaded`.",
     )
 
     def validate(self, attrs):
-        if attrs.get("search_tab") == SearchTab.FAVORITES and not attrs.get(
+        search_tab = attrs.get("search_tab")
+        if search_tab in (SearchTab.FAVORITES, SearchTab.UPLOADED) and not attrs.get(
             "workspace"
         ):
             raise serializers.ValidationError(
-                {"workspace_id": "This field is required to search favorites."}
+                {"workspace_id": f"This field is required to search {search_tab}."}
             )
         return attrs
 

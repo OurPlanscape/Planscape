@@ -6,7 +6,7 @@ export type RasterColorType = 'RAMP' | 'INTERVALS' | 'VALUES';
 export interface BaseDataSet {
   id: number;
   name: string;
-  organization: IdNamePair;
+  organization: IdNamePair | null;
 }
 
 export interface SimpleCategory {

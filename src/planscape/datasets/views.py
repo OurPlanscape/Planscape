@@ -6,6 +6,7 @@ from datasets.models import (
     DataLayer,
     DataLayerType,
     Dataset,
+    SearchTab,
     SimpleCategory,
     VisibilityOptions,
 )
@@ -31,6 +32,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.db.models import Q
 from drf_spectacular.utils import extend_schema
+from modules.base import filter_datalayers
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
@@ -54,11 +56,41 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
 
     def get_queryset(self):
         user = self.request.user if self.request else None
-        return (
+        queryset = (
             Dataset.objects.all()
             .accessible_by(user)
             .select_related("organization", "created_by")
         )
+        if self.action == "list":
+            queryset = self._filter_by_search_tab(queryset)
+        return queryset
+
+    @extend_schema(
+        description="Lists datasets. Outside the general tab, only the datasets "
+        "holding datalayers of that tab, e.g. a workspace's uploads.",
+        parameters=[BrowseDataSetSerializer],
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    def _filter_by_search_tab(self, queryset):
+        params = BrowseDataSetSerializer(
+            data=self.request.query_params,
+            context={"request": self.request},
+        )
+        params.is_valid(raise_exception=True)
+        search_tab = params.validated_data.get("search_tab")
+        if search_tab == SearchTab.GENERAL:
+            return queryset
+        datalayers = filter_datalayers(
+            DataLayer.objects.all(),
+            type=params.validated_data.get("type"),
+            module=params.validated_data.get("module"),
+            search_tab=search_tab,
+            user=self.request.user,
+            workspace=params.validated_data.get("workspace"),
+        )
+        return queryset.filter(pk__in=datalayers.values("dataset_id"))
 
     @extend_schema(
         description="Returns all datalayers inside this dataset",

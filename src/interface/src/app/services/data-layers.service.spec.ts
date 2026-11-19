@@ -29,6 +29,20 @@ describe('DatalayersService', () => {
   });
 
   describe('the uploaded tab', () => {
+    it("lists the datasets holding a workspace's uploads", () => {
+      service.listUploadedDataSets(7, 'map').subscribe();
+
+      const req = httpMock.expectOne(
+        (r) => r.url === `${environment.backend_endpoint}/v2/datasets/`
+      );
+      expect(req.request.method).toBe('GET');
+      expect(req.request.params.get('search_tab')).toBe('uploaded');
+      expect(req.request.params.get('workspace_id')).toBe('7');
+      expect(req.request.params.get('module')).toBe('map');
+      expect(req.request.params.get('type')).toBe('RASTER');
+      req.flush({ count: 0, results: [] });
+    });
+
     it('browses the uploads of a dataset', () => {
       service.listDataLayers(10, 'map', undefined, 7, 'uploaded').subscribe();
 

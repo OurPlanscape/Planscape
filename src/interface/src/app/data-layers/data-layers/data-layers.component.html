@@ -90,7 +90,7 @@
               *ngFor="let dataSet of dataSets"
               (selectDataset)="viewDatasetCategories(dataSet)"
               [name]="dataSet.name"
-              [organizationName]="dataSet.organization.name">
+              [organizationName]="dataSet.organization?.name ?? ''">
             </app-data-set>
           </ng-container>
         </ng-container>

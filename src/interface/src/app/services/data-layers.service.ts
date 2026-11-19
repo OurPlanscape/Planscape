@@ -13,6 +13,9 @@ import {
 import { map, of } from 'rxjs';
 import { Geometry } from 'geojson';
 
+// One page is enough: a workspace holds a handful of upload datasets
+export const UPLOADED_DATASETS_LIMIT = 500;
+
 @Injectable({
   providedIn: 'root',
 })
@@ -25,6 +28,27 @@ export class DataLayersService {
       {
         withCredentials: true,
         params: { limit: limit, ...(offset ? { offset } : {}) },
+      }
+    );
+  }
+
+  /** The datasets holding a workspace's ready uploads for `module`. */
+  listUploadedDataSets(
+    workspaceId: number,
+    module: string,
+    type: 'RASTER' | 'VECTOR' = 'RASTER'
+  ) {
+    return this.http.get<Pagination<DataSet>>(
+      environment.backend_endpoint + '/v2/datasets/',
+      {
+        withCredentials: true,
+        params: {
+          search_tab: 'uploaded',
+          workspace_id: workspaceId,
+          module,
+          type,
+          limit: UPLOADED_DATASETS_LIMIT,
+        },
       }
     );
   }

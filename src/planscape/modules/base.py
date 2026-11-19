@@ -29,7 +29,7 @@ from planning.models import (
     ScenarioPlanningApproach,
     TreatmentGoalUsageType,
 )
-from workspaces.models import Workspace
+from workspaces.models import Workspace, WorkspaceKind
 
 RunnableItem = Union[PlanningArea, Scenario]
 
@@ -49,6 +49,11 @@ PREFERRED_DISPLAY_TYPE_BY_LAYER_TYPE = {
     DataLayerType.RASTER: PreferredDisplayType.MAIN_DATALAYERS,
     DataLayerType.VECTOR: PreferredDisplayType.BASE_DATALAYERS,
 }
+
+
+def exclude_uploads(queryset: QuerySet, workspace_field: str) -> QuerySet:
+    """Drops what was uploaded to a workspace, leaving the catalog."""
+    return queryset.exclude(**{f"{workspace_field}__kind": WorkspaceKind.PLANNING})
 
 
 def filter_datalayers(
@@ -91,8 +96,15 @@ def filter_datalayers(
             ).values("datalayer_id")
         )
     elif search_tab == SearchTab.UPLOADED:
-        # TODO: narrow to uploaded datalayers once uploaded filtering is defined.
-        pass
+        # The catalog lives in DATA workspaces; uploads in datasets of the
+        # planning workspace they were uploaded to
+        queryset = queryset.filter(
+            dataset__workspace=workspace,
+            dataset__workspace__kind=WorkspaceKind.PLANNING,
+        )
+    elif search_tab == SearchTab.GENERAL:
+        # uploads have a tab of their own, so this one is the catalog
+        queryset = exclude_uploads(queryset, "dataset__workspace")
 
     return queryset
 
@@ -152,9 +164,13 @@ class BaseModule:
     ) -> QuerySet[SimpleCategory]:
         return SimpleCategory.objects.all()
 
+    def get_option_datasets(self, **kwargs) -> QuerySet[Dataset]:
+        """The datasets the data layers tab browses: the catalog only."""
+        return exclude_uploads(self.get_datasets(**kwargs), "workspace")
+
     def _get_options(self, **kwargs) -> Dict[str, Any]:
         # Single query for both lists: filtering by geometry is expensive.
-        datasets = list(self.get_datasets(**kwargs))
+        datasets = list(self.get_option_datasets(**kwargs))
         return {
             "datalayers": self.get_datalayers(**kwargs),
             "datasets": {

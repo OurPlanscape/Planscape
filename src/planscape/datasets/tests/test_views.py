@@ -482,21 +482,6 @@ class TestDataLayerViewSet(APITestCase):
         response = self.client.get(url, {"term": "forest", "type": "RASTER"})
         self.assertEqual(response.status_code, 405)
 
-    def test_find_anything_accepts_search_tab(self):
-        self.client.force_authenticate(user=self.normal)
-        DataLayerFactory.create(
-            dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
-        )
-        url = reverse("api:datasets:datalayers-find-anything")
-        response = self.client.post(
-            url,
-            {"term": "forest", "type": "RASTER", "search_tab": "uploaded"},
-            format="json",
-        )
-        data = response.json()
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(1, data.get("count"))
-
     def test_find_anything_type_vector_returns_vectors(self):
         self.client.force_authenticate(user=self.normal)
         for i in range(3):
@@ -1291,3 +1276,227 @@ class TestPublicAccess(APITestCase):
         url = reverse("api:datasets:datasets-list")
         resp = self.client.post(url, {})
         self.assertIn(resp.status_code, (401, 403))
+
+
+ENABLED_EVERYWHERE = {
+    "modules": {
+        "map": {"enabled": True},
+        "advanced_stand_level_constraint": {"enabled": True},
+    }
+}
+
+
+class UploadedTabTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.workspace = PlanningWorkspaceFactory.create(created_by=self.user)
+        # the catalog lives in a DATA workspace the user also belongs to
+        self.catalog_workspace = WorkspaceFactory.create()
+        UserAccessWorkspaceFactory.create(
+            user=self.user,
+            workspace=self.catalog_workspace,
+            role=WorkspaceRole.COLLABORATOR,
+        )
+        self.catalog = DatasetFactory.create(
+            visibility=VisibilityOptions.PUBLIC,
+            workspace=self.catalog_workspace,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        )
+        DataLayerFactory.create(
+            dataset=self.catalog,
+            workspace=self.catalog_workspace,
+            name="Canopy catalog",
+            type=DataLayerType.RASTER,
+            metadata=ENABLED_EVERYWHERE,
+        )
+        # catalog data from before workspaces has none
+        self.legacy = DatasetFactory.create(
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        )
+        DataLayerFactory.create(
+            dataset=self.legacy,
+            name="Canopy legacy",
+            type=DataLayerType.RASTER,
+            metadata=ENABLED_EVERYWHERE,
+        )
+        self.uploads = DatasetFactory.create(
+            visibility=VisibilityOptions.PRIVATE,
+            workspace=self.workspace,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        )
+        # like the admin API creates them: only the dataset has the workspace
+        self.upload = DataLayerFactory.create(
+            dataset=self.uploads,
+            name="Canopy upload",
+            type=DataLayerType.RASTER,
+            metadata=ENABLED_EVERYWHERE,
+        )
+        DataLayerFactory.create(
+            dataset=self.uploads,
+            name="Canopy pending",
+            type=DataLayerType.RASTER,
+            status=DataLayerStatus.PENDING,
+            metadata=ENABLED_EVERYWHERE,
+        )
+        other_workspace = PlanningWorkspaceFactory.create(created_by=self.user)
+        self.other_uploads = DatasetFactory.create(
+            visibility=VisibilityOptions.PRIVATE,
+            workspace=other_workspace,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        )
+        DataLayerFactory.create(
+            dataset=self.other_uploads,
+            name="Canopy elsewhere",
+            type=DataLayerType.RASTER,
+            metadata=ENABLED_EVERYWHERE,
+        )
+        self.client.force_authenticate(self.user)
+
+    def find(self, workspace_id, search_tab="uploaded", module="map"):
+        return self.client.post(
+            reverse("api:datasets:datalayers-find-anything"),
+            {
+                "term": "canopy",
+                "type": "RASTER",
+                "module": module,
+                "search_tab": search_tab,
+                "workspace_id": workspace_id,
+            },
+            format="json",
+        )
+
+    def browse(self, dataset, search_tab="uploaded"):
+        return self.client.post(
+            reverse("api:datasets:datasets-browse", kwargs={"pk": dataset.pk}),
+            {
+                "type": "RASTER",
+                "module": "map",
+                "search_tab": search_tab,
+                "workspace_id": self.workspace.pk,
+            },
+            format="json",
+        )
+
+    def names(self, response):
+        return {result["name"] for result in response.json()["results"]}
+
+    def list_datasets(self, **params):
+        url = reverse("api:datasets:datasets-list")
+        return self.client.get(f"{url}?{urlencode(params)}")
+
+    def test_find_anything_returns_only_this_workspaces_ready_uploads(self):
+        response = self.find(self.workspace.pk)
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(
+            [result["name"] for result in response.json()["results"]],
+            ["Canopy upload"],
+        )
+
+    def test_find_anything_finds_no_uploads_in_a_catalog_workspace(self):
+        response = self.find(self.catalog_workspace.pk)
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()["count"], 0)
+
+    def test_find_anything_requires_a_workspace(self):
+        response = self.client.post(
+            reverse("api:datasets:datalayers-find-anything"),
+            {"term": "canopy", "type": "RASTER", "search_tab": "uploaded"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_browse_lists_the_uploads_of_the_upload_dataset(self):
+        response = self.browse(self.uploads)
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual([row["name"] for row in response.json()], ["Canopy upload"])
+
+    def test_browse_lists_nothing_from_a_catalog_dataset(self):
+        response = self.browse(self.catalog)
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json(), [])
+
+    def test_dataset_list_has_only_datasets_with_this_workspaces_uploads(self):
+        response = self.list_datasets(
+            search_tab="uploaded", workspace_id=self.workspace.pk, type="RASTER"
+        )
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(
+            [row["id"] for row in response.json()["results"]], [self.uploads.pk]
+        )
+
+    def test_dataset_list_requires_a_workspace_for_uploads(self):
+        response = self.list_datasets(search_tab="uploaded")
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_dataset_list_is_unfiltered_on_the_general_tab(self):
+        response = self.list_datasets()
+
+        self.assertEqual(response.status_code, 200, response.content)
+        ids = {row["id"] for row in response.json()["results"]}
+        self.assertTrue(
+            {self.catalog.pk, self.uploads.pk, self.other_uploads.pk} <= ids
+        )
+
+    def test_map_search_finds_the_catalog_and_no_uploads(self):
+        response = self.find(self.workspace.pk, search_tab="general")
+
+        self.assertEqual(response.status_code, 200, response.content)
+        names = self.names(response)
+        self.assertIn("Canopy catalog", names)
+        self.assertIn("Canopy legacy", names)
+        self.assertNotIn("Canopy upload", names)
+        self.assertNotIn("Canopy elsewhere", names)
+
+    def test_map_browse_of_an_upload_dataset_is_empty(self):
+        response = self.browse(self.other_uploads, search_tab="general")
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json(), [])
+
+    def test_map_datasets_leave_out_uploads(self):
+        response = self.client.get(
+            reverse("api:modules:modules-detail", kwargs={"pk": "map"})
+        )
+
+        self.assertEqual(response.status_code, 200, response.content)
+        ids = {
+            row["id"] for row in response.json()["options"]["datasets"]["main_datasets"]
+        }
+        self.assertIn(self.catalog.pk, ids)
+        self.assertIn(self.legacy.pk, ids)
+        self.assertNotIn(self.uploads.pk, ids)
+        self.assertNotIn(self.other_uploads.pk, ids)
+
+    def test_other_modules_follow_the_same_tabs(self):
+        module = "advanced_stand_level_constraint"
+
+        general = self.names(self.find(self.workspace.pk, "general", module))
+        uploaded = self.names(self.find(self.workspace.pk, "uploaded", module))
+
+        self.assertIn("Canopy catalog", general)
+        self.assertNotIn("Canopy upload", general)
+        self.assertEqual(uploaded, {"Canopy upload"})
+
+    def test_other_modules_list_only_catalog_datasets_but_know_upload_layers(self):
+        response = self.client.get(
+            reverse(
+                "api:modules:modules-detail",
+                kwargs={"pk": "advanced_stand_level_constraint"},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200, response.content)
+        options = response.json()["options"]
+        # chosen constraints are looked up here, uploads included
+        self.assertIn(self.upload.pk, {row["id"] for row in options["datalayers"]})
+        datasets = {row["id"] for row in options["datasets"]["main_datasets"]}
+        self.assertIn(self.catalog.pk, datasets)
+        self.assertNotIn(self.uploads.pk, datasets)

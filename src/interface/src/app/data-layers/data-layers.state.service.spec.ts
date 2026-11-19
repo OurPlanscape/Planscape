@@ -60,6 +60,7 @@ describe('DataLayersStateService', () => {
         'listCategoryDataLayers',
         'search',
         'browseFavorites',
+        'listUploadedDataSets',
       ]
     );
     dataLayersService.listDataSets.and.returnValue(
@@ -68,6 +69,9 @@ describe('DataLayersStateService', () => {
     dataLayersService.listDataLayers.and.returnValue(of([]));
     dataLayersService.listCategoryDataLayers.and.returnValue(of([]));
     dataLayersService.browseFavorites.and.returnValue(of([]));
+    dataLayersService.listUploadedDataSets.and.returnValue(
+      of({ count: 0, results: [] } as unknown as Pagination<DataSet>)
+    );
 
     currentWorkspaceId = null;
     currentPlan = null;
@@ -302,6 +306,64 @@ describe('DataLayersStateService', () => {
       service.setSearchTab('uploaded');
 
       expect(service.browseByCategory()).toBeFalse();
+    });
+
+    it("lists the datasets holding the workspace's uploads", () => {
+      dataLayersService.listUploadedDataSets.and.returnValue(
+        of({ count: 1, results: [dataSet] } as unknown as Pagination<DataSet>)
+      );
+      createService();
+      service.setSearchTab('uploaded');
+      let dataSets: unknown;
+      service.dataSets$.subscribe((d) => (dataSets = d));
+
+      expect(dataLayersService.listUploadedDataSets).toHaveBeenCalledWith(
+        7,
+        'map'
+      );
+      expect(dataSets).toEqual([dataSet]);
+    });
+
+    it('lists the uploads of the module it browses for', () => {
+      createService();
+      service.setModuleNameOverride('advanced_stand_level_constraint');
+      service.setSearchTab('uploaded');
+      service.dataSets$.subscribe();
+
+      expect(dataLayersService.listUploadedDataSets).toHaveBeenCalledWith(
+        7,
+        'advanced_stand_level_constraint'
+      );
+    });
+
+    it('lists no datasets outside a workspace', () => {
+      currentWorkspaceId = null;
+      createService();
+      service.setSearchTab('uploaded');
+      let dataSets: unknown;
+      service.dataSets$.subscribe((d) => (dataSets = d));
+
+      expect(dataSets).toEqual([]);
+      expect(dataLayersService.listUploadedDataSets).not.toHaveBeenCalled();
+    });
+
+    it('lists no datasets when the request fails', () => {
+      dataLayersService.listUploadedDataSets.and.returnValue(
+        throwError(() => new Error('down'))
+      );
+      createService();
+      service.setSearchTab('uploaded');
+      let dataSets: unknown;
+      service.dataSets$.subscribe((d) => (dataSets = d));
+
+      expect(dataSets).toEqual([]);
+    });
+
+    it("lists the module's catalog on the general tab", () => {
+      createService();
+      service.dataSets$.subscribe();
+
+      expect(dataLayersService.listUploadedDataSets).not.toHaveBeenCalled();
     });
 
     it('asks the dataset for its uploads in the workspace', () => {

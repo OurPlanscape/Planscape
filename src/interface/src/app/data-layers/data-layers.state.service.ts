@@ -79,13 +79,6 @@ export class DataLayersStateService implements OnDestroy {
   /** The map module failed to load, so there are no datasets or categories to browse. */
   loadError$ = this.mapModuleService.loadError$;
 
-  dataSets$ = this.moduleNameOverride$.pipe(
-    switchMap((name) =>
-      name ? this.mapModuleService.datasetsFor(name) : this.baseDataSets$
-    ),
-    tap(() => queueMicrotask(() => this.loadingSubject.next(false)))
-  );
-
   retryLoad() {
     this.mapModuleService.retryLoadMapModule();
   }
@@ -118,6 +111,34 @@ export class DataLayersStateService implements OnDestroy {
     return (
       this.featureService.isFeatureEnabled('DATA_ORGANIZATION') &&
       this._searchTab$.value !== 'uploaded'
+    );
+  }
+
+  // The module's catalog, or the workspace's uploads on the uploaded tab
+  dataSets$ = combineLatest([this.moduleNameOverride$, this._searchTab$]).pipe(
+    switchMap(([name, tab]) => {
+      if (tab === 'uploaded') {
+        return this.uploadedDataSets$(name ?? this.mapModuleService.moduleName);
+      }
+      return name
+        ? this.mapModuleService.datasetsFor(name)
+        : this.baseDataSets$;
+    }),
+    tap(() => queueMicrotask(() => this.loadingSubject.next(false)))
+  );
+
+  private uploadedDataSets$(module: string): Observable<BaseDataSet[]> {
+    return this.planState.currentPlanOrNull$.pipe(
+      switchMap((plan) => {
+        const workspaceId = this.requestWorkspaceId(plan, 'uploaded');
+        if (workspaceId === null) {
+          return of([]);
+        }
+        return this.service.listUploadedDataSets(workspaceId, module).pipe(
+          map((page) => page.results),
+          catchError(() => of([]))
+        );
+      })
     );
   }
 
@@ -544,7 +565,7 @@ export class DataLayersStateService implements OnDestroy {
       type: 'dataset',
       id: dataset.id,
       name: dataset.name,
-      organization: dataset.organization,
+      organization: dataset.organization ?? undefined,
     });
   }
 
