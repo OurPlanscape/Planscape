@@ -179,6 +179,10 @@ export class ScenarioCreationComponent implements OnInit {
     map((s) => (s?.hasMap ?? false) && !this.isImprovedTreatmentGoalStep(s))
   );
 
+  showMapLayerControls$ = this.newScenarioState.currentStep$.pipe(
+    map((s) => !this.isImprovedTreatmentGoalStep(s))
+  );
+
   standSize$ = this.newScenarioState.scenarioConfig$.pipe(
     map((config) => config.stand_size)
   );
@@ -268,6 +272,11 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
+
+  showClearMapButton$ = combineLatest([
+    this.viewedDataLayer$,
+    this.showMapLayerControls$,
+  ]).pipe(map(([layer, showControls]) => !!layer && showControls));
 
   constructor(
     private scenarioService: ScenarioService,
@@ -507,15 +516,31 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   stepChanged(cdkIndex: number) {
-    const config = cdkIndex === 0 ? null : (this.steps[cdkIndex - 1] ?? null);
-    this.newScenarioState.setCurrentStep(config);
+    this.newScenarioState.setCurrentStep(this.stepConfigAt(cdkIndex));
   }
 
   handleStepChangeEvent(event: StepperSelectionEvent) {
+    if (this.crossesImprovedTreatmentGoalStep(event)) {
+      this.clearViewedDataLayer();
+    }
+
     const newStep = event.selectedStep;
     if (newStep instanceof StepComponent && newStep.stepLogic) {
       newStep.stepLogic.beforeStepLoad();
     }
+  }
+
+  private stepConfigAt(cdkIndex: number): ScenarioStepConfig | null {
+    return cdkIndex === 0 ? null : (this.steps[cdkIndex - 1] ?? null);
+  }
+
+  private crossesImprovedTreatmentGoalStep(event: StepperSelectionEvent) {
+    return (
+      this.isImprovedTreatmentGoalStep(
+        this.stepConfigAt(event.previouslySelectedIndex)
+      ) ||
+      this.isImprovedTreatmentGoalStep(this.stepConfigAt(event.selectedIndex))
+    );
   }
 
   clearViewedDataLayer() {

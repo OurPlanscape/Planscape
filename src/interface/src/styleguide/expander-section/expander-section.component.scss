@@ -33,6 +33,10 @@
     background-size: 6px;
   }
 
+  &:hover {
+    background-color: $color-soft-white;
+  }
+
   &.open {
     background-color: $color-soft-white;
     border-bottom: 1px solid $color-soft-gray;

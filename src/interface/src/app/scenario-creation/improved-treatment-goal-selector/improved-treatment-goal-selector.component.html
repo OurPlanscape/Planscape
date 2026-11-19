@@ -43,16 +43,23 @@
         "
         [title]="category.key"
         [isOpen]="!!results.searchTerm">
-        <sg-expander-item
-          *ngFor="let goal of category.value; trackBy: trackByGoal"
-          groupName="improvedTreatmentGoalSelect"
-          [label]="goal.name"
-          [value]="goal.id"
-          [checked]="goal.id === control.value"
-          [showTooltip]="!!goal.description"
-          (optionSelected)="selectGoal($event)">
-          <div [innerHTML]="goal.description"></div>
-        </sg-expander-item>
+        <ng-container *ngFor="let goal of category.value; trackBy: trackByGoal">
+          <sg-expander-item
+            groupName="improvedTreatmentGoalSelect"
+            [label]="goal.name"
+            [value]="goal.id"
+            [checked]="goal.id === control.value"
+            [showTooltip]="true"
+            [tooltipInteractive]="true"
+            [tooltipTemplate]="goalDetails"
+            (optionSelected)="selectGoal($event)"></sg-expander-item>
+
+          <ng-template #goalDetails let-close="close">
+            <app-treatment-goal-details
+              [goal]="goal"
+              (closed)="close()"></app-treatment-goal-details>
+          </ng-template>
+        </ng-container>
       </sg-expander-section>
     </div>
 
