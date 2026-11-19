@@ -8,6 +8,10 @@ interface TestUser {
   lastName: string;
 }
 
+const PLANNING_AREA_URL = 'planscape-backend/v2/planningareas/';
+const SCENARIO_URL = 'planscape-backend/v2/scenarios/';
+
+
 export async function registerTestUser(api: APIRequestContext, user: TestUser) {
   return api.post('/planscape-backend/dj-rest-auth/registration/', {
     data: {
@@ -70,12 +74,9 @@ export async function destroyTestUser(api: APIRequestContext) {
   return res;
 }
 
-const PLANNING_AREA_URL = 'planscape-backend/v2/planningareas/'
-
-
 export async function createPlanningArea(api: APIRequestContext, testName: string, testGeom: Geometry, workspaceId: number) {
   const res = await api.post(PLANNING_AREA_URL, {
-    data: { name: testName, geometry: testGeom , workspace: workspaceId } 
+    data: { name: testName, geometry: testGeom, workspace: workspaceId }
   });
   if (!res.ok()) {
     throw new Error(`Plan creation failed: ${res.status()} ${await res.text()}`);
@@ -90,5 +91,27 @@ export async function deletePlanningArea(api: APIRequestContext, planId: number)
     throw new Error(`Plan deletion failed: ${res.status()} ${await res.text()}`);
   }
   console.log('Deleted a plan:', res);
+  return res;
+}
+
+export async function getScenariosForPlan(
+  request: APIRequestContext,
+  planId: number,
+): Promise<{ id: number }[]> {
+  const res = await request.get(SCENARIO_URL, {
+    params: { planning_area: planId },
+  });
+  if (!res.ok()) throw new Error(`List scenarios failed: ${res.status()}`);
+  return res.json();
+}
+
+
+export async function deleteScenario(api: APIRequestContext, scenarioId: number) {
+  const res = await api.delete(SCENARIO_URL + '/' + scenarioId, {
+  });
+  if (!res.ok()) {
+    throw new Error(`Scenario deletion failed: ${res.status()} ${await res.text()}`);
+  }
+  console.log('Deleted a scenario:', res);
   return res;
 }

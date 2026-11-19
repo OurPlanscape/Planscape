@@ -31,8 +31,6 @@ test('user can create a Custom Scenario', { tag: ['@smoke'] }, async ({ page, wo
     await page.getByRole('menuitem', { name: 'Choose Custom Scenario Build' });
     page.getByRole('menuitem', { name: 'Choose Custom Scenario Build' }).click({ timeout: 60000 });
   }
-  await page.pause()
-
 
   // create scenario
   await page.getByRole('textbox').fill(newScenarioName);

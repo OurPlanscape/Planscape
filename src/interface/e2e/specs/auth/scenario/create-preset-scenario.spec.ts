@@ -33,8 +33,6 @@ test('user can create a Preset Scenario', { tag: ['@smoke'] }, async ({ page, pl
     await page.getByRole('menuitem',{ name: 'Choose Treatment Goal Start'});
     page.getByRole('menuitem',{ name: 'Choose Treatment Goal Start'}).click({ timeout: 60000 });
   }
-  await page.pause();
-
 
   // create scenario
   await page.getByRole('textbox').fill(newScenarioName);
@@ -79,9 +77,6 @@ test('user can create a Preset Scenario', { tag: ['@smoke'] }, async ({ page, pl
   await expect(page.getByText('Your Scenario Analysis is in')).toBeVisible();
   await page.getByRole('button', { name: 'Close' }).click({ timeout: 60000 });
   await expect(page.getByText('Running')).toBeVisible();
-
-  console.log('what is workspaceid now?', workspaceId);
-  console.log('what is planId now?', planId);
 
   // Confirm that the scenario was created
   await planPage.goto(workspaceId, planId);
