@@ -34,13 +34,16 @@ test('user can create a Preset Scenario', { tag: ['@smoke'] }, async ({ page, pl
   await page.getByText('Prioritize Areas with High Expected Tree Volume Loss from Wildfire').click();
   await page.getByRole('button', { name: 'Save & Continue' }).click();
 
-
-  // Step 2. Select Areas to Exclude
-  await expect(page.locator('#mat-mdc-checkbox-1')).toContainText('Protection Status 1 – Wilderness areas (natural processes occur freely)');
-  const selectionButton = await page.getByRole('button').nth(3);
-  // TODO: expect that this button is now a '-' 
-  selectionButton.click();
+    // Step: Select Areas to Include
+    await expect(page.getByRole('region', { name: 'Select Areas To Include * 0' })).toBeVisible();
+  await page.getByRole('button', { name: 'Select All' }).click();
   await page.getByRole('button', { name: 'Save & Continue' }).click();
+
+
+  // Step. Select Areas to Exclude
+  await expect(page.getByRole('region', { name: 'Select Areas To Exclude (' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save & Continue' })).toBeVisible();
+  await page.getByRole('button', { name: 'Save & Continue' }).click({ timeout: 60000 });
 
   // Step 3. Stand Level Constraints (slope, roads)
   await page.getByRole('button', { name: 'Save & Continue' }).click();
@@ -59,6 +62,7 @@ test('user can create a Preset Scenario', { tag: ['@smoke'] }, async ({ page, pl
   // After creation - close confirmation
   await expect(page.getByText('Your Scenario Analysis is in')).toBeVisible();
   await page.getByRole('button', { name: 'Close' }).click();
+  await expect(page.getByText('Running')).toBeVisible();
 
   // Confirm that the scenario was created
   await planPage.goto(workspaceId, planId);
