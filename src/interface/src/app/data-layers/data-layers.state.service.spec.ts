@@ -965,9 +965,16 @@ describe('DataLayersStateService', () => {
 
     it('drops the draft when another layer is selected', () => {
       service.previewStyle(draft);
-      service.selectDataLayer(layer);
+      service.selectDataLayer({ ...layer, id: 10 } as DataLayer);
 
       expect(legendLabels()).toContain('Own low');
+    });
+
+    it('keeps the draft when the same layer is selected again', () => {
+      service.previewStyle(draft);
+      service.selectDataLayer({ ...layer } as DataLayer);
+
+      expect(legendLabels()).toContain('Draft one');
     });
   });
 });

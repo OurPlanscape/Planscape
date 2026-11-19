@@ -120,7 +120,8 @@
           <app-upload-style-editor
             *ngIf="tab === 'style'"
             [form]="styleForm"
-            [range]="range"></app-upload-style-editor>
+            [range]="range"
+            [automaticStyle]="detail.default_style"></app-upload-style-editor>
 
           <div class="form-actions">
             <button sg-button type="button" variant="ghost" (click)="cancel()">
@@ -171,6 +172,13 @@
                 size="compact"></app-map-layer-color-legend>
             </mgl-control>
           </mgl-map>
+          <div
+            *ngIf="bounds(detail)"
+            class="map-loader"
+            [class.visible]="layerLoading$ | async"
+            [attr.aria-hidden]="(layerLoading$ | async) !== true">
+            <mat-spinner diameter="32"></mat-spinner>
+          </div>
           <ng-template #noExtent>
             <sg-empty-state
               icon="map"

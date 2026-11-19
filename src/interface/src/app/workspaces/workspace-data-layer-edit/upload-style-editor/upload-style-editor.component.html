@@ -12,7 +12,7 @@
     </span>
   </sg-toggle>
 
-  <div class="style-fields" [class.disabled]="!custom">
+  <div class="style-fields" *ngIf="custom">
     <mat-form-field appearance="outline" class="map-type">
       <mat-label>Map type</mat-label>
       <mat-select formControlName="map_type">
@@ -29,6 +29,8 @@
           *ngFor="let palette of palettes"
           type="button"
           class="palette"
+          [class.active]="isActivePalette(palette)"
+          [attr.aria-pressed]="isActivePalette(palette)"
           [disabled]="!custom"
           [attr.aria-label]="'Use the ' + palette.name + ' palette'"
           [matTooltip]="palette.name"
@@ -43,16 +45,30 @@
     <div class="section">
       <div class="section-header">
         <div class="section-label">Breaks</div>
-        <button
-          *ngIf="range"
-          sg-button
-          type="button"
-          variant="text"
-          [disabled]="!custom"
-          (click)="applyEvenBreaks()">
-          Even breaks
-        </button>
+        <div class="section-actions">
+          <button
+            *ngIf="automaticStyle"
+            sg-button
+            type="button"
+            variant="text"
+            matTooltip="Reset breaks and go back to the default palette"
+            (click)="reset()">
+            Reset
+          </button>
+          <button
+            *ngIf="range"
+            sg-button
+            type="button"
+            variant="text"
+            (click)="applyEvenBreaks()">
+            Even breaks
+          </button>
+        </div>
       </div>
+      <p *ngIf="range" class="hint range-hint">
+        Values in this layer range from {{ range.min | number: '1.0-2' }} to
+        {{ range.max | number: '1.0-2' }}.
+      </p>
 
       <table class="entries" formArrayName="entries">
         <thead>

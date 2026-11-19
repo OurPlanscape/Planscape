@@ -1,15 +1,16 @@
 import { Component, Input } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
+import { DecimalPipe, NgFor, NgIf } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ButtonComponent, ToggleComponent } from '@styleguide';
-import { RasterColorType } from '@types';
+import { RasterColorType, StyleJson } from '@types';
 import {
   createStyleEntry,
   MAX_STYLE_ENTRIES,
   MIN_STYLE_ENTRIES,
+  resetStyleForm,
   UploadStyleForm,
 } from './upload-style-form';
 import {
@@ -21,7 +22,6 @@ import {
 
 const MAP_TYPES: { value: RasterColorType; label: string }[] = [
   { value: 'RAMP', label: 'Ramp (smooth gradient)' },
-  { value: 'INTERVALS', label: 'Intervals (color per range)' },
   { value: 'VALUES', label: 'Values (color per exact value)' },
 ];
 
@@ -29,6 +29,7 @@ const MAP_TYPES: { value: RasterColorType; label: string }[] = [
   selector: 'app-upload-style-editor',
   standalone: true,
   imports: [
+    DecimalPipe,
     NgFor,
     NgIf,
     ReactiveFormsModule,
@@ -45,6 +46,8 @@ export class UploadStyleEditorComponent {
   @Input({ required: true }) form!: UploadStyleForm;
   /** The raster's value range, for even breaks. */
   @Input() range: { min: number; max: number } | null = null;
+  /** The automatic color scale, which Reset goes back to. */
+  @Input() automaticStyle: StyleJson | null = null;
 
   readonly mapTypes = MAP_TYPES;
   readonly palettes = STYLE_PALETTES;
@@ -73,12 +76,28 @@ export class UploadStyleEditorComponent {
     return `linear-gradient(to right, ${palette.colors.join(', ')})`;
   }
 
+  /** Whether the breaks are colored exactly as `palette` would color them. */
+  isActivePalette(palette: StylePalette) {
+    const colors = this.entries.controls.map((entry) =>
+      entry.controls.color.value.toLowerCase()
+    );
+    return paletteColors(palette, colors.length).every(
+      (color, i) => color.toLowerCase() === colors[i]
+    );
+  }
+
   applyPalette(palette: StylePalette) {
     const colors = paletteColors(palette, this.entries.length);
     this.entries.controls.forEach((entry, i) =>
       entry.controls.color.setValue(colors[i])
     );
     this.entries.markAsDirty();
+  }
+
+  reset() {
+    if (this.automaticStyle) {
+      resetStyleForm(this.form, this.automaticStyle);
+    }
   }
 
   applyEvenBreaks() {

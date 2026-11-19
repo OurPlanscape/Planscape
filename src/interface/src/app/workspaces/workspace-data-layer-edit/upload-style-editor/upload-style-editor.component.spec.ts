@@ -37,27 +37,48 @@ describe('UploadStyleEditorComponent', () => {
     fixture.detectChanges();
   });
 
-  const buttons = (selector: string) =>
-    Array.from(
-      fixture.nativeElement.querySelectorAll(selector)
-    ) as HTMLButtonElement[];
-
   it('shows a row per break', () => {
     expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(2);
   });
 
-  it('disables every control while the custom style is off', () => {
+  it('hides every control while the custom style is off', () => {
     fillStyleForm(form, STYLE, false);
     fixture.detectChanges();
 
-    const inputs = Array.from(
-      fixture.nativeElement.querySelectorAll('tbody input')
-    ) as HTMLInputElement[];
-    expect(inputs.every((input) => input.disabled)).toBeTrue();
-    expect(buttons('.palette').every((b) => b.disabled)).toBeTrue();
+    expect(fixture.nativeElement.querySelector('.style-fields')).toBeNull();
     expect(fixture.nativeElement.textContent).toContain(
       'Using the automatic color scale'
     );
+  });
+
+  it('resets to the automatic color scale', () => {
+    const automatic: StyleJson = {
+      map_type: 'RAMP',
+      entries: [
+        { value: 1, color: '#111111' },
+        { value: 2, color: '#222222' },
+        { value: 3, color: '#333333' },
+      ],
+    };
+    component.automaticStyle = automatic;
+    form.controls.map_type.setValue('VALUES');
+    component.removeEntry(0);
+
+    component.reset();
+
+    expect(form.controls.map_type.value).toBe('RAMP');
+    expect(form.getRawValue().entries.map((e) => e.value)).toEqual([1, 2, 3]);
+    expect(form.controls.custom.value).toBeTrue();
+    expect(form.dirty).toBeTrue();
+  });
+
+  it('hides Reset without an automatic color scale', () => {
+    const labels = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        'button'
+      ) as NodeListOf<HTMLButtonElement>
+    ).map((b) => b.textContent?.trim());
+    expect(labels).not.toContain('Reset');
   });
 
   it('recolors the breaks with a palette', () => {
@@ -66,6 +87,29 @@ describe('UploadStyleEditorComponent', () => {
     expect(form.controls.entries.at(0).controls.color.value).toBe('#440154');
     expect(form.controls.entries.at(1).controls.color.value).toBe('#fde725');
     expect(form.dirty).toBeTrue();
+  });
+
+  it('highlights the palette the breaks are colored with', () => {
+    const viridis = STYLE_PALETTES.find((p) => p.name === 'Viridis')!;
+    component.applyPalette(viridis);
+    fixture.detectChanges();
+
+    const active = fixture.nativeElement.querySelectorAll('.palette.active');
+    expect(active.length).toBe(1);
+    expect(active[0].getAttribute('aria-label')).toContain('Viridis');
+
+    form.controls.entries.at(0).controls.color.setValue('#123456');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.palette.active')).toBeNull();
+  });
+
+  it('shows the raster value range', () => {
+    component.range = { min: 5, max: 23652 };
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Values in this layer range from 5 to 23,652.'
+    );
   });
 
   it('spreads breaks over the raster range', () => {

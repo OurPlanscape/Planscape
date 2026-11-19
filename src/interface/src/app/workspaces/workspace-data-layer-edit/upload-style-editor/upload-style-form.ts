@@ -65,6 +65,20 @@ export function fillStyleForm(
   style: StyleJson,
   custom: boolean
 ) {
+  fillEntries(form, style);
+  form.patchValue({ custom, map_type: style.map_type });
+  setCustomStyle(form, custom);
+  form.markAsPristine();
+}
+
+/** Puts back `style`'s map type and breaks, as an edit. */
+export function resetStyleForm(form: UploadStyleForm, style: StyleJson) {
+  fillEntries(form, style);
+  form.controls.map_type.setValue(style.map_type);
+  form.markAsDirty();
+}
+
+function fillEntries(form: UploadStyleForm, style: StyleJson) {
   const entries = form.controls.entries;
   entries.clear({ emitEvent: false });
   for (const entry of style.entries) {
@@ -78,9 +92,6 @@ export function fillStyleForm(
       { emitEvent: false }
     );
   }
-  form.patchValue({ custom, map_type: style.map_type });
-  setCustomStyle(form, custom);
-  form.markAsPristine();
 }
 
 /** The editor only applies while the custom style is on. */

@@ -236,6 +236,24 @@ describe('UploadDataLayerComponent', () => {
       expect(service.deleteDataLayer).toHaveBeenCalledWith(7, layer.id);
       expect(dialogRef.close).toHaveBeenCalledWith();
     });
+
+    it('discards the layer once it exists when cancelled while being created', () => {
+      component.handleFile(tif());
+      component.submit();
+      component.close();
+      confirmed$.next(true);
+
+      expect(service.deleteDataLayer).not.toHaveBeenCalled();
+      created$.next({
+        datalayer: layer,
+        upload_to: { url: 'https://storage.example/session' },
+      });
+      created$.complete();
+
+      expect(service.uploadFile).not.toHaveBeenCalled();
+      expect(service.deleteDataLayer).toHaveBeenCalledWith(7, layer.id);
+      expect(dialogRef.close).toHaveBeenCalledOnceWith();
+    });
   });
 
   describe('nameFromFile', () => {

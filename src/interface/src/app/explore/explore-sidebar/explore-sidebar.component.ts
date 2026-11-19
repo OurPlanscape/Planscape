@@ -86,9 +86,10 @@ export class ExploreSidebarComponent {
   );
 
   dataLayersSelection$ = this.dataLayersState$.pipe(
-    // Maps register and restore their state on init, after this header was checked
-    observeOn(asapScheduler),
-    switchMap((state) => state?.selection$ ?? of(null))
+    switchMap((state) => state?.selection$ ?? of(null)),
+    // Maps register and restore their state on init, and switching to the
+    // Uploaded tab resets the selection, both after this header was checked
+    observeOn(asapScheduler)
   );
 
   constructor(

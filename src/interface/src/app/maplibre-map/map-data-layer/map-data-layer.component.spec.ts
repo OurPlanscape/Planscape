@@ -64,4 +64,44 @@ describe('MapDataLayerComponent', () => {
       ['https://cog.example/layer.tif', draft],
     ]);
   });
+
+  describe('redrawing', () => {
+    const url = 'https://cog.example/layer.tif';
+    const draft: StyleJson = { ...ownStyle, map_type: 'INTERVALS' };
+    const layerWith = (style: StyleJson) => ({
+      id: 9,
+      info: { blockxsize: 256 },
+      styles: [{ id: 1, data: style }],
+    });
+    let redraws: jasmine.Spy;
+
+    beforeEach(() => {
+      redraws = spyOn(component, 'addRasterLayer');
+      mockMap.getLayer.and.returnValue({} as any);
+      dataLayerWithUrl$.next({ layer: layerWith(ownStyle), url });
+      draftStyle$.next(draft);
+      redraws.calls.reset();
+    });
+
+    it('skips the redraw when the saved style replaces an identical draft', () => {
+      dataLayerWithUrl$.next({ layer: layerWith(draft), url });
+      draftStyle$.next(null);
+
+      expect(redraws).not.toHaveBeenCalled();
+    });
+
+    it('redraws when the saved style differs from the draft', () => {
+      dataLayerWithUrl$.next({ layer: layerWith(draft), url });
+      draftStyle$.next({ ...ownStyle, map_type: 'VALUES' });
+
+      expect(redraws).toHaveBeenCalledTimes(1);
+    });
+
+    it('redraws when the same layer comes back to retry', () => {
+      const current = dataLayerWithUrl$.value;
+      dataLayerWithUrl$.next({ layer: current.layer, url });
+
+      expect(redraws).toHaveBeenCalledTimes(1);
+    });
+  });
 });

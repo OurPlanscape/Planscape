@@ -27,7 +27,7 @@ import {
 import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
 import { WorkspaceDataLayersService } from '@services/workspace-data-layers.service';
 import { WorkspaceDataLayer } from '@types';
-import { filter, merge, Subscription, switchMap, tap } from 'rxjs';
+import { EMPTY, filter, merge, Subscription, switchMap, tap } from 'rxjs';
 
 export interface UploadDataLayerData {
   workspaceId: number;
@@ -84,6 +84,7 @@ export class UploadDataLayerComponent implements OnDestroy {
 
   private suggestedName = '';
   private pendingLayer: WorkspaceDataLayer | null = null;
+  private cancelled = false;
   private upload?: Subscription;
   private confirmRef?: MatDialogRef<ConfirmationDialogComponent, boolean>;
 
@@ -130,6 +131,7 @@ export class UploadDataLayerComponent implements OnDestroy {
       return;
     }
     this.error = null;
+    this.cancelled = false;
     this.uploading = true;
     this.progress = 0;
     this.form.disable();
@@ -142,14 +144,22 @@ export class UploadDataLayerComponent implements OnDestroy {
       })
       .pipe(
         tap(({ datalayer }) => (this.pendingLayer = datalayer)),
-        switchMap(({ upload_to }) =>
-          this.workspaceDataLayersService.uploadFile(upload_to.url, file)
-        )
+        switchMap(({ upload_to }) => {
+          if (this.cancelled) {
+            this.discardPendingLayer();
+            return EMPTY;
+          }
+          return this.workspaceDataLayersService.uploadFile(
+            upload_to.url,
+            file
+          );
+        })
       )
       .subscribe({
         next: (progress) => (this.progress = progress),
-        error: (error: HttpErrorResponse) => this.handleError(error),
-        complete: () => this.finish(),
+        error: (error: HttpErrorResponse) =>
+          this.cancelled ? undefined : this.handleError(error),
+        complete: () => (this.cancelled ? undefined : this.finish()),
       });
   }
 
@@ -194,9 +204,14 @@ export class UploadDataLayerComponent implements OnDestroy {
   }
 
   private cancelUpload() {
-    this.upload?.unsubscribe();
+    this.cancelled = true;
     this.uploading = false;
-    this.discardPendingLayer();
+    // While the layer is still being created, aborting the request could
+    // leave it behind on the server; let it finish and discard it then.
+    if (this.pendingLayer) {
+      this.upload?.unsubscribe();
+      this.discardPendingLayer();
+    }
   }
 
   private handleError(error: HttpErrorResponse) {

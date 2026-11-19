@@ -1,6 +1,6 @@
 <sg-modal
   title="Upload data layer"
-  primaryButtonText="Upload"
+  [primaryButtonText]="uploading ? 'Uploading' : 'Upload'"
   secondaryButtonText="Cancel"
   [showClose]="true"
   [primaryButtonDisabled]="!canSubmit"

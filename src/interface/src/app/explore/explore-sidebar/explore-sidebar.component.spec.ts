@@ -306,9 +306,10 @@ describe('ExploreSidebarComponent', () => {
       expect(panels[0].attributes['panel']).toBe('uploaded');
     });
 
-    it('goes back to the datasets from the header arrow', () => {
+    it('goes back to the datasets from the header arrow', fakeAsync(() => {
       component.selectedTab = SidebarTabs.UPLOADED;
       selection$.next({ type: 'dataset', id: 10, name: 'My uploads' });
+      flushMicrotasks();
       fixture.detectChanges();
 
       expect(
@@ -320,14 +321,15 @@ describe('ExploreSidebarComponent', () => {
         .nativeElement.click();
 
       expect(dataLayersState.goBackToSearchResults).toHaveBeenCalled();
-    });
+    }));
   });
 
   describe('when a category is open in the data layers panel', () => {
-    beforeEach(() => {
+    beforeEach(fakeAsync(() => {
       selection$.next({ type: 'category', id: 20, name: 'Air Quality' });
+      flushMicrotasks();
       fixture.detectChanges();
-    });
+    }));
 
     it('shows the category name in the header', () => {
       expect(

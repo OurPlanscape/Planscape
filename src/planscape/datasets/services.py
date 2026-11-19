@@ -37,7 +37,6 @@ from datasets.models import (
     PreferredDisplayType,
     SearchGroupBy,
     SearchResult,
-    SearchGroupBy,
     SearchTab,
     SimpleCategory,
     StorageTypeChoices,
@@ -918,7 +917,6 @@ def enable_datalayer_module(
 
 UPLOAD_EXTENSIONS = (".tif", ".tiff")
 UPLOAD_MIMETYPE = "image/tiff"
-UPLOADED_DATASET_NAME = "Uploaded"
 
 
 class UploadsNotSupported(Exception):
@@ -945,24 +943,28 @@ def is_upload_raw_url(gs_url: str) -> bool:
     return gs_url.startswith(prefix)
 
 
+def upload_dataset_name(user: User) -> str:
+    return f"{user.get_full_name() or user.email} uploaded data"
+
+
 def get_or_create_workspace_upload_dataset(
     workspace: Workspace,
     user: User,
 ) -> Dataset:
     """
-    The dataset that holds a workspace's uploaded datalayers. Locks the
-    workspace row so two first uploads can't create two datasets.
+    The dataset that holds a user's uploads to a workspace, one per uploader.
+    Locks the workspace row so two first uploads can't create two datasets.
     """
     Workspace.objects.select_for_update().filter(pk=workspace.pk).first()
     dataset = (
-        Dataset.objects.filter(workspace=workspace, name=UPLOADED_DATASET_NAME)
+        Dataset.objects.filter(workspace=workspace, created_by=user)
         .order_by("pk")
         .first()
     )
     if dataset:
         return dataset
     return Dataset.objects.create(
-        name=UPLOADED_DATASET_NAME,
+        name=upload_dataset_name(user),
         workspace=workspace,
         created_by=user,
         visibility=VisibilityOptions.PRIVATE,
@@ -976,7 +978,6 @@ def workspace_upload_name_taken(
     return (
         DataLayer.objects.filter(
             dataset__workspace=workspace,
-            dataset__name=UPLOADED_DATASET_NAME,
             name=name,
             type=DataLayerType.RASTER,
         )

@@ -554,7 +554,7 @@ export class DataLayersStateService implements OnDestroy {
       type: 'dataset',
       id: dataset.id,
       name: dataset.name,
-      organization: dataset.organization,
+      organization: dataset.organization ?? undefined,
     });
   }
 
@@ -578,7 +578,11 @@ export class DataLayersStateService implements OnDestroy {
 
   selectDataLayer(dataLayer: DataLayer | null) {
     this.setDataLayerLoading(true);
-    if (this._draftStyle$.value) {
+    // a draft belongs to its layer; reselecting that layer (e.g. after saving
+    // the draft) keeps it until the editor drops it, so the map doesn't flash
+    // the old style in between
+    const sameLayer = dataLayer?.id === this._viewedDataLayer$.value?.id;
+    if (this._draftStyle$.value && !sameLayer) {
       this._draftStyle$.next(null);
     }
     this._viewedDataLayer$.next(dataLayer);

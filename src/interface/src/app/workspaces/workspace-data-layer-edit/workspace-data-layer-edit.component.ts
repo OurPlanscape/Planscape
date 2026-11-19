@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
 import {
   FormControl,
@@ -20,7 +20,7 @@ import {
   Map as MapLibreMap,
   RequestTransformFunction,
 } from 'maplibre-gl';
-import { BehaviorSubject, debounceTime } from 'rxjs';
+import { BehaviorSubject, debounceTime, filter } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   ButtonComponent,
@@ -107,7 +107,7 @@ const EDITABLE_FIELDS: EditableField[] = [
   templateUrl: './workspace-data-layer-edit.component.html',
   styleUrl: './workspace-data-layer-edit.component.scss',
 })
-export class WorkspaceDataLayerEditComponent implements OnInit {
+export class WorkspaceDataLayerEditComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
@@ -118,6 +118,7 @@ export class WorkspaceDataLayerEditComponent implements OnInit {
   private workspaceDataLayersService = inject(WorkspaceDataLayersService);
   private dataLayersService = inject(DataLayersService);
   private dataLayersState = inject(DataLayersStateService);
+  layerLoading$ = this.dataLayersState.loadingLayer$;
   private mapConfigState = inject(MapConfigState);
 
   readonly workspaceId: number = this.route.snapshot.data['workspaceId'];
@@ -169,8 +170,14 @@ export class WorkspaceDataLayerEditComponent implements OnInit {
     this.styleForm.controls.custom.valueChanges
       .pipe(untilDestroyed(this))
       .subscribe((custom) => setCustomStyle(this.styleForm, custom));
+    // a reset (load/save) isn't an edit: the saved style replaces the draft
+    // once the refreshed layer is drawn
     this.styleForm.valueChanges
-      .pipe(debounceTime(250), untilDestroyed(this))
+      .pipe(
+        debounceTime(250),
+        filter(() => this.styleForm.dirty),
+        untilDestroyed(this)
+      )
       .subscribe(() => this.previewDraft());
   }
 
@@ -193,6 +200,10 @@ export class WorkspaceDataLayerEditComponent implements OnInit {
       backUrl: `/workspace/${this.workspaceId}/datalayers`,
     });
     this.load();
+  }
+
+  ngOnDestroy() {
+    this.dataLayersState.previewStyle(null);
   }
 
   canManage(workspace: Workspace) {
@@ -289,9 +300,10 @@ export class WorkspaceDataLayerEditComponent implements OnInit {
   // Unsaved style edits are drawn on the map and legend as they're made
   private previewDraft() {
     const detail = this.detail$.value;
-    if (!detail || this.styleForm.pristine) {
-      this.dataLayersState.previewStyle(null);
-    } else if (!this.styleForm.controls.custom.value) {
+    if (!detail) {
+      return;
+    }
+    if (!this.styleForm.controls.custom.value) {
       this.dataLayersState.previewStyle(
         detail.custom_style ? detail.default_style : null
       );

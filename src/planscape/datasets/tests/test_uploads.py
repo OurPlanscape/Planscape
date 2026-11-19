@@ -23,10 +23,10 @@ from datasets.models import (
     WorkspaceFavoriteDataLayer,
 )
 from datasets.services import (
-    UPLOADED_DATASET_NAME,
     create_workspace_upload,
     expire_stale_uploads,
     get_or_create_workspace_upload_dataset,
+    upload_dataset_name,
 )
 from datasets.tasks import process_uploaded_datalayer
 from datasets.upload_metadata import read_upload_metadata, write_upload_metadata
@@ -103,7 +103,8 @@ class CreateWorkspaceDataLayerTest(APITestCase):
         datalayer = DataLayer.objects.get(pk=body["datalayer"]["id"])
         self.assertEqual(datalayer.workspace, self.workspace)
         self.assertEqual(datalayer.dataset.workspace, self.workspace)
-        self.assertEqual(datalayer.dataset.name, UPLOADED_DATASET_NAME)
+        self.assertEqual(datalayer.dataset.name, upload_dataset_name(self.collaborator))
+        self.assertEqual(datalayer.dataset.created_by, self.collaborator)
         self.assertTrue(
             datalayer.raw_url.startswith(
                 f"gs://{BUCKET}/uploads/raw/workspaces/{self.workspace.pk}/"
@@ -130,6 +131,32 @@ class CreateWorkspaceDataLayerTest(APITestCase):
         self.client.post(self.url, self.payload, format="json")
         self.client.post(self.url, {**self.payload, "name": "Other"}, format="json")
         self.assertEqual(Dataset.objects.filter(workspace=self.workspace).count(), 1)
+
+    def test_each_uploader_gets_their_own_dataset(self, upload_url):
+        self.client.force_authenticate(self.owner)
+        self.client.post(self.url, self.payload, format="json")
+        self.client.force_authenticate(self.collaborator)
+        self.client.post(self.url, {**self.payload, "name": "Other"}, format="json")
+        names = set(
+            Dataset.objects.filter(workspace=self.workspace).values_list(
+                "name", flat=True
+            )
+        )
+        self.assertEqual(
+            names,
+            {upload_dataset_name(self.owner), upload_dataset_name(self.collaborator)},
+        )
+
+    def test_name_is_unique_across_uploaders(self, upload_url):
+        self.client.force_authenticate(self.owner)
+        self.client.post(self.url, self.payload, format="json")
+        self.client.force_authenticate(self.collaborator)
+        response = self.client.post(self.url, self.payload, format="json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_dataset_name_falls_back_to_email(self, upload_url):
+        user = UserFactory.create(first_name="", last_name="")
+        self.assertEqual(upload_dataset_name(user), f"{user.email} uploaded data")
 
     def test_viewer_is_forbidden(self, upload_url):
         self.client.force_authenticate(self.viewer)
