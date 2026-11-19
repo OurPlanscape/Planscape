@@ -186,6 +186,26 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
         )
 
 
+class DataLayerEmbedSerializer(DataLayerSerializer):
+    """
+    Simplified DataLayer representation used when embedded in other
+    resources (e.g. treatment goal usages). It must be used when it needs
+    to list DataLayers for performance.
+    """
+
+    class Meta(DataLayerSerializer.Meta):
+        fields = (
+            "id",
+            "name",
+            "dataset",
+            "category",
+            "type",
+            "styles",
+            "info",
+            "metadata",
+        )
+
+
 class CreateDatasetSerializer(serializers.ModelSerializer[Dataset]):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
     workspace_id = serializers.PrimaryKeyRelatedField(

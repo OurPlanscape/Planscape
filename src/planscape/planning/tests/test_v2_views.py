@@ -1432,6 +1432,19 @@ class TreatmentGoalViewSetTest(APITestCase):
         }
         self.assertEqual(set(usages.keys()), {"PRIORITY", "THRESHOLD"})
         self.assertIsInstance(usages["PRIORITY"], dict)
+        self.assertEqual(
+            set(usages["PRIORITY"].keys()),
+            {
+                "id",
+                "name",
+                "dataset",
+                "category",
+                "type",
+                "styles",
+                "info",
+                "metadata",
+            },
+        )
         self.assertEqual(usages["PRIORITY"]["id"], self.dl1.id)
         self.assertEqual(usages["PRIORITY"]["name"], "Layer 1")
         self.assertIn("styles", usages["PRIORITY"])
@@ -1610,7 +1623,8 @@ class TreatmentGoalViewSetTest(APITestCase):
             u["datalayer"]
             for goal in data
             for u in goal["usage_types"]
-            if u["datalayer"]["path"] == ["Root", "Child", "Grandchild"]
+            if u["datalayer"]["category"]
+            and u["datalayer"]["category"]["name"] == "Grandchild"
         ]
         self.assertTrue(nested)
         self.assertEqual(nested[0]["category"]["parent"]["name"], "Child")
