@@ -2,8 +2,10 @@ import copy
 import json
 from unittest import mock
 
-from datasets.models import DataLayerType, GeometryType
-from datasets.tests.factories import DataLayerFactory
+from datasets.models import Category, DataLayerType, GeometryType
+from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.test import TestCase, override_settings
@@ -24,8 +26,13 @@ from planning.models import (
     ScenarioVersion,
     TreatmentGoalGroup,
     TreatmentGoalUsageType,
+    TreatmentGoalUsesDataLayer,
 )
-from planning.serializers import ListScenarioSerializer, ScenarioV2Serializer
+from planning.serializers import (
+    ListScenarioSerializer,
+    ScenarioV2Serializer,
+    ScenarioV3Serializer,
+)
 from planning.services import clone_scenario, trigger_scenario_run
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -3783,3 +3790,74 @@ class TreatableStandsEndpointTest(APITestCase):
             response.status_code,
             status.HTTP_409_CONFLICT,
         )
+
+
+class ScenarioUsageTypesQueryCountTest(TestCase):
+    def _scenario_with_usages(self, count):
+        dataset = DatasetFactory.create()
+        kwargs = {
+            "organization": dataset.organization,
+            "created_by": dataset.created_by,
+            "dataset": dataset,
+        }
+        root = Category.add_root(name="Root", **kwargs)
+        child = root.add_child(name="Child", **kwargs)
+        grandchild = child.add_child(name="Grandchild", **kwargs)
+        categories = [grandchild, child, root]
+        usage_types = list(TreatmentGoalUsageType.values)
+
+        goal = TreatmentGoalFactory.create()
+        for i in range(count):
+            TreatmentGoalUsesDataLayer.objects.create(
+                usage_type=usage_types[i % len(usage_types)],
+                treatment_goal=goal,
+                datalayer=DataLayerFactory.create(
+                    dataset=dataset,
+                    category=categories[i % len(categories)],
+                    style=StyleFactory.create() if i % 2 else None,
+                ),
+            )
+        scenario = ScenarioFactory.create(
+            treatment_goal=goal, type=ScenarioType.PRESET
+        )
+        return Scenario.objects.get(pk=scenario.pk)
+
+    def _count_queries(self, serializer_class, scenario):
+        with CaptureQueriesContext(connection) as ctx:
+            data = serializer_class(scenario).data
+        return len(ctx.captured_queries), data
+
+    def _assert_constant_queries(self, serializer_class):
+        small = self._scenario_with_usages(1)
+        large = self._scenario_with_usages(9)
+        small_count, _ = self._count_queries(serializer_class, small)
+        large_count, data = self._count_queries(serializer_class, large)
+        self.assertEqual(small_count, large_count)
+        self.assertEqual(len(data["usage_types"]), 9)
+        return data
+
+    def test_v2_usage_types_constant_queries(self):
+        self._assert_constant_queries(ScenarioV2Serializer)
+
+    def test_v3_usage_types_constant_queries(self):
+        self._assert_constant_queries(ScenarioV3Serializer)
+
+    @override_settings(FEATURE_FLAGS=["IMPROVED_TREATMENT_GOAL"])
+    def test_v2_improved_usage_types_constant_queries(self):
+        data = self._assert_constant_queries(ScenarioV2Serializer)
+        paths = {tuple(u["datalayer"]["path"]) for u in data["usage_types"]}
+        self.assertIn(("Root", "Child", "Grandchild"), paths)
+        nested = next(
+            u["datalayer"]
+            for u in data["usage_types"]
+            if u["datalayer"]["path"] == ["Root", "Child", "Grandchild"]
+        )
+        self.assertEqual(nested["category"]["parent"]["name"], "Child")
+        self.assertEqual(nested["category"]["parent"]["parent"]["name"], "Root")
+        self.assertTrue(any(u["datalayer"]["styles"] for u in data["usage_types"]))
+
+    @override_settings(FEATURE_FLAGS=["IMPROVED_TREATMENT_GOAL"])
+    def test_v3_improved_usage_types_constant_queries(self):
+        data = self._assert_constant_queries(ScenarioV3Serializer)
+        self.assertTrue(all(isinstance(u["datalayer"], dict) for u in data["usage_types"]))
+

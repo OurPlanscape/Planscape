@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 from urllib.parse import urlparse
 from uuid import uuid4
 
@@ -207,8 +207,16 @@ class Category(CreatedAtMixin, UpdatedAtMixin, UUIDMixin, MP_Node):
         max_length=128,
     )
 
-    @cached(timeout=settings.CATEGORY_PATH_TTL)
     def _get_full_path(self) -> List[str]:
+        # Ancestors batch-loaded by `hydrate_category_ancestors` avoid both the
+        # DB query and the cache round-trip.
+        prefetched = getattr(self, "_prefetched_ancestors", None)
+        if prefetched is not None:
+            return [*(c.name for c in prefetched), self.name]
+        return self._get_cached_full_path()
+
+    @cached(timeout=settings.CATEGORY_PATH_TTL)
+    def _get_cached_full_path(self) -> List[str]:
         ancestors = [c.name for c in self.get_ancestors()]
         return [*ancestors, self.name]
 
@@ -218,6 +226,45 @@ class Category(CreatedAtMixin, UpdatedAtMixin, UUIDMixin, MP_Node):
     class Meta(TypedModelMeta):
         verbose_name = "Category"
         verbose_name_plural = "Categories"
+
+
+def hydrate_category_ancestors(categories: Iterable[Optional[Category]]) -> None:
+    """
+    Loads every ancestor of the given categories with a single query and
+    attaches them to each instance, so that `get_parent()` (treebeard caches it
+    in `_cached_parent_obj`) and `_get_full_path()` don't hit the database.
+    Categories that were already hydrated are skipped.
+    """
+    nodes = [
+        c
+        for c in categories
+        if c is not None and getattr(c, "_prefetched_ancestors", None) is None
+    ]
+    if not nodes:
+        return
+
+    steplen = Category.steplen
+    ancestor_paths = {
+        node.path[:pos]
+        for node in nodes
+        for pos in range(steplen, len(node.path), steplen)
+    }
+    ancestors_by_path: Dict[str, Category] = {}
+    if ancestor_paths:
+        ancestors_by_path = {
+            c.path: c for c in Category.objects.filter(path__in=ancestor_paths)
+        }
+
+    for node in [*nodes, *ancestors_by_path.values()]:
+        chain = [
+            ancestors_by_path[node.path[:pos]]
+            for pos in range(steplen, len(node.path), steplen)
+            if node.path[:pos] in ancestors_by_path
+        ]
+        node._prefetched_ancestors = chain  # type: ignore[attr-defined]
+        parent = ancestors_by_path.get(node.path[:-steplen])
+        if parent is not None:
+            node._cached_parent_obj = parent  # type: ignore[attr-defined]
 
 
 class SimpleCategory(CreatedAtMixin, UpdatedAtMixin, UUIDMixin, models.Model):
