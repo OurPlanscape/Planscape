@@ -126,6 +126,16 @@ export interface DataLayer {
   is_favorite?: boolean | null;
 }
 
+/**
+ * Lightweight DataLayer preview used in list responses.
+ * Signed URLs are omitted to avoid slow GCS requests.
+ * Fetch the full layer or signed URLs from their respective endpoints when needed
+ */
+export type EmbeddedDataLayer = Pick<
+  DataLayer,
+  'id' | 'name' | 'dataset' | 'type' | 'styles' | 'info' | 'metadata'
+>;
+
 export interface BaseLayer extends Omit<DataLayer, 'styles'> {
   map_url: string;
   storage_type?: string;
