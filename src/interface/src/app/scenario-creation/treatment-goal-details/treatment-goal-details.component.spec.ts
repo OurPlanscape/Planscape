@@ -99,6 +99,16 @@ describe('TreatmentGoalDetailsComponent', () => {
     expect(styles.maxHeight).toBe('600px');
   });
 
+  it('fills the preview box so it reads apart from the panel', () => {
+    const box = fixture.debugElement.query(By.css('.preview-layers'));
+    const fill = getComputedStyle(box.nativeElement).backgroundColor;
+
+    expect(fill).not.toBe('rgba(0, 0, 0, 0)');
+    expect(fill).not.toBe(
+      getComputedStyle(fixture.nativeElement).backgroundColor
+    );
+  });
+
   it('sorts the layers into the groups the design names', () => {
     expect(groupLabels()).toEqual([
       'Priority Objective',

@@ -1,5 +1,5 @@
 import { STAND_SIZE } from '@plan/plan-helpers';
-import { DataLayer } from './data-sets';
+import { EmbeddedDataLayer } from './data-sets';
 import { Geometry } from 'geojson';
 
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
@@ -199,7 +199,7 @@ export interface FeatureCollection extends GeoJSON.FeatureCollection {
 // Backend usage type entry for scenario outputs.
 export interface UsageType {
   usage_type: string;
-  datalayer: string | DataLayer;
+  datalayer: string | EmbeddedDataLayer;
   weight?: number;
 }
 
