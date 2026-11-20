@@ -13,7 +13,15 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { ResourceUnavailableComponent } from '@app/shared/resource-unavailable/resource-unavailable.component';
 import { PlanningAreaListComponent } from '../planning-area-list/planning-area-list.component';
-import { Workspace } from '@types';
+import {
+  DATALAYER_UPLOAD_EVENTS,
+  Pagination,
+  Workspace,
+  WorkspaceDataLayer,
+} from '@types';
+import { WebSocketService } from '@app/services';
+import { WorkspaceDataLayersService } from '@services/workspace-data-layers.service';
+import { catchError, map, merge, of, switchMap } from 'rxjs';
 import { FeatureService } from '@app/features/feature.service';
 
 @Component({
@@ -43,6 +51,8 @@ export class WorkspaceDashboardComponent implements OnInit {
   private workspaceActionsService = inject(WorkspaceActionsService);
   private router: Router = inject(Router);
   private featureService: FeatureService = inject(FeatureService);
+  private workspaceDataLayersService = inject(WorkspaceDataLayersService);
+  private webSocketService = inject(WebSocketService);
 
   workspaceId = this.route.snapshot.data['workspaceId'];
 
@@ -51,6 +61,20 @@ export class WorkspaceDashboardComponent implements OnInit {
   isWorkspaceLoading$ = this.workspaceState.isWorkspaceLoading$;
 
   workspaceNotFound$ = this.workspaceState.workspaceNotFound$;
+
+  dataLayersSummary$ = merge(
+    of(null),
+    this.webSocketService.workspaceUpdates$(DATALAYER_UPLOAD_EVENTS)
+  ).pipe(
+    switchMap(() =>
+      this.workspaceDataLayersService
+        .listDataLayers(this.workspaceId, SUMMARY_PAGE_SIZE, 0)
+        .pipe(
+          map(dataLayersSummary),
+          catchError(() => of(null))
+        )
+    )
+  );
 
   canShare(workspace: Workspace): boolean {
     return workspace.permissions.includes('add_collaborator');
@@ -84,4 +108,28 @@ export class WorkspaceDashboardComponent implements OnInit {
       ? 'View & upload data'
       : null;
   }
+}
+
+const SUMMARY_PAGE_SIZE = 100;
+
+/** "4 layers · 1 processing · 1 failed", or null when there are none. */
+export function dataLayersSummary(
+  page: Pagination<WorkspaceDataLayer>
+): string | null {
+  if (page.count === 0) {
+    return null;
+  }
+  const processing = page.results.filter(
+    (layer) => layer.status === 'PENDING' || layer.status === 'PROCESSING'
+  ).length;
+  const failed = page.results.filter(
+    (layer) => layer.status === 'FAILED'
+  ).length;
+  return [
+    `${page.count} ${page.count === 1 ? 'layer' : 'layers'}`,
+    processing ? `${processing} processing` : '',
+    failed ? `${failed} failed` : '',
+  ]
+    .filter(Boolean)
+    .join(' · ');
 }
