@@ -1257,6 +1257,7 @@ class TreatmentGoalViewSet(
         usages_qs = TreatmentGoalUsesDataLayer.objects.select_related(
             "datalayer",
             "datalayer__category",
+            "datalayer__dataset",
         )
         qs = (
             TreatmentGoal.objects.accessible_by(user)

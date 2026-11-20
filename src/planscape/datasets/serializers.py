@@ -117,6 +117,17 @@ class DatasetSerializer(serializers.ModelSerializer[Dataset]):
         )
 
 
+class DatasetEmbbedSerializer(serializers.ModelSerializer[Dataset]):
+    class Meta:
+        model = Dataset
+        fields = (
+            "id",
+            "organization",
+            "name",
+            "description",
+        )
+
+
 class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     category = CategoryEmbbedSerializer()
     public_url = serializers.CharField(
@@ -192,6 +203,8 @@ class DataLayerEmbedSerializer(DataLayerSerializer):
     resources (e.g. treatment goal usages). It must be used when it needs
     to list DataLayers for performance.
     """
+
+    dataset = DatasetEmbbedSerializer()
 
     class Meta(DataLayerSerializer.Meta):
         fields = (

@@ -935,7 +935,7 @@ class TreatmentGoalUsageListSerializer(serializers.ListSerializer):
         if isinstance(data, models.QuerySet) and data._result_cache is None:
             if improved:
                 data = data.select_related(
-                    "datalayer", "datalayer__category"
+                    "datalayer", "datalayer__category", "datalayer__dataset"
                 ).prefetch_related("datalayer__styles")
             else:
                 data = data.select_related("datalayer")
