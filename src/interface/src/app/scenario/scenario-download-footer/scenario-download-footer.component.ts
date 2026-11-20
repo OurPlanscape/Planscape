@@ -8,8 +8,6 @@ import { getSafeFileName } from '@shared/files';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { ScenarioState } from '../scenario.state';
 import { FeaturesModule } from '@features/features.module';
-import { LegacyScenarioConfigOverlayComponent } from '@scenario/legacy-scenario-config-overlay/legacy-scenario-config-overlay.component';
-import { ScenarioConfigOverlayComponent } from '@scenario/scenario-config-overlay/scenario-config-overlay.component';
 import { MatMenuModule } from '@angular/material/menu';
 import { GeopackageFailureModalComponent } from '@scenario/geopackage-failure-modal/geopackage-failure-modal.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -26,8 +24,6 @@ import { ScenarioConfigListOverlayComponent } from '../scenario-config-list-over
     ButtonComponent,
     FeaturesModule,
     MatMenuModule,
-    LegacyScenarioConfigOverlayComponent,
-    ScenarioConfigOverlayComponent,
     ScenarioConfigListOverlayComponent,
   ],
   templateUrl: './scenario-download-footer.component.html',
