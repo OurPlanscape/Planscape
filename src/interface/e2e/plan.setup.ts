@@ -10,7 +10,7 @@ setup('create workspace and planning area', async ({ request }) => {
 
   const response = await createPlanningArea(
     request,
-    `Test Plan - ${Date.now()}`,
+    `Test Plan from API - ${Date.now()}`,
     geomYosemite,
     workspace.id,
   );

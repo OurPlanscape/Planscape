@@ -92,7 +92,13 @@ test('user can create a Custom Scenario', { tag: ['@smoke'] }, async ({ page, wo
   // After creation - close confirmation
   await expect(page.getByText('Your Scenario Analysis is in')).toBeVisible();
   await page.getByRole('button', { name: 'Close' }).click({ timeout: 60000 });
-  await expect(page.getByText('Running')).toBeVisible();
+
+  // check that the scenario is either Running or Done
+  const scenarioCard = page
+    .locator('sg-scenario-card')
+    .filter({ has: page.locator('.scenario-name', { hasText: newScenarioName }) });
+  await expect(scenarioCard).toBeVisible();
+  await expect(scenarioCard.locator('sg-status-chip')).toHaveText(/^\s*(Running|Done)\s*$/);
 
   // Confirm that the scenario was created
   await planPage.goto(workspaceId, planId);

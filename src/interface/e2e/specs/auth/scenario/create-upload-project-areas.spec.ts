@@ -40,6 +40,13 @@ test('user can upload a project area', { tag: ['@smoke'] }, async ({ page, planI
   await page.locator('sg-file-upload input[type="file"]').setInputFiles(SCENARIO_SHAPEFILE);
   await page.getByRole('button', { name: 'Create' }).click();
 
+  // Check that the Project Area Exists
+  const scenarioCard = page
+    .locator('sg-scenario-card')
+    .filter({ has: page.locator('.scenario-name', { hasText: newScenarioName }) });
+  await expect(scenarioCard).toBeVisible();
+
+
   // Confirm the new scenario via the UI and scenario name
   await planPage.goto(workspaceId, planId);
   await expect(page.getByText(newScenarioName));

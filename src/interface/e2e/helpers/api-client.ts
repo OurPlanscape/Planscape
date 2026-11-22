@@ -85,12 +85,11 @@ export async function createPlanningArea(api: APIRequestContext, testName: strin
 }
 
 export async function deletePlanningArea(api: APIRequestContext, planId: number) {
-  const res = await api.delete(PLANNING_AREA_URL + '/' + planId, {
+  const res = await api.delete(PLANNING_AREA_URL + `/${planId}/`, {
   });
   if (!res.ok()) {
     throw new Error(`Plan deletion failed: ${res.status()} ${await res.text()}`);
   }
-  console.log('Deleted a plan:', res);
   return res;
 }
 
@@ -107,11 +106,10 @@ export async function getScenariosForPlan(
 
 
 export async function deleteScenario(api: APIRequestContext, scenarioId: number) {
-  const res = await api.delete(SCENARIO_URL + '/' + scenarioId, {
+  const res = await api.delete(SCENARIO_URL + `/${scenarioId}/`, {
   });
   if (!res.ok()) {
     throw new Error(`Scenario deletion failed: ${res.status()} ${await res.text()}`);
   }
-  console.log('Deleted a scenario:', res);
   return res;
 }

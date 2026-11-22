@@ -10,7 +10,6 @@ teardown('delete associated scenarios areas', async ({ request }) => {
   const scenarioResults = await getScenariosForPlan(request, planId);
 
   for (const id of scenarioResults.map(scenario => scenario.id)) {
-    console.log('deleting scenario: ', id);
     await deleteScenario(request, id);
   }
 });
