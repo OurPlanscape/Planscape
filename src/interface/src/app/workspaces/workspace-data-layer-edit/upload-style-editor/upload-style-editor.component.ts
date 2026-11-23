@@ -9,7 +9,7 @@ import { RasterColorType, StyleJson } from '@types';
 import {
   createStyleEntry,
   MAX_STYLE_ENTRIES,
-  MIN_STYLE_ENTRIES,
+  minStyleEntries,
   resetStyleForm,
   UploadStyleForm,
 } from './upload-style-form';
@@ -22,6 +22,7 @@ import {
 
 const MAP_TYPES: { value: RasterColorType; label: string }[] = [
   { value: 'RAMP', label: 'Ramp (smooth gradient)' },
+  { value: 'INTERVALS', label: 'Intervals (color up to each value)' },
   { value: 'VALUES', label: 'Values (color per exact value)' },
 ];
 
@@ -52,7 +53,6 @@ export class UploadStyleEditorComponent {
   readonly mapTypes = MAP_TYPES;
   readonly palettes = STYLE_PALETTES;
   readonly maxEntries = MAX_STYLE_ENTRIES;
-  readonly minEntries = MIN_STYLE_ENTRIES;
 
   get custom() {
     return this.form.controls.custom.value;
@@ -62,7 +62,14 @@ export class UploadStyleEditorComponent {
     return this.form.controls.entries;
   }
 
+  get minEntries() {
+    return minStyleEntries(this.form.controls.map_type.value);
+  }
+
   get orderError(): string | null {
+    if (this.form.hasError('tooFewEntries')) {
+      return 'Ramps and intervals need at least 2 breaks.';
+    }
     if (this.form.hasError('unorderedValues')) {
       return 'Values must go from lowest to highest.';
     }

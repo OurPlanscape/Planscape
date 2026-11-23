@@ -898,10 +898,14 @@ class UploadStyleEntrySerializer(serializers.Serializer):
 
 class UploadStyleSerializer(serializers.Serializer):
     map_type = serializers.ChoiceField(choices=["RAMP", "INTERVALS", "VALUES"])
-    entries = UploadStyleEntrySerializer(many=True, min_length=2, max_length=20)
+    entries = UploadStyleEntrySerializer(many=True, min_length=1, max_length=20)
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         values = [entry["value"] for entry in attrs["entries"]]
+        if attrs["map_type"] != "VALUES" and len(values) < 2:
+            raise serializers.ValidationError(
+                {"entries": "Ramps and intervals need at least 2 breaks."}
+            )
         if attrs["map_type"] == "VALUES":
             if len(set(values)) != len(values):
                 raise serializers.ValidationError(

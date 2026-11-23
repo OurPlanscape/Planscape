@@ -132,6 +132,15 @@ describe('UploadStyleEditorComponent', () => {
     expect(form.controls.entries.length).toBe(2);
   });
 
+  it('lets a values style go down to one break', () => {
+    form.controls.map_type.setValue('VALUES');
+    component.removeEntry(0);
+
+    expect(form.controls.entries.length).toBe(1);
+    component.removeEntry(0);
+    expect(form.controls.entries.length).toBe(1);
+  });
+
   it('removes a break', () => {
     component.addEntry();
     component.removeEntry(0);

@@ -1,9 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { filter, map } from 'rxjs';
+import { Router } from '@angular/router';
+import { filter } from 'rxjs';
 import { AuthService, WebSocketService } from '@services';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
-import { DATALAYER_STATUS_EVENT, DataLayerUploadPayload } from '@types';
+import {
+  DATALAYER_STATUS_EVENT,
+  DataLayerUploadPayload,
+  WorkspaceEvent,
+} from '@types';
 
 /**
  * Tells the uploader when their layer finishes processing, wherever they are
@@ -16,24 +21,25 @@ export class DataLayerUploadListenerService {
   private webSocketService = inject(WebSocketService);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
+  private router = inject(Router);
 
   start(): void {
     this.webSocketService
       .on<DataLayerUploadPayload>(DATALAYER_STATUS_EVENT)
       .pipe(
-        map((event) => event.data),
         filter(
-          (upload): upload is DataLayerUploadPayload =>
-            !!upload && upload.created_by === this.authService.currentUser()?.id
+          (
+            event
+          ): event is WorkspaceEvent<DataLayerUploadPayload> &
+            Required<Pick<WorkspaceEvent<DataLayerUploadPayload>, 'data'>> =>
+            !!event.data &&
+            event.data.created_by === this.authService.currentUser()?.id
         )
       )
-      .subscribe((upload) => {
+      .subscribe((event) => {
+        const upload = event.data;
         if (upload.status === 'READY') {
-          this.snackBar.open(
-            `"${upload.name}" is ready. Find it in the Uploaded tab.`,
-            'Dismiss',
-            SNACK_NOTICE_CONFIG
-          );
+          this.showReady(event);
         } else if (upload.status === 'FAILED') {
           const reason = upload.failure_reason
             ? ` ${upload.failure_reason}`
@@ -45,5 +51,22 @@ export class DataLayerUploadListenerService {
           );
         }
       });
+  }
+
+  private showReady(event: WorkspaceEvent<DataLayerUploadPayload>) {
+    const workspaceId = event.workspace_id;
+    const layerId = event.object?.id;
+    const canLink = workspaceId !== undefined && layerId !== undefined;
+    this.snackBar
+      .open(
+        `"${event.data?.name}" is ready.`,
+        canLink ? 'View layer' : 'Dismiss',
+        SNACK_NOTICE_CONFIG
+      )
+      .onAction()
+      .pipe(filter(() => canLink))
+      .subscribe(() =>
+        this.router.navigate(['/workspace', workspaceId, 'datalayers', layerId])
+      );
   }
 }

@@ -14,6 +14,12 @@ import {
 } from '@types';
 
 export const MIN_STYLE_ENTRIES = 2;
+// a single value can be colored on its own; ramps and intervals need two
+export const MIN_VALUES_ENTRIES = 1;
+
+export function minStyleEntries(mapType: RasterColorType): number {
+  return mapType === 'VALUES' ? MIN_VALUES_ENTRIES : MIN_STYLE_ENTRIES;
+}
 export const MAX_STYLE_ENTRIES = 20;
 
 export type StyleEntryForm = FormGroup<{
@@ -141,7 +147,7 @@ export function draftStyle(
 
 const entriesCountValidator: ValidatorFn = (control: AbstractControl) => {
   const count = (control as FormArray).length;
-  if (count < MIN_STYLE_ENTRIES) {
+  if (count < MIN_VALUES_ENTRIES) {
     return { tooFewEntries: true };
   }
   if (count > MAX_STYLE_ENTRIES) {
@@ -156,6 +162,11 @@ const entriesOrderValidator: ValidatorFn = (
   const form = control as UploadStyleForm;
   if (form.controls.entries.disabled) {
     return null;
+  }
+  if (
+    form.controls.entries.length < minStyleEntries(form.controls.map_type.value)
+  ) {
+    return { tooFewEntries: true };
   }
   const values = form.controls.entries.controls
     .map((entry) => entry.controls.value.value)

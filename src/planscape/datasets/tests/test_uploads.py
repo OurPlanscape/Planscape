@@ -824,6 +824,11 @@ class UploadStyleTest(APITestCase):
         response = self.client.patch(self.url, {"style": style}, format="json")
         self.assertEqual(response.status_code, 200, response.content)
 
+    def test_values_style_takes_a_single_value(self):
+        style = {"map_type": "VALUES", "entries": [{"value": 1, "color": "#aa00ff"}]}
+        response = self.client.patch(self.url, {"style": style}, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+
     def test_cannot_style_another_workspace_layer(self):
         other = make_upload(
             PlanningWorkspaceFactory.create(), status=DataLayerStatus.READY

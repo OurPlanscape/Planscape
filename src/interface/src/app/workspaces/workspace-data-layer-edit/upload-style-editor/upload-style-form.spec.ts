@@ -82,13 +82,15 @@ describe('upload style form', () => {
     expect(form.hasError('duplicateValues')).toBeTrue();
   });
 
-  it('needs between 2 and 20 breaks', () => {
+  it('needs 2 breaks for ramps but takes a single value', () => {
     const form = createStyleForm();
     fillStyleForm(form, STYLE, true);
     form.controls.entries.clear();
     form.controls.entries.push(createStyleEntry(1, '#000000'));
 
-    expect(form.controls.entries.hasError('tooFewEntries')).toBeTrue();
+    expect(form.hasError('tooFewEntries')).toBeTrue();
+    form.controls.map_type.setValue('VALUES');
+    expect(form.valid).toBeTrue();
   });
 
   it('is valid while off, whatever the editor holds', () => {

@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { filter, Subject } from 'rxjs';
+import { Router } from '@angular/router';
 import { MockProvider } from 'ng-mocks';
 import { AuthService, WebSocketService } from '@services';
 import {
@@ -13,10 +14,12 @@ import { DataLayerUploadListenerService } from './data-layer-upload-listener.ser
 describe('DataLayerUploadListenerService', () => {
   let events$: Subject<WorkspaceEvent>;
   let snackOpen: jasmine.Spy;
+  let snackAction$: Subject<void>;
 
   const statusChanged = (data: Partial<DataLayerUploadPayload>) =>
     ({
       type: DATALAYER_STATUS_EVENT,
+      workspace_id: 2,
       object: { kind: 'datalayer', id: 5 },
       data: {
         name: 'Canopy',
@@ -35,6 +38,7 @@ describe('DataLayerUploadListenerService', () => {
       providers: [
         MockProvider(MatSnackBar),
         MockProvider(AuthService),
+        MockProvider(Router),
         {
           provide: WebSocketService,
           useValue: {
@@ -48,7 +52,10 @@ describe('DataLayerUploadListenerService', () => {
     spyOn(TestBed.inject(AuthService), 'currentUser').and.returnValue({
       id: 3,
     } as any);
-    snackOpen = spyOn(TestBed.inject(MatSnackBar), 'open');
+    snackAction$ = new Subject<void>();
+    snackOpen = spyOn(TestBed.inject(MatSnackBar), 'open').and.returnValue({
+      onAction: () => snackAction$,
+    } as any);
     TestBed.inject(DataLayerUploadListenerService).start();
   });
 
@@ -56,10 +63,18 @@ describe('DataLayerUploadListenerService', () => {
     events$.next(statusChanged({ status: 'READY' }));
 
     expect(snackOpen).toHaveBeenCalledWith(
-      jasmine.stringContaining('"Canopy" is ready'),
-      'Dismiss',
+      '"Canopy" is ready.',
+      'View layer',
       jasmine.anything()
     );
+  });
+
+  it('opens the layer from the ready message', () => {
+    const navigate = spyOn(TestBed.inject(Router), 'navigate');
+    events$.next(statusChanged({ status: 'READY' }));
+    snackAction$.next();
+
+    expect(navigate).toHaveBeenCalledWith(['/workspace', 2, 'datalayers', 5]);
   });
 
   it('tells the uploader why their layer failed', () => {
