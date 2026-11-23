@@ -10,8 +10,6 @@ import { getSafeFileName } from '@app/shared/files';
 import { FEEDBACK_URL, SNACK_ERROR_CONFIG } from '@app/shared';
 import { GeopackageFailureModalComponent } from '../geopackage-failure-modal/geopackage-failure-modal.component';
 import { MatMenuModule } from '@angular/material/menu';
-import { LegacyScenarioConfigOverlayComponent } from '../legacy-scenario-config-overlay/legacy-scenario-config-overlay.component';
-import { ScenarioConfigOverlayComponent } from '../scenario-config-overlay/scenario-config-overlay.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GEO_PACKAGE_LABELS } from '../scenario.constants';
 import { FeaturesModule } from '@app/features/features.module';
@@ -25,8 +23,6 @@ import { ScenarioConfigListOverlayComponent } from '../scenario-config-list-over
     ButtonComponent,
     FeaturesModule,
     MatMenuModule,
-    LegacyScenarioConfigOverlayComponent,
-    ScenarioConfigOverlayComponent,
     ScenarioConfigListOverlayComponent,
   ],
   templateUrl: './scenario-dashboard-footer.component.html',
