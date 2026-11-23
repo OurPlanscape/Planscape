@@ -94,6 +94,15 @@
             </app-data-set>
           </ng-container>
         </ng-container>
+        <sg-empty-state
+          *ngIf="showNoUploads$ | async"
+          icon="drive_folder_upload"
+          [outlined]="true"
+          class="no-uploads"
+          title="No Uploaded Data Yet"
+          [description]="
+            (noUploadsDescription$ | async) || ''
+          "></sg-empty-state>
       </ng-template>
     </ng-container>
     <mat-spinner

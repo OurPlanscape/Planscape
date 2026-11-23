@@ -61,6 +61,11 @@ $search-container-height: 79px;
   margin: 28px;
 }
 
+.no-uploads {
+  box-sizing: border-box;
+  height: 100%;
+}
+
 .result-count {
   @include h5();
   padding: 14px 16px;

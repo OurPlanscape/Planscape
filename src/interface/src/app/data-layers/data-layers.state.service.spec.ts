@@ -60,6 +60,7 @@ describe('DataLayersStateService', () => {
         'listCategoryDataLayers',
         'search',
         'browseFavorites',
+        'browseUploads',
       ]
     );
     dataLayersService.listDataSets.and.returnValue(
@@ -68,6 +69,7 @@ describe('DataLayersStateService', () => {
     dataLayersService.listDataLayers.and.returnValue(of([]));
     dataLayersService.listCategoryDataLayers.and.returnValue(of([]));
     dataLayersService.browseFavorites.and.returnValue(of([]));
+    dataLayersService.browseUploads.and.returnValue(of([]));
 
     currentWorkspaceId = null;
     currentPlan = null;
@@ -297,6 +299,39 @@ describe('DataLayersStateService', () => {
       currentWorkspaceId = 7;
     });
 
+    it('lists the datasets of the workspace uploads', () => {
+      dataLayersService.browseUploads.and.returnValue(
+        of([
+          layer,
+          { ...layer, id: 2 },
+          { ...layer, id: 3, dataset: { id: 11, name: 'Another' } },
+        ] as DataLayer[])
+      );
+      createService();
+      service.setSearchTab('uploaded');
+      let names: string[] = [];
+      service.dataSets$.subscribe((d) => (names = d.map((s) => s.name)));
+
+      expect(dataLayersService.browseUploads).toHaveBeenCalledWith(
+        7,
+        'map',
+        undefined
+      );
+      expect(names).toEqual(['Another', 'Dataset']);
+    });
+
+    it('shows the spinner while the uploads load', () => {
+      const uploads$ = new Subject<DataLayer[]>();
+      dataLayersService.browseUploads.and.returnValue(uploads$);
+      createService();
+      service.setSearchTab('uploaded');
+      let loading = false;
+      service.loading$.subscribe((l) => (loading = l));
+      service.dataSets$.subscribe();
+
+      expect(loading).toBeTrue();
+    });
+
     it('browses datasets instead of categories', () => {
       createService('DATA_ORGANIZATION');
       service.setSearchTab('uploaded');
@@ -494,6 +529,21 @@ describe('DataLayersStateService', () => {
       currentWorkspaceId = 7;
       createService(...flags);
     }
+
+    describe('who is allowed to upload', () => {
+      it('follows the add_datalayer permission of the workspace', () => {
+        createInWorkspace();
+        const seen: boolean[] = [];
+        service.canUploadDataLayers$.subscribe((can) => seen.push(can));
+
+        currentWorkspace$.next({
+          permissions: ['add_datalayer'],
+        } as unknown as Workspace);
+        currentWorkspace$.next({ permissions: [] } as unknown as Workspace);
+
+        expect(seen).toEqual([false, true, false]);
+      });
+    });
 
     describe('who is allowed to change them', () => {
       const workspaceOf = (role: WorkspaceRole) =>
