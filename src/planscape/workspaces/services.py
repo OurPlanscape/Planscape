@@ -12,7 +12,6 @@ from workspaces.events import publish_member_event, publish_workspace_deleted
 from workspaces.models import (
     UserAccessWorkspace,
     Workspace,
-    WorkspaceKind,
     WorkspaceRole,
 )
 from workspaces.permissions import WorkspacePermission
@@ -31,7 +30,6 @@ def create_workspace(
     """Canonical method to create a new planning workspace."""
     workspace = Workspace.objects.create(
         name=name,
-        kind=WorkspaceKind.PLANNING,
         created_by=user,
         creator_name=user.get_full_name(),
         **kwargs,

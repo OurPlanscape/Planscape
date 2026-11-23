@@ -1,6 +1,6 @@
 from unittest import mock
 from urllib.parse import urlencode
-from datasets.models import DataLayer, Dataset
+from datasets.models import DataLayer, DataLayerOrigin, Dataset
 from datasets.tests.factories import DataLayerFactory, DatasetFactory
 from organizations.tests.factories import OrganizationFactory
 from django.contrib.auth import get_user_model
@@ -87,6 +87,29 @@ class TestAdminDataLayerViewSet(APITestCase):
         response = self.client.post(url, data=data, format="json")
         self.assertEqual(response.status_code, 201)
         self.assertEqual(1, DataLayer.objects.all().count())
+        self.assertEqual(DataLayer.objects.get().origin, DataLayerOrigin.PLANSCAPE)
+
+    @mock.patch(
+        "datasets.services.create_upload_url_s3",
+        return_value={"url": "foo"},
+    )
+    def test_create_user_upload(self, _create_upload_url):
+        self.client.force_authenticate(user=self.admin)
+        url = reverse("api:admin-datasets:datalayers-list")
+        data = {
+            "name": "my upload",
+            "dataset": self.dataset.pk,
+            "type": "RASTER",
+            "organization": self.dataset.organization.pk,
+            "original_name": "foo",
+            "origin": DataLayerOrigin.USER,
+        }
+        response = self.client.post(url, data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(
+            response.json()["datalayer"]["origin"], DataLayerOrigin.USER
+        )
+        self.assertEqual(DataLayer.objects.get().origin, DataLayerOrigin.USER)
 
 
 class TestAdminDatasetViewSet(APITestCase):

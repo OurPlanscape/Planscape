@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 
 from datasets.models import (
     DataLayer,
+    DataLayerOrigin,
     DataLayerStatus,
     DataLayerType,
     PreferredDisplayType,
@@ -485,7 +486,10 @@ class TestDataLayerViewSet(APITestCase):
     def test_find_anything_accepts_search_tab(self):
         self.client.force_authenticate(user=self.normal)
         DataLayerFactory.create(
-            dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
+            dataset=self.dataset,
+            name="Forest",
+            type=DataLayerType.RASTER,
+            origin=DataLayerOrigin.USER,
         )
         url = reverse("api:datasets:datalayers-find-anything")
         response = self.client.post(
@@ -641,6 +645,126 @@ class TestDataLayerViewSet(APITestCase):
             data = response.json()
             self.assertEqual(data["count"], 1)
             self.assertEqual(data["results"][0]["id"], favorite.pk)
+
+    def test_find_anything_uploaded_returns_workspace_uploads(self):
+        viewer = UserFactory.create()
+        workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        UserAccessWorkspaceFactory.create(
+            user=viewer, workspace=workspace, role=WorkspaceRole.VIEWER
+        )
+        dataset = DatasetFactory.create(workspace=workspace)
+        upload = DataLayerFactory.create(
+            dataset=dataset,
+            name="Fire upload",
+            type=DataLayerType.RASTER,
+            origin=DataLayerOrigin.USER,
+        )
+        DataLayerFactory.create(
+            dataset=dataset, name="Fire catalog", type=DataLayerType.RASTER
+        )
+        DataLayerFactory.create(
+            dataset=DatasetFactory.create(
+                workspace=PlanningWorkspaceFactory.create(created_by=self.normal)
+            ),
+            name="Fire elsewhere",
+            type=DataLayerType.RASTER,
+            origin=DataLayerOrigin.USER,
+        )
+        url = reverse("api:datasets:datalayers-find-anything")
+        params = {
+            "term": "fire",
+            "type": "RASTER",
+            "search_tab": SearchTab.UPLOADED,
+            "workspace_id": workspace.pk,
+            "group_by": "dataset",
+        }
+
+        for user in (self.normal, viewer):
+            self.client.force_authenticate(user=user)
+            response = self.client.post(url, params, format="json")
+
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            self.assertEqual(
+                [row["id"] for row in data["results"] if row["type"] == "DATALAYER"],
+                [upload.pk],
+            )
+
+    def test_find_anything_general_excludes_uploads(self):
+        workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        dataset = DatasetFactory.create(workspace=workspace)
+        catalog = DataLayerFactory.create(
+            dataset=dataset, name="Fire catalog", type=DataLayerType.RASTER
+        )
+        DataLayerFactory.create(
+            dataset=dataset,
+            name="Fire upload",
+            type=DataLayerType.RASTER,
+            origin=DataLayerOrigin.USER,
+        )
+        self.client.force_authenticate(user=self.normal)
+        url = reverse("api:datasets:datalayers-find-anything")
+        params = {
+            "term": "fire",
+            "type": "RASTER",
+            "workspace_id": workspace.pk,
+            "group_by": "dataset",
+        }
+
+        response = self.client.post(url, params, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(
+            [row["id"] for row in data["results"] if row["type"] == "DATALAYER"],
+            [catalog.pk],
+        )
+
+    def test_find_anything_uploaded_without_workspace_returns_accessible_uploads(
+        self,
+    ):
+        workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        other_workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        uploads = [
+            DataLayerFactory.create(
+                dataset=DatasetFactory.create(
+                    workspace=upload_workspace, visibility=VisibilityOptions.PRIVATE
+                ),
+                name=f"Fire upload {index}",
+                type=DataLayerType.RASTER,
+                origin=DataLayerOrigin.USER,
+            )
+            for index, upload_workspace in enumerate((workspace, other_workspace))
+        ]
+        DataLayerFactory.create(
+            dataset=self.dataset, name="Fire catalog", type=DataLayerType.RASTER
+        )
+        DataLayerFactory.create(
+            dataset=DatasetFactory.create(
+                workspace=PlanningWorkspaceFactory.create(),
+                visibility=VisibilityOptions.PRIVATE,
+            ),
+            name="Fire inaccessible",
+            type=DataLayerType.RASTER,
+            origin=DataLayerOrigin.USER,
+        )
+        self.client.force_authenticate(user=self.normal)
+        url = reverse("api:datasets:datalayers-find-anything")
+        params = {
+            "term": "fire",
+            "type": "RASTER",
+            "search_tab": "uploaded",
+            "group_by": "dataset",
+        }
+
+        response = self.client.post(url, params, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(
+            {row["id"] for row in data["results"] if row["type"] == "DATALAYER"},
+            {upload.pk for upload in uploads},
+        )
 
     def test_find_anything_favorites_requires_workspace(self):
         self.client.force_authenticate(user=self.normal)
@@ -823,7 +947,79 @@ class TestDataLayerViewSet(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual([row["id"] for row in response.json()], [raster.pk])
 
-    def test_browse_only_supports_favorites_tab(self):
+    def test_browse_returns_workspace_uploads_across_datasets(self):
+        viewer = UserFactory.create()
+        workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        UserAccessWorkspaceFactory.create(
+            user=viewer, workspace=workspace, role=WorkspaceRole.VIEWER
+        )
+        dataset = DatasetFactory.create(workspace=workspace)
+        other_dataset = DatasetFactory.create(workspace=workspace)
+        second = DataLayerFactory.create(
+            dataset=other_dataset, name="B upload", origin=DataLayerOrigin.USER
+        )
+        first = DataLayerFactory.create(
+            dataset=dataset, name="A upload", origin=DataLayerOrigin.USER
+        )
+        DataLayerFactory.create(dataset=dataset, origin=DataLayerOrigin.PLANSCAPE)
+        DataLayerFactory.create(
+            dataset=DatasetFactory.create(
+                workspace=PlanningWorkspaceFactory.create(created_by=self.normal)
+            ),
+            origin=DataLayerOrigin.USER,
+        )
+        WorkspaceFavoriteDataLayer.objects.create(workspace=workspace, datalayer=first)
+        url = reverse("api:datasets:datalayers-browse")
+        params = {"search_tab": "uploaded", "workspace_id": workspace.pk}
+
+        for user in (self.normal, viewer):
+            self.client.force_authenticate(user=user)
+            response = self.client.post(url, params, format="json")
+
+            self.assertEqual(response.status_code, 200)
+            data = response.json()
+            self.assertEqual([row["id"] for row in data], [first.pk, second.pk])
+            self.assertEqual([row["is_favorite"] for row in data], [True, False])
+            self.assertTrue(
+                all(row["origin"] == DataLayerOrigin.USER for row in data)
+            )
+
+    def test_browse_uploaded_without_workspace_returns_accessible_uploads(self):
+        workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        other_workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        first = DataLayerFactory.create(
+            dataset=DatasetFactory.create(
+                workspace=workspace, visibility=VisibilityOptions.PRIVATE
+            ),
+            name="A upload",
+            origin=DataLayerOrigin.USER,
+        )
+        second = DataLayerFactory.create(
+            dataset=DatasetFactory.create(
+                workspace=other_workspace, visibility=VisibilityOptions.PRIVATE
+            ),
+            name="B upload",
+            origin=DataLayerOrigin.USER,
+        )
+        DataLayerFactory.create(dataset=self.dataset)
+        DataLayerFactory.create(
+            dataset=DatasetFactory.create(
+                workspace=PlanningWorkspaceFactory.create(),
+                visibility=VisibilityOptions.PRIVATE,
+            ),
+            origin=DataLayerOrigin.USER,
+        )
+        self.client.force_authenticate(user=self.normal)
+        url = reverse("api:datasets:datalayers-browse")
+
+        response = self.client.post(url, {"search_tab": "uploaded"}, format="json")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual([row["id"] for row in data], [first.pk, second.pk])
+        self.assertTrue(all(row["is_favorite"] is None for row in data))
+
+    def test_browse_rejects_general_tab(self):
         workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
         self.client.force_authenticate(user=self.normal)
         url = reverse("api:datasets:datalayers-browse")
@@ -963,6 +1159,55 @@ class TestDatasetViewSet(APITestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual([favorite.pk], [row.get("id") for row in data])
+
+    def test_browses_datalayers_uploaded_returns_workspace_uploads(self):
+        self.client.force_authenticate(user=self.normal)
+        workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        dataset = DatasetFactory(workspace=workspace)
+        upload = DataLayerFactory.create(
+            dataset=dataset, type=DataLayerType.RASTER, origin=DataLayerOrigin.USER
+        )
+        catalog = DataLayerFactory.create(dataset=dataset, type=DataLayerType.RASTER)
+        url = reverse("api:datasets:datasets-browse", kwargs={"pk": dataset.pk})
+
+        uploaded = self.client.post(
+            url,
+            {
+                "type": "RASTER",
+                "search_tab": "uploaded",
+                "workspace_id": workspace.pk,
+            },
+            format="json",
+        )
+        general = self.client.post(url, {"type": "RASTER"}, format="json")
+
+        self.assertEqual(uploaded.status_code, 200)
+        self.assertEqual([upload.pk], [row.get("id") for row in uploaded.json()])
+        self.assertEqual(general.status_code, 200)
+        self.assertEqual([catalog.pk], [row.get("id") for row in general.json()])
+
+    def test_browses_datalayers_uploaded_excludes_other_workspaces(self):
+        self.client.force_authenticate(user=self.normal)
+        workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        other_workspace = PlanningWorkspaceFactory.create(created_by=self.normal)
+        dataset = DatasetFactory(workspace=other_workspace)
+        DataLayerFactory.create(
+            dataset=dataset, type=DataLayerType.RASTER, origin=DataLayerOrigin.USER
+        )
+        url = reverse("api:datasets:datasets-browse", kwargs={"pk": dataset.pk})
+
+        response = self.client.post(
+            url,
+            {
+                "type": "RASTER",
+                "search_tab": "uploaded",
+                "workspace_id": workspace.pk,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([], response.json())
 
     def test_browses_datalayers_favorites_requires_workspace(self):
         self.client.force_authenticate(user=self.normal)
