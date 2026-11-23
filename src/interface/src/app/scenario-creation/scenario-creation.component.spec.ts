@@ -34,7 +34,6 @@ import { MOCK_SCENARIO } from '@services/mocks';
 
 import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
-import { StandLevelConstraintsComponent } from '@scenario-creation/step3/stand-level-constraints.component';
 import { TreatmentTargetComponent } from '@scenario-creation/treatment-target/treatment-target.component';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { ScenarioMapComponent } from '@maplibre-map/scenario-map/scenario-map.component';
@@ -42,6 +41,7 @@ import { FeatureService } from '@app/features/feature.service';
 import { PlanState } from '@plan/plan.state';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
 import { SHOW_FAVORITE_STAR } from '@data-layers/favorite-star/favorite-star.token';
+import { AdvStandLevelConstraintsComponent } from './step3/adv-stand-level-constraints/adv-stand-level-constraints.component';
 
 describe('ScenarioCreationComponent', () => {
   let component: ScenarioCreationComponent;
@@ -81,7 +81,7 @@ describe('ScenarioCreationComponent', () => {
         MockComponents(
           Step1WithOverviewComponent,
           DataLayersComponent,
-          StandLevelConstraintsComponent,
+          AdvStandLevelConstraintsComponent,
           TreatmentTargetComponent,
           BaseLayersComponent,
           ScenarioMapComponent

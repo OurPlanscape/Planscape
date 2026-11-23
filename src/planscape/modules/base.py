@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Type, Union
 
 from datasets.models import (
     DataLayer,
+    DataLayerOrigin,
     DataLayerStatus,
     DataLayerType,
     Dataset,
@@ -64,6 +65,10 @@ def filter_datalayers(
     Narrows `queryset` to the datalayers a user can browse or find. Shared by
     browse, find anything and the module options, so all of them agree on
     which datalayers exist for a module, type and geometry.
+
+    `search_tab` picks the datalayers listed: the Planscape catalog (general),
+    the workspace's favorites, or user uploads (only the workspace's, when a
+    workspace is given).
     """
     queryset = queryset.accessible_by(user).filter(status=DataLayerStatus.READY)
 
@@ -84,14 +89,19 @@ def filter_datalayers(
     if geometry is not None:
         queryset = queryset.by_outline_intersects(geometry)
 
-    if search_tab == SearchTab.FAVORITES:
-        queryset = queryset.filter(
-            id__in=WorkspaceFavoriteDataLayer.objects.filter(
-                workspace=workspace
-            ).values("datalayer_id")
-        )
-    elif search_tab == SearchTab.UPLOADED:
-        queryset = queryset.filter(workspace=workspace, raw_url__isnull=False)
+    match search_tab:
+        case SearchTab.FAVORITES:
+            queryset = queryset.filter(
+                id__in=WorkspaceFavoriteDataLayer.objects.filter(
+                    workspace=workspace
+                ).values("datalayer_id")
+            )
+        case SearchTab.UPLOADED:
+            queryset = queryset.filter(origin=DataLayerOrigin.USER)
+            if workspace is not None:
+                queryset = queryset.filter(dataset__workspace=workspace)
+        case _:
+            queryset = queryset.filter(origin=DataLayerOrigin.PLANSCAPE)
 
     return queryset
 

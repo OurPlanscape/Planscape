@@ -1991,6 +1991,8 @@ def export_datalayer_names_file(scenario: Scenario) -> Path:
 
 
 def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
+    temp_file: Path | None = None
+    datalayers_names_file: Path | None = None
     try:
         if not regenerate and scenario.geopackage_url:
             logger.info(
@@ -2060,8 +2062,6 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
             bucket_name=settings.GCS_MEDIA_BUCKET,
         )
 
-        temp_file.unlink(missing_ok=True)
-        datalayers_names_file.unlink(missing_ok=True)
         scenario.geopackage_url = geopackage_path
         scenario.geopackage_status = GeoPackageStatus.SUCCEEDED
         scenario.save(
@@ -2079,6 +2079,11 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
         )
         publish_scenario_event("planning.scenario.geopackage_status_changed", scenario)
         raise
+    finally:
+        if temp_file is not None:
+            temp_file.unlink(missing_ok=True)
+        if datalayers_names_file is not None:
+            datalayers_names_file.unlink(missing_ok=True)
 
 
 @transaction.atomic()

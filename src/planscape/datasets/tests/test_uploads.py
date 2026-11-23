@@ -16,6 +16,7 @@ from workspaces.models import WorkspaceRole
 
 from datasets.models import (
     DataLayer,
+    DataLayerOrigin,
     DataLayerStatus,
     DataLayerType,
     Dataset,
@@ -48,6 +49,7 @@ def make_upload(workspace, status=DataLayerStatus.PENDING, **kwargs):
         workspace=workspace,
         type=DataLayerType.RASTER,
         status=status,
+        origin=DataLayerOrigin.USER,
         info=None,
         **kwargs,
     )
@@ -877,13 +879,6 @@ class BrowseUploadedTest(APITestCase):
         self.assertEqual(response.status_code, 200, response.content)
         rows = {row["name"]: row["is_favorite"] for row in response.json()}
         self.assertEqual(rows, {"Aspect": True, "Canopy": False})
-
-    def test_requires_a_workspace(self):
-        self.client.force_authenticate(self.owner)
-        body = {**self.body}
-        del body["workspace_id"]
-        response = self.client.post(self.url, body, format="json")
-        self.assertEqual(response.status_code, 400)
 
     def test_outsiders_cannot_browse_the_workspace(self):
         self.client.force_authenticate(self.outsider)

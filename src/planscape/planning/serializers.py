@@ -22,7 +22,7 @@ from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from stands.models import Stand, StandSizeChoices
 from workspaces.access import get_planning_area_permissions, get_planning_area_role
-from workspaces.models import Workspace, WorkspaceKind
+from workspaces.models import Workspace
 from workspaces.permissions import WorkspacePermission
 
 from planning.geometry import coerce_geojson, coerce_geometry
@@ -162,7 +162,7 @@ class CreatePlanningAreaSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
     workspace = serializers.PrimaryKeyRelatedField(
-        queryset=Workspace.objects.filter(kind=WorkspaceKind.PLANNING),
+        queryset=Workspace.objects.all(),
         required=False,
         allow_null=True,
         help_text="Optional Workspace to create the Planning Area in.",

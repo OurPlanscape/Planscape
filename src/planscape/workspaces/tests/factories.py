@@ -5,7 +5,6 @@ from datasets.models import VisibilityOptions
 from workspaces.models import (
     UserAccessWorkspace,
     Workspace,
-    WorkspaceKind,
     WorkspaceRole,
 )
 
@@ -16,7 +15,6 @@ class WorkspaceFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda x: f"Workspace {x}")
     visibility = VisibilityOptions.PRIVATE
-    kind = WorkspaceKind.DATA
 
 
     @factory.post_generation
@@ -55,7 +53,6 @@ class UserAccessWorkspaceFactory(factory.django.DjangoModelFactory):
 class PlanningWorkspaceFactory(WorkspaceFactory):
     """A user-facing workspace, always owned by its creator."""
 
-    kind = WorkspaceKind.PLANNING
     created_by = factory.SubFactory(UserFactory)
     creator_name = factory.LazyAttribute(
         lambda workspace: workspace.created_by.get_full_name()

@@ -13,7 +13,6 @@ from workspaces.access import PLANNING_AREA_ROLES
 from workspaces.models import (
     UserAccessWorkspace,
     Workspace,
-    WorkspaceKind,
     WorkspaceRole,
 )
 
@@ -156,7 +155,6 @@ class Command(BaseCommand):
 
     def _find_default_workspace(self, user: AbstractUser) -> Optional[Workspace]:
         return Workspace.objects.filter(
-            kind=WorkspaceKind.PLANNING,
             created_by=user,
             name=DEFAULT_WORKSPACE_NAME,
         ).first()
@@ -166,7 +164,6 @@ class Command(BaseCommand):
             workspace = Workspace.objects.create(
                 name=name,
                 visibility=VisibilityOptions.PRIVATE,
-                kind=WorkspaceKind.PLANNING,
                 created_by=owner,
                 creator_name=owner.get_full_name() if owner else None,
             )

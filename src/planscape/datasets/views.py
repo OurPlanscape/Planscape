@@ -4,6 +4,7 @@ from core.serializers import MultiSerializerMixin
 from datasets.filters import DataLayerFilterSet
 from datasets.models import (
     DataLayer,
+    DataLayerOrigin,
     DataLayerStatus,
     DataLayerType,
     Dataset,
@@ -29,7 +30,7 @@ from datasets.serializers import (
 from datasets.services import (
     UploadsNotSupported,
     browse,
-    browse_favorites,
+    browse_datalayers,
     browse_simple_category,
     create_workspace_upload,
     delete_workspace_datalayer,
@@ -214,8 +215,9 @@ class DataLayerViewSet(
         return Response({"layer_url": datalayer.get_map_url()})
 
     @extend_schema(
-        description="Returns the datalayers favorited in a workspace, or its "
-        "ready uploads, across all datasets.",
+        description="Returns the datalayers favorited in a workspace, or the "
+        "uploaded datalayers (narrowed to a workspace when given), across all "
+        "datasets.",
         request=BrowseDataLayersSerializer,
         responses={200: BrowseDataLayerSerializer(many=True)},
     )
@@ -226,27 +228,28 @@ class DataLayerViewSet(
             context={"request": request},
         )
         serializer.is_valid(raise_exception=True)
-        workspace = serializer.validated_data["workspace"]
+        workspace = serializer.validated_data.get("workspace")
         search_tab = serializer.validated_data["search_tab"]
         results = list(
-            browse_favorites(
-                workspace,
+            browse_datalayers(
+                search_tab,
+                workspace=workspace,
                 type=serializer.validated_data.get("type"),
                 module=serializer.validated_data.get("module"),
                 geometry=serializer.validated_data.get("geometry"),
                 user=request.user,
-                search_tab=search_tab,
             )
         )
-        result_ids = {datalayer.pk for datalayer in results}
+        datalayer_ids = [datalayer.pk for datalayer in results]
+        favorite_datalayer_ids = (
+            set(datalayer_ids)
+            if search_tab == SearchTab.FAVORITES
+            else get_favorite_datalayer_ids(workspace, datalayer_ids)
+        )
         serializer = BrowseDataLayerSerializer(
             results,
             many=True,
-            context={
-                "favorite_datalayer_ids": result_ids
-                if search_tab == SearchTab.FAVORITES
-                else get_favorite_datalayer_ids(workspace, result_ids),
-            },
+            context={"favorite_datalayer_ids": favorite_datalayer_ids},
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -314,13 +317,15 @@ class DataLayerViewSet(
 
         # Workspace uploads only show up elsewhere once they're READY; the
         # workspace datalayers endpoint is where pending and failed ones live.
-        unfinished_uploads = Q(raw_url__isnull=False) & ~Q(status=DataLayerStatus.READY)
+        unfinished_uploads = Q(origin=DataLayerOrigin.USER) & ~Q(
+            status=DataLayerStatus.READY
+        )
 
         if self.action == "urls":
             workspace_uploads = Q(pk__in=[])
             if user and user.is_authenticated:
                 workspace_uploads = Q(
-                    raw_url__isnull=False,
+                    origin=DataLayerOrigin.USER,
                     workspace__user_access__user=user,
                 )
             return (
@@ -392,7 +397,7 @@ class WorkspaceDataLayerViewSet(
         return (
             DataLayer.objects.filter(
                 workspace=self.get_workspace(),
-                raw_url__isnull=False,
+                origin=DataLayerOrigin.USER,
             )
             .select_related("created_by")
             .order_by("-created_at")

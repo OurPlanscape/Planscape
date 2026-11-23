@@ -29,6 +29,7 @@ from datasets.models import (
     Category,
     DataLayer,
     DataLayerHasStyle,
+    DataLayerOrigin,
     DataLayerStatus,
     DataLayerType,
     Dataset,
@@ -537,17 +538,17 @@ def browse_simple_category(
     )
 
 
-def browse_favorites(
-    workspace: Workspace,
+def browse_datalayers(
+    search_tab: str,
+    workspace: Optional[Workspace] = None,
     type: Optional[DataLayerType] = None,
     module: Optional[str] = None,
     geometry: Optional[GEOSGeometry] = None,
     user: Optional[User] = None,
-    search_tab: str = SearchTab.FAVORITES,
 ) -> QuerySet[DataLayer]:
     """
-    Every datalayer of a workspace tab, across all datasets: its favorites,
-    or its READY uploads with `search_tab=uploaded`.
+    The datalayers of a search tab (the workspace's favorites, or uploads),
+    across all datasets.
     """
     datalayers = filter_datalayers(
         DataLayer.objects.all(),
@@ -1094,6 +1095,7 @@ def create_workspace_upload(
         mimetype=UPLOAD_MIMETYPE,
         raw_url=raw_url,
         file_size=size,
+        origin=DataLayerOrigin.USER,
         # module lists only include layers enabled for them
         metadata={"modules": {"map": {"enabled": True}}},
     )

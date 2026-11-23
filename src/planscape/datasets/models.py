@@ -287,6 +287,16 @@ class DataLayerType(models.TextChoices):
     RASTER = "RASTER", "Raster"
 
 
+class DataLayerOrigin(models.TextChoices):
+    """
+    Who brought the datalayer into Planscape: the Planscape team (data
+    catalog) or a user uploading their own data to a workspace.
+    """
+
+    PLANSCAPE = "PLANSCAPE", "Planscape"
+    USER = "USER", "User"
+
+
 class SearchTab(models.TextChoices):
     GENERAL = "general", "General"
     FAVORITES = "favorites", "Favorites"
@@ -555,6 +565,14 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         null=True,
         blank=True,
         help_text="Size in bytes of the uploaded file.",
+    )
+
+    origin = models.CharField(
+        max_length=16,
+        choices=DataLayerOrigin.choices,
+        default=DataLayerOrigin.PLANSCAPE,
+        db_index=True,
+        help_text="Whether the Planscape team or a user uploaded the datalayer.",
     )
 
     info = models.JSONField(

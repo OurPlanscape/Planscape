@@ -8,14 +8,13 @@ class WorkspaceAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
-        "kind",
         "visibility",
         "creator_name",
         "created_at",
         "updated_at",
         "deleted_at",
     )
-    list_filter = ("kind", "visibility")
+    list_filter = ("visibility",)
     search_fields = ("name", "creator_name")
     readonly_fields = ("created_at", "updated_at", "deleted_at")
 
