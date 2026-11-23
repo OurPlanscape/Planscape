@@ -14,7 +14,6 @@ from rest_framework.test import APITestCase
 from workspaces.models import (
     UserAccessWorkspace,
     Workspace,
-    WorkspaceKind,
     WorkspaceRole,
 )
 from workspaces.tests.factories import (
@@ -65,7 +64,6 @@ class CreateWorkspaceTest(APITestCase):
         )
 
         workspace = Workspace.objects.get(pk=response.json()["id"])
-        self.assertEqual(workspace.kind, WorkspaceKind.PLANNING)
         self.assertEqual(workspace.created_by, self.user)
         self.assertEqual(workspace.creator_name, "Han Solo")
         self.assertTrue(
@@ -145,18 +143,19 @@ class ListWorkspaceTest(APITestCase):
         self.assertEqual(names, {"Mine", "Shared"})
         self.assertEqual(response.json()["count"], 2)
 
-    def test_list_excludes_data_catalog_workspaces(self):
-        catalog = WorkspaceFactory.create(name="Default")
+    def test_list_includes_every_workspace_with_access(self):
+        shared = WorkspaceFactory.create(name="Shared")
         UserAccessWorkspaceFactory.create(
-            user=self.user, workspace=catalog, role=WorkspaceRole.COLLABORATOR
+            user=self.user, workspace=shared, role=WorkspaceRole.COLLABORATOR
         )
         PlanningWorkspaceFactory.create(name="Mine", created_by=self.user)
+        WorkspaceFactory.create(name="Not mine")
 
         self.client.force_authenticate(user=self.user)
         response = self.client.get(reverse(LIST_URL))
 
         names = {row["name"] for row in response.json()["results"]}
-        self.assertEqual(names, {"Mine"})
+        self.assertEqual(names, {"Shared", "Mine"})
 
     def test_list_excludes_soft_deleted_workspaces(self):
         PlanningWorkspaceFactory.create(name="Alive", created_by=self.user)

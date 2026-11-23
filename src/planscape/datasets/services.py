@@ -521,22 +521,24 @@ def browse_simple_category(
     )
 
 
-def browse_favorites(
-    workspace: Workspace,
+def browse_datalayers(
+    search_tab: str,
+    workspace: Optional[Workspace] = None,
     type: Optional[DataLayerType] = None,
     module: Optional[str] = None,
     geometry: Optional[GEOSGeometry] = None,
     user: Optional[User] = None,
 ) -> QuerySet[DataLayer]:
     """
-    Every datalayer favorited in the workspace, across all datasets.
+    The datalayers of a search tab (the workspace's favorites, or uploads),
+    across all datasets.
     """
     datalayers = filter_datalayers(
         DataLayer.objects.all(),
         type=type,
         module=module,
         geometry=geometry,
-        search_tab=SearchTab.FAVORITES,
+        search_tab=search_tab,
         user=user,
         workspace=workspace,
     )

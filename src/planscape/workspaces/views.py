@@ -16,7 +16,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 
 from workspaces.filters import PlanningWorkspaceFilterSet
-from workspaces.models import Workspace, WorkspaceKind
+from workspaces.models import Workspace
 from workspaces.permissions import WorkspaceViewPermission
 from workspaces.serializers import (
     CreatePlanningWorkspaceSerializer,
@@ -153,10 +153,7 @@ class WorkspaceViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         # Deliberately not self.get_object(): the requester doesn't have
         # workspace access yet (that's exactly what accepting grants them),
         # so the standard access-scoped queryset would 404 them out.
-        workspace = get_object_or_404(
-            Workspace.objects.filter(kind=WorkspaceKind.PLANNING),
-            pk=pk,
-        )
+        workspace = get_object_or_404(Workspace.objects.all(), pk=pk)
         access = accept_invite(user=request.user, workspace=workspace)
         return Response(WorkspaceMemberSerializer(access).data)
 

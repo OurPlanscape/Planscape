@@ -25,25 +25,11 @@ class WorkspaceRole(models.TextChoices):
     VIEWER = "VIEWER", "Viewer"
 
 
-class WorkspaceKind(models.TextChoices):
-    """
-    Separates the data-catalog workspaces (which group Datasets, Styles and
-    DataLayers and are managed through the admin API) from the user-facing
-    workspaces that group Planning Areas.
-    """
-
-    DATA = "DATA", "Data Catalog"
-    PLANNING = "PLANNING", "Planning"
-
-
 class WorkspaceManager(AliveObjectsManager):
     def list_by_user(self, user: "AbstractUser") -> models.QuerySet:
         if not user or not user.is_authenticated:
             return self.get_queryset().none()
-        return self.get_queryset().filter(
-            kind=WorkspaceKind.PLANNING,
-            user_access__user=user,
-        )
+        return self.get_queryset().filter(user_access__user=user)
 
     def list_for_api(self, user: "AbstractUser") -> models.QuerySet:
         return (
@@ -69,13 +55,6 @@ class Workspace(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         choices=VisibilityOptions.choices,
         default=VisibilityOptions.PRIVATE,
         max_length=16,
-    )
-
-    kind = models.CharField(
-        choices=WorkspaceKind.choices,
-        default=WorkspaceKind.DATA,
-        max_length=16,
-        help_text="What this workspace groups: data catalog entries or planning areas.",
     )
 
     created_by_id: int
