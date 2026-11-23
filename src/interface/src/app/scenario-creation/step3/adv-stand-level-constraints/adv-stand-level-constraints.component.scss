@@ -3,7 +3,7 @@
 @import 'mixins';
 
 .stand-label {
-    @include xs-label();
+    @include small-paragraph();
     margin: 0 0 16px 0;
 }
 
