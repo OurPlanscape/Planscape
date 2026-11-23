@@ -45,7 +45,11 @@ import { FeaturesModule } from '@features/features.module';
 import { FeatureService } from '@features/feature.service';
 
 // Side panels that show the data layers of a single map
-const PER_MAP_TABS = [SidebarTabs.DATA_LAYERS, SidebarTabs.FAVORITES];
+const PER_MAP_TABS = [
+  SidebarTabs.DATA_LAYERS,
+  SidebarTabs.FAVORITES,
+  SidebarTabs.UPLOADED,
+];
 
 @UntilDestroy()
 @Component({

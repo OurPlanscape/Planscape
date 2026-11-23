@@ -68,7 +68,7 @@
       ">
     </app-map-project-areas>
   </ng-container>
-  <mgl-control position="bottom-left">
+  <mgl-control position="bottom-left" *ngIf="showDataLayerName">
     <app-data-layer-name [showClearButton]="true"></app-data-layer-name>
   </mgl-control>
 

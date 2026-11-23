@@ -1,6 +1,7 @@
 import csv
 import json
 import shutil
+import zipfile
 from datetime import date, datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -23,6 +24,7 @@ from stands.services import calculate_stand_vector_stats_with_stand_list
 from stands.tests.factories import StandFactory, StandMetricFactory
 
 from planning.models import (
+    GeoPackageStatus,
     PlanningArea,
     PlanningAreaMapStatus,
     Scenario,
@@ -39,6 +41,7 @@ from planning.services import (
     create_planning_area,
     create_scenario,
     create_scenario_from_upload,
+    export_datalayer_names_file,
     export_planning_area_to_geopackage,
     export_scenario_inputs_to_geopackage,
     export_scenario_stand_outputs_to_geopackage,
@@ -1046,6 +1049,139 @@ class TestExportToGeopackage(TestCase):
 
         layers = fiona.listlayers(self.preset_scenario_output_path)
         self.assertNotIn("stand_outputs", layers)
+
+    def _expected_names(self, datalayers):
+        return {f"datalayer_{dl.pk}": dl.name for dl in datalayers}
+
+    def test_export_datalayer_names_file_preset_scenario(self):
+        output = export_datalayer_names_file(self.preset_scenario)
+
+        self.assertTrue(output.exists())
+        self.assertEqual(output.parent, Path(settings.TEMP_GEOPACKAGE_FOLDER))
+        self.assertEqual(output.name, f"datalayers_{self.preset_scenario.pk}.json")
+        with open(output, encoding="utf-8") as f:
+            self.assertEqual(json.load(f), self._expected_names(self.datalayers))
+
+    def test_export_datalayer_names_file_custom_scenario(self):
+        output = export_datalayer_names_file(self.custom_scenario)
+
+        self.assertTrue(output.exists())
+        with open(output, encoding="utf-8") as f:
+            self.assertEqual(json.load(f), self._expected_names(self.datalayers))
+
+    def test_export_datalayer_names_file_creates_missing_folder(self):
+        folder = Path("/tmp/planscape-test-output/missing/nested/geopackages")
+        shutil.rmtree(folder, ignore_errors=True)
+        self.assertFalse(folder.exists())
+
+        with self.settings(TEMP_GEOPACKAGE_FOLDER=str(folder)):
+            output = export_datalayer_names_file(self.preset_scenario)
+
+        self.assertTrue(folder.exists())
+        self.assertEqual(output.parent, folder)
+        self.assertTrue(output.exists())
+
+    def test_export_datalayer_names_file_overwrites_existing_file(self):
+        first = export_datalayer_names_file(self.preset_scenario)
+        first.write_text('{"stale": "content"}', encoding="utf-8")
+
+        second = export_datalayer_names_file(self.preset_scenario)
+
+        self.assertEqual(first, second)
+        with open(second, encoding="utf-8") as f:
+            self.assertEqual(json.load(f), self._expected_names(self.datalayers))
+
+    def test_export_datalayer_names_file_keeps_non_ascii_names(self):
+        datalayer = DataLayerFactory.create(
+            type=DataLayerType.RASTER, name="Água ñandú"
+        )
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning,
+            user=self.user,
+            type=ScenarioType.CUSTOM,
+            with_priorities=[datalayer],
+        )
+
+        output = export_datalayer_names_file(scenario)
+
+        content = output.read_text(encoding="utf-8")
+        self.assertIn("Água ñandú", content)
+        self.assertNotIn("\\u", content)
+        self.assertEqual(
+            json.loads(content), {f"datalayer_{datalayer.pk}": "Água ñandú"}
+        )
+
+    def test_export_datalayer_names_file_excludes_vector_datalayers(self):
+        raster = DataLayerFactory.create(type=DataLayerType.RASTER)
+        vector = DataLayerFactory.create(type=DataLayerType.VECTOR)
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning,
+            user=self.user,
+            type=ScenarioType.CUSTOM,
+            with_priorities=[raster],
+            with_cobenefits=[vector],
+        )
+
+        output = export_datalayer_names_file(scenario)
+
+        with open(output, encoding="utf-8") as f:
+            data = json.load(f)
+        self.assertEqual(data, {f"datalayer_{raster.pk}": raster.name})
+        self.assertNotIn(f"datalayer_{vector.pk}", data)
+
+    @mock.patch("planning.services.upload_file_via_cli", autospec=True)
+    def test_export_geopackage_zip_contains_datalayer_names(self, upload_mock):
+        invalidate_all()
+        output = export_to_geopackage(self.preset_scenario)
+        self.assertIsNotNone(output)
+
+        temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
+        zip_path = temp_folder / f"{self.preset_scenario.uuid}.gpkg.zip"
+        self.assertTrue(zip_path.exists())
+        with zipfile.ZipFile(zip_path) as zipf:
+            self.assertIn("datalayer_names.json", zipf.namelist())
+            data = json.loads(zipf.read("datalayer_names.json").decode("utf-8"))
+        self.assertEqual(data, self._expected_names(self.datalayers))
+
+        # temporary names file is cleaned up after the upload
+        names_file = temp_folder / f"datalayers_{self.preset_scenario.pk}.json"
+        self.assertFalse(names_file.exists())
+
+    @mock.patch("planning.services.export_datalayer_names_file", autospec=True)
+    @mock.patch("planning.services.upload_file_via_cli", autospec=True)
+    def test_export_geopackage_fails_when_names_file_export_fails(
+        self, upload_mock, names_mock
+    ):
+        invalidate_all()
+        names_mock.side_effect = OSError("disk full")
+
+        with self.assertRaises(OSError):
+            export_to_geopackage(self.preset_scenario)
+
+        self.preset_scenario.refresh_from_db()
+        self.assertEqual(
+            self.preset_scenario.geopackage_status, GeoPackageStatus.FAILED
+        )
+        self.assertIsNone(self.preset_scenario.geopackage_url)
+        self.assertFalse(upload_mock.called)
+
+    @mock.patch("planning.services.upload_file_via_cli", autospec=True)
+    def test_export_geopackage_cleans_temp_files_when_upload_fails(self, upload_mock):
+        invalidate_all()
+        upload_mock.side_effect = RuntimeError("upload failed")
+
+        with self.assertRaises(RuntimeError):
+            export_to_geopackage(self.preset_scenario)
+
+        temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
+        names_file = temp_folder / f"datalayers_{self.preset_scenario.pk}.json"
+        gpkg_file = temp_folder / f"{self.preset_scenario.uuid}.gpkg"
+        self.assertFalse(names_file.exists())
+        self.assertFalse(gpkg_file.exists())
+        self.preset_scenario.refresh_from_db()
+        self.assertEqual(
+            self.preset_scenario.geopackage_status, GeoPackageStatus.FAILED
+        )
 
     def tearDown(self) -> None:
         self.preset_scenario_output_path.unlink(missing_ok=True)

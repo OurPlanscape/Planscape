@@ -6,11 +6,14 @@
     (click)="handleClick(item)"
     [disableRipple]="true"
     [class.is-hoverable]="hoverable"
-    [class.selected-chip]="isSelected(item)">
+    [class.selected-chip]="isSelected(item)"
+    [class.truncate]="truncate">
     <mat-icon class="material-symbols-outlined" *ngIf="showEdit" matChipAvatar
       >edit</mat-icon
     >
-    {{ item.name }}
+    <span class="chip-label" [title]="truncate ? item.name : ''">{{
+      item.name
+    }}</span>
     <button *ngIf="showClose" class="chip-button" matChipRemove>
       <mat-icon>close</mat-icon>
     </button>

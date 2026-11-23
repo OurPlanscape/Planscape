@@ -63,6 +63,18 @@ export const WithSelectedItem: Story = {
   },
 };
 
+export const Truncated: Story = {
+  args: {
+    items: [
+      {
+        id: 1,
+        name: 'Prioritize Areas with High Expected Tree Volume Loss from Wildfire',
+      },
+    ],
+    truncate: true,
+  },
+};
+
 export const NoItems: Story = {
   args: {
     items: [],

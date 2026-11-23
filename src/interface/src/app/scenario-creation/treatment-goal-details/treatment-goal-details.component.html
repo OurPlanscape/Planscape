@@ -1,0 +1,45 @@
+<h3 class="header">
+  Treatment Goal Details
+  <button
+    sg-button
+    type="button"
+    variant="icon-only"
+    icon="close"
+    [outlined]="true"
+    class="close-button"
+    aria-label="Close treatment goal details"
+    (click)="closed.emit()"></button>
+</h3>
+
+<div class="content">
+  <p
+    class="description"
+    *ngIf="goal.description"
+    [innerHTML]="goal.description"></p>
+
+  <section class="preview-layers" *ngIf="previewGroups.length">
+    <h4 class="preview-title">Preview layers</h4>
+
+    <div
+      class="group"
+      *ngFor="let group of previewGroups; trackBy: trackByGroup">
+      <div class="group-label">{{ group.label }}</div>
+
+      <ul class="layers">
+        <li *ngFor="let row of group.rows; trackBy: trackByRow">
+          <sg-toggle
+            align="top"
+            [checked]="previewedRow === row"
+            (changed)="toggleLayer(row, $event)">
+            <span class="layer">
+              <span class="layer-name">{{ row.layer.name }}</span>
+              <span class="layer-source" *ngIf="sourceOf(row.layer)">{{
+                sourceOf(row.layer)
+              }}</span>
+            </span>
+          </sg-toggle>
+        </li>
+      </ul>
+    </div>
+  </section>
+</div>

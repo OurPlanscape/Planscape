@@ -3,7 +3,10 @@ import { Component, Input } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { delay, map, shareReplay, startWith } from 'rxjs';
 import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
-import { DynamicDataLayersComponent } from '@explore/dynamic-data-layers/dynamic-data-layers.component';
+import {
+  DataLayersPanel,
+  DynamicDataLayersComponent,
+} from '@explore/dynamic-data-layers/dynamic-data-layers.component';
 import { DataLayersRegistryService } from '../data-layers-registry';
 
 /**
@@ -19,7 +22,7 @@ import { DataLayersRegistryService } from '../data-layers-registry';
 })
 export class MapTabsComponent {
   // Which data layer panel each map shows
-  @Input() panel: 'browse' | 'favorites' = 'browse';
+  @Input() panel: DataLayersPanel = 'browse';
 
   layoutMode$ = this.multiMapConfigState.layoutMode$;
   mapsArray$ = this.dataLayersRegistryService.size$.pipe(

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   ControlComponent,
@@ -71,6 +71,8 @@ import { AllTreatableStandsComponent } from '../all-treatable-stands/all-treatab
   styleUrl: './scenario-map.component.scss',
 })
 export class ScenarioMapComponent implements OnDestroy {
+  @Input() showDataLayerName = true;
+
   /**
    * The sub-unit layer currently pushed into the app-wide BaseLayersStateService.
    * Tracked so it can be removed on destroy — otherwise it leaks into every other

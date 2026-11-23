@@ -4,7 +4,16 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { NgxMaskModule } from 'ngx-mask';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, EMPTY, Observable, of, Subject } from 'rxjs';
+import { StepperSelectionEvent } from '@angular/cdk/stepper';
+import { By } from '@angular/platform-browser';
+import {
+  BehaviorSubject,
+  EMPTY,
+  firstValueFrom,
+  Observable,
+  of,
+  Subject,
+} from 'rxjs';
 import { MockComponents, MockModule, MockProvider } from 'ng-mocks';
 
 import { ScenarioCreationComponent } from './scenario-creation.component';
@@ -15,8 +24,9 @@ import { ScenarioService } from '@services';
 import { ScenarioState } from '@scenario/scenario.state';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
 import { NewScenarioState } from './new-scenario.state';
-import { AvailableStands, Scenario, ScenarioV3Config } from '@types';
+import { AvailableStands, DataLayer, Scenario, ScenarioV3Config } from '@types';
 import {
+  ScenarioStepConfig,
   SUB_UNITS_STEP,
   TREATMENT_GOAL_STEP_LABEL,
 } from '@app/scenario/scenario.constants';
@@ -26,6 +36,7 @@ import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overvi
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
 import { TreatmentTargetComponent } from '@scenario-creation/treatment-target/treatment-target.component';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
+import { ScenarioMapComponent } from '@maplibre-map/scenario-map/scenario-map.component';
 import { FeatureService } from '@app/features/feature.service';
 import { PlanState } from '@plan/plan.state';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
@@ -43,6 +54,7 @@ describe('ScenarioCreationComponent', () => {
       flags?: string[];
       currentScenario$?: Observable<Scenario>;
       scenarioConfig$?: Observable<ScenarioV3Config>;
+      currentStep$?: Observable<ScenarioStepConfig | null>;
       currentPlanWorkspaceId$?: Observable<number | null>;
     } = {}
   ) {
@@ -50,6 +62,7 @@ describe('ScenarioCreationComponent', () => {
       flags = [],
       currentScenario$ = of(MOCK_SCENARIO),
       scenarioConfig$ = of({} as ScenarioV3Config),
+      currentStep$ = of(null),
       currentPlanWorkspaceId$ = EMPTY,
     } = options;
 
@@ -70,7 +83,8 @@ describe('ScenarioCreationComponent', () => {
           DataLayersComponent,
           AdvStandLevelConstraintsComponent,
           TreatmentTargetComponent,
-          BaseLayersComponent
+          BaseLayersComponent,
+          ScenarioMapComponent
         ),
       ],
       providers: [
@@ -85,7 +99,7 @@ describe('ScenarioCreationComponent', () => {
         }),
         MockProvider(NewScenarioState, {
           availableStands$: of({ summary: {} } as AvailableStands),
-          currentStep$: of(null),
+          currentStep$,
           scenarioConfig$,
           priorityObjectivesDetails$: of([]),
         }),
@@ -120,6 +134,109 @@ describe('ScenarioCreationComponent', () => {
 
   it('does not invite favoriting while a scenario is being configured', () => {
     expect(fixture.debugElement.injector.get(SHOW_FAVORITE_STAR)).toBeFalse();
+  });
+
+  describe('the overview shared by the steps', () => {
+    let currentStep$: BehaviorSubject<ScenarioStepConfig | null>;
+
+    async function setUpOnStep(
+      step: Partial<ScenarioStepConfig>,
+      flags: string[] = []
+    ) {
+      currentStep$ = new BehaviorSubject<ScenarioStepConfig | null>(null);
+      await setUpComponent({ flags, currentStep$ });
+      currentStep$.next(step as ScenarioStepConfig);
+    }
+
+    function isShown() {
+      fixture.detectChanges();
+      return !!fixture.debugElement.query(By.css('app-scenario-summary'));
+    }
+
+    it('is drawn on the steps that have a map', async () => {
+      await setUpOnStep({ label: 'Include Areas', hasMap: true });
+      expect(isShown()).toBeTrue();
+    });
+
+    it('is left out of the steps that have no map', async () => {
+      await setUpOnStep({ label: 'Include Areas', hasMap: false });
+
+      expect(isShown()).toBeFalse();
+    });
+
+    it('leaves the treatment goal step to itself once the flag is on', async () => {
+      await setUpOnStep({ label: TREATMENT_GOAL_STEP_LABEL, hasMap: true }, [
+        'IMPROVED_TREATMENT_GOAL',
+      ]);
+
+      expect(isShown()).toBeFalse();
+    });
+
+    it('still covers the treatment goal step while the flag is off', async () => {
+      await setUpOnStep({ label: TREATMENT_GOAL_STEP_LABEL, hasMap: true });
+
+      expect(isShown()).toBeTrue();
+    });
+  });
+
+  describe('the layer controls the shell puts around the map', () => {
+    const drawnLayer = { id: 3, name: 'Fire Severity' } as DataLayer;
+
+    let currentStep$: BehaviorSubject<ScenarioStepConfig | null>;
+
+    async function setUpOnStep(
+      step: Partial<ScenarioStepConfig>,
+      flags: string[] = [],
+      layer: DataLayer | null = drawnLayer
+    ) {
+      currentStep$ = new BehaviorSubject<ScenarioStepConfig | null>(null);
+      await setUpComponent({ flags, currentStep$ });
+      currentStep$.next(step as ScenarioStepConfig);
+      if (layer) {
+        fixture.debugElement.injector
+          .get(DataLayersStateService)
+          .selectDataLayer(layer);
+      }
+      fixture.detectChanges();
+    }
+
+    function hasClearMapButton() {
+      return !!fixture.debugElement.query(By.css('.clear-btn'));
+    }
+
+    function mapShowsLayerName() {
+      return fixture.debugElement.query(By.directive(ScenarioMapComponent))
+        .componentInstance.showDataLayerName;
+    }
+
+    it('offers Clear Map and the layer name while a layer is drawn', async () => {
+      await setUpOnStep({ label: 'Include Areas', hasMap: true });
+
+      expect(hasClearMapButton()).toBeTrue();
+      expect(mapShowsLayerName()).toBeTrue();
+    });
+
+    it('leaves both out of the step that has its own layer toggles', async () => {
+      await setUpOnStep({ label: TREATMENT_GOAL_STEP_LABEL, hasMap: true }, [
+        'IMPROVED_TREATMENT_GOAL',
+      ]);
+
+      expect(hasClearMapButton()).toBeFalse();
+      expect(mapShowsLayerName()).toBeFalse();
+    });
+
+    it('keeps both on the treatment goal step while the flag is off', async () => {
+      await setUpOnStep({ label: TREATMENT_GOAL_STEP_LABEL, hasMap: true });
+
+      expect(hasClearMapButton()).toBeTrue();
+      expect(mapShowsLayerName()).toBeTrue();
+    });
+
+    it('offers no Clear Map when no layer is drawn', async () => {
+      await setUpOnStep({ label: 'Include Areas', hasMap: true }, [], null);
+
+      expect(hasClearMapButton()).toBeFalse();
+    });
   });
 
   // the data layers panel of these steps offers the favorites of a
@@ -300,6 +417,64 @@ describe('ScenarioCreationComponent', () => {
           configurePresetScenario();
 
           expect(treatmentGoalStep()?.hasMap).toBeFalse();
+        });
+
+        describe('the layer previewed from its tooltip', () => {
+          const previewed = { id: 7, name: 'Wildfire Hazard Potential' };
+
+          function dataLayersState() {
+            return fixture.debugElement.injector.get(DataLayersStateService);
+          }
+
+          function cdkIndexOf(label: string) {
+            return (
+              component.steps.findIndex((step) => step.label === label) + 1
+            );
+          }
+
+          function moveBetween(from: number, to: number) {
+            component.handleStepChangeEvent({
+              previouslySelectedIndex: from,
+              selectedIndex: to,
+            } as StepperSelectionEvent);
+          }
+
+          async function viewedLayer() {
+            return firstValueFrom(dataLayersState().viewedDataLayer$);
+          }
+
+          beforeEach(async () => {
+            await setUpWithFlag();
+            configurePresetScenario();
+            dataLayersState().selectDataLayer(previewed as DataLayer);
+          });
+
+          it('is wiped off the map when the step is left', async () => {
+            moveBetween(
+              cdkIndexOf(TREATMENT_GOAL_STEP_LABEL),
+              cdkIndexOf('Include Areas')
+            );
+
+            expect(await viewedLayer()).toBeNull();
+          });
+
+          it('is wiped off the map when the step is reached', async () => {
+            moveBetween(
+              cdkIndexOf('Include Areas'),
+              cdkIndexOf(TREATMENT_GOAL_STEP_LABEL)
+            );
+
+            expect(await viewedLayer()).toBeNull();
+          });
+
+          it('leaves the layers of the other steps alone', async () => {
+            moveBetween(
+              cdkIndexOf('Include Areas'),
+              cdkIndexOf('Exclude Areas')
+            );
+
+            expect(await viewedLayer()).toBe(previewed as DataLayer);
+          });
         });
 
         it('leaves every other step as it was', async () => {

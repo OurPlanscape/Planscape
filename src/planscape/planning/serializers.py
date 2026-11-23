@@ -4,10 +4,17 @@ from typing import List, Optional  # noqa
 
 import markdown
 from core.flags import feature_enabled
-from datasets.models import DataLayer, DataLayerStatus, DataLayerType, GeometryType
-from datasets.serializers import DataLayerSerializer
+from datasets.models import (
+    DataLayer,
+    DataLayerStatus,
+    DataLayerType,
+    GeometryType,
+    hydrate_category_ancestors,
+)
+from datasets.serializers import DataLayerEmbedSerializer
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from django.db import models
 from django.utils import timezone
 from planscape.analytics import track_event
 from planscape.exceptions import InvalidGeometry
@@ -913,17 +920,43 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         return instance
 
 
+class TreatmentGoalUsageListSerializer(serializers.ListSerializer):
+    """
+    Avoids N+1 queries when serializing usages: loads each usage's data layer,
+    category and styles in bulk, and batch-loads category ancestors when the
+    full DataLayer is embedded. Usages that were already prefetched (e.g. by
+    TreatmentGoalViewSet) are used as they are.
+    """
+
+    def to_representation(self, data):
+        if isinstance(data, models.manager.BaseManager):
+            data = data.all()
+        improved = feature_enabled("IMPROVED_TREATMENT_GOAL")
+        if isinstance(data, models.QuerySet) and data._result_cache is None:
+            if improved:
+                data = data.select_related(
+                    "datalayer", "datalayer__category", "datalayer__dataset"
+                ).prefetch_related("datalayer__styles")
+            else:
+                data = data.select_related("datalayer")
+        usages = list(data)
+        if improved:
+            hydrate_category_ancestors(usage.datalayer.category for usage in usages)
+        return super().to_representation(usages)
+
+
 class TreatmentGoalUsageSerializer(serializers.ModelSerializer):
     datalayer = serializers.SerializerMethodField()
 
     def get_datalayer(self, instance):
         if feature_enabled("IMPROVED_TREATMENT_GOAL"):
-            return DataLayerSerializer(instance.datalayer, context=self.context).data
+            return DataLayerEmbedSerializer(instance.datalayer, context=self.context).data
         return instance.datalayer.name
 
     class Meta:
         model = TreatmentGoalUsesDataLayer
         fields = ("usage_type", "datalayer")
+        list_serializer_class = TreatmentGoalUsageListSerializer
 
 
 class TreatmentGoalSerializer(serializers.ModelSerializer):

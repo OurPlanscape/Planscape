@@ -77,12 +77,14 @@ export class DataLayersRailComponent {
         this.buildRailItems();
       });
 
-    // the map's layer name legend browses to its layer, so bring the data layers back
+    // the map's layer name legend browses to its layer, so bring the data layers
+    // back, unless it is browsing the uploads already
     this.dataLayersStateService.paths$
       .pipe(
         untilDestroyed(this),
         skip(1),
-        filter((path) => path.length > 0)
+        filter((path) => path.length > 0),
+        filter(() => this.activePanel !== 'uploaded')
       )
       .subscribe(() => (this.activePanel = 'data-layers'));
   }

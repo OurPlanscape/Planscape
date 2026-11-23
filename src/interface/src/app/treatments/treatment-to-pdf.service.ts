@@ -166,6 +166,7 @@ export class TreatmentToPDFService {
         fontSize: 7,
         lineWidth: 0,
         font: 'Helvetica',
+        fontStyle: 'normal',
         textColor: '#000000',
       },
       alternateRowStyles: { fillColor: [255, 255, 255] },

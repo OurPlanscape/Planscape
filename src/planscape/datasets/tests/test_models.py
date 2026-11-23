@@ -11,6 +11,7 @@ from datasets.models import (
     Dataset,
     VisibilityOptions,
     get_dataset_ids_intersecting,
+    hydrate_category_ancestors,
     validate_dataset_modules,
 )
 from datasets.tests.factories import DataLayerFactory, DatasetFactory
@@ -262,3 +263,31 @@ class CategoryFullPathTest(TestCase):
 
         self.assertEqual(root._get_full_path(), ["Root"])
         self.assertEqual(child._get_full_path(), ["Root", "Child"])
+
+    def test_hydrated_ancestors_skip_queries(self):
+        dataset = DatasetFactory.create()
+        kwargs = {
+            "organization": dataset.organization,
+            "created_by": dataset.created_by,
+            "dataset": dataset,
+        }
+        root = Category.add_root(name="Root", **kwargs)
+        child = root.add_child(name="Child", **kwargs)
+        grandchild = child.add_child(name="Grandchild", **kwargs)
+
+        fresh_root, fresh_grandchild = Category.objects.filter(
+            pk__in=[root.pk, grandchild.pk]
+        ).order_by("depth")
+        with self.assertNumQueries(1):
+            hydrate_category_ancestors([fresh_root, fresh_grandchild, None])
+
+        with self.assertNumQueries(0):
+            self.assertEqual(
+                fresh_grandchild._get_full_path(), ["Root", "Child", "Grandchild"]
+            )
+            parent = fresh_grandchild.get_parent()
+            self.assertEqual(parent.name, "Child")
+            self.assertEqual(parent.get_parent().name, "Root")
+            self.assertEqual(parent._get_full_path(), ["Root", "Child"])
+            self.assertIsNone(fresh_root.get_parent())
+            self.assertEqual(fresh_root._get_full_path(), ["Root"])
