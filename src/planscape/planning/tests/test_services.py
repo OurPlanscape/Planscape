@@ -1165,6 +1165,24 @@ class TestExportToGeopackage(TestCase):
         self.assertIsNone(self.preset_scenario.geopackage_url)
         self.assertFalse(upload_mock.called)
 
+    @mock.patch("planning.services.upload_file_via_cli", autospec=True)
+    def test_export_geopackage_cleans_temp_files_when_upload_fails(self, upload_mock):
+        invalidate_all()
+        upload_mock.side_effect = RuntimeError("upload failed")
+
+        with self.assertRaises(RuntimeError):
+            export_to_geopackage(self.preset_scenario)
+
+        temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
+        names_file = temp_folder / f"datalayers_{self.preset_scenario.pk}.json"
+        gpkg_file = temp_folder / f"{self.preset_scenario.uuid}.gpkg"
+        self.assertFalse(names_file.exists())
+        self.assertFalse(gpkg_file.exists())
+        self.preset_scenario.refresh_from_db()
+        self.assertEqual(
+            self.preset_scenario.geopackage_status, GeoPackageStatus.FAILED
+        )
+
     def tearDown(self) -> None:
         self.preset_scenario_output_path.unlink(missing_ok=True)
         self.custom_scenario_output_path.unlink(missing_ok=True)
