@@ -3,7 +3,7 @@ import { test as setup } from '@playwright/test';
 import fs from 'fs';
 import { createWorkspace, createPlanningArea } from './helpers/api-client';
 import { geomYosemite } from './fixtures/test-geometries';
-import { PLAN_FILE } from './helpers/paths'
+import { PLAN_FILE, STATE_DIR } from './helpers/paths'
 
 setup('create workspace and planning area', async ({ request }) => {
   const workspace = await createWorkspace(request, `E2E Explore ${Date.now()}`);
@@ -16,6 +16,7 @@ setup('create workspace and planning area', async ({ request }) => {
   );
   const plan = await response.json();
 
+  fs.mkdirSync(STATE_DIR, { recursive: true });
   fs.writeFileSync(
     PLAN_FILE,
     JSON.stringify({ workspaceId: workspace.id, planId: plan.id }),
