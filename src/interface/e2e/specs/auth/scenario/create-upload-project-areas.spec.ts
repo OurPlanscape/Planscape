@@ -1,54 +1,35 @@
+import path from 'path';
 import { expect } from '@playwright/test';
 import { PlanningAreaPage } from '../../../pages/planningarea.page';
+import { ScenarioPage } from '../../../pages/scenario.page';
 import { test } from '../../../fixtures/test-planningarea';
 
-import path from 'path';
-
-const SCENARIO_SHAPEFILE = path.resolve(
-  __dirname,
-  '../../../assets/inside_yosemite.zip',
-);
+const SCENARIO_SHAPEFILE = path.resolve(__dirname, '../../../assets/inside_yosemite.zip');
 
 test('user can upload a project area', { tag: ['@smoke'] }, async ({ page, planId, workspaceId }) => {
-
-  // go to the newly created Planning Area
-  if (!planId) {
-    throw new Error('A planning area does not exist for the scenario test.');
-  }
   const planPage = new PlanningAreaPage(page);
-  await planPage.goto(workspaceId, planId);
+  const scenarios = new ScenarioPage(page);
+  const name = `Test Uploaded Project Areas - ${Date.now()}`;
 
-  const newScenarioName = `Test Uploaded Project Areas - ${Date.now()}`;
+  await test.step('open upload dialog', async () => {
+    await planPage.goto(workspaceId, planId);
+    const emptyState = page
+      .locator('sg-action-card[title="Upload Project Areas"]')
+      .getByText('upload Upload', { exact: true });
+    const existing = page.getByRole('button', { name: 'Upload Project Areas' });
+    await emptyState.or(existing).click();
+  });
 
+  await test.step('fill in details and upload file', async () => {
+    await page.getByRole('textbox', { name: 'Name' }).fill(name);
+    await page.getByRole('button', { name: 'more options' }).click();
+    await page.locator('sg-file-upload input[type="file"]').setInputFiles(SCENARIO_SHAPEFILE);
+    await page.getByRole('button', { name: 'Create' }).click();
+  });
 
-  const buttonWithNoScenarioYet = page
-    .getByText('upload Upload', { exact: true });
-  const buttonWithExistingScenarios = page.getByRole('button', { name: 'Upload Project Areas' });
-
-  if (await page
-    .locator('sg-action-card[title="Upload Project Areas"]')
-    .getByText('upload Upload', { exact: true }).isVisible()) {
-    buttonWithNoScenarioYet.click({ timeout: 60000 });
-  } else {
-    buttonWithExistingScenarios.click();
-
-  }
-
-  await page.getByRole('textbox', { name: 'Name' }).click();
-  await page.getByRole('textbox', { name: 'Name' }).fill(newScenarioName);
-  await page.getByRole('button', { name: 'more options' }).click();
-  await page.locator('sg-file-upload input[type="file"]').setInputFiles(SCENARIO_SHAPEFILE);
-  await page.getByRole('button', { name: 'Create' }).click();
-
-  // Check that the Project Area Exists
-  const scenarioCard = page
-    .locator('sg-scenario-card')
-    .filter({ has: page.locator('.scenario-name', { hasText: newScenarioName }) });
-  await expect(scenarioCard).toBeVisible();
-
-
-  // Confirm the new scenario via the UI and scenario name
-  await planPage.goto(workspaceId, planId);
-  await expect(page.getByText(newScenarioName));
-
+  await test.step('verify project area exists', async () => {
+    await scenarios.expectScenarioVisible(name);
+    await planPage.goto(workspaceId, planId);
+    await expect(page.getByText(name)).toBeVisible();
+  });
 });

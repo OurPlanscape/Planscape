@@ -3,7 +3,7 @@ import { test as setup } from '@playwright/test';
 import fs from 'fs';
 import { createWorkspace, createPlanningArea } from './helpers/api-client';
 import { geomYosemite } from './fixtures/test-geometries';
-import { PLAN_FILE } from './.support/paths';
+import { PLAN_FILE } from './helpers/paths'
 
 setup('create workspace and planning area', async ({ request }) => {
   const workspace = await createWorkspace(request, `E2E Explore ${Date.now()}`);

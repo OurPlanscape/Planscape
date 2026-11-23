@@ -1,7 +1,7 @@
 import { test as teardown } from '@playwright/test';
 import fs from 'fs';
 import { deleteScenario, getScenariosForPlan } from './helpers/api-client';
-import { PLAN_FILE } from './.support/paths';
+import { PLAN_FILE } from './helpers/paths';
 
 
 teardown('delete associated scenarios areas', async ({ request }) => {

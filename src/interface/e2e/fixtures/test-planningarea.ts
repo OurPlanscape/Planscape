@@ -1,6 +1,6 @@
 import { test as base } from '@playwright/test';
 import fs from 'fs';
-import { PLAN_FILE } from '../.support/paths';
+import { PLAN_FILE } from '../helpers/paths';
 
 
 export const test = base.extend<{ planId: number; workspaceId: number }>({
