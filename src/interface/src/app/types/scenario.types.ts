@@ -1,4 +1,5 @@
 import { STAND_SIZE } from '@plan/plan-helpers';
+import { EmbeddedDataLayer } from './data-sets';
 import { Geometry } from 'geojson';
 
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
@@ -198,7 +199,7 @@ export interface FeatureCollection extends GeoJSON.FeatureCollection {
 // Backend usage type entry for scenario outputs.
 export interface UsageType {
   usage_type: string;
-  datalayer: string;
+  datalayer: string | EmbeddedDataLayer;
   weight?: number;
 }
 
@@ -211,12 +212,13 @@ export interface ScenarioGoal {
   category: string;
   group: string;
   group_text: string;
+  usage_types?: UsageType[];
 }
 
 // Backend constraint definition (thresholds for stands).
 export type CONSTRAINT_OPERATOR =
-  | 'eq'
-  | 'dne'
+  | 'in'
+  | 'nin'
   | 'lt'
   | 'lte'
   | 'gt'
@@ -236,8 +238,8 @@ export interface OperatorDefinition {
 }
 
 export const CONSTRAINT_OPERATORS: OperatorDefinition[] = [
-  { value: 'eq', label: 'Equal to', symbol: '=' },
-  { value: 'dne', label: 'Does not equal', symbol: '!=' },
+  { value: 'in', label: 'Equal to', symbol: '=' },
+  { value: 'nin', label: 'Does not equal', symbol: '!=' },
   { value: 'gt', label: 'Greater than', symbol: '>' },
   { value: 'gte', label: 'Greater than or equal to', symbol: '≥' },
   { value: 'lt', label: 'Less than', symbol: '<' },

@@ -1,10 +1,10 @@
 import logging
 
 from core.serializers import MultiSerializerMixin
-from datasets.models import DataLayer
+from datasets.models import DataLayer, hydrate_category_ancestors
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -38,9 +38,11 @@ from funding_report.services import (
     calculate_funding_report_flame_length_reduction,
     merge_aet_improvement_into_results,
 )
+from core.flags import feature_enabled
 from funding_report.tasks import (
     async_generate_funding_report_geopackage,
     run_funding_opportunity_report,
+    run_funding_opportunity_report_with_burn_emmulator,
     send_funding_opportunity_report_shared_link,
 )
 from modules.base import compute_scenario_capabilities
@@ -54,6 +56,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
+from planning.events import publish_planning_area_event, publish_scenario_event
 from planning.filters import (
     PlanningAreaFilter,
     PlanningAreaOrderingFilter,
@@ -71,6 +74,7 @@ from planning.models import (
     ScenarioType,
     ScenarioVersion,
     TreatmentGoal,
+    TreatmentGoalUsesDataLayer,
 )
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
@@ -90,6 +94,7 @@ from planning.serializers import (
     ScenarioV2Serializer,
     ScenarioV3Serializer,
     SubUnitsDetailsParamsSerializer,
+    TreatableStandsSerializer,
     TreatmentGoalSerializer,
     UpdatePlanningAreaSerializer,
     UploadedScenarioDataSerializer,
@@ -106,6 +111,7 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
     get_available_stands,
+    get_forsys_input_stands,
     get_scenario_configuration_details,
     get_sub_units_details,
     is_project_areas_child,
@@ -187,6 +193,11 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         instance.updated_at = timezone.now()
         instance.save(update_fields=["updated_at"])
         super().perform_update(serializer)
+        publish_planning_area_event(
+            "planning.planning_area.updated",
+            serializer.instance,
+            actor=self.request.user,
+        )
 
     @extend_schema(description="Create Planning Area.")
     def create(self, request, *args, **kwargs):
@@ -378,12 +389,14 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
                 ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
             )
 
-        scenario = create_scenario(**validated_data)
+        # one transaction, so the created event carries the draft status
+        with transaction.atomic():
+            scenario = create_scenario(**validated_data)
 
-        if hasattr(scenario, "result_status"):
-            scenario.results.status = ScenarioResultStatus.DRAFT
-            scenario.results.save()
-            scenario.refresh_from_db()
+            if hasattr(scenario, "result_status"):
+                scenario.results.status = ScenarioResultStatus.DRAFT
+                scenario.results.save()
+                scenario.refresh_from_db()
 
         out_serializer = ScenarioV3Serializer(instance=scenario)
 
@@ -399,6 +412,13 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             user=self.request.user,
             scenario=instance,
         )
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        publish_scenario_event(
+            "planning.scenario.updated", self.get_object(), actor=request.user
+        )
+        return response
 
     def get_serializer_class(self):
         return (
@@ -440,14 +460,12 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
     @extend_schema(description="Clone a scenario by id")
     @action(methods=["POST"], detail=True, url_path="clone")
     def clone(self, request, pk=None):
-        source = self.get_object()  
+        source = self.get_object()
 
         name = request.data.get("name")
 
         new_scenario = clone_scenario(
-            original_scenario_id=source.pk,
-            user=request.user,
-            name=name
+            original_scenario_id=source.pk, user=request.user, name=name
         )
 
         out = ScenarioV3Serializer(
@@ -481,6 +499,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         planning_area = instance.planning_area
         planning_area.updated_at = timezone.now()
         planning_area.save(update_fields=["updated_at"])
+        publish_scenario_event(
+            "planning.scenario.updated", instance, actor=request.user
+        )
         return Response(response_serializer.data)
 
     @extend_schema(
@@ -553,6 +574,9 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         planning_area = instance.planning_area
         planning_area.updated_at = timezone.now()
         planning_area.save(update_fields=["updated_at"])
+        publish_scenario_event(
+            "planning.scenario.updated", instance, actor=request.user
+        )
         return Response(response_serializer.data)
 
     @extend_schema(
@@ -581,7 +605,10 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             "funding_report.report.created", report, actor=request.user
         )
 
-        run_funding_opportunity_report.delay(report.pk)
+        if feature_enabled("FOR_WITH_BURN_EMULATOR"):
+            run_funding_opportunity_report_with_burn_emmulator.delay(report.pk)
+        else:
+            run_funding_opportunity_report.delay(report.pk)
         track_event(
             name="planning.funding_report.run",
             properties={
@@ -829,7 +856,10 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         },
     )
     @action(
-        methods=["get"], detail=True, url_path="download-geopackage", filterset_class=None
+        methods=["get"],
+        detail=True,
+        url_path="download-geopackage",
+        filterset_class=None,
     )
     def download_geopackage(self, request, pk=None):
         scenario = self.get_object()
@@ -880,6 +910,11 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
 
             scenario.geopackage_status = GeoPackageStatus.PENDING
             scenario.save(update_fields=["geopackage_status", "updated_at"])
+            publish_scenario_event(
+                "planning.scenario.geopackage_status_changed",
+                scenario,
+                actor=request.user,
+            )
 
             # `async_generate_scenario_geopackage` only proceeds for scenarios
             # already in PENDING status unless told to regenerate - force it
@@ -994,6 +1029,41 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
         out_serializer = AvailableStandsSerializer(instance=result)
         return Response(
             out_serializer.data,
+            status=status.HTTP_200_OK,
+        )
+
+    @extend_schema(
+        description=(
+            "Return the stand IDs saved in a "
+            "scenario's ForSys inputs, together "
+            "with their count and acreage."
+        ),
+        responses={200: TreatableStandsSerializer},
+    )
+    @action(
+        methods=["get"],
+        detail=True,
+        url_path="treatable-stands",
+        serializer_class=TreatableStandsSerializer,
+    )
+    def treatable_stands(self, request, pk=None):
+        scenario = self.get_object()
+
+        result = get_forsys_input_stands(scenario)
+
+        if result is None:
+            return Response(
+                {
+                    "detail": (
+                        "ForSys input stands are not available for this scenario."
+                    )
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        serializer = TreatableStandsSerializer(instance=result)
+        return Response(
+            serializer.data,
             status=status.HTTP_200_OK,
         )
 
@@ -1184,5 +1254,29 @@ class TreatmentGoalViewSet(
 
     def get_queryset(self):
         user = self.request.user if self.request else None
-        qs = TreatmentGoal.objects.accessible_by(user)
+        usages_qs = TreatmentGoalUsesDataLayer.objects.select_related(
+            "datalayer",
+            "datalayer__category",
+            "datalayer__dataset",
+        )
+        qs = (
+            TreatmentGoal.objects.accessible_by(user)
+            .select_related("category")
+            .prefetch_related(
+                Prefetch("datalayer_usages", queryset=usages_qs),
+                "datalayer_usages__datalayer__styles",
+            )
+        )
         return qs
+
+    def get_serializer(self, *args, **kwargs):
+        if args and feature_enabled("IMPROVED_TREATMENT_GOAL"):
+            instance = args[0]
+            goals = list(instance) if kwargs.get("many") else [instance]
+            args = (goals if kwargs.get("many") else instance, *args[1:])
+            hydrate_category_ancestors(
+                usage.datalayer.category
+                for goal in goals
+                for usage in goal.datalayer_usages.all()
+            )
+        return super().get_serializer(*args, **kwargs)

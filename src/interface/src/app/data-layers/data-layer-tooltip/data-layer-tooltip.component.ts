@@ -1,4 +1,10 @@
-import { Component, Input } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output,
+} from '@angular/core';
 import {
   AsyncPipe,
   DatePipe,
@@ -80,6 +86,13 @@ export class DataLayerTooltipComponent {
   // We should highlight searchText if provided
   @Input() searchText = '';
 
+  @Output() closed = new EventEmitter<void>();
+
+  @HostListener('click', ['$event'])
+  onClick(event: MouseEvent) {
+    event.stopPropagation();
+  }
+
   // The layer name collapses the description, it starts open
   descriptionExpanded = true;
 
@@ -125,17 +138,12 @@ export class DataLayerTooltipComponent {
     return this.layer.organization?.name ?? '';
   }
 
-  // TODO: To be confirmed and added by Jordan
   get geographicCoverage(): string {
-    return this.identification?.['geographicCoverage'] ?? 'Insert location';
+    return this.identification?.['geographicCoverage'] ?? '--';
   }
 
-  // TODO: To be confirmed and added by Jordan
   get description(): string {
-    return (
-      this.identification?.['description'] ??
-      'Lorem ipsum dolor sit amet consectetur. Leo fermentum dictum ut arcu euismod consectetur purus adipiscing. Amet interdum...'
-    );
+    return this.identification?.['description'] ?? '';
   }
 
   get valueRange(): string {
@@ -157,7 +165,7 @@ export class DataLayerTooltipComponent {
 
   private formatValue(value: number) {
     return Number(value).toLocaleString('en-US', {
-      maximumFractionDigits: 0,
+      maximumFractionDigits: 2,
     });
   }
 

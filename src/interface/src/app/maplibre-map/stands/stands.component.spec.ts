@@ -8,6 +8,11 @@ import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { MapConfigState } from '../map-config.state';
 import { MARTIN_SOURCES } from '@treatments/map.sources';
 import { FrontendConstants } from '@map/map.constants';
+import {
+  CUSTOM_SCENARIO_OVERVIEW_STEPS,
+  SCENARIO_OVERVIEW_STEPS,
+  SUB_UNITS_STEP,
+} from '@scenario/scenario.constants';
 import { BASE_COLORS } from '@treatments/map.styles';
 
 describe('StandsComponent', () => {
@@ -131,7 +136,7 @@ describe('StandsComponent', () => {
       );
     });
 
-    it('should use stands by project areas when hasParent is true and withIncludes is false', async () => {
+    it('should use stands by project areas when hasParent is true and the step has no includes', async () => {
       component.hasParent = true;
 
       expect(await firstValueFrom(component.sourceName$)).toBe(
@@ -139,9 +144,9 @@ describe('StandsComponent', () => {
       );
     });
 
-    it('should use standsWithIncludes when withIncludes is true and hasParent is false', async () => {
+    it('should use standsWithIncludes when the step has includes and hasParent is false', async () => {
       currentStep$.next({
-        withIncludes: true,
+        includeExcludedAreas: true,
       });
 
       expect(await firstValueFrom(component.sourceName$)).toBe(
@@ -149,11 +154,11 @@ describe('StandsComponent', () => {
       );
     });
 
-    it('should use treatable stands by project areas when withIncludes and hasParent are true', async () => {
+    it('should use treatable stands by project areas when the step has includes and hasParent is true', async () => {
       component.hasParent = true;
 
       currentStep$.next({
-        withIncludes: true,
+        includeExcludedAreas: true,
       });
 
       expect(await firstValueFrom(component.sourceName$)).toBe(
@@ -162,8 +167,39 @@ describe('StandsComponent', () => {
     });
   });
 
+  /**
+   * Locks down which martin source each step of the workflow reads, so the
+   * step flags can be reshuffled without moving the stands on the map.
+   */
+  describe('the source each step of the workflow reads', () => {
+    const withIncludes =
+      MARTIN_SOURCES.scenarioStands.sources.standsWithIncludes;
+
+    const expectedSources = new Map<unknown, string>([
+      ...SCENARIO_OVERVIEW_STEPS.map(
+        (step, index) =>
+          [step, index >= 2 ? withIncludes : defaultSourceName] as const
+      ),
+      ...CUSTOM_SCENARIO_OVERVIEW_STEPS.map(
+        (step, index) =>
+          [step, index >= 3 ? withIncludes : defaultSourceName] as const
+      ),
+      [SUB_UNITS_STEP, defaultSourceName],
+    ]);
+
+    expectedSources.forEach((expected, step) => {
+      const { label } = step as { label: string };
+
+      it(`reads the stands of '${label}' from ${expected}`, async () => {
+        currentStep$.next(step);
+
+        expect(await firstValueFrom(component.sourceName$)).toBe(expected);
+      });
+    });
+  });
+
   describe('tilesUrl$', () => {
-    it('should create scenario stands URL when withIncludes is false and hasParent is false', async () => {
+    it('should create scenario stands URL when the step has no includes and hasParent is false', async () => {
       scenarioConfig$.next({
         stand_size: 20,
       });
@@ -191,9 +227,9 @@ describe('StandsComponent', () => {
       expect(url).toContain('datetime=');
     });
 
-    it('should create stands with includes URL when withIncludes is true', async () => {
+    it('should create stands with includes URL when the step has includes', async () => {
       currentStep$.next({
-        withIncludes: true,
+        includeExcludedAreas: true,
       });
 
       scenarioConfig$.next({
@@ -208,11 +244,11 @@ describe('StandsComponent', () => {
       expect(url).toContain('datetime=');
     });
 
-    it('should create treatable stands by project areas URL when withIncludes and hasParent are true', async () => {
+    it('should create treatable stands by project areas URL when the step has includes and hasParent is true', async () => {
       component.hasParent = true;
 
       currentStep$.next({
-        withIncludes: true,
+        includeExcludedAreas: true,
       });
 
       scenarioConfig$.next({

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { PlanState } from '@app/plan/plan.state';
 import { ScenarioState } from '@app/scenario/scenario.state';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
@@ -12,6 +12,7 @@ import { overrideFeatureFlags } from '@features/testing';
 import { SyncedMapsComponent } from '@maplibre-map/synced-maps/synced-maps.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { ExploreStorageService } from '@services/local-storage.service';
+import { MapModuleService } from '@services/map-module.service';
 import { SharedModule } from '@shared';
 import { Geometry } from '@turf/helpers';
 import {
@@ -20,13 +21,23 @@ import {
   MockProvider,
   MockProviders,
 } from 'ng-mocks';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, of, Subject } from 'rxjs';
+import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
+import { SidebarTabs } from '@explore/sidebar-tabs';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
 import { ExploreComponent } from './explore.component';
 
 describe('ExploreComponent', () => {
   let fixture: ComponentFixture<ExploreComponent>;
   let breadcrumbService: BreadcrumbService;
   let currentPlanId$: BehaviorSubject<number | null>;
+  let currentPlanOrNull$: BehaviorSubject<Plan | null>;
+  let currentPlanWorkspaceId$: Subject<number | null>;
+  let loadMapModule: jasmine.Spy;
+  let setWorkspaceId: jasmine.Spy;
+  let resetWorkspaceId: jasmine.Spy;
+  let workspaceNotFound$: BehaviorSubject<boolean>;
+  let currentPlan$: BehaviorSubject<Plan>;
 
   const mockRouteSnapshotData: { planId?: number; scenarioId?: number } = {};
 
@@ -65,6 +76,13 @@ describe('ExploreComponent', () => {
     mockRouteSnapshotData.planId = 24;
     mockRouteSnapshotData.scenarioId = 1234;
     currentPlanId$ = new BehaviorSubject<number | null>(24);
+    currentPlanOrNull$ = new BehaviorSubject<Plan | null>(mockPlan);
+    currentPlanWorkspaceId$ = new Subject<number | null>();
+    loadMapModule = jasmine.createSpy('loadMapModule').and.returnValue(of({}));
+    setWorkspaceId = jasmine.createSpy('setWorkspaceId');
+    resetWorkspaceId = jasmine.createSpy('resetWorkspaceId');
+    workspaceNotFound$ = new BehaviorSubject(false);
+    currentPlan$ = new BehaviorSubject(mockPlan);
 
     await TestBed.configureTestingModule({
       imports: [ExploreComponent, SharedModule, BrowserAnimationsModule],
@@ -72,7 +90,15 @@ describe('ExploreComponent', () => {
         MockProviders(BreadcrumbService, ExploreStorageService),
         MockProvider(PlanState, {
           currentPlanId$,
-          currentPlan$: of(mockPlan),
+          currentPlanWorkspaceId$,
+          currentPlan$,
+          currentPlanOrNull$,
+        }),
+        MockProvider(MapModuleService, { loadMapModule }),
+        MockProvider(WorkspaceState, {
+          setWorkspaceId,
+          resetWorkspaceId,
+          workspaceNotFound$,
         }),
         MockProvider(ScenarioState, {
           currentScenario$: of(mockScenario),
@@ -93,6 +119,33 @@ describe('ExploreComponent', () => {
         },
       })
       .compileComponents();
+  });
+
+  describe('map module', () => {
+    beforeEach(() => overrideFeatureFlags('DATA_ORGANIZATION'));
+
+    it("loads it narrowed to the plan's geometry", () => {
+      setupComponent();
+      expect(loadMapModule).toHaveBeenCalledOnceWith(mockPlan.geometry);
+    });
+
+    it('loads it unfiltered when DATA_ORGANIZATION is off', () => {
+      overrideFeatureFlags();
+      setupComponent();
+      expect(loadMapModule).toHaveBeenCalledOnceWith(undefined);
+    });
+
+    it('loads it unfiltered without a plan', () => {
+      currentPlanOrNull$.next(null);
+      setupComponent();
+      expect(loadMapModule).toHaveBeenCalledOnceWith(undefined);
+    });
+
+    it('does not reload when the same plan emits again', () => {
+      setupComponent();
+      currentPlanOrNull$.next({ ...mockPlan });
+      expect(loadMapModule).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('renders the legacy sidebar when DATA_ORGANIZATION is off', () => {
@@ -145,6 +198,125 @@ describe('ExploreComponent', () => {
     expect(config.backUrl).toEqual('/');
   });
 
+  describe('the favorites of a planning area', () => {
+    // they are the favorites of the workspace the area belongs to
+    it('come from the workspace of the plan', () => {
+      setupComponent();
+
+      currentPlanWorkspaceId$.next(42);
+
+      expect(setWorkspaceId).toHaveBeenCalledOnceWith(42);
+      expect(resetWorkspaceId).not.toHaveBeenCalled();
+    });
+
+    it('are none for a planning area outside a workspace', () => {
+      setupComponent();
+
+      currentPlanWorkspaceId$.next(null);
+
+      expect(resetWorkspaceId).toHaveBeenCalled();
+      expect(setWorkspaceId).not.toHaveBeenCalled();
+    });
+
+    // the workspace map viewer gets its id from the route
+    it('leave the workspace alone where there is no plan', () => {
+      setupComponent();
+
+      expect(setWorkspaceId).not.toHaveBeenCalled();
+      expect(resetWorkspaceId).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('the side panel', () => {
+    function mapState() {
+      return fixture.debugElement.injector.get(MultiMapConfigState);
+    }
+
+    beforeEach(() => overrideFeatureFlags('DATA_ORGANIZATION'));
+
+    it('stays on the favorites panel picked from the data layers one', () => {
+      setupComponent();
+
+      fixture.componentInstance.onTabIndexChange(SidebarTabs.FAVORITES);
+
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.FAVORITES);
+    });
+
+    it('stays on the favorites panel picked from the base layers one', () => {
+      setupComponent();
+      fixture.componentInstance.onTabIndexChange(SidebarTabs.BASE_LAYERS);
+
+      fixture.componentInstance.onTabIndexChange(SidebarTabs.FAVORITES);
+
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.FAVORITES);
+    });
+
+    it('stays on the favorites panel with no map picked yet', () => {
+      setupComponent();
+      // a session that ended on the base layers comes back without one
+      mapState().setSelectedMap(null);
+
+      fixture.componentInstance.onTabIndexChange(SidebarTabs.FAVORITES);
+
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.FAVORITES);
+    });
+
+    it('keeps the favorites panel when its tabs pick another map', () => {
+      setupComponent();
+      fixture.componentInstance.onTabIndexChange(SidebarTabs.FAVORITES);
+
+      // the tabs under the search bar show that map's favorites
+      mapState().setSelectedMap(2);
+
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.FAVORITES);
+    });
+
+    it('opens the panel of the map the user clicks on, where it was', () => {
+      setupComponent();
+      fixture.componentInstance.onTabIndexChange(SidebarTabs.FAVORITES);
+      fixture.componentInstance.setPanelExpanded(false);
+
+      mapState().selectClickedMap(2);
+
+      expect(fixture.componentInstance.panelExpanded).toBe(true);
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.FAVORITES);
+    });
+
+    function restoreTab(tabIndex: SidebarTabs) {
+      spyOn(TestBed.inject(ExploreStorageService), 'getItem').and.returnValue({
+        tabIndex,
+        isPanelExpanded: true,
+        opacity: 0.5,
+      });
+      setupComponent();
+    }
+
+    it('restores the uploaded panel with DATA_UPLOAD', () => {
+      overrideFeatureFlags('DATA_ORGANIZATION', 'DATA_UPLOAD');
+      restoreTab(SidebarTabs.UPLOADED);
+
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.UPLOADED);
+    });
+
+    it('falls back to the data layers when DATA_UPLOAD went off', () => {
+      restoreTab(SidebarTabs.UPLOADED);
+
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.DATA_LAYERS);
+    });
+
+    it('browses to the layer whose name is clicked on a map', () => {
+      setupComponent();
+      fixture.componentInstance.onTabIndexChange(SidebarTabs.FAVORITES);
+      fixture.componentInstance.setPanelExpanded(false);
+
+      // only the data layers panel shows where a layer comes from
+      mapState().goToLayerOnMap(2);
+
+      expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.DATA_LAYERS);
+      expect(fixture.componentInstance.panelExpanded).toBe(true);
+    });
+  });
+
   it('points "New Plan" back to the workspace in the workspace map viewer', () => {
     delete mockRouteSnapshotData.planId;
     delete mockRouteSnapshotData.scenarioId;
@@ -155,5 +327,54 @@ describe('ExploreComponent', () => {
     setupComponent();
 
     expect(lastBreadcrumbConfig().backUrl).toEqual('/workspace/7');
+  });
+
+  describe('a link to something the user cannot open', () => {
+    let navigate: jasmine.Spy;
+
+    function onWorkspaceMapViewer(workspaceId: string) {
+      delete mockRouteSnapshotData.planId;
+      delete mockRouteSnapshotData.scenarioId;
+      currentPlanId$.next(null);
+      (TestBed.inject(ActivatedRoute).snapshot as any).pathFromRoot = [
+        { paramMap: convertToParamMap({ workspaceId }) },
+      ];
+    }
+
+    beforeEach(() => {
+      navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
+    });
+
+    it('goes home when the workspace is not found', () => {
+      onWorkspaceMapViewer('7');
+      setupComponent();
+      expect(navigate).not.toHaveBeenCalled();
+
+      workspaceNotFound$.next(true);
+
+      expect(navigate).toHaveBeenCalledOnceWith(['/home']);
+    });
+
+    it('goes home when the plan fails to load', () => {
+      setupComponent();
+      expect(navigate).not.toHaveBeenCalled();
+
+      currentPlan$.error(new Error('Not found'));
+
+      expect(navigate).toHaveBeenCalledOnceWith(['/home']);
+    });
+
+    it('stays on the map viewer of a plan that loads', () => {
+      setupComponent();
+
+      expect(navigate).not.toHaveBeenCalled();
+    });
+
+    it('ignores the workspace state off the workspace map viewer', () => {
+      workspaceNotFound$.next(true);
+      setupComponent();
+
+      expect(navigate).not.toHaveBeenCalled();
+    });
   });
 });

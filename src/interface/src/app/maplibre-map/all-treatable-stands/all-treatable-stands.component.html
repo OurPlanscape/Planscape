@@ -1,0 +1,21 @@
+<mgl-vector-source
+  id="allTreatableStandsLayer"
+  [tiles]="[vectorLayer]"
+  promoteId="id">
+</mgl-vector-source>
+
+<mgl-layer
+  id="treatableStandsFill"
+  type="fill"
+  source="allTreatableStandsLayer"
+  [sourceLayer]="martinSource.sources.treatableStandsByScenario"
+  [paint]="standPaint">
+</mgl-layer>
+
+<mgl-layer
+  id="treatableStandsOutline"
+  type="line"
+  source="allTreatableStandsLayer"
+  [sourceLayer]="martinSource.sources.treatableStandsByScenario"
+  [paint]="standOutlinePaint">
+</mgl-layer>

@@ -36,6 +36,8 @@ def publish_report_event(
         obj=report_object(report.pk, scenario.pk, scenario.planning_area_id),
         data={
             "status": report.status,
+            "calculation_status": report.calculation_status,
+            "burn_simulation_status": report.burn_simulation_status,
             "geopackage_status": report.geopackage_status,
             **data,
         },
@@ -43,7 +45,12 @@ def publish_report_event(
     )
 
 
-def publish_report_status_by_id(report_id: int, status: str) -> None:
+def publish_report_status_by_id(
+    report_id: int,
+    status: str,
+    calculation_status: str | None = None,
+    burn_simulation_status: str | None = None,
+) -> None:
     """For writers that use `QuerySet.update()` and have no instance at hand."""
     row = (
         FundingOpportunityReport.objects.filter(pk=report_id)
@@ -61,5 +68,9 @@ def publish_report_status_by_id(report_id: int, status: str) -> None:
         workspace_id,
         STATUS_CHANGED_EVENT,
         obj=report_object(report_id, scenario_id, planning_area_id),
-        data={"status": status},
+        data={
+            "status": status,
+            "calculation_status": calculation_status,
+            "burn_simulation_status": burn_simulation_status,
+        },
     )

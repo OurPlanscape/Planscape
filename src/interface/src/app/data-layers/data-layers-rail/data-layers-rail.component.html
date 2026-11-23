@@ -3,7 +3,9 @@
   [activeId]="activePanel"
   (itemSelected)="selectItem($event)"></app-sidebar-icon-rail>
 
-<div class="panel" *ngIf="activePanel === 'data-layers'">
+<div
+  class="panel"
+  *ngIf="activePanel === 'data-layers' || activePanel === 'uploaded'">
   <div class="panel-header">
     <ng-container *ngIf="selection$ | async as selection; else title">
       <button
@@ -16,14 +18,23 @@
       <h4 class="selection-title">{{ selection.name }}</h4>
     </ng-container>
     <ng-template #title>
-      <h4>Data Layers</h4>
+      <h4>{{ activePanel === 'uploaded' ? 'Uploaded' : 'Data Layers' }}</h4>
     </ng-template>
   </div>
   <app-data-layers
+    [searchTab]="activePanel === 'uploaded' ? 'uploaded' : 'general'"
     [displayAddButton]="displayAddButton"
     [useClearFooter]="useClearFooter"
     [showSelectionHeader]="false"
     [class.sticky-search]="stickySearch"></app-data-layers>
+</div>
+
+<div class="panel" *ngIf="activePanel === 'favorites'">
+  <div class="panel-header">
+    <h4>Favorite Data Layers</h4>
+  </div>
+  <app-favorite-data-layers
+    [displayAddButton]="displayAddButton"></app-favorite-data-layers>
 </div>
 
 <div class="panel" *ngIf="activePanel === 'base-layers'">

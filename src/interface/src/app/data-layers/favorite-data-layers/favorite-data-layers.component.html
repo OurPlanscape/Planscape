@@ -1,0 +1,104 @@
+<div class="side-search-container" [class.no-border]="belowSearch">
+  <sg-search-bar
+    class="search-bar"
+    [debounceInterval]="160"
+    searchPlaceholder="Search in favorites"
+    [showCloseButton]="true"
+    [searchValue]="(searchTerm$ | async) || ''"
+    (searchString)="search($event)"
+    (clearSearch)="clearSearch()"></sg-search-bar>
+</div>
+<ng-container *ngTemplateOutlet="belowSearch ?? null"></ng-container>
+
+<div class="scrollable" *ngIf="favorites$ | async as favorites">
+  <mat-spinner
+    *ngIf="favorites.isLoading && !favorites.data"
+    diameter="20"
+    class="loader"></mat-spinner>
+
+  <sg-empty-state
+    *ngIf="favorites.error"
+    icon="error_outline"
+    [outlined]="true"
+    title="We couldn't load your favorites"
+    description="The server could not return the favorites of this workspace. Try again later."></sg-empty-state>
+
+  <ng-container *ngIf="favorites.data && !favorites.error">
+    <div *ngIf="displayAddButton && (hasResults$ | async)" class="nodes-header">
+      <span class="select-column">Select</span
+      ><span>{{ dataLayersStateService.viewColumnLabel }}</span>
+    </div>
+
+    <div
+      class="data-layer"
+      [class.with-add-button]="displayAddButton"
+      *ngFor="let layer of results$ | async; trackBy: trackById">
+      <span
+        class="button-column"
+        *ngIf="displayAddButton"
+        [matTooltip]="getTooltipText(layer, isSelectionCompleted$ | async)"
+        [matTooltipDisabled]="
+          !isUnselectable(layer) && (isSelectionCompleted$ | async) === false
+        ">
+        <mat-checkbox
+          class="view-checkbox"
+          [checked]="isSelected(layer)"
+          [disabled]="
+            !isSelected(layer) &&
+            (isUnselectable(layer) || (isSelectionCompleted$ | async))
+          "
+          (click)="toggleSelection(layer)"></mat-checkbox>
+      </span>
+      <sg-toggle
+        class="toggle"
+        [ngModel]="(viewedDataLayerId$ | async) === layer.id"
+        (change)="selectDataLayer(layer, $event)">
+        <app-favorite-star [layer]="layer"></app-favorite-star>
+        <span
+          class="layer-name"
+          [sgHighlighter]="(searchTerm$ | async) || ''"
+          [sgHighlighterText]="layer.name"></span>
+      </sg-toggle>
+      <mat-spinner
+        diameter="20"
+        *ngIf="
+          (viewedDataLayerId$ | async) === layer.id &&
+          (loadingDataLayer$ | async)
+        "></mat-spinner>
+      <button
+        sg-button
+        variant="icon-only"
+        icon="info"
+        class="info-icon"
+        [outlined]="true"
+        [matMenuTriggerFor]="popoverMenu"
+        #infoTrigger="matMenuTrigger"
+        appSingleOpenMenu
+        (menuOpened)="infoMenuOpen = true"
+        (menuClosed)="infoMenuOpen = false"></button>
+      <mat-menu
+        #popoverMenu="matMenu"
+        class="datalayer-tooltip-panel"
+        [hasBackdrop]="false">
+        <app-data-layer-tooltip
+          [layer]="layer"
+          *ngIf="infoMenuOpen"
+          (closed)="infoTrigger.closeMenu()"></app-data-layer-tooltip>
+      </mat-menu>
+    </div>
+
+    <!-- nothing favorited yet -->
+    <sg-empty-state
+      *ngIf="(searchTerm$ | async) === '' && (hasResults$ | async) === false"
+      icon="star"
+      [outlined]="true"
+      title="No favorite data layers yet"
+      [description]="(emptyStateDescription$ | async) || ''"></sg-empty-state>
+
+    <!-- there are favorites, they just do not match what was typed -->
+    <sg-no-results
+      *ngIf="
+        (searchTerm$ | async) && (hasResults$ | async) === false
+      "></sg-no-results>
+  </ng-container>
+</div>

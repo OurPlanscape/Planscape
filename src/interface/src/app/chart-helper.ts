@@ -164,9 +164,16 @@ export function getGroupedAttainment(features: FeatureCollection[]) {
   return groupedAttainment;
 }
 
+export function usageTypeLayerName(usage: UsageType): string {
+  return typeof usage.datalayer === 'string'
+    ? usage.datalayer
+    : (usage.datalayer?.name ?? '');
+}
+
 function lookupUsageTypeByName(layer: string, usageTypes: UsageType[]): string {
   return (
-    usageTypes.find((usage) => usage.datalayer === layer)?.usage_type ?? ''
+    usageTypes.find((usage) => usageTypeLayerName(usage) === layer)
+      ?.usage_type ?? ''
   );
 }
 

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 from urllib.parse import urlparse
 from uuid import uuid4
 
@@ -8,7 +8,7 @@ from cacheops import cached
 from core.flags import feature_enabled
 from core.gcs import create_download_url as create_gcs_download_url
 from core.gcs import is_gcs_file
-from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin
+from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin, UUIDMixin
 from core.s3 import create_download_url as create_s3_download_url
 from core.s3 import is_s3_file
 from core.schemes import SUPPORTED_SCHEMES
@@ -83,7 +83,7 @@ class DatasetManager(models.Manager):
         return DatasetQuerySet(self.model, using=self._db).filter(deleted_at=None)
 
 
-class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
+class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, UUIDMixin, models.Model):
     id: int
 
     created_by_id: int
@@ -156,7 +156,7 @@ class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         verbose_name_plural = "Datasets"
 
 
-class Category(CreatedAtMixin, UpdatedAtMixin, MP_Node):
+class Category(CreatedAtMixin, UpdatedAtMixin, UUIDMixin, MP_Node):
     id: int
 
     created_by_id: int
@@ -207,8 +207,16 @@ class Category(CreatedAtMixin, UpdatedAtMixin, MP_Node):
         max_length=128,
     )
 
-    @cached(timeout=settings.CATEGORY_PATH_TTL)
     def _get_full_path(self) -> List[str]:
+        # Ancestors batch-loaded by `hydrate_category_ancestors` avoid both the
+        # DB query and the cache round-trip.
+        prefetched = getattr(self, "_prefetched_ancestors", None)
+        if prefetched is not None:
+            return [*(c.name for c in prefetched), self.name]
+        return self._get_cached_full_path()
+
+    @cached(timeout=settings.CATEGORY_PATH_TTL)
+    def _get_cached_full_path(self) -> List[str]:
         ancestors = [c.name for c in self.get_ancestors()]
         return [*ancestors, self.name]
 
@@ -220,7 +228,46 @@ class Category(CreatedAtMixin, UpdatedAtMixin, MP_Node):
         verbose_name_plural = "Categories"
 
 
-class SimpleCategory(CreatedAtMixin, UpdatedAtMixin, models.Model):
+def hydrate_category_ancestors(categories: Iterable[Optional[Category]]) -> None:
+    """
+    Loads every ancestor of the given categories with a single query and
+    attaches them to each instance, so that `get_parent()` (treebeard caches it
+    in `_cached_parent_obj`) and `_get_full_path()` don't hit the database.
+    Categories that were already hydrated are skipped.
+    """
+    nodes = [
+        c
+        for c in categories
+        if c is not None and getattr(c, "_prefetched_ancestors", None) is None
+    ]
+    if not nodes:
+        return
+
+    steplen = Category.steplen
+    ancestor_paths = {
+        node.path[:pos]
+        for node in nodes
+        for pos in range(steplen, len(node.path), steplen)
+    }
+    ancestors_by_path: Dict[str, Category] = {}
+    if ancestor_paths:
+        ancestors_by_path = {
+            c.path: c for c in Category.objects.filter(path__in=ancestor_paths)
+        }
+
+    for node in [*nodes, *ancestors_by_path.values()]:
+        chain = [
+            ancestors_by_path[node.path[:pos]]
+            for pos in range(steplen, len(node.path), steplen)
+            if node.path[:pos] in ancestors_by_path
+        ]
+        node._prefetched_ancestors = chain  # type: ignore[attr-defined]
+        parent = ancestors_by_path.get(node.path[:-steplen])
+        if parent is not None:
+            node._cached_parent_obj = parent  # type: ignore[attr-defined]
+
+
+class SimpleCategory(CreatedAtMixin, UpdatedAtMixin, UUIDMixin, models.Model):
     id: int
 
     name = models.CharField(max_length=128)
@@ -244,6 +291,11 @@ class SearchTab(models.TextChoices):
     GENERAL = "general", "General"
     FAVORITES = "favorites", "Favorites"
     UPLOADED = "uploaded", "Uploaded"
+
+
+class SearchGroupBy(models.TextChoices):
+    SIMPLE_CATEGORY = "simple_category", "Simple category"
+    DATASET = "dataset", "Dataset"
 
 
 class DataLayerStatus(models.TextChoices):
@@ -316,6 +368,9 @@ class DataLayerQuerySet(models.QuerySet):
         query = {"modules": {"forsys": {"capabilities": [capability]}}}
         return self.all().filter(metadata__contains=query)
 
+    def by_outline_intersects(self, geometry: GEOSGeometry) -> models.QuerySet:
+        return self.all().filter(pk__in=get_datalayer_ids_intersecting(geometry))
+
     def accessible_by(self, user) -> models.QuerySet:
         accessible_datasets_ids = (
             Dataset.objects.all().accessible_by(user).values_list("id", flat=True)
@@ -337,8 +392,8 @@ class Style(
     id: int
 
     uuid = models.UUIDField(
-        null=True,
         default=uuid4,
+        db_index=True,
     )
 
     created_by_id: int
@@ -408,7 +463,8 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
 
     uuid = models.UUIDField(
-        null=True,
+        default=uuid4,
+        db_index=True,
     )
 
     created_by_id: int
@@ -628,6 +684,23 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 def get_dataset_ids_intersecting(geometry: GEOSGeometry) -> List[int]:
     """
     IDs of datasets with at least one datalayer whose outline intersects
+    `geometry`.
+    """
+    return sorted(
+        {dataset_id for _, dataset_id in _get_datalayers_intersecting(geometry)}
+    )
+
+
+def get_datalayer_ids_intersecting(geometry: GEOSGeometry) -> List[int]:
+    """
+    IDs of datalayers whose outline intersects `geometry`.
+    """
+    return [datalayer_id for datalayer_id, _ in _get_datalayers_intersecting(geometry)]
+
+
+def _get_datalayers_intersecting(geometry: GEOSGeometry) -> List[Tuple[int, int]]:
+    """
+    (datalayer_id, dataset_id) pairs of datalayers whose outline intersects
     `geometry`. Testing detailed outlines is expensive, so the result is cached
     by the geometry's EWKT plus a fingerprint of the datalayers table: any
     datalayer save or delete changes the fingerprint, invalidating the cache.
@@ -636,7 +709,7 @@ def get_dataset_ids_intersecting(geometry: GEOSGeometry) -> List[int]:
         count=Count("id"),
         last_updated_at=Max("updated_at"),
     )
-    return _get_dataset_ids_intersecting(
+    return _get_cached_datalayers_intersecting(
         str(geometry),
         fingerprint["count"],
         fingerprint["last_updated_at"],
@@ -644,17 +717,16 @@ def get_dataset_ids_intersecting(geometry: GEOSGeometry) -> List[int]:
 
 
 @cached(timeout=settings.MODULE_DATASETS_TTL)
-def _get_dataset_ids_intersecting(
+def _get_cached_datalayers_intersecting(
     geometry_ewkt: str,
     # Not used in the body: only part of the cache key.
     datalayer_count: int,
     datalayer_last_updated_at: Optional[datetime],
-) -> List[int]:
+) -> List[Tuple[int, int]]:
     return list(
         DataLayer.objects.filter(outline__intersects=GEOSGeometry(geometry_ewkt))
-        .order_by()
-        .values_list("dataset_id", flat=True)
-        .distinct()
+        .order_by("id")
+        .values_list("id", "dataset_id")
     )
 
 

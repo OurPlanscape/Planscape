@@ -5,7 +5,7 @@ substitutions:
   _SECRET_KEY_SECRET: planscape-backend-secret-key-dev
 
 steps:
-  - name: ghcr.io/astral-sh/uv:python3.10-bookworm-slim
+  - name: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
     entrypoint: bash
     secretEnv:
       - SECRET_KEY

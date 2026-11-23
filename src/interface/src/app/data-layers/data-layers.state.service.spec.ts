@@ -3,8 +3,19 @@ import { fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 import { DataLayersStateService } from './data-layers.state.service';
 import { MockProvider } from 'ng-mocks';
 import { DataLayersService } from '@services/data-layers.service';
-import { of, Subject, throwError } from 'rxjs';
-import { DataLayer, DataSet, Pagination } from '@types';
+import { defer, filter, of, Subject, throwError } from 'rxjs';
+import {
+  DATALAYER_FAVORITED_EVENT,
+  DATALAYER_UNFAVORITED_EVENT,
+  DataLayer,
+  DataSet,
+  Pagination,
+  Plan,
+  REALTIME_CONNECTED_EVENT,
+  Workspace,
+  WorkspaceEvent,
+  WorkspaceRole,
+} from '@types';
 import { MapModuleService } from '@services/map-module.service';
 import { FeaturesModule } from '@features/features.module';
 import { overrideFeatureFlags } from '@features/testing';
@@ -17,12 +28,16 @@ import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token
 import { TreeNode } from '@data-layers/data-layers/tree-node';
 import { WorkspacesService } from '@services/workspaces.service';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { WebSocketService } from '@services/websocket.service';
 
 describe('DataLayersStateService', () => {
   let service: DataLayersStateService;
   let dataLayersService: jasmine.SpyObj<DataLayersService>;
   let workspacesService: jasmine.SpyObj<WorkspacesService>;
   let currentWorkspaceId: number | null;
+  let currentWorkspace$: Subject<Workspace>;
+  let currentPlan: Plan | null;
+  let workspaceEvents$: Subject<WorkspaceEvent>;
 
   const layer = {
     id: 1,
@@ -39,15 +54,25 @@ describe('DataLayersStateService', () => {
   beforeEach(() => {
     dataLayersService = jasmine.createSpyObj<DataLayersService>(
       'DataLayersService',
-      ['listDataSets', 'listDataLayers', 'listCategoryDataLayers']
+      [
+        'listDataSets',
+        'listDataLayers',
+        'listCategoryDataLayers',
+        'search',
+        'browseFavorites',
+      ]
     );
     dataLayersService.listDataSets.and.returnValue(
       of({} as Pagination<DataSet>)
     );
     dataLayersService.listDataLayers.and.returnValue(of([]));
     dataLayersService.listCategoryDataLayers.and.returnValue(of([]));
+    dataLayersService.browseFavorites.and.returnValue(of([]));
 
     currentWorkspaceId = null;
+    currentPlan = null;
+    currentWorkspace$ = new Subject<Workspace>();
+    workspaceEvents$ = new Subject<WorkspaceEvent>();
     workspacesService = jasmine.createSpyObj<WorkspacesService>(
       'WorkspacesService',
       ['favoriteDataLayer', 'unfavoriteDataLayer']
@@ -73,14 +98,27 @@ describe('DataLayersStateService', () => {
         MockProvider(PlanState, {
           currentPlan$: of(MOCK_PLAN),
           currentPlanId$: of(123),
-          planningAreaGeometry$: of(MOCK_GEOMETRY),
+          currentPlanOrNull$: defer(() => of(currentPlan)),
         }),
         { provide: WorkspacesService, useValue: workspacesService },
+        {
+          provide: WebSocketService,
+          useValue: {
+            on: (type: string) =>
+              workspaceEvents$.pipe(filter((event) => event.type === type)),
+          },
+        },
         {
           provide: WorkspaceState,
           useValue: {
             get currentWorkspaceIdValue() {
               return currentWorkspaceId;
+            },
+            get currentWorkspaceId$() {
+              return of(currentWorkspaceId);
+            },
+            get currentWorkspace$() {
+              return currentWorkspace$;
             },
           },
         },
@@ -138,11 +176,26 @@ describe('DataLayersStateService', () => {
     expect(tree!).toEqual([{ name: 'Layer', item: layer }]);
   });
 
+  // the rail's panel is narrower than the legacy one it replaces
+  describe('the label of the view column', () => {
+    it('is short where the panel is narrow', () => {
+      createService('DATA_ORGANIZATION');
+
+      expect(service.viewColumnLabel).toBe('View');
+    });
+
+    it('spells the column out in the legacy panel', () => {
+      createService();
+
+      expect(service.viewColumnLabel).toBe('View Layer');
+    });
+  });
+
   describe('loading$', () => {
-    it('stops once the categories load, even if the plan geometry arrives later', fakeAsync(() => {
-      const geometry$ = new Subject<any>();
+    it('stops once the categories load, even if the plan arrives later', fakeAsync(() => {
+      const plan$ = new Subject<Plan | null>();
       TestBed.overrideProvider(PlanState, {
-        useValue: { planningAreaGeometry$: geometry$ },
+        useValue: { currentPlanOrNull$: plan$ },
       });
       service = TestBed.inject(DataLayersStateService);
       let loading: boolean | undefined;
@@ -154,11 +207,174 @@ describe('DataLayersStateService', () => {
       flushMicrotasks();
       expect(loading).toBeFalse();
 
-      geometry$.next(MOCK_GEOMETRY);
+      plan$.next(MOCK_PLAN);
       flushMicrotasks();
 
       expect(loading).toBeFalse();
     }));
+  });
+
+  describe('scoping requests to the plan', () => {
+    const plan = { ...MOCK_PLAN, geometry: MOCK_GEOMETRY, workspace: 9 };
+    const dataSet = {
+      id: 10,
+      name: 'Dataset',
+      organization: layer.organization,
+    };
+
+    beforeEach(() => {
+      dataLayersService.search.and.returnValue(
+        of({ count: 0, results: [] } as unknown as Pagination<any>)
+      );
+      currentPlan = plan;
+    });
+
+    it('sends the plan geometry and workspace when USE_GEOMETRY is on', () => {
+      TestBed.overrideProvider(USE_GEOMETRY, { useValue: true });
+      createService('DATA_ORGANIZATION');
+      service.searchResults$.subscribe();
+
+      service.selectDataSet(dataSet);
+      service.search('fire');
+
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        MOCK_GEOMETRY,
+        9
+      );
+      expect(dataLayersService.search).toHaveBeenCalledWith(
+        jasmine.objectContaining({ geometry: MOCK_GEOMETRY, workspaceId: 9 })
+      );
+    });
+
+    it('leaves the geometry out when USE_GEOMETRY is off', () => {
+      createService('DATA_ORGANIZATION');
+      service.selectDataSet(dataSet);
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        undefined,
+        9
+      );
+    });
+
+    it("prefers the workspace route's id over the plan's", () => {
+      currentWorkspaceId = 7;
+      createService('DATA_ORGANIZATION');
+      service.selectDataSet(dataSet);
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        undefined,
+        7
+      );
+    });
+
+    it('sends no workspace with DATA_ORGANIZATION off', () => {
+      createService();
+      service.selectDataSet(dataSet);
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        undefined,
+        null
+      );
+    });
+  });
+
+  describe('the uploaded tab', () => {
+    const dataSet = {
+      id: 10,
+      name: 'Dataset',
+      organization: layer.organization,
+    };
+
+    beforeEach(() => {
+      dataLayersService.search.and.returnValue(
+        of({ count: 0, results: [] } as unknown as Pagination<any>)
+      );
+      currentWorkspaceId = 7;
+    });
+
+    it('browses datasets instead of categories', () => {
+      createService('DATA_ORGANIZATION');
+      service.setSearchTab('uploaded');
+
+      expect(service.browseByCategory()).toBeFalse();
+    });
+
+    it('asks the dataset for its uploads in the workspace', () => {
+      createService();
+      service.setSearchTab('uploaded');
+      service.selectDataSet(dataSet);
+
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        undefined,
+        7,
+        'uploaded'
+      );
+    });
+
+    it('searches the uploads grouped by dataset', () => {
+      createService('DATA_ORGANIZATION');
+      service.searchResults$.subscribe();
+      service.setSearchTab('uploaded');
+      service.search('fire');
+
+      expect(dataLayersService.search).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          term: 'fire',
+          workspaceId: 7,
+          searchTab: 'uploaded',
+          groupBy: 'dataset',
+        })
+      );
+    });
+
+    it('opens the dataset of a layer, even if it has categories', () => {
+      createService('DATA_ORGANIZATION');
+      service.setSearchTab('uploaded');
+      service.goToDataLayerCategory(layer);
+
+      expect(dataLayersService.listDataLayers).toHaveBeenCalledWith(
+        10,
+        'map',
+        undefined,
+        7,
+        'uploaded'
+      );
+      expect(dataLayersService.listCategoryDataLayers).not.toHaveBeenCalled();
+    });
+
+    it('starts over when switching tabs', () => {
+      createService();
+      let term: string | undefined;
+      service.searchTerm$.subscribe((t) => (term = t));
+      let selection: unknown;
+      service.selection$.subscribe((s) => (selection = s));
+      service.selectDataSet(dataSet);
+      service.search('fire');
+
+      service.setSearchTab('uploaded');
+
+      expect(term).toBe('');
+      expect(selection).toBeNull();
+    });
+
+    it('keeps browsing when the tab is set again', () => {
+      createService();
+      service.setSearchTab('uploaded');
+      let selection: unknown;
+      service.selection$.subscribe((s) => (selection = s));
+      service.selectDataSet(dataSet);
+
+      service.setSearchTab('uploaded');
+
+      expect(selection).not.toBeNull();
+    });
   });
 
   describe('goToDataLayerCategory', () => {
@@ -279,6 +495,59 @@ describe('DataLayersStateService', () => {
       createService(...flags);
     }
 
+    describe('who is allowed to change them', () => {
+      const workspaceOf = (role: WorkspaceRole) =>
+        ({ role }) as unknown as Workspace;
+
+      function editingFlags() {
+        const seen: boolean[] = [];
+        service.canEditFavorites$.subscribe((canEdit) => seen.push(canEdit));
+        return seen;
+      }
+
+      it('holds off until the workspace is known', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+
+        expect(editingFlags()).toEqual([false]);
+      });
+
+      it('lets an owner change them', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        const seen = editingFlags();
+
+        currentWorkspace$.next(workspaceOf('OWNER'));
+
+        expect(seen).toEqual([false, true]);
+      });
+
+      it('lets a collaborator change them', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        const seen = editingFlags();
+
+        currentWorkspace$.next(workspaceOf('COLLABORATOR'));
+
+        expect(seen).toEqual([false, true]);
+      });
+
+      it('leaves a viewer with nothing to change', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        const seen = editingFlags();
+
+        currentWorkspace$.next(workspaceOf('VIEWER'));
+
+        expect(seen).toEqual([false]);
+      });
+
+      it('changes nothing for a workspace that fails to load', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        const seen = editingFlags();
+
+        currentWorkspace$.error(new Error('nope'));
+
+        expect(seen).toEqual([false]);
+      });
+    });
+
     it('follows the payload for a layer nobody touched', () => {
       createInWorkspace('DATA_ORGANIZATION');
 
@@ -315,6 +584,131 @@ describe('DataLayersStateService', () => {
       service.toggleFavorite(inTree);
 
       expect(isFavorite(inSearch)).toBe(true);
+    });
+
+    describe('when another member changes them', () => {
+      const favoriteEvent = (type: string, layerId: number) =>
+        ({
+          type,
+          workspace_id: 7,
+          object: { kind: 'datalayer', id: layerId },
+          actor_id: 99,
+        }) as WorkspaceEvent;
+
+      it('fills the star of a layer somebody else favorited', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+
+        workspaceEvents$.next(
+          favoriteEvent(DATALAYER_FAVORITED_EVENT, notFavorited.id)
+        );
+
+        expect(isFavorite(notFavorited)).toBe(true);
+      });
+
+      it('empties the star of a layer somebody else took out', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+
+        workspaceEvents$.next(
+          favoriteEvent(DATALAYER_UNFAVORITED_EVENT, favorited.id)
+        );
+
+        expect(isFavorite(favorited)).toBe(false);
+      });
+
+      it('asks for the list again, since the event says nothing about the module', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        service.favorites$.subscribe();
+        dataLayersService.browseFavorites.calls.reset();
+
+        workspaceEvents$.next(
+          favoriteEvent(DATALAYER_FAVORITED_EVENT, notFavorited.id)
+        );
+
+        expect(dataLayersService.browseFavorites).toHaveBeenCalledTimes(1);
+      });
+
+      it('asks for the list again whenever the connection is made', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        service.favorites$.subscribe();
+        dataLayersService.browseFavorites.calls.reset();
+
+        // events are not replayed, so a reconnection can hide a change
+        workspaceEvents$.next({ type: REALTIME_CONNECTED_EVENT });
+
+        expect(dataLayersService.browseFavorites).toHaveBeenCalledTimes(1);
+      });
+
+      it('leaves the list on screen while it refreshes', () => {
+        dataLayersService.browseFavorites.and.returnValue(of([favorited]));
+        createInWorkspace('DATA_ORGANIZATION');
+        const seen: (DataLayer[] | undefined)[] = [];
+        service.favorites$.subscribe((resource) =>
+          seen.push(resource.isLoading ? resource.data : undefined)
+        );
+
+        workspaceEvents$.next(
+          favoriteEvent(DATALAYER_FAVORITED_EVENT, notFavorited.id)
+        );
+
+        // the loading emission carries what the panel already had
+        expect(seen).toContain([favorited]);
+      });
+
+      it('ignores the events of the workspace that are not about favorites', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        service.favorites$.subscribe();
+        dataLayersService.browseFavorites.calls.reset();
+
+        workspaceEvents$.next({
+          type: 'planning.planning_area.created',
+          workspace_id: 7,
+        });
+
+        expect(dataLayersService.browseFavorites).not.toHaveBeenCalled();
+        expect(isFavorite(notFavorited)).toBe(false);
+      });
+    });
+
+    it('confirms the layer joined the favorites', () => {
+      createInWorkspace('DATA_ORGANIZATION');
+      const toast = spyOn(TestBed.inject(MatSnackBar), 'open');
+
+      service.toggleFavorite(notFavorited);
+
+      expect(toast).toHaveBeenCalledWith(
+        'Layer added to favorites.',
+        'Dismiss',
+        jasmine.objectContaining({ verticalPosition: 'bottom' })
+      );
+    });
+
+    it('confirms the layer left the favorites', () => {
+      createInWorkspace('DATA_ORGANIZATION');
+      const toast = spyOn(TestBed.inject(MatSnackBar), 'open');
+
+      service.toggleFavorite(favorited);
+
+      expect(toast).toHaveBeenCalledWith(
+        'Layer removed from favorites.',
+        'Dismiss',
+        jasmine.objectContaining({ verticalPosition: 'bottom' })
+      );
+    });
+
+    it('keeps the confirmation back until the backend takes it', () => {
+      createInWorkspace('DATA_ORGANIZATION');
+      const toast = spyOn(TestBed.inject(MatSnackBar), 'open');
+      workspacesService.favoriteDataLayer.and.returnValue(
+        throwError(() => new Error('nope'))
+      );
+
+      service.toggleFavorite(notFavorited);
+
+      expect(toast).not.toHaveBeenCalledWith(
+        'Layer added to favorites.',
+        'Dismiss',
+        jasmine.anything()
+      );
     });
 
     it('puts the star back and warns when favoriting fails', () => {
@@ -388,8 +782,126 @@ describe('DataLayersStateService', () => {
       );
     });
 
+    describe('listing them for the panel', () => {
+      it('browses the favorites of the workspace', () => {
+        dataLayersService.browseFavorites.and.returnValue(of([]));
+        createInWorkspace('DATA_ORGANIZATION');
+
+        service.favorites$.subscribe();
+
+        expect(dataLayersService.browseFavorites).toHaveBeenCalledWith(
+          7,
+          'map',
+          undefined
+        );
+      });
+
+      it('sends the plan geometry when USE_GEOMETRY is on', () => {
+        currentPlan = { ...MOCK_PLAN, geometry: MOCK_GEOMETRY };
+        TestBed.overrideProvider(USE_GEOMETRY, { useValue: true });
+        createInWorkspace('DATA_ORGANIZATION');
+
+        service.favorites$.subscribe();
+
+        expect(dataLayersService.browseFavorites).toHaveBeenCalledWith(
+          7,
+          'map',
+          MOCK_GEOMETRY
+        );
+      });
+
+      it('leaves the geometry out when USE_GEOMETRY is off', () => {
+        currentPlan = { ...MOCK_PLAN, geometry: MOCK_GEOMETRY };
+        createInWorkspace('DATA_ORGANIZATION');
+
+        service.favorites$.subscribe();
+
+        expect(dataLayersService.browseFavorites).toHaveBeenCalledWith(
+          7,
+          'map',
+          undefined
+        );
+      });
+
+      it('hands the panel the layers the backend returned', () => {
+        const layers = [{ id: 5, name: 'Fuels' }] as DataLayer[];
+        dataLayersService.browseFavorites.and.returnValue(of(layers));
+        createInWorkspace('DATA_ORGANIZATION');
+
+        let seen: DataLayer[] | undefined;
+        service.favorites$.subscribe((r) => (seen = r.data));
+
+        expect(seen).toEqual(layers);
+      });
+
+      it('surfaces the error instead of swallowing it', () => {
+        dataLayersService.browseFavorites.and.returnValue(
+          throwError(() => new Error('400'))
+        );
+        createInWorkspace('DATA_ORGANIZATION');
+
+        let errored = false;
+        service.favorites$.subscribe((r) => (errored = !!r.error));
+
+        expect(errored).toBe(true);
+      });
+
+      it('refetches once the backend takes a new favorite', () => {
+        createInWorkspace('DATA_ORGANIZATION');
+        service.favorites$.subscribe();
+
+        expect(dataLayersService.browseFavorites.calls.count()).toBe(1);
+
+        service.toggleFavorite(notFavorited);
+
+        // the panel would otherwise keep showing the list of the first visit
+        expect(dataLayersService.browseFavorites.calls.count()).toBe(2);
+      });
+
+      it('does not refetch when the backend refuses the favorite', () => {
+        workspacesService.favoriteDataLayer.and.returnValue(
+          throwError(() => new Error('400'))
+        );
+        createInWorkspace('DATA_ORGANIZATION');
+        service.favorites$.subscribe();
+
+        service.toggleFavorite(notFavorited);
+
+        expect(dataLayersService.browseFavorites.calls.count()).toBe(1);
+      });
+
+      it('drops a row as soon as its star is emptied', () => {
+        dataLayersService.browseFavorites.and.returnValue(of([favorited]));
+        createInWorkspace('DATA_ORGANIZATION');
+
+        let seen: DataLayer[] | undefined;
+        service.favorites$.subscribe((r) => (seen = r.data));
+
+        expect(seen).toEqual([favorited]);
+
+        // the refetch is still in flight, the row should already be gone
+        dataLayersService.browseFavorites.and.returnValue(of([favorited]));
+        service.toggleFavorite(favorited);
+
+        expect(seen).toEqual([]);
+      });
+
+      it('does not ask outside a workspace', () => {
+        currentWorkspaceId = null;
+        currentWorkspace$ = new Subject<Workspace>();
+        workspaceEvents$ = new Subject<WorkspaceEvent>();
+        createService('DATA_ORGANIZATION');
+
+        service.favorites$.subscribe();
+
+        expect(dataLayersService.browseFavorites).not.toHaveBeenCalled();
+      });
+    });
+
     it('offers no favoriting outside a workspace', () => {
       currentWorkspaceId = null;
+      currentWorkspace$ = new Subject<Workspace>();
+      workspaceEvents$ = new Subject<WorkspaceEvent>();
       createService('DATA_ORGANIZATION');
 
       expect(service.favoritesEnabled()).toBe(false);

@@ -1,5 +1,6 @@
 import tempfile
 from pathlib import Path
+from unittest import mock
 
 import fiona
 import numpy as np
@@ -7,7 +8,7 @@ import rasterio
 from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.geos import MultiPolygon, Polygon
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -17,6 +18,8 @@ from rasterio.transform import from_origin
 
 from funding_report.models import FundingOpportunityReport
 from funding_report.services import (
+    export_burn_simulation_raster_to_geopackage,
+    export_funding_report_to_geopackage,
     export_planning_area_results_to_geopackage,
     export_project_areas_results_to_geopackage,
     export_treatment_raster_to_geopackage,
@@ -42,6 +45,25 @@ def write_categorical_treatment_raster(path: Path) -> None:
         crs="EPSG:4269",
         transform=transform,
         nodata=0,
+    ) as dst:
+        dst.write(values, 1)
+
+
+def write_burn_simulation_raster(path: Path) -> None:
+    """Mimics the burn emulator output: single-band float values with nodata."""
+    values = np.array([[0.5, 1.25], [-9999.0, 3.75]], dtype=np.float32)
+    transform = from_origin(-121.0, 39.0, 0.0003, 0.0003)
+    with rasterio.open(
+        path,
+        "w",
+        driver="GTiff",
+        height=values.shape[0],
+        width=values.shape[1],
+        count=1,
+        dtype=values.dtype,
+        crs="EPSG:4269",
+        transform=transform,
+        nodata=-9999.0,
     ) as dst:
         dst.write(values, 1)
 
@@ -198,3 +220,74 @@ class GeopackageExportTest(TestCase):
         layers = fiona.listlayers(str(self.out_path))
         self.assertIn("planning_area", layers)
         self.assertIn("project_areas", layers)
+
+    def _add_burn_simulation_datalayer(self):
+        burn_path = self.out_path.parent / "burn_simulation.tif"
+        write_burn_simulation_raster(burn_path)
+        self.burn_datalayer = DataLayerFactory.create(
+            name="burn simulation",
+            type=DataLayerType.RASTER,
+            url=str(burn_path),
+        )
+        self.report.burn_simulation_datalayer = self.burn_datalayer
+        self.report.save(update_fields=["burn_simulation_datalayer"])
+
+    def test_burn_simulation_raster_exported(self):
+        self._add_burn_simulation_datalayer()
+
+        export_planning_area_results_to_geopackage(self.report, self.out_path)
+        export_project_areas_results_to_geopackage(self.report, self.out_path)
+        export_treatment_raster_to_geopackage(self.report, self.out_path)
+        export_burn_simulation_raster_to_geopackage(self.report, self.out_path)
+
+        layers = fiona.listlayers(str(self.out_path))
+        self.assertIn("planning_area", layers)
+        self.assertIn("project_areas", layers)
+
+        with rasterio.open(str(self.out_path), TABLE="treatment_clip") as src:
+            self.assertEqual(src.nodata, 0)
+            data = src.read(1)
+            self.assertEqual(data[0, 0], 1)
+            self.assertEqual(data[0, 1], 2)
+
+        with rasterio.open(str(self.out_path), TABLE="burn_simulation") as src:
+            self.assertEqual(src.width, 2)
+            self.assertEqual(src.height, 2)
+            self.assertEqual(src.nodata, -9999.0)
+            data = src.read(1)
+            self.assertAlmostEqual(float(data[0, 0]), 0.5)
+            self.assertAlmostEqual(float(data[0, 1]), 1.25)
+            self.assertAlmostEqual(float(data[1, 1]), 3.75)
+            self.assertTrue(src.read(1, masked=True).mask[1, 0])
+
+    def test_skips_burn_raster_when_no_burn_datalayer(self):
+        export_planning_area_results_to_geopackage(self.report, self.out_path)
+        export_burn_simulation_raster_to_geopackage(self.report, self.out_path)
+
+        with self.assertRaises(rasterio.errors.RasterioIOError):
+            rasterio.open(str(self.out_path), TABLE="burn_simulation")
+
+    def _run_full_export(self):
+        with (
+            mock.patch("core.gcs.upload_file_via_cli"),
+            mock.patch("core.s3.upload_file_via_s3_client"),
+            mock.patch(
+                "funding_report.services.export_burn_simulation_raster_to_geopackage"
+            ) as burn_export,
+            self.settings(TEMP_GEOPACKAGE_FOLDER=str(self.out_path.parent)),
+        ):
+            result = export_funding_report_to_geopackage(self.report)
+        self.assertIsNotNone(result)
+        return burn_export
+
+    @override_settings(FEATURE_FLAGS=["FOR_WITH_BURN_EMULATOR"])
+    def test_full_export_includes_burn_raster_when_flag_enabled(self):
+        self._add_burn_simulation_datalayer()
+        burn_export = self._run_full_export()
+        burn_export.assert_called_once()
+
+    @override_settings(FEATURE_FLAGS=[])
+    def test_full_export_skips_burn_raster_when_flag_disabled(self):
+        self._add_burn_simulation_datalayer()
+        burn_export = self._run_full_export()
+        burn_export.assert_not_called()

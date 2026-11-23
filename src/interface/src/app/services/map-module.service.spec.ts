@@ -156,6 +156,21 @@ describe('MapModuleService loadError$', () => {
     expect(errors).toEqual([false, false, true]);
   });
 
+  it('ignores a response from a load that was superseded', () => {
+    const unfiltered = new Subject<ApiModule<MapData>>();
+    const filtered = new Subject<ApiModule<MapData>>();
+    getModule.and.returnValues(unfiltered, filtered);
+    let latest: MapData | undefined;
+    svc.mapData$.subscribe((d) => (latest = d));
+
+    svc.loadMapModule().subscribe();
+    svc.loadMapModule({ type: 'Point', coordinates: [0, 0] }).subscribe();
+    filtered.next({ name: 'map', options: { tag: 'filtered' } as any });
+    unfiltered.next({ name: 'map', options: { tag: 'unfiltered' } as any });
+
+    expect((latest as any).tag).toBe('filtered');
+  });
+
   it('retries with the last geometry and clears the error on success', () => {
     const geometry = { type: 'Point', coordinates: [0, 0] };
     getModule.and.returnValue(throwError(() => new Error('502')));

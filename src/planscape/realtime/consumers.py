@@ -3,7 +3,10 @@ from typing import Any, Optional
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-from workspaces.access import get_workspace_role
+from workspaces.access import (
+    get_workspace_planning_area_access,
+    get_workspace_role,
+)
 from workspaces.models import Workspace
 
 from realtime.events import workspace_group_name
@@ -20,6 +23,7 @@ CLOSE_NOT_FOUND = 4404
 CONNECTED_EVENT = "realtime.connected"
 WORKSPACE_DELETED_EVENT = "workspace.workspace.deleted"
 MEMBERSHIP_REVOKED_EVENTS = ("workspace.member.removed", "workspace.member.left")
+ROLE_CHANGED_EVENT = "workspace.member.role_changed"
 
 
 @database_sync_to_async
@@ -39,6 +43,7 @@ class WorkspaceConsumer(AsyncJsonWebsocketConsumer):
 
     workspace_id: int
     group_name: Optional[str] = None
+    role: Optional[str] = None
 
     async def connect(self):
         await self.accept()
@@ -58,6 +63,7 @@ class WorkspaceConsumer(AsyncJsonWebsocketConsumer):
             await self.close(code=CLOSE_FORBIDDEN)
             return
 
+        self.role = str(role)
         self.group_name = workspace_group_name(self.workspace_id)
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.send_json(
@@ -90,9 +96,37 @@ class WorkspaceConsumer(AsyncJsonWebsocketConsumer):
     async def workspace_event(self, message: dict[str, Any]):
         """Handler for channel-layer messages of type `workspace.event`."""
         event = message["event"]
-        await self.send_json(event)
+        self.track_role_change(event)
+        await self.send_json(self.for_viewer(event))
         if self.revokes_access(event):
             await self.close(code=CLOSE_FORBIDDEN)
+
+    def track_role_change(self, event: dict[str, Any]) -> None:
+        if event.get("type") != ROLE_CHANGED_EVENT:
+            return
+        user = self.scope.get("user")
+        data = event.get("data") or {}
+        if user is not None and data.get("user_id") == user.pk:
+            self.role = data.get("role")
+
+    def for_viewer(self, event: dict[str, Any]) -> dict[str, Any]:
+        """
+        Planning area `role` and `permissions` depend on who is looking, so
+        they're added here, per connection, instead of when the event is
+        published to the whole workspace.
+        """
+        data = event.get("data")
+        if (event.get("object") or {}).get("kind") != "planning_area" or not data:
+            return event
+        user = self.scope.get("user")
+        role, permissions = get_workspace_planning_area_access(
+            is_creator=user is not None and data.get("user") == user.pk,
+            workspace_role=self.role,
+        )
+        return {
+            **event,
+            "data": {**data, "role": role or False, "permissions": permissions},
+        }
 
     def revokes_access(self, event: dict[str, Any]) -> bool:
         event_type = event.get("type")

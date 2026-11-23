@@ -12,8 +12,15 @@
   <app-sub-unit-toggle
     *ngIf="subUnitToggleLayer$ | async as layer"
     [layer]="layer"></app-sub-unit-toggle>
+
   <app-treated-stands-toggle
     *ngIf="showSubUnitToggleOnResults$ | async"></app-treated-stands-toggle>
+
+  <ng-container>
+    <app-all-treatable-stands-toggle
+      *ngIf="showAllTreatableStandsToggleOnResults$ | async">
+    </app-all-treatable-stands-toggle>
+  </ng-container>
 </app-map-nav-bar>
 
 <mgl-map
@@ -61,7 +68,7 @@
       ">
     </app-map-project-areas>
   </ng-container>
-  <mgl-control position="bottom-left">
+  <mgl-control position="bottom-left" *ngIf="showDataLayerName">
     <app-data-layer-name [showClearButton]="true"></app-data-layer-name>
   </mgl-control>
 
@@ -89,6 +96,13 @@
       *ngIf="mapLibreMap"
       [mapLibreMap]="mapLibreMap"></app-treated-stands>
   </ng-container>
+
+  <ng-container *ngIf="showAllTreatableStands$ | async">
+    <app-all-treatable-stands
+      *ngIf="mapLibreMap"
+      [mapLibreMap]="mapLibreMap"></app-all-treatable-stands>
+  </ng-container>
+
   <mgl-control position="top-left">
     <app-map-layer-color-legend></app-map-layer-color-legend>
   </mgl-control>

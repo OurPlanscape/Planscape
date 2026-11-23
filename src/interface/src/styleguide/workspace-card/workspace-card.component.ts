@@ -39,17 +39,24 @@ export class WorkspaceCardComponent {
   @Input() userCanRename = false;
   @Input() userCanDelete = false;
   @Input() userCanShare = false;
+  @Input() userCanLeave = false;
 
   @Output() rename = new EventEmitter<void>();
   @Output() share = new EventEmitter<void>();
   @Output() delete = new EventEmitter<void>();
+  @Output() leave = new EventEmitter<void>();
 
   get planningAreasLabel(): string {
     return this.planningAreasCount === 1 ? 'Planning Area' : 'Planning Areas';
   }
 
   get hasActions(): boolean {
-    return this.userCanRename || this.userCanShare || this.userCanDelete;
+    return (
+      this.userCanRename ||
+      this.userCanShare ||
+      this.userCanLeave ||
+      this.userCanDelete
+    );
   }
 
   /** The menu sits inside the card's link, so its clicks must not navigate. */

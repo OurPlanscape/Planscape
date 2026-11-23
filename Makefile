@@ -43,7 +43,7 @@ taggit:
 	echo "Completed taggit"
 
 install-dependencies-frontend:
-	cd src/interface && npm install
+	cd src/interface && npm install && npm run postinstall
 
 compile-angular:
 	cd src/interface && npm run build -- --configuration production --output-path=./dist/out

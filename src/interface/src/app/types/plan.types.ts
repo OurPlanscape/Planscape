@@ -23,6 +23,7 @@ export interface Plan {
     | 'STANDS_DONE'
     | 'FAILED'
     | 'OVERSIZE';
+  workspace?: number | null;
 }
 
 export type PreviewPlan = Omit<Plan, 'geometry' | 'area_m2'>;

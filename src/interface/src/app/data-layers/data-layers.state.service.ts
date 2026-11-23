@@ -1,25 +1,34 @@
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, OnDestroy } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
 import {
   BehaviorSubject,
   catchError,
   combineLatest,
   distinctUntilChanged,
+  filter,
   map,
+  merge,
   Observable,
   of,
   shareReplay,
   startWith,
   Subject,
+  Subscription,
   switchMap,
   tap,
 } from 'rxjs';
 import {
   BaseDataSet,
   DataLayer,
+  DATALAYER_FAVORITED_EVENT,
+  DATALAYER_UNFAVORITED_EVENT,
   IdNamePair,
   Pagination,
+  Plan,
+  REALTIME_CONNECTED_EVENT,
+  Resource,
   SearchResult,
+  SearchTab,
   SimpleCategory,
 } from '@types';
 import {
@@ -32,11 +41,17 @@ import { MapModuleService } from '@services/map-module.service';
 import { MAX_SELECTED_DATALAYERS } from '@data-layers/data-layers/max-selected-datalayers.token';
 import { PlanState } from '@plan/plan.state';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
-import { SNACK_ERROR_CONFIG, UnselectableType } from '@app/shared';
+import {
+  SNACK_BOTTOM_NOTICE_CONFIG,
+  SNACK_ERROR_CONFIG,
+  UnselectableType,
+} from '@app/shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FeatureService } from '@features/feature.service';
 import { WorkspacesService } from '@services/workspaces.service';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { WebSocketService } from '@services/websocket.service';
+import { Geometry } from 'geojson';
 
 /** The dataset or category whose layers are being browsed. */
 export interface BrowseSelection {
@@ -52,7 +67,7 @@ export interface unselectableLayer {
 }
 
 @Injectable()
-export class DataLayersStateService {
+export class DataLayersStateService implements OnDestroy {
   readonly limit = 20;
 
   private moduleNameOverride$ = new BehaviorSubject<string | null>(null);
@@ -80,6 +95,30 @@ export class DataLayersStateService {
     // from the other module paired with the new module name
     this._selectedDataSet$.next(null);
     this.moduleNameOverride$.next(name);
+  }
+
+  private _searchTab$ = new BehaviorSubject<SearchTab>('general');
+  searchTab$ = this._searchTab$.asObservable();
+
+  /**
+   * Which tab the browse panel lists: every data layer, or the workspace's
+   * uploads. Uploads are browsed by dataset, since they have no categories.
+   */
+  setSearchTab(tab: SearchTab) {
+    if (tab === this._searchTab$.value) {
+      return;
+    }
+    this.resetPath();
+    this.clearSearch();
+    this._searchTab$.next(tab);
+  }
+
+  /** Whether layers are browsed through simple categories instead of datasets. */
+  browseByCategory(): boolean {
+    return (
+      this.featureService.isFeatureEnabled('DATA_ORGANIZATION') &&
+      this._searchTab$.value !== 'uploaded'
+    );
   }
 
   private _selectedDataSet$ = new BehaviorSubject<BaseDataSet | null>(null);
@@ -137,21 +176,21 @@ export class DataLayersStateService {
 
   dataTree$ = combineLatest([
     this.selection$,
-    // Setting an initial value when there is no plan
-    this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
+    this.planState.currentPlanOrNull$,
     this.moduleNameOverride$,
   ]).pipe(
     tap(() => this.loadingSubject.next(true)),
-    switchMap(([selection, planningAreaGeometry, override]) => {
+    switchMap(([selection, plan, override]) => {
+      const searchTab = this._searchTab$.value;
       if (!selection) {
         this.loadingSubject.next(false);
         return of(null);
       }
       const module = override ?? this.mapModuleService.moduleName;
-      const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
+      const geometry = this.planGeometry(plan);
       // categories list their layers flat; datasets nest them by path
       const isCategory = selection.type === 'category';
-      const workspaceId = this.favoritesWorkspaceId();
+      const workspaceId = this.requestWorkspaceId(plan, searchTab);
       const layers$ = isCategory
         ? this.service.listCategoryDataLayers(
             selection.id,
@@ -159,12 +198,20 @@ export class DataLayersStateService {
             geometry,
             workspaceId
           )
-        : this.service.listDataLayers(
-            selection.id,
-            module,
-            geometry,
-            workspaceId
-          );
+        : searchTab === 'uploaded'
+          ? this.service.listDataLayers(
+              selection.id,
+              module,
+              geometry,
+              workspaceId,
+              searchTab
+            )
+          : this.service.listDataLayers(
+              selection.id,
+              module,
+              geometry,
+              workspaceId
+            );
       return layers$.pipe(
         map((items) =>
           isCategory ? buildFlatTree(items) : buildPathTree(items)
@@ -211,11 +258,11 @@ export class DataLayersStateService {
   searchResults$: Observable<Pagination<SearchResult> | null> = combineLatest([
     this.searchTerm$,
     this._offset,
-    // Setting an initial value when there is no plan
-    this.planState.planningAreaGeometry$.pipe(startWith(undefined)),
+    this.planState.currentPlanOrNull$,
     this.moduleNameOverride$,
+    this._searchTab$,
   ]).pipe(
-    switchMap(([term, offset, planningAreaGeometry, override]) => {
+    switchMap(([term, offset, plan, override, searchTab]) => {
       if (!term) {
         return of(null);
       }
@@ -223,16 +270,17 @@ export class DataLayersStateService {
 
       const module = override ?? this.mapModuleService.moduleName;
 
-      const geometry = this.sendGeometry ? planningAreaGeometry : undefined;
-
       return this.service
         .search({
           term,
           limit: this.limit,
           offset,
           module,
-          geometry,
-          workspaceId: this.favoritesWorkspaceId(),
+          geometry: this.planGeometry(plan),
+          workspaceId: this.requestWorkspaceId(plan, searchTab),
+          ...(searchTab === 'uploaded'
+            ? { searchTab, groupBy: 'dataset' as const }
+            : {}),
         })
         .pipe(
           startWith(null),
@@ -271,6 +319,35 @@ export class DataLayersStateService {
     );
   }
 
+  canEditFavorites$: Observable<boolean> =
+    this.workspaceState.currentWorkspace$.pipe(
+      map(
+        (workspace) =>
+          workspace.role === 'OWNER' || workspace.role === 'COLLABORATOR'
+      ),
+      catchError(() => of(false)),
+      startWith(false),
+      distinctUntilChanged(),
+      shareReplay(1)
+    );
+
+  favoritesEnabled$: Observable<boolean> =
+    this.workspaceState.currentWorkspaceId$.pipe(
+      map(
+        (workspaceId) =>
+          workspaceId !== null &&
+          this.featureService.isFeatureEnabled('DATA_ORGANIZATION')
+      ),
+      distinctUntilChanged(),
+      shareReplay(1)
+    );
+
+  get viewColumnLabel(): string {
+    return this.featureService.isFeatureEnabled('DATA_ORGANIZATION')
+      ? 'View'
+      : 'View Layer';
+  }
+
   favoritesEnabled(): boolean {
     return (
       this.featureService.isFeatureEnabled('DATA_ORGANIZATION') &&
@@ -285,15 +362,23 @@ export class DataLayersStateService {
     }
     const wanted = !this.isFavorite(layer);
     const previous = this._favoriteChanges$.value;
-    const changes = new Map(previous);
-    changes.set(layer.id, wanted);
-    this._favoriteChanges$.next(changes);
+    this.setFavorite(layer.id, wanted);
 
     const request = wanted
       ? this.workspacesService.favoriteDataLayer(workspaceId, layer.id)
       : this.workspacesService.unfavoriteDataLayer(workspaceId, layer.id);
 
     request.subscribe({
+      next: () => {
+        this._reloadFavorites$.next();
+        this.matSnackBar.open(
+          wanted
+            ? 'Layer added to favorites.'
+            : 'Layer removed from favorites.',
+          'Dismiss',
+          SNACK_BOTTOM_NOTICE_CONFIG
+        );
+      },
       error: () => {
         this._favoriteChanges$.next(previous);
         this.matSnackBar.open(
@@ -307,11 +392,122 @@ export class DataLayersStateService {
     });
   }
 
+  private setFavorite(layerId: number, isFavorite: boolean) {
+    const changes = new Map(this._favoriteChanges$.value);
+    changes.set(layerId, isFavorite);
+    this._favoriteChanges$.next(changes);
+  }
+
+  private followFavoriteEvents(): Subscription {
+    const changed$ = merge(
+      this.webSocketService
+        .on(DATALAYER_FAVORITED_EVENT)
+        .pipe(map((event) => ({ id: event.object?.id, isFavorite: true }))),
+      this.webSocketService
+        .on(DATALAYER_UNFAVORITED_EVENT)
+        .pipe(map((event) => ({ id: event.object?.id, isFavorite: false })))
+    ).pipe(
+      filter(
+        (change): change is { id: number; isFavorite: boolean } =>
+          change.id !== undefined
+      ),
+      tap(({ id, isFavorite }) => this.setFavorite(id, isFavorite))
+    );
+
+    return merge(
+      changed$,
+      this.webSocketService.on(REALTIME_CONNECTED_EVENT)
+    ).subscribe(() => this._reloadFavorites$.next());
+  }
+
+  private _reloadFavorites$ = new BehaviorSubject<void>(undefined);
+
+  private lastFavorites: DataLayer[] | undefined;
+
+  private favoritesFromServer$: Observable<Resource<DataLayer[]>> =
+    combineLatest([
+      this._reloadFavorites$,
+      this.planState.currentPlanOrNull$,
+    ]).pipe(
+      switchMap(([_, plan]) => {
+        const workspaceId = this.favoritesWorkspaceId();
+        if (workspaceId === null) {
+          return of({ isLoading: false, data: [] } as Resource<DataLayer[]>);
+        }
+        return this.service
+          .browseFavorites(
+            workspaceId,
+            this.mapModuleService.moduleName,
+            this.planGeometry(plan)
+          )
+          .pipe(
+            tap((layers) => (this.lastFavorites = layers)),
+            map(
+              (layers) =>
+                ({ isLoading: false, data: layers }) as Resource<DataLayer[]>
+            ),
+            catchError((error) =>
+              of({ isLoading: false, error } as Resource<DataLayer[]>)
+            ),
+            startWith({
+              isLoading: true,
+              data: this.lastFavorites,
+            } as Resource<DataLayer[]>)
+          );
+      }),
+      shareReplay(1)
+    );
+
+  /**
+   * What the panel shows: the server's list, minus whatever was unfavorited
+   * here since, so a row leaves the moment its star is emptied instead of
+   * waiting for the refetch.
+   */
+  favorites$: Observable<Resource<DataLayer[]>> = combineLatest([
+    this.favoritesFromServer$,
+    this._favoriteChanges$,
+  ]).pipe(
+    map(([resource, changes]) =>
+      resource.data
+        ? {
+            ...resource,
+            data: resource.data.filter(
+              (layer) => changes.get(layer.id) !== false
+            ),
+          }
+        : resource
+    ),
+    shareReplay(1)
+  );
+
   private favoritesWorkspaceId(): number | null {
     return this.favoritesEnabled()
       ? this.workspaceState.currentWorkspaceIdValue
       : null;
   }
+
+  private planGeometry(plan: Plan | null): Geometry | undefined {
+    return this.sendGeometry && plan ? (plan.geometry as Geometry) : undefined;
+  }
+
+  // Off the workspace route (a plan's map viewer) we still send the plan's
+  // workspace, but favorites stay gated on favoritesEnabled().
+  private requestWorkspaceId(
+    plan: Plan | null,
+    searchTab: SearchTab = 'general'
+  ): number | null {
+    if (
+      searchTab !== 'uploaded' &&
+      !this.featureService.isFeatureEnabled('DATA_ORGANIZATION')
+    ) {
+      return null;
+    }
+    return (
+      this.workspaceState.currentWorkspaceIdValue ?? plan?.workspace ?? null
+    );
+  }
+
+  private subscriptions = new Subscription();
 
   private _paths$ = new BehaviorSubject<string[]>([]);
   paths$ = this._paths$.asObservable();
@@ -330,8 +526,15 @@ export class DataLayersStateService {
     private matSnackBar: MatSnackBar,
     private featureService: FeatureService,
     private workspacesService: WorkspacesService,
-    private workspaceState: WorkspaceState
-  ) {}
+    private workspaceState: WorkspaceState,
+    private webSocketService: WebSocketService
+  ) {
+    this.subscriptions.add(this.followFavoriteEvents());
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+  }
 
   // determines whether we interject anything when the user makes a selection
   selectionMode: 'AUTOMATIC' | 'MANUAL' = 'AUTOMATIC';
@@ -443,10 +646,7 @@ export class DataLayersStateService {
 
   private browseSelectionFor(layer: DataLayer): BrowseSelection {
     const categories = layer.simple_categories ?? [];
-    if (
-      this.featureService.isFeatureEnabled('DATA_ORGANIZATION') &&
-      categories.length > 0
-    ) {
+    if (this.browseByCategory() && categories.length > 0) {
       // stay in the current category if the layer belongs to it
       const current = this._selection$.value;
       const category =

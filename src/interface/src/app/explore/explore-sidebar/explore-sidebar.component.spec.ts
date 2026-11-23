@@ -1,4 +1,10 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Component, OnInit } from '@angular/core';
+import {
+  ComponentFixture,
+  fakeAsync,
+  flushMicrotasks,
+  TestBed,
+} from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { MapTabsComponent } from '@explore/map-tabs/map-tabs.component';
@@ -11,16 +17,26 @@ import {
   BrowseSelection,
   DataLayersStateService,
 } from '@data-layers/data-layers.state.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, EMPTY, of, Subject } from 'rxjs';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { UploadDataModalComponent } from '@data-layers/upload-data-modal/upload-data-modal.component';
+import { FEATURES_JSON } from '@features/features-config';
+import { FeaturesModule } from '@features/features.module';
 
 describe('ExploreSidebarComponent', () => {
   let component: ExploreSidebarComponent;
   let fixture: ComponentFixture<ExploreSidebarComponent>;
   let selection$: BehaviorSubject<BrowseSelection | null>;
   let dataLayersState: jasmine.SpyObj<DataLayersStateService>;
+  let dataUploadEnabled = false;
+  let workspacePermissions = ['view_workspace', 'add_datalayer'];
+  let dialog: jasmine.SpyObj<MatDialog>;
+  let afterClosed$: Subject<void>;
 
   beforeEach(async () => {
     selection$ = new BehaviorSubject<BrowseSelection | null>(null);
+    afterClosed$ = new Subject<void>();
     dataLayersState = jasmine.createSpyObj<DataLayersStateService>(
       'DataLayersStateService',
       ['goBackToSearchResults'],
@@ -28,6 +44,10 @@ describe('ExploreSidebarComponent', () => {
     );
     const registry = new DataLayersRegistryService();
     registry.set(1, dataLayersState);
+    dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+    dialog.open.and.returnValue({
+      afterClosed: () => afterClosed$,
+    } as unknown as MatDialogRef<unknown>);
 
     await TestBed.configureTestingModule({
       imports: [ExploreSidebarComponent],
@@ -37,12 +57,27 @@ describe('ExploreSidebarComponent', () => {
           useValue: { selectedMapId$: new BehaviorSubject(1) },
         },
         { provide: DataLayersRegistryService, useValue: registry },
+        {
+          provide: WorkspaceState,
+          useValue: {
+            currentWorkspace$: of({ permissions: workspacePermissions }),
+          },
+        },
+        { provide: MatDialog, useValue: dialog },
       ],
     })
+      .overrideProvider(FEATURES_JSON, {
+        useValue: { DATA_UPLOAD: dataUploadEnabled },
+      })
       .overrideComponent(ExploreSidebarComponent, {
-        remove: { imports: [MapTabsComponent, BaseLayersComponent] },
+        remove: {
+          imports: [MapTabsComponent, BaseLayersComponent, FeaturesModule],
+        },
         add: {
-          imports: MockComponents(MapTabsComponent, BaseLayersComponent),
+          imports: [
+            ...MockComponents(MapTabsComponent, BaseLayersComponent),
+            FeaturesModule,
+          ],
         },
       })
       .compileComponents();
@@ -50,6 +85,7 @@ describe('ExploreSidebarComponent', () => {
     fixture = TestBed.createComponent(ExploreSidebarComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    await fixture.whenStable();
   });
 
   it('shows the data layers panel by default', () => {
@@ -105,13 +141,134 @@ describe('ExploreSidebarComponent', () => {
     expect(component.expandedChange.emit).toHaveBeenCalledWith(true);
   });
 
-  it('ignores rail items that have no panel yet', () => {
-    spyOn(component.expandedChange, 'emit');
+  it('switches to the favorites panel when that rail item is picked', () => {
     spyOn(component.selectedTabChange, 'emit');
     component.selectItem(component.railItems[2]);
 
-    expect(component.expandedChange.emit).not.toHaveBeenCalled();
-    expect(component.selectedTabChange.emit).not.toHaveBeenCalled();
+    expect(component.selectedTabChange.emit).toHaveBeenCalledWith(
+      SidebarTabs.FAVORITES
+    );
+  });
+
+  it('shows the favorites panel when that tab is selected', () => {
+    component.selectedTab = SidebarTabs.FAVORITES;
+    fixture.detectChanges();
+
+    const panels = fixture.debugElement.queryAll(By.css('app-map-tabs'));
+
+    expect(panels.length).toBe(1);
+    expect(panels[0].attributes['panel']).toBe('favorites');
+  });
+
+  const railIcons = () =>
+    fixture.debugElement
+      .queryAll(By.css('.rail-button mat-icon'))
+      .map((icon) => icon.nativeElement.textContent.trim());
+
+  const uploadButton = () =>
+    fixture.debugElement.query(By.css('.upload-button'));
+
+  it('hides upload without DATA_UPLOAD', () => {
+    expect(uploadButton()).toBeNull();
+    expect(railIcons()).not.toContain('drive_folder_upload');
+  });
+
+  describe('with DATA_UPLOAD', () => {
+    beforeAll(() => (dataUploadEnabled = true));
+    afterAll(() => (dataUploadEnabled = false));
+
+    it('shows the upload CTA at the top of the rail', () => {
+      const rail: HTMLElement = fixture.nativeElement.querySelector(
+        'app-sidebar-icon-rail'
+      );
+      expect(rail.firstElementChild).toBe(uploadButton().nativeElement);
+    });
+
+    it('opens the upload modal from the CTA', () => {
+      uploadButton().nativeElement.click();
+
+      expect(dialog.open).toHaveBeenCalledWith(UploadDataModalComponent, {
+        restoreFocus: false,
+      });
+    });
+
+    it('moves focus off the CTA while the modal is open and back on close', () => {
+      const button: HTMLElement = uploadButton().nativeElement;
+      button.focus();
+      button.click();
+
+      expect(document.activeElement).not.toBe(button);
+
+      afterClosed$.next();
+
+      expect(document.activeElement).toBe(button);
+    });
+
+    describe('for a workspace viewer', () => {
+      beforeAll(() => (workspacePermissions = ['view_workspace']));
+      afterAll(
+        () => (workspacePermissions = ['view_workspace', 'add_datalayer'])
+      );
+
+      it('hides the upload CTA', () => {
+        expect(uploadButton()).toBeNull();
+      });
+    });
+
+    it('shows the uploaded item', () => {
+      expect(railIcons()).toEqual([
+        'category',
+        'layers',
+        'drive_folder_upload',
+        'star',
+      ]);
+    });
+
+    it('switches to the uploaded panel when that rail item is picked', () => {
+      spyOn(component.selectedTabChange, 'emit');
+      fixture.debugElement
+        .queryAll(By.css('.rail-button'))[2]
+        .nativeElement.click();
+
+      expect(component.selectedTabChange.emit).toHaveBeenCalledWith(
+        SidebarTabs.UPLOADED
+      );
+    });
+
+    it('titles the uploaded panel', () => {
+      component.selectedTab = SidebarTabs.UPLOADED;
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.query(By.css('.panel-header h4')).nativeElement
+          .textContent
+      ).toContain('Uploaded');
+    });
+
+    it('shows the uploaded panel when that tab is selected', () => {
+      component.selectedTab = SidebarTabs.UPLOADED;
+      fixture.detectChanges();
+
+      const panels = fixture.debugElement.queryAll(By.css('app-map-tabs'));
+      expect(panels.length).toBe(1);
+      expect(panels[0].attributes['panel']).toBe('uploaded');
+    });
+
+    it('goes back to the datasets from the header arrow', () => {
+      component.selectedTab = SidebarTabs.UPLOADED;
+      selection$.next({ type: 'dataset', id: 10, name: 'My uploads' });
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.query(By.css('.panel-header h4')).nativeElement
+          .textContent
+      ).toContain('My uploads');
+      fixture.debugElement
+        .query(By.css('.panel-header .back-button'))
+        .nativeElement.click();
+
+      expect(dataLayersState.goBackToSearchResults).toHaveBeenCalled();
+    });
   });
 
   describe('when a category is open in the data layers panel', () => {
@@ -148,4 +305,78 @@ describe('ExploreSidebarComponent', () => {
       ).toBeNull();
     });
   });
+});
+
+// Stands in for a synced map: registers its data layers state and restores
+// the stored selection on init, after the sidebar header has been checked.
+@Component({
+  selector: 'app-restoring-map',
+  standalone: true,
+  template: '',
+})
+class RestoringMapComponent implements OnInit {
+  constructor(private registry: DataLayersRegistryService) {}
+
+  ngOnInit() {
+    const selection$ = new BehaviorSubject<BrowseSelection | null>(null);
+    this.registry.set(1, { selection$ } as unknown as DataLayersStateService);
+    selection$.next({ type: 'category', id: 5, name: 'Fire-Adapted' });
+  }
+}
+
+@Component({
+  selector: 'app-restoring-maps',
+  standalone: true,
+  imports: [RestoringMapComponent],
+  template: '<app-restoring-map></app-restoring-map>',
+})
+class RestoringMapsComponent {}
+
+@Component({
+  standalone: true,
+  imports: [ExploreSidebarComponent, RestoringMapsComponent],
+  template: `
+    <app-explore-sidebar></app-explore-sidebar>
+    <app-restoring-maps></app-restoring-maps>
+  `,
+})
+class ExploreHostComponent {}
+
+describe('ExploreSidebarComponent with a map restored after it', () => {
+  let fixture: ComponentFixture<ExploreHostComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [ExploreHostComponent],
+      providers: [
+        {
+          provide: MultiMapConfigState,
+          useValue: { selectedMapId$: new BehaviorSubject(1) },
+        },
+        { provide: WorkspaceState, useValue: { currentWorkspace$: EMPTY } },
+        { provide: MatDialog, useValue: {} },
+      ],
+    })
+      .overrideComponent(ExploreSidebarComponent, {
+        remove: { imports: [MapTabsComponent, BaseLayersComponent] },
+        add: {
+          imports: MockComponents(MapTabsComponent, BaseLayersComponent),
+        },
+      })
+      .compileComponents();
+
+    fixture = TestBed.createComponent(ExploreHostComponent);
+  });
+
+  it('shows the restored category without changing the header mid-check', fakeAsync(() => {
+    expect(() => fixture.detectChanges()).not.toThrow();
+
+    flushMicrotasks();
+    fixture.detectChanges();
+
+    expect(
+      fixture.debugElement.query(By.css('.panel-header h4')).nativeElement
+        .textContent
+    ).toContain('Fire-Adapted');
+  }));
 });

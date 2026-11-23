@@ -4,6 +4,7 @@ import json
 import logging
 import math
 import os
+import re
 import zipfile
 from collections.abc import Collection
 from datetime import date, datetime, time
@@ -18,6 +19,7 @@ from typing import (  # noqa
     Type,
     Union,
 )
+
 import fiona
 from actstream import action
 from cacheops import cached
@@ -34,7 +36,7 @@ from django.contrib.gis.db.models.functions import Area, Centroid, Transform
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.contrib.gis.measure import A
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import Exists, OuterRef, QuerySet, Subquery
 from django.db.models.aggregates import Sum
 from django.db.models.functions import Substr
 from django.utils.text import slugify
@@ -43,6 +45,7 @@ from fiona.crs import from_epsg
 from gis.info import get_gdal_env
 from impacts.calculator import truncate_result
 from modules.base import (
+    AdvancedStandLevelConstraintModule,
     ForsysModule,
     PrioritizeSubUnitsModule,
     compute_planning_area_capabilities,
@@ -62,7 +65,12 @@ from stands.models import (
 from stands.services import get_datalayer_metric, get_stand_grid_key_search_precision
 from utils.geometry import to_multi
 
-from planning.events import publish_planning_area_event, publish_scenario_event
+from planning.events import (
+    publish_planning_area_deleted,
+    publish_planning_area_event,
+    publish_scenario_deleted,
+    publish_scenario_event,
+)
 from planning.geometry import (
     coerce_geojson,
     coerce_geometry,
@@ -230,9 +238,7 @@ def delete_planning_area(
     right_now = now()
     action.send(user, verb="deleted", action_object=planning_area)
     planning_area.delete()
-    publish_planning_area_event(
-        "planning.planning_area.deleted", planning_area, actor=user
-    )
+    publish_planning_area_deleted(planning_area, actor=user)
     Scenario.objects.filter(planning_area__pk=planning_area.pk).update(
         deleted_at=right_now
     )
@@ -326,53 +332,59 @@ def _get_unique_clone_name(planning_area_id: int, base_name: str) -> str:
         counter += 1
     return f"{base_name} ({counter})"
 
-def migrate_configuration(old_config: dict[str, Any], current_version: ScenarioVersion) -> dict[str, Any]:    
+
+def migrate_configuration(
+    old_config: dict[str, Any], current_version: ScenarioVersion
+) -> dict[str, Any]:
     new_config = copy.deepcopy(old_config or {})
-    new_config['constraints'] = []
-    new_config['targets'] = {}
+    new_config["constraints"] = []
+    new_config["targets"] = {}
 
     # old configs that become targets
     for old_key, new_key in (
-        ('est_cost', 'estimated_cost'),
-        ('estimated_cost', 'estimated_cost'),
-        ('max_project_count', 'max_project_count'),
+        ("est_cost", "estimated_cost"),
+        ("estimated_cost", "estimated_cost"),
+        ("max_project_count", "max_project_count"),
     ):
         if old_key in new_config:
-            new_config['targets'][new_key] = new_config.pop(old_key)
+            new_config["targets"][new_key] = new_config.pop(old_key)
 
     # old configs that become constraint items
-    if 'max_slope' in new_config:
-        slope_value = new_config.pop('max_slope')
+    if "max_slope" in new_config:
+        slope_value = new_config.pop("max_slope")
         slope_layer = DataLayer.objects.all().by_meta_name("slope")
         if slope_layer is None:
             logger.warning("slope layer not found")
         else:
-            new_config['constraints'].append({
-                "datalayer": slope_layer.pk,
-                "operator": "lt",
-                "value": slope_value,
-            })
+            new_config["constraints"].append(
+                {
+                    "datalayer": slope_layer.pk,
+                    "operator": "lt",
+                    "value": slope_value,
+                }
+            )
 
-    if 'min_distance_from_road' in new_config:
-        roads_value = new_config.pop('min_distance_from_road')
+    if "min_distance_from_road" in new_config:
+        roads_value = new_config.pop("min_distance_from_road")
         roads_layer = DataLayer.objects.all().by_meta_name("distance_from_roads")
         if roads_layer is None:
             logger.warning("min_distance_from_road layer not found")
         else:
-            new_config['constraints'].append({
-                "datalayer": roads_layer.pk,
-                "operator": "lte",
-                "value": roads_value,
-            })
+            new_config["constraints"].append(
+                {
+                    "datalayer": roads_layer.pk,
+                    "operator": "lte",
+                    "value": roads_value,
+                }
+            )
 
     return new_config
+
 
 # Clones the scenario configuration and sets to DRAFT
 @transaction.atomic
 def clone_scenario(
-    original_scenario_id: int,
-    user: User,
-    name: str | None = None
+    original_scenario_id: int, user: User, name: str | None = None
 ) -> Scenario:
 
     original = Scenario.objects.select_for_update().get(pk=original_scenario_id)
@@ -388,21 +400,26 @@ def clone_scenario(
     else:
         new_config = copy.deepcopy(original.configuration)
 
-
     # never clone these fields
-    _CLONE_EXCLUDE = {"uuid", "created_at", "updated_at", 
-        "geopackage_url", "ready_email_sent_at"}
+    _CLONE_EXCLUDE = {
+        "uuid",
+        "created_at",
+        "updated_at",
+        "geopackage_url",
+        "ready_email_sent_at",
+    }
 
     # Fields that are replaced or reset rather than copied
     overrides = {
-        "user": user, # whoever copies the scenario is the new owner
+        "user": user,  # whoever copies the scenario is the new owner
         "name": new_name,
+        "forsys_input": None,
         "configuration": new_config,
         "treatable_area": (
             original.treatable_area.clone() if original.treatable_area else None
         ),
         "status": ScenarioStatus.ACTIVE,
-        "result_status": ScenarioResultStatus.PENDING, # remember this is not results.status
+        "result_status": ScenarioResultStatus.PENDING,  # remember this is not results.status
         "geopackage_status": GeoPackageStatus.PENDING,
         "post_process_status": ScenarioPostProcessingStatus.PENDING,
     }
@@ -416,11 +433,10 @@ def clone_scenario(
 
     clone = Scenario.objects.create(**copied, **overrides)
     ScenarioResult.objects.create(scenario=clone, status=ScenarioResultStatus.DRAFT)
-    publish_scenario_event(
-        "planning.scenario.created", clone, actor=user, cloned_from=original.pk
-    )
+    publish_scenario_event("planning.scenario.created", clone, actor=user)
 
     return clone
+
 
 @transaction.atomic()
 def create_scenario(user: User, **kwargs) -> Scenario:
@@ -487,7 +503,9 @@ def create_scenario(user: User, **kwargs) -> Scenario:
                 "origin": scenario.origin,
                 "treatment_goal_id": treatment_goal.pk if treatment_goal else None,
                 "treatment_goal_category": (
-                    treatment_goal.category.name if treatment_goal and treatment_goal.category else None
+                    treatment_goal.category.name
+                    if treatment_goal and treatment_goal.category
+                    else None
                 ),
                 "treatment_goal_name": treatment_goal.name if treatment_goal else None,
                 "email": user.email if user else None,
@@ -689,7 +707,7 @@ def delete_scenario(
     planning_area: PlanningArea = scenario.planning_area
 
     scenario.delete()
-    publish_scenario_event("planning.scenario.deleted", scenario, actor=user)
+    publish_scenario_deleted(scenario, actor=user)
 
     planning_area.updated_at = right_now
     planning_area.save(update_fields=["updated_at"])
@@ -866,6 +884,13 @@ def calculate_child_project_areas(scenario: Scenario) -> list[ProjectArea]:
     return project_areas
 
 
+def _format_in_value(value: str) -> str:
+    # numbers are kept as is, words are quoted
+    if re.match(r"^-?\d+(\.\d+)?$", value):
+        return value
+    return f'"{value}"'
+
+
 def _get_operation(operator: str, value: str) -> str:
     match operator:
         case "btw":
@@ -873,11 +898,16 @@ def _get_operation(operator: str, value: str) -> str:
             values.sort()
             min_value, max_value = values
             return f"value >= {min_value} & value <= {max_value}"
+        case "in" | "nin":
+            items = [item.strip() for item in value.split(",") if item.strip()]
+            rendered = ", ".join(_format_in_value(item) for item in items)
+            expression = f"value %in% c({rendered})"
+            return expression if operator == "in" else f"!({expression})"
         case _:
             # normal cases
             # constraints datalayers from scenario configuration
             OPERATOR_MAP = {
-                "eq": "=",
+                "eq": "==",
                 "dne": "!=",
                 "lt": "<",
                 "lte": "<=",
@@ -1202,7 +1232,14 @@ def trigger_scenario_run(scenario: "Scenario", user: User) -> "Scenario":
 
     capabilities = compute_scenario_capabilities(scenario)
     scenario.capabilities = capabilities
-    scenario.save(update_fields=["capabilities"])
+    scenario.forsys_input = None
+    scenario.save(
+        update_fields=[
+            "capabilities",
+            "forsys_input",
+            "updated_at",
+        ]
+    )
 
     if hasattr(scenario, "results"):
         scenario.results.status = ScenarioResultStatus.PENDING
@@ -1489,7 +1526,9 @@ def export_scenario_stand_outputs_to_geopackage(
         and not is_project_areas_child(scenario)
     )
 
-    sub_units_lookup_table = _get_sub_units_lookup_table(scenario=scenario) if is_sub_units else None
+    sub_units_lookup_table = (
+        _get_sub_units_lookup_table(scenario=scenario) if is_sub_units else None
+    )
 
     with open(stnd_file, "r") as csvfile:
         reader = csv.DictReader(csvfile)
@@ -1758,7 +1797,7 @@ def export_scenario_sub_units_outputs_to_geopackage(
     geojson = get_flatten_geojson(scenario)
 
     is_child_scenario = is_project_areas_child(scenario)
-    
+
     schema_geojson = copy.deepcopy(geojson)
     if not is_child_scenario:
         # rename proj_id to subunit_id on schema
@@ -1873,6 +1912,8 @@ def export_treatable_area_to_geopackage(
                         )
                         properties = {
                             p: getattr(feature, p.lower())
+                            if hasattr(feature, p.lower())
+                            else None
                             for p in list(schema.get("properties").keys())
                         }
                         properties["ownership"] = included.name
@@ -1934,7 +1975,24 @@ def export_planning_area_to_geopackage(
         raise e
 
 
+def export_datalayer_names_file(scenario: Scenario) -> Path:
+    datalayers = scenario.get_raster_datalayers()
+    translation_dict = {
+        f"datalayer_{datalayer.pk}": datalayer.name for datalayer in datalayers
+    }
+    temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
+    if not temp_folder.exists():
+        temp_folder.mkdir(parents=True)
+    temp_file = temp_folder / f"datalayers_{scenario.pk}.json"
+    with open(temp_file, "w", encoding="utf-8") as file:
+        json.dump(translation_dict, file, indent=4, ensure_ascii=False)
+
+    return temp_file
+
+
 def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
+    temp_file: Path | None = None
+    datalayers_names_file: Path | None = None
     try:
         if not regenerate and scenario.geopackage_url:
             logger.info(
@@ -1953,11 +2011,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
 
         scenario.geopackage_status = GeoPackageStatus.PROCESSING
         scenario.save(update_fields=["geopackage_status", "updated_at"])
-        publish_scenario_event(
-            "planning.scenario.geopackage_status_changed",
-            scenario,
-            geopackage_url=scenario.geopackage_url,
-        )
+        publish_scenario_event("planning.scenario.geopackage_status_changed", scenario)
 
         export_planning_area_to_geopackage(scenario.planning_area, temp_file)
         if feature_enabled("ADD_INCLUDES"):
@@ -1986,6 +2040,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
         if zip_file.exists():
             zip_file.unlink()
         forsys_inputs_file = scenario.get_forsys_folder() / f"{scenario.uuid}.json"
+        datalayers_names_file = export_datalayer_names_file(scenario=scenario)
         with zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED) as zipf:
             zipf.write(temp_file, arcname=temp_file.name)
             if forsys_inputs_file.exists():
@@ -1997,6 +2052,8 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
                     forsys_inputs_file,
                 )
 
+            zipf.write(datalayers_names_file, arcname="datalayer_names.json")
+
         upload_file_via_cli(
             object_name=geopackage_path.replace(
                 f"gs://{settings.GCS_MEDIA_BUCKET}/", ""
@@ -2005,17 +2062,12 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
             bucket_name=settings.GCS_MEDIA_BUCKET,
         )
 
-        temp_file.unlink(missing_ok=True)
         scenario.geopackage_url = geopackage_path
         scenario.geopackage_status = GeoPackageStatus.SUCCEEDED
         scenario.save(
             update_fields=["geopackage_url", "geopackage_status", "updated_at"]
         )
-        publish_scenario_event(
-            "planning.scenario.geopackage_status_changed",
-            scenario,
-            geopackage_url=scenario.geopackage_url,
-        )
+        publish_scenario_event("planning.scenario.geopackage_status_changed", scenario)
 
         return str(geopackage_path)
     except Exception:
@@ -2025,11 +2077,13 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
         scenario.save(
             update_fields=["geopackage_url", "geopackage_status", "updated_at"]
         )
-        publish_scenario_event(
-            "planning.scenario.geopackage_status_changed",
-            scenario,
-            geopackage_url=scenario.geopackage_url,
-        )
+        publish_scenario_event("planning.scenario.geopackage_status_changed", scenario)
+        raise
+    finally:
+        if temp_file is not None:
+            temp_file.unlink(missing_ok=True)
+        if datalayers_names_file is not None:
+            datalayers_names_file.unlink(missing_ok=True)
 
 
 @transaction.atomic()
@@ -2078,30 +2132,67 @@ def get_constrained_stands(
     usage_type: TreatmentGoalUsageType = TreatmentGoalUsageType.THRESHOLD,
 ):
     if not metric_column:
+        modules = (datalayer.metadata or {}).get("modules", {})
+
         metric_column = (
-            datalayer.metadata.get("modules", {})
-            .get("forsys", {})
-            .get("metric_column", "avg")
-        )
-    if not operator:
-        metric_filter = f"{metric_column}"
-    else:
-        metric_filter = f"{metric_column}__{operator}"
-    logger.info(f"processing metric_filter {metric_filter} with value {value}")
-
-    match usage_type:
-        case TreatmentGoalUsageType.THRESHOLD:
-            metrics = StandMetric.objects.filter(
-                datalayer_id=datalayer.pk,
-                stand_id__in=stands_qs,
-                **{metric_filter: value},
+            modules.get("forsys", {}).get("metric_column")
+            or modules.get(AdvancedStandLevelConstraintModule.name, {}).get(
+                "metric_column"
             )
-            excluded_ids = list(metrics.values_list("stand_id", flat=True))
-            stands_qs = stands_qs.exclude(pk__in=excluded_ids)
-        case _:
-            raise ValueError("Invalid usage_type for get_constrainted_stands.")
+            or "avg"
+        )
 
-    return stands_qs.values_list("id", flat=True)
+    if usage_type != TreatmentGoalUsageType.THRESHOLD:
+        raise ValueError("Invalid usage_type for get_constrained_stands.")
+
+    metrics = StandMetric.objects.filter(
+        stand_id=OuterRef("pk"),
+        datalayer_id=datalayer.pk,
+    )
+
+    if operator == "btw":
+        values = [v.strip() for v in str(value).split(",")]
+        if len(values) != 2:
+            raise ValueError("Between operator requires two values.")
+
+        lower, upper = sorted(float(v) for v in values)
+        matching_metrics = metrics.filter(**{f"{metric_column}__range": (lower, upper)})
+
+    elif operator in ("in", "nin"):
+        values = [v.strip() for v in str(value).split(",") if v.strip()]
+        if not values:
+            raise ValueError("In operator requires at least one value.")
+
+        lookup = {f"{metric_column}__in": values}
+
+        if operator == "nin":
+            matching_metrics = metrics.filter(
+                **{f"{metric_column}__isnull": False}
+            ).exclude(**lookup)
+        else:
+            matching_metrics = metrics.filter(**lookup)
+
+    elif operator == "dne":
+        matching_metrics = metrics.filter(
+            **{f"{metric_column}__isnull": False}
+        ).exclude(**{f"{metric_column}__exact": value})
+
+    else:
+        operator_map = {
+            "eq": "exact",
+            "gt": "gt",
+            "gte": "gte",
+            "lt": "lt",
+            "lte": "lte",
+        }
+
+        lookup = operator_map.get(operator or "eq")
+        if lookup is None:
+            raise ValueError(f"Unsupported operator: {operator}")
+
+        matching_metrics = metrics.filter(**{f"{metric_column}__{lookup}": value})
+
+    return stands_qs.exclude(Exists(matching_metrics)).values_list("id", flat=True)
 
 
 @cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
@@ -2154,13 +2245,16 @@ def get_available_stands(
     planning_area = scenario.planning_area
     area_transform = Area(Transform("geometry", settings.AREA_SRID))
     if feature_enabled("ADD_INCLUDES") and scenario.treatable_area is not None:
-        stands = scenario.get_treatable_area_stands(stand_size=stand_size)
+        geometry = Scenario.objects.filter(pk=scenario.pk).values("treatable_area")
     else:
-        stands = planning_area.get_stands(stand_size)
+        geometry = PlanningArea.objects.filter(pk=planning_area.pk).values("geometry")
 
+    # the database reads the geometry, so it is not sent with every query below
+    stands = Stand.objects.within_geometry(Subquery(geometry[:1]), stand_size)
     stands = stands.annotate(area=area_transform)
 
     total_area = stands.aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+    potential_area = total_area
 
     if is_project_areas_child(scenario):
         project_area_stand_ids = get_project_areas_child_stand_ids(
@@ -2168,8 +2262,7 @@ def get_available_stands(
             stand_size=stand_size,
         )
         stands = stands.filter(id__in=project_area_stand_ids)
-
-    potential_area = stands.aggregate(total_area_m2=Sum("area"))["total_area_m2"]
+        potential_area = stands.aggregate(total_area_m2=Sum("area"))["total_area_m2"]
 
     excluded_ids = []
     constrained_ids = []
@@ -2200,7 +2293,13 @@ def get_available_stands(
     constraints = [
         constraint
         for constraint in constraints
-        if constraint.get("datalayer").has_module(ForsysModule.name)
+        if (
+            (datalayer := constraint.get("datalayer"))
+            and (
+                datalayer.has_module(ForsysModule.name)
+                or datalayer.has_module(AdvancedStandLevelConstraintModule.name)
+            )
+        )
     ]
     for constraint in constraints:
         stands_queryset = stands.all()
@@ -2301,6 +2400,61 @@ def get_available_stand_ids(
 
     stand_ids = set(stand_ids) - set(excluded_ids)
     return list(stand_ids)
+
+
+def get_eligible_stand_ids(scenario: Scenario) -> list[int]:
+    forsys_input = scenario.forsys_input or {}
+    original_ids = forsys_input.get("stand_ids")
+
+    if not isinstance(original_ids, list):
+        raise ValueError("ForSys input stands are missing.")
+
+    constraints = [
+        {
+            **constraint,
+            "datalayer": DataLayer.objects.get(pk=constraint["datalayer"]),
+        }
+        for constraint in ((scenario.configuration or {}).get("constraints") or [])
+    ]
+
+    unavailable = get_available_stands(
+        scenario,
+        stand_size=scenario.get_stand_size(),
+        constraints=constraints,
+    )["unavailable"]
+
+    return sorted(set(original_ids) - set(unavailable["by_thresholds"]))
+
+
+def get_forsys_input_stands(
+    scenario: Scenario,
+) -> dict[str, Any] | None:
+
+    if scenario.result_status != ScenarioResultStatus.SUCCESS:
+        return None
+
+    forsys_input = scenario.forsys_input or {}
+    stand_ids = forsys_input.get("eligible_stand_ids")
+
+    if not isinstance(stand_ids, list):
+        return None
+
+    stand_ids = sorted(set(stand_ids))
+
+    total_area_m2 = (
+        Stand.objects.filter(id__in=stand_ids).aggregate(total=Sum("area_m2"))["total"]
+        or 0.0
+    )
+
+    return {
+        "stand_ids": stand_ids,
+        "stand_count": len(stand_ids),
+        "stand_size": scenario.get_stand_size(),
+        "total_area_acres": round(
+            total_area_m2 / settings.CONVERSION_SQM_ACRES,
+            2,
+        ),
+    }
 
 
 def calculate_scenario_treatable_area(

@@ -1,14 +1,15 @@
 import json
 import tempfile
 from pathlib import Path
+from unittest import mock
 
 import numpy as np
 import rasterio
-from datasets.models import DataLayerType
-from datasets.tests.factories import DataLayerFactory, DatasetFactory
+from datasets.models import DataLayer, DataLayerStatus, DataLayerType, Style
+from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
 from django.conf import settings
 from django.contrib.gis.geos import MultiPolygon, Polygon
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from planning.services import get_acreage
 from planning.tests.factories import (
     PlanningAreaFactory,
@@ -19,7 +20,11 @@ from pyproj import Geod, Transformer
 from rasterio.mask import mask
 from rasterio.transform import from_origin
 
+from planscape.tests.factories import UserFactory
+
 from funding_report.models import (
+    BURN_SIMULATION_ROLE,
+    BURN_SIMULATION_STYLE_NAME,
     FUNDING_REPORT_YEARS,
     TREATMENT_NO_TREATMENT_LABEL,
     TREATMENT_ROLE,
@@ -40,12 +45,14 @@ from funding_report.services import (
     build_project_area_features,
     calculate_aet_improvement,
     calculate_biomass_volumes,
+    calculate_burn_simulation_results,
     calculate_funding_report_flame_length_reduction,
     calculate_pixel_deltas,
     calculate_project_area_aet_improvement,
     calculate_project_area_delta,
     calculate_treatment_pixel_areas,
     flatten_report_metrics,
+    generate_burn_simulation_datalayer,
     get_aet_delta_datalayer,
     get_biomass_datalayer,
     get_funding_report_layers_of_interest,
@@ -1618,3 +1625,193 @@ class BuildGeopackageFeaturesTest(TestCase):
         )
 
         self.assertEqual(build_project_area_features(empty_report), [])
+
+
+@override_settings(
+    PROVIDER="gcp",
+    GCS_BUCKET="planscape-datastore-test",
+    DEFAULT_ADMIN_EMAIL="burn-admin@example.com",
+)
+class GenerateBurnSimulationDatalayerTest(TestCase):
+    def setUp(self):
+        UserFactory.create(email="burn-admin@example.com")
+        self.scenario = ScenarioFactory.create()
+        self.report = FundingOpportunityReport.objects.create(
+            scenario=self.scenario,
+            created_by=self.scenario.user,
+        )
+        self.treatment = DataLayerFactory.create(
+            name="Treatment",
+            type=DataLayerType.RASTER,
+            metadata={
+                "modules": {
+                    "funding_report": {
+                        "variable": TREATMENT_VARIABLE,
+                        "role": TREATMENT_ROLE,
+                    }
+                }
+            },
+        )
+        self.extract = self.enterContext(
+            mock.patch("funding_report.services.extract_band")
+        )
+        self.reproject = self.enterContext(
+            mock.patch("funding_report.services.to_planscape_streaming")
+        )
+        info = {"bounds": [-121.0, 38.0, -120.0, 39.0], "crs": "EPSG:4326"}
+        self.enterContext(
+            mock.patch(
+                "funding_report.services.get_layer_info",
+                return_value=(DataLayerType.RASTER, info),
+            )
+        )
+        self.enterContext(
+            mock.patch(
+                "funding_report.services.detect_mimetype", return_value="image/tiff"
+            )
+        )
+
+    def test_reprojects_output_and_registers_raster(self):
+        datalayer = generate_burn_simulation_datalayer(
+            self.report, "gs://burn-output/job/output.tif"
+        )
+
+        self.extract.assert_called_once()
+        extract_kwargs = self.extract.call_args.kwargs
+        self.assertEqual(
+            extract_kwargs["input_file"], "/vsigs/burn-output/job/output.tif"
+        )
+        self.assertEqual(extract_kwargs["band"], 3)
+        self.reproject.assert_called_once_with(
+            input_file=extract_kwargs["output_file"],
+            output_file=datalayer.url,
+        )
+        self.assertEqual(
+            datalayer.url,
+            f"gs://planscape-datastore-test/datalayers/"
+            f"{self.treatment.organization_id}/{datalayer.uuid}.tif",
+        )
+        self.assertEqual(datalayer.type, DataLayerType.RASTER)
+        self.assertEqual(datalayer.status, DataLayerStatus.PENDING)
+        self.assertEqual(datalayer.dataset, self.treatment.dataset)
+        self.assertEqual(datalayer.organization, self.treatment.organization)
+        self.assertEqual(
+            datalayer.metadata["modules"]["funding_report"]["role"],
+            BURN_SIMULATION_ROLE,
+        )
+        self.assertEqual(
+            datalayer.name,
+            f"Funding Report Burn Simulation - Scenario {self.scenario.pk}",
+        )
+        self.assertIsNotNone(datalayer.geometry)
+
+    def test_replaces_previous_burn_datalayer(self):
+        name = f"Funding Report Burn Simulation - Scenario {self.scenario.pk}"
+        previous = DataLayerFactory.create(
+            type=DataLayerType.RASTER, dataset=self.treatment.dataset, name=name
+        )
+        previous.delete()
+
+        datalayer = generate_burn_simulation_datalayer(
+            self.report, "gs://burn-output/job/output.tif"
+        )
+
+        self.assertEqual(datalayer.name, name)
+        self.assertFalse(DataLayer.dead_or_alive.filter(pk=previous.pk).exists())
+
+    def test_associates_burn_simulation_style(self):
+        Style.objects.filter(name=BURN_SIMULATION_STYLE_NAME).delete()
+        style = StyleFactory.create(
+            name=BURN_SIMULATION_STYLE_NAME, type=DataLayerType.RASTER
+        )
+
+        datalayer = generate_burn_simulation_datalayer(
+            self.report, "gs://burn-output/job/output.tif"
+        )
+
+        associations = list(datalayer.rel_styles.all())
+        self.assertEqual(len(associations), 1)
+        self.assertEqual(associations[0].style, style)
+        self.assertTrue(associations[0].default)
+
+    def test_without_burn_simulation_style(self):
+        Style.objects.filter(name=BURN_SIMULATION_STYLE_NAME).delete()
+        datalayer = generate_burn_simulation_datalayer(
+            self.report, "gs://burn-output/job/output.tif"
+        )
+
+        self.assertFalse(datalayer.rel_styles.exists())
+
+    def test_missing_treatment_datalayer(self):
+        self.treatment.delete()
+        with self.assertRaises(ValueError):
+            generate_burn_simulation_datalayer(self.report, "gs://burn-output/a.tif")
+        self.extract.assert_not_called()
+        self.reproject.assert_not_called()
+
+
+class CalculateBurnSimulationResultsTest(TestCase):
+    NODATA = -9999
+
+    def setUp(self):
+        tmp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp_dir.cleanup)
+        self.raster_path = Path(tmp_dir.name) / "burn.tif"
+        profile = dict(
+            driver="GTiff",
+            height=3,
+            width=3,
+            count=1,
+            crs="EPSG:3857",
+            transform=from_origin(-13_400_000, 4_600_000, 100, 100),
+            nodata=self.NODATA,
+            dtype=np.float32,
+        )
+        # 4 pixels > 0, 3 zero, 2 nodata -> 4 / 9 of the planning area
+        values = np.array(
+            [[0, 5, self.NODATA], [1, 0, 2], [self.NODATA, 0, 3]],
+            dtype=np.float32,
+        )
+        with rasterio.open(self.raster_path, "w", **profile) as dst:
+            dst.write(values, 1)
+
+        self.datalayer = DataLayerFactory.create(
+            type=DataLayerType.RASTER, url=str(self.raster_path)
+        )
+
+    def _report(self, geometry):
+        planning_area = PlanningAreaFactory.create(
+            with_stands=False, geometry=geometry
+        )
+        scenario = ScenarioFactory.create(planning_area=planning_area)
+        return FundingOpportunityReport.objects.create(
+            scenario=scenario, created_by=scenario.user
+        )
+
+    def test_scales_planning_area_acres_by_burned_pixel_ratio(self):
+        geometry = raster_bounds_geometry(self.raster_path)
+        report = self._report(geometry)
+
+        results = calculate_burn_simulation_results(report, self.datalayer)
+
+        planning_area_acres = get_acreage(geometry)
+        self.assertEqual(results["total_pixels"], 9)
+        self.assertEqual(results["burned_pixels"], 4)
+        self.assertAlmostEqual(results["planning_area_acres"], planning_area_acres)
+        self.assertAlmostEqual(
+            results["catastrophic_wildfire_reduction_percent"], 4 / 9 * 100
+        )
+        self.assertAlmostEqual(
+            results["catastrophic_wildfire_reduction_acres"],
+            planning_area_acres * 4 / 9,
+        )
+
+    def test_planning_area_outside_raster_returns_zero(self):
+        geometry = MultiPolygon(Polygon.from_bbox((-100, 30, -99, 31)), srid=4269)
+        report = self._report(geometry)
+
+        results = calculate_burn_simulation_results(report, self.datalayer)
+
+        self.assertEqual(results["total_pixels"], 0)
+        self.assertEqual(results["burned_pixels"], 0)
+        self.assertEqual(results["catastrophic_wildfire_reduction_acres"], 0.0)

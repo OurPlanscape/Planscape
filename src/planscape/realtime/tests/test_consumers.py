@@ -3,9 +3,16 @@ from channels.db import database_sync_to_async
 from channels.layers import get_channel_layer
 from channels.routing import URLRouter
 from channels.security.websocket import OriginValidator
+from collaboration.models import Role
 from django.test import TestCase
 from planscape.tests.factories import UserFactory
 from rest_framework_simplejwt.tokens import AccessToken
+from workspaces.access import (
+    COLLABORATOR_PERMISSIONS,
+    CREATOR_ROLE,
+    OWNER_PERMISSIONS,
+    VIEWER_PERMISSIONS,
+)
 from workspaces.models import WorkspaceRole
 from workspaces.tests.factories import (
     PlanningWorkspaceFactory,
@@ -61,11 +68,11 @@ async def close_code(communicator):
     return message["code"]
 
 
-async def send_event(workspace_id, event_type, data=None):
+async def send_event(workspace_id, event_type, data=None, obj=None):
     event = build_event(
         workspace_id,
         event_type,
-        obj={"kind": "workspace", "id": workspace_id},
+        obj=obj or {"kind": "workspace", "id": workspace_id},
         data=data,
     )
     await get_channel_layer().group_send(
@@ -271,5 +278,79 @@ class WorkspaceConsumerTest(TestCase):
             self.assertEqual(received["data"]["workspace_id"], self.workspace.pk)
             closed = await comm.receive_output()
             self.assertEqual(closed["code"], CLOSE_FORBIDDEN)
+        finally:
+            await comm.disconnect()
+
+    async def send_planning_area_event(self, creator_id):
+        await send_event(
+            self.workspace.pk,
+            "planning.planning_area.updated",
+            data={"id": 3, "user": creator_id, "name": "PA"},
+            obj={"kind": "planning_area", "id": 3},
+        )
+
+    async def test_planning_area_role_and_permissions_follow_the_viewer(self):
+        comm = communicator(self.workspace.pk, cookie_headers(self.viewer))
+        try:
+            await comm.connect()
+            await comm.receive_json_from()
+
+            await self.send_planning_area_event(creator_id=self.owner.pk)
+
+            received = await comm.receive_json_from()
+            self.assertEqual(received["data"]["name"], "PA")
+            self.assertEqual(received["data"]["role"], Role.VIEWER)
+            self.assertEqual(received["data"]["permissions"], VIEWER_PERMISSIONS)
+        finally:
+            await comm.disconnect()
+
+    async def test_planning_area_creator_gets_creator_role(self):
+        comm = communicator(self.workspace.pk, cookie_headers(self.viewer))
+        try:
+            await comm.connect()
+            await comm.receive_json_from()
+
+            await self.send_planning_area_event(creator_id=self.viewer.pk)
+
+            received = await comm.receive_json_from()
+            self.assertEqual(received["data"]["role"], CREATOR_ROLE)
+            self.assertEqual(received["data"]["permissions"], OWNER_PERMISSIONS)
+        finally:
+            await comm.disconnect()
+
+    async def test_role_change_applies_to_later_planning_area_events(self):
+        comm = communicator(self.workspace.pk, cookie_headers(self.viewer))
+        try:
+            await comm.connect()
+            await comm.receive_json_from()
+
+            await send_event(
+                self.workspace.pk,
+                "workspace.member.role_changed",
+                data={"user_id": self.viewer.pk, "role": WorkspaceRole.COLLABORATOR},
+            )
+            await comm.receive_json_from()
+            await self.send_planning_area_event(creator_id=self.owner.pk)
+
+            received = await comm.receive_json_from()
+            self.assertEqual(received["data"]["role"], Role.COLLABORATOR)
+            self.assertEqual(received["data"]["permissions"], COLLABORATOR_PERMISSIONS)
+        finally:
+            await comm.disconnect()
+
+    async def test_deleted_planning_area_gets_no_role(self):
+        comm = communicator(self.workspace.pk, cookie_headers(self.viewer))
+        try:
+            await comm.connect()
+            await comm.receive_json_from()
+
+            await send_event(
+                self.workspace.pk,
+                "planning.planning_area.deleted",
+                obj={"kind": "planning_area", "id": 3},
+            )
+
+            received = await comm.receive_json_from()
+            self.assertEqual(received["data"], {})
         finally:
             await comm.disconnect()

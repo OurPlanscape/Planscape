@@ -1,24 +1,28 @@
+@import 'colors';
 @import 'mixins';
 
 :host {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
-  text-transform: capitalize;
 }
 
 input {
-  margin: 0;
+  flex: 0 0 auto;
   width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: $color-standard-blue;
   cursor: pointer;
 }
 
 label {
   @include small-paragraph();
+  flex: 1 0 0;
+  color: $color-black;
   cursor: pointer;
 }
 
-button.info {
-  margin-left: auto;
+sg-popover {
+  flex: 0 0 auto;
 }

@@ -34,6 +34,13 @@ export const MARTIN_SOURCES = {
       label: 'project_areas_by_scenario_label',
     },
   },
+  treatableStandsByScenario: {
+    tilesUrl:
+      environment.martin_server + 'treatable_stands_by_scenario/{z}/{x}/{y}',
+    sources: {
+      treatableStandsByScenario: 'treatable_stands_by_scenario',
+    },
+  },
   // Public / unauthed variant of `projectAreasByScenario`, keyed by the shared
   // link UUID instead of a scenario id. The martin function applies the
   // planning-approach feature cap itself and emits the same source layers.

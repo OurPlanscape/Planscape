@@ -1,22 +1,24 @@
-import {
-  ComponentFixture,
-  discardPeriodicTasks,
-  fakeAsync,
-  TestBed,
-  tick,
-} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PlanningAreaListComponent } from './planning-area-list.component';
 import { PlanningAreasDataSource } from '@app/standalone/planning-areas/planning-areas.datasource';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
-import { AuthService } from '@app/services';
-import { BehaviorSubject, of, Subject } from 'rxjs';
+import { AuthService, WebSocketService } from '@app/services';
+import { BehaviorSubject, filter, of, Subject, throwError } from 'rxjs';
 import { MockProviders } from 'ng-mocks';
 import { MapService } from '@maplibre/ngx-maplibre-gl';
 import { ActivatedRoute, Router } from '@angular/router';
-import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
 import { WorkspaceState } from '../workspace.state';
-import { Workspace } from '@types';
+import {
+  MEMBER_ROLE_CHANGED_EVENT,
+  PLANNING_AREA_CREATED_EVENT,
+  PLANNING_AREA_DELETED_EVENT,
+  PLANNING_AREA_UPDATED_EVENT,
+  PLANNING_AREA_MAP_STATUS_EVENT,
+  REALTIME_CONNECTED_EVENT,
+  Workspace,
+  WorkspaceEvent,
+} from '@types';
 
 describe('PlanningAreaListComponent', () => {
   let component: PlanningAreaListComponent;
@@ -27,6 +29,8 @@ describe('PlanningAreaListComponent', () => {
   let newScenarioStateMock: jasmine.SpyObj<NewScenarioState>;
   let authServiceMock: jasmine.SpyObj<AuthService>;
   let currentWorkspace$: BehaviorSubject<Workspace>;
+  let workspaceEvents$: Subject<WorkspaceEvent>;
+  let roleChanges$: Subject<WorkspaceEvent<any>>;
 
   const workspaceWith = (permissions: string[]) =>
     ({ permissions }) as unknown as Workspace;
@@ -85,6 +89,10 @@ describe('PlanningAreaListComponent', () => {
       workspaceWith(['add_planningarea'])
     );
 
+    // the page around the list owns the connection; here we just feed events
+    workspaceEvents$ = new Subject<WorkspaceEvent>();
+    roleChanges$ = new Subject();
+
     await TestBed.configureTestingModule({
       imports: [PlanningAreaListComponent],
     })
@@ -111,6 +119,20 @@ describe('PlanningAreaListComponent', () => {
             {
               provide: WorkspaceState,
               useValue: { currentWorkspace$ },
+            },
+            {
+              provide: WebSocketService,
+              useValue: {
+                ownRoleChanged$: () => roleChanges$,
+                workspaceUpdates$: (types: string[]) =>
+                  workspaceEvents$.pipe(
+                    filter(
+                      (event) =>
+                        types.includes(event.type) ||
+                        event.type === REALTIME_CONNECTED_EVENT
+                    )
+                  ),
+              },
             },
             {
               provide: ActivatedRoute,
@@ -149,49 +171,92 @@ describe('PlanningAreaListComponent', () => {
     });
   });
 
-  describe('polling', () => {
-    it('refreshes the data source every POLLING_INTERVAL', fakeAsync(() => {
-      component.ngOnInit();
+  describe('following the workspace', () => {
+    const event = (type: string): WorkspaceEvent => ({
+      type,
+      workspace_id: 1,
+      object: { kind: 'planning_area', id: 3 },
+    });
 
-      tick(POLLING_INTERVAL - 1);
+    beforeEach(() => component.ngOnInit());
+
+    it('asks for the list again when a planning area is created', () => {
+      workspaceEvents$.next(event(PLANNING_AREA_CREATED_EVENT));
+
+      expect(dataSourceMock.refresh.calls.count()).toBe(1);
+    });
+
+    it('asks for the list again when a planning area is deleted', () => {
+      workspaceEvents$.next(event(PLANNING_AREA_DELETED_EVENT));
+
+      expect(dataSourceMock.refresh.calls.count()).toBe(1);
+    });
+
+    it('asks for the list again when the map of one is ready', () => {
+      workspaceEvents$.next(event(PLANNING_AREA_MAP_STATUS_EVENT));
+
+      expect(dataSourceMock.refresh.calls.count()).toBe(1);
+    });
+
+    it('asks for the list again whenever the connection is made', () => {
+      // events are not replayed, so a reconnection can hide a change
+      workspaceEvents$.next(event(REALTIME_CONNECTED_EVENT));
+
+      expect(dataSourceMock.refresh.calls.count()).toBe(1);
+    });
+
+    it('ignores the events that say nothing about the list', () => {
+      workspaceEvents$.next(event('planning.scenario.status_changed'));
+      workspaceEvents$.next(event('planning.scenario.created'));
+
       expect(dataSourceMock.refresh).not.toHaveBeenCalled();
+    });
 
-      tick(1);
+    it('asks for the list again when one is renamed', () => {
+      workspaceEvents$.next(event(PLANNING_AREA_UPDATED_EVENT));
+
       expect(dataSourceMock.refresh.calls.count()).toBe(1);
+    });
 
-      tick(POLLING_INTERVAL);
+    it('asks for the list again when my role changes', () => {
+      roleChanges$.next({
+        type: MEMBER_ROLE_CHANGED_EVENT,
+        data: { user_id: 7, role: 'VIEWER' },
+      });
+
+      expect(dataSourceMock.refresh.calls.count()).toBe(1);
+    });
+
+    it('never misses a change that lands while a refresh is in flight', () => {
+      const inFlight$ = new Subject<any>();
+      dataSourceMock.refresh.and.returnValue(inFlight$);
+
+      workspaceEvents$.next(event(PLANNING_AREA_CREATED_EVENT));
+      workspaceEvents$.next(event(PLANNING_AREA_MAP_STATUS_EVENT));
+
       expect(dataSourceMock.refresh.calls.count()).toBe(2);
+      expect(inFlight$.observed).toBeTrue();
+    });
 
-      discardPeriodicTasks();
-    }));
+    it('keeps listening after a refresh fails', () => {
+      dataSourceMock.refresh.and.returnValue(
+        throwError(() => new Error('nope'))
+      );
+      workspaceEvents$.next(event(PLANNING_AREA_CREATED_EVENT));
 
-    it('skips poll ticks while a refresh is in flight', fakeAsync(() => {
-      const longRefresh$ = new Subject<any>();
-      dataSourceMock.refresh.and.returnValue(longRefresh$);
-      component.ngOnInit();
+      dataSourceMock.refresh.and.returnValue(of({ count: 0, results: [] }));
+      workspaceEvents$.next(event(PLANNING_AREA_CREATED_EVENT));
 
-      tick(POLLING_INTERVAL);
-      expect(dataSourceMock.refresh.calls.count()).toBe(1);
-
-      tick(POLLING_INTERVAL);
-      expect(dataSourceMock.refresh.calls.count()).toBe(1);
-
-      longRefresh$.complete();
-      tick(POLLING_INTERVAL);
       expect(dataSourceMock.refresh.calls.count()).toBe(2);
+    });
 
-      discardPeriodicTasks();
-    }));
-
-    it('stops polling when the component is destroyed', fakeAsync(() => {
-      component.ngOnInit();
-      tick(POLLING_INTERVAL);
-      expect(dataSourceMock.refresh.calls.count()).toBe(1);
-
+    it('stops listening when the component is destroyed', () => {
       fixture.destroy();
-      tick(POLLING_INTERVAL);
-      expect(dataSourceMock.refresh.calls.count()).toBe(1);
-    }));
+
+      workspaceEvents$.next(event(PLANNING_AREA_CREATED_EVENT));
+
+      expect(dataSourceMock.refresh).not.toHaveBeenCalled();
+    });
   });
 
   describe('search', () => {

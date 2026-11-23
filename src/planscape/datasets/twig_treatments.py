@@ -5,8 +5,7 @@ import subprocess
 import tempfile
 import zipfile
 from copy import deepcopy
-from datetime import date, datetime
-from datetime import timezone as datetime_timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any, TextIO
 from uuid import uuid4
@@ -84,7 +83,7 @@ def format_arcgis_epoch_millis_date(value: Any) -> str | None:
     return (
         datetime.fromtimestamp(
             timestamp_millis / 1000,
-            tz=datetime_timezone.utc,
+            tz=UTC,
         )
         .date()
         .isoformat()
@@ -344,19 +343,38 @@ def convert_geojson_to_zipped_shapefile(
     shapefile_layer_name = slugify_layer_name(layer_name)
     output_directory_path = Path(output_directory)
 
+    reprojected_path = output_directory_path / "reprojected.gpkg"
     shapefile_path = output_directory_path / f"{shapefile_layer_name}.shp"
     zip_path = output_directory_path / f"{shapefile_layer_name}.zip"
+
+    reproject_command = [
+        "ogr2ogr",
+        "-f",
+        "GPKG",
+        str(reprojected_path),
+        input_file,
+        "-t_srs",
+        TWIG_TREATMENTS_OUTPUT_SRS,
+        "-nlt",
+        "PROMOTE_TO_MULTI",
+        "-makevalid",
+    ]
+
+    logger.info(
+        "Reprojecting TWIG GeoJSON %s to %s",
+        input_file,
+        TWIG_TREATMENTS_OUTPUT_SRS,
+    )
+    subprocess.run(reproject_command, check=True)
 
     command = [
         "ogr2ogr",
         "-f",
         "ESRI Shapefile",
         str(shapefile_path),
-        input_file,
+        str(reprojected_path),
         "-nln",
         shapefile_layer_name,
-        "-t_srs",
-        TWIG_TREATMENTS_OUTPUT_SRS,
         "-nlt",
         "PROMOTE_TO_MULTI",
         "-makevalid",
@@ -372,7 +390,6 @@ def convert_geojson_to_zipped_shapefile(
         TWIG_TREATMENTS_OUTPUT_SRS,
         zip_path,
     )
-
     subprocess.run(command, check=True)
 
     with zipfile.ZipFile(

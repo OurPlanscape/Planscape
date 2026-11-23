@@ -3,6 +3,7 @@
     *ngFor="let result of results.categories"
     (selectDataset)="goToCategory(result.data)"
     [name]="result.name"
+    [categoryIcon]="result.data.icon"
     [searchTerm]="searchTerm">
   </app-data-set>
   <app-data-set
@@ -16,6 +17,7 @@
     *ngFor="let group of results.groupedLayers"
     (selectDataset)="goToGroup(group)"
     [name]="group.category?.name ?? 'Uncategorized'"
+    [categoryIcon]="group.category ? group.category.icon : undefined"
     [layers]="group.layers"
     [searchTerm]="searchTerm"
     [displayAddButton]="displayAddButton">

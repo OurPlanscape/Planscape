@@ -30,19 +30,26 @@
             *ngIf="(loadingLayers$ | async)?.includes('source_' + layer.id)">
           </mat-spinner>
 
-          <button
-            *ngIf="layer.metadata?.['metadata']"
-            sg-button
-            variant="icon-only"
-            icon="info"
-            class="info-icon"
-            [outlined]="true"
-            [matMenuTriggerFor]="popoverMenu"></button>
-          <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
-            <app-data-layer-tooltip
-              [layer]="layer"
-              [showAllData]="false"></app-data-layer-tooltip>
-          </mat-menu>
+          <ng-container *ngIf="layer.metadata?.['metadata']">
+            <button
+              sg-button
+              variant="icon-only"
+              icon="info"
+              class="info-icon"
+              [outlined]="true"
+              [matMenuTriggerFor]="popoverMenu"
+              #infoTrigger="matMenuTrigger"
+              appSingleOpenMenu></button>
+            <mat-menu
+              #popoverMenu="matMenu"
+              class="datalayer-tooltip-panel"
+              [hasBackdrop]="false">
+              <app-data-layer-tooltip
+                [layer]="layer"
+                [showAllData]="false"
+                (closed)="infoTrigger.closeMenu()"></app-data-layer-tooltip>
+            </mat-menu>
+          </ng-container>
 
           <span
             class="base-layer-legend"

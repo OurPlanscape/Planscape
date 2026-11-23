@@ -1,6 +1,7 @@
 import csv
 import json
 import shutil
+import zipfile
 from datetime import date, datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -16,12 +17,14 @@ from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import connection
 from django.test import TestCase, override_settings
+from django.test.utils import CaptureQueriesContext
 from fiona.crs import to_string
 from stands.models import Stand, StandSizeChoices
 from stands.services import calculate_stand_vector_stats_with_stand_list
 from stands.tests.factories import StandFactory, StandMetricFactory
 
 from planning.models import (
+    GeoPackageStatus,
     PlanningArea,
     PlanningAreaMapStatus,
     Scenario,
@@ -34,10 +37,11 @@ from planning.models import (
 from planning.services import (
     build_run_configuration,
     calculate_and_update_scenario_result,
+    clone_scenario,
     create_planning_area,
     create_scenario,
-    clone_scenario,
     create_scenario_from_upload,
+    export_datalayer_names_file,
     export_planning_area_to_geopackage,
     export_scenario_inputs_to_geopackage,
     export_scenario_stand_outputs_to_geopackage,
@@ -53,8 +57,8 @@ from planning.services import (
     get_max_area_project,
     get_max_treatable_area,
     get_max_treatable_stand_count,
-    get_schema,
     get_scenario_configuration_details,
+    get_schema,
     get_sub_units_details,
     sanitize_shp_field_name,
     trigger_scenario_run,
@@ -153,8 +157,7 @@ class BuildRunConfigurationTest(TestCase):
         run_configuration = build_run_configuration(scenario)
 
         datalayers = {
-            datalayer["id"]: datalayer
-            for datalayer in run_configuration["datalayers"]
+            datalayer["id"]: datalayer for datalayer in run_configuration["datalayers"]
         }
         self.assertEqual(datalayers[dne_datalayer.pk]["threshold"], "value != 10")
         self.assertEqual(
@@ -200,8 +203,7 @@ class BuildRunConfigurationTest(TestCase):
         run_configuration = build_run_configuration(scenario)
 
         datalayers = {
-            datalayer["id"]: datalayer
-            for datalayer in run_configuration["datalayers"]
+            datalayer["id"]: datalayer for datalayer in run_configuration["datalayers"]
         }
         self.assertEqual(datalayers[priority.pk]["threshold"], "value != 10")
         self.assertEqual(
@@ -215,6 +217,56 @@ class BuildRunConfigurationTest(TestCase):
         self.assertEqual(
             datalayers[cobenefit.pk]["usage_type"],
             TreatmentGoalUsageType.SECONDARY_METRIC,
+        )
+
+    def test_build_run_configuration_renders_in_and_nin_operators(self):
+        in_datalayer = DataLayerFactory.create(type=DataLayerType.RASTER)
+        nin_datalayer = DataLayerFactory.create(type=DataLayerType.RASTER)
+        priority = DataLayerFactory.create(type=DataLayerType.RASTER)
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatment_goal=None,
+            type=ScenarioType.CUSTOM,
+            configuration={
+                "stand_size": StandSizeChoices.LARGE,
+                "targets": {"max_area": 1000},
+                "priorities": [{"datalayer": priority.pk, "weight": 2}],
+                "constraints": [
+                    {
+                        "datalayer": in_datalayer.pk,
+                        "operator": "in",
+                        "value": "1, 2,abc",
+                    },
+                    {
+                        "datalayer": nin_datalayer.pk,
+                        "operator": "nin",
+                        "value": "-1.5,forest",
+                    },
+                    {
+                        "datalayer": priority.pk,
+                        "operator": "in",
+                        "value": "3",
+                    },
+                ],
+            },
+        )
+
+        run_configuration = build_run_configuration(scenario)
+
+        datalayers = {
+            datalayer["id"]: datalayer for datalayer in run_configuration["datalayers"]
+        }
+        self.assertEqual(
+            datalayers[in_datalayer.pk]["threshold"],
+            'value %in% c(1, 2, "abc")',
+        )
+        self.assertEqual(
+            datalayers[nin_datalayer.pk]["threshold"],
+            '!(value %in% c(-1.5, "forest"))',
+        )
+        self.assertEqual(
+            datalayers[priority.pk]["threshold"],
+            "value %in% c(3)",
         )
 
 
@@ -998,6 +1050,139 @@ class TestExportToGeopackage(TestCase):
         layers = fiona.listlayers(self.preset_scenario_output_path)
         self.assertNotIn("stand_outputs", layers)
 
+    def _expected_names(self, datalayers):
+        return {f"datalayer_{dl.pk}": dl.name for dl in datalayers}
+
+    def test_export_datalayer_names_file_preset_scenario(self):
+        output = export_datalayer_names_file(self.preset_scenario)
+
+        self.assertTrue(output.exists())
+        self.assertEqual(output.parent, Path(settings.TEMP_GEOPACKAGE_FOLDER))
+        self.assertEqual(output.name, f"datalayers_{self.preset_scenario.pk}.json")
+        with open(output, encoding="utf-8") as f:
+            self.assertEqual(json.load(f), self._expected_names(self.datalayers))
+
+    def test_export_datalayer_names_file_custom_scenario(self):
+        output = export_datalayer_names_file(self.custom_scenario)
+
+        self.assertTrue(output.exists())
+        with open(output, encoding="utf-8") as f:
+            self.assertEqual(json.load(f), self._expected_names(self.datalayers))
+
+    def test_export_datalayer_names_file_creates_missing_folder(self):
+        folder = Path("/tmp/planscape-test-output/missing/nested/geopackages")
+        shutil.rmtree(folder, ignore_errors=True)
+        self.assertFalse(folder.exists())
+
+        with self.settings(TEMP_GEOPACKAGE_FOLDER=str(folder)):
+            output = export_datalayer_names_file(self.preset_scenario)
+
+        self.assertTrue(folder.exists())
+        self.assertEqual(output.parent, folder)
+        self.assertTrue(output.exists())
+
+    def test_export_datalayer_names_file_overwrites_existing_file(self):
+        first = export_datalayer_names_file(self.preset_scenario)
+        first.write_text('{"stale": "content"}', encoding="utf-8")
+
+        second = export_datalayer_names_file(self.preset_scenario)
+
+        self.assertEqual(first, second)
+        with open(second, encoding="utf-8") as f:
+            self.assertEqual(json.load(f), self._expected_names(self.datalayers))
+
+    def test_export_datalayer_names_file_keeps_non_ascii_names(self):
+        datalayer = DataLayerFactory.create(
+            type=DataLayerType.RASTER, name="Água ñandú"
+        )
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning,
+            user=self.user,
+            type=ScenarioType.CUSTOM,
+            with_priorities=[datalayer],
+        )
+
+        output = export_datalayer_names_file(scenario)
+
+        content = output.read_text(encoding="utf-8")
+        self.assertIn("Água ñandú", content)
+        self.assertNotIn("\\u", content)
+        self.assertEqual(
+            json.loads(content), {f"datalayer_{datalayer.pk}": "Água ñandú"}
+        )
+
+    def test_export_datalayer_names_file_excludes_vector_datalayers(self):
+        raster = DataLayerFactory.create(type=DataLayerType.RASTER)
+        vector = DataLayerFactory.create(type=DataLayerType.VECTOR)
+        scenario = ScenarioFactory.create(
+            planning_area=self.planning,
+            user=self.user,
+            type=ScenarioType.CUSTOM,
+            with_priorities=[raster],
+            with_cobenefits=[vector],
+        )
+
+        output = export_datalayer_names_file(scenario)
+
+        with open(output, encoding="utf-8") as f:
+            data = json.load(f)
+        self.assertEqual(data, {f"datalayer_{raster.pk}": raster.name})
+        self.assertNotIn(f"datalayer_{vector.pk}", data)
+
+    @mock.patch("planning.services.upload_file_via_cli", autospec=True)
+    def test_export_geopackage_zip_contains_datalayer_names(self, upload_mock):
+        invalidate_all()
+        output = export_to_geopackage(self.preset_scenario)
+        self.assertIsNotNone(output)
+
+        temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
+        zip_path = temp_folder / f"{self.preset_scenario.uuid}.gpkg.zip"
+        self.assertTrue(zip_path.exists())
+        with zipfile.ZipFile(zip_path) as zipf:
+            self.assertIn("datalayer_names.json", zipf.namelist())
+            data = json.loads(zipf.read("datalayer_names.json").decode("utf-8"))
+        self.assertEqual(data, self._expected_names(self.datalayers))
+
+        # temporary names file is cleaned up after the upload
+        names_file = temp_folder / f"datalayers_{self.preset_scenario.pk}.json"
+        self.assertFalse(names_file.exists())
+
+    @mock.patch("planning.services.export_datalayer_names_file", autospec=True)
+    @mock.patch("planning.services.upload_file_via_cli", autospec=True)
+    def test_export_geopackage_fails_when_names_file_export_fails(
+        self, upload_mock, names_mock
+    ):
+        invalidate_all()
+        names_mock.side_effect = OSError("disk full")
+
+        with self.assertRaises(OSError):
+            export_to_geopackage(self.preset_scenario)
+
+        self.preset_scenario.refresh_from_db()
+        self.assertEqual(
+            self.preset_scenario.geopackage_status, GeoPackageStatus.FAILED
+        )
+        self.assertIsNone(self.preset_scenario.geopackage_url)
+        self.assertFalse(upload_mock.called)
+
+    @mock.patch("planning.services.upload_file_via_cli", autospec=True)
+    def test_export_geopackage_cleans_temp_files_when_upload_fails(self, upload_mock):
+        invalidate_all()
+        upload_mock.side_effect = RuntimeError("upload failed")
+
+        with self.assertRaises(RuntimeError):
+            export_to_geopackage(self.preset_scenario)
+
+        temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
+        names_file = temp_folder / f"datalayers_{self.preset_scenario.pk}.json"
+        gpkg_file = temp_folder / f"{self.preset_scenario.uuid}.gpkg"
+        self.assertFalse(names_file.exists())
+        self.assertFalse(gpkg_file.exists())
+        self.preset_scenario.refresh_from_db()
+        self.assertEqual(
+            self.preset_scenario.geopackage_status, GeoPackageStatus.FAILED
+        )
+
     def tearDown(self) -> None:
         self.preset_scenario_output_path.unlink(missing_ok=True)
         self.custom_scenario_output_path.unlink(missing_ok=True)
@@ -1387,6 +1572,92 @@ class TestRemoveExcludes(TestCase):
 
         self.assertEqual(0, len(result["unavailable"]["by_thresholds"]))
 
+    def _setup_treatable_area_with_constraints(self):
+        avg_datalayer = DataLayerFactory.create(
+            type=DataLayerType.RASTER,
+            metadata={"modules": {"forsys": {"enabled": True}}},
+        )
+        min_datalayer = DataLayerFactory.create(
+            type=DataLayerType.RASTER,
+            metadata={"modules": {"forsys": {"enabled": True, "metric_column": "min"}}},
+        )
+        for i, stand in enumerate(self.stands):
+            StandMetricFactory.create(stand=stand, datalayer=avg_datalayer, avg=i)
+            StandMetricFactory.create(stand=stand, datalayer=min_datalayer, min=i % 4)
+        extent = MultiPolygon(
+            [stand.geometry for stand in self.stands[:8]], srid=4269
+        ).extent
+        self.scenario.treatable_area = MultiPolygon(
+            Polygon.from_bbox(extent), srid=4269
+        )
+        self.scenario.save(update_fields=["treatable_area"])
+        return {
+            "stand_size": StandSizeChoices.LARGE,
+            "excludes": [self.datalayer],
+            "constraints": [
+                {"datalayer": avg_datalayer, "operator": "lte", "value": 12},
+                {"datalayer": min_datalayer, "operator": "gte", "value": 1},
+            ],
+        }
+
+    @override_settings(FEATURE_FLAGS="ADD_INCLUDES")
+    def test_get_available_stands_with_treatable_area(self):
+        kwargs = self._setup_treatable_area_with_constraints()
+        result = get_available_stands(self.scenario, **kwargs)
+
+        index_by_id = {stand.id: i for i, stand in enumerate(self.stands)}
+        unavailable = result["unavailable"]
+        self.assertEqual(
+            [0, 1, 2, 3, 4, 5, 7, 8, 9],
+            sorted(index_by_id[i] for i in unavailable["by_exclusions"]),
+        )
+        self.assertEqual(
+            [0, 4, 8, 12, 13],
+            sorted(index_by_id[i] for i in unavailable["by_thresholds"]),
+        )
+        summary = result["summary"]
+        self.assertAlmostEqual(7118.095268765973, summary["total_area"])
+        self.assertAlmostEqual(1779.5074267977302, summary["available_area"])
+        self.assertAlmostEqual(593.0808673452595, summary["treatable_area"])
+        self.assertAlmostEqual(6525.0144014207135, summary["unavailable_area"])
+        self.assertEqual(1, summary["treatable_stand_count"])
+
+    @override_settings(FEATURE_FLAGS="ADD_INCLUDES")
+    def test_get_available_stands_does_not_send_geometry_in_queries(self):
+        kwargs = self._setup_treatable_area_with_constraints()
+        with CaptureQueriesContext(connection) as context:
+            get_available_stands(self.scenario, **kwargs)
+
+        geometry_hex = self.scenario.treatable_area.ewkb.hex()
+        for query in context.captured_queries:
+            self.assertNotIn(geometry_hex, query["sql"].lower())
+
+    def test_get_available_stands_applies_aslc_constraint(self):
+        self.datalayer.metadata = {
+            "modules": {
+                "forsys": {
+                    "enabled": False,
+                },
+                "advanced_stand_level_constraint": {
+                    "enabled": True,
+                    "metric_column": "majority",
+                },
+            }
+        }
+        self.datalayer.save(update_fields=["metadata"])
+        result = get_available_stands(
+            self.scenario,
+            stand_size=StandSizeChoices.LARGE,
+            constraints=[
+                {
+                    "datalayer": self.datalayer,
+                    "operator": None,
+                    "value": 1,
+                }
+            ],
+        )
+        self.assertEqual(6, len(result["unavailable"]["by_thresholds"]))
+
 
 class ValidateScenarioConfigurationTest(TestCase):
     def setUp(self):
@@ -1771,36 +2042,48 @@ class CloneScenarioTest(TestCase):
         )
 
     def test_cloning_of_scenario(self):
-        orig_scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
-        cloned_scenario = clone_scenario(orig_scenario.id, self.secondUser, 'some new scenario')
+        orig_scenario = ScenarioFactory.create(
+            planning_area=self.planning_area, user=self.user
+        )
+        cloned_scenario = clone_scenario(
+            orig_scenario.id, self.secondUser, "some new scenario"
+        )
         # assert that some cloned attributes should match
-        self.assertEqual(orig_scenario.planning_area_id, cloned_scenario.planning_area_id)
+        self.assertEqual(
+            orig_scenario.planning_area_id, cloned_scenario.planning_area_id
+        )
         self.assertEqual(orig_scenario.origin, cloned_scenario.origin)
         self.assertEqual(orig_scenario.type, cloned_scenario.type)
         self.assertEqual(orig_scenario.capabilities, cloned_scenario.capabilities)
         self.assertEqual(orig_scenario.treatment_goal, cloned_scenario.treatment_goal)
-       
+
         # assert that clone is associated with user doing the cloning
         self.assertEqual(cloned_scenario.user, self.secondUser)
-        
+
         # assert that some attributes should not be cloned
         self.assertNotEqual(orig_scenario.user, cloned_scenario.user)
         self.assertNotEqual(orig_scenario.uuid, cloned_scenario.uuid)
 
     def test_cloning_of_scenario_but_not_results(self):
-        orig_scenario = ScenarioFactory.create(planning_area=self.planning_area, user=self.user)
+        orig_scenario = ScenarioFactory.create(
+            planning_area=self.planning_area, user=self.user
+        )
         ScenarioResultFactory.create(
             scenario=orig_scenario, status=ScenarioResultStatus.SUCCESS
         )
-        cloned_scenario = clone_scenario(orig_scenario.id, self.secondUser, 'some new scenario')
+        cloned_scenario = clone_scenario(
+            orig_scenario.id, self.secondUser, "some new scenario"
+        )
 
         # assert that some cloned attributes should match
-        self.assertEqual(orig_scenario.planning_area_id, cloned_scenario.planning_area_id)
+        self.assertEqual(
+            orig_scenario.planning_area_id, cloned_scenario.planning_area_id
+        )
         self.assertEqual(orig_scenario.origin, cloned_scenario.origin)
         self.assertEqual(orig_scenario.type, cloned_scenario.type)
         self.assertEqual(orig_scenario.capabilities, cloned_scenario.capabilities)
         self.assertEqual(orig_scenario.treatment_goal, cloned_scenario.treatment_goal)
-       
+
         # assert that clone is associated with user doing the cloning
         self.assertEqual(cloned_scenario.user, self.secondUser)
 
@@ -1810,7 +2093,9 @@ class CloneScenarioTest(TestCase):
         self.assertNotEqual(orig_scenario.uuid, cloned_scenario.uuid)
 
         # assert that results are not copied
-        self.assertNotEqual(orig_scenario.results.status, cloned_scenario.results.status)
+        self.assertNotEqual(
+            orig_scenario.results.status, cloned_scenario.results.status
+        )
 
         self.assertEqual(cloned_scenario.results.status, ScenarioResultStatus.DRAFT)
         self.assertEqual(cloned_scenario.results.result, None)
@@ -1820,14 +2105,20 @@ class CloneScenarioTest(TestCase):
 
     def test_cloning_of_scenario_with_name_collisions(self):
         scenarioV3 = ScenarioFactory.create(
-            planning_area=self.planning_area, 
-            user=self.user)
+            planning_area=self.planning_area, user=self.user
+        )
         scenarioV3.version = ScenarioVersion.V3
         scenarioV3.save()
 
-        cloned_scenario = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
-        cloned_scenario_2 = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
-        cloned_scenario_3 = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
+        cloned_scenario = clone_scenario(
+            scenarioV3.id, self.secondUser, "some new scenario"
+        )
+        cloned_scenario_2 = clone_scenario(
+            scenarioV3.id, self.secondUser, "some new scenario"
+        )
+        cloned_scenario_3 = clone_scenario(
+            scenarioV3.id, self.secondUser, "some new scenario"
+        )
         self.assertNotEqual(cloned_scenario.name, cloned_scenario_2.name)
         self.assertNotEqual(cloned_scenario.name, cloned_scenario_3.name)
         self.assertNotEqual(cloned_scenario_2.name, cloned_scenario_3.name)
@@ -1844,10 +2135,10 @@ class CloneScenarioTest(TestCase):
             "constraints": [
                 {"datalayer": 1, "operator": "lt", "value": 25},
             ],
-            "included_areas": [123,456,789],
-            "excluded_areas": [333,222,111],
-            "priorities": [100,200],
-            "cobenefits": [300,400],
+            "included_areas": [123, 456, 789],
+            "excluded_areas": [333, 222, 111],
+            "priorities": [100, 200],
+            "cobenefits": [300, 400],
         }
         tx_goal = TreatmentGoalFactory(name="Some tx goal")
         scenarioV3 = ScenarioFactory.create(
@@ -1859,11 +2150,13 @@ class CloneScenarioTest(TestCase):
         )
         self.assertEqual(scenarioV3.version, ScenarioVersion.V3)
 
-        cloned_scenario = clone_scenario(scenarioV3.id, self.secondUser, 'some new scenario')
+        cloned_scenario = clone_scenario(
+            scenarioV3.id, self.secondUser, "some new scenario"
+        )
 
         self.assertNotEqual(cloned_scenario.pk, scenarioV3.pk)
         self.assertEqual(cloned_scenario.user, self.secondUser)
-        self.assertEqual(cloned_scenario.name, 'some new scenario')
+        self.assertEqual(cloned_scenario.name, "some new scenario")
         self.assertEqual(cloned_scenario.treatment_goal, tx_goal)
         self.assertEqual(
             cloned_scenario.planning_approach,
@@ -1888,7 +2181,9 @@ class CloneScenarioTest(TestCase):
             },
         )
 
-        cloned_scenario = clone_scenario(scenarioV1.id, self.secondUser, 'some new scenario')
+        cloned_scenario = clone_scenario(
+            scenarioV1.id, self.secondUser, "some new scenario"
+        )
 
         config = cloned_scenario.configuration
         self.assertEqual(config["targets"], {"estimated_cost": 2000})
@@ -1917,7 +2212,9 @@ class CloneScenarioTest(TestCase):
             },
         )
 
-        cloned_scenario = clone_scenario(scenarioV2.id, self.secondUser, 'some new scenario')
+        cloned_scenario = clone_scenario(
+            scenarioV2.id, self.secondUser, "some new scenario"
+        )
 
         config = cloned_scenario.configuration
         self.assertEqual(

@@ -122,6 +122,21 @@ export class ScenarioState {
     })
   );
 
+  public hasScenarioCompleted$ = this.currentScenarioId$.pipe(
+    switchMap((id) => {
+      if (!id) {
+        return of(false);
+      }
+      return this.currentScenario$.pipe(
+        map(
+          (plan) =>
+            plan.scenario_result?.status === 'SUCCESS' ||
+            plan.scenario_result?.status === 'FAILURE'
+        )
+      );
+    })
+  );
+
   setScenarioId(id: number) {
     this._currentScenarioId$.next(id);
   }

@@ -18,6 +18,38 @@ $panel-side-padding: 16px;
   width: $map-sidebar-width;
 }
 
+.upload-button {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background-color: $color-main-blue;
+  color: $color-white;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $color-standard-blue;
+  }
+
+  mat-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 24px;
+  }
+}
+
+.upload-divider {
+  width: 48px;
+  margin: 0;
+  border: none;
+  border-top: 1px solid $color-dark-gray;
+}
+
 .panel {
   display: flex;
   flex-direction: column;

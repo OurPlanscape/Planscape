@@ -1,6 +1,6 @@
 FROM ghcr.io/astral-sh/uv:latest AS builder
 
-FROM arm64v8/python:3.14.0-slim-trixie
+FROM arm64v8/python:3.12-slim-trixie
 COPY --from=builder /uv /uvx /bin/
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -35,6 +35,13 @@ RUN wget https://github.com/OSGeo/gdal/archive/refs/tags/v${GDAL_VERSION}.tar.gz
     cmake --build . && \
     cmake --build . --target install && \
     rm -rf gdal-${GDAL_VERSION} v${GDAL_VERSION}.tar.gz
+
+# python-magic needs the system library; kept after the GDAL build so adding
+# packages here doesn't invalidate that layer.
+RUN apt-get update && \
+    apt-get -y install libmagic1 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 ENV UV_PROJECT_ENVIRONMENT=/opt/virtualenvs/
 ENV UV_LINK_MODE=copy

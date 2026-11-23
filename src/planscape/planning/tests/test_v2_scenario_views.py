@@ -2,14 +2,18 @@ import copy
 import json
 from unittest import mock
 
-from datasets.models import DataLayerType, GeometryType
-from datasets.tests.factories import DataLayerFactory
+from datasets.models import Category, DataLayer, DataLayerType, GeometryType
+from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from modules.base import compute_scenario_capabilities
 from rest_framework import status
 from rest_framework.test import APITestCase
+from stands.models import Stand, StandSizeChoices
 
 from planning.models import (
     GeoPackageStatus,
@@ -22,8 +26,14 @@ from planning.models import (
     ScenarioVersion,
     TreatmentGoalGroup,
     TreatmentGoalUsageType,
+    TreatmentGoalUsesDataLayer,
 )
-from planning.serializers import ListScenarioSerializer, ScenarioV2Serializer
+from planning.serializers import (
+    ListScenarioSerializer,
+    ScenarioV2Serializer,
+    ScenarioV3Serializer,
+)
+from planning.services import clone_scenario, trigger_scenario_run
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -819,6 +829,46 @@ class ScenarioDetailTest(APITestCase):
             self.assertIn("usage_type", entry)
             self.assertIn("datalayer", entry)
 
+    @override_settings(FEATURE_FLAGS=["IMPROVED_TREATMENT_GOAL"])
+    def test_detail_scenario_v2_with_improved_usage_types(self):
+        self.scenario.treatment_goal = TreatmentGoalFactory.create(with_datalayers=True)
+        self.scenario.save()
+        expected_ids = set(
+            self.scenario.treatment_goal.datalayer_usages.values_list(
+                "datalayer_id", flat=True
+            )
+        )
+
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(data.get("usage_types")), 3)
+        for entry in data.get("usage_types"):
+            self.assertIn("usage_type", entry)
+            self.assertIsInstance(entry["datalayer"], dict)
+            self.assertIn("name", entry["datalayer"])
+            self.assertIn("styles", entry["datalayer"])
+            for field in ("url", "public_url", "map_url"):
+                self.assertNotIn(field, entry["datalayer"])
+            self.assertIsInstance(entry["datalayer"]["dataset"], dict)
+            self.assertEqual(
+                set(entry["datalayer"]["dataset"].keys()),
+                {"id", "organization", "name", "description"},
+            )
+        self.assertEqual(
+            {entry["datalayer"]["id"] for entry in data.get("usage_types")},
+            expected_ids,
+        )
+
     def test_detail_scenario_v3_custom_usage_types(self):
         priority = DataLayerFactory(name="Priority Layer")
         cobenefit = DataLayerFactory(name="Cobenefit Layer")
@@ -1329,6 +1379,82 @@ class PatchScenarioConfigurationTest(APITestCase):
                 },
             ],
         )
+
+    def test_patch_scenario_configuration_accepts_in_and_nin_constraints(self):
+        in_datalayer = DataLayerFactory(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        nin_datalayer = DataLayerFactory(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        payload = {
+            "configuration": {
+                "constraints": [
+                    {
+                        "datalayer": in_datalayer.pk,
+                        "operator": "in",
+                        "value": "1, 2,abc",
+                    },
+                    {
+                        "datalayer": nin_datalayer.pk,
+                        "operator": "nin",
+                        "value": "-1.5,forest_type",
+                    },
+                ],
+            }
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        config = response.data.get("configuration", {})
+        self.assertEqual(
+            config["constraints"],
+            [
+                {
+                    "datalayer": in_datalayer.pk,
+                    "operator": "in",
+                    "value": "1,2,abc",
+                },
+                {
+                    "datalayer": nin_datalayer.pk,
+                    "operator": "nin",
+                    "value": "-1.5,forest_type",
+                },
+            ],
+        )
+
+    def test_patch_scenario_configuration_rejects_invalid_constraint_values(self):
+        datalayer = DataLayerFactory(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+        invalid_constraints = [
+            {"operator": "in", "value": "1,,2"},
+            {"operator": "in", "value": 'a"b'},
+            {"operator": "nin", "value": "a)"},
+            {"operator": "nin", "value": "1,2 3"},
+            {"operator": "eq", "value": "1,2"},
+            {"operator": "eq", "value": "abc"},
+            {"operator": "btw", "value": "1,abc"},
+        ]
+
+        self.client.force_authenticate(self.user)
+        for constraint in invalid_constraints:
+            with self.subTest(constraint=constraint):
+                payload = {
+                    "configuration": {
+                        "constraints": [{"datalayer": datalayer.pk, **constraint}]
+                    }
+                }
+                response = self.client.patch(self.url, payload, format="json")
+
+                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+                error_data = response.json()["errors"]["configuration"]["constraints"]
+                self.assertIn("value", error_data["0"])
 
     # Test sequential patches, ensure we retain values as expected
     @mock.patch(
@@ -2450,6 +2576,7 @@ class CreateScenarioForDraftsTest(APITestCase):
             Scenario.objects.filter(name="invalid child scenario").exists()
         )
 
+
 class CloneScenariosTest(APITestCase):
     def setUp(self):
         self.creator = UserFactory()
@@ -2482,7 +2609,6 @@ class CloneScenariosTest(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-
     def test_collaborators_can_clone(self):
         self.client.force_authenticate(self.collaborator)
         response = self.client.post(
@@ -2492,7 +2618,6 @@ class CloneScenariosTest(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-
     def test_clone_requires_create_priv(self):
         self.client.force_authenticate(self.viewer)
         response = self.client.post(
@@ -2501,7 +2626,6 @@ class CloneScenariosTest(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
 
     def test_clone_requires_pa_access(self):
         self.client.force_authenticate(self.other_user)
@@ -3464,3 +3588,299 @@ class GetScenarioConfigurationTest(APITestCase):
         response = self._get(scenario, user=self.viewer)
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class TreatableStandsEndpointTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+
+        geometry = Polygon(
+            (
+                (-121, 38),
+                (-121, 38.01),
+                (-120.99, 38.01),
+                (-120.99, 38),
+                (-121, 38),
+            ),
+            srid=4269,
+        )
+
+        self.stand1 = Stand.objects.create(
+            size=StandSizeChoices.LARGE,
+            geometry=geometry,
+            area_m2=1_000_000,
+            grid_key="plan4153-a",
+        )
+        self.stand2 = Stand.objects.create(
+            size=StandSizeChoices.LARGE,
+            geometry=geometry.clone(),
+            area_m2=2_000_000,
+            grid_key="plan4153-b",
+        )
+
+        self.scenario = ScenarioFactory.create(
+            user=self.user,
+            planning_area=self.planning_area,
+            type=ScenarioType.PRESET,
+            planning_approach=(ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS),
+            result_status=ScenarioResultStatus.SUCCESS,
+            configuration={
+                "stand_size": StandSizeChoices.LARGE,
+                "targets": {
+                    "max_project_count": 1,
+                },
+            },
+            forsys_input={
+                "stand_ids": [
+                    self.stand2.pk,
+                    self.stand1.pk,
+                    self.stand1.pk,
+                ],
+                "eligible_stand_ids": [
+                    self.stand1.pk,
+                    self.stand1.pk,
+                ],
+                "datalayers": [],
+                "variables": {},
+            },
+        )
+
+        self.url = reverse(
+            "api:planning:scenarios-treatable-stands",
+            kwargs={"pk": self.scenario.pk},
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_returns_forsys_input_stands(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = response.json()
+
+        self.assertEqual(data["stand_ids"], [self.stand1.pk])
+        self.assertEqual(data["stand_count"], 1)
+        self.assertEqual(data["stand_size"], "LARGE")
+
+        expected_acres = round(
+            1_000_000 / settings.CONVERSION_SQM_ACRES,
+            2,
+        )
+        self.assertEqual(data["total_area_acres"], expected_acres)
+
+    def test_does_not_include_other_stands(self):
+        other_stand = Stand.objects.create(
+            size=StandSizeChoices.LARGE,
+            geometry=self.stand1.geometry.clone(),
+            area_m2=1_000_000,
+            grid_key="plan4153-c",
+        )
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn(
+            other_stand.pk,
+            response.json()["stand_ids"],
+        )
+        self.assertNotIn(
+            self.stand2.pk,
+            response.json()["stand_ids"],
+        )
+
+    def test_returns_stands_when_scenario_fails(self):
+        failure_statuses = [
+            ScenarioResultStatus.FAILURE,
+            ScenarioResultStatus.PANIC,
+            ScenarioResultStatus.TIMED_OUT,
+        ]
+
+        for result_status in failure_statuses:
+            with self.subTest(result_status=result_status):
+                self.scenario.result_status = result_status
+                self.scenario.save(update_fields=["result_status"])
+
+                response = self.client.get(self.url)
+
+                self.assertEqual(
+                    response.status_code,
+                    status.HTTP_409_CONFLICT,
+                )
+
+    def test_no_forsys_inputs(self):
+        self.scenario.forsys_input = None
+        self.scenario.save(update_fields=["forsys_input"])
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+
+    def test_empty_stand_ids(self):
+        self.scenario.forsys_input = {
+            "stand_ids": [self.stand1.pk, self.stand2.pk],
+            "eligible_stand_ids": [],
+        }
+        self.scenario.save(update_fields=["forsys_input"])
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["stand_ids"], [])
+        self.assertEqual(response.json()["stand_count"], 0)
+        self.assertEqual(response.json()["total_area_acres"], 0)
+
+    def test_pending_scenario(self):
+        self.scenario.result_status = ScenarioResultStatus.PENDING
+        self.scenario.save(update_fields=["result_status"])
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+
+    def test_unauthenticated_user(self):
+        self.client.force_authenticate(user=None)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_other_user_cannot_access_scenario(self):
+        other_user = UserFactory.create()
+        self.client.force_authenticate(user=other_user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_clone_does_not_retain_forsys_inputs(self):
+        with mock.patch("planning.services.publish_scenario_event"):
+            clone = clone_scenario(
+                original_scenario_id=self.scenario.pk,
+                user=self.user,
+            )
+
+        self.assertIsNone(clone.forsys_input)
+        self.assertEqual(
+            clone.result_status,
+            ScenarioResultStatus.PENDING,
+        )
+
+    def test_trigger_run_clears_previous_inputs(self):
+        with (
+            mock.patch(
+                "planning.services.compute_scenario_capabilities",
+                return_value=[],
+            ),
+            mock.patch("planning.services.track_event"),
+            mock.patch("planning.services.action.send"),
+            mock.patch("planning.services.publish_scenario_event"),
+            self.captureOnCommitCallbacks(execute=False),
+        ):
+            trigger_scenario_run(
+                scenario=self.scenario,
+                user=self.user,
+            )
+
+        self.scenario.refresh_from_db()
+        self.assertIsNone(self.scenario.forsys_input)
+
+    def test_missing_eligible_stand_ids(self):
+        self.scenario.forsys_input = {
+            "stand_ids": [self.stand1.pk, self.stand2.pk],
+        }
+        self.scenario.save(update_fields=["forsys_input"])
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_409_CONFLICT,
+        )
+
+
+class ScenarioUsageTypesQueryCountTest(TestCase):
+    def _scenario_with_usages(self, count):
+        dataset = DatasetFactory.create()
+        kwargs = {
+            "organization": dataset.organization,
+            "created_by": dataset.created_by,
+            "dataset": dataset,
+        }
+        root = Category.add_root(name="Root", **kwargs)
+        child = root.add_child(name="Child", **kwargs)
+        grandchild = child.add_child(name="Grandchild", **kwargs)
+        categories = [grandchild, child, root]
+        usage_types = list(TreatmentGoalUsageType.values)
+
+        goal = TreatmentGoalFactory.create()
+        for i in range(count):
+            TreatmentGoalUsesDataLayer.objects.create(
+                usage_type=usage_types[i % len(usage_types)],
+                treatment_goal=goal,
+                # Distinct dataset per layer so a missing dataset
+                # select_related shows up as an N+1.
+                datalayer=DataLayerFactory.create(
+                    dataset=DatasetFactory.create(),
+                    category=categories[i % len(categories)],
+                    style=StyleFactory.create() if i % 2 else None,
+                ),
+            )
+        scenario = ScenarioFactory.create(
+            treatment_goal=goal, type=ScenarioType.PRESET
+        )
+        return Scenario.objects.get(pk=scenario.pk)
+
+    def _count_queries(self, serializer_class, scenario):
+        with CaptureQueriesContext(connection) as ctx:
+            data = serializer_class(scenario).data
+        return len(ctx.captured_queries), data
+
+    def _assert_embedded_datasets(self, data):
+        for usage in data["usage_types"]:
+            datalayer = DataLayer.objects.get(pk=usage["datalayer"]["id"])
+            self.assertEqual(
+                usage["datalayer"]["dataset"],
+                {
+                    "id": datalayer.dataset.id,
+                    "organization": datalayer.dataset.organization_id,
+                    "name": datalayer.dataset.name,
+                    "description": datalayer.dataset.description,
+                },
+            )
+
+    def _assert_constant_queries(self, serializer_class):
+        small = self._scenario_with_usages(1)
+        large = self._scenario_with_usages(9)
+        small_count, _ = self._count_queries(serializer_class, small)
+        large_count, data = self._count_queries(serializer_class, large)
+        self.assertEqual(small_count, large_count)
+        self.assertEqual(len(data["usage_types"]), 9)
+        return data
+
+    def test_v2_usage_types_constant_queries(self):
+        self._assert_constant_queries(ScenarioV2Serializer)
+
+    def test_v3_usage_types_constant_queries(self):
+        self._assert_constant_queries(ScenarioV3Serializer)
+
+    @override_settings(FEATURE_FLAGS=["IMPROVED_TREATMENT_GOAL"])
+    def test_v2_improved_usage_types_constant_queries(self):
+        data = self._assert_constant_queries(ScenarioV2Serializer)
+        nested = next(
+            u["datalayer"]
+            for u in data["usage_types"]
+            if u["datalayer"]["category"]
+            and u["datalayer"]["category"]["name"] == "Grandchild"
+        )
+        self.assertEqual(nested["category"]["parent"]["name"], "Child")
+        self.assertEqual(nested["category"]["parent"]["parent"]["name"], "Root")
+        self.assertTrue(any(u["datalayer"]["styles"] for u in data["usage_types"]))
+        self._assert_embedded_datasets(data)
+
+    @override_settings(FEATURE_FLAGS=["IMPROVED_TREATMENT_GOAL"])
+    def test_v3_improved_usage_types_constant_queries(self):
+        data = self._assert_constant_queries(ScenarioV3Serializer)
+        self.assertTrue(all(isinstance(u["datalayer"], dict) for u in data["usage_types"]))
+        self._assert_embedded_datasets(data)
+

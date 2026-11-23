@@ -37,7 +37,6 @@ import {
   ScenarioV3Payload,
 } from '@types';
 import { MatDialog } from '@angular/material/dialog';
-import { StandLevelConstraintsComponent } from '@scenario-creation/step3/stand-level-constraints.component';
 import {
   convertOldConfigurationToV3Payload,
   isCustomScenario,
@@ -48,6 +47,7 @@ import { NewScenarioState } from './new-scenario.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { getPlanPath } from '@plan/plan-helpers';
 import { FeaturesModule } from '@features/features.module';
+import { FeatureService } from '@features/feature.service';
 import { TreatmentTargetComponent } from '@scenario-creation/treatment-target/treatment-target.component';
 import { filter } from 'rxjs/operators';
 import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
@@ -57,6 +57,7 @@ import {
   ScenarioStepConfig,
   SUB_UNIT_LAYER_COLOR,
   SUB_UNITS_STEP,
+  TREATMENT_GOAL_STEP_LABEL,
 } from '@scenario/scenario.constants';
 import { SharedModule } from '@shared';
 import { ScenarioState } from '@scenario/scenario.state';
@@ -68,16 +69,19 @@ import { CustomPriorityObjectivesComponent } from '@scenario-creation/custom-pri
 import { CustomCobenefitsComponent } from '@scenario-creation/custom-cobenefits/custom-cobenefits.component';
 import { MAP_MODULE_NAME } from '@services/map-module.token';
 import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
+import { SHOW_FAVORITE_STAR } from '@data-layers/favorite-star/favorite-star.token';
 import { BASE_LAYER_STYLE } from '@maplibre-map/map-base-layers/map-base-layers-style.token';
 import { MapModuleService } from '@services/map-module.service';
 import { PlanState } from '@plan/plan.state';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
 import { TreatmentGoalStepComponent } from '@scenario-creation/treatment-goal-step/treatment-goal-step.component';
+import { ImprovedTreatmentGoalStepComponent } from '@scenario-creation/improved-treatment-goal-step/improved-treatment-goal-step.component';
 import { Step1WithOverviewComponent } from '@scenario-creation/step1-with-overview/step1-with-overview.component';
 import { SubUnitsTreatmentTargetComponent } from './sub-units-treatment-target/sub-units-treatment-target.component';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { IncludeAreasSelectorComponent } from './include-areas-selector/include-areas-selector.component';
 import { CreateScenarioError } from '@app/services/errors';
-import { ConstraintsStepComponent } from './constraints-step/constraints-step.component';
+import { AdvStandLevelConstraintsComponent } from './step3/adv-stand-level-constraints/adv-stand-level-constraints.component';
 
 @UntilDestroy()
 @Component({
@@ -85,6 +89,7 @@ import { ConstraintsStepComponent } from './constraints-step/constraints-step.co
   providers: [
     { provide: MAP_MODULE_NAME, useValue: 'forsys' },
     { provide: USE_GEOMETRY, useValue: true },
+    { provide: SHOW_FAVORITE_STAR, useValue: false },
     {
       provide: BASE_LAYER_STYLE,
       useFactory: (state: NewScenarioState) => ({
@@ -102,13 +107,14 @@ import { ConstraintsStepComponent } from './constraints-step/constraints-step.co
   ],
   standalone: true,
   imports: [
+    AdvStandLevelConstraintsComponent,
     AsyncPipe,
     CdkStepperModule,
-    ConstraintsStepComponent,
     CustomCobenefitsComponent,
     CustomPriorityObjectivesComponent,
     ExcludeAreasSelectorComponent,
     FeaturesModule,
+    ImprovedTreatmentGoalStepComponent,
     IncludeAreasSelectorComponent,
     NavBarComponent,
     NgClass,
@@ -117,7 +123,6 @@ import { ConstraintsStepComponent } from './constraints-step/constraints-step.co
     ScenarioMapComponent,
     ScenarioSummaryComponent,
     SharedModule,
-    StandLevelConstraintsComponent,
     Step1WithOverviewComponent,
     Step1WithOverviewComponent,
     StepComponent,
@@ -166,6 +171,14 @@ export class ScenarioCreationComponent implements OnInit {
   );
   showMap$ = this.newScenarioState.currentStep$.pipe(
     map((s) => s?.hasMap ?? false)
+  );
+
+  showSharedSummary$ = this.newScenarioState.currentStep$.pipe(
+    map((s) => (s?.hasMap ?? false) && !this.isImprovedTreatmentGoalStep(s))
+  );
+
+  showMapLayerControls$ = this.newScenarioState.currentStep$.pipe(
+    map((s) => !this.isImprovedTreatmentGoalStep(s))
   );
 
   standSize$ = this.newScenarioState.scenarioConfig$.pipe(
@@ -218,12 +231,35 @@ export class ScenarioCreationComponent implements OnInit {
         config.planning_approach &&
         isPlanningApproachSubUnits(config.planning_approach);
 
-      return subUnitsPrioritized && !hasParent
-        ? [SUB_UNITS_STEP, ...baseSteps]
-        : baseSteps;
+      const steps =
+        subUnitsPrioritized && !hasParent
+          ? [SUB_UNITS_STEP, ...baseSteps]
+          : baseSteps;
+
+      return this.withImprovedTreatmentGoal(steps);
     }),
     shareReplay(1)
   );
+
+  private isImprovedTreatmentGoalStep(step: ScenarioStepConfig | null) {
+    return (
+      step?.label === TREATMENT_GOAL_STEP_LABEL &&
+      this.featureService.isFeatureEnabled('IMPROVED_TREATMENT_GOAL')
+    );
+  }
+
+  private withImprovedTreatmentGoal(
+    steps: ScenarioStepConfig[]
+  ): ScenarioStepConfig[] {
+    if (!this.featureService.isFeatureEnabled('IMPROVED_TREATMENT_GOAL')) {
+      return steps;
+    }
+    return steps.map((step) =>
+      step.label === TREATMENT_GOAL_STEP_LABEL
+        ? { ...step, hasMap: true }
+        : step
+    );
+  }
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload($event: any) {
@@ -234,6 +270,11 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   viewedDataLayer$ = this.dataLayersStateService.viewedDataLayer$;
+
+  showClearMapButton$ = combineLatest([
+    this.viewedDataLayer$,
+    this.showMapLayerControls$,
+  ]).pipe(map(([layer, showControls]) => !!layer && showControls));
 
   constructor(
     private scenarioService: ScenarioService,
@@ -247,6 +288,8 @@ export class ScenarioCreationComponent implements OnInit {
     private mapModuleService: MapModuleService,
     private planState: PlanState,
     private dataLayersStateService: DataLayersStateService,
+    private workspaceState: WorkspaceState,
+    private featureService: FeatureService,
     private cdr: ChangeDetectorRef
   ) {
     // Pre load goals
@@ -258,8 +301,8 @@ export class ScenarioCreationComponent implements OnInit {
       .pipe(
         take(1),
         filter((s) => isCustomScenario(s.type)),
-        switchMap(() => this.planState.currentPlan$),
-        switchMap((plan) => this.mapModuleService.loadMapModule(plan.geometry))
+        switchMap(() => this.planState.planningAreaGeometry$),
+        switchMap((geometry) => this.mapModuleService.loadMapModule(geometry))
       )
       .subscribe();
 
@@ -271,6 +314,20 @@ export class ScenarioCreationComponent implements OnInit {
       this.steps = steps;
       this.cdr.markForCheck();
     });
+
+    this.followPlanWorkspace();
+  }
+
+  private followPlanWorkspace() {
+    this.planState.currentPlanWorkspaceId$
+      .pipe(untilDestroyed(this))
+      .subscribe((workspaceId) => {
+        if (workspaceId === null) {
+          this.workspaceState.resetWorkspaceId();
+        } else {
+          this.workspaceState.setWorkspaceId(workspaceId);
+        }
+      });
   }
 
   loadExistingScenario() {
@@ -457,15 +514,31 @@ export class ScenarioCreationComponent implements OnInit {
   }
 
   stepChanged(cdkIndex: number) {
-    const config = cdkIndex === 0 ? null : (this.steps[cdkIndex - 1] ?? null);
-    this.newScenarioState.setCurrentStep(config);
+    this.newScenarioState.setCurrentStep(this.stepConfigAt(cdkIndex));
   }
 
   handleStepChangeEvent(event: StepperSelectionEvent) {
+    if (this.crossesImprovedTreatmentGoalStep(event)) {
+      this.clearViewedDataLayer();
+    }
+
     const newStep = event.selectedStep;
     if (newStep instanceof StepComponent && newStep.stepLogic) {
       newStep.stepLogic.beforeStepLoad();
     }
+  }
+
+  private stepConfigAt(cdkIndex: number): ScenarioStepConfig | null {
+    return cdkIndex === 0 ? null : (this.steps[cdkIndex - 1] ?? null);
+  }
+
+  private crossesImprovedTreatmentGoalStep(event: StepperSelectionEvent) {
+    return (
+      this.isImprovedTreatmentGoalStep(
+        this.stepConfigAt(event.previouslySelectedIndex)
+      ) ||
+      this.isImprovedTreatmentGoalStep(this.stepConfigAt(event.selectedIndex))
+    );
   }
 
   clearViewedDataLayer() {

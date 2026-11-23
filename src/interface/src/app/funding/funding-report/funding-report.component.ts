@@ -42,6 +42,7 @@ import {
   FlameLengthInterval,
   FundingReport,
   FundingReportBiomassVolumes,
+  FUNDING_REPORT_GEOPACKAGE_EVENT,
   FundingReportDataLayers,
   FundingReportTimeSeriesMetric,
 } from '@types';
@@ -70,26 +71,30 @@ import { FundingReportToPdfService } from '../funding-report-to-pdf.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   debounceTime,
   distinctUntilChanged,
-  exhaustMap,
+  EMPTY,
   filter,
   finalize,
   map,
+  switchMap,
   take,
-  takeWhile,
-  timer,
 } from 'rxjs';
 
 import { SNACK_ERROR_CONFIG, SUPPORT_URL } from '@app/shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { DataLayersService, FileSaverService } from '@app/services';
+import {
+  DataLayersService,
+  FileSaverService,
+  WebSocketService,
+} from '@app/services';
 import { MatDialog } from '@angular/material/dialog';
 import { ScenarioState } from '@scenario/scenario.state';
 import { ShareFundingReportDialogComponent } from '../share-funding-report-dialog/share-funding-report-dialog.component';
-import { POLLING_INTERVAL } from '@app/plan/plan-helpers';
 import { FundingReportService } from '@app/services/funding-report.service';
+import { FeaturesModule } from '@features/features.module';
 
 /** Pause after the last keystroke before recalculating water availability. */
 const WATER_DEBOUNCE_MS = 300;
@@ -97,6 +102,10 @@ const WATER_DEBOUNCE_MS = 300;
 /** Display name for the report's AET (water availability) data layer. */
 const AET_LAYER_NAME =
   'Percentage change in water availability after treatment';
+
+/** Display name for the report's Burn Simulation (aka Catastrophic Fire Reduction) data layer. */
+const BURN_SIMULATION_LAYER_NAME =
+  'Catastrophic Wildfire Avoided after Treatment';
 
 interface ChartConfig {
   data: ChartData<'bar'>;
@@ -120,6 +129,7 @@ export type ReportInteractivity = boolean | 'readonly';
   standalone: true,
   imports: [
     CommonModule,
+    FeaturesModule,
     FundingReportFooterComponent,
     FundingReportMapComponent,
     MatButtonModule,
@@ -157,7 +167,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     private fileSaverService: FileSaverService,
     private dataLayersService: DataLayersService,
     private dialog: MatDialog,
-    private scenarioState: ScenarioState
+    private scenarioState: ScenarioState,
+    private webSocketService: WebSocketService
   ) {}
 
   /**
@@ -191,33 +202,30 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   /** True while a Geopackage is being downloadeed, to disable the download control. */
   downloadingGeopackage$ = new BehaviorSubject<boolean>(false);
 
-  /** retriggers a polling for new geopackage, disables button until it has succeeded again */
+  /** Disables the download button until the rebuilt geopackage is ready. */
   pollingForGeopackage$ = new BehaviorSubject<boolean>(false);
 
   INITIAL_AET_PERCENTAGE = 25;
 
-  pollForNewGeoPackage() {
-    this.pollingForGeopackage$.next(true);
-    this.pollForNewGeopackage()
-      .pipe(
-        finalize(() => this.pollingForGeopackage$.next(false)),
-        untilDestroyed(this)
-      )
-      .subscribe();
-  }
+  protected readonly SUPPORT_URL = SUPPORT_URL;
 
-  private pollForNewGeopackage() {
-    return timer(POLLING_INTERVAL, POLLING_INTERVAL).pipe(
-      exhaustMap(() =>
-        this.fundingReportService.getReport(this.report.scenario)
-      ),
-      takeWhile(
-        (report) =>
-          report?.geopackage_status !== 'FAILED' &&
-          report?.geopackage_status !== 'SUCCEEDED',
-        true
-      )
-    );
+  private newGeopackage$() {
+    this.pollingForGeopackage$.next(true);
+    return this.webSocketService
+      .scenarioUpdates$(this.report.scenario, [FUNDING_REPORT_GEOPACKAGE_EVENT])
+      .pipe(
+        switchMap(() =>
+          this.fundingReportService.getReport(this.report.scenario)
+        ),
+        filter(
+          (report) =>
+            report?.geopackage_status === 'SUCCEEDED' ||
+            report?.geopackage_status === 'FAILED'
+        ),
+        take(1),
+        catchError(() => EMPTY),
+        finalize(() => this.pollingForGeopackage$.next(false))
+      );
   }
 
   sections: ReportSection[] = [];
@@ -240,6 +248,8 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   sectionLayers: Record<string, MapLayer[]> = {
     carbon: [],
     wildfire: [],
+    burn_simulation: [],
+    cat_reduction: [],
     water: [],
     biomass: [],
   };
@@ -382,11 +392,13 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
         debounceTime(WATER_DEBOUNCE_MS),
         distinctUntilChanged(),
         filter((value): value is number => value !== null),
+        switchMap((value) => {
+          this.updateWaterAvailability.emit(value);
+          return this.newGeopackage$();
+        }),
         untilDestroyed(this)
       )
-      .subscribe((value) => {
-        this.updateWaterAvailability.emit(value);
-      });
+      .subscribe();
 
     // Redraw the flame length chart from the already-loaded report whenever the
     // user picks a different interval — no recalculation request needed.
@@ -439,6 +451,7 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
         this.sectionLayers = {
           carbon: this.toMapLayers(datalayers.carbon),
           wildfire: this.toMapLayers(datalayers.wildfire_risk_reduction),
+          burn_simulation: this.burnSimulationLayers(),
           // The water section shows the report's own AET layer (a bare id),
           // not the module's water layers.
           water: this.waterMapLayers(),
@@ -469,6 +482,11 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
   private waterMapLayers(): MapLayer[] {
     const id = this.report?.aet_datalayer;
     return id != null ? [{ id, name: AET_LAYER_NAME }] : [];
+  }
+
+  private burnSimulationLayers(): MapLayer[] {
+    const id = this.report?.burn_simulation_datalayer;
+    return id != null ? [{ id, name: BURN_SIMULATION_LAYER_NAME }] : [];
   }
 
   /** Reduce vector base layers to id/name plus the swatch colors for checkboxes. */
@@ -646,7 +664,6 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
     this.waterAvailabilityControl.setValue(
       sanitized === '' ? null : Number(sanitized)
     );
-    this.pollForNewGeoPackage();
   }
 
   get isPreview() {
@@ -736,6 +753,25 @@ export class FundingReportComponent implements OnInit, OnChanges, OnDestroy {
           },
         });
     }
+  }
+
+  get hasBurnSimulationResults() {
+    // Note: PENDING is the default state on the BE,
+    // so this will be the case for old FoR reports w/o burn results
+    return (
+      !!this.report.burn_simulation_status &&
+      this.report.burn_simulation_status !== 'PENDING'
+    );
+  }
+
+  get catastrophicFire() {
+    const burnResults = this.report.results?.burn_simulation;
+
+    // This may include several attributes in the near future,
+    //  so keeping this as an object for now.
+    return {
+      acresReduced: burnResults?.catastrophic_wildfire_reduction_acres,
+    };
   }
 
   /**

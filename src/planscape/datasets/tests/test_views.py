@@ -5,6 +5,7 @@ from datasets.models import (
     DataLayer,
     DataLayerStatus,
     DataLayerType,
+    PreferredDisplayType,
     SearchTab,
     VisibilityOptions,
     WorkspaceFavoriteDataLayer,
@@ -409,6 +410,27 @@ class TestDataLayerViewSet(APITestCase):
 
         for row in data["results"]:
             self.assertEqual("RASTER", row["data"]["type"])
+
+    @mock.patch("datasets.views.find_anything", return_value={})
+    def test_find_anything_passes_group_by(self, find_anything_mock):
+        self.client.force_authenticate(user=self.normal)
+        url = reverse("api:datasets:datalayers-find-anything")
+        params = {"term": "foo", "type": "RASTER", "group_by": "dataset"}
+
+        response = self.client.post(url, params, format="json")
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(find_anything_mock.call_args.kwargs["group_by"], "dataset")
+
+    def test_find_anything_rejects_unknown_group_by(self):
+        self.client.force_authenticate(user=self.normal)
+        url = reverse("api:datasets:datalayers-find-anything")
+        params = {"term": "foo", "type": "RASTER", "group_by": "organization"}
+
+        response = self.client.post(url, params, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("group_by", response.json()["errors"])
 
     @mock.patch("datasets.views.track_event")
     def test_find_anything_tracks_search_event(self, track_event_mock):
@@ -1038,7 +1060,10 @@ class TestSimpleCategoryViewSet(APITestCase):
     def test_browse_filters_by_module(self):
         self.client.force_authenticate(user=self.normal)
         category = SimpleCategoryFactory.create()
-        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        dataset = DatasetFactory(
+            visibility=VisibilityOptions.PUBLIC,
+            preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        )
         included = DataLayerFactory.create(
             dataset=dataset,
             type=DataLayerType.RASTER,

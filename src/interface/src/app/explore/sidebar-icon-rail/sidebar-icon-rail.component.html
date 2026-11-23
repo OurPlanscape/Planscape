@@ -1,3 +1,4 @@
+<ng-content></ng-content>
 <button
   type="button"
   *ngFor="let item of items"
@@ -5,6 +6,7 @@
   [class.active]="item.id === activeId"
   [class.disabled]="item.disabled"
   [attr.aria-disabled]="item.disabled || null"
+  [attr.aria-label]="item.label"
   [matTooltip]="item.label"
   matTooltipPosition="right"
   (click)="selectItem(item)">

@@ -16,12 +16,15 @@ from datasets.models import (
     Dataset,
     GeometryType,
     PreferredDisplayType,
+    SearchGroupBy,
     SearchTab,
     SelectionTypeOptions,
     VisibilityOptions,
     WorkspaceFavoriteDataLayer,
 )
 from datasets.services import (
+    browse,
+    browse_simple_category,
     create_dataset,
     create_datalayer,
     create_upload_url_for_org,
@@ -323,6 +326,7 @@ class TestGetTableMask(TestCase):
 
 
 class TestSearch(TestCase):
+    @override_settings(FEATURE_FLAGS=[])
     def test_end_to_end_with_spatial(self):
         unit_square = MultiPolygon(
             GEOSGeometry(
@@ -414,6 +418,7 @@ class TestSearch(TestCase):
         self.assertNotIn(subcategory2.name, names)
         self.assertNotIn(cat1_datalayer3.name, names)
 
+    @override_settings(FEATURE_FLAGS=[])
     def test_end_to_end(self):
         organization = OrganizationFactory.create(name="my cool fire org")
         dataset = DatasetFactory(
@@ -582,6 +587,24 @@ class TestSearch(TestCase):
             {f"DATALAYER:{canopy.pk}", f"DATALAYER:{height.pk}"},
         )
 
+    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
+    def test_datasets_are_not_returned_with_flag(self):
+        organization = OrganizationFactory.create(name="Manzanita Org")
+        dataset = DatasetFactory(
+            organization=organization, name="Manzanita dataset", visibility="PUBLIC"
+        )
+        datalayer = DataLayerFactory.create(
+            organization=organization,
+            dataset=dataset,
+            name="Manzanita cover",
+            status=DataLayerStatus.READY,
+            type=DataLayerType.RASTER,
+        )
+
+        results = find_anything("manzanita", type=DataLayerType.RASTER)
+
+        self.assertEqual(set(results), {f"DATALAYER:{datalayer.pk}"})
+
     @override_settings(FEATURE_FLAGS=[])
     def test_simple_categories_are_not_searched_without_flag(self):
         dataset = DatasetFactory(visibility="PUBLIC")
@@ -623,9 +646,11 @@ class TestSearch(TestCase):
             status=DataLayerStatus.READY,
             type=DataLayerType.RASTER,
             metadata={
-                "identification": {
-                    "title": "Layer A",
-                    "abstract": "Modeled sagebrush cover",
+                "metadata": {
+                    "identification": {
+                        "title": "Layer A",
+                        "abstract": "Modeled sagebrush cover",
+                    }
                 }
             },
         )
@@ -635,8 +660,10 @@ class TestSearch(TestCase):
             status=DataLayerStatus.READY,
             type=DataLayerType.RASTER,
             metadata={
-                "identification": {
-                    "keywords": {"default": {"keywords": ["fuels", "SAGEBRUSH"]}}
+                "metadata": {
+                    "identification": {
+                        "keywords": {"default": {"keywords": ["fuels", "SAGEBRUSH"]}}
+                    }
                 }
             },
         )
@@ -645,7 +672,7 @@ class TestSearch(TestCase):
             name="Layer C",
             status=DataLayerStatus.READY,
             type=DataLayerType.RASTER,
-            metadata={"identification": {"abstract": "Canopy height"}},
+            metadata={"metadata": {"identification": {"abstract": "Canopy height"}}},
         )
         null_metadata_layer = DataLayerFactory.create(
             dataset=dataset,
@@ -663,21 +690,64 @@ class TestSearch(TestCase):
         self.assertNotIn(no_match_layer.name, names)
         self.assertNotIn(null_metadata_layer.name, names)
 
-    def test_metadata_search_ignores_keys_and_modules(self):
+    def test_metadata_search_only_searches_identification_values(self):
         dataset = DatasetFactory(visibility="PUBLIC")
-        DataLayerFactory.create(
+        datalayer = DataLayerFactory.create(
             dataset=dataset,
             name="Layer A",
             status=DataLayerStatus.READY,
             type=DataLayerType.RASTER,
             metadata={
-                "identification": {"abstract": "Canopy height"},
                 "modules": {"map": {"enabled": True, "label": "pinyon"}},
+                "metadata": {
+                    "metadata": {
+                        "language": "USA",
+                        "identifier": "WildlifeSpecRichness_v5.tif",
+                        "hierarchylevel": "dataset",
+                    },
+                    "distribution": {
+                        "download": {
+                            "url": "https://example.org/dictionary.pdf",
+                            "name": "Landscape Metrics",
+                            "type": "WWW:LINK",
+                        }
+                    },
+                    "identification": {
+                        "date": {"date": "2023-01-01"},
+                        "title": "Wildlife Species Richness",
+                        "keywords": {
+                            "units": {
+                                "keywords": ["Number of species"],
+                                "keywords_type": "unit",
+                            }
+                        },
+                        "language": "Spanish",
+                        "description": None,
+                        "geographicCoverage": "California",
+                    },
+                },
             },
         )
+        expected = {f"DATALAYER:{datalayer.pk}"}
 
-        self.assertEqual(find_anything("abstract", type=DataLayerType.RASTER), {})
-        self.assertEqual(find_anything("pinyon", type=DataLayerType.RASTER), {})
+        def search(term):
+            return set(find_anything(term, type=DataLayerType.RASTER))
+
+        # identification values match, at any depth
+        self.assertEqual(search("richness"), expected)
+        self.assertEqual(search("number of species"), expected)
+        self.assertEqual(search("2023-01"), expected)
+        self.assertEqual(search("california"), expected)
+        # excluded keys are ignored
+        self.assertEqual(search("spanish"), set())
+        self.assertEqual(search("unit"), set())
+        # keys are never searched
+        self.assertEqual(search("geographicCoverage"), set())
+        # values outside identification are ignored
+        self.assertEqual(search("WildlifeSpecRichness"), set())
+        self.assertEqual(search("dictionary"), set())
+        self.assertEqual(search("metrics"), set())
+        self.assertEqual(search("pinyon"), set())
 
     def test_metadata_search_escapes_like_wildcards(self):
         dataset = DatasetFactory(visibility="PUBLIC")
@@ -686,7 +756,7 @@ class TestSearch(TestCase):
             name="Layer A",
             status=DataLayerStatus.READY,
             type=DataLayerType.RASTER,
-            metadata={"identification": {"abstract": "Canopy height"}},
+            metadata={"metadata": {"identification": {"abstract": "Canopy height"}}},
         )
 
         self.assertEqual(find_anything("can%height", type=DataLayerType.RASTER), {})
@@ -707,7 +777,9 @@ class TestSearch(TestCase):
             status=DataLayerStatus.READY,
             type=DataLayerType.RASTER,
             outline=unit_square,
-            metadata={"identification": {"abstract": "juniper encroachment"}},
+            metadata={
+                "metadata": {"identification": {"abstract": "juniper encroachment"}}
+            },
             simple_categories=[category],
         )
         outside = DataLayerFactory.create(
@@ -716,7 +788,9 @@ class TestSearch(TestCase):
             status=DataLayerStatus.READY,
             type=DataLayerType.RASTER,
             outline=far_square,
-            metadata={"identification": {"abstract": "juniper encroachment"}},
+            metadata={
+                "metadata": {"identification": {"abstract": "juniper encroachment"}}
+            },
             simple_categories=[category],
         )
 
@@ -737,7 +811,7 @@ class TestSearch(TestCase):
         private_dataset = DatasetFactory(visibility=VisibilityOptions.PRIVATE)
         category = SimpleCategoryFactory.create(name="Manzanita chaparral")
         private_only = SimpleCategoryFactory.create(name="Manzanita barrens")
-        metadata = {"identification": {"abstract": "manzanita cover"}}
+        metadata = {"metadata": {"identification": {"abstract": "manzanita cover"}}}
         public_metadata = DataLayerFactory.create(
             dataset=public_dataset,
             name="Public metadata",
@@ -838,6 +912,7 @@ class TestSearchFavorites(TestCase):
         self.assertIn(f"DATALAYER:{self.favorite.pk}", results)
         self.assertNotIn(f"DATALAYER:{self.not_favorite.pk}", results)
 
+    @override_settings(FEATURE_FLAGS=[])
     def test_datasets_restricted_to_ones_with_favorites(self):
         self.favorite_in(self.workspace, self.favorite)
 
@@ -846,6 +921,7 @@ class TestSearchFavorites(TestCase):
         self.assertIn(f"DATASET:{self.favorite_dataset.pk}", results)
         self.assertNotIn(f"DATASET:{self.other_dataset.pk}", results)
 
+    @override_settings(FEATURE_FLAGS=[])
     def test_organization_match_restricted_to_datasets_with_favorites(self):
         self.favorite_in(self.workspace, self.favorite)
 
@@ -864,7 +940,7 @@ class TestSearchFavorites(TestCase):
         self.assertNotIn(f"SIMPLE_CATEGORY:{self.other_category.pk}", results)
 
     def test_metadata_match_restricted_to_favorites(self):
-        metadata = {"identification": {"abstract": "sequoia groves"}}
+        metadata = {"metadata": {"identification": {"abstract": "sequoia groves"}}}
         favorite = DataLayerFactory.create(
             dataset=self.favorite_dataset,
             name="Metadata favorite",
@@ -885,6 +961,126 @@ class TestSearchFavorites(TestCase):
 
         self.assertIn(f"DATALAYER:{favorite.pk}", results)
         self.assertNotIn(f"DATALAYER:{not_favorite.pk}", results)
+
+
+class TestBrowseFindAnythingParity(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.geometry = GEOSGeometry(
+            "MULTIPOLYGON(((0 0, 2 0, 2 2, 0 2, 0 0)))", srid=4269
+        )
+        self.category = SimpleCategoryFactory.create(name="Sequoia groves")
+        self.dataset = self._dataset(PreferredDisplayType.MAIN_DATALAYERS)
+        self.visible = self._datalayer(self.dataset, name="Sequoia visible")
+        self.not_intersecting = self._datalayer(
+            self.dataset,
+            name="Sequoia far away",
+            outline="MULTIPOLYGON(((5 5, 6 5, 6 6, 5 6, 5 5)))",
+        )
+        self.not_ready = self._datalayer(
+            self.dataset, name="Sequoia failed", status=DataLayerStatus.FAILED
+        )
+        self.base_dataset = self._dataset(PreferredDisplayType.BASE_DATALAYERS)
+        self.wrong_display_type = self._datalayer(self.base_dataset)
+        self.outside_module_dataset = self._dataset(None)
+        self.outside_module = self._datalayer(self.outside_module_dataset)
+        self.private_dataset = self._dataset(
+            PreferredDisplayType.MAIN_DATALAYERS,
+            visibility=VisibilityOptions.PRIVATE,
+            created_by=UserFactory.create(),
+        )
+        self.private = self._datalayer(self.private_dataset)
+        self.datasets = [
+            self.dataset,
+            self.base_dataset,
+            self.outside_module_dataset,
+            self.private_dataset,
+        ]
+
+    def _dataset(self, preferred_display_type, **kwargs):
+        kwargs.setdefault("visibility", VisibilityOptions.PUBLIC)
+        return DatasetFactory.create(
+            name="Sequoia dataset",
+            preferred_display_type=preferred_display_type,
+            **kwargs,
+        )
+
+    def _datalayer(self, dataset, **kwargs):
+        kwargs.setdefault("name", "Sequoia layer")
+        kwargs.setdefault("outline", "MULTIPOLYGON(((0 0, 1 0, 1 1, 0 1, 0 0)))")
+        return DataLayerFactory.create(
+            dataset=dataset,
+            type=DataLayerType.RASTER,
+            metadata={
+                "modules": {"map": {"enabled": True}, "impacts": {"enabled": True}}
+            },
+            simple_categories=[self.category],
+            **kwargs,
+        )
+
+    def _filters(self, **kwargs):
+        return {
+            "type": DataLayerType.RASTER,
+            "module": "map",
+            "geometry": self.geometry,
+            "user": self.user,
+            **kwargs,
+        }
+
+    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
+    def test_browse_and_find_anything_return_the_same_datalayers(self):
+        by_category = {
+            datalayer.pk
+            for datalayer in browse_simple_category(self.category, **self._filters())
+        }
+        by_dataset = {
+            datalayer.pk
+            for dataset in self.datasets
+            for datalayer in browse(dataset, **self._filters())
+        }
+        found = {
+            result.id
+            for result in find_anything("sequoia", **self._filters()).values()
+            if result.type == "DATALAYER"
+        }
+
+        self.assertEqual(by_category, {self.visible.pk})
+        self.assertEqual(by_dataset, {self.visible.pk})
+        self.assertEqual(found, {self.visible.pk})
+
+    @override_settings(FEATURE_FLAGS=["DATA_ORGANIZATION"])
+    def test_group_by_dataset_overrides_flag(self):
+        results = find_anything(
+            "sequoia dataset", group_by=SearchGroupBy.DATASET, **self._filters()
+        )
+
+        self.assertIn(f"DATASET:{self.dataset.pk}", results)
+        self.assertFalse(
+            any(r.type == "SIMPLE_CATEGORY" for r in results.values())
+        )
+
+    @override_settings(FEATURE_FLAGS=[])
+    def test_group_by_simple_category_overrides_flag(self):
+        results = find_anything(
+            "sequoia", group_by=SearchGroupBy.SIMPLE_CATEGORY, **self._filters()
+        )
+
+        self.assertIn(f"DATALAYER:{self.visible.pk}", results)
+        self.assertFalse(any(r.type == "DATASET" for r in results.values()))
+
+    @override_settings(FEATURE_FLAGS=[])
+    def test_find_anything_hides_datasets_without_visible_datalayers(self):
+        results = find_anything("sequoia dataset", **self._filters())
+
+        self.assertIn(f"DATASET:{self.dataset.pk}", results)
+        self.assertNotIn(f"DATASET:{self.base_dataset.pk}", results)
+        self.assertNotIn(f"DATASET:{self.outside_module_dataset.pk}", results)
+        self.assertNotIn(f"DATASET:{self.private_dataset.pk}", results)
+
+    def test_find_anything_returns_nothing_for_module_without_datasets(self):
+        results = find_anything("sequoia", **self._filters(module="impacts"))
+
+        self.assertEqual(results, {})
 
 
 class TestStorageURL(TestCase):

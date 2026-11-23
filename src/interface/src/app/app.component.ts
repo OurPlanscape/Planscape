@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { distinctUntilChanged, filter, take } from 'rxjs';
+import { combineLatest, distinctUntilChanged, map, take } from 'rxjs';
 import { AuthService, WebSocketService } from '@services';
 import { OverlayLoaderService } from '@services/overlay-loader.service';
 
@@ -7,7 +7,9 @@ import { environment } from '@env/environment';
 import { ForsysService } from '@services/forsys.service';
 import { MapModuleService } from '@services/map-module.service';
 import { ProductAnalyticsService } from '@services/product-analytics.service';
+import { PlanDeletedListenerService } from '@plan/plan-deleted-listener.service';
 import { WorkspaceDeletedListenerService } from '@app/workspaces/workspace-deleted-listener.service';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
 
 @Component({
   selector: 'app-root',
@@ -28,7 +30,9 @@ export class AppComponent implements OnInit {
     private mapModuleService: MapModuleService,
     private productAnalyticsService: ProductAnalyticsService,
     private webSocketService: WebSocketService,
-    private workspaceDeletedListener: WorkspaceDeletedListenerService
+    private workspaceState: WorkspaceState,
+    private workspaceDeletedListener: WorkspaceDeletedListenerService,
+    private planDeletedListener: PlanDeletedListenerService
   ) {}
 
   isLoading$ = this.overlayLoaderService.isLoading$;
@@ -45,21 +49,29 @@ export class AppComponent implements OnInit {
     // Refresh the user's logged in status when the app initializes.
     this.authService.refreshLoggedInUser().pipe(take(1)).subscribe();
     this.productAnalyticsService.init();
-    this.connectWebSocketWhileLoggedIn();
+    this.followCurrentWorkspace();
     this.workspaceDeletedListener.start();
+    this.planDeletedListener.start();
   }
 
-  private connectWebSocketWhileLoggedIn() {
-    this.authService.isLoggedIn$
+  // There is one connection per workspace, and everything inside a workspace
+  // listens to it so it is open for as long as we are in one. A socket keeps
+  // the user it was opened with, so it is also tied to the session.
+  private followCurrentWorkspace() {
+    combineLatest([
+      this.workspaceState.currentWorkspaceId$,
+      this.authService.loggedInUser$.pipe(map((user) => user?.id ?? null)),
+    ])
       .pipe(
-        filter((loggedIn) => loggedIn !== null),
-        distinctUntilChanged()
+        distinctUntilChanged(
+          ([workspaceA, userA], [workspaceB, userB]) =>
+            workspaceA === workspaceB && userA === userB
+        )
       )
-      .subscribe((loggedIn) => {
-        if (loggedIn) {
-          this.webSocketService.connect();
-        } else {
-          this.webSocketService.disconnect();
+      .subscribe(([workspaceId, userId]) => {
+        this.webSocketService.disconnect();
+        if (workspaceId !== null && userId !== null) {
+          this.webSocketService.connect(workspaceId);
         }
       });
   }

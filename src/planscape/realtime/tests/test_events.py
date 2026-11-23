@@ -1,6 +1,7 @@
 from datetime import date
 from unittest import mock
 
+import msgpack
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.test import TestCase
@@ -37,6 +38,17 @@ class ToPlainTest(TestCase):
             },
         )
         self.assertIs(type(value["status"]), str)
+
+    def test_integers_msgpack_cannot_pack_become_floats(self):
+        nodata = -340282306073709650000000000000000000000
+        value = to_plain({"nodata": nodata, "max": 2**64 - 1, "min": -(2**63)})
+
+        self.assertEqual(
+            value,
+            {"nodata": float(nodata), "max": 2**64 - 1, "min": -(2**63)},
+        )
+        self.assertIs(type(value["max"]), int)
+        msgpack.packb(value)
 
 
 class BuildEventTest(TestCase):
@@ -120,3 +132,38 @@ class PublishWorkspaceEventTest(TestCase):
             with self.assertLogs("realtime.events", level="ERROR"):
                 with self.captureOnCommitCallbacks(execute=True):
                     publish_workspace_event(5, "x.y.z", obj={"kind": "x", "id": 1})
+
+    def test_callable_data_is_built_after_commit(self):
+        build = mock.Mock(return_value={"name": "after commit"})
+        with mock.patch("realtime.events._send") as send:
+            with self.captureOnCommitCallbacks(execute=True):
+                publish_workspace_event(
+                    5, "x.y.z", obj={"kind": "x", "id": 1}, data=build
+                )
+                build.assert_not_called()
+
+        build.assert_called_once_with()
+        (event,) = [call.args[0] for call in send.call_args_list]
+        self.assertEqual(event["data"], {"name": "after commit"})
+
+    def test_callable_data_returning_none_drops_the_event(self):
+        with mock.patch("realtime.events._send") as send:
+            with self.captureOnCommitCallbacks(execute=True):
+                publish_workspace_event(
+                    5, "x.y.z", obj={"kind": "x", "id": 1}, data=lambda: None
+                )
+
+        send.assert_not_called()
+
+    def test_callable_data_errors_are_logged_not_raised(self):
+        def build():
+            raise RuntimeError("gone")
+
+        with mock.patch("realtime.events._send") as send:
+            with self.assertLogs("realtime.events", level="ERROR"):
+                with self.captureOnCommitCallbacks(execute=True):
+                    publish_workspace_event(
+                        5, "x.y.z", obj={"kind": "x", "id": 1}, data=build
+                    )
+
+        send.assert_not_called()

@@ -181,6 +181,56 @@ def warp(
             return output_file
 
 
+def extract_band(input_file: str, output_file: str, band: int) -> str:
+    """
+    Write a single band of `input_file` to a new tiled GeoTIFF.
+
+    Copies block by block, so the band is never fully loaded in memory.
+    CRS, transform, dtype and nodata are preserved.
+
+    Args:
+        input_file: Path to the input raster (local or VSI path)
+        output_file: Local path for the single-band output GeoTIFF
+        band: 1-based index of the band to extract
+
+    Returns:
+        Path to the output file
+    """
+    log.info(f"Extracting band {band} from {input_file}")
+    with rasterio.Env(**get_gdal_env()):
+        with rasterio.open(input_file) as source:
+            if not 1 <= band <= source.count:
+                raise ValueError(
+                    f"Band {band} out of range; raster has {source.count} band(s)."
+                )
+            output_profile = {
+                **source.profile,
+                "driver": "GTiff",
+                "count": 1,
+                "nodata": source.nodatavals[band - 1],
+                "tiled": True,
+                "blockxsize": 512,
+                "blockysize": 512,
+                "compress": "DEFLATE",
+                "bigtiff": "IF_SAFER",
+            }
+            output_profile.pop("photometric", None)
+            output_profile.pop("interleave", None)
+
+            with rasterio.open(output_file, "w", **output_profile) as destination:
+                for _, window in destination.block_windows(1):
+                    destination.write(
+                        source.read(band, window=window), 1, window=window
+                    )
+                description = source.descriptions[band - 1]
+                if description:
+                    destination.set_band_description(1, description)
+                band_tags = source.tags(band)
+                if band_tags:
+                    destination.update_tags(1, **band_tags)
+    return output_file
+
+
 def to_cog_streaming(
     input_file: str,
     output_file: str,

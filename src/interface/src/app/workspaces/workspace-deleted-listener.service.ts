@@ -1,24 +1,23 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRouteSnapshot, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import {
   catchError,
   EMPTY,
   exhaustMap,
   filter,
-  ignoreElements,
-  interval,
   map,
   Observable,
-  of,
   switchMap,
   take,
   tap,
 } from 'rxjs';
-import { AuthService, WorkspacesService } from '@services';
-import { Workspace, WorkspaceDeletedPayload } from '@types';
-import { POLLING_INTERVAL } from '@plan/plan-helpers';
+import { AuthService, WebSocketService } from '@services';
+import {
+  Workspace,
+  WorkspaceDeletedPayload,
+  WORKSPACE_DELETED_EVENT,
+} from '@types';
 import { WorkspaceState } from './workspace.state';
 import { WorkspaceDeletedModalComponent } from './workspace-deleted-modal/workspace-deleted-modal.component';
 
@@ -30,7 +29,7 @@ import { WorkspaceDeletedModalComponent } from './workspace-deleted-modal/worksp
   providedIn: 'root',
 })
 export class WorkspaceDeletedListenerService {
-  private workspacesService = inject(WorkspacesService);
+  private webSocketService = inject(WebSocketService);
   private workspaceState = inject(WorkspaceState);
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -39,17 +38,15 @@ export class WorkspaceDeletedListenerService {
   start(): void {
     this.workspaceDeleted$()
       .pipe(
-        filter((event) => event.workspace_id === this.currentWorkspaceId()),
+        filter(
+          (event) =>
+            event.workspace_id === this.workspaceState.currentWorkspaceIdValue
+        ),
         switchMap(() =>
           this.workspaceState.currentWorkspace$.pipe(
             take(1),
             catchError(() => EMPTY)
           )
-        ),
-        // the creator already knows: they did it
-        filter(
-          (workspace) =>
-            workspace.created_by !== this.authService.currentUser()?.id
         ),
         // one modal at a time
         exhaustMap((workspace) => this.showDeletedModal(workspace))
@@ -60,41 +57,18 @@ export class WorkspaceDeletedListenerService {
   /**
    * Emits when the workspace we are in no longer exists.
    *
-   * Polls the workspace while we are inside one; a 404 means it was deleted.
-   * TODO: replace the polling with
-   * `this.webSocketService.on<WorkspaceDeletedPayload>(WORKSPACE_DELETED_EVENT)`
-   * once the backend emits it.
    */
   private workspaceDeleted$(): Observable<WorkspaceDeletedPayload> {
-    return interval(POLLING_INTERVAL).pipe(
-      map(() => this.currentWorkspaceId()),
-      filter((workspaceId): workspaceId is number => workspaceId !== null),
-      // ignore ticks while a check is in flight
-      exhaustMap((workspaceId) =>
-        this.workspacesService.getWorkspace(workspaceId).pipe(
-          ignoreElements(),
-          catchError((error) =>
-            error instanceof HttpErrorResponse && error.status === 404
-              ? of({ workspace_id: workspaceId })
-              : EMPTY
-          )
-        )
-      )
-    );
-  }
-
-  //The workspaceId param of the active route if we are inside a workspace
-  private currentWorkspaceId(): number | null {
-    let route: ActivatedRouteSnapshot | null =
-      this.router.routerState.snapshot.root;
-    while (route) {
-      const workspaceId = route.paramMap.get('workspaceId');
-      if (workspaceId) {
-        return Number(workspaceId);
-      }
-      route = route.firstChild;
-    }
-    return null;
+    return this.webSocketService
+      .on<WorkspaceDeletedPayload>(WORKSPACE_DELETED_EVENT)
+      .pipe(
+        filter(
+          (event) => event.actor_id !== this.authService.currentUser()?.id
+        ),
+        map((event) => ({
+          workspace_id: event.data?.workspace_id ?? event.workspace_id ?? 0,
+        }))
+      );
   }
 
   private showDeletedModal(workspace: Workspace): Observable<unknown> {

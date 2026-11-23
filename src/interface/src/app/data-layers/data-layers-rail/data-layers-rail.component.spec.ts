@@ -4,37 +4,55 @@ import { BehaviorSubject } from 'rxjs';
 import { MockComponent } from 'ng-mocks';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { FavoriteDataLayersComponent } from '@data-layers/favorite-data-layers/favorite-data-layers.component';
 import {
   BrowseSelection,
   DataLayersStateService,
 } from '../data-layers.state.service';
 import { DataLayersRailComponent } from './data-layers-rail.component';
+import { FEATURES_JSON } from '@features/features-config';
+import { FeaturesModule } from '@features/features.module';
 
 describe('DataLayersRailComponent', () => {
   let fixture: ComponentFixture<DataLayersRailComponent>;
   let selection$: BehaviorSubject<BrowseSelection | null>;
   let paths$: BehaviorSubject<string[]>;
+  let favoritesEnabled$: BehaviorSubject<boolean>;
   let state: jasmine.SpyObj<DataLayersStateService>;
+  let dataUploadEnabled = false;
 
   beforeEach(async () => {
     selection$ = new BehaviorSubject<BrowseSelection | null>(null);
     paths$ = new BehaviorSubject<string[]>([]);
+    favoritesEnabled$ = new BehaviorSubject(false);
     state = jasmine.createSpyObj<DataLayersStateService>(
       'DataLayersStateService',
       ['goBackToSearchResults'],
-      { selection$, paths$ }
+      { selection$, paths$, favoritesEnabled$ }
     );
 
     await TestBed.configureTestingModule({
       imports: [DataLayersRailComponent],
       providers: [{ provide: DataLayersStateService, useValue: state }],
     })
+      .overrideProvider(FEATURES_JSON, {
+        useValue: { DATA_UPLOAD: dataUploadEnabled },
+      })
       .overrideComponent(DataLayersRailComponent, {
-        remove: { imports: [DataLayersComponent, BaseLayersComponent] },
+        remove: {
+          imports: [
+            DataLayersComponent,
+            BaseLayersComponent,
+            FavoriteDataLayersComponent,
+            FeaturesModule,
+          ],
+        },
         add: {
           imports: [
             MockComponent(DataLayersComponent),
             MockComponent(BaseLayersComponent),
+            MockComponent(FavoriteDataLayersComponent),
+            FeaturesModule,
           ],
         },
       })
@@ -52,7 +70,7 @@ describe('DataLayersRailComponent', () => {
 
   it('shows the rail with only data layers selectable', () => {
     const buttons = fixture.debugElement.queryAll(By.css('.rail-button'));
-    expect(buttons.length).toBe(3);
+    expect(buttons.length).toBe(2);
     expect(buttons[0].nativeElement.classList).toContain('active');
     expect(
       buttons
@@ -81,7 +99,134 @@ describe('DataLayersRailComponent', () => {
 
     expect(instance.displayAddButton).toBeTrue();
     expect(instance.showSelectionHeader).toBeFalse();
+    expect(instance.searchTab).toBe('general');
     expect(layers.nativeElement.classList).toContain('sticky-search');
+  });
+
+  const icons = () =>
+    fixture.debugElement
+      .queryAll(By.css('.rail-button mat-icon'))
+      .map((icon) => icon.nativeElement.textContent.trim());
+
+  it('hides the uploaded item without DATA_UPLOAD', () => {
+    expect(icons()).not.toContain('drive_folder_upload');
+  });
+
+  describe('with DATA_UPLOAD', () => {
+    beforeAll(() => (dataUploadEnabled = true));
+    afterAll(() => (dataUploadEnabled = false));
+
+    it('shows the uploaded item', () => {
+      expect(icons()).toEqual(['category', 'drive_folder_upload', 'star']);
+    });
+
+    const dataLayers = () =>
+      fixture.debugElement.query(By.css('app-data-layers'))
+        .componentInstance as DataLayersComponent;
+
+    function openUploaded() {
+      fixture.debugElement
+        .queryAll(By.css('.rail-button'))[1]
+        .nativeElement.click();
+      fixture.detectChanges();
+    }
+
+    it('opens the uploaded panel', () => {
+      openUploaded();
+
+      expect(title()).toContain('Uploaded');
+    });
+
+    it('browses the uploads, with the same options as the data layers', () => {
+      openUploaded();
+
+      expect(dataLayers().searchTab).toBe('uploaded');
+      expect(dataLayers().displayAddButton).toBeTrue();
+      expect(dataLayers().showSelectionHeader).toBeFalse();
+    });
+
+    it('browses every layer again back on the data layers', () => {
+      openUploaded();
+      fixture.debugElement
+        .queryAll(By.css('.rail-button'))[0]
+        .nativeElement.click();
+      fixture.detectChanges();
+
+      expect(title()).toContain('Data Layers');
+      expect(dataLayers().searchTab).toBe('general');
+    });
+
+    it('shows the open dataset of the uploads with a way back', () => {
+      openUploaded();
+      selection$.next({ type: 'dataset', id: 10, name: 'My uploads' });
+      fixture.detectChanges();
+
+      expect(title()).toContain('My uploads');
+      fixture.debugElement.query(By.css('.back-button')).nativeElement.click();
+      expect(state.goBackToSearchResults).toHaveBeenCalled();
+    });
+
+    it('stays on the uploads when the map browses to its layer', () => {
+      openUploaded();
+
+      paths$.next(['a']);
+      fixture.detectChanges();
+
+      expect(dataLayers().searchTab).toBe('uploaded');
+    });
+  });
+
+  describe('favorites', () => {
+    const buttons = () => fixture.debugElement.queryAll(By.css('.rail-button'));
+
+    function openFavorites() {
+      favoritesEnabled$.next(true);
+      fixture.detectChanges();
+      buttons()[buttons().length - 1].nativeElement.click();
+      fixture.detectChanges();
+    }
+
+    // there is no list to show outside a workspace
+    it('stay out of reach where they do not apply', () => {
+      expect(buttons()[buttons().length - 1].nativeElement.classList).toContain(
+        'disabled'
+      );
+    });
+
+    it('open as a panel of their own', () => {
+      openFavorites();
+
+      expect(title()).toContain('Favorite Data Layers');
+      expect(
+        fixture.debugElement.query(By.css('app-favorite-data-layers'))
+      ).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('app-data-layers'))).toBeNull();
+    });
+
+    // the point of favoriting a layer is reaching for it while configuring
+    it('let the step pick a layer, like the browse list', () => {
+      openFavorites();
+
+      const panel = fixture.debugElement.query(
+        By.css('app-favorite-data-layers')
+      ).componentInstance as FavoriteDataLayersComponent;
+
+      expect(panel.displayAddButton).toBeTrue();
+    });
+
+    it('give way to the data layers when they stop applying', () => {
+      openFavorites();
+
+      favoritesEnabled$.next(false);
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.query(By.css('app-data-layers'))
+      ).toBeTruthy();
+      expect(
+        fixture.debugElement.query(By.css('app-favorite-data-layers'))
+      ).toBeNull();
+    });
   });
 
   describe('with base layers', () => {
@@ -93,7 +238,7 @@ describe('DataLayersRailComponent', () => {
     });
 
     it('adds base layers to the rail after data layers', () => {
-      expect(buttons().length).toBe(4);
+      expect(buttons().length).toBe(3);
       expect(buttons()[1].nativeElement.classList).not.toContain('disabled');
     });
 

@@ -100,6 +100,31 @@ class DataLayerAdminShapefileUploadTest(TestCase):
         self.assertEqual(self.datalayer.status, original_status)
 
 
+class DataLayerAdminGeometryWidgetTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory.create(is_staff=True, is_superuser=True)
+        self.client.force_login(self.user)
+
+    def test_add_view_renders(self):
+        response = self.client.get(reverse("admin:datasets_datalayer_add"))
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_change_view_renders_readonly_maps(self):
+        datalayer = DataLayerFactory.create()
+
+        response = self.client.get(
+            reverse("admin:datasets_datalayer_change", args=[datalayer.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('id="id_geometry_map"', html)
+        self.assertIn('id="id_outline_map"', html)
+        # Django's OLMapWidget.js would turn these into editable maps.
+        self.assertNotIn("dj_map_wrapper", html)
+
+
 class SimpleCategoryAdminDataLayersTest(TestCase):
     def setUp(self):
         self.user = UserFactory.create(is_staff=True, is_superuser=True)

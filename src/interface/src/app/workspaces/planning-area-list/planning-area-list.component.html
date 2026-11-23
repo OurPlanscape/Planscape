@@ -56,9 +56,7 @@
             <sg-planning-area-card
               *ngIf="planning"
               [planningArea]="planning"
-              [link]="['/workspace', workspaceId, 'plan', planning.id]"
-              (afterDelete)="reload()"
-              (afterRename)="reload()">
+              [link]="['/workspace', workspaceId, 'plan', planning.id]">
               <div mapSlot class="map">
                 <mgl-map
                   [style]="baseLayerUrl"
@@ -100,8 +98,7 @@
     </ng-container>
     <ng-template #noResults>
       <div class="empty-state">
-        <app-planning-area-empty-state
-          (reload)="reload()"></app-planning-area-empty-state>
+        <app-planning-area-empty-state></app-planning-area-empty-state>
       </div>
     </ng-template>
   </div>

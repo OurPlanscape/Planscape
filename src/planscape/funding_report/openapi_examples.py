@@ -110,6 +110,13 @@ FUNDING_OPPORTUNITY_REPORT_RESPONSE_EXAMPLE = OpenApiExample(
                     "No Treatment": 10.55,
                 },
             },
+            "burn_simulation": {
+                "catastrophic_wildfire_reduction_acres": 812.5,
+                "catastrophic_wildfire_reduction_percent": 12.5,
+                "planning_area_acres": 6500.0,
+                "total_pixels": 28900,
+                "burned_pixels": 3612,
+            },
         },
     },
     response_only=True,

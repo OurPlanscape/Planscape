@@ -20,6 +20,26 @@
 
 .data-set-data {
   display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.category-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: $color-dark-gray;
+  color: $color-white;
+
+  mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+  }
 }
 
 .data-set-name {
@@ -75,10 +95,14 @@
 .data-layer {
   display: flex;
   width: 100%;
-  align-items: center;
+  align-items: flex-start;
 
   &.with-add-button {
     gap: 16px;
+  }
+
+  mat-spinner {
+    margin-top: 9px;
   }
 }
 
@@ -143,4 +167,5 @@
 .toggle {
   margin-right: auto;
   flex: 1;
+  padding: 8px 0;
 }

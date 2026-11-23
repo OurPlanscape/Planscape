@@ -5,6 +5,7 @@ import { DashboardLayoutComponent } from '@styleguide/dashboard-layout/dashboard
 import { NavBarComponent } from '@standalone/nav-bar/nav-bar.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { ProductAnalyticsService } from '@services/product-analytics.service';
+import { WebSocketService } from '@services';
 import { ToolInfoCardPartner } from '@styleguide/tool-info-card/tool-info-card.component';
 import { MapConfigState } from '@app/maplibre-map/map-config.state';
 import { FundingMapConfigState } from '../funding-map-config-state';
@@ -12,7 +13,6 @@ import {
   BehaviorSubject,
   catchError,
   combineLatest,
-  exhaustMap,
   filter,
   map,
   of,
@@ -20,8 +20,6 @@ import {
   startWith,
   switchMap,
   take,
-  takeWhile,
-  timer,
 } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FundingEmptyStateComponent } from '../funding-empty-state/funding-empty-state.component';
@@ -33,10 +31,9 @@ import { ScenarioState } from '@scenario/scenario.state';
 import { scenarioHasCapability } from '@scenario/scenario-helper';
 import { FundingReportService } from '@services/funding-report.service';
 import { AuthService } from '@services/auth.service';
-import { FundingReport, User } from '@types';
+import { FUNDING_REPORT_EVENTS, FundingReport, User } from '@types';
 import { PlanState } from '@plan/plan.state';
 import { canAddScenario } from '@plan/permissions';
-import { POLLING_INTERVAL } from '@plan/plan-helpers';
 import { SNACK_ERROR_CONFIG, SUPPORT_URL } from '@shared';
 import { MessageCardComponent } from '@styleguide/message-card/message-card.component';
 
@@ -76,7 +73,8 @@ export class FundingDashboardComponent implements OnInit {
     private route: ActivatedRoute,
     private fundingReportService: FundingReportService,
     private snackbar: MatSnackBar,
-    private productAnalyticsService: ProductAnalyticsService
+    private productAnalyticsService: ProductAnalyticsService,
+    private webSocketService: WebSocketService
   ) {}
 
   protected readonly SUPPORT_URL = SUPPORT_URL;
@@ -93,7 +91,7 @@ export class FundingDashboardComponent implements OnInit {
   private generationRequested$ = new BehaviorSubject<boolean>(false);
 
   report$ = this.scenarioId$.pipe(
-    switchMap((id) => this.reload$.pipe(switchMap(() => this.pollReport(id)))),
+    switchMap((id) => this.reload$.pipe(switchMap(() => this.watchReport(id)))),
     untilDestroyed(this),
     shareReplay(1)
   );
@@ -153,17 +151,16 @@ export class FundingDashboardComponent implements OnInit {
   );
 
   /**
-   * Polls the report every `POLLING_INTERVAL` while it is still generating,
-   * emitting the first terminal (or empty) report and then completing.
+   * Reads the report once and again on every event the run reports, over the
+   * workspace connection.
    */
-  private pollReport(scenarioId: number) {
-    return timer(0, POLLING_INTERVAL).pipe(
-      exhaustMap(() => this.fundingReportService.getReport(scenarioId)),
-      takeWhile((report) => {
-        const processingResult = this.isStillProcessing(report);
-        return processingResult;
-      }, true)
-    );
+  private watchReport(scenarioId: number) {
+    return this.webSocketService
+      .scenarioUpdates$(scenarioId, FUNDING_REPORT_EVENTS)
+      .pipe(
+        startWith(null),
+        switchMap(() => this.fundingReportService.getReport(scenarioId))
+      );
   }
 
   private isGenerating(report: FundingReport | null): boolean {

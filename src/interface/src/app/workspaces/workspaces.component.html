@@ -60,9 +60,11 @@
           [userCanRename]="can(workspace, 'change_workspace')"
           [userCanDelete]="can(workspace, 'remove_workspace')"
           [userCanShare]="can(workspace, 'add_collaborator')"
+          [userCanLeave]="canLeave(workspace)"
           [link]="['/workspace', workspace.id]"
           (rename)="renameWorkspace(workspace)"
           (share)="shareWorkspace(workspace)"
+          (leave)="leaveWorkspace(workspace)"
           (delete)="deleteWorkspace(workspace)"></sg-workspace-card>
       </div>
     </div>

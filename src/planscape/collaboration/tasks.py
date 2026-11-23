@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from planscape.celery import app
-from utils.frontend import get_frontend_url
+from utils.frontend import get_frontend_url, get_planning_area_path
 
 from collaboration.models import UserObjectRole
 
@@ -33,6 +33,7 @@ def send_invitation(
         if role == "owner":
             role_article = "an"
 
+        planning_area_path = get_planning_area_path(planning_area)
         context = {
             "inviter": user_object_role.inviter,
             "collaborator": (
@@ -44,10 +45,10 @@ def send_invitation(
             "message": message,
             "frontend_url": get_frontend_url("home"),
             "frontend_assets": get_frontend_url("assets"),
-            "planning_area_link": get_frontend_url(f"plan/{planning_area.pk}"),
+            "planning_area_link": get_frontend_url(planning_area_path),
             "create_account_link": get_frontend_url(
                 "signup",
-                query_params={"redirect": f"plan/{planning_area.pk}"},
+                query_params={"redirect": planning_area_path},
             ),
         }
 

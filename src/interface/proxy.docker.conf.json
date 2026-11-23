@@ -1,4 +1,11 @@
 {
+  "/planscape-backend/ws": {
+    "target": "http://web:8000",
+    "ws": true,
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
   "/planscape-backend": {
     "target": "http://web:8000/",
     "secure": false,

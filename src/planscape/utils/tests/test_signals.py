@@ -7,7 +7,7 @@ class TestSignalHandler(TestCase):
     def test_init_returns_instance(self):
         handler = SignalHandler(signals=[SIGINT])
         self.assertIsNotNone(handler)
-        self.assertEquals(handler.watching_signals, [SIGINT])
+        self.assertEqual(handler.watching_signals, [SIGINT])
         self.assertIsNone(handler.caught_signal)
 
     def test_handle_sets_caught_signal(self):

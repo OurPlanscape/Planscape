@@ -13,8 +13,10 @@ The name and value of the flag will be shared by frontend and backend.
 
 `API_ZONAL_STATS`: Calculate Zonal Status using Stand-Metrics API
 
-`ADV_STAND_LEVEL_CONSTRAINTS`: Enables Advanced Stand Level Constraints
-
 `DATA_ORGANIZATION`: Enables Data Organization
 
 `DATA_UPLOAD`: Enables the user to upload data
+
+`CATASTROPHIC_REDUCTION`: Features related to Catastrophic Fire Reduction stats in FoR
+
+`IMPROVED_TREATMENT_GOAL`: Enables the new Improved Treatment Goal step

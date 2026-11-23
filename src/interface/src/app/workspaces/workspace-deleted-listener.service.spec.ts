@@ -1,28 +1,21 @@
-import {
-  discardPeriodicTasks,
-  fakeAsync,
-  TestBed,
-  tick,
-} from '@angular/core/testing';
-import { HttpErrorResponse } from '@angular/common/http';
+import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { of, Subject, throwError } from 'rxjs';
+import { filter, of, Subject, throwError } from 'rxjs';
 import { MockProvider } from 'ng-mocks';
-import { AuthService, WorkspacesService } from '@services';
-import { Workspace } from '@types';
-import { POLLING_INTERVAL } from '@plan/plan-helpers';
+import { AuthService, WebSocketService } from '@services';
+import { Workspace, WorkspaceEvent, WORKSPACE_DELETED_EVENT } from '@types';
 import { WorkspaceState } from './workspace.state';
 import { WorkspaceDeletedListenerService } from './workspace-deleted-listener.service';
 import { WorkspaceDeletedModalComponent } from './workspace-deleted-modal/workspace-deleted-modal.component';
 
 describe('WorkspaceDeletedListenerService', () => {
   let service: WorkspaceDeletedListenerService;
-  let getWorkspace: jasmine.Spy;
+  let events$: Subject<WorkspaceEvent>;
   let dialogOpen: jasmine.Spy;
   let navigate: jasmine.Spy;
   let currentUser: jasmine.Spy;
-  let routeWorkspaceId: string | null;
+  let currentWorkspaceId: number | null;
 
   const workspace = {
     id: 7,
@@ -30,51 +23,47 @@ describe('WorkspaceDeletedListenerService', () => {
     created_by: 3,
   } as Workspace;
 
-  const notFound = () =>
-    throwError(() => new HttpErrorResponse({ status: 404 }));
-
-  /** Mimics a route tree: root → child with the `workspaceId` param. */
-  function routerState() {
-    return {
-      snapshot: {
-        root: {
-          paramMap: new Map(),
-          firstChild: {
-            paramMap: new Map(
-              routeWorkspaceId ? [['workspaceId', routeWorkspaceId]] : []
-            ),
-            firstChild: null,
-          },
-        },
-      },
-    };
-  }
+  /** What the backend sends to everyone connected to the workspace. */
+  const deleted = (actorId: number | null = 3, workspaceId = 7) =>
+    ({
+      type: WORKSPACE_DELETED_EVENT,
+      workspace_id: workspaceId,
+      object: { kind: 'workspace', id: workspaceId },
+      data: { workspace_id: workspaceId },
+      actor_id: actorId,
+    }) as WorkspaceEvent;
 
   beforeEach(() => {
-    routeWorkspaceId = '7';
+    events$ = new Subject<WorkspaceEvent>();
+    currentWorkspaceId = 7;
 
     TestBed.configureTestingModule({
       providers: [
-        MockProvider(WorkspacesService),
-        MockProvider(WorkspaceState, { currentWorkspace$: of(workspace) }),
         MockProvider(AuthService),
         MockProvider(MatDialog),
         {
-          provide: Router,
+          provide: WebSocketService,
           useValue: {
-            get routerState() {
-              return routerState();
-            },
-            navigate: jasmine.createSpy('navigate'),
+            on: (type: string) =>
+              events$.pipe(filter((event) => event.type === type)),
           },
+        },
+        {
+          provide: WorkspaceState,
+          useValue: {
+            currentWorkspace$: of(workspace),
+            get currentWorkspaceIdValue() {
+              return currentWorkspaceId;
+            },
+          },
+        },
+        {
+          provide: Router,
+          useValue: { navigate: jasmine.createSpy('navigate') },
         },
       ],
     });
 
-    getWorkspace = spyOn(
-      TestBed.inject(WorkspacesService),
-      'getWorkspace'
-    ).and.returnValue(of(workspace));
     navigate = TestBed.inject(Router).navigate as jasmine.Spy;
     currentUser = spyOn(
       TestBed.inject(AuthService),
@@ -85,39 +74,11 @@ describe('WorkspaceDeletedListenerService', () => {
     } as any);
 
     service = TestBed.inject(WorkspaceDeletedListenerService);
+    service.start();
   });
 
-  it('polls the workspace we are in every POLLING_INTERVAL', fakeAsync(() => {
-    service.start();
-
-    tick(POLLING_INTERVAL - 1);
-    expect(getWorkspace).not.toHaveBeenCalled();
-
-    tick(1);
-    expect(getWorkspace).toHaveBeenCalledWith(7);
-
-    tick(POLLING_INTERVAL);
-    expect(getWorkspace).toHaveBeenCalledTimes(2);
-    expect(dialogOpen).not.toHaveBeenCalled();
-
-    discardPeriodicTasks();
-  }));
-
-  it('does not poll while outside a workspace', fakeAsync(() => {
-    routeWorkspaceId = null;
-    service.start();
-
-    tick(POLLING_INTERVAL * 2);
-
-    expect(getWorkspace).not.toHaveBeenCalled();
-    discardPeriodicTasks();
-  }));
-
-  it('shows the modal and goes home when the workspace is gone', fakeAsync(() => {
-    getWorkspace.and.returnValue(notFound());
-    service.start();
-
-    tick(POLLING_INTERVAL);
+  it('shows the modal and goes home when the workspace is deleted', () => {
+    events$.next(deleted());
 
     expect(dialogOpen).toHaveBeenCalledWith(
       WorkspaceDeletedModalComponent,
@@ -127,66 +88,59 @@ describe('WorkspaceDeletedListenerService', () => {
       })
     );
     expect(navigate).toHaveBeenCalledWith(['/home']);
-    discardPeriodicTasks();
-  }));
+  });
 
-  it('keeps polling after other errors', fakeAsync(() => {
-    getWorkspace.and.returnValue(
-      throwError(() => new HttpErrorResponse({ status: 500 }))
-    );
-    service.start();
-
-    tick(POLLING_INTERVAL);
-    expect(dialogOpen).not.toHaveBeenCalled();
-
-    getWorkspace.and.returnValue(notFound());
-    tick(POLLING_INTERVAL);
-    expect(dialogOpen).toHaveBeenCalledTimes(1);
-
-    discardPeriodicTasks();
-  }));
-
-  it('does not bother the creator', fakeAsync(() => {
+  it('does not bother whoever deleted it', () => {
     currentUser.and.returnValue({ id: 3 } as any);
-    getWorkspace.and.returnValue(notFound());
-    service.start();
 
-    tick(POLLING_INTERVAL);
+    events$.next(deleted(3));
 
     expect(dialogOpen).not.toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
-    discardPeriodicTasks();
-  }));
+  });
 
-  it('opens a single modal while it stays open', fakeAsync(() => {
+  it('ignores an event about another workspace', () => {
+    events$.next(deleted(3, 9));
+
+    expect(dialogOpen).not.toHaveBeenCalled();
+  });
+
+  it('ignores the other events of the workspace', () => {
+    events$.next({
+      type: 'planning.planning_area.created',
+      workspace_id: 7,
+    });
+
+    expect(dialogOpen).not.toHaveBeenCalled();
+  });
+
+  it('opens a single modal while it stays open', () => {
     const closed$ = new Subject<boolean>();
     dialogOpen.and.returnValue({ afterClosed: () => closed$ } as any);
-    getWorkspace.and.returnValue(notFound());
-    service.start();
 
-    tick(POLLING_INTERVAL * 3);
+    events$.next(deleted());
+    events$.next(deleted());
 
     expect(dialogOpen).toHaveBeenCalledTimes(1);
     expect(navigate).not.toHaveBeenCalled();
 
     closed$.next(true);
+
     expect(navigate).toHaveBeenCalledWith(['/home']);
-    discardPeriodicTasks();
-  }));
+  });
 
-  it('keeps listening when the workspace failed to load', fakeAsync(() => {
+  it('keeps listening when the workspace failed to load', () => {
     const workspaceState = TestBed.inject(WorkspaceState);
-    workspaceState.currentWorkspace$ = throwError(() => new Error('404'));
-    getWorkspace.and.returnValue(notFound());
-    service.start();
+    (workspaceState as any).currentWorkspace$ = throwError(
+      () => new Error('404')
+    );
 
-    tick(POLLING_INTERVAL);
+    events$.next(deleted());
     expect(dialogOpen).not.toHaveBeenCalled();
 
-    workspaceState.currentWorkspace$ = of(workspace);
-    tick(POLLING_INTERVAL);
-    expect(dialogOpen).toHaveBeenCalledTimes(1);
+    (workspaceState as any).currentWorkspace$ = of(workspace);
+    events$.next(deleted());
 
-    discardPeriodicTasks();
-  }));
+    expect(dialogOpen).toHaveBeenCalledTimes(1);
+  });
 });

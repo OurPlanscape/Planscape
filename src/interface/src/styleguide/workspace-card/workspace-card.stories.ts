@@ -63,6 +63,16 @@ export const LongName: Story = {
   },
 };
 
+export const SharedWithMe: Story = {
+  args: {
+    ...Default.args,
+    userCanRename: false,
+    userCanShare: false,
+    userCanDelete: false,
+    userCanLeave: true,
+  },
+};
+
 export const ReadOnly: Story = {
   args: {
     ...Default.args,

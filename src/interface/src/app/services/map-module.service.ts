@@ -20,6 +20,7 @@ export class MapModuleService {
   public loadError$ = this._loadError$.asObservable();
 
   private lastGeometry?: any;
+  private latestLoad = 0;
 
   public datasets$ = this.mapData$.pipe(
     map((data) => ({
@@ -48,13 +49,16 @@ export class MapModuleService {
   loadMapModule(geometry?: any) {
     this.lastGeometry = geometry;
     this._loadError$.next(false);
+    // e.g. the app's unfiltered load landing after a plan's filtered one
+    const load = ++this.latestLoad;
+    const isLatest = () => load === this.latestLoad;
     const filters = geometry ? { geometry } : undefined;
     return this.moduleService
       .getModule<ApiModule<MapData>>(this.moduleName, filters)
       .pipe(
         tap({
-          next: (data) => this._mapData$.next(data.options),
-          error: () => this._loadError$.next(true),
+          next: (data) => isLatest() && this._mapData$.next(data.options),
+          error: () => isLatest() && this._loadError$.next(true),
         })
       );
   }

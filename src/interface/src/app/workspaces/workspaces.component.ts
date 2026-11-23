@@ -30,7 +30,7 @@ import {
 } from '@styleguide';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { POLLING_INTERVAL } from '@plan/plan-helpers';
-import { WorkspacesService } from '@services';
+import { AuthService, WorkspacesService } from '@services';
 import { LoadedResult, Pagination, Resource, Workspace } from '@types';
 import {
   CreateWorkspaceOrigin,
@@ -69,6 +69,7 @@ const PAGE_SIZE = 12;
 export class WorkspacesComponent implements OnInit {
   private workspaceActionsService = inject(WorkspaceActionsService);
   private workspacesService = inject(WorkspacesService);
+  private authService = inject(AuthService);
   private snackbar = inject(MatSnackBar);
 
   private reload$ = new BehaviorSubject<void>(undefined);
@@ -243,16 +244,27 @@ export class WorkspacesComponent implements OnInit {
           this.currentWorkspaces$.next(
             this.currentWorkspaces$.value.filter((w) => w.id !== workspace.id)
           );
-          this.reloadAfterDelete();
+          this.reloadAfterRemoval();
         }
       });
+  }
+
+  leaveWorkspace(workspace: Workspace) {
+    this.workspaceActionsService.leaveWorkspace(workspace).subscribe((left) => {
+      if (left) {
+        this.currentWorkspaces$.next(
+          this.currentWorkspaces$.value.filter((w) => w.id !== workspace.id)
+        );
+        this.reloadAfterRemoval();
+      }
+    });
   }
 
   /**
    * The card is already gone from the list; this refills the page behind it,
    * or steps back when it was the only one left on this page.
    */
-  private reloadAfterDelete() {
+  private reloadAfterRemoval() {
     const { page } = this.query$.value;
     if (page > 1 && !this.currentWorkspaces$.value.length) {
       this.goToPage(page - 1);
@@ -263,6 +275,11 @@ export class WorkspacesComponent implements OnInit {
 
   can(workspace: Workspace, permission: string): boolean {
     return workspace.permissions.includes(permission);
+  }
+
+  canLeave(workspace: Workspace): boolean {
+    const userId = this.authService.currentUser()?.id;
+    return !!userId && workspace.created_by !== userId;
   }
 
   trackById(_index: number, workspace: Workspace) {

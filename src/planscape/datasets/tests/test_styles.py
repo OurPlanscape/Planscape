@@ -35,15 +35,15 @@ class TestGetDefaultRasterStyle(SimpleTestCase):
         result = get_default_raster_style(-10, 10)
         result = result["data"]
         self.assertEqual(len(result["entries"]), 7)
-        self.assertAlmostEquals(result["entries"][0]["value"], -10, 2)
+        self.assertAlmostEqual(result["entries"][0]["value"], -10, 2)
         self.assertEqual(result["entries"][-1]["value"], 10)
 
     def test_large_numbers(self):
         result = get_default_raster_style(1000, 5000)
         result = result["data"]
         self.assertEqual(len(result["entries"]), 7)
-        self.assertAlmostEquals(result["entries"][0]["value"], 1000, 2)
-        self.assertAlmostEquals(result["entries"][-1]["value"], 5000, 2)
+        self.assertAlmostEqual(result["entries"][0]["value"], 1000, 2)
+        self.assertAlmostEqual(result["entries"][-1]["value"], 5000, 2)
 
     def test_includes_nan_nodata_sentinel(self):
         result = get_default_raster_style(0, 70)["data"]

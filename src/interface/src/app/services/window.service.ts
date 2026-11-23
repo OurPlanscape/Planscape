@@ -2,6 +2,7 @@ import { isPlatformBrowser } from '@angular/common';
 import {
   ClassProvider,
   FactoryProvider,
+  inject,
   InjectionToken,
   PLATFORM_ID,
 } from '@angular/core';
@@ -65,8 +66,18 @@ import {
  * ```
  */
 
-/* Create a new injection token for injecting the window into a component. */
-export const WINDOW = new InjectionToken<Window>('WindowToken');
+/*
+ * Create a new injection token for injecting the window into a component.
+ *
+ * It resolves on its own so that a service depending on it can be injected
+ * anywhere, a test bed included, without every one of them listing a provider.
+ * `WINDOW_PROVIDERS` still wins where it is declared.
+ */
+export const WINDOW = new InjectionToken<Window>('WindowToken', {
+  providedIn: 'root',
+  factory: () =>
+    (isPlatformBrowser(inject(PLATFORM_ID)) ? window : {}) as Window,
+});
 
 /* Define abstract class for obtaining reference to the global window object. */
 export abstract class WindowRef {

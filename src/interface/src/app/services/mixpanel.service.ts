@@ -34,6 +34,12 @@ export class MixpanelService {
     // detection on every DOM change - and autocapture mutates the DOM as it
     // walks it, looping until the tab freezes. Tracking still works.
     this.zone.runOutsideAngular(() => {
+      // zone.js shares one native listener per target/event/capture and keeps
+      // the first registration's options. Session recording adds a passive
+      // capture mousemove on document, which would make MapLibre's drag
+      // listener passive too (it calls preventDefault). Registering a
+      // non-passive one first keeps the shared listener non-passive.
+      document.addEventListener('mousemove', () => {}, { capture: true });
       mixpanel.init(environment.mixpanel_token, {
         autocapture: true,
         // Pageviews fire on any URL change, query-string-only ones included, so

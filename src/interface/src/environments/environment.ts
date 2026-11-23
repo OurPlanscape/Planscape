@@ -11,7 +11,7 @@ export const environment = {
   download_endpoint: '', // Replace with actual URL
   martin_server: 'https://dev.planscape.org/tiles/',
   feature_flags: '',
-  websocket_endpoint: '', // Replace with the backend WebSocket URL (ws:// or wss://)
+  websocket_endpoint: '/planscape-backend/ws', // path on the app's host, so the handshake carries the auth cookie
   mapbox_key: '',
   mixpanel_token: '',
   mixpanel_enabled: false,

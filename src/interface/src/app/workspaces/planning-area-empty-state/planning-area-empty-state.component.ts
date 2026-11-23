@@ -1,5 +1,5 @@
 import { AsyncPipe, NgIf } from '@angular/common';
-import { Component, EventEmitter, inject, Output } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { UploadPlanningAreaBoxComponent } from '@app/explore/upload-planning-area-box/upload-planning-area-box.component';
@@ -25,7 +25,6 @@ import { WorkspaceState } from '../workspace.state';
   providers: [DrawService],
 })
 export class PlanningAreaEmptyStateComponent {
-  @Output() reload = new EventEmitter();
   showUploadForm = false;
   private dialog = inject(MatDialog);
   private route = inject(ActivatedRoute);
@@ -42,17 +41,10 @@ export class PlanningAreaEmptyStateComponent {
     });
   }
   handleUpload() {
-    this.dialog
-      .open(PlanningAreaCreationModalComponent, {
-        data: {
-          workspaceId: this.workspaceId,
-        },
-      })
-      .afterClosed()
-      .subscribe((reload) => {
-        if (reload === true) {
-          this.reload.emit();
-        }
-      });
+    this.dialog.open(PlanningAreaCreationModalComponent, {
+      data: {
+        workspaceId: this.workspaceId,
+      },
+    });
   }
 }

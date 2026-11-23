@@ -2,11 +2,15 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MockProvider } from 'ng-mocks';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { DataLayersService } from '@services/data-layers.service';
 import { MapModuleService } from '@services/map-module.service';
-import { BaseLayer, MapDataDataSet } from '@types';
+import { BaseLayer, MapDataDataSet, Plan } from '@types';
+import { PlanState } from '@plan/plan.state';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { USE_GEOMETRY } from '@data-layers/data-layers/geometry-datalayers.token';
+import { MOCK_GEOMETRY, MOCK_PLAN } from '@services/mocks';
 import { BaseLayersGroupComponent } from './base-layers-group.component';
 
 const dataSet = {
@@ -23,8 +27,10 @@ describe('BaseLayersGroupComponent', () => {
   let component: BaseLayersGroupComponent;
   let fixture: ComponentFixture<BaseLayersGroupComponent>;
   let listSpy: jasmine.Spy;
+  let plan$: BehaviorSubject<Plan | null>;
 
   beforeEach(async () => {
+    plan$ = new BehaviorSubject<Plan | null>(null);
     listSpy = jasmine
       .createSpy('listBaseLayersByDataSet')
       .and.returnValue(of([layer(2, 'Zeta'), layer(1, 'Alpha')]));
@@ -37,6 +43,12 @@ describe('BaseLayersGroupComponent', () => {
         }),
         MockProvider(DataLayersService, { listBaseLayersByDataSet: listSpy }),
         MockProvider(MapModuleService, { moduleName: 'map' }),
+        MockProvider(PlanState, { currentPlanOrNull$: plan$ }),
+        {
+          provide: WorkspaceState,
+          useValue: { currentWorkspaceIdValue: null },
+        },
+        { provide: USE_GEOMETRY, useValue: true },
       ],
     }).compileComponents();
 
@@ -58,8 +70,17 @@ describe('BaseLayersGroupComponent', () => {
     fixture.debugElement.query(By.css('.group-header')).nativeElement.click();
     fixture.detectChanges();
 
-    expect(listSpy).toHaveBeenCalledWith(1, 'map');
+    expect(listSpy).toHaveBeenCalledWith(1, 'map', undefined, null);
     expect(layerNames()).toEqual(['Alpha', 'Zeta']);
+  });
+
+  it("scopes the fetch to the plan's area and workspace", () => {
+    plan$.next({ ...MOCK_PLAN, geometry: MOCK_GEOMETRY, workspace: 9 });
+    fixture.detectChanges();
+
+    fixture.debugElement.query(By.css('.group-header')).nativeElement.click();
+
+    expect(listSpy).toHaveBeenCalledWith(1, 'map', MOCK_GEOMETRY, 9);
   });
 
   it('fetches only once even when the dataset has no layers', () => {

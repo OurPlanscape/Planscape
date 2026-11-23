@@ -2,64 +2,219 @@ import { Inject, Injectable } from '@angular/core';
 import {
   BehaviorSubject,
   distinctUntilChanged,
+  EMPTY,
   filter,
+  interval,
   map,
+  merge,
   Observable,
   Subject,
   Subscription,
+  switchMap,
+  throttleTime,
 } from 'rxjs';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import * as Sentry from '@sentry/angular';
 import { environment } from '@env/environment';
-import { WebSocketMessage, WebSocketStatus } from '@types';
+import {
+  MEMBER_ROLE_CHANGED_EVENT,
+  MemberRoleChangedPayload,
+  REALTIME_CONNECTED_EVENT,
+  WebSocketStatus,
+  WorkspaceEvent,
+} from '@types';
+import { AuthService } from './auth.service';
 import { WINDOW } from './window.service';
 
+// How long to wait before dialling again after the connection drops
+export const RECONNECT_DELAY = 3000;
+
+// The backoff never grows past this
+export const MAX_RECONNECT_DELAY = 60000;
+
+// Drops are routine (sleep, network changes, Cloud Run's request timeout), so
+// we only report once this many attempts in a row have failed
+export const REPORT_AFTER_ATTEMPTS = 5;
+
+// Idle sockets get dropped on the way, so we keep them busy. A ping still
+// unanswered at the next beat means the connection is dead.
+export const HEARTBEAT_INTERVAL = 30000;
+
+// How often pages refresh while the socket can't tell them what changed
+export const FALLBACK_POLL_INTERVAL = 3000;
+
+// Collapses a burst of events into a first and a last refresh
+export const UPDATES_THROTTLE = 300;
+
+// The token expired: worth one refresh before dialling again
+const UNAUTHENTICATED_CLOSE_CODE = 4401;
+
 /**
- * Single WebSocket connection to the backend.
- *
- * The endpoint and the message contract are not defined yet. Once they are,
- * set `environment.websocket_endpoint` and extend `WebSocketMessage`; consumers
- * read events through `messages$` / `on()` and never touch the socket itself.
+ * Close codes the consumer uses to turn us away: no longer a member, or the
+ * workspace is gone. Dialling again would only repeat them.
  */
+const FINAL_CLOSE_CODES = [4403, 4404];
+
+function isAboutPlan(event: WorkspaceEvent, planId: number): boolean {
+  return event.object?.kind === 'planning_area'
+    ? event.object.id === planId
+    : event.object?.['planning_area_id'] === planId;
+}
+
+function isAboutScenario(event: WorkspaceEvent, scenarioId: number): boolean {
+  return event.object?.kind === 'scenario'
+    ? event.object.id === scenarioId
+    : event.object?.['scenario_id'] === scenarioId;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class WebSocketService {
-  private socket$: WebSocketSubject<WebSocketMessage> | null = null;
+  private socket$: WebSocketSubject<WorkspaceEvent> | null = null;
   private socketSubscription: Subscription | null = null;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private reconnectAttempts = 0;
+  private heartbeat: ReturnType<typeof setInterval> | null = null;
+  private awaitingPong = false;
+  private tokenRefreshed = false;
+
+  private workspaceId: number | null = null;
 
   private _status$ = new BehaviorSubject<WebSocketStatus>('disconnected');
   /** Connection state; replays the current value on subscribe. */
   status$ = this._status$.pipe(distinctUntilChanged());
 
-  private _messages$ = new Subject<WebSocketMessage>();
-  /** Every message received from the backend. */
+  private _messages$ = new Subject<WorkspaceEvent>();
+  /** Every event received from the backend. */
   messages$ = this._messages$.asObservable();
 
-  constructor(@Inject(WINDOW) private window: Window & typeof globalThis) {}
+  constructor(
+    @Inject(WINDOW) private window: Window & typeof globalThis,
+    private authService: AuthService
+  ) {}
 
   get status(): WebSocketStatus {
     return this._status$.value;
   }
 
   /**
-   * Opens the connection. Does nothing if one is already open or opening,
-   * or while no endpoint is configured.
+   * Connects to the channel of a workspace. Connecting to the one we are
+   * already on does nothing; connecting to another one moves the connection.
+   * Does nothing while no endpoint is configured.
    */
-  connect(url = environment.websocket_endpoint): void {
-    if (this.socket$ || !url) {
+  connect(workspaceId: number): void {
+    if (!environment.websocket_endpoint) {
       return;
     }
+    if (this.workspaceId === workspaceId && this.socket$) {
+      return;
+    }
+    this.disconnect();
+    this.workspaceId = workspaceId;
+    this.open(workspaceId);
+  }
 
+  disconnect(): void {
+    this.cancelReconnect();
+    this.workspaceId = null;
+    if (!this.socket$) {
+      return;
+    }
+    // closes the socket, or aborts the handshake if it hasn't finished
+    const socket$ = this.socket$;
+    socket$.complete();
+    this.cleanup(socket$, 'disconnected');
+  }
+
+  on<T = Record<string, unknown>>(type: string): Observable<WorkspaceEvent<T>> {
+    return this.messages$.pipe(
+      filter((event) => event.type === type)
+    ) as Observable<WorkspaceEvent<T>>;
+  }
+
+  /**
+   * Emits when an admin changes the role of the current user, which changes
+   * the permissions we were given on everything in the workspace.
+   */
+  ownRoleChanged$(): Observable<WorkspaceEvent<MemberRoleChangedPayload>> {
+    return this.on<MemberRoleChangedPayload>(MEMBER_ROLE_CHANGED_EVENT).pipe(
+      filter(
+        (event) => event.data?.user_id === this.authService.currentUser()?.id
+      )
+    );
+  }
+
+  /**
+   * Emits whenever the workspace may have changed: the event that says so, or
+   * `realtime.connected` as events are not replayed, or null on a timer while
+   * there is no connection, which is also the case for plans outside a
+   * workspace.
+   */
+  workspaceUpdates$(types: string[]): Observable<WorkspaceEvent | null> {
+    return this.updates$(
+      this.messages$.pipe(filter((event) => types.includes(event.type)))
+    );
+  }
+
+  /** Same as `workspaceUpdates$`, for the events about a single plan. */
+  planUpdates$(
+    planId: number,
+    types: string[]
+  ): Observable<WorkspaceEvent | null> {
+    return this.updates$(
+      this.messages$.pipe(
+        filter(
+          (event) => types.includes(event.type) && isAboutPlan(event, planId)
+        )
+      )
+    );
+  }
+
+  scenarioUpdates$(
+    scenarioId: number,
+    types: string[]
+  ): Observable<WorkspaceEvent | null> {
+    return this.updates$(
+      this.messages$.pipe(
+        filter(
+          (event) =>
+            types.includes(event.type) && isAboutScenario(event, scenarioId)
+        )
+      )
+    );
+  }
+
+  private updates$(
+    events$: Observable<WorkspaceEvent>
+  ): Observable<WorkspaceEvent | null> {
+    return merge(
+      events$,
+      this.on(REALTIME_CONNECTED_EVENT),
+      this.status$.pipe(
+        switchMap((status) =>
+          status === 'connected' ? EMPTY : interval(FALLBACK_POLL_INTERVAL)
+        ),
+        map(() => null)
+      )
+    ).pipe(
+      throttleTime(UPDATES_THROTTLE, undefined, {
+        leading: true,
+        trailing: true,
+      })
+    );
+  }
+
+  private open(workspaceId: number): void {
     this._status$.next('connecting');
     // captured so the callbacks of a closed socket can't touch a newer one
-    const socket$: WebSocketSubject<WebSocketMessage> = webSocket({
-      url,
+    const socket$: WebSocketSubject<WorkspaceEvent> = webSocket({
+      url: this.urlFor(workspaceId),
       WebSocketCtor: this.window.WebSocket,
       openObserver: {
         next: () => {
           if (this.socket$ === socket$) {
-            this._status$.next('connected');
+            this.startHeartbeat(socket$, workspaceId);
           }
         },
       },
@@ -68,62 +223,122 @@ export class WebSocketService {
           if (this.socket$ !== socket$) {
             return;
           }
-          if (!event.wasClean) {
-            this.logError(
-              new Error(`WebSocket closed unexpectedly (code ${event.code})`)
-            );
-          }
           this.cleanup(socket$, event.wasClean ? 'disconnected' : 'error');
+          if (event.code === UNAUTHENTICATED_CLOSE_CODE) {
+            this.refreshTokenAndReconnect(workspaceId);
+          } else if (!FINAL_CLOSE_CODES.includes(event.code)) {
+            this.scheduleReconnect(workspaceId);
+          }
         },
       },
     });
     this.socket$ = socket$;
     this.socketSubscription = socket$.subscribe({
-      next: (message) => this._messages$.next(message),
-      error: (error) => {
-        this.logError(error);
+      next: (event) => this.handleMessage(event),
+      error: () => {
         this.cleanup(socket$, 'error');
+        this.scheduleReconnect(workspaceId);
       },
     });
   }
 
-  disconnect(): void {
-    if (!this.socket$) {
-      return;
+  private handleMessage(event: WorkspaceEvent): void {
+    this.awaitingPong = false;
+    // The server accepts every socket before it checks who is calling, so
+    // only this says the connection is good.
+    if (event.type === REALTIME_CONNECTED_EVENT) {
+      this.reconnectAttempts = 0;
+      this.tokenRefreshed = false;
+      this._status$.next('connected');
     }
-    // closes the socket, or aborts the handshake if it hasn't finished
-    this.socket$.complete();
-    this.cleanup(this.socket$, 'disconnected');
+    this._messages$.next(event);
   }
 
-  /** Messages are dropped, not queued, while the connection isn't open. */
-  send(message: WebSocketMessage): void {
-    if (!this.socket$ || this.status !== 'connected') {
-      this.logError(
-        new Error(
-          `WebSocket message "${message.type}" sent while ${this.status}`
-        )
-      );
+  // Logged out sessions complete without emitting, and we stay down
+  private refreshTokenAndReconnect(workspaceId: number): void {
+    if (this.tokenRefreshed) {
       return;
     }
-    this.socket$.next(message);
+    this.tokenRefreshed = true;
+    this.authService.refreshToken().subscribe({
+      next: () => this.scheduleReconnect(workspaceId),
+      error: () => this.scheduleReconnect(workspaceId),
+    });
   }
 
-  /** Payloads of the messages of a given type. */
-  on<T>(type: string): Observable<T> {
-    return this.messages$.pipe(
-      filter((message) => message.type === type),
-      map((message) => message.payload as T)
+  private scheduleReconnect(workspaceId: number): void {
+    if (this.reconnectTimer || this.workspaceId !== workspaceId) {
+      return;
+    }
+    const delay = Math.min(
+      RECONNECT_DELAY * 2 ** this.reconnectAttempts,
+      MAX_RECONNECT_DELAY
     );
+    this.reconnectAttempts++;
+    if (this.reconnectAttempts === REPORT_AFTER_ATTEMPTS) {
+      this.logError(
+        new Error(`WebSocket failed to reconnect to workspace ${workspaceId}`)
+      );
+    }
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      if (this.workspaceId === workspaceId && !this.socket$) {
+        this.open(workspaceId);
+      }
+    }, delay);
+  }
+
+  private cancelReconnect(): void {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    this.reconnectAttempts = 0;
+    this.tokenRefreshed = false;
+  }
+
+  // Keeps the connection from being dropped for being idle, and notices when
+  // it died without a close, which a sleeping laptop never gets to see
+  private startHeartbeat(
+    socket$: WebSocketSubject<WorkspaceEvent>,
+    workspaceId: number
+  ): void {
+    this.stopHeartbeat();
+    this.awaitingPong = false;
+    this.heartbeat = setInterval(() => {
+      if (this.socket$ !== socket$) {
+        return;
+      }
+      if (this.awaitingPong) {
+        socket$.complete();
+        this.cleanup(socket$, 'error');
+        this.scheduleReconnect(workspaceId);
+        return;
+      }
+      this.awaitingPong = true;
+      socket$.next({ type: 'ping' });
+    }, HEARTBEAT_INTERVAL);
+  }
+
+  private stopHeartbeat(): void {
+    if (this.heartbeat) {
+      clearInterval(this.heartbeat);
+      this.heartbeat = null;
+    }
+  }
+
+  private urlFor(workspaceId: number): string {
+    return `${environment.websocket_endpoint}/workspaces/${workspaceId}/`;
   }
 
   private cleanup(
-    socket$: WebSocketSubject<WebSocketMessage>,
+    socket$: WebSocketSubject<WorkspaceEvent>,
     status: WebSocketStatus
   ) {
     if (this.socket$ !== socket$) {
       return;
     }
+    this.stopHeartbeat();
     this.socketSubscription?.unsubscribe();
     this.socketSubscription = null;
     this.socket$ = null;

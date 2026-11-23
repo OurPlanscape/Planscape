@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import patch
-from utils.frontend import get_frontend_url
+from types import SimpleNamespace
+
+from utils.frontend import get_frontend_url, get_planning_area_path
 
 
 class TestGetFrontendUrl(unittest.TestCase):
@@ -23,3 +25,14 @@ class TestGetFrontendUrl(unittest.TestCase):
         url = "/test"
         with self.assertRaises(ValueError):
             get_frontend_url(url)
+
+
+class TestGetPlanningAreaPath(unittest.TestCase):
+    def test_under_its_workspace(self):
+        planning_area = SimpleNamespace(pk=12, workspace_id=5)
+        self.assertEqual(get_planning_area_path(planning_area), "workspace/5/plan/12")
+
+    def test_without_workspace(self):
+        planning_area = SimpleNamespace(pk=12, workspace_id=None)
+        with self.assertRaises(ValueError):
+            get_planning_area_path(planning_area)

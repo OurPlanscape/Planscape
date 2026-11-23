@@ -18,6 +18,7 @@ import { unselectableReason } from '@app/shared';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
 import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.component';
+import { SingleOpenMenuDirective } from '@standalone/single-open-menu-directive/single-open-menu.directive';
 
 @Component({
   selector: 'app-data-set',
@@ -34,6 +35,7 @@ import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.
     AsyncPipe,
     MatMenuModule,
     DataLayerTooltipComponent,
+    SingleOpenMenuDirective,
     MatTooltipModule,
     MatCheckboxModule,
     ToggleComponent,
@@ -46,6 +48,8 @@ import { FavoriteStarComponent } from '@data-layers/favorite-star/favorite-star.
 export class DataSetComponent {
   @Input() name = '';
   @Input() organizationName = '';
+  /** Only set for simple categories; null shows the generic category icon. */
+  @Input() categoryIcon?: string | null;
   @Input() layers?: DataLayerSearchResult[];
   @Input() path?: string[];
   @Input() searchTerm = '';
@@ -88,7 +92,7 @@ export class DataSetComponent {
     return '';
   }
 
-  constructor(private dataLayersStateService: DataLayersStateService) {}
+  constructor(protected dataLayersStateService: DataLayersStateService) {}
 
   selectDataLayer(dataLayer: DataLayer, event: Event) {
     const target = event.target as HTMLInputElement;

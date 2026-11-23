@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   ControlComponent,
@@ -28,7 +28,6 @@ import { MapConfigService } from '../map-config.service';
 import { DataLayerNameComponent } from '@data-layers/data-layer-name/data-layer-name.component';
 import { FrontendConstants } from '@map/map.constants';
 import { ScenarioLegendComponent } from '@scenario-creation/scenario-legend/scenario-legend.component';
-import { FeaturesModule } from '@features/features.module';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NewScenarioState } from '@scenario-creation/new-scenario.state';
 import { MapBaseLayersComponent } from '@maplibre-map/map-base-layers/map-base-layers.component';
@@ -38,12 +37,16 @@ import { BaseLayersStateService } from '@base-layers/base-layers.state.service';
 import { StandsComponent } from '../stands/stands.component';
 import { TreatedStandsToggleComponent } from '../treated-stands-toggle/treated-stands-toggle.component';
 import { TreatedStandsComponent } from '../treated-stands/treated-stands.component';
+import { AllTreatableStandsToggleComponent } from '../all-treatable-stands-toggle/all-treatable-stands-toggle.component';
+import { AllTreatableStandsComponent } from '../all-treatable-stands/all-treatable-stands.component';
 
 @UntilDestroy()
 @Component({
   selector: 'app-scenario-map',
   standalone: true,
   imports: [
+    AllTreatableStandsComponent,
+    AllTreatableStandsToggleComponent,
     CommonModule,
     MapComponent,
     MapNavbarComponent,
@@ -57,7 +60,6 @@ import { TreatedStandsComponent } from '../treated-stands/treated-stands.compone
     MapLayerColorLegendComponent,
     DataLayerNameComponent,
     ScenarioLegendComponent,
-    FeaturesModule,
     StandsComponent,
     MatProgressSpinnerModule,
     MapBaseLayersComponent,
@@ -69,6 +71,8 @@ import { TreatedStandsComponent } from '../treated-stands/treated-stands.compone
   styleUrl: './scenario-map.component.scss',
 })
 export class ScenarioMapComponent implements OnDestroy {
+  @Input() showDataLayerName = true;
+
   /**
    * The sub-unit layer currently pushed into the app-wide BaseLayersStateService.
    * Tracked so it can be removed on destroy — otherwise it leaks into every other
@@ -153,10 +157,31 @@ export class ScenarioMapComponent implements OnDestroy {
     )
   );
 
+  showAllTreatableStandsToggleOnResults$ = combineLatest([
+    this.scenarioState.hasScenarioCompleted$,
+    this.scenarioState.currentScenario$,
+  ]).pipe(
+    map(
+      ([hasCompleted, scenario]) =>
+        hasCompleted &&
+        !!scenario.planning_approach &&
+        !isPlanningApproachSubUnits(scenario.planning_approach)
+    )
+  );
+
   // We are showing treated stands if the scenario is completed and we have subunits
   showTreatedStands$ = combineLatest([
     this.newScenarioState.displayTreatedStands$,
     this.showSubUnitToggleOnResults$,
+  ]).pipe(
+    map(([displayTreatedStands, showSubUnitsOnResults]) => {
+      return displayTreatedStands && showSubUnitsOnResults;
+    })
+  );
+
+  showAllTreatableStands$ = combineLatest([
+    this.newScenarioState.displayAllTreatableStands$,
+    this.showAllTreatableStandsToggleOnResults$,
   ]).pipe(
     map(([displayTreatedStands, showSubUnitsOnResults]) => {
       return displayTreatedStands && showSubUnitsOnResults;

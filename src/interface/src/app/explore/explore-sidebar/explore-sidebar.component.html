@@ -1,14 +1,27 @@
 <app-sidebar-icon-rail
   [items]="railItems"
   [activeId]="expanded ? activeItemId : null"
-  (itemSelected)="selectItem($event)"></app-sidebar-icon-rail>
+  (itemSelected)="selectItem($event)">
+  <ng-container *ngIf="canUpload$ | async">
+    <button
+      type="button"
+      class="upload-button"
+      aria-label="Upload data"
+      matTooltip="Upload data"
+      matTooltipPosition="right"
+      #uploadTrigger
+      (click)="openUpload(uploadTrigger)">
+      <mat-icon class="material-symbols-outlined">upload</mat-icon>
+    </button>
+    <hr class="upload-divider" />
+  </ng-container>
+</app-sidebar-icon-rail>
 
 <div class="panel" *ngIf="expanded">
   <div class="panel-header">
     <ng-container
       *ngIf="
-        selectedTab === SidebarTabs.DATA_LAYERS &&
-          (dataLayersSelection$ | async);
+        browsesLayers && (dataLayersSelection$ | async);
         else title;
         let selection
       ">
@@ -33,6 +46,12 @@
   <div class="panel-content">
     <app-map-tabs
       *ngIf="selectedTab === SidebarTabs.DATA_LAYERS"></app-map-tabs>
+    <app-map-tabs
+      panel="favorites"
+      *ngIf="selectedTab === SidebarTabs.FAVORITES"></app-map-tabs>
+    <app-map-tabs
+      panel="uploaded"
+      *ngIf="selectedTab === SidebarTabs.UPLOADED"></app-map-tabs>
     <app-base-layers
       *ngIf="selectedTab === SidebarTabs.BASE_LAYERS"></app-base-layers>
   </div>

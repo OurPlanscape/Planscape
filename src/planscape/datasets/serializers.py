@@ -10,6 +10,7 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     MapServiceChoices,
+    SearchGroupBy,
     SearchTab,
     SimpleCategory,
     StorageTypeChoices,
@@ -116,6 +117,17 @@ class DatasetSerializer(serializers.ModelSerializer[Dataset]):
         )
 
 
+class DatasetEmbbedSerializer(serializers.ModelSerializer[Dataset]):
+    class Meta:
+        model = Dataset
+        fields = (
+            "id",
+            "organization",
+            "name",
+            "description",
+        )
+
+
 class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     category = CategoryEmbbedSerializer()
     public_url = serializers.CharField(
@@ -182,6 +194,28 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "metadata",
             "map_service_type",
             "original_name",
+        )
+
+
+class DataLayerEmbedSerializer(DataLayerSerializer):
+    """
+    Simplified DataLayer representation used when embedded in other
+    resources (e.g. treatment goal usages). It must be used when it needs
+    to list DataLayers for performance.
+    """
+
+    dataset = DatasetEmbbedSerializer()
+
+    class Meta(DataLayerSerializer.Meta):
+        fields = (
+            "id",
+            "name",
+            "dataset",
+            "category",
+            "type",
+            "styles",
+            "info",
+            "metadata",
         )
 
 
@@ -746,6 +780,13 @@ class FindAnythingSerializer(SearchTabSerializer):
 
     type = serializers.ChoiceField(
         choices=DataLayerType.choices,
+    )
+
+    group_by = serializers.ChoiceField(
+        choices=SearchGroupBy.choices,
+        required=False,
+        help_text="Group results by simple category or by dataset. "
+        "Defaults to simple category when DATA_ORGANIZATION is on.",
     )
 
     geometry = GeometryTypeField(

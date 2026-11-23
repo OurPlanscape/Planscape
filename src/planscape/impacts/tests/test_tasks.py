@@ -26,11 +26,15 @@ from impacts.tasks import (
     batch_stand_ids,
 )
 from impacts.tests.factories import TreatmentPlanFactory, TreatmentPrescriptionFactory
+from workspaces.tests.factories import WorkspaceFactory
 
 
 class AsyncSendEmailProcessFinishedTest(TestCase):
     def setUp(self):
-        self.treatment_plan = TreatmentPlanFactory.create()
+        self.workspace = WorkspaceFactory.create()
+        self.treatment_plan = TreatmentPlanFactory.create(
+            scenario__planning_area__workspace=self.workspace
+        )
         self.user = self.treatment_plan.created_by
 
     @mock.patch("impacts.tasks.send_mail", return_value=True)
@@ -47,6 +51,15 @@ class AsyncSendEmailProcessFinishedTest(TestCase):
             message=mock.ANY,
             html_message=mock.ANY,
         )
+
+        scenario = self.treatment_plan.scenario
+        expected_path = (
+            f"workspace/{self.workspace.pk}/plan/{scenario.planning_area_id}"
+            f"/scenario/{scenario.pk}/treatment/{self.treatment_plan.pk}/impacts"
+        )
+        _, kwargs = send_email_mock.call_args
+        self.assertIn(expected_path, kwargs["html_message"])
+        self.assertIn(expected_path, kwargs["message"])
 
     @mock.patch("impacts.tasks.send_mail", return_value=True)
     def test_dont_send_email_if_treatment_plan_deleted(self, send_email_mock):
@@ -176,7 +189,7 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
                 metadata=action_metadata,
                 type=DataLayerType.RASTER,
             )
-            self.assertEquals(TreatmentResult.objects.count(), 0)
+            self.assertEqual(TreatmentResult.objects.count(), 0)
 
             async_calculate_impacts_for_variable_action_year(
                 self.plan.id,
@@ -187,8 +200,8 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
             )
 
             self.assertGreater(TreatmentResult.objects.count(), 0)
-            self.assertEquals(ProjectAreaTreatmentResult.objects.count(), 0)
-            self.assertEquals(len(self.stands), TreatmentResult.objects.count())
+            self.assertEqual(ProjectAreaTreatmentResult.objects.count(), 0)
+            self.assertEqual(len(self.stands), TreatmentResult.objects.count())
 
     def test_trigger_task_with_delted_tx_plan(self):
         with self.settings(
@@ -231,7 +244,7 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
                 metadata=action_metadata,
                 type=DataLayerType.RASTER,
             )
-            self.assertEquals(TreatmentResult.objects.count(), 0)
+            self.assertEqual(TreatmentResult.objects.count(), 0)
 
             self.plan.delete()
             async_calculate_impacts_for_variable_action_year(
@@ -242,8 +255,8 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TestCase):
                 stand_ids=[stand.id for stand in self.stands],
             )
 
-            self.assertEquals(TreatmentResult.objects.count(), 0)
-            self.assertEquals(ProjectAreaTreatmentResult.objects.count(), 0)
+            self.assertEqual(TreatmentResult.objects.count(), 0)
+            self.assertEqual(ProjectAreaTreatmentResult.objects.count(), 0)
 
 
 class AsyncCalculateBaselineMetricsForVariableYearTest(TestCase):

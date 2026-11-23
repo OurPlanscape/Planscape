@@ -77,6 +77,10 @@ class Command(BaseCommand):
             if item.get("model") == "datasets.datalayer" and "table" in fields:
                 fields.pop("table")
 
+            # Older backups have null uuids; let the model generate one.
+            if "uuid" in fields and fields["uuid"] is None:
+                fields.pop("uuid")
+
         with open(file_path, "w", encoding="utf-8") as fh:
             json.dump(data, fh, indent=2)
 

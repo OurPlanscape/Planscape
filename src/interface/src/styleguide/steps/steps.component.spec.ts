@@ -6,7 +6,7 @@ import {
 } from '@angular/core/testing';
 import { StepsComponent } from './steps.component';
 import { CdkStepperModule } from '@angular/cdk/stepper';
-import { Component, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -14,6 +14,53 @@ import {
   Validators,
 } from '@angular/forms';
 import { of, throwError } from 'rxjs';
+import { StepComponent, StepDirective } from './step.component';
+
+/** Counts how often the content of a step is built and torn down. */
+@Component({
+  selector: 'app-test-step-content',
+  template: '',
+  standalone: true,
+  providers: [
+    { provide: StepDirective, useExisting: TestStepContentComponent },
+  ],
+})
+class TestStepContentComponent
+  extends StepDirective<unknown>
+  implements OnInit, OnDestroy
+{
+  static built = 0;
+  static destroyed = 0;
+  form = new FormGroup({});
+  loaded = 0;
+  getData() {
+    return {};
+  }
+  override beforeStepLoad() {
+    this.loaded++;
+  }
+  ngOnInit() {
+    TestStepContentComponent.built++;
+  }
+  ngOnDestroy() {
+    TestStepContentComponent.destroyed++;
+  }
+}
+
+@Component({
+  selector: 'app-test-steps-host',
+  template: `
+    <sg-steps>
+      <sg-step><app-test-step-content></app-test-step-content></sg-step>
+      <sg-step><app-test-step-content></app-test-step-content></sg-step>
+    </sg-steps>
+  `,
+  standalone: true,
+  imports: [StepsComponent, StepComponent, TestStepContentComponent],
+})
+class StepContentHostComponent {
+  @ViewChild(StepsComponent) stepsComponent!: StepsComponent<any>;
+}
 
 @Component({
   selector: 'app-test-host',
@@ -128,4 +175,35 @@ describe('StepsComponent', () => {
     tick();
     expect(host.stepsComponent.selectedIndex).toBe(0);
   }));
+
+  /**
+   * The content of a step is projected into an `ng-template`, so Angular builds
+   * it once with the parent view and only moves it around. A step that wants to
+   * reapply what it holds on the way back in has to do it in `beforeStepLoad`.
+   */
+  describe('the lifetime of the content of a step', () => {
+    let stepsFixture: ComponentFixture<StepContentHostComponent>;
+
+    beforeEach(fakeAsync(() => {
+      TestStepContentComponent.built = 0;
+      TestStepContentComponent.destroyed = 0;
+      stepsFixture = TestBed.createComponent(StepContentHostComponent);
+      stepsFixture.detectChanges();
+      tick();
+    }));
+
+    it('builds every step once and keeps it through the navigation', fakeAsync(() => {
+      expect(TestStepContentComponent.built).toBe(2);
+
+      stepsFixture.componentInstance.stepsComponent.selectedIndex = 1;
+      stepsFixture.detectChanges();
+      tick();
+      stepsFixture.componentInstance.stepsComponent.goBack();
+      stepsFixture.detectChanges();
+      tick();
+
+      expect(TestStepContentComponent.built).toBe(2);
+      expect(TestStepContentComponent.destroyed).toBe(0);
+    }));
+  });
 });

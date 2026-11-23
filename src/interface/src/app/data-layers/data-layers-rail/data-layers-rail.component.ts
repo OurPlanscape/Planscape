@@ -5,39 +5,17 @@ import { filter, skip } from 'rxjs';
 import { ButtonComponent } from '@styleguide';
 import { BaseLayersComponent } from '@base-layers/base-layers/base-layers.component';
 import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { FavoriteDataLayersComponent } from '@data-layers/favorite-data-layers/favorite-data-layers.component';
 import {
   SidebarIconRailComponent,
   SidebarRailItem,
 } from '@explore/sidebar-icon-rail/sidebar-icon-rail.component';
+import { dataLayersRailItems } from '@explore/sidebar-icon-rail/data-layers-rail-items';
+import { FeatureService } from '@features/feature.service';
+import { FeaturesModule } from '@features/features.module';
 import { DataLayersStateService } from '../data-layers.state.service';
 
-type RailPanel = 'data-layers' | 'base-layers';
-
-const DATA_LAYERS_ITEM: SidebarRailItem = {
-  id: 'data-layers',
-  icon: 'category',
-  label: 'Data Layers',
-};
-const BASE_LAYERS_ITEM: SidebarRailItem = {
-  id: 'base-layers',
-  icon: 'layers',
-  label: 'Base Layers',
-};
-const DISABLED_ITEMS: SidebarRailItem[] = [
-  {
-    id: 'uploaded',
-    icon: 'drive_folder_upload',
-    label: 'Uploaded',
-    disabled: true,
-  },
-  { id: 'favorites', icon: 'star', label: 'Favorites', disabled: true },
-];
-const ITEMS = [DATA_LAYERS_ITEM, ...DISABLED_ITEMS];
-const ITEMS_WITH_BASE_LAYERS = [
-  DATA_LAYERS_ITEM,
-  BASE_LAYERS_ITEM,
-  ...DISABLED_ITEMS,
-];
+type RailPanel = 'data-layers' | 'base-layers' | 'favorites' | 'uploaded';
 
 /**
  * Data layers with the icon rail, and optionally base layers, for pages
@@ -54,6 +32,8 @@ const ITEMS_WITH_BASE_LAYERS = [
     ButtonComponent,
     BaseLayersComponent,
     DataLayersComponent,
+    FavoriteDataLayersComponent,
+    FeaturesModule,
     SidebarIconRailComponent,
   ],
   templateUrl: './data-layers-rail.component.html',
@@ -63,25 +43,58 @@ export class DataLayersRailComponent {
   @Input() displayAddButton = false;
   @Input() useClearFooter = true;
   @Input() stickySearch = false;
-  @Input() showBaseLayers = false;
+
+  @Input() set showBaseLayers(value: boolean) {
+    this._showBaseLayers = value;
+    this.buildRailItems();
+  }
+
+  private _showBaseLayers = false;
+  private favoritesEnabled = false;
 
   activePanel: RailPanel = 'data-layers';
 
-  get railItems(): SidebarRailItem[] {
-    return this.showBaseLayers ? ITEMS_WITH_BASE_LAYERS : ITEMS;
-  }
+  railItems: SidebarRailItem[] = [];
 
   selection$ = this.dataLayersStateService.selection$;
 
-  constructor(private dataLayersStateService: DataLayersStateService) {
-    // the map's layer name legend browses to its layer, so bring the data layers back
+  private readonly uploadEnabled =
+    this.featureService.isFeatureEnabled('DATA_UPLOAD');
+
+  constructor(
+    private dataLayersStateService: DataLayersStateService,
+    private featureService: FeatureService
+  ) {
+    this.buildRailItems();
+
+    this.dataLayersStateService.favoritesEnabled$
+      .pipe(untilDestroyed(this))
+      .subscribe((enabled) => {
+        this.favoritesEnabled = enabled;
+        if (!enabled && this.activePanel === 'favorites') {
+          this.activePanel = 'data-layers';
+        }
+        this.buildRailItems();
+      });
+
+    // the map's layer name legend browses to its layer, so bring the data layers
+    // back, unless it is browsing the uploads already
     this.dataLayersStateService.paths$
       .pipe(
         untilDestroyed(this),
         skip(1),
-        filter((path) => path.length > 0)
+        filter((path) => path.length > 0),
+        filter(() => this.activePanel !== 'uploaded')
       )
       .subscribe(() => (this.activePanel = 'data-layers'));
+  }
+
+  private buildRailItems() {
+    this.railItems = dataLayersRailItems({
+      baseLayers: this._showBaseLayers,
+      uploaded: this.uploadEnabled,
+      favoritesEnabled: this.favoritesEnabled,
+    });
   }
 
   selectItem(item: SidebarRailItem) {

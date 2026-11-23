@@ -14,6 +14,7 @@ from core.gcs import create_upload_url as create_upload_url_gcs
 from core.gcs import is_gcs_file
 from core.s3 import create_upload_url as create_upload_url_s3
 from core.s3 import is_s3_file, s3_filename
+from datasets.events import publish_datalayer_favorited, publish_datalayer_unfavorited
 from datasets.models import (
     Category,
     DataLayer,
@@ -22,8 +23,8 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     GeometryType,
-    PreferredDisplayType,
     SearchResult,
+    SearchGroupBy,
     SearchTab,
     SimpleCategory,
     StorageTypeChoices,
@@ -45,7 +46,7 @@ from django.db.models import BooleanField, QuerySet
 from django.db.models.expressions import RawSQL
 from gis.geometry import geodjango_to_multi, to_geodjango_geometry
 from gis.rasters import get_estimated_mask as get_estimated_mask_raster
-from modules.base import get_module
+from modules.base import filter_datalayers
 from organizations.models import Organization
 from planning.models import TreatmentGoalUsageType
 from rest_framework.exceptions import NotFound
@@ -472,38 +473,23 @@ def browse(
     module: Optional[str] = None,
     geometry: Optional[GEOSGeometry] = None,
     search_tab: str = SearchTab.GENERAL,
+    user: Optional[User] = None,
     workspace: Optional[Workspace] = None,
 ) -> QuerySet[DataLayer]:
-    datalayers = (
-        DataLayer.objects.filter(
-            dataset=dataset,
-            status=DataLayerStatus.READY,
-        )
-        .select_related(
-            "organization",
-            "dataset",
-            "category",
-        )
-        .prefetch_related("styles", "simple_categories")
+    datalayers = filter_datalayers(
+        DataLayer.objects.filter(dataset=dataset),
+        type=type,
+        module=module,
+        geometry=geometry,
+        search_tab=search_tab,
+        user=user,
+        workspace=workspace,
     )
-
-    if type is not None:
-        datalayers = datalayers.filter(type=type)
-
-    if geometry is not None:
-        datalayers = datalayers.filter(outline__intersects=geometry)
-
-    if module:
-        filter = {f"metadata__modules__{module}__enabled": True}
-        datalayers = datalayers.filter(**filter)
-
-    if search_tab == SearchTab.FAVORITES:
-        datalayers = datalayers.filter(workspace_favorites__workspace=workspace)
-    elif search_tab == SearchTab.UPLOADED:
-        # TODO: narrow to uploaded datalayers once uploaded filtering is defined.
-        pass
-
-    return datalayers
+    return datalayers.select_related(
+        "organization",
+        "dataset",
+        "category",
+    ).prefetch_related("styles", "simple_categories")
 
 
 def browse_simple_category(
@@ -515,38 +501,24 @@ def browse_simple_category(
     user: Optional[User] = None,
     workspace: Optional[Workspace] = None,
 ) -> QuerySet[DataLayer]:
-    datalayers = (
-        DataLayer.objects.all()
-        .accessible_by(user)
-        .filter(
-            simple_categories=category,
-            status=DataLayerStatus.READY,
-        )
-        .select_related(
+    datalayers = filter_datalayers(
+        DataLayer.objects.filter(simple_categories=category),
+        type=type,
+        module=module,
+        geometry=geometry,
+        search_tab=search_tab,
+        user=user,
+        workspace=workspace,
+    )
+    return (
+        datalayers.select_related(
             "organization",
             "dataset",
             "category",
         )
         .prefetch_related("styles", "simple_categories")
+        .distinct()
     )
-
-    if type is not None:
-        datalayers = datalayers.filter(type=type)
-
-    if geometry is not None:
-        datalayers = datalayers.filter(outline__intersects=geometry)
-
-    if module:
-        filter = {f"metadata__modules__{module}__enabled": True}
-        datalayers = datalayers.filter(**filter)
-
-    if search_tab == SearchTab.FAVORITES:
-        datalayers = datalayers.filter(workspace_favorites__workspace=workspace)
-    elif search_tab == SearchTab.UPLOADED:
-        # TODO: narrow to uploaded datalayers once uploaded filtering is defined.
-        pass
-
-    return datalayers.distinct()
 
 
 def browse_favorites(
@@ -559,58 +531,72 @@ def browse_favorites(
     """
     Every datalayer favorited in the workspace, across all datasets.
     """
-    datalayers = (
-        DataLayer.objects.all()
-        .accessible_by(user)
-        .filter(
-            workspace_favorites__workspace=workspace,
-            status=DataLayerStatus.READY,
-        )
-        .select_related(
+    datalayers = filter_datalayers(
+        DataLayer.objects.all(),
+        type=type,
+        module=module,
+        geometry=geometry,
+        search_tab=SearchTab.FAVORITES,
+        user=user,
+        workspace=workspace,
+    )
+    return (
+        datalayers.select_related(
             "organization",
             "dataset",
             "category",
         )
         .prefetch_related("styles", "simple_categories")
+        .order_by("name")
     )
-
-    if type is not None:
-        datalayers = datalayers.filter(type=type)
-
-    if geometry is not None:
-        datalayers = datalayers.filter(outline__intersects=geometry)
-
-    if module:
-        filter = {f"metadata__modules__{module}__enabled": True}
-        datalayers = datalayers.filter(**filter)
-
-    return datalayers.order_by("name")
 
 
 def _escape_like(term: str) -> str:
     return term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
+EXCLUDED_METADATA_KEYS = ("keywords_type", "language")
+
+
 def metadata_values_contain(term: str) -> RawSQL:
     """
-    Matches datalayers that have any string value in their metadata containing
-    `term` (case insensitive). Only values are searched, never keys, and the
-    internal `modules` configuration is ignored.
+    Matches datalayers whose `metadata.metadata.identification` has any string
+    value containing `term` (case insensitive), at any depth. Only values are
+    searched, never keys, and values under the keys in
+    `EXCLUDED_METADATA_KEYS` are ignored.
     """
     column = f'"{DataLayer._meta.db_table}"."metadata"'
+    excluded = ", ".join(["%s"] * len(EXCLUDED_METADATA_KEYS))
     sql = f"""EXISTS (
-    SELECT 1
-    FROM jsonb_path_query(
-        CASE
-            WHEN jsonb_typeof({column}) = 'object' THEN {column} - 'modules'
-            ELSE {column}
-        END,
-        'strict $.**'
-    ) AS value
-    WHERE jsonb_typeof(value) = 'string'
-    AND value #>> '{{}}' ILIKE %s
+    WITH RECURSIVE node(key, value) AS (
+        SELECT NULL::text, {column} #> '{{metadata,identification}}'
+        UNION ALL
+        SELECT child.key, child.value
+        FROM node
+        CROSS JOIN LATERAL (
+            SELECT e.key, e.value
+            FROM jsonb_each(
+                CASE WHEN jsonb_typeof(node.value) = 'object'
+                    THEN node.value ELSE '{{}}'::jsonb END
+            ) AS e
+            UNION ALL
+            SELECT NULL::text, a.value
+            FROM jsonb_array_elements(
+                CASE WHEN jsonb_typeof(node.value) = 'array'
+                    THEN node.value ELSE '[]'::jsonb END
+            ) AS a
+        ) AS child
+        WHERE child.key IS NULL OR child.key NOT IN ({excluded})
+    )
+    SELECT 1 FROM node
+    WHERE jsonb_typeof(node.value) = 'string'
+    AND node.value #>> '{{}}' ILIKE %s
 )"""
-    return RawSQL(sql, (f"%{_escape_like(term)}%",), output_field=BooleanField())
+    return RawSQL(
+        sql,
+        (*EXCLUDED_METADATA_KEYS, f"%{_escape_like(term)}%"),
+        output_field=BooleanField(),
+    )
 
 
 @cached(timeout=settings.FIND_ANYTHING_TTL)
@@ -622,163 +608,68 @@ def find_anything(
     search_tab: str = SearchTab.GENERAL,
     user: Optional[User] = None,
     workspace: Optional[Workspace] = None,
+    group_by: Optional[str] = None,
     **kwargs,
 ) -> Dict[str, SearchResult]:
     """
-    Given a term, search for anything (datasets / datalayers)
+    Given a term, search for anything (datasets / datalayers).
+
+    `group_by` picks what datalayers are browsed through: simple categories
+    or datasets. Without it, the DATA_ORGANIZATION flag decides.
     """
-    layer_type = type or DataLayerType.RASTER
-    if module:
-        mod = get_module(module)
-        preferred_display_type = (
-            PreferredDisplayType.MAIN_DATALAYERS
-            if layer_type == DataLayerType.RASTER
-            else PreferredDisplayType.BASE_DATALAYERS
+    if group_by is None:
+        group_by = (
+            SearchGroupBy.SIMPLE_CATEGORY
+            if feature_enabled("DATA_ORGANIZATION")
+            else SearchGroupBy.DATASET
         )
-        dataset_ids = [
-            d.pk
-            for d in mod.get_datasets(user=user)
-            if d.preferred_display_type == preferred_display_type
-        ]
-    else:
-        dataset_ids = None
-
-    datalayer_filter: Dict[str, Any] = {
-        "name__icontains": term,
-        "status": DataLayerStatus.READY,
-        "type": layer_type,
-    }
-    category_filter: Dict[str, Any] = {
-        "category__name__icontains": term,
-        "status": DataLayerStatus.READY,
-        "type": layer_type,
-    }
-    # datalayers a simple category must contain to be returned as a result
-    simple_category_layer_filter: Dict[str, Any] = {
-        "status": DataLayerStatus.READY,
-        "type": layer_type,
-    }
-    simple_category_filter: Dict[str, Any] = {
-        "simple_categories__name__icontains": term,
-        "status": DataLayerStatus.READY,
-        "type": layer_type,
-    }
-    metadata_filter: Dict[str, Any] = {
-        "metadata_match": True,
-        "status": DataLayerStatus.READY,
-        "type": layer_type,
-    }
-    dataset_filter: Dict[str, Any] = {
-        "name__icontains": term,
-    }
-    org_filter: Dict[str, Any] = {
-        "organization__name__icontains": term,
-    }
-
-    if module:
-        datalayer_filter[f"metadata__modules__{module}__enabled"] = True
-        category_filter[f"metadata__modules__{module}__enabled"] = True
-        simple_category_filter[f"metadata__modules__{module}__enabled"] = True
-        simple_category_layer_filter[f"metadata__modules__{module}__enabled"] = True
-        metadata_filter[f"metadata__modules__{module}__enabled"] = True
-
-    if dataset_ids:
-        datalayer_filter["dataset_id__in"] = dataset_ids
-        category_filter["dataset__id__in"] = dataset_ids
-        simple_category_filter["dataset_id__in"] = dataset_ids
-        simple_category_layer_filter["dataset_id__in"] = dataset_ids
-        metadata_filter["dataset_id__in"] = dataset_ids
-        dataset_filter["id__in"] = dataset_ids
-        org_filter["id__in"] = dataset_ids
-
-    if geometry:
-        datalayer_filter["outline__intersects"] = geometry
-        category_filter["outline__intersects"] = geometry
-        simple_category_filter["outline__intersects"] = geometry
-        simple_category_layer_filter["outline__intersects"] = geometry
-        metadata_filter["outline__intersects"] = geometry
-
-    if search_tab == SearchTab.FAVORITES:
-        favorites = WorkspaceFavoriteDataLayer.objects.filter(
-            workspace=workspace,
-            datalayer__deleted_at=None,
-            datalayer__status=DataLayerStatus.READY,
-        )
-        favorite_datalayer_ids = favorites.values("datalayer_id")
-        datalayer_filter["id__in"] = favorite_datalayer_ids
-        category_filter["id__in"] = favorite_datalayer_ids
-        simple_category_filter["id__in"] = favorite_datalayer_ids
-        simple_category_layer_filter["id__in"] = favorite_datalayer_ids
-        metadata_filter["id__in"] = favorite_datalayer_ids
-        # `pk__in` instead of `id__in` so it's ANDed with the module filter
-        # instead of overwriting it.
-        favorite_dataset_ids = favorites.values("datalayer__dataset_id")
-        dataset_filter["pk__in"] = favorite_dataset_ids
-        org_filter["pk__in"] = favorite_dataset_ids
-    elif search_tab == SearchTab.UPLOADED:
-        # TODO: narrow to uploaded datalayers once uploaded filtering is defined.
-        pass
+    datalayers = filter_datalayers(
+        DataLayer.objects.all(),
+        type=type or DataLayerType.RASTER,
+        module=module,
+        geometry=geometry,
+        search_tab=search_tab,
+        user=user,
+        workspace=workspace,
+    )
+    # datasets and organizations are only returned when they hold at least one
+    # of those datalayers, so browsing them is never empty
+    datasets = Dataset.objects.filter(pk__in=datalayers.values("dataset_id"))
 
     simple_categories = SimpleCategory.objects.none()
     simple_category_datalayers = DataLayer.objects.none()
-    if feature_enabled("DATA_ORGANIZATION"):
+    if group_by == SearchGroupBy.SIMPLE_CATEGORY:
+        # simple categories replace datasets as the way to browse datalayers
+        datasets = Dataset.objects.none()
         simple_categories = SimpleCategory.objects.filter(
             name__icontains=term,
-            id__in=DataLayer.objects.all()
-            .accessible_by(user)
-            .filter(**simple_category_layer_filter)
-            .values("simple_categories"),
+            id__in=datalayers.values("simple_categories"),
         )
-        simple_category_datalayers = (
-            DataLayer.objects.all()
-            .accessible_by(user)
-            .filter(**simple_category_filter)
-            .distinct()
-        )
+        simple_category_datalayers = datalayers.filter(
+            simple_categories__name__icontains=term
+        ).distinct()
 
     raw_results = [
         [
             dataset_to_search_result(x)
-            for x in Dataset.objects.all()
-            .accessible_by(user)
-            .filter(
-                **org_filter,
-            )
+            for x in datasets.filter(organization__name__icontains=term)
         ],
-        [
-            dataset_to_search_result(x)
-            for x in Dataset.objects.all()
-            .accessible_by(user)
-            .filter(
-                **dataset_filter,
-            )
-        ],
+        [dataset_to_search_result(x) for x in datasets.filter(name__icontains=term)],
         [simple_category_to_search_result(x) for x in simple_categories],
         [
             datalayer_to_search_result(x)
-            for x in DataLayer.objects.all()
-            .accessible_by(user)
-            .filter(
-                **category_filter,
-            )
+            for x in datalayers.filter(category__name__icontains=term)
         ],
         [
             datalayer_to_search_result(x)
-            for x in DataLayer.objects.all()
-            .accessible_by(user)
-            .filter(
-                **datalayer_filter,
-            )
+            for x in datalayers.filter(name__icontains=term)
         ],
         [datalayer_to_search_result(x) for x in simple_category_datalayers],
         [
             datalayer_to_search_result(x)
-            for x in DataLayer.objects.all()
-            .accessible_by(user)
-            .alias(metadata_match=metadata_values_contain(term))
-            .filter(
-                **metadata_filter,
-            )
+            for x in datalayers.alias(
+                metadata_match=metadata_values_contain(term)
+            ).filter(metadata_match=True)
         ],
     ]
     search_results = itertools.chain.from_iterable(raw_results)
@@ -826,6 +717,7 @@ def add_favorite_datalayer(
         defaults={"created_by": user},
     )
     if created:
+        publish_datalayer_favorited(workspace, datalayer, actor=user)
         track_event(
             name="datasets.datalayer.favorited",
             properties={
@@ -868,6 +760,7 @@ def remove_favorite_datalayer(
     if not deleted:
         raise NotFound("DataLayer is not a favorite of this workspace.")
 
+    publish_datalayer_unfavorited(workspace, datalayer_id, actor=user)
     track_event(
         name="datasets.datalayer.unfavorited",
         properties={

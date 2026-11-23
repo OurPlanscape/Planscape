@@ -1,6 +1,22 @@
-import { TestBed } from '@angular/core/testing';
-import { WebSocketMessage, WebSocketStatus } from '@types';
-import { WebSocketService } from './websocket.service';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { EMPTY, Observable, of, Subject, throwError } from 'rxjs';
+import {
+  MEMBER_ROLE_CHANGED_EVENT,
+  REALTIME_CONNECTED_EVENT,
+  WebSocketStatus,
+  WorkspaceEvent,
+} from '@types';
+import { environment } from '@env/environment';
+import {
+  FALLBACK_POLL_INTERVAL,
+  HEARTBEAT_INTERVAL,
+  MAX_RECONNECT_DELAY,
+  RECONNECT_DELAY,
+  REPORT_AFTER_ATTEMPTS,
+  UPDATES_THROTTLE,
+  WebSocketService,
+} from './websocket.service';
+import { AuthService } from './auth.service';
 import { WINDOW } from './window.service';
 
 /** Stand-in for the browser WebSocket; tests drive its events by hand. */
@@ -8,8 +24,8 @@ class FakeWebSocket {
   static instances: FakeWebSocket[] = [];
 
   readyState: number = WebSocket.CONNECTING;
-  sent: string[] = [];
   closed = false;
+  sent: string[] = [];
 
   onopen: ((event: unknown) => void) | null = null;
   onclose: ((event: unknown) => void) | null = null;
@@ -29,30 +45,47 @@ class FakeWebSocket {
   }
 
   // helpers to simulate the server side
-  open() {
+  accept() {
     this.readyState = WebSocket.OPEN;
     this.onopen?.({});
   }
 
-  receive(message: WebSocketMessage) {
-    this.onmessage?.({ data: JSON.stringify(message) });
+  open() {
+    this.accept();
+    this.receive({ type: REALTIME_CONNECTED_EVENT });
   }
 
-  fail() {
-    this.onerror?.({ type: 'error' });
+  receive(event: WorkspaceEvent) {
+    this.onmessage?.({ data: JSON.stringify(event) });
   }
 
-  dropped() {
+  dropped(code = 1006) {
     this.readyState = WebSocket.CLOSED;
-    this.onclose?.({ wasClean: false, code: 1006 });
+    this.onclose?.({ wasClean: false, code });
+  }
+
+  closedByServer(code: number) {
+    this.readyState = WebSocket.CLOSED;
+    this.onclose?.({ wasClean: true, code });
   }
 }
+
+const workspaceId = 7;
+
+const planningAreaCreated: WorkspaceEvent = {
+  type: 'planning.planning_area.created',
+  workspace_id: workspaceId,
+  object: { kind: 'planning_area', id: 3 },
+  data: { map_status: 'PENDING' },
+  actor_id: 12,
+  timestamp: '2026-10-26T10:00:00Z',
+};
 
 describe('WebSocketService', () => {
   let service: WebSocketService;
   let logErrorSpy: jasmine.Spy;
-
-  const url = 'wss://example.test/events';
+  let refreshToken: jasmine.Spy;
+  let endpoint: string;
 
   function socket(): FakeWebSocket {
     return FakeWebSocket.instances[FakeWebSocket.instances.length - 1];
@@ -60,11 +93,20 @@ describe('WebSocketService', () => {
 
   beforeEach(() => {
     FakeWebSocket.instances = [];
+    endpoint = environment.websocket_endpoint;
+    // the test environment ships without an endpoint
+    environment.websocket_endpoint = '/planscape-backend/ws';
     // spy on our own method, not on Sentry
     logErrorSpy = spyOn(WebSocketService.prototype as any, 'logError' as any);
 
+    refreshToken = jasmine.createSpy('refreshToken').and.returnValue(of({}));
+
     TestBed.configureTestingModule({
       providers: [
+        {
+          provide: AuthService,
+          useValue: { refreshToken, currentUser: () => ({ id: 3 }) },
+        },
         {
           provide: WINDOW,
           useValue: { WebSocket: FakeWebSocket },
@@ -74,50 +116,72 @@ describe('WebSocketService', () => {
     service = TestBed.inject(WebSocketService);
   });
 
+  afterEach(() => {
+    service.disconnect();
+    environment.websocket_endpoint = endpoint;
+  });
+
   it('should be created', () => {
     expect(service).toBeTruthy();
     expect(service.status).toBe('disconnected');
   });
 
   describe('connect', () => {
-    it('opens a socket to the url and tracks the status', () => {
+    it('opens a socket to the channel of the workspace', () => {
       const statuses: WebSocketStatus[] = [];
       service.status$.subscribe((status) => statuses.push(status));
 
-      service.connect(url);
+      service.connect(workspaceId);
 
       expect(FakeWebSocket.instances.length).toBe(1);
-      expect(socket().url).toBe(url);
+      expect(socket().url).toBe('/planscape-backend/ws/workspaces/7/');
       expect(service.status).toBe('connecting');
 
-      socket().open();
+      socket().accept();
+      expect(service.status).toBe('connecting');
+
+      socket().receive({ type: REALTIME_CONNECTED_EVENT });
 
       expect(service.status).toBe('connected');
       expect(statuses).toEqual(['disconnected', 'connecting', 'connected']);
     });
 
-    it('does not open a second socket while one is open', () => {
-      service.connect(url);
+    it('stays on the socket it already has for that workspace', () => {
+      service.connect(workspaceId);
       socket().open();
 
-      service.connect(url);
+      service.connect(workspaceId);
 
       expect(FakeWebSocket.instances.length).toBe(1);
     });
 
+    it('moves the connection when another workspace is opened', () => {
+      service.connect(workspaceId);
+      const first = socket();
+      first.open();
+
+      service.connect(9);
+
+      expect(first.closed).toBeTrue();
+      expect(FakeWebSocket.instances.length).toBe(2);
+      expect(socket().url).toBe('/planscape-backend/ws/workspaces/9/');
+    });
+
     it('does nothing when the endpoint is not configured', () => {
-      service.connect('');
+      environment.websocket_endpoint = '';
+
+      service.connect(workspaceId);
 
       expect(FakeWebSocket.instances.length).toBe(0);
       expect(service.status).toBe('disconnected');
       expect(logErrorSpy).not.toHaveBeenCalled();
     });
 
-    it('can reconnect after disconnecting', () => {
-      service.connect(url);
+    it('can connect again after disconnecting', () => {
+      service.connect(workspaceId);
       service.disconnect();
 
-      service.connect(url);
+      service.connect(workspaceId);
       socket().open();
 
       expect(FakeWebSocket.instances.length).toBe(2);
@@ -125,10 +189,10 @@ describe('WebSocketService', () => {
     });
 
     it('ignores the close of a previous socket', () => {
-      service.connect(url);
+      service.connect(workspaceId);
       const first = socket();
       service.disconnect();
-      service.connect(url);
+      service.connect(workspaceId);
       socket().open();
 
       first.dropped();
@@ -137,70 +201,223 @@ describe('WebSocketService', () => {
     });
   });
 
-  describe('messages', () => {
+  describe('events', () => {
     beforeEach(() => {
-      service.connect(url);
+      service.connect(workspaceId);
       socket().open();
     });
 
-    it('emits every message received', () => {
-      const received: WebSocketMessage[] = [];
-      service.messages$.subscribe((message) => received.push(message));
+    it('emits every event received', () => {
+      const received: WorkspaceEvent[] = [];
+      service.messages$.subscribe((event) => received.push(event));
 
-      socket().receive({ type: 'scenario.updated', payload: { id: 1 } });
-      socket().receive({ type: 'ping' });
+      socket().receive(planningAreaCreated);
+      socket().receive({ type: 'pong' });
 
-      expect(received).toEqual([
-        { type: 'scenario.updated', payload: { id: 1 } },
-        { type: 'ping' },
-      ]);
+      expect(received).toEqual([planningAreaCreated, { type: 'pong' }]);
     });
 
-    it('filters by type and unwraps the payload with on()', () => {
-      const payloads: unknown[] = [];
+    it('filters by type with on(), envelope and all', () => {
+      const received: WorkspaceEvent[] = [];
       service
-        .on('scenario.updated')
-        .subscribe((payload) => payloads.push(payload));
+        .on('planning.planning_area.created')
+        .subscribe((event) => received.push(event));
 
-      socket().receive({ type: 'ping' });
-      socket().receive({ type: 'scenario.updated', payload: { id: 1 } });
+      socket().receive({ type: 'pong' });
+      socket().receive(planningAreaCreated);
 
-      expect(payloads).toEqual([{ id: 1 }]);
+      expect(received).toEqual([planningAreaCreated]);
+    });
+
+    it('tells us when our own role changes, and only ours', () => {
+      const ours: WorkspaceEvent = {
+        type: MEMBER_ROLE_CHANGED_EVENT,
+        data: { user_id: 3, role: 'VIEWER' },
+      };
+      const received: WorkspaceEvent<unknown>[] = [];
+      service.ownRoleChanged$().subscribe((event) => received.push(event));
+
+      socket().receive({
+        type: MEMBER_ROLE_CHANGED_EVENT,
+        data: { user_id: 4, role: 'VIEWER' },
+      });
+      socket().receive(ours);
+
+      expect(received).toEqual([ours]);
     });
   });
 
-  describe('send', () => {
-    it('serializes the message when connected', () => {
-      service.connect(url);
+  describe('updates', () => {
+    const scenarioEvent = (planningAreaId: number): WorkspaceEvent => ({
+      type: 'planning.scenario.created',
+      object: {
+        kind: 'scenario',
+        id: 1,
+        planning_area_id: planningAreaId,
+      },
+    });
+    const planEvent = (id: number): WorkspaceEvent => ({
+      type: 'planning.planning_area.updated',
+      object: { kind: 'planning_area', id },
+    });
+
+    function collect(updates$: Observable<WorkspaceEvent | null>) {
+      const received: (WorkspaceEvent | null)[] = [];
+      return {
+        received,
+        subscription: updates$.subscribe((u) => received.push(u)),
+      };
+    }
+
+    it('emits the scenario events of the plan and no others', fakeAsync(() => {
+      service.connect(workspaceId);
       socket().open();
+      const { received, subscription } = collect(
+        service.planUpdates$(3, ['planning.scenario.created'])
+      );
 
-      service.send({ type: 'subscribe', payload: { plan: 5 } });
+      socket().receive(scenarioEvent(4));
+      socket().receive({ ...scenarioEvent(3), type: 'other.event' });
+      socket().receive(scenarioEvent(3));
+      tick(UPDATES_THROTTLE);
 
-      expect(socket().sent).toEqual([
-        JSON.stringify({ type: 'subscribe', payload: { plan: 5 } }),
-      ]);
-    });
+      expect(received).toEqual([scenarioEvent(3)]);
 
-    it('drops the message and logs when not connected', () => {
-      service.send({ type: 'subscribe' });
+      subscription.unsubscribe();
+      service.disconnect();
+    }));
 
-      expect(FakeWebSocket.instances.length).toBe(0);
-      expect(logErrorSpy).toHaveBeenCalled();
-    });
+    it('matches planning area events by their own id', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+      const { received, subscription } = collect(
+        service.planUpdates$(3, ['planning.planning_area.updated'])
+      );
 
-    it('drops the message and logs while connecting', () => {
-      service.connect(url);
+      socket().receive(planEvent(4));
+      socket().receive(planEvent(3));
+      tick(UPDATES_THROTTLE);
 
-      service.send({ type: 'subscribe' });
+      expect(received).toEqual([planEvent(3)]);
 
-      expect(socket().sent).toEqual([]);
-      expect(logErrorSpy).toHaveBeenCalled();
-    });
+      subscription.unsubscribe();
+      service.disconnect();
+    }));
+
+    it('emits the events of one scenario and no others', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+      const { received, subscription } = collect(
+        service.scenarioUpdates$(1, ['planning.scenario.created'])
+      );
+
+      socket().receive({
+        ...scenarioEvent(3),
+        object: { kind: 'scenario', id: 2, planning_area_id: 3 },
+      });
+      socket().receive(scenarioEvent(3));
+      tick(UPDATES_THROTTLE);
+
+      expect(received).toEqual([scenarioEvent(3)]);
+
+      subscription.unsubscribe();
+      service.disconnect();
+    }));
+
+    it('reaches the scenario from what hangs off it', fakeAsync(() => {
+      const treatmentPlanEvent: WorkspaceEvent = {
+        type: 'impacts.treatment_plan.status_changed',
+        object: {
+          kind: 'treatment_plan',
+          id: 9,
+          scenario_id: 1,
+          planning_area_id: 3,
+        },
+      };
+      service.connect(workspaceId);
+      socket().open();
+      const { received, subscription } = collect(
+        service.scenarioUpdates$(1, ['impacts.treatment_plan.status_changed'])
+      );
+
+      socket().receive({
+        ...treatmentPlanEvent,
+        object: { ...treatmentPlanEvent.object!, scenario_id: 2 },
+      });
+      socket().receive(treatmentPlanEvent);
+      tick(UPDATES_THROTTLE);
+
+      expect(received).toEqual([treatmentPlanEvent]);
+
+      subscription.unsubscribe();
+      service.disconnect();
+    }));
+
+    it('emits on every connection, as events are not replayed', fakeAsync(() => {
+      const { received, subscription } = collect(service.workspaceUpdates$([]));
+      service.connect(workspaceId);
+
+      socket().open();
+      tick(UPDATES_THROTTLE);
+
+      expect(received).toEqual([{ type: REALTIME_CONNECTED_EVENT }]);
+
+      subscription.unsubscribe();
+      service.disconnect();
+    }));
+
+    it('collapses a burst, keeping the first and the last', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+      const { received, subscription } = collect(
+        service.workspaceUpdates$(['planning.planning_area.updated'])
+      );
+
+      socket().receive(planEvent(1));
+      socket().receive(planEvent(2));
+      socket().receive(planEvent(3));
+      tick(UPDATES_THROTTLE);
+
+      expect(received).toEqual([planEvent(1), planEvent(3)]);
+
+      tick(UPDATES_THROTTLE);
+      subscription.unsubscribe();
+      service.disconnect();
+    }));
+
+    it('polls while there is no connection', fakeAsync(() => {
+      const { received, subscription } = collect(service.workspaceUpdates$([]));
+
+      tick(FALLBACK_POLL_INTERVAL);
+      tick(UPDATES_THROTTLE);
+
+      expect(received).toEqual([null]);
+
+      subscription.unsubscribe();
+    }));
+
+    it('stops polling once connected, and starts again if it drops', fakeAsync(() => {
+      const { received, subscription } = collect(service.workspaceUpdates$([]));
+      service.connect(workspaceId);
+      socket().open();
+      tick(UPDATES_THROTTLE);
+      received.length = 0;
+
+      tick(FALLBACK_POLL_INTERVAL * 3);
+      expect(received).toEqual([]);
+
+      socket().closedByServer(4403);
+      tick(FALLBACK_POLL_INTERVAL);
+      tick(UPDATES_THROTTLE);
+      expect(received).toEqual([null]);
+
+      subscription.unsubscribe();
+    }));
   });
 
   describe('disconnect', () => {
     it('closes the socket and updates the status', () => {
-      service.connect(url);
+      service.connect(workspaceId);
       socket().open();
 
       service.disconnect();
@@ -217,24 +434,312 @@ describe('WebSocketService', () => {
     });
   });
 
-  describe('failures', () => {
-    it('reports an error status and logs when the socket fails', () => {
-      service.connect(url);
+  describe('keepalive', () => {
+    it('pings while the connection is open', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
 
-      socket().fail();
+      tick(HEARTBEAT_INTERVAL);
 
+      expect(socket().sent).toEqual([JSON.stringify({ type: 'ping' })]);
+
+      // the heartbeat is periodic; close it inside the fake clock
+      service.disconnect();
+    }));
+
+    it('keeps a connection that answers', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+
+      tick(HEARTBEAT_INTERVAL);
+      socket().receive({ type: 'pong' });
+      tick(HEARTBEAT_INTERVAL);
+
+      expect(FakeWebSocket.instances.length).toBe(1);
+      expect(socket().sent.length).toBe(2);
+
+      service.disconnect();
+    }));
+
+    it('takes any frame as a sign of life', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+
+      tick(HEARTBEAT_INTERVAL);
+      socket().receive(planningAreaCreated);
+      tick(HEARTBEAT_INTERVAL);
+
+      expect(service.status).toBe('connected');
+
+      service.disconnect();
+    }));
+
+    it('dials again when a ping goes unanswered', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+      const dead = socket();
+
+      tick(HEARTBEAT_INTERVAL * 2);
+
+      expect(dead.closed).toBeTrue();
       expect(service.status).toBe('error');
-      expect(logErrorSpy).toHaveBeenCalled();
-    });
 
-    it('reports an error status and logs when the connection is dropped', () => {
-      service.connect(url);
+      tick(RECONNECT_DELAY);
+      expect(FakeWebSocket.instances.length).toBe(2);
+
+      socket().open();
+      expect(service.status).toBe('connected');
+
+      service.disconnect();
+    }));
+
+    it('stops pinging once the connection is gone', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+      const open = socket();
+      service.disconnect();
+
+      tick(HEARTBEAT_INTERVAL * 2);
+
+      expect(open.sent).toEqual([]);
+    }));
+  });
+
+  describe('when the connection drops', () => {
+    it('dials again without reporting it', fakeAsync(() => {
+      service.connect(workspaceId);
       socket().open();
 
       socket().dropped();
 
       expect(service.status).toBe('error');
-      expect(logErrorSpy).toHaveBeenCalled();
-    });
+      expect(logErrorSpy).not.toHaveBeenCalled();
+
+      tick(RECONNECT_DELAY);
+
+      expect(FakeWebSocket.instances.length).toBe(2);
+      socket().open();
+      expect(service.status).toBe('connected');
+
+      service.disconnect();
+    }));
+
+    it('keeps the events flowing after it dials again', fakeAsync(() => {
+      const received: WorkspaceEvent[] = [];
+      service.messages$.subscribe((event) => received.push(event));
+      service.connect(workspaceId);
+      socket().open();
+
+      socket().dropped();
+      tick(RECONNECT_DELAY);
+      socket().open();
+      socket().receive(planningAreaCreated);
+
+      expect(received).toContain(planningAreaCreated);
+
+      service.disconnect();
+    }));
+
+    it('reports once when it cannot get back in', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+
+      for (let attempt = 0; attempt <= REPORT_AFTER_ATTEMPTS; attempt++) {
+        socket().dropped();
+        tick(MAX_RECONNECT_DELAY);
+      }
+
+      expect(logErrorSpy).toHaveBeenCalledTimes(1);
+
+      service.disconnect();
+    }));
+
+    it('backs off while the backend stays down', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+
+      socket().dropped();
+      tick(RECONNECT_DELAY);
+      expect(FakeWebSocket.instances.length).toBe(2);
+
+      // the second attempt never opens, so the wait doubles
+      socket().dropped();
+      tick(RECONNECT_DELAY);
+      expect(FakeWebSocket.instances.length).toBe(2);
+
+      tick(RECONNECT_DELAY);
+      expect(FakeWebSocket.instances.length).toBe(3);
+    }));
+
+    it('waits the short delay again after a connection that worked', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+
+      socket().dropped();
+      tick(RECONNECT_DELAY);
+      socket().open();
+
+      socket().dropped();
+      tick(RECONNECT_DELAY);
+
+      expect(FakeWebSocket.instances.length).toBe(3);
+
+      service.disconnect();
+    }));
+
+    it('dials again when the server closes cleanly', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+
+      // 1012: the worker restarted
+      socket().closedByServer(1012);
+
+      expect(service.status).toBe('disconnected');
+      expect(logErrorSpy).not.toHaveBeenCalled();
+
+      tick(RECONNECT_DELAY);
+
+      expect(FakeWebSocket.instances.length).toBe(2);
+
+      service.disconnect();
+    }));
+
+    it('backs off when sockets are accepted but never get through', fakeAsync(() => {
+      service.connect(workspaceId);
+
+      socket().accept();
+      socket().dropped();
+      tick(RECONNECT_DELAY);
+      expect(FakeWebSocket.instances.length).toBe(2);
+
+      socket().accept();
+      socket().dropped();
+      tick(RECONNECT_DELAY);
+      expect(FakeWebSocket.instances.length).toBe(2);
+
+      tick(RECONNECT_DELAY);
+      expect(FakeWebSocket.instances.length).toBe(3);
+
+      service.disconnect();
+    }));
+
+    it('gives up when the server closes cleanly with a final code', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+
+      socket().closedByServer(4404);
+      tick(RECONNECT_DELAY);
+
+      expect(FakeWebSocket.instances.length).toBe(1);
+    }));
+
+    it('gives up when the backend turns us away', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+
+      // 4403: no longer a member, or the workspace is gone
+      socket().dropped(4403);
+      tick(RECONNECT_DELAY);
+
+      expect(FakeWebSocket.instances.length).toBe(1);
+      expect(service.status).toBe('error');
+    }));
+
+    it('does not dial again once we left the workspace', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().open();
+
+      socket().dropped();
+      service.disconnect();
+      tick(RECONNECT_DELAY);
+
+      expect(FakeWebSocket.instances.length).toBe(1);
+    }));
+  });
+
+  describe('when the token expired', () => {
+    it('refreshes it and dials again', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().accept();
+
+      socket().closedByServer(4401);
+
+      expect(refreshToken).toHaveBeenCalledTimes(1);
+
+      tick(RECONNECT_DELAY);
+      expect(FakeWebSocket.instances.length).toBe(2);
+
+      socket().open();
+      expect(service.status).toBe('connected');
+
+      service.disconnect();
+    }));
+
+    it('stops if the fresh token is rejected too', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().accept();
+      socket().closedByServer(4401);
+      tick(RECONNECT_DELAY);
+
+      socket().accept();
+      socket().closedByServer(4401);
+      tick(RECONNECT_DELAY * 2);
+
+      expect(refreshToken).toHaveBeenCalledTimes(1);
+      expect(FakeWebSocket.instances.length).toBe(2);
+    }));
+
+    it('refreshes again on a later expiry', fakeAsync(() => {
+      service.connect(workspaceId);
+      socket().accept();
+      socket().closedByServer(4401);
+      tick(RECONNECT_DELAY);
+      socket().open();
+
+      socket().closedByServer(4401);
+
+      expect(refreshToken).toHaveBeenCalledTimes(2);
+
+      tick(RECONNECT_DELAY);
+      service.disconnect();
+    }));
+
+    it('stays down when the session is over', fakeAsync(() => {
+      refreshToken.and.returnValue(EMPTY);
+      service.connect(workspaceId);
+      socket().accept();
+
+      socket().closedByServer(4401);
+      tick(RECONNECT_DELAY);
+
+      expect(FakeWebSocket.instances.length).toBe(1);
+    }));
+
+    it('dials again if the refresh itself fails', fakeAsync(() => {
+      refreshToken.and.returnValue(throwError(() => new Error('offline')));
+      service.connect(workspaceId);
+      socket().accept();
+
+      socket().closedByServer(4401);
+      tick(RECONNECT_DELAY);
+
+      expect(FakeWebSocket.instances.length).toBe(2);
+
+      service.disconnect();
+    }));
+
+    it('does not dial if we left while refreshing', fakeAsync(() => {
+      const refreshed$ = new Subject<void>();
+      refreshToken.and.returnValue(refreshed$);
+      service.connect(workspaceId);
+      socket().accept();
+      socket().closedByServer(4401);
+
+      service.disconnect();
+      refreshed$.next();
+      tick(RECONNECT_DELAY);
+
+      expect(FakeWebSocket.instances.length).toBe(1);
+    }));
   });
 });

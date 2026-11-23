@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -21,6 +21,7 @@ import {
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { CreatePlanDialogComponent } from '@explore/create-plan-dialog/create-plan-dialog.component';
 import { NgIf } from '@angular/common';
+import { getMapViewerPath, getPlanPath } from '@plan/plan-helpers';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 import { MatButtonModule } from '@angular/material/button';
 
@@ -45,8 +46,6 @@ export class PlanningAreaMenuComponent {
   @Input() showRename = true;
   @Input() showShare = true;
   @Input() showDelete = true;
-  @Output() afterDelete = new EventEmitter();
-  @Output() afterRename = new EventEmitter();
 
   constructor(
     private authService: AuthService,
@@ -56,6 +55,14 @@ export class PlanningAreaMenuComponent {
     private breadcrumbService: BreadcrumbService,
     private route: ActivatedRoute
   ) {}
+
+  get planPath() {
+    return getPlanPath(this.plan.id, this.route.snapshot);
+  }
+
+  get mapViewerPath() {
+    return getMapViewerPath(this.plan.id, this.route.snapshot);
+  }
 
   get shareEnabled() {
     return canViewCollaborators(this.plan);
@@ -121,7 +128,6 @@ export class PlanningAreaMenuComponent {
             'Dismiss',
             SNACK_BOTTOM_NOTICE_CONFIG
           );
-          this.afterRename.emit();
         }
       });
   }
@@ -144,7 +150,6 @@ export class PlanningAreaMenuComponent {
       .subscribe((confirmed) => {
         if (confirmed) {
           this.planService.deletePlan(this.plan.id).subscribe(() => {
-            this.afterDelete.emit();
             this.snackbar.open(
               `Successfully deleted plan: ${this.plan.name}`,
               'Dismiss',

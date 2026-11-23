@@ -1,0 +1,9 @@
+<app-scenario-summary
+  class="step-overview"
+  [planningApproach]="(planningApproach$ | async) ?? undefined"
+  [standSize]="(standSize$ | async) ?? null"></app-scenario-summary>
+
+<app-improved-treatment-goal-selector
+  [control]="
+    form.controls.treatment_goal
+  "></app-improved-treatment-goal-selector>

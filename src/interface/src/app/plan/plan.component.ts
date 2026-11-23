@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EMPTY, finalize, interval, switchMap, take } from 'rxjs';
+import { finalize, take } from 'rxjs';
 import { Plan } from '@types';
 import { Note, PlanningAreaNotesService } from '@services';
 import { NotesPanelState } from '@styleguide';
@@ -20,9 +20,6 @@ import {
   getPlanPath,
   getWorkspaceId,
   PlanningAreaCreationOrigin,
-  planningAreaMetricsAreReady,
-  planningAreaMetricsFailed,
-  POLLING_INTERVAL,
 } from './plan-helpers';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
 import { SuccessDialogComponent } from '@styleguide/dialogs/success-dialog/success-dialog.component';
@@ -90,7 +87,6 @@ export class PlanComponent implements OnInit {
 
   ngOnInit() {
     this.loadNotes();
-    this.pollForChanges();
   }
 
   backToOverview() {
@@ -159,23 +155,6 @@ export class PlanComponent implements OnInit {
 
   canAddScenario(plan: Plan) {
     return canAddScenario(plan) || false;
-  }
-
-  // only poll if plan.map-status is not done
-  private pollForChanges() {
-    this.currentPlan$
-      .pipe(
-        // poll only while NOT DONE
-        switchMap((plan) =>
-          !this.isPlanMapStatusReady(plan) ? interval(POLLING_INTERVAL) : EMPTY
-        ),
-        untilDestroyed(this)
-      )
-      .subscribe(() => this.planState.reloadPlan());
-  }
-
-  private isPlanMapStatusReady(plan: Plan) {
-    return planningAreaMetricsAreReady(plan) || planningAreaMetricsFailed(plan);
   }
 
   private checkForInProgressModal() {

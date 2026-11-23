@@ -15,14 +15,24 @@ import { ScenarioState } from '@app/scenario/scenario.state';
 import { MapModuleService } from '@app/services/map-module.service';
 import { ModuleService } from '@app/services/module.service';
 import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
-import { DataLayer, Constraint } from '@app/types';
+import { DataLayer, Constraint, ForsysData } from '@app/types';
 import { NamedConstraint } from '../adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
 import { DataLayersRailComponent } from '@app/data-layers/data-layers-rail/data-layers-rail.component';
+import { ForsysService } from '@app/services/forsys.service';
 
 const layerOne = { id: 1, name: 'Test Layer One' } as unknown as DataLayer;
 const layerTwo = { id: 2, name: 'Test Layer Two' } as unknown as DataLayer;
+
+const forsysData: ForsysData = {
+  inclusions: [],
+  exclusions: [],
+  thresholds: {
+    slope: { id: 1 },
+    distance_from_roads: { id: 2 },
+  },
+};
 
 function makeConstraint(
   partial: Partial<NamedConstraint> = {}
@@ -59,7 +69,7 @@ describe('AdvStandLevelConstraintsComponent', () => {
   let mapModuleServiceSpy: jasmine.SpyObj<MapModuleService>;
 
   let currentScenario$: Subject<unknown>;
-  let currentPlan$: Subject<unknown>;
+  let planningAreaGeometry$: Subject<unknown>;
   let advConstraints$: BehaviorSubject<Constraint[] | null>;
   let layerClicked$: Subject<DataLayer>;
 
@@ -81,7 +91,7 @@ describe('AdvStandLevelConstraintsComponent', () => {
 
   beforeEach(async () => {
     currentScenario$ = new Subject();
-    currentPlan$ = new Subject();
+    planningAreaGeometry$ = new Subject();
     advConstraints$ = new BehaviorSubject<Constraint[] | null>(null);
     layerClicked$ = new Subject<DataLayer>();
 
@@ -116,6 +126,9 @@ describe('AdvStandLevelConstraintsComponent', () => {
       ],
       providers: [
         { provide: MapModuleService, useValue: mapModuleServiceSpy },
+        MockProvider(ForsysService, {
+          forsysData$: of(forsysData),
+        }),
         MockProvider(DataLayersStateService, {
           layerClicked$,
           addSelectedLayer: jasmine.createSpy('addSelectedLayer'),
@@ -125,10 +138,17 @@ describe('AdvStandLevelConstraintsComponent', () => {
         { provide: MatDialog, useValue: dialogSpy },
         { provide: ModuleService, useValue: moduleServiceSpy },
         { provide: ScenarioState, useValue: { currentScenario$ } },
-        { provide: NewScenarioState, useValue: { advConstraints$ } },
+        {
+          provide: NewScenarioState,
+          useValue: {
+            advConstraints$,
+            scenarioConfig$: new BehaviorSubject({}),
+            setConstraints: jasmine.createSpy('setConstraints'),
+          },
+        },
         {
           provide: PlanState,
-          useValue: { currentPlan$, planningAreaGeometry$: new Subject() },
+          useValue: { planningAreaGeometry$ },
         },
       ],
     })
@@ -194,7 +214,7 @@ describe('AdvStandLevelConstraintsComponent', () => {
         expect(mapModuleServiceSpy.loadMapModule).not.toHaveBeenCalled();
 
         currentScenario$.next({ id: 99 });
-        currentPlan$.next({ geometry: { type: 'Polygon' } });
+        planningAreaGeometry$.next({ type: 'Polygon' });
 
         expect(mapModuleServiceSpy.loadMapModule).toHaveBeenCalledOnceWith({
           type: 'Polygon',
@@ -415,6 +435,48 @@ describe('AdvStandLevelConstraintsComponent', () => {
 
         expect(selected()).toEqual([]);
         expect(component.activeConstraint$.value).toBeNull();
+      });
+    });
+
+    describe('validations for stand level constraints form should work as expected', () => {
+      const ranges = [
+        { control: 'max_slope', min: 0, max: 100, valid: 50 },
+        { control: 'min_distance_from_road', min: 0, max: 100000, valid: 500 },
+      ];
+
+      const ctrl = (name: string) => component.form.get(name)!;
+
+      ranges.forEach(({ control, min, max, valid }) => {
+        describe(control, () => {
+          it(`is invalid below ${min}`, () => {
+            ctrl(control).setValue(min - 1);
+            expect(ctrl(control).valid).toBeFalse();
+            expect(ctrl(control).hasError('min')).toBeTrue();
+          });
+
+          it(`is invalid above ${max}`, () => {
+            ctrl(control).setValue(max + 1);
+            expect(ctrl(control).valid).toBeFalse();
+            expect(ctrl(control).hasError('max')).toBeTrue();
+          });
+
+          it('is valid within range', () => {
+            ctrl(control).setValue(valid);
+            expect(ctrl(control).valid).toBeTrue();
+          });
+        });
+      });
+
+      it('makes the form invalid when any field is out of range', () => {
+        ctrl('max_slope').setValue(50);
+        ctrl('min_distance_from_road').setValue(100001);
+        expect(component.form.valid).toBeFalse();
+      });
+
+      it('makes the form valid when all fields are in range', () => {
+        ctrl('max_slope').setValue(10);
+        ctrl('min_distance_from_road').setValue(1000);
+        expect(component.form.valid).toBeTrue();
       });
     });
   });

@@ -152,9 +152,20 @@ export function getPlanPath(
   planId: number | string,
   route?: ActivatedRouteSnapshot
 ) {
+  return `${getWorkspacePrefix(route)}/plan/${planId}`;
+}
+
+/** Pass the route so pages under `/workspace/:workspaceId` keep the prefix. */
+export function getMapViewerPath(
+  planId: number | string,
+  route?: ActivatedRouteSnapshot
+) {
+  return `${getWorkspacePrefix(route)}/map-viewer/${planId}`;
+}
+
+function getWorkspacePrefix(route?: ActivatedRouteSnapshot) {
   const workspaceId = getWorkspaceId(route);
-  const prefix = workspaceId ? `/workspace/${workspaceId}` : '';
-  return `${prefix}/plan/${planId}`;
+  return workspaceId ? `/workspace/${workspaceId}` : '';
 }
 
 export function isValidTotalArea(area: number) {

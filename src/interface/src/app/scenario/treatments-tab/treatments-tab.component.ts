@@ -2,13 +2,18 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TreatmentsService } from '@services/treatments.service';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
-import { Plan, TreatmentPlan, TreatmentStatus } from '@types';
+import {
+  Plan,
+  TREATMENT_PLAN_LIST_EVENTS,
+  TreatmentPlan,
+  TreatmentStatus,
+} from '@types';
 import { DeleteDialogComponent } from '@standalone/delete-dialog/delete-dialog.component';
-import { interval, take } from 'rxjs';
+import { startWith, take } from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { POLLING_INTERVAL } from '@plan/plan-helpers';
+import { WebSocketService } from '@services';
 import {
   canCloneTreatmentPlan,
   canDeleteTreatmentPlan,
@@ -47,18 +52,18 @@ export class TreatmentsTabComponent implements OnInit {
     private treatmentsService: TreatmentsService,
     private matSnackBar: MatSnackBar,
     private dialog: MatDialog,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private webSocketService: WebSocketService
   ) {}
 
   ngOnInit(): void {
-    this.pollForChanges();
+    this.listenForChanges();
   }
 
-  private pollForChanges() {
-    this.loadTreatments();
-    // we might want to check if any scenario is still pending in order to poll
-    interval(POLLING_INTERVAL)
-      .pipe(untilDestroyed(this))
+  private listenForChanges() {
+    this.webSocketService
+      .scenarioUpdates$(Number(this.scenarioId), TREATMENT_PLAN_LIST_EVENTS)
+      .pipe(startWith(null), untilDestroyed(this))
       .subscribe(() => this.loadTreatments());
   }
 

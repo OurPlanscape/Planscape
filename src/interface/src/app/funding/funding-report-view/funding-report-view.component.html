@@ -48,7 +48,13 @@
       </div>
     </div>
     <div class="data-layers-view" *ngIf="currentView === 'data_layers'">
+      <app-data-layers-rail
+        *appFeatureFlag="'DATA_ORGANIZATION'"
+        class="data-layers-rail"
+        [showBaseLayers]="true"
+        [useClearFooter]="false"></app-data-layers-rail>
       <mat-tab-group
+        *appFeatureFlag="'DATA_ORGANIZATION'; hide: true"
         class="map-layers-tabs"
         [(selectedIndex)]="tabIndex"
         mat-stretch-tabs="false"

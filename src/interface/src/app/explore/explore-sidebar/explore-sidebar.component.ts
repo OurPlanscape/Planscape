@@ -13,14 +13,33 @@ import {
   SidebarIconRailComponent,
   SidebarRailItem,
 } from '@explore/sidebar-icon-rail/sidebar-icon-rail.component';
+import { dataLayersRailItems } from '@explore/sidebar-icon-rail/data-layers-rail-items';
 import { SidebarTabs } from '@explore/sidebar-tabs';
 import { DataLayersRegistryService } from '@explore/data-layers-registry';
 import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
-import { combineLatest, map, of, switchMap, take } from 'rxjs';
+import { WorkspaceState } from '@app/workspaces/workspace.state';
+import { MatDialog } from '@angular/material/dialog';
+import { UploadDataModalComponent } from '@data-layers/upload-data-modal/upload-data-modal.component';
+import { FeatureService } from '@features/feature.service';
+import { FeaturesModule } from '@features/features.module';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import {
+  asapScheduler,
+  catchError,
+  combineLatest,
+  map,
+  observeOn,
+  of,
+  switchMap,
+  take,
+} from 'rxjs';
 
 const PANEL_BY_RAIL_ITEM: Record<string, SidebarTabs> = {
   'data-layers': SidebarTabs.DATA_LAYERS,
   'base-layers': SidebarTabs.BASE_LAYERS,
+  favorites: SidebarTabs.FAVORITES,
+  uploaded: SidebarTabs.UPLOADED,
 };
 
 @Component({
@@ -31,7 +50,10 @@ const PANEL_BY_RAIL_ITEM: Record<string, SidebarTabs> = {
     AsyncPipe,
     ButtonComponent,
     BaseLayersComponent,
+    FeaturesModule,
     MapTabsComponent,
+    MatIconModule,
+    MatTooltipModule,
     SidebarIconRailComponent,
   ],
   templateUrl: './explore-sidebar.component.html',
@@ -55,13 +77,34 @@ export class ExploreSidebarComponent {
   );
 
   dataLayersSelection$ = this.dataLayersState$.pipe(
+    // Maps register and restore their state on init, after this header was checked
+    observeOn(asapScheduler),
     switchMap((state) => state?.selection$ ?? of(null))
   );
 
   constructor(
     private multiMapConfigState: MultiMapConfigState,
-    private dataLayersRegistry: DataLayersRegistryService
+    private dataLayersRegistry: DataLayersRegistryService,
+    private featureService: FeatureService,
+    private workspaceState: WorkspaceState,
+    private dialog: MatDialog
   ) {}
+
+  canUpload$ = this.featureService.isFeatureEnabled('DATA_UPLOAD')
+    ? this.workspaceState.currentWorkspace$.pipe(
+        map((workspace) => workspace.permissions.includes('add_datalayer')),
+        catchError(() => of(false))
+      )
+    : of(false);
+
+  openUpload(trigger: HTMLElement) {
+    // The dialog aria-hides the page before it takes focus
+    trigger.blur();
+    this.dialog
+      .open(UploadDataModalComponent, { restoreFocus: false })
+      .afterClosed()
+      .subscribe(() => trigger.focus());
+  }
 
   goBack() {
     this.dataLayersState$
@@ -69,15 +112,23 @@ export class ExploreSidebarComponent {
       .subscribe((state) => state?.goBackToSearchResults());
   }
 
+  // Panels that drill into a dataset or category, and need a way back out
+  get browsesLayers(): boolean {
+    return (
+      this.selectedTab === SidebarTabs.DATA_LAYERS ||
+      this.selectedTab === SidebarTabs.UPLOADED
+    );
+  }
+
   @HostBinding('class.expanded') get hostExpanded() {
     return this.expanded;
   }
 
-  readonly railItems: SidebarRailItem[] = [
-    { id: 'data-layers', icon: 'category', label: 'Data Layers' },
-    { id: 'base-layers', icon: 'layers', label: 'Base Layers' },
-    { id: 'favorites', icon: 'star', label: 'Favorites', disabled: true },
-  ];
+  readonly railItems = dataLayersRailItems({
+    baseLayers: true,
+    uploaded: this.featureService.isFeatureEnabled('DATA_UPLOAD'),
+    favoritesEnabled: true,
+  });
 
   get activeItem() {
     return this.railItems.find(

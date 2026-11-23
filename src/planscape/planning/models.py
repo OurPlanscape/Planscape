@@ -277,7 +277,7 @@ class ScenarioVersion(models.TextChoices):
     V3 = "V3", "Version 3"
 
 
-class TreatmentGoalCategory(CreatedAtMixin, UpdatedAtMixin, models.Model):
+class TreatmentGoalCategory(CreatedAtMixin, UpdatedAtMixin, UUIDMixin, models.Model):
     id: int
     name = models.CharField(
         max_length=120,
@@ -326,7 +326,9 @@ class TreatmentGoalManager(AliveObjectsManager):
         return qs.filter(active=True)
 
 
-class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
+class TreatmentGoal(
+    CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, UUIDMixin, models.Model
+):
     id: int
     name = models.CharField(max_length=120, help_text="Name of the Treatment Goal.")
     description = models.TextField(null=True, help_text="Treatment Goal description.")

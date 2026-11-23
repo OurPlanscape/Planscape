@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, take } from 'rxjs';
+import { BehaviorSubject, Subject, take } from 'rxjs';
 import { MapConfigState } from './map-config.state';
 import { MultiMapsStorageService } from '@services/local-storage.service';
 import { MAP_WEST_CONUS_BOUNDS } from '@map/map.constants';
@@ -19,6 +19,12 @@ export class MultiMapConfigState extends MapConfigState {
 
   private _allowClickOnMap$ = new BehaviorSubject(false);
   public allowClickOnMap$ = this._allowClickOnMap$.asObservable();
+
+  private _mapClicked$ = new Subject<number>();
+  public mapClicked$ = this._mapClicked$.asObservable();
+
+  private _layerNameClicked$ = new Subject<number>();
+  public layerNameClicked$ = this._layerNameClicked$.asObservable();
 
   constructor(
     private multiMapsStorageService: MultiMapsStorageService,
@@ -80,6 +86,16 @@ export class MultiMapConfigState extends MapConfigState {
 
   setSelectedMap(id: number | null) {
     this._selectedMapId$.next(id);
+  }
+
+  selectClickedMap(id: number) {
+    this.setSelectedMap(id);
+    this._mapClicked$.next(id);
+  }
+
+  goToLayerOnMap(id: number) {
+    this.selectClickedMap(id);
+    this._layerNameClicked$.next(id);
   }
 
   resetToFirstMap() {

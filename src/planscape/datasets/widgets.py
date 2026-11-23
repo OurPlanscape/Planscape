@@ -19,17 +19,19 @@ class ReadOnlyOSMGeometryWidget(gis_forms.OSMWidget):
 
     def get_context(self, name, value, attrs):
         context = super().get_context(name, None, attrs)
-        context["widget"]["geometry_url"] = self.geometry_url
-        context["widget"]["map_options_json"] = json.dumps(
+        widget = context["widget"]
+        widget_attrs = widget["attrs"]
+        widget["geometry_url"] = self.geometry_url
+        widget["map_options_json"] = json.dumps(
             {
-                "geom_name": context["geom_type"],
-                "id": context["id"],
-                "map_id": f"{context['id']}_map",
-                "map_srid": context["map_srid"],
-                "name": context["name"],
-                "default_lon": context["default_lon"],
-                "default_lat": context["default_lat"],
-                "default_zoom": context["default_zoom"],
+                "geom_name": widget_attrs["geom_name"],
+                "id": widget_attrs["id"],
+                "map_id": f"{widget_attrs['id']}_map",
+                "map_srid": widget_attrs["map_srid"],
+                "name": widget["name"],
+                "default_lon": widget_attrs["default_lon"],
+                "default_lat": widget_attrs["default_lat"],
+                "default_zoom": widget_attrs["default_zoom"],
             }
         )
         return context

@@ -1,17 +1,27 @@
 import json
+import re
 from typing import List, Optional  # noqa
 
 import markdown
-from workspaces.access import get_planning_area_permissions, get_planning_area_role
-from datasets.models import DataLayer, DataLayerStatus, DataLayerType, GeometryType
+from core.flags import feature_enabled
+from datasets.models import (
+    DataLayer,
+    DataLayerStatus,
+    DataLayerType,
+    GeometryType,
+    hydrate_category_ancestors,
+)
+from datasets.serializers import DataLayerEmbedSerializer
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from django.db import models
 from django.utils import timezone
 from planscape.analytics import track_event
 from planscape.exceptions import InvalidGeometry
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from stands.models import Stand, StandSizeChoices
+from workspaces.access import get_planning_area_permissions, get_planning_area_role
 from workspaces.models import Workspace, WorkspaceKind
 from workspaces.permissions import WorkspacePermission
 
@@ -123,6 +133,24 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
             "workspace",
         )
         model = PlanningArea
+
+
+class RealtimePlanningAreaSerializer(ListPlanningAreaSerializer):
+    """
+    Planning area as pushed over the workspace socket. `role` and
+    `permissions` depend on who is looking, so the socket adds them per
+    connection.
+    """
+
+    role = None
+    permissions = None
+
+    class Meta(ListPlanningAreaSerializer.Meta):
+        fields = tuple(
+            field
+            for field in ListPlanningAreaSerializer.Meta.fields
+            if field not in ("role", "permissions")
+        )
 
 
 class CreatePlanningAreaSerializer(serializers.ModelSerializer):
@@ -348,6 +376,9 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
         model = ScenarioResult
 
     def get_result(self, instance):
+        # the project area GeoJSON is too large to push over the socket
+        if self.context.get("exclude_result"):
+            return None
         result = instance.result
         if not result:
             return None
@@ -556,6 +587,19 @@ class UpsertConfigurationV2Serializer(ConfigurationV2Serializer):
         return instance
 
 
+CONSTRAINT_OPERATORS = ["eq", "dne", "lt", "lte", "gt", "gte", "btw", "in", "nin"]
+CONSTRAINT_NUMBER_RE = re.compile(r"^-?\d+(\.\d+)?$")
+CONSTRAINT_WORD_RE = re.compile(r"^\w+$")
+
+
+def _is_number(value: str) -> bool:
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
 class ConstraintSerializer(serializers.Serializer):
     datalayer = serializers.PrimaryKeyRelatedField(
         queryset=DataLayer.objects.all(),
@@ -563,40 +607,63 @@ class ConstraintSerializer(serializers.Serializer):
     )
 
     operator = serializers.ChoiceField(
-        choices=["eq", "dne", "lt", "lte", "gt", "gte", "btw"],
+        choices=CONSTRAINT_OPERATORS,
         required=True,
     )
 
     value = serializers.CharField(
-        max_length=32,
+        max_length=256,
         required=True,
     )
 
-    def validate_value(self, value):
-        if "," in str(value):
-            values = value.strip().replace(" ", "").split(",", maxsplit=1)
-            values.sort()
-            min_value, max_value = values
-            try:
-                float(min_value)
-                float(max_value)
-                return f"{min_value},{max_value}"
-            except ValueError:
-                raise serializers.ValidationError("Invalid constraint value(s)")
-        else:
-            try:
-                float(value)
-                return value
-            except ValueError:
-                raise serializers.ValidationError("Invalid constraint value")
+    def validate(self, attrs):
+        operator = attrs.get("operator")
+        value = str(attrs.get("value"))
+
+        match operator:
+            case "btw":
+                attrs["value"] = self._validate_between_value(value)
+            case "in" | "nin":
+                attrs["value"] = self._validate_list_value(value)
+            case _:
+                attrs["value"] = self._validate_single_value(value)
+
+        return attrs
+
+    def _validate_between_value(self, value):
+        if "," not in value:
+            return self._validate_single_value(value)
+
+        values = value.strip().replace(" ", "").split(",", maxsplit=1)
+        values.sort()
+        min_value, max_value = values
+        try:
+            float(min_value)
+            float(max_value)
+            return f"{min_value},{max_value}"
+        except ValueError:
+            raise serializers.ValidationError({"value": "Invalid constraint value(s)"})
+
+    def _validate_list_value(self, value):
+        # numbers or words separated by comma, e.g. "1, 2,abc"
+        items = [item.strip() for item in value.split(",")]
+        for item in items:
+            if not (CONSTRAINT_NUMBER_RE.match(item) or CONSTRAINT_WORD_RE.match(item)):
+                raise serializers.ValidationError(
+                    {"value": "Invalid constraint value(s)"}
+                )
+        return ",".join(items)
+
+    def _validate_single_value(self, value):
+        if not _is_number(value):
+            raise serializers.ValidationError({"value": "Invalid constraint value"})
+        return value
 
 
 class ConstraintReadSerializer(serializers.Serializer):
     datalayer = serializers.IntegerField()
-    operator = serializers.ChoiceField(
-        choices=["eq", "dne", "lt", "lte", "gt", "gte", "btw"]
-    )
-    value = serializers.CharField(max_length=32)
+    operator = serializers.ChoiceField(choices=CONSTRAINT_OPERATORS)
+    value = serializers.CharField(max_length=256)
 
 
 class TargetsSerializer(serializers.Serializer):
@@ -853,12 +920,43 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
         return instance
 
 
+class TreatmentGoalUsageListSerializer(serializers.ListSerializer):
+    """
+    Avoids N+1 queries when serializing usages: loads each usage's data layer,
+    category and styles in bulk, and batch-loads category ancestors when the
+    full DataLayer is embedded. Usages that were already prefetched (e.g. by
+    TreatmentGoalViewSet) are used as they are.
+    """
+
+    def to_representation(self, data):
+        if isinstance(data, models.manager.BaseManager):
+            data = data.all()
+        improved = feature_enabled("IMPROVED_TREATMENT_GOAL")
+        if isinstance(data, models.QuerySet) and data._result_cache is None:
+            if improved:
+                data = data.select_related(
+                    "datalayer", "datalayer__category", "datalayer__dataset"
+                ).prefetch_related("datalayer__styles")
+            else:
+                data = data.select_related("datalayer")
+        usages = list(data)
+        if improved:
+            hydrate_category_ancestors(usage.datalayer.category for usage in usages)
+        return super().to_representation(usages)
+
+
 class TreatmentGoalUsageSerializer(serializers.ModelSerializer):
-    datalayer = serializers.CharField(source="datalayer.name", read_only=True)
+    datalayer = serializers.SerializerMethodField()
+
+    def get_datalayer(self, instance):
+        if feature_enabled("IMPROVED_TREATMENT_GOAL"):
+            return DataLayerEmbedSerializer(instance.datalayer, context=self.context).data
+        return instance.datalayer.name
 
     class Meta:
         model = TreatmentGoalUsesDataLayer
         fields = ("usage_type", "datalayer")
+        list_serializer_class = TreatmentGoalUsageListSerializer
 
 
 class TreatmentGoalSerializer(serializers.ModelSerializer):
@@ -1186,11 +1284,12 @@ class WeightedDataLayerSerializer(IdNameSerializer):
 
 class ConstraintDetailsSerializer(serializers.Serializer):
     datalayer = IdNameSerializer()
-    operator = serializers.ChoiceField(
-        choices=["eq", "dne", "lt", "lte", "gt", "gte", "btw"]
-    )
+    operator = serializers.ChoiceField(choices=CONSTRAINT_OPERATORS)
     value = serializers.CharField(
-        help_text="Constraint value. For `btw`, a comma separated `min,max` pair."
+        help_text=(
+            "Constraint value. For `btw`, a comma separated `min,max` pair. "
+            "For `in` and `nin`, a comma separated list of numbers or words."
+        )
     )
 
 
@@ -1753,6 +1852,18 @@ class AvailableStandsSerializer(serializers.Serializer):
     unavailable = UnavailableStandsSerializer()
 
     summary = AvailableStandsSummarySerializer()
+
+
+class TreatableStandsSerializer(serializers.Serializer):
+    stand_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        help_text="Stand IDs saved in the ForSys inputs.",
+    )
+    stand_count = serializers.IntegerField()
+    stand_size = serializers.ChoiceField(
+        choices=StandSizeChoices.choices,
+    )
+    total_area_acres = serializers.FloatField()
 
 
 class SubUnitsDetailsParamsSerializer(serializers.Serializer):

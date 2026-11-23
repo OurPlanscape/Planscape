@@ -225,3 +225,27 @@ def update_file_cache_control(
     blob.cache_control = directives
     blob.patch()
     logger.info(f"Updated cache_control for {gs_url}.")
+
+
+def copy_file(source_url: str, destination_url: str):
+    """
+    Copies a Google Cloud Storage file server-side, possibly across buckets.
+
+    Args:
+        source_url (str): The GCS URL of the file to copy.
+        destination_url (str): The GCS URL of the copy.
+    """
+    if not is_gcs_file(source_url) or not is_gcs_file(destination_url):
+        raise ValueError(f"Invalid GCS URLs: {source_url} -> {destination_url}")
+
+    source_bucket, source_key = get_bucket_and_key(source_url)
+    destination_bucket, destination_key = get_bucket_and_key(destination_url)
+    storage_client = storage.Client()
+    source = storage_client.bucket(source_bucket).blob(source_key)
+    destination = storage_client.bucket(destination_bucket).blob(destination_key)
+
+    logger.info(f"Copying {source_url} to {destination_url}.")
+    token, _, _ = destination.rewrite(source)
+    while token is not None:
+        token, _, _ = destination.rewrite(source, token=token)
+    logger.info(f"Copied {source_url} to {destination_url}.")

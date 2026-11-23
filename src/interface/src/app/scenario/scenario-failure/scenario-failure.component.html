@@ -29,6 +29,16 @@
       You can copy your scenario and edit it with these adjustments in mind,
       then run the scenario again.
     </p>
+
+    <div class="info-box">
+      <div class="heading">Your Scenario May Be Too Constrained</div>
+      <div>
+        Turn on “All Treatable Stands” to see which stands meet your
+        constraints, then consider adjusting your constraints to make more
+        stands available.
+      </div>
+    </div>
+
     <div class="actions" *ngIf="variant === 'default'">
       <button
         (click)="tryAgain.emit()"
