@@ -10,7 +10,7 @@ export const test = base.extend<{ planId: number; workspaceId: number }>({
   workspaceId: async ({}, use) => {
     await use(JSON.parse(fs.readFileSync(PLAN_FILE, 'utf8')).workspaceId);
   },
-  // overrides martin requests... TODO: we might not need this for hosted e2e tests?
+  // overrides martin requests
   page: async ({ page }, use) => {
     await page.route('**/tiles/**', async (route) => {
       await route.fulfill({

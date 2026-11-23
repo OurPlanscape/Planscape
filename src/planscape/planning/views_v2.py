@@ -1245,7 +1245,7 @@ class TreatmentGoalViewSet(
     """
 
     serializer_class = TreatmentGoalSerializer
-    # filterset_class = TreatmentGoalFilter
+    filterset_class = TreatmentGoalFilter
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [TrackedFilterBackend, OrderingFilter]
     ordering_fields = ["category__name", "name"]
