@@ -2,7 +2,7 @@ import copy
 import json
 from unittest import mock
 
-from datasets.models import Category, DataLayerType, GeometryType
+from datasets.models import Category, DataLayer, DataLayerType, GeometryType
 from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
@@ -857,6 +857,13 @@ class ScenarioDetailTest(APITestCase):
             self.assertIsInstance(entry["datalayer"], dict)
             self.assertIn("name", entry["datalayer"])
             self.assertIn("styles", entry["datalayer"])
+            for field in ("url", "public_url", "map_url"):
+                self.assertNotIn(field, entry["datalayer"])
+            self.assertIsInstance(entry["datalayer"]["dataset"], dict)
+            self.assertEqual(
+                set(entry["datalayer"]["dataset"].keys()),
+                {"id", "organization", "name", "description"},
+            )
         self.assertEqual(
             {entry["datalayer"]["id"] for entry in data.get("usage_types")},
             expected_ids,
@@ -3811,8 +3818,10 @@ class ScenarioUsageTypesQueryCountTest(TestCase):
             TreatmentGoalUsesDataLayer.objects.create(
                 usage_type=usage_types[i % len(usage_types)],
                 treatment_goal=goal,
+                # Distinct dataset per layer so a missing dataset
+                # select_related shows up as an N+1.
                 datalayer=DataLayerFactory.create(
-                    dataset=dataset,
+                    dataset=DatasetFactory.create(),
                     category=categories[i % len(categories)],
                     style=StyleFactory.create() if i % 2 else None,
                 ),
@@ -3826,6 +3835,19 @@ class ScenarioUsageTypesQueryCountTest(TestCase):
         with CaptureQueriesContext(connection) as ctx:
             data = serializer_class(scenario).data
         return len(ctx.captured_queries), data
+
+    def _assert_embedded_datasets(self, data):
+        for usage in data["usage_types"]:
+            datalayer = DataLayer.objects.get(pk=usage["datalayer"]["id"])
+            self.assertEqual(
+                usage["datalayer"]["dataset"],
+                {
+                    "id": datalayer.dataset.id,
+                    "organization": datalayer.dataset.organization_id,
+                    "name": datalayer.dataset.name,
+                    "description": datalayer.dataset.description,
+                },
+            )
 
     def _assert_constant_queries(self, serializer_class):
         small = self._scenario_with_usages(1)
@@ -3845,19 +3867,20 @@ class ScenarioUsageTypesQueryCountTest(TestCase):
     @override_settings(FEATURE_FLAGS=["IMPROVED_TREATMENT_GOAL"])
     def test_v2_improved_usage_types_constant_queries(self):
         data = self._assert_constant_queries(ScenarioV2Serializer)
-        paths = {tuple(u["datalayer"]["path"]) for u in data["usage_types"]}
-        self.assertIn(("Root", "Child", "Grandchild"), paths)
         nested = next(
             u["datalayer"]
             for u in data["usage_types"]
-            if u["datalayer"]["path"] == ["Root", "Child", "Grandchild"]
+            if u["datalayer"]["category"]
+            and u["datalayer"]["category"]["name"] == "Grandchild"
         )
         self.assertEqual(nested["category"]["parent"]["name"], "Child")
         self.assertEqual(nested["category"]["parent"]["parent"]["name"], "Root")
         self.assertTrue(any(u["datalayer"]["styles"] for u in data["usage_types"]))
+        self._assert_embedded_datasets(data)
 
     @override_settings(FEATURE_FLAGS=["IMPROVED_TREATMENT_GOAL"])
     def test_v3_improved_usage_types_constant_queries(self):
         data = self._assert_constant_queries(ScenarioV3Serializer)
         self.assertTrue(all(isinstance(u["datalayer"], dict) for u in data["usage_types"]))
+        self._assert_embedded_datasets(data)
 

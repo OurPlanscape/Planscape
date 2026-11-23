@@ -3,11 +3,11 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ButtonComponent, ToggleComponent } from '@styleguide';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
-import { DataLayer, ScenarioGoal, UsageType } from '@types';
+import { DataLayer, EmbeddedDataLayer, ScenarioGoal, UsageType } from '@types';
 
 interface PreviewRow {
   key: string;
-  layer: DataLayer;
+  layer: EmbeddedDataLayer;
 }
 
 interface PreviewGroup {
@@ -25,7 +25,7 @@ function rowsOf(usages: UsageType[], usageType: string): PreviewRow[] {
   return usages
     .filter((usage) => usage.usage_type === usageType)
     .map((usage) => usage.datalayer)
-    .filter((layer): layer is DataLayer => typeof layer !== 'string')
+    .filter((layer): layer is EmbeddedDataLayer => typeof layer !== 'string')
     .map((layer) => ({ key: `${usageType}:${layer.id}`, layer }));
 }
 
@@ -67,10 +67,12 @@ export class TreatmentGoalDetailsComponent {
 
   toggleLayer(row: PreviewRow, previewing: boolean) {
     this.previewedRow = previewing ? row : null;
-    this.dataLayersStateService.selectDataLayer(previewing ? row.layer : null);
+    this.dataLayersStateService.selectDataLayer(
+      previewing ? (row.layer as DataLayer) : null
+    );
   }
 
-  sourceOf(layer: DataLayer) {
+  sourceOf(layer: EmbeddedDataLayer) {
     return layer.dataset?.name ?? '';
   }
 

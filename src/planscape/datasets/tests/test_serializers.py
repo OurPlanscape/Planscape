@@ -13,8 +13,10 @@ from datasets.serializers import (
     CreateDatasetSerializer,
     CreateDataLayerSerializer,
     CreateStyleSerializer,
+    DataLayerEmbedSerializer,
     DataLayerMetadataSerializer,
     DataLayerSerializer,
+    DatasetEmbbedSerializer,
     DatasetSerializer,
     UpdateDatasetSerializer,
 )
@@ -214,6 +216,69 @@ class DataLayerSerializerTest(TestCase):
         self.assertEqual(data["name"], data_layer.name)
         self.assertEqual(data["organization"], data_layer.organization.id)
         self.assertEqual(data["dataset"], data_layer.dataset.id)
+
+
+class DatasetEmbbedSerializerTest(TestCase):
+    def test_dataset_embed_serializer_fields(self):
+        dataset = DatasetFactory(description="Some description")
+        data = DatasetEmbbedSerializer(dataset).data
+        self.assertEqual(
+            data,
+            {
+                "id": dataset.id,
+                "organization": dataset.organization_id,
+                "name": dataset.name,
+                "description": "Some description",
+            },
+        )
+
+
+class DataLayerEmbedSerializerTest(TestCase):
+    def test_embed_serializer_fields(self):
+        data_layer = DataLayerFactory()
+        data = DataLayerEmbedSerializer(data_layer).data
+        self.assertEqual(
+            set(data.keys()),
+            {
+                "id",
+                "name",
+                "dataset",
+                "category",
+                "type",
+                "styles",
+                "info",
+                "metadata",
+            },
+        )
+        for field in ("url", "public_url", "map_url", "path", "created_by"):
+            self.assertNotIn(field, data)
+        self.assertEqual(data["id"], data_layer.id)
+        self.assertEqual(data["name"], data_layer.name)
+
+    def test_embed_serializer_nests_dataset(self):
+        dataset = DatasetFactory(description="Layer dataset")
+        data_layer = DataLayerFactory(dataset=dataset)
+        data = DataLayerEmbedSerializer(data_layer).data
+        self.assertEqual(
+            data["dataset"],
+            {
+                "id": dataset.id,
+                "organization": dataset.organization_id,
+                "name": dataset.name,
+                "description": "Layer dataset",
+            },
+        )
+
+    def test_embed_serializer_without_category(self):
+        data_layer = DataLayerFactory(category=None)
+        data = DataLayerEmbedSerializer(data_layer).data
+        self.assertIsNone(data["category"])
+        self.assertEqual(data["dataset"]["id"], data_layer.dataset_id)
+
+    def test_full_serializer_keeps_dataset_as_pk(self):
+        data_layer = DataLayerFactory()
+        data = DataLayerSerializer(data_layer).data
+        self.assertEqual(data["dataset"], data_layer.dataset_id)
 
 
 class DataLayerMetadataSerializerTest(TestCase):

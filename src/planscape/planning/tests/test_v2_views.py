@@ -3,7 +3,7 @@ from unittest import mock
 
 from collaboration.models import Role
 from collaboration.tests.factories import UserObjectRoleFactory
-from datasets.models import Category
+from datasets.models import Category, DataLayer
 from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
@@ -1432,11 +1432,60 @@ class TreatmentGoalViewSetTest(APITestCase):
         }
         self.assertEqual(set(usages.keys()), {"PRIORITY", "THRESHOLD"})
         self.assertIsInstance(usages["PRIORITY"], dict)
+        self.assertEqual(
+            set(usages["PRIORITY"].keys()),
+            {
+                "id",
+                "name",
+                "dataset",
+                "category",
+                "type",
+                "styles",
+                "info",
+                "metadata",
+            },
+        )
         self.assertEqual(usages["PRIORITY"]["id"], self.dl1.id)
         self.assertEqual(usages["PRIORITY"]["name"], "Layer 1")
         self.assertIn("styles", usages["PRIORITY"])
         self.assertEqual(usages["THRESHOLD"]["id"], self.dl2.id)
         self.assertEqual(usages["THRESHOLD"]["name"], "Layer 2")
+        for usage, datalayer in (
+            (usages["PRIORITY"], self.dl1),
+            (usages["THRESHOLD"], self.dl2),
+        ):
+            self.assertEqual(
+                usage["dataset"],
+                {
+                    "id": datalayer.dataset.id,
+                    "organization": datalayer.dataset.organization_id,
+                    "name": datalayer.dataset.name,
+                    "description": datalayer.dataset.description,
+                },
+            )
+
+    @override_settings(FEATURE_FLAGS=["IMPROVED_TREATMENT_GOAL"])
+    def test_detail_treatment_goal_improved_usage_types_dataset(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(
+            reverse(
+                "api:planning:treatment-goals-detail",
+                args=[self.first_treatment_goal.id],
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        usage_types = response.json()["usage_types"]
+        self.assertTrue(usage_types)
+        for usage in usage_types:
+            dataset = usage["datalayer"]["dataset"]
+            self.assertEqual(
+                set(dataset.keys()), {"id", "organization", "name", "description"}
+            )
+            self.assertEqual(
+                dataset["id"],
+                DataLayer.objects.get(pk=usage["datalayer"]["id"]).dataset_id,
+            )
 
     def test_list_inactive_treatment_goals_as_staff(self):
         staff_user = UserFactory.create(is_staff=True)
@@ -1551,8 +1600,10 @@ class TreatmentGoalViewSetTest(APITestCase):
                 ("THRESHOLD", child),
                 ("SECONDARY_METRIC", root),
             ):
+                # Distinct dataset per layer so a missing dataset
+                # prefetch shows up as an N+1 in the query count tests.
                 datalayer = DataLayerFactory.create(
-                    dataset=dataset,
+                    dataset=DatasetFactory.create(),
                     category=category,
                     style=StyleFactory.create() if i % 2 else None,
                 )
@@ -1610,7 +1661,8 @@ class TreatmentGoalViewSetTest(APITestCase):
             u["datalayer"]
             for goal in data
             for u in goal["usage_types"]
-            if u["datalayer"]["path"] == ["Root", "Child", "Grandchild"]
+            if u["datalayer"]["category"]
+            and u["datalayer"]["category"]["name"] == "Grandchild"
         ]
         self.assertTrue(nested)
         self.assertEqual(nested[0]["category"]["parent"]["name"], "Child")
