@@ -45,13 +45,15 @@ export class ScenarioPage {
         await this.saveAndContinue();
     }
 
-    async setTreatmentTargetAndRun() {
+    async setTreatmentTarget() {
         const min = this.page.getByRole('textbox', { name: 'Min:' });
         await min.fill('100');
         await min.press('Tab');
         await this.page.locator('#mat-input-3').fill('10');
         await this.page.getByRole('button', { name: 'Save & Run Scenario' }).click();
+    }
 
+    async runScenario() {
         await expect(this.page.getByText('Ready to run the scenario?')).toBeVisible();
         await this.page.getByRole('button', { name: 'Run Scenario' }).click();
         await expect(this.page.getByText('Your Scenario Analysis is in')).toBeVisible();

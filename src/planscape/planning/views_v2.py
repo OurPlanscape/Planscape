@@ -1252,7 +1252,6 @@ class TreatmentGoalViewSet(
     ordering = ["category__name", "name"]
 
     def get_queryset(self):
-        # user = self.request.user if self.request else None
-        # qs = TreatmentGoal.objects.accessible_by(user)
-        # return qs
-        return TreatmentGoal.objects
+        user = self.request.user if self.request else None
+        qs = TreatmentGoal.objects.accessible_by(user)
+        return qs

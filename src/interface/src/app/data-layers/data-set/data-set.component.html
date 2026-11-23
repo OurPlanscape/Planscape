@@ -44,6 +44,7 @@
       ">
       <mat-checkbox
         class="view-checkbox"
+        [aria-label]="layer.name"
         [checked]="isDatalayerSelected(layer.data)"
         [disabled]="
           !isDatalayerSelected(layer.data) &&

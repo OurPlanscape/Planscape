@@ -19,14 +19,22 @@ test('user can create a Custom Scenario', { tag: ['@smoke'] }, async ({ page, wo
   await test.step('select priority objectives', async () => {
     const search = page.getByRole('combobox', { name: 'Search in data layers' });
     await search.fill('land');
-    await page.locator('#mat-mdc-checkbox-47-input').check(); // TODO: replace generated ID
+
+    const rows = page.locator('.data-layer');
+    const viewCheckbox = rows.first().locator('mat-checkbox.view-checkbox').getByRole('checkbox');
+
+    await viewCheckbox.check();
+    await expect(viewCheckbox).toBeChecked();
     await wizard.saveAndContinue();
   });
 
   await test.step('select co-benefits', async () => {
     await expect(page.getByRole('region', { name: 'SELECT CO-BENEFITS (OPTIONAL' })).toBeVisible();
     await page.getByRole('combobox', { name: 'Search in data layers' }).fill('land');
-    await page.locator('#mat-mdc-checkbox-126-input').check(); // TODO: replace generated ID
+    const rows = page.locator('.data-layer');
+    const viewCheckbox = rows.last().locator('mat-checkbox.view-checkbox').getByRole('checkbox');
+    await viewCheckbox.check();
+    await expect(viewCheckbox).toBeChecked();
     await wizard.saveAndContinue();
   });
 
@@ -43,8 +51,12 @@ test('user can create a Custom Scenario', { tag: ['@smoke'] }, async ({ page, wo
     await wizard.saveAndContinue();
   });
 
-  await test.step('set treatment target and run', async () => {
-    await wizard.setTreatmentTargetAndRun();
+  await test.step('set treatment target', async () => {
+    await wizard.setTreatmentTarget();
+  });
+
+  await test.step('run scenario', async () => {
+    await wizard.runScenario();
   });
 
   await test.step('verify scenario was created', async () => {

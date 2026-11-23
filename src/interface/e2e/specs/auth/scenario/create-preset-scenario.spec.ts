@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import { PlanningAreaPage } from '../../../pages/planningarea.page';
 import { test } from '../../../fixtures/test-planningarea';
 import { ScenarioPage } from '../../../pages/scenariowizard.page';
@@ -30,5 +31,17 @@ test('user can create a Preset Scenario', { tag: ['@smoke'] }, async ({ page, pl
   });
 
 
-  await test.step('set target and run', () => wizard.setTreatmentTargetAndRun());
+  await test.step('set treatment target', async () => {
+    await wizard.setTreatmentTarget();
+  });
+
+  await test.step('run scenario', async () => {
+    await wizard.runScenario();
+  });
+
+  await test.step('verify scenario was created', async () => {
+    await wizard.expectScenarioRunningOrDone(name);
+    await planPage.goto(workspaceId, planId);
+    await expect(page.getByText(name)).toBeVisible();
+  });
 });
