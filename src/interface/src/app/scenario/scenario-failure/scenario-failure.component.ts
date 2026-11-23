@@ -9,12 +9,11 @@ import {
   SYSTEM_ERRORS_SET,
   USER_REVISABLE_ERRORS_SET,
 } from '@types';
-import { FeaturesModule } from '@features/features.module';
 import { FEEDBACK_URL } from '@app/shared';
 
 @Component({
   standalone: true,
-  imports: [FeaturesModule, NgIf, ButtonComponent, MatIconModule],
+  imports: [NgIf, ButtonComponent, MatIconModule],
   selector: 'app-scenario-failure',
   templateUrl: './scenario-failure.component.html',
   styleUrls: ['./scenario-failure.component.scss'],
