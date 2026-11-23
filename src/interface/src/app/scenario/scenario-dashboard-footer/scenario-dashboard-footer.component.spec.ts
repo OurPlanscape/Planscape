@@ -3,9 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ScenarioDashboardFooterComponent } from './scenario-dashboard-footer.component';
 import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { ScenarioService } from '@app/services';
-import { ScenarioConfigOverlayComponent } from '../scenario-config-overlay/scenario-config-overlay.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { LegacyScenarioConfigOverlayComponent } from '../legacy-scenario-config-overlay/legacy-scenario-config-overlay.component';
 import { ButtonComponent } from '@styleguide';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute } from '@angular/router';
@@ -19,13 +17,7 @@ describe('ScenarioDashboardFooterComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, ScenarioDashboardFooterComponent],
-      declarations: [
-        MockDeclarations(
-          ScenarioConfigOverlayComponent,
-          LegacyScenarioConfigOverlayComponent,
-          ButtonComponent
-        ),
-      ],
+      declarations: [MockDeclarations(ButtonComponent)],
       providers: [
         MockProviders(MatSnackBar, MatDialog, ScenarioService),
         { provide: ActivatedRoute, useValue: { firstChild: {} } },

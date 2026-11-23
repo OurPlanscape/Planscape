@@ -244,6 +244,31 @@ describe('ExploreSidebarComponent', () => {
           .textContent
       ).toContain('Uploaded');
     });
+
+    it('shows the uploaded panel when that tab is selected', () => {
+      component.selectedTab = SidebarTabs.UPLOADED;
+      fixture.detectChanges();
+
+      const panels = fixture.debugElement.queryAll(By.css('app-map-tabs'));
+      expect(panels.length).toBe(1);
+      expect(panels[0].attributes['panel']).toBe('uploaded');
+    });
+
+    it('goes back to the datasets from the header arrow', () => {
+      component.selectedTab = SidebarTabs.UPLOADED;
+      selection$.next({ type: 'dataset', id: 10, name: 'My uploads' });
+      fixture.detectChanges();
+
+      expect(
+        fixture.debugElement.query(By.css('.panel-header h4')).nativeElement
+          .textContent
+      ).toContain('My uploads');
+      fixture.debugElement
+        .query(By.css('.panel-header .back-button'))
+        .nativeElement.click();
+
+      expect(dataLayersState.goBackToSearchResults).toHaveBeenCalled();
+    });
   });
 
   describe('when a category is open in the data layers panel', () => {

@@ -1975,7 +1975,24 @@ def export_planning_area_to_geopackage(
         raise e
 
 
+def export_datalayer_names_file(scenario: Scenario) -> Path:
+    datalayers = scenario.get_raster_datalayers()
+    translation_dict = {
+        f"datalayer_{datalayer.pk}": datalayer.name for datalayer in datalayers
+    }
+    temp_folder = Path(settings.TEMP_GEOPACKAGE_FOLDER)
+    if not temp_folder.exists():
+        temp_folder.mkdir(parents=True)
+    temp_file = temp_folder / f"datalayers_{scenario.pk}.json"
+    with open(temp_file, "w", encoding="utf-8") as file:
+        json.dump(translation_dict, file, indent=4, ensure_ascii=False)
+
+    return temp_file
+
+
 def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
+    temp_file: Path | None = None
+    datalayers_names_file: Path | None = None
     try:
         if not regenerate and scenario.geopackage_url:
             logger.info(
@@ -2023,6 +2040,7 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
         if zip_file.exists():
             zip_file.unlink()
         forsys_inputs_file = scenario.get_forsys_folder() / f"{scenario.uuid}.json"
+        datalayers_names_file = export_datalayer_names_file(scenario=scenario)
         with zipfile.ZipFile(zip_file, "w", zipfile.ZIP_DEFLATED) as zipf:
             zipf.write(temp_file, arcname=temp_file.name)
             if forsys_inputs_file.exists():
@@ -2034,6 +2052,8 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
                     forsys_inputs_file,
                 )
 
+            zipf.write(datalayers_names_file, arcname="datalayer_names.json")
+
         upload_file_via_cli(
             object_name=geopackage_path.replace(
                 f"gs://{settings.GCS_MEDIA_BUCKET}/", ""
@@ -2042,7 +2062,6 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
             bucket_name=settings.GCS_MEDIA_BUCKET,
         )
 
-        temp_file.unlink(missing_ok=True)
         scenario.geopackage_url = geopackage_path
         scenario.geopackage_status = GeoPackageStatus.SUCCEEDED
         scenario.save(
@@ -2060,6 +2079,11 @@ def export_to_geopackage(scenario: Scenario, regenerate=False) -> str | None:
         )
         publish_scenario_event("planning.scenario.geopackage_status_changed", scenario)
         raise
+    finally:
+        if temp_file is not None:
+            temp_file.unlink(missing_ok=True)
+        if datalayers_names_file is not None:
+            datalayers_names_file.unlink(missing_ok=True)
 
 
 @transaction.atomic()

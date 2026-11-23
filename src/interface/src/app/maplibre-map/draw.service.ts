@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
-import { TerraDraw } from 'terra-draw';
-import { FeatureId } from 'terra-draw/dist/extend';
+import {
+  TerraDraw,
+  TerraDrawPolygonMode,
+  TerraDrawSelectMode,
+} from 'terra-draw';
+import { FeatureId, TerraDrawBaseDrawMode } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { Map as MapLibreMap } from 'maplibre-gl';
@@ -66,8 +70,29 @@ export class DrawService {
 
   constructor(private http: HttpClient) {}
 
-  initializeTerraDraw(map: MapLibreMap, modes: any[]) {
+  createDefaultModes(): TerraDrawBaseDrawMode<any>[] {
+    const polygonMode = new TerraDrawPolygonMode({
+      styles: {
+        fillColor: '#A5C8D7',
+        fillOpacity: 0.5,
+        outlineColor: '#000000',
+        outlineWidth: 2,
+        closingPointColor: '#ffffff',
+        closingPointWidth: 6,
+        closingPointOutlineColor: '#0000ee',
+        closingPointOutlineWidth: 2,
+      },
+      pointerDistance: 10, // reduce snap distance / auto-finish sensitivity
+    });
+    const selectMode = new TerraDrawSelectMode(DefaultSelectConfig);
+    return [polygonMode, selectMode];
+  }
+
+  initializeTerraDraw(map: MapLibreMap, modes?: TerraDrawBaseDrawMode<any>[]) {
     this._mapRef = map;
+
+    const modesToSet = modes ? modes : this.createDefaultModes();
+
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
       map: map,
       renderBelowLayerId: 'drawing-hook',
@@ -75,7 +100,7 @@ export class DrawService {
     if (!this._terraDraw) {
       this._terraDraw = new TerraDraw({
         adapter: mapLibreAdapter,
-        modes: modes,
+        modes: modesToSet,
       });
       this._terraDraw.start();
     }
@@ -352,7 +377,7 @@ export class DrawService {
     if (!this._mapRef || !this._uploadedShape) {
       return;
     }
-    if (!this._mapRef.getSource('uploaded-shape')) {
+    if (!this._mapRef.isSourceLoaded('uploaded-shape')) {
       this.initializeUploadedShapeLayer();
     }
     const source = this._mapRef.getSource(

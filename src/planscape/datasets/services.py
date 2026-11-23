@@ -555,26 +555,48 @@ def _escape_like(term: str) -> str:
     return term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
+EXCLUDED_METADATA_KEYS = ("keywords_type", "language")
+
+
 def metadata_values_contain(term: str) -> RawSQL:
     """
-    Matches datalayers that have any string value in their metadata containing
-    `term` (case insensitive). Only values are searched, never keys, and the
-    internal `modules` configuration is ignored.
+    Matches datalayers whose `metadata.metadata.identification` has any string
+    value containing `term` (case insensitive), at any depth. Only values are
+    searched, never keys, and values under the keys in
+    `EXCLUDED_METADATA_KEYS` are ignored.
     """
     column = f'"{DataLayer._meta.db_table}"."metadata"'
+    excluded = ", ".join(["%s"] * len(EXCLUDED_METADATA_KEYS))
     sql = f"""EXISTS (
-    SELECT 1
-    FROM jsonb_path_query(
-        CASE
-            WHEN jsonb_typeof({column}) = 'object' THEN {column} - 'modules'
-            ELSE {column}
-        END,
-        'strict $.**'
-    ) AS value
-    WHERE jsonb_typeof(value) = 'string'
-    AND value #>> '{{}}' ILIKE %s
+    WITH RECURSIVE node(key, value) AS (
+        SELECT NULL::text, {column} #> '{{metadata,identification}}'
+        UNION ALL
+        SELECT child.key, child.value
+        FROM node
+        CROSS JOIN LATERAL (
+            SELECT e.key, e.value
+            FROM jsonb_each(
+                CASE WHEN jsonb_typeof(node.value) = 'object'
+                    THEN node.value ELSE '{{}}'::jsonb END
+            ) AS e
+            UNION ALL
+            SELECT NULL::text, a.value
+            FROM jsonb_array_elements(
+                CASE WHEN jsonb_typeof(node.value) = 'array'
+                    THEN node.value ELSE '[]'::jsonb END
+            ) AS a
+        ) AS child
+        WHERE child.key IS NULL OR child.key NOT IN ({excluded})
+    )
+    SELECT 1 FROM node
+    WHERE jsonb_typeof(node.value) = 'string'
+    AND node.value #>> '{{}}' ILIKE %s
 )"""
-    return RawSQL(sql, (f"%{_escape_like(term)}%",), output_field=BooleanField())
+    return RawSQL(
+        sql,
+        (*EXCLUDED_METADATA_KEYS, f"%{_escape_like(term)}%"),
+        output_field=BooleanField(),
+    )
 
 
 @cached(timeout=settings.FIND_ANYTHING_TTL)

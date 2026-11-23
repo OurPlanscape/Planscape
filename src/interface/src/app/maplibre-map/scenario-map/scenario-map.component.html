@@ -16,7 +16,7 @@
   <app-treated-stands-toggle
     *ngIf="showSubUnitToggleOnResults$ | async"></app-treated-stands-toggle>
 
-  <ng-container *appFeatureFlag="'ASLC_ALL_TX_STANDS'">
+  <ng-container>
     <app-all-treatable-stands-toggle
       *ngIf="showAllTreatableStandsToggleOnResults$ | async">
     </app-all-treatable-stands-toggle>
@@ -68,7 +68,7 @@
       ">
     </app-map-project-areas>
   </ng-container>
-  <mgl-control position="bottom-left">
+  <mgl-control position="bottom-left" *ngIf="showDataLayerName">
     <app-data-layer-name [showClearButton]="true"></app-data-layer-name>
   </mgl-control>
 

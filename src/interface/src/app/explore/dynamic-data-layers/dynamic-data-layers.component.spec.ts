@@ -84,6 +84,26 @@ describe('DynamicDataLayersComponent', () => {
     expect(destroySpy).toHaveBeenCalled();
   });
 
+  it('builds the browse panel on the uploads for the uploaded panel', fakeAsync(() => {
+    component.mapId = 1;
+    component.panel = 'uploaded';
+    fixture.detectChanges();
+    tick();
+
+    const panel = component['componentRef']?.instance as DataLayersComponent;
+    expect(panel instanceof DataLayersComponent).toBeTrue();
+    expect(panel.searchTab).toBe('uploaded');
+  }));
+
+  it('browses every layer in the browse panel', fakeAsync(() => {
+    component.mapId = 1;
+    fixture.detectChanges();
+    tick();
+
+    const panel = component['componentRef']?.instance as DataLayersComponent;
+    expect(panel.searchTab).toBe('general');
+  }));
+
   it('hands the map tabs to the favorites panel too', fakeAsync(() => {
     const host = TestBed.createComponent(TabsHostComponent);
     host.detectChanges();

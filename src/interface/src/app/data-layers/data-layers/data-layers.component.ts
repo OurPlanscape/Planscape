@@ -29,7 +29,7 @@ import {
   PaginatorComponent,
   SearchBarComponent,
 } from '@styleguide';
-import { BaseDataSet, SimpleCategory } from '@types';
+import { BaseDataSet, SearchTab, SimpleCategory } from '@types';
 import { FeatureService } from '@features/feature.service';
 import { FeaturesModule } from '@features/features.module';
 import {
@@ -85,6 +85,12 @@ export class DataLayersComponent {
   // Rendered between the search bar and the list (map viewer map tabs)
   @Input() belowSearch?: TemplateRef<unknown>;
 
+  @Input() set searchTab(tab: SearchTab) {
+    this.dataLayersStateService.setSearchTab(tab);
+    this.browseByCategory = this.dataLayersStateService.browseByCategory();
+    this.searchPlaceholder = this.placeholderFor(tab);
+  }
+
   constructor(
     private dataLayersStateService: DataLayersStateService,
     private featureService: FeatureService
@@ -93,10 +99,18 @@ export class DataLayersComponent {
   // With DATA_ORGANIZATION the clear button lives on the map's layer name instead.
   showClearButton = !this.featureService.isFeatureEnabled('DATA_ORGANIZATION');
   @HostBinding('class.data-organization')
-  browseByCategory = this.featureService.isFeatureEnabled('DATA_ORGANIZATION');
-  searchPlaceholder = this.browseByCategory
-    ? 'Search in data layers'
-    : 'Search by dataset, metric, category, org...';
+  dataOrganization = this.featureService.isFeatureEnabled('DATA_ORGANIZATION');
+  browseByCategory = this.dataLayersStateService.browseByCategory();
+  searchPlaceholder = this.placeholderFor('general');
+
+  private placeholderFor(tab: SearchTab): string {
+    if (tab === 'uploaded') {
+      return 'Search in uploaded';
+    }
+    return this.dataOrganization
+      ? 'Search in data layers'
+      : 'Search by dataset, metric, category, org...';
+  }
 
   loading$ = this.dataLayersStateService.loading$;
   loadError$ = this.dataLayersStateService.loadError$;

@@ -19,7 +19,7 @@
         'pre-step': (isOnPreStep$ | async),
       }"
       [showStepIndex]="false"
-      [showClearButton]="!!(viewedDataLayer$ | async)"
+      [showClearButton]="(showClearMapButton$ | async) ?? false"
       linear
       finishLabel="Save & Run Scenario"
       continueLabel="Save & Continue"
@@ -32,7 +32,7 @@
       [disabled]="(loading$ | async) || false">
       <app-scenario-summary
         sharedHeading
-        *ngIf="showMap$ | async"
+        *ngIf="showSharedSummary$ | async"
         [standSize]="(standSize$ | async) || null"
         [treatmentGoal]="(treatmentGoalName$ | async) || ''"
         [priorityObjectives]="
@@ -68,15 +68,7 @@
           <app-exclude-areas-selector></app-exclude-areas-selector>
         </sg-step>
         <sg-step>
-          <app-stand-level-constraints
-            *appFeatureFlag="
-              'ADV_STAND_LEVEL_CONSTRAINTS';
-              hide: true
-            "></app-stand-level-constraints>
-          <app-adv-stand-level-constraints
-            *appFeatureFlag="
-              'ADV_STAND_LEVEL_CONSTRAINTS'
-            "></app-adv-stand-level-constraints>
+          <app-adv-stand-level-constraints></app-adv-stand-level-constraints>
         </sg-step>
         <sg-step>
           <app-treatment-target
@@ -112,15 +104,7 @@
           <app-exclude-areas-selector></app-exclude-areas-selector>
         </sg-step>
         <sg-step>
-          <app-stand-level-constraints
-            *appFeatureFlag="
-              'ADV_STAND_LEVEL_CONSTRAINTS';
-              hide: true
-            "></app-stand-level-constraints>
-          <app-adv-stand-level-constraints
-            *appFeatureFlag="
-              'ADV_STAND_LEVEL_CONSTRAINTS'
-            "></app-adv-stand-level-constraints>
+          <app-adv-stand-level-constraints></app-adv-stand-level-constraints>
         </sg-step>
         <sg-step>
           <app-treatment-target
@@ -130,6 +114,10 @@
         </sg-step>
       </ng-template>
     </sg-steps>
-    <app-scenario-map *ngIf="showMap$ | async"></app-scenario-map>
+    <app-scenario-map
+      *ngIf="showMap$ | async"
+      [showDataLayerName]="
+        (showMapLayerControls$ | async) ?? true
+      "></app-scenario-map>
   </section>
 </ng-container>
