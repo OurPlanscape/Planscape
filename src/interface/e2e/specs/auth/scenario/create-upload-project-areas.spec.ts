@@ -1,7 +1,7 @@
 import path from 'path';
 import { expect } from '@playwright/test';
 import { PlanningAreaPage } from '../../../pages/planningarea.page';
-import { ScenarioPage } from '../../../pages/scenario.page';
+import { ScenarioPage } from '../../../pages/scenariowizard.page';
 import { test } from '../../../fixtures/test-planningarea';
 
 const SCENARIO_SHAPEFILE = path.resolve(__dirname, '../../../assets/inside_yosemite.zip');
@@ -33,3 +33,4 @@ test('user can upload a project area', { tag: ['@smoke'] }, async ({ page, planI
     await expect(page.getByText(name)).toBeVisible();
   });
 });
+

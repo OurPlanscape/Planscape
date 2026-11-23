@@ -1,13 +1,13 @@
 import { expect } from '@playwright/test';
 import { PlanningAreaPage } from '../../../pages/planningarea.page';
-import { ScenarioWizardPage } from '../../../pages/scenariowizard.page';
+import { ScenarioPage } from '../../../pages/scenariowizard.page';
 import { test } from '../../../fixtures/test-planningarea';
 
 test('user can create a Custom Scenario', { tag: ['@smoke'] }, async ({ page, workspaceId, planId }) => {
   test.setTimeout(180_000); // whole flow, not a single step
 
   const planPage = new PlanningAreaPage(page);
-  const wizard = new ScenarioWizardPage(page);
+  const wizard = new ScenarioPage(page);
   const name = `New Test Custom Scenario - ${Date.now()}`;
 
   await test.step('open planning area and start a custom scenario', async () => {
