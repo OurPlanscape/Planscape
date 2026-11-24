@@ -943,8 +943,8 @@ def check_burn_emulator_status(funding_opportunity_report_id: int) -> None:
 
 @app.task()
 def poll_burn_emulator_jobs() -> None:
-    if not feature_enabled("FOR_WITH_BURN_EMULATOR"):
-        log.info("Feature FOR_WITH_BURN_EMULATOR disabled.")
+    if not feature_enabled("CATASTROPHIC_REDUCTION"):
+        log.info("Feature CATASTROPHIC_REDUCTION disabled.")
         return
 
     report_ids = FundingOpportunityReport.objects.filter(

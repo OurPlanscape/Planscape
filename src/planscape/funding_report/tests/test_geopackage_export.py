@@ -280,7 +280,7 @@ class GeopackageExportTest(TestCase):
         self.assertIsNotNone(result)
         return burn_export
 
-    @override_settings(FEATURE_FLAGS=["FOR_WITH_BURN_EMULATOR"])
+    @override_settings(FEATURE_FLAGS=["CATASTROPHIC_REDUCTION"])
     def test_full_export_includes_burn_raster_when_flag_enabled(self):
         self._add_burn_simulation_datalayer()
         burn_export = self._run_full_export()
