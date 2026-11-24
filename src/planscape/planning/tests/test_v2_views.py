@@ -1388,6 +1388,7 @@ class TreatmentGoalViewSetTest(APITestCase):
             usage_type="THRESHOLD",
             datalayer=self.dl2,
             treatment_goal=self.first_treatment_goal,
+            threshold="value >= 60 & value <= 61",
         )
 
     def test_list_treatment_goals(self):
@@ -1413,8 +1414,15 @@ class TreatmentGoalViewSetTest(APITestCase):
         self.assertCountEqual(
             first_treatment_goal["usage_types"],
             [
-                {"usage_type": "PRIORITY", "datalayer": "Layer 1"},
-                {"usage_type": "THRESHOLD", "datalayer": "Layer 2"},
+                {"usage_type": "PRIORITY", "datalayer": "Layer 1", "threshold": None},
+                {
+                    "usage_type": "THRESHOLD",
+                    "datalayer": "Layer 2",
+                    "threshold": [
+                        {"operator": "gte", "value": 60},
+                        {"operator": "lte", "value": 61},
+                    ],
+                },
             ],
         )
 
