@@ -57,6 +57,12 @@ def publish_datalayer_unfavorited(
     )
 
 
+DATALAYER_CREATED = "datasets.datalayer.created"
+DATALAYER_STATUS_CHANGED = "datasets.datalayer.status_changed"
+DATALAYER_DELETED = "datasets.datalayer.deleted"
+DATALAYER_UPDATED = "datasets.datalayer.updated"
+
+
 def serialize_upload_status(datalayer: DataLayer) -> dict[str, Any]:
     return {
         "name": datalayer.name,
@@ -66,9 +72,10 @@ def serialize_upload_status(datalayer: DataLayer) -> dict[str, Any]:
     }
 
 
-def _publish_upload_event(
+def publish_upload_event(
     event_type: str,
     datalayer: DataLayer,
+    *,
     actor: Any = None,
 ) -> None:
     publish_workspace_event(
@@ -78,21 +85,3 @@ def _publish_upload_event(
         data=serialize_upload_status(datalayer),
         actor_id=get_actor_id(actor),
     )
-
-
-def publish_datalayer_created(datalayer: DataLayer, *, actor: Any = None) -> None:
-    _publish_upload_event("datasets.datalayer.created", datalayer, actor)
-
-
-def publish_datalayer_status_changed(
-    datalayer: DataLayer, *, actor: Any = None
-) -> None:
-    _publish_upload_event("datasets.datalayer.status_changed", datalayer, actor)
-
-
-def publish_datalayer_deleted(datalayer: DataLayer, *, actor: Any = None) -> None:
-    _publish_upload_event("datasets.datalayer.deleted", datalayer, actor)
-
-
-def publish_datalayer_updated(datalayer: DataLayer, *, actor: Any = None) -> None:
-    _publish_upload_event("datasets.datalayer.updated", datalayer, actor)

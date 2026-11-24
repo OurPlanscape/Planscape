@@ -5,7 +5,7 @@ import mimetypes
 from copy import deepcopy
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, Collection, Dict, Optional, Set, Tuple
+from typing import Any, Collection, Dict, Optional, Set, Tuple, Union
 from uuid import uuid4
 
 import mmh3
@@ -14,16 +14,17 @@ from cacheops import cached, invalidate_model
 from core.flags import feature_enabled
 from core.gcs import create_upload_url as create_upload_url_gcs
 from core.gcs import delete_file as delete_gcs_file
-from core.gcs import get_bucket_and_key, is_gcs_file
+from core.gcs import is_gcs_file
 from core.s3 import create_upload_url as create_upload_url_s3
 from core.s3 import is_s3_file, s3_filename
 from datasets.events import (
-    publish_datalayer_created,
-    publish_datalayer_deleted,
+    DATALAYER_CREATED,
+    DATALAYER_DELETED,
+    DATALAYER_STATUS_CHANGED,
+    DATALAYER_UPDATED,
     publish_datalayer_favorited,
-    publish_datalayer_status_changed,
     publish_datalayer_unfavorited,
-    publish_datalayer_updated,
+    publish_upload_event,
 )
 from datasets.models import (
     Category,
@@ -80,8 +81,20 @@ def get_bucket_url() -> str:
     return f"s3://{settings.S3_BUCKET}"
 
 
+def owner_properties(
+    organization: Optional[Organization], workspace: Optional[Workspace] = None
+) -> Dict[str, Any]:
+    """Analytics properties for whoever owns a datalayer or style."""
+    if organization:
+        return {
+            "organization_id": organization.pk,
+            "organization_name": organization.name,
+        }
+    return {"workspace_id": workspace.pk if workspace else None}
+
+
 def get_object_name(
-    organization_id: int,
+    organization_id: Union[int, str],
     uuid: str,
     original_name: Optional[str] = None,
     mimetype: Optional[str] = None,
@@ -96,7 +109,7 @@ def get_object_name(
 
 
 def get_storage_url(
-    organization_id: int,
+    organization_id: Union[int, str],
     uuid: str,
     original_name: str,
     mimetype: Optional[str] = None,
@@ -143,10 +156,11 @@ def get_storage_url_and_path(
 
 
 def create_upload_url_for_org(
-    organization_id: int,
+    organization_id: Union[int, str],
     uuid: str,
     original_name: str,
     mimetype: Optional[str] = None,
+    upload_session: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     if is_s3_file(original_name):
         log.info("The file is already in S3. No need to create a new URL.")
@@ -162,6 +176,7 @@ def create_upload_url_for_org(
         case "gcp":
             upload_url_response = create_upload_url_gcs(
                 object_name=object_name,
+                **(upload_session or {}),
             )
         case _:
             upload_url_response = create_upload_url_s3(
@@ -239,16 +254,21 @@ def create_dataset(
 
 
 @transaction.atomic()
+def style_hash(data: Dict[str, Any]) -> str:
+    return mmh3.hash_bytes(json.dumps(data)).hex()
+
+
 def create_style(
     name: str,
-    organization: Organization,
+    organization: Optional[Organization],
     created_by: User,
     type: DataLayerType,
     data: Dict[str, Any],
     datalayers: Optional[Collection[DataLayer]] = None,
     **kwargs,
 ) -> Dict[str, Any]:
-    data_hash = mmh3.hash_bytes(json.dumps(data)).hex()
+    """Pass `workspace` in kwargs for a style owned by a workspace."""
+    data_hash = style_hash(data)
     hash_already_exists = Style.objects.filter(
         organization=organization,
         data_hash=data_hash,
@@ -260,13 +280,13 @@ def create_style(
         type=type,
         data=data,
         data_hash=data_hash,
+        **kwargs,
     )
     action.send(created_by, verb="created", action_object=style)
     track_event(
         name="datasets.style.created",
         properties={
-            "organization_id": organization.pk,
-            "organization_name": organization.name,
+            **owner_properties(organization, kwargs.get("workspace")),
             "type": type,
             "email": created_by.email if created_by else None,
         },
@@ -312,8 +332,7 @@ def assign_style(
     track_event(
         name="datasets.style.assigned",
         properties={
-            "organization_id": style.organization.id,
-            "organization_name": style.organization.name,
+            **owner_properties(style.organization, style.workspace),
             "datalayer_id": datalayer.pk,
             "datalayer_name": datalayer.name,
             "dataset_id": datalayer.dataset.pk,
@@ -375,7 +394,7 @@ def change_datalayer_status(
 def create_datalayer(
     name: str,
     dataset: Dataset,
-    organization: Organization,
+    organization: Optional[Organization],
     created_by: User,
     original_name: Optional[str] = None,
     url: Optional[str] = None,
@@ -385,8 +404,13 @@ def create_datalayer(
     geometry_type: Optional[GeometryType] = None,
     info: Optional[Dict[str, Any]] = None,
     mimetype: Optional[str] = None,
+    upload_session: Optional[Dict[str, Any]] = None,
     **kwargs,
 ) -> Dict[str, Any]:
+    """
+    Creates a datalayer owned by an organization, or by the `workspace` in
+    kwargs when there is none. `upload_session` goes to the GCS upload session.
+    """
     metadata = kwargs.pop("metadata", None) or None
     style = kwargs.pop("style", None) or None
     uuid = str(uuid4())
@@ -408,9 +432,12 @@ def create_datalayer(
         upload_to = {}
         kwargs["status"] = DataLayerStatus.READY
 
+    workspace = kwargs.get("workspace")
+    owner = organization.pk if organization else f"workspaces/{workspace.pk}"
+
     if original_name:
         storage_url = get_storage_url(
-            organization_id=organization.pk,
+            organization_id=owner,
             uuid=uuid,
             original_name=original_name,
             mimetype=mimetype,
@@ -431,10 +458,11 @@ def create_datalayer(
             )
 
         upload_to = create_upload_url_for_org(
-            organization_id=organization.pk,
+            organization_id=owner,
             uuid=uuid,
             original_name=original_name,
             mimetype=mimetype,
+            upload_session=upload_session,
         )
 
     datalayer = DataLayer.objects.create(
@@ -469,8 +497,7 @@ def create_datalayer(
     track_event(
         name="datasets.datalayer.created",
         properties={
-            "organization_id": organization.pk,
-            "organization_name": organization.name,
+            **owner_properties(organization, workspace),
             "dataset_id": dataset.pk,
             "dataset_name": dataset.name,
             "email": created_by.email if created_by else None,
@@ -924,24 +951,9 @@ class UploadsNotSupported(Exception):
     pass
 
 
-def get_upload_raw_url(workspace_id: int, uuid: str, extension: str) -> str:
-    return (
-        f"gs://{settings.GCS_BUCKET}/{settings.UPLOADS_RAW_FOLDER}"
-        f"/workspaces/{workspace_id}/{uuid}{extension}"
-    )
-
-
-def get_upload_final_url(workspace_id: int, uuid: str) -> str:
-    # Must contain "/datalayers/": get_public_url splits on it for the raster proxy.
-    return (
-        f"{get_bucket_url()}/{settings.DATALAYERS_FOLDER}"
-        f"/workspaces/{workspace_id}/{uuid}.tif"
-    )
-
-
-def is_upload_raw_url(gs_url: str) -> bool:
-    prefix = f"gs://{settings.GCS_BUCKET}/{settings.UPLOADS_RAW_FOLDER}/"
-    return gs_url.startswith(prefix)
+def workspace_uploads_prefix() -> str:
+    """Where workspace uploads live; GCS finalize notifications watch it."""
+    return f"{get_bucket_url()}/{settings.DATALAYERS_FOLDER}/workspaces/"
 
 
 def upload_dataset_name(user: User) -> str:
@@ -1008,7 +1020,7 @@ def update_workspace_datalayer(
     if style is not _UNCHANGED:
         set_upload_style(datalayer, user, style)
     invalidate_model(DataLayer)
-    publish_datalayer_updated(datalayer, actor=user)
+    publish_upload_event(DATALAYER_UPDATED, datalayer, actor=user)
     return datalayer
 
 
@@ -1045,22 +1057,20 @@ def set_upload_style(
             for entry in style_data["entries"]
         ],
     }
-    data_hash = mmh3.hash_bytes(json.dumps(data)).hex()
-    if style:
-        style.data = data
-        style.data_hash = data_hash
-        style.save(update_fields=["data", "data_hash", "updated_at"])
-    else:
-        style = Style.objects.create(
+    if not style:
+        return create_style(
             name=f"upload-{datalayer.uuid}",
-            workspace_id=datalayer.workspace_id,
             organization=None,
+            workspace=datalayer.workspace,
             created_by=user,
             type=DataLayerType.RASTER,
             data=data,
-            data_hash=data_hash,
-        )
-        DataLayerHasStyle.objects.create(datalayer=datalayer, style=style, default=True)
+            datalayers=[datalayer],
+        )["style"]
+
+    style.data = data
+    style.data_hash = style_hash(data)
+    style.save(update_fields=["data", "data_hash", "updated_at"])
     invalidate_model(Style)
     return style
 
@@ -1074,74 +1084,52 @@ def create_workspace_upload(
     size: int,
     origin: Optional[str] = None,
 ) -> Dict[str, Any]:
+    """A PENDING raster upload, plus the GCS session the browser PUTs it to."""
     if settings.PROVIDER != "gcp":
         raise UploadsNotSupported("Uploads are only supported on GCS storage.")
 
-    dataset = get_or_create_workspace_upload_dataset(workspace, created_by)
-    uuid = str(uuid4())
-    raw_url = get_upload_raw_url(workspace.pk, uuid, Path(original_name).suffix.lower())
-    datalayer = DataLayer.objects.create(
-        uuid=uuid,
+    result = create_datalayer(
         name=name,
-        dataset=dataset,
+        dataset=get_or_create_workspace_upload_dataset(workspace, created_by),
+        organization=None,
         workspace=workspace,
         created_by=created_by,
-        type=DataLayerType.RASTER,
-        geometry_type=GeometryType.RASTER,
-        storage_type=StorageTypeChoices.FILESYSTEM,
-        map_service_type=MapServiceChoices.COG,
-        status=DataLayerStatus.PENDING,
         original_name=original_name,
         mimetype=UPLOAD_MIMETYPE,
-        raw_url=raw_url,
+        type=DataLayerType.RASTER,
+        geometry_type=GeometryType.RASTER,
+        map_service_type=MapServiceChoices.COG,
+        status=DataLayerStatus.PENDING,
         file_size=size,
         origin=DataLayerOrigin.USER,
         # module lists only include layers enabled for them
         metadata={"modules": {"map": {"enabled": True}}},
-    )
-
-    bucket_name, object_name = get_bucket_and_key(raw_url)
-    upload_to = create_upload_url_gcs(
-        object_name=object_name,
-        bucket_name=bucket_name,
-        content_type=UPLOAD_MIMETYPE,
-        size=size,
-        origin=origin,
-    )
-    if not upload_to:
-        raise ValueError("Could not create upload url.")
-
-    action.send(created_by, verb="uploaded", action_object=datalayer)
-    invalidate_model(DataLayer)
-    publish_datalayer_created(datalayer, actor=created_by)
-    track_event(
-        name="datasets.datalayer.uploaded",
-        properties={
-            "workspace_id": workspace.pk,
+        upload_session={
+            "content_type": UPLOAD_MIMETYPE,
             "size": size,
-            "email": created_by.email,
+            "origin": origin,
         },
-        user_id=created_by.pk,
     )
-    return {"datalayer": datalayer, "upload_to": upload_to}
+    publish_upload_event(DATALAYER_CREATED, result["datalayer"], actor=created_by)
+    return result
 
 
-def delete_raw_upload(datalayer: DataLayer) -> None:
-    if not datalayer.raw_url:
-        return
+def delete_upload_file(datalayer: DataLayer) -> None:
     try:
-        delete_gcs_file(datalayer.raw_url)
+        delete_gcs_file(datalayer.url)
     except Exception:
-        log.exception("Could not delete raw upload of datalayer %s", datalayer.pk)
+        log.exception("Could not delete the file of datalayer %s", datalayer.pk)
 
 
 @transaction.atomic()
 def delete_workspace_datalayer(datalayer: DataLayer, user: User) -> None:
+    # READY layers keep their file like any soft-deleted datalayer
+    if datalayer.status != DataLayerStatus.READY:
+        transaction.on_commit(lambda: delete_upload_file(datalayer))
     datalayer.delete()
-    transaction.on_commit(lambda: delete_raw_upload(datalayer))
     action.send(user, verb="deleted", action_object=datalayer)
     invalidate_model(DataLayer)
-    publish_datalayer_deleted(datalayer, actor=user)
+    publish_upload_event(DATALAYER_DELETED, datalayer, actor=user)
 
 
 def fail_datalayer(datalayer: DataLayer, reason: str) -> None:
@@ -1149,7 +1137,7 @@ def fail_datalayer(datalayer: DataLayer, reason: str) -> None:
     datalayer.failure_reason = reason
     datalayer.save(update_fields=["status", "failure_reason", "updated_at"])
     invalidate_model(DataLayer)
-    publish_datalayer_status_changed(datalayer)
+    publish_upload_event(DATALAYER_STATUS_CHANGED, datalayer)
 
 
 def expire_stale_uploads() -> int:
@@ -1162,7 +1150,7 @@ def expire_stale_uploads() -> int:
     processing_cutoff = now - timedelta(
         hours=settings.DATALAYER_UPLOAD_PROCESSING_TTL_HOURS
     )
-    uploads = DataLayer.objects.filter(raw_url__isnull=False)
+    uploads = DataLayer.objects.filter(origin=DataLayerOrigin.USER)
     stale_pending = uploads.filter(
         status=DataLayerStatus.PENDING, created_at__lt=pending_cutoff
     )
@@ -1173,7 +1161,6 @@ def expire_stale_uploads() -> int:
     expired = 0
     for datalayer in stale_pending:
         fail_datalayer(datalayer, "The upload never completed.")
-        delete_raw_upload(datalayer)
         expired += 1
     for datalayer in stale_processing:
         fail_datalayer(datalayer, "Processing timed out.")
