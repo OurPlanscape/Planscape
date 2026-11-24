@@ -34,6 +34,7 @@ describe('CustomCobenefitsComponent', () => {
           selection$: of(null),
           dataTree$: of(null),
           searchResults$: of(null),
+          canUploadDataLayers$: of(false),
         }),
       ],
     }).compileComponents();
