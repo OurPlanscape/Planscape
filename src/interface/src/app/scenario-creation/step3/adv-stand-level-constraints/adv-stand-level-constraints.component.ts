@@ -61,6 +61,7 @@ import { MatInputModule } from '@angular/material/input';
 import { ASLC_INFO_URL } from '@app/shared';
 
 const MAX_SELECTABLE_LAYERS = Number.POSITIVE_INFINITY;
+const MAX_DISTANCE_FROM_ROADS_MILES = 100;
 
 @UntilDestroy()
 @Component({
@@ -97,6 +98,7 @@ export class AdvStandLevelConstraintsComponent
   implements OnInit, OnDestroy
 {
   protected readonly ASLC_INFO_URL = ASLC_INFO_URL;
+  protected readonly maxDistanceFromRoads = MAX_DISTANCE_FROM_ROADS_MILES;
 
   selectedConstraints$ = new BehaviorSubject<NamedConstraint[]>([]);
   private readonly destroy$ = new Subject<void>();
@@ -126,7 +128,7 @@ export class AdvStandLevelConstraintsComponent
     ]),
     min_distance_from_road: new FormControl<number | null>(null, [
       Validators.min(0),
-      Validators.max(100000),
+      Validators.max(MAX_DISTANCE_FROM_ROADS_MILES),
     ]),
     constraints: new FormControl<NamedConstraint[]>([], { nonNullable: true }),
   });

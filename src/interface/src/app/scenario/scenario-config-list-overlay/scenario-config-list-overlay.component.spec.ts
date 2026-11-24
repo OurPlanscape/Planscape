@@ -51,9 +51,9 @@ const makeConfig = (
   excluded_areas: [{ id: 300, name: 'Area to Exclude' }],
   stand_level_constraints: [
     {
-      datalayer: { id: ROADS_ID, name: 'Distance From Roads - Yards' },
+      datalayer: { id: ROADS_ID, name: 'Distance From Roads' },
       operator: 'lte',
-      value: '1000',
+      value: '2.5',
     },
     {
       datalayer: { id: SLOPE_ID, name: 'CONUS Slope Percentage' },
@@ -250,8 +250,26 @@ describe('ScenarioConfigListOverlayComponent', () => {
 
     it('renders the hardcoded slope and roads wording', () => {
       const rows = items('Stand-Level Constraints');
-      expect(rows).toContain('Distance from roads is less than (<) 1,000 yds');
+      expect(rows).toContain('Distance from roads is less than (<) 2.5 mi');
       expect(rows).toContain('Slope less than or equal to (<=) 99 %');
+    });
+
+    it('names the layer when a constraint does not match slope or roads', () => {
+      emitConfig(
+        makeConfig({
+          stand_level_constraints: [
+            {
+              datalayer: { id: 9999, name: 'Distance From Roads - Yards' },
+              operator: 'lt',
+              value: '1000',
+            },
+          ],
+        })
+      );
+
+      expect(items('Stand-Level Constraints')).toEqual([
+        'Distance From Roads - Yards: < 1000',
+      ]);
     });
 
     it('renders advanced constraints with the generic display name', () => {
@@ -291,7 +309,7 @@ describe('ScenarioConfigListOverlayComponent', () => {
       );
       const rows = items('Stand-Level Constraints');
       expect(rows).toContain('Tx Goal Layer > 100');
-      expect(rows).toContain('Distance from roads is less than (<) 1,000 yds');
+      expect(rows).toContain('Distance from roads is less than (<) 2.5 mi');
       expect(rows).toContain('Slope less than or equal to (<=) 99 %');
     });
   });
