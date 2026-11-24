@@ -49,6 +49,7 @@ from planning.services import (
     calculate_scenario_treatable_area,
     get_acreage,
     get_min_project_area,
+    parse_threshold_expression,
     union_geojson,
 )
 
@@ -931,6 +932,16 @@ class TreatmentGoalUsageListSerializer(serializers.ListSerializer):
 
 class TreatmentGoalUsageSerializer(serializers.ModelSerializer):
     datalayer = serializers.SerializerMethodField()
+    threshold = serializers.SerializerMethodField(
+        help_text=(
+            "Threshold as a list of constraint-like conditions, e.g. "
+            '`[{"operator": "gte", "value": 60}, {"operator": "lte", "value": 61}]` '
+            "for `value >= 60 & value <= 61`."
+        )
+    )
+
+    def get_threshold(self, instance):
+        return parse_threshold_expression(instance.threshold)
 
     def get_datalayer(self, instance):
         if feature_enabled("IMPROVED_TREATMENT_GOAL"):
@@ -939,7 +950,7 @@ class TreatmentGoalUsageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TreatmentGoalUsesDataLayer
-        fields = ("usage_type", "datalayer")
+        fields = ("usage_type", "datalayer", "threshold")
         list_serializer_class = TreatmentGoalUsageListSerializer
 
 
