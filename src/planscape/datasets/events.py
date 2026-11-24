@@ -61,6 +61,12 @@ DATALAYER_CREATED = "datasets.datalayer.created"
 DATALAYER_STATUS_CHANGED = "datasets.datalayer.status_changed"
 DATALAYER_DELETED = "datasets.datalayer.deleted"
 DATALAYER_UPDATED = "datasets.datalayer.updated"
+DATALAYER_UPLOAD_EVENTS = (
+    DATALAYER_CREATED,
+    DATALAYER_STATUS_CHANGED,
+    DATALAYER_DELETED,
+    DATALAYER_UPDATED,
+)
 
 
 def serialize_upload_status(datalayer: DataLayer) -> dict[str, Any]:

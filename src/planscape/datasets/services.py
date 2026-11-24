@@ -53,7 +53,7 @@ from datasets.search import (
 )
 from datasets.tasks import datalayer_uploaded
 from datasets.upload_metadata import write_upload_metadata
-from datasets.styles import UPLOAD_STYLE_NO_DATA
+from datasets.styles import DEFAULT_NO_DATA, get_upload_style
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, Polygon
@@ -218,7 +218,7 @@ def geometry_from_info(
 @transaction.atomic()
 def create_dataset(
     name: str,
-    organization: Organization,
+    organization: Optional[Organization],
     workspace: Workspace,
     created_by: User,
     description: Optional[str] = None,
@@ -243,8 +243,7 @@ def create_dataset(
     track_event(
         name="datasets.dataset.created",
         properties={
-            "organization_id": organization.pk,
-            "organization_name": organization.name,
+            **owner_properties(organization, workspace),
             "visibility": visibility,
             "email": created_by.email if created_by else None,
         },
@@ -253,11 +252,11 @@ def create_dataset(
     return dataset
 
 
-@transaction.atomic()
 def style_hash(data: Dict[str, Any]) -> str:
     return mmh3.hash_bytes(json.dumps(data)).hex()
 
 
+@transaction.atomic()
 def create_style(
     name: str,
     organization: Optional[Organization],
@@ -353,7 +352,7 @@ DATALAYER_TRANSITIONS = {
 
 @transaction.atomic()
 def change_datalayer_status(
-    organization: Organization,
+    organization: Optional[Organization],
     user: User,
     datalayer: DataLayer,
     target_status: DataLayerStatus,
@@ -377,8 +376,9 @@ def change_datalayer_status(
     track_event(
         name="datasets.datalayer.changed_status",
         properties={
-            "organization_id": organization.pk,
-            "organization_name": organization.name,
+            **owner_properties(
+                organization or datalayer.organization, datalayer.workspace
+            ),
             "dataset_id": datalayer.dataset.pk,
             "dataset_name": datalayer.dataset.name,
             "email": user.email if user else None,
@@ -943,7 +943,6 @@ def enable_datalayer_module(
     return datalayer
 
 
-UPLOAD_EXTENSIONS = (".tif", ".tiff")
 UPLOAD_MIMETYPE = "image/tiff"
 
 
@@ -976,26 +975,13 @@ def get_or_create_workspace_upload_dataset(
     )
     if dataset:
         return dataset
-    return Dataset.objects.create(
+    return create_dataset(
         name=upload_dataset_name(user),
+        organization=None,
         workspace=workspace,
         created_by=user,
         visibility=VisibilityOptions.PRIVATE,
         preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
-    )
-
-
-def workspace_upload_name_taken(
-    workspace: Workspace, name: str, exclude_id: Optional[int] = None
-) -> bool:
-    return (
-        DataLayer.objects.filter(
-            dataset__workspace=workspace,
-            name=name,
-            type=DataLayerType.RASTER,
-        )
-        .exclude(pk=exclude_id)
-        .exists()
     )
 
 
@@ -1024,13 +1010,6 @@ def update_workspace_datalayer(
     return datalayer
 
 
-def get_upload_style(datalayer: DataLayer) -> Optional[Style]:
-    return Style.objects.filter(
-        workspace_id=datalayer.workspace_id,
-        rel_styles__datalayer=datalayer,
-    ).first()
-
-
 def set_upload_style(
     datalayer: DataLayer, user: User, style_data: Optional[Dict[str, Any]]
 ) -> Optional[Style]:
@@ -1046,7 +1025,7 @@ def set_upload_style(
 
     data = {
         "map_type": style_data["map_type"],
-        "no_data": deepcopy(UPLOAD_STYLE_NO_DATA),
+        "no_data": deepcopy(DEFAULT_NO_DATA),
         "entries": [
             {
                 "value": entry["value"],
@@ -1132,12 +1111,21 @@ def delete_workspace_datalayer(datalayer: DataLayer, user: User) -> None:
     publish_upload_event(DATALAYER_DELETED, datalayer, actor=user)
 
 
-def fail_datalayer(datalayer: DataLayer, reason: str) -> None:
-    datalayer.status = DataLayerStatus.FAILED
-    datalayer.failure_reason = reason
-    datalayer.save(update_fields=["status", "failure_reason", "updated_at"])
+def publish_upload_status(datalayer: DataLayer) -> None:
+    """Tells the workspace the status an upload is in now."""
     invalidate_model(DataLayer)
     publish_upload_event(DATALAYER_STATUS_CHANGED, datalayer)
+
+
+def set_upload_status(
+    datalayer: DataLayer,
+    status: DataLayerStatus,
+    failure_reason: Optional[str] = None,
+) -> None:
+    datalayer.status = status
+    datalayer.failure_reason = failure_reason
+    datalayer.save(update_fields=["status", "failure_reason", "updated_at"])
+    publish_upload_status(datalayer)
 
 
 def expire_stale_uploads() -> int:
@@ -1151,18 +1139,24 @@ def expire_stale_uploads() -> int:
         hours=settings.DATALAYER_UPLOAD_PROCESSING_TTL_HOURS
     )
     uploads = DataLayer.objects.filter(origin=DataLayerOrigin.USER)
-    stale_pending = uploads.filter(
-        status=DataLayerStatus.PENDING, created_at__lt=pending_cutoff
-    )
-    stale_processing = uploads.filter(
-        status=DataLayerStatus.PROCESSING, updated_at__lt=processing_cutoff
+    stale = (
+        (
+            uploads.filter(
+                status=DataLayerStatus.PENDING, created_at__lt=pending_cutoff
+            ),
+            "The upload never completed.",
+        ),
+        (
+            uploads.filter(
+                status=DataLayerStatus.PROCESSING, updated_at__lt=processing_cutoff
+            ),
+            "Processing timed out.",
+        ),
     )
 
     expired = 0
-    for datalayer in stale_pending:
-        fail_datalayer(datalayer, "The upload never completed.")
-        expired += 1
-    for datalayer in stale_processing:
-        fail_datalayer(datalayer, "Processing timed out.")
-        expired += 1
+    for datalayers, reason in stale:
+        for datalayer in datalayers:
+            set_upload_status(datalayer, DataLayerStatus.FAILED, reason)
+            expired += 1
     return expired

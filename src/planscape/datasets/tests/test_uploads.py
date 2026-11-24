@@ -1,9 +1,12 @@
 import shutil
 from datetime import timedelta
+from io import StringIO
 from pathlib import Path
 from unittest import mock
 
 from django.contrib.gis.geos import Polygon
+from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -21,9 +24,12 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     Style,
+    VisibilityOptions,
     WorkspaceFavoriteDataLayer,
 )
 from datasets.services import (
+    change_datalayer_status,
+    create_style,
     create_workspace_upload,
     expire_stale_uploads,
     get_or_create_workspace_upload_dataset,
@@ -757,6 +763,13 @@ class UploadStyleTest(APITestCase):
         self.assertEqual(len(body["style"]["entries"]), 7)
         self.assertEqual(body["default_style"], body["style"])
 
+    def test_automatic_ramp_leaves_the_stored_stats_alone(self):
+        url = reverse("api:datasets:datalayers-detail", args=[self.datalayer.pk])
+        with mock.patch.object(DataLayer, "get_public_url", return_value=None):
+            body = self.client.get(url).json()
+        self.assertEqual(body["info"]["stats"], [{"min": 0, "max": 100}])
+        self.assertIn(-9999, body["styles"][0]["data"]["no_data"]["values"])
+
     def test_sets_a_custom_style(self):
         response = self.client.patch(self.url, {"style": STYLE}, format="json")
         self.assertEqual(response.status_code, 200, response.content)
@@ -955,3 +968,97 @@ class UploadMetadataTest(TestCase):
         self.assertEqual(
             metadata, {"metadata": {"identification": {"description": "About"}}}
         )
+
+
+class WorkspaceOwnedRecordsTest(TestCase):
+    """The datalayer services, used for records without an organization."""
+
+    def setUp(self):
+        self.workspace = PlanningWorkspaceFactory.create()
+        self.user = self.workspace.created_by
+
+    def test_first_upload_creates_a_tracked_private_dataset(self):
+        with mock.patch("datasets.services.track_event") as track:
+            dataset = get_or_create_workspace_upload_dataset(self.workspace, self.user)
+
+        self.assertEqual(dataset.visibility, VisibilityOptions.PRIVATE)
+        self.assertIsNone(dataset.organization)
+        track.assert_called_once()
+        self.assertEqual(track.call_args.kwargs["name"], "datasets.dataset.created")
+        self.assertEqual(
+            track.call_args.kwargs["properties"]["workspace_id"], self.workspace.pk
+        )
+
+    def test_status_change_does_not_need_an_organization(self):
+        datalayer = make_upload(self.workspace, status=DataLayerStatus.PROCESSING)
+
+        change_datalayer_status(
+            organization=None,
+            user=self.user,
+            datalayer=datalayer,
+            target_status=DataLayerStatus.FAILED,
+        )
+
+        datalayer.refresh_from_db()
+        self.assertEqual(datalayer.status, DataLayerStatus.FAILED)
+
+    def test_style_is_not_kept_when_it_cannot_be_assigned(self):
+        vector = make_upload(self.workspace, status=DataLayerStatus.READY)
+        DataLayer.objects.filter(pk=vector.pk).update(type=DataLayerType.VECTOR)
+        vector.refresh_from_db()
+
+        with self.assertRaises(ValueError):
+            create_style(
+                name="Ramp",
+                organization=None,
+                workspace=self.workspace,
+                created_by=self.user,
+                type=DataLayerType.RASTER,
+                data=STYLE,
+                datalayers=[vector],
+            )
+
+        self.assertFalse(Style.objects.filter(name="Ramp").exists())
+
+
+@mock.patch(
+    "datasets.management.commands.process_uploaded_datalayer"
+    ".process_uploaded_datalayer"
+)
+class ProcessUploadedDataLayerCommandTest(TestCase):
+    def setUp(self):
+        self.datalayer = make_upload(
+            PlanningWorkspaceFactory.create(),
+            status=DataLayerStatus.FAILED,
+            failure_reason="No CRS",
+        )
+
+    def test_retry_moves_a_failed_upload_back_to_pending(self, process):
+        with mock.patch("datasets.events.publish_workspace_event") as publish:
+            call_command(
+                "process_uploaded_datalayer",
+                str(self.datalayer.pk),
+                "--retry",
+                stdout=StringIO(),
+            )
+
+        self.datalayer.refresh_from_db()
+        self.assertEqual(self.datalayer.status, DataLayerStatus.PENDING)
+        self.assertIsNone(self.datalayer.failure_reason)
+        process.assert_called_once_with(self.datalayer.pk)
+        self.assertEqual(
+            publish.call_args.args[1], "datasets.datalayer.status_changed"
+        )
+        self.assertEqual(publish.call_args.kwargs["data"]["status"], "PENDING")
+
+    def test_failed_upload_is_refused_without_retry(self, process):
+        with self.assertRaises(CommandError):
+            call_command(
+                "process_uploaded_datalayer",
+                str(self.datalayer.pk),
+                stdout=StringIO(),
+            )
+
+        process.assert_not_called()
+        self.datalayer.refresh_from_db()
+        self.assertEqual(self.datalayer.status, DataLayerStatus.FAILED)

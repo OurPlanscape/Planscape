@@ -21,10 +21,10 @@ from datasets.models import (
 )
 from datasets.upload_metadata import read_upload_metadata
 from datasets.styles import (
-    get_default_raster_style,
     get_default_raster_style_for,
     get_default_vector_style,
     get_raster_style,
+    get_upload_style,
 )
 from django.conf import settings
 from django.core.validators import URLValidator
@@ -147,25 +147,13 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     path = serializers.SerializerMethodField()
     original_name = serializers.CharField(read_only=True)
 
-    def _default_raster_style(self, instance):
-        stats = instance.info.get("stats")[0]
-        return get_default_raster_style(**stats)
-
     def get_styles(self, instance):
         if instance.styles.all().exists():
             style = instance.styles.all().first()
             return [get_raster_style(datalayer=instance, style=style)]
         match instance.type:
             case DataLayerType.RASTER:
-                stats = (
-                    instance.info.get("stats", [])[0]
-                    if instance.info
-                    else {"min": 0, "max": 1}
-                )
-                nodata = instance.info.get("nodata") if instance.info else None
-                if nodata is not None:
-                    stats["nodata"] = nodata
-                return [get_default_raster_style(**stats)]
+                return [get_default_raster_style_for(instance)]
             case _:
                 return [get_default_vector_style()]
 
@@ -632,10 +620,6 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             return None
         return instance.pk in favorite_ids
 
-    def _default_raster_style(self, instance):
-        stats = instance.info.get("stats")[0]
-        return get_default_raster_style(**stats)
-
     def get_styles(self, instance) -> Collection[Dict[str, Any]]:
         styles = list(instance.styles.all())
         if styles:
@@ -643,15 +627,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
 
         match instance.type:
             case DataLayerType.RASTER:
-                stats = (
-                    instance.info.get("stats", [])[0]
-                    if instance.info
-                    else {"min": 0, "max": 1}
-                )
-                nodata = instance.info.get("nodata") if instance.info else None
-                if nodata is not None:
-                    stats["nodata"] = nodata
-                return [get_default_raster_style(**stats)]
+                return [get_default_raster_style_for(instance)]
             case _:
                 return [get_default_vector_style()]
 
@@ -831,14 +807,35 @@ class WorkspaceFavoriteDataLayerSerializer(
         )
 
 
+UPLOAD_EXTENSIONS = (".tif", ".tiff")
+
+
+def validate_upload_name(
+    workspace: Workspace, name: str, exclude_id: Optional[int] = None
+) -> str:
+    """Upload names are unique in a workspace, across every uploader."""
+    taken = (
+        DataLayer.objects.filter(
+            dataset__workspace=workspace,
+            name=name,
+            type=DataLayerType.RASTER,
+        )
+        .exclude(pk=exclude_id)
+        .exists()
+    )
+    if taken:
+        raise serializers.ValidationError(
+            "A data layer with this name already exists in this workspace."
+        )
+    return name
+
+
 class CreateWorkspaceDataLayerSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=256)
     original_name = serializers.CharField(max_length=1024)
     size = serializers.IntegerField(min_value=1)
 
     def validate_original_name(self, value: str) -> str:
-        from datasets.services import UPLOAD_EXTENSIONS
-
         if not value.lower().endswith(UPLOAD_EXTENSIONS):
             raise serializers.ValidationError(
                 "Only GeoTIFF files (.tif, .tiff) are supported."
@@ -854,16 +851,7 @@ class CreateWorkspaceDataLayerSerializer(serializers.Serializer):
         return value
 
     def validate_name(self, value: str) -> str:
-        from datasets.services import workspace_upload_name_taken
-
-        value = value.strip()
-        if not value:
-            raise serializers.ValidationError("Name can't be blank.")
-        if workspace_upload_name_taken(self.context["workspace"], value):
-            raise serializers.ValidationError(
-                "A data layer with this name already exists in this workspace."
-            )
-        return value
+        return validate_upload_name(self.context["workspace"], value)
 
 
 class WorkspaceDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
@@ -898,8 +886,6 @@ class WorkspaceDataLayerDetailSerializer(WorkspaceDataLayerSerializer):
     """
 
     def to_representation(self, instance: DataLayer) -> Dict[str, Any]:
-        from datasets.services import get_upload_style
-
         data = super().to_representation(instance)
         data.update(read_upload_metadata(instance.metadata))
         data["bbox"] = list(instance.geometry.extent) if instance.geometry else None
@@ -975,19 +961,10 @@ class UpdateWorkspaceDataLayerSerializer(serializers.Serializer):
     style = UploadStyleSerializer(required=False, allow_null=True)
 
     def validate_name(self, value: str) -> str:
-        from datasets.services import workspace_upload_name_taken
-
-        value = value.strip()
-        if not value:
-            raise serializers.ValidationError("Name can't be blank.")
         datalayer = self.context["datalayer"]
-        if workspace_upload_name_taken(
+        return validate_upload_name(
             datalayer.workspace, value, exclude_id=datalayer.pk
-        ):
-            raise serializers.ValidationError(
-                "A data layer with this name already exists in this workspace."
-            )
-        return value
+        )
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         if self.context["datalayer"].status != DataLayerStatus.READY:
