@@ -553,14 +553,6 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Why processing failed, shown to the uploader.",
     )
 
-    raw_url = models.CharField(
-        max_length=1024,
-        null=True,
-        blank=True,
-        db_index=True,
-        help_text="Where a workspace upload lands before processing.",
-    )
-
     file_size = models.BigIntegerField(
         null=True,
         blank=True,

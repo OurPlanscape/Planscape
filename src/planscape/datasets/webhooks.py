@@ -8,8 +8,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from datasets.models import DataLayer, DataLayerStatus
-from datasets.services import is_upload_raw_url
+from datasets.models import DataLayer, DataLayerOrigin, DataLayerStatus
+from datasets.services import workspace_uploads_prefix
 from datasets.tasks import process_uploaded_datalayer
 
 log = logging.getLogger(__name__)
@@ -59,11 +59,14 @@ class GCSUploadWebhookView(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         gs_url = f"gs://{attributes.get('bucketId')}/{attributes.get('objectId')}"
-        if not is_upload_raw_url(gs_url):
+        if not gs_url.startswith(workspace_uploads_prefix()):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
+        # processing rewrites the file in place, which notifies again; the
+        # layer isn't PENDING anymore by then
         datalayer = DataLayer.objects.filter(
-            raw_url=gs_url,
+            url=gs_url,
+            origin=DataLayerOrigin.USER,
             status=DataLayerStatus.PENDING,
         ).first()
         if datalayer is None:

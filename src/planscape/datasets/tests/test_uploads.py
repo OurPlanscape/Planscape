@@ -30,6 +30,7 @@ from datasets.services import (
     upload_dataset_name,
 )
 from datasets.tasks import process_uploaded_datalayer
+from gis.rasters import get_estimated_mask
 from datasets.upload_metadata import read_upload_metadata, write_upload_metadata
 from datasets.tests.factories import DataLayerFactory
 from planscape.tests.factories import UserFactory
@@ -53,8 +54,8 @@ def make_upload(workspace, status=DataLayerStatus.PENDING, **kwargs):
         info=None,
         **kwargs,
     )
-    datalayer.raw_url = (
-        f"gs://{BUCKET}/uploads/raw/workspaces/{workspace.pk}/{datalayer.uuid}.tif"
+    datalayer.url = (
+        f"gs://{BUCKET}/datalayers/workspaces/{workspace.pk}/{datalayer.uuid}.tif"
     )
     datalayer.save()
     return datalayer
@@ -107,15 +108,13 @@ class CreateWorkspaceDataLayerTest(APITestCase):
         self.assertEqual(datalayer.dataset.workspace, self.workspace)
         self.assertEqual(datalayer.dataset.name, upload_dataset_name(self.collaborator))
         self.assertEqual(datalayer.dataset.created_by, self.collaborator)
-        self.assertTrue(
-            datalayer.raw_url.startswith(
-                f"gs://{BUCKET}/uploads/raw/workspaces/{self.workspace.pk}/"
-            )
+        self.assertEqual(
+            datalayer.url,
+            f"gs://{BUCKET}/datalayers/workspaces/{self.workspace.pk}/"
+            f"{datalayer.uuid}.TIF",
         )
-        self.assertTrue(datalayer.raw_url.endswith(".tif"))
         upload_url.assert_called_once_with(
-            object_name=datalayer.raw_url.removeprefix(f"gs://{BUCKET}/"),
-            bucket_name=BUCKET,
+            object_name=datalayer.url.removeprefix(f"gs://{BUCKET}/"),
             content_type="image/tiff",
             size=self.payload["size"],
             origin="http://localhost:4200",
@@ -250,7 +249,7 @@ class ListAndDeleteWorkspaceDataLayersTest(APITestCase):
         self.assertEqual(self.client.get(self.url).status_code, 403)
 
     @mock.patch("datasets.services.delete_gcs_file")
-    def test_delete_soft_deletes_and_removes_raw_file(self, delete_file):
+    def test_delete_soft_deletes_and_removes_unfinished_file(self, delete_file):
         datalayer = make_upload(self.workspace)
         self.client.force_authenticate(self.owner)
         with self.captureOnCommitCallbacks(execute=True):
@@ -258,7 +257,15 @@ class ListAndDeleteWorkspaceDataLayersTest(APITestCase):
         self.assertEqual(response.status_code, 204)
         self.assertFalse(DataLayer.objects.filter(pk=datalayer.pk).exists())
         self.assertTrue(DataLayer.dead_or_alive.filter(pk=datalayer.pk).exists())
-        delete_file.assert_called_once_with(datalayer.raw_url)
+        delete_file.assert_called_once_with(datalayer.url)
+
+    @mock.patch("datasets.services.delete_gcs_file")
+    def test_delete_keeps_the_file_of_a_ready_layer(self, delete_file):
+        datalayer = make_upload(self.workspace, status=DataLayerStatus.READY)
+        self.client.force_authenticate(self.owner)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.delete(f"{self.url}{datalayer.pk}/")
+        delete_file.assert_not_called()
 
     def test_cannot_delete_layer_from_another_workspace(self):
         other = make_upload(PlanningWorkspaceFactory.create())
@@ -286,7 +293,7 @@ class GCSUploadWebhookTest(APITestCase):
 
     def push(self, object_url=None, event_type="OBJECT_FINALIZE"):
         bucket, key = (
-            (object_url or self.datalayer.raw_url).removeprefix("gs://").split("/", 1)
+            (object_url or self.datalayer.url).removeprefix("gs://").split("/", 1)
         )
         return self.client.post(
             self.url,
@@ -334,15 +341,15 @@ class GCSUploadWebhookTest(APITestCase):
         self.assertEqual(self.push(event_type="OBJECT_DELETE").status_code, 204)
         delay.assert_not_called()
 
-    def test_ignores_objects_outside_raw_prefix(self, verify, delay):
+    def test_ignores_objects_outside_uploads_prefix(self, verify, delay):
         verify.return_value = self.claims
-        response = self.push(f"gs://{BUCKET}/datalayers/workspaces/1/x.tif")
+        response = self.push(f"gs://{BUCKET}/datalayers/1/x.tif")
         self.assertEqual(response.status_code, 204)
         delay.assert_not_called()
 
     def test_ignores_unknown_objects(self, verify, delay):
         verify.return_value = self.claims
-        response = self.push(f"gs://{BUCKET}/uploads/raw/workspaces/1/nope.tif")
+        response = self.push(f"gs://{BUCKET}/datalayers/workspaces/1/nope.tif")
         self.assertEqual(response.status_code, 204)
         delay.assert_not_called()
 
@@ -358,9 +365,13 @@ def fake_download(gs_url, output_file):
     shutil.copy(ASSETS / "raster1.tif", output_file)
 
 
+def local_mask(url):
+    return get_estimated_mask(str(ASSETS / "raster1.tif"))
+
+
 @override_settings(GCS_BUCKET=BUCKET, PROVIDER="gcp")
 @mock.patch("datasets.tasks.datalayer_file_post_process.delay")
-@mock.patch("datasets.services.delete_gcs_file")
+@mock.patch("datasets.services.get_estimated_mask_raster", side_effect=local_mask)
 @mock.patch("datasets.tasks.get_gcs_hash", return_value="crc")
 @mock.patch("datasets.tasks.upload_file_via_cli")
 @mock.patch("datasets.tasks.download_file", side_effect=fake_download)
@@ -371,7 +382,7 @@ class ProcessUploadedDataLayerTest(TestCase):
         self.datalayer = make_upload(self.workspace)
 
     def test_success_makes_layer_ready(
-        self, size, download, upload, gcs_hash, delete_file, post_process
+        self, size, download, upload, gcs_hash, mask, post_process
     ):
         process_uploaded_datalayer(self.datalayer.pk)
 
@@ -393,18 +404,17 @@ class ProcessUploadedDataLayerTest(TestCase):
             upload.call_args.kwargs["object_name"],
             f"datalayers/workspaces/{self.workspace.pk}/{self.datalayer.uuid}.tif",
         )
-        delete_file.assert_called_once_with(self.datalayer.raw_url)
         post_process.assert_called_once_with(datalayer_id=self.datalayer.pk)
 
     def test_second_delivery_is_a_no_op(
-        self, size, download, upload, gcs_hash, delete_file, post_process
+        self, size, download, upload, gcs_hash, mask, post_process
     ):
         process_uploaded_datalayer(self.datalayer.pk)
         process_uploaded_datalayer(self.datalayer.pk)
         download.assert_called_once()
 
     def test_missing_crs_fails_with_reason(
-        self, size, download, upload, gcs_hash, delete_file, post_process
+        self, size, download, upload, gcs_hash, mask, post_process
     ):
         with mock.patch(
             "datasets.tasks.to_planscape_streaming",
@@ -417,12 +427,25 @@ class ProcessUploadedDataLayerTest(TestCase):
         self.datalayer.refresh_from_db()
         self.assertEqual(self.datalayer.status, DataLayerStatus.FAILED)
         self.assertIn("coordinate reference system", self.datalayer.failure_reason)
-        delete_file.assert_not_called()
         upload.assert_not_called()
+
+    def test_failing_the_shared_processing_fails_with_reason(
+        self, size, download, upload, gcs_hash, mask, post_process
+    ):
+        mask.side_effect = RuntimeError("boom")
+        with mock.patch("datasets.events.publish_workspace_event") as publish:
+            process_uploaded_datalayer(self.datalayer.pk)
+
+        self.datalayer.refresh_from_db()
+        self.assertEqual(self.datalayer.status, DataLayerStatus.FAILED)
+        self.assertIn("Processing failed", self.datalayer.failure_reason)
+        self.assertEqual(
+            publish.call_args.kwargs["data"]["status"], DataLayerStatus.FAILED
+        )
 
     @override_settings(DATALAYER_UPLOAD_MAX_BYTES=10)
     def test_oversized_object_fails(
-        self, size, download, upload, gcs_hash, delete_file, post_process
+        self, size, download, upload, gcs_hash, mask, post_process
     ):
         process_uploaded_datalayer(self.datalayer.pk)
 
@@ -432,7 +455,7 @@ class ProcessUploadedDataLayerTest(TestCase):
         download.assert_not_called()
 
     def test_publishes_status_changes(
-        self, size, download, upload, gcs_hash, delete_file, post_process
+        self, size, download, upload, gcs_hash, mask, post_process
     ):
         with mock.patch("datasets.events.publish_workspace_event") as publish:
             process_uploaded_datalayer(self.datalayer.pk)
@@ -445,7 +468,7 @@ class ProcessUploadedDataLayerTest(TestCase):
         self.assertEqual(statuses, ["PROCESSING", "READY"])
 
     def test_status_changes_name_the_uploader(
-        self, size, download, upload, gcs_hash, delete_file, post_process
+        self, size, download, upload, gcs_hash, mask, post_process
     ):
         with mock.patch("datasets.events.publish_workspace_event") as publish:
             process_uploaded_datalayer(self.datalayer.pk)
@@ -494,7 +517,6 @@ class ReadPathsTest(APITestCase):
     DATALAYER_UPLOAD_PENDING_TTL_HOURS=24,
     DATALAYER_UPLOAD_PROCESSING_TTL_HOURS=2,
 )
-@mock.patch("datasets.services.delete_gcs_file")
 class ExpireStaleUploadsTest(TestCase):
     def setUp(self):
         self.workspace = PlanningWorkspaceFactory.create()
@@ -505,7 +527,7 @@ class ExpireStaleUploadsTest(TestCase):
             updated_at=timezone.now() - timedelta(hours=hours),
         )
 
-    def test_expires_old_pending_and_stuck_processing(self, delete_file):
+    def test_expires_old_pending_and_stuck_processing(self):
         old_pending = make_upload(self.workspace)
         fresh_pending = make_upload(self.workspace)
         stuck = make_upload(self.workspace, status=DataLayerStatus.PROCESSING)
@@ -522,7 +544,6 @@ class ExpireStaleUploadsTest(TestCase):
         self.assertEqual(fresh_pending.status, DataLayerStatus.PENDING)
         self.assertEqual(stuck.status, DataLayerStatus.FAILED)
         self.assertEqual(stuck.failure_reason, "Processing timed out.")
-        delete_file.assert_called_once_with(old_pending.raw_url)
 
 
 @override_settings(PROVIDER="gcp", GCS_BUCKET=BUCKET)

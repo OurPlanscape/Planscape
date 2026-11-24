@@ -697,7 +697,6 @@ AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", "us-west-2")
 AWS_S3_ENDPOINT_URL = config("AWS_S3_ENDPOINT_URL", default=None)
 UPLOAD_EXPIRATION_TTL = config("UPLOAD_EXPIRATION_TTL", default=3600, cast=int)
 DATALAYERS_FOLDER = "datalayers"
-UPLOADS_RAW_FOLDER = "uploads/raw"
 DATALAYER_UPLOAD_MAX_BYTES = config(
     "DATALAYER_UPLOAD_MAX_BYTES", default=2 * 1024**3, cast=int
 )

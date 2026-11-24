@@ -33,17 +33,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name="datalayer",
-            name="raw_url",
-            field=models.CharField(
-                blank=True,
-                db_index=True,
-                help_text="Where a workspace upload lands before processing.",
-                max_length=1024,
-                null=True,
-            ),
-        ),
-        migrations.AddField(
-            model_name="datalayer",
             name="file_size",
             field=models.BigIntegerField(
                 blank=True,
