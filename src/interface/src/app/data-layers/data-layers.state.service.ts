@@ -592,7 +592,7 @@ export class DataLayersStateService implements OnDestroy {
       type: 'dataset',
       id: dataset.id,
       name: dataset.name,
-      organization: dataset.organization,
+      organization: dataset.organization ?? undefined,
     });
   }
 
