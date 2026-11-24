@@ -747,7 +747,8 @@ class UploadStyleTest(APITestCase):
 
     def public_styles(self):
         url = reverse("api:datasets:datalayers-detail", args=[self.datalayer.pk])
-        return self.client.get(url).json()["styles"]
+        with mock.patch.object(DataLayer, "get_public_url", return_value=None):
+            return self.client.get(url).json()["styles"]
 
     def test_starts_with_the_automatic_ramp(self):
         body = self.client.get(self.url).json()
