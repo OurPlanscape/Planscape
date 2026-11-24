@@ -605,7 +605,7 @@ class ScenarioViewSet(MultiSerializerMixin, viewsets.ModelViewSet):
             "funding_report.report.created", report, actor=request.user
         )
 
-        if feature_enabled("FOR_WITH_BURN_EMULATOR"):
+        if feature_enabled("CATASTROPHIC_REDUCTION"):
             run_funding_opportunity_report_with_burn_emmulator.delay(report.pk)
         else:
             run_funding_opportunity_report.delay(report.pk)
