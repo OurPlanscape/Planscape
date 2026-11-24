@@ -156,6 +156,18 @@ const routes: Routes = [
           ).then((m) => m.WorkspaceDashboardComponent),
       },
       {
+        path: 'workspace/:workspaceId/datalayers',
+        title: 'Data Layers',
+        canActivate: [AuthGuard],
+        resolve: {
+          workspaceId: workspaceLoaderResolver,
+        },
+        loadComponent: () =>
+          import(
+            '@app/workspaces/workspace-data-layers/workspace-data-layers.component'
+          ).then((m) => m.WorkspaceDataLayersComponent),
+      },
+      {
         // The same plan, scenario and treatment pages, reached from a workspace.
         path: 'workspace/:workspaceId',
         resolve: {
