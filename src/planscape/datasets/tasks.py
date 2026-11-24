@@ -1,15 +1,33 @@
 import logging
+import os
+import tempfile
 
-from core.gcs import get_gcs_hash, is_gcs_file, update_file_cache_control
+from core.gcs import (
+    download_file,
+    get_bucket_and_key,
+    get_file_size,
+    get_gcs_hash,
+    is_gcs_file,
+    update_file_cache_control,
+    upload_file_via_cli,
+)
 from core.mattermost import post_to_mattermost
 from core.s3 import get_s3_hash, is_s3_file
 from django.conf import settings
 from django.db import connection
+from django.utils import timezone
+from gis.info import info_raster
+from gis.rasters import to_planscape_streaming
 from gis.vectors import ogr2ogr
 from planning.geometry import to_multipolygon
 from planscape.celery import app
 
-from datasets.models import DataLayer, DataLayerStatus, DataLayerType
+from datasets.models import (
+    DataLayer,
+    DataLayerOrigin,
+    DataLayerStatus,
+    DataLayerType,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -206,3 +224,105 @@ def refresh_twig_treatment_layers_task() -> None:
             f"planscape-{settings.ENV} :x: TWIG treatment layer refresh failed: {exc}"
         )
         raise
+
+
+PROCESSING_FAILED = "Processing failed. Try uploading the file again."
+
+
+class UploadProcessingError(Exception):
+    """Processing failed for a reason the uploader can act on."""
+
+
+def upload_failure_reason(exc: Exception) -> str:
+    if isinstance(exc, UploadProcessingError):
+        return str(exc)
+    message = str(exc)
+    if "CRS" in message:
+        return "The file has no coordinate reference system (CRS)."
+    if exc.__class__.__name__ in ("RasterioIOError", "CPLE_OpenFailedError"):
+        return "The file is not a readable GeoTIFF."
+    return PROCESSING_FAILED
+
+
+def claim_upload(datalayer_id: int) -> bool:
+    """Atomically moves an upload from PENDING to PROCESSING. False if
+    another delivery already claimed it."""
+    claimed = DataLayer.objects.filter(
+        pk=datalayer_id,
+        status=DataLayerStatus.PENDING,
+        origin=DataLayerOrigin.USER,
+    ).update(status=DataLayerStatus.PROCESSING, updated_at=timezone.now())
+    return claimed == 1
+
+
+def convert_upload(datalayer: DataLayer, workdir: str) -> None:
+    """Replaces the uploaded GeoTIFF with a Planscape COG, in place."""
+    from datasets.services import geometry_from_info
+
+    size = get_file_size(datalayer.url)  # type: ignore
+    if size is None:
+        raise UploadProcessingError("The uploaded file was not found.")
+    if size > settings.DATALAYER_UPLOAD_MAX_BYTES:
+        limit_gb = settings.DATALAYER_UPLOAD_MAX_BYTES / 1024**3
+        raise UploadProcessingError(
+            f"The file is larger than the {limit_gb:g} GB limit."
+        )
+
+    raw_file = os.path.join(workdir, "raw.tif")
+    cog_file = os.path.join(workdir, "cog.tif")
+    download_file(datalayer.url, raw_file)  # type: ignore
+    to_planscape_streaming(input_file=raw_file, output_file=cog_file)
+
+    _bucket, object_name = get_bucket_and_key(datalayer.url)  # type: ignore
+    upload_file_via_cli(object_name=object_name, input_file=cog_file)
+
+    datalayer.info = info_raster(cog_file)
+    datalayer.geometry = geometry_from_info(
+        datalayer.info, datalayer_type=DataLayerType.RASTER
+    )
+    datalayer.failure_reason = None
+    datalayer.save(update_fields=["info", "geometry", "failure_reason", "updated_at"])
+
+
+@app.task()
+def process_uploaded_datalayer(datalayer_id: int) -> None:
+    """
+    Turns a workspace upload into a READY COG datalayer: reprojects to the
+    Planscape CRS and converts to COG, then `process_datalayer` does what it
+    does for every datalayer (hash, outline, status). Safe to call more than
+    once per upload; only the first call does the work.
+    """
+    from datasets.services import publish_upload_status, set_upload_status
+
+    if not claim_upload(datalayer_id):
+        logger.info("Upload %s is not pending, skipping", datalayer_id)
+        return
+
+    datalayer = DataLayer.objects.get(pk=datalayer_id)
+    publish_upload_status(datalayer)
+
+    try:
+        with tempfile.TemporaryDirectory() as workdir:
+            convert_upload(datalayer, workdir)
+    except Exception as exc:
+        logger.exception("Processing upload %s failed", datalayer_id)
+        set_upload_status(
+            datalayer, DataLayerStatus.FAILED, upload_failure_reason(exc)
+        )
+        return
+
+    process_datalayer(datalayer_id)
+    datalayer.refresh_from_db()
+    if datalayer.status == DataLayerStatus.FAILED:
+        set_upload_status(datalayer, DataLayerStatus.FAILED, PROCESSING_FAILED)
+        return
+    publish_upload_status(datalayer)
+
+
+@app.task()
+def expire_stale_uploads_task() -> None:
+    from datasets.services import expire_stale_uploads
+
+    expired = expire_stale_uploads()
+    if expired:
+        logger.info("Expired %s stale uploads", expired)

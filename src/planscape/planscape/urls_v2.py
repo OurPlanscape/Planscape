@@ -2,6 +2,7 @@ from climate_foresight.routers import router as climate_foresight_router
 from datasets.admin_routers import router as datasets_admin_router
 from workspaces.admin_routers import router as workspaces_admin_router
 from datasets.routers import router as datasets_router
+from datasets.webhooks import GCSUploadWebhookView
 from django.urls import include, path
 from impacts.routers import router as impacts_router
 from modules.routers import router as modules_router
@@ -13,6 +14,11 @@ core_router = SimpleRouter()
 
 app_name = "api"
 urlpatterns = [
+    path(
+        "webhooks/gcs/datalayer-uploaded/",
+        GCSUploadWebhookView.as_view(),
+        name="gcs-datalayer-uploaded",
+    ),
     path(
         "funding_report/",
         include(("funding_report.urls", "funding_report"), namespace="funding_report"),

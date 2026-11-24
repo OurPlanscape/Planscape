@@ -354,3 +354,42 @@ class WorkspaceConsumerTest(TestCase):
             self.assertEqual(received["data"], {})
         finally:
             await comm.disconnect()
+
+
+class WorkspaceConsumerUploadVisibilityTest(TestCase):
+    def consumer(self, role):
+        from realtime.consumers import WorkspaceConsumer
+
+        consumer = WorkspaceConsumer()
+        consumer.role = role
+        return consumer
+
+    def event(self, event_type, status):
+        return {"type": event_type, "data": {"status": status}}
+
+    def test_viewers_only_see_ready_uploads(self):
+        viewer = self.consumer(WorkspaceRole.VIEWER)
+        self.assertTrue(
+            viewer.hides_upload(self.event("datasets.datalayer.created", "PENDING"))
+        )
+        self.assertTrue(
+            viewer.hides_upload(
+                self.event("datasets.datalayer.status_changed", "FAILED")
+            )
+        )
+        self.assertFalse(
+            viewer.hides_upload(
+                self.event("datasets.datalayer.status_changed", "READY")
+            )
+        )
+        self.assertFalse(
+            viewer.hides_upload(self.event("datasets.datalayer.favorited", None))
+        )
+
+    def test_collaborators_see_every_upload_event(self):
+        collaborator = self.consumer(WorkspaceRole.COLLABORATOR)
+        self.assertFalse(
+            collaborator.hides_upload(
+                self.event("datasets.datalayer.status_changed", "PROCESSING")
+            )
+        )

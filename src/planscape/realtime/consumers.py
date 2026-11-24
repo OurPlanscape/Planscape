@@ -3,11 +3,13 @@ from typing import Any, Optional
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from datasets.events import DATALAYER_UPLOAD_EVENTS
+from datasets.models import DataLayerStatus
 from workspaces.access import (
     get_workspace_planning_area_access,
     get_workspace_role,
 )
-from workspaces.models import Workspace
+from workspaces.models import Workspace, WorkspaceRole
 
 from realtime.events import workspace_group_name
 
@@ -97,6 +99,8 @@ class WorkspaceConsumer(AsyncJsonWebsocketConsumer):
         """Handler for channel-layer messages of type `workspace.event`."""
         event = message["event"]
         self.track_role_change(event)
+        if self.hides_upload(event):
+            return
         await self.send_json(self.for_viewer(event))
         if self.revokes_access(event):
             await self.close(code=CLOSE_FORBIDDEN)
@@ -108,6 +112,14 @@ class WorkspaceConsumer(AsyncJsonWebsocketConsumer):
         data = event.get("data") or {}
         if user is not None and data.get("user_id") == user.pk:
             self.role = data.get("role")
+
+    def hides_upload(self, event: dict[str, Any]) -> bool:
+        """Viewers only ever see READY uploaded datalayers."""
+        if event.get("type") not in DATALAYER_UPLOAD_EVENTS:
+            return False
+        if self.role != WorkspaceRole.VIEWER:
+            return False
+        return (event.get("data") or {}).get("status") != DataLayerStatus.READY
 
     def for_viewer(self, event: dict[str, Any]) -> dict[str, Any]:
         """
