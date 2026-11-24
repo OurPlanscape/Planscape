@@ -32,7 +32,12 @@ from modules.base import MODULE_HANDLERS
 from requests import Response
 from requests.exceptions import JSONDecodeError
 
-from datasets.models import DataLayer, DataLayerType, MapServiceChoices
+from datasets.models import (
+    DataLayer,
+    DataLayerOrigin,
+    DataLayerType,
+    MapServiceChoices,
+)
 from datasets.parsers import get_and_parse_datalayer_file_metadata
 
 TREATMENT_METADATA_REGEX = re.compile(
@@ -95,6 +100,7 @@ def get_create_call(
     dataset,
     metadata: str | None = None,
     map_service_type: str | None = None,
+    origin: str | None = None,
 ) -> list[str]:
     command = [
         "python3",
@@ -112,6 +118,8 @@ def get_create_call(
         command.extend(["--metadata", metadata])
     if map_service_type:
         command.extend(["--map-service-type", map_service_type])
+    if origin:
+        command.extend(["--origin", origin])
     return command
 
 
@@ -206,6 +214,14 @@ class Command(PlanscapeCommand):
             "--metadata",
             required=False,
             type=json.loads,
+        )
+        create_parser.add_argument(
+            "--origin",
+            type=str,
+            required=False,
+            choices=DataLayerOrigin.values,
+            default=DataLayerOrigin.PLANSCAPE,
+            help="Who uploads the datalayer: the Planscape team or a user.",
         )
         for module_name in MODULE_HANDLERS.keys():
             create_parser.add_argument(
@@ -465,6 +481,7 @@ class Command(PlanscapeCommand):
         category = kwargs.get("category")
         metadata = metadata or {}
         style = kwargs.get("style", None) or None
+        origin = kwargs.get("origin") or DataLayerOrigin.PLANSCAPE
         input_data = {
             "organization": org,
             "name": name,
@@ -479,6 +496,7 @@ class Command(PlanscapeCommand):
             "style": style,
             "map_service_type": map_service_type,
             "url": url,
+            "origin": origin,
         }
         input_data = sanitize_json_value(input_data)
 
@@ -592,6 +610,7 @@ class Command(PlanscapeCommand):
                             dataset=dataset,
                             metadata=metadata,
                             map_service_type=map_service_type,
+                            origin=kwargs.get("origin"),
                         )
                         subprocess.run(command)
                     return None

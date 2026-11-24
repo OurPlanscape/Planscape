@@ -184,6 +184,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "type",
             "geometry_type",
             "status",
+            "origin",
             "styles",
             "path",
             "url",
@@ -328,6 +329,7 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "style",
             "map_service_type",
             "storage_type",
+            "origin",
         )
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
@@ -672,6 +674,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "type",
             "geometry_type",
             "status",
+            "origin",
             "storage_type",
             "info",
             "metadata",
@@ -700,7 +703,9 @@ class BrowseDataLayerFilterSerializer(serializers.Serializer):
 class SearchTabSerializer(serializers.Serializer):
     """
     `search_tab` handling shared by find anything and browse. The favorites tab
-    is scoped to a workspace the requester has access to.
+    is scoped to a workspace the requester has access to. The uploaded tab
+    lists every upload the requester can access, or only the workspace's
+    uploads when a workspace is given.
     """
 
     def __init__(self, *args, **kwargs):
@@ -719,8 +724,8 @@ class SearchTabSerializer(serializers.Serializer):
         queryset=Workspace.objects.none(),
         source="workspace",
         required=False,
-        help_text="Workspace whose favorites are searched. "
-        "Required when `search_tab` is `favorites`.",
+        help_text="Workspace whose favorites or uploads are searched. "
+        "Required when `search_tab` is `favorites`; optional for `uploaded`.",
     )
 
     def validate(self, attrs):
@@ -756,12 +761,15 @@ class BrowseDataSetSerializer(SearchTabSerializer):
 
 class BrowseDataLayersSerializer(BrowseDataSetSerializer):
     """
-    Browse across every dataset. Only the favorites tab is supported, since the
-    general tab would return every accessible datalayer.
+    Browse favorites or uploads across every dataset. The general tab isn't
+    supported, since it would return every accessible datalayer.
     """
 
     search_tab = serializers.ChoiceField(
-        choices=[(SearchTab.FAVORITES.value, SearchTab.FAVORITES.label)],
+        choices=[
+            (SearchTab.FAVORITES.value, SearchTab.FAVORITES.label),
+            (SearchTab.UPLOADED.value, SearchTab.UPLOADED.label),
+        ],
     )
 
 

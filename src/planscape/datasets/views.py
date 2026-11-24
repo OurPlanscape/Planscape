@@ -6,6 +6,7 @@ from datasets.models import (
     DataLayer,
     DataLayerType,
     Dataset,
+    SearchTab,
     SimpleCategory,
     VisibilityOptions,
 )
@@ -21,7 +22,7 @@ from datasets.serializers import (
 )
 from datasets.services import (
     browse,
-    browse_favorites,
+    browse_datalayers,
     browse_simple_category,
     find_anything,
     get_favorite_datalayer_ids,
@@ -193,8 +194,9 @@ class DataLayerViewSet(
         return Response({"layer_url": datalayer.get_map_url()})
 
     @extend_schema(
-        description="Returns the datalayers favorited in a workspace, across "
-        "all datasets.",
+        description="Returns the datalayers favorited in a workspace, or the "
+        "uploaded datalayers (narrowed to a workspace when given), across all "
+        "datasets.",
         request=BrowseDataLayersSerializer,
         responses={200: BrowseDataLayerSerializer(many=True)},
     )
@@ -205,22 +207,28 @@ class DataLayerViewSet(
             context={"request": request},
         )
         serializer.is_valid(raise_exception=True)
-        workspace = serializer.validated_data["workspace"]
+        workspace = serializer.validated_data.get("workspace")
+        search_tab = serializer.validated_data["search_tab"]
         results = list(
-            browse_favorites(
-                workspace,
+            browse_datalayers(
+                search_tab,
+                workspace=workspace,
                 type=serializer.validated_data.get("type"),
                 module=serializer.validated_data.get("module"),
                 geometry=serializer.validated_data.get("geometry"),
                 user=request.user,
             )
         )
+        datalayer_ids = [datalayer.pk for datalayer in results]
+        favorite_datalayer_ids = (
+            set(datalayer_ids)
+            if search_tab == SearchTab.FAVORITES
+            else get_favorite_datalayer_ids(workspace, datalayer_ids)
+        )
         serializer = BrowseDataLayerSerializer(
             results,
             many=True,
-            context={
-                "favorite_datalayer_ids": {datalayer.pk for datalayer in results},
-            },
+            context={"favorite_datalayer_ids": favorite_datalayer_ids},
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
 

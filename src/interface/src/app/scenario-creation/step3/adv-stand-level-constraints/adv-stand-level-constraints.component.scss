@@ -3,7 +3,7 @@
 @import 'mixins';
 
 .stand-label {
-    @include xs-label();
+    @include small-paragraph();
     margin: 0 0 16px 0;
 }
 
@@ -36,7 +36,7 @@
     vertical-align: sub;
 }
 
-::ng-deep .constraints-step {
+.constraints-step ::ng-deep {
     margin-bottom: 16px;
 
     .mdc-text-field--outlined {
@@ -46,6 +46,15 @@
     .mdc-text-field__input {
         padding: $steps-padding 0 $steps-padding $steps-padding;
         margin-right: 2px;
+    }
+
+    .mat-expansion-panel {
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .mat-expansion-panel-body {
+        padding: 0;
     }
 
     .mat-mdc-form-field-subscript-wrapper {

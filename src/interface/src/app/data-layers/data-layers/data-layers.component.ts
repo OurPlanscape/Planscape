@@ -24,6 +24,7 @@ import {
 import { UntilDestroy } from '@ngneat/until-destroy';
 import {
   ButtonComponent,
+  EmptyStateComponent,
   ExpanderSectionComponent,
   NoResultsComponent,
   PaginatorComponent,
@@ -61,6 +62,7 @@ import { groupSearchResults, Results } from './search';
     NgClass,
     MatProgressSpinnerModule,
     ButtonComponent,
+    EmptyStateComponent,
     MessageCardComponent,
     DataLayerTreeComponent,
     SearchBarComponent,
@@ -89,6 +91,7 @@ export class DataLayersComponent {
     this.dataLayersStateService.setSearchTab(tab);
     this.browseByCategory = this.dataLayersStateService.browseByCategory();
     this.searchPlaceholder = this.placeholderFor(tab);
+    this.isUploadedTab = tab === 'uploaded';
   }
 
   constructor(
@@ -102,6 +105,7 @@ export class DataLayersComponent {
   dataOrganization = this.featureService.isFeatureEnabled('DATA_ORGANIZATION');
   browseByCategory = this.dataLayersStateService.browseByCategory();
   searchPlaceholder = this.placeholderFor('general');
+  isUploadedTab = false;
 
   private placeholderFor(tab: SearchTab): string {
     if (tab === 'uploaded') {
@@ -168,6 +172,21 @@ export class DataLayersComponent {
     map(([dataSets, loading]) => {
       return dataSets.length > 0 && !loading;
     })
+  );
+
+  showNoUploads$ = combineLatest([this.dataSets$, this.loading$]).pipe(
+    map(
+      ([dataSets, loading]) =>
+        this.isUploadedTab && !dataSets.length && !loading
+    )
+  );
+
+  noUploadsDescription$ = this.dataLayersStateService.canUploadDataLayers$.pipe(
+    map((canUpload) =>
+      canUpload
+        ? 'Layers you or your collaborators upload will appear here, visible only to people with access to this workspace.'
+        : 'There are no data layers uploaded to this workspace. Layers uploaded by owner and editors will appear here.'
+    )
   );
 
   showCategories$ = combineLatest([this.categories$, this.loading$]).pipe(

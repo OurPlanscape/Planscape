@@ -10,15 +10,14 @@ from planscape.tests.factories import UserFactory
 from workspaces.models import (
     UserAccessWorkspace,
     Workspace,
-    WorkspaceKind,
     WorkspaceRole,
 )
 from workspaces.tests.factories import PlanningWorkspaceFactory
 
 
 def planning_workspaces():
-    # a data catalog workspace named "Default" is created by a migration
-    return Workspace.objects.filter(kind=WorkspaceKind.PLANNING)
+    # a "Default" workspace without a creator is created by a migration
+    return Workspace.objects.exclude(created_by=None)
 
 
 class MigratePlanningAreaWorkspacesCommandTest(TestCase):
@@ -49,7 +48,6 @@ class MigratePlanningAreaWorkspacesCommandTest(TestCase):
             planning_area.refresh_from_db()
         workspace = planning_area1.workspace
         self.assertEqual(workspace.name, "Default")
-        self.assertEqual(workspace.kind, WorkspaceKind.PLANNING)
         self.assertEqual(workspace.created_by, user)
         self.assertEqual(planning_area2.workspace, workspace)
         self.assertEqual(
@@ -190,9 +188,7 @@ class MigratePlanningAreaWorkspacesCommandTest(TestCase):
         self.assertIsNone(shared_planning_area.workspace)
         self.assertEqual(planning_workspaces().count(), 0)
         self.assertEqual(
-            UserAccessWorkspace.objects.filter(
-                workspace__kind=WorkspaceKind.PLANNING
-            ).count(),
+            UserAccessWorkspace.objects.exclude(workspace__created_by=None).count(),
             0,
         )
         self.assertIn("[DRY RUN]", output)

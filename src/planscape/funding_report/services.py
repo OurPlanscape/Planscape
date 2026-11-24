@@ -1728,7 +1728,7 @@ def export_funding_report_to_geopackage(
         export_planning_area_results_to_geopackage(report, temp_file)
         export_project_areas_results_to_geopackage(report, temp_file)
         export_treatment_raster_to_geopackage(report, temp_file)
-        if feature_enabled("FOR_WITH_BURN_EMULATOR"):
+        if feature_enabled("CATASTROPHIC_REDUCTION"):
             export_burn_simulation_raster_to_geopackage(report, temp_file)
 
         object_name = f"{settings.GEOPACKAGES_FOLDER}/funding_report_{report.pk}.gpkg"
