@@ -1,0 +1,65 @@
+<div class="col left-panel">
+  <div class="section-container">
+    <sg-section
+      headline="Select Data Layers"
+      [required]="true"
+      class="datalayers-section"
+      tooltipIcon="help"
+      tooltipLink="https://support.planscape.org/support/solutions/articles/32000036443-how-to-use-climate-foresightToDoc">
+      <p class="description bold-paragraph">
+        Select the data layers you want to include in your Climate Foresight
+        analysis (up to {{ maxDataLayers }}).
+      </p>
+      <p class="description">
+        Choose layers that represent current landscape conditions you want to
+        evaluate based on future climate conditions. These layers will form the
+        foundation of your analysis.
+      </p>
+
+      <div class="selection-counter">
+        <span class="count">
+          {{ selectedCount$ | async }}/{{ maxDataLayers }} Selected
+        </span>
+        <button sg-button icon="add" (click)="toggleBrowser()">Select</button>
+      </div>
+
+      <div
+        class="data-layers-list"
+        *ngIf="selectedDataLayers$ | async as selectedDataLayers">
+        <div *ngIf="selectedDataLayers.length === 0" class="no-selection">
+          <p>No Data Layers Selected</p>
+        </div>
+
+        <div *ngIf="selectedDataLayers.length > 0" class="selected-layers">
+          <div
+            *ngFor="let layer of selectedDataLayers"
+            class="selected-layer-item">
+            <span class="layer-name">{{ layer.name }}</span>
+            <button
+              sg-button
+              variant="icon-only"
+              icon="close"
+              (click)="removeDataLayer(layer)"
+              class="remove-button"></button>
+          </div>
+        </div>
+      </div>
+    </sg-section>
+  </div>
+</div>
+
+<div class="browser-panel" [class.open]="isBrowserOpen">
+  <div class="browser-header">
+    <h5>Data layers</h5>
+    <button
+      sg-button
+      variant="icon-only"
+      icon="close"
+      (click)="toggleBrowser()"></button>
+  </div>
+  <div class="datalayer-container">
+    <app-data-layers
+      class="white-background"
+      [displayAddButton]="true"></app-data-layers>
+  </div>
+</div>
