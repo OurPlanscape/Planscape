@@ -3,6 +3,8 @@ from typing import Any, Optional
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from datasets.events import DATALAYER_UPLOAD_EVENTS
+from datasets.models import DataLayerStatus
 from workspaces.access import (
     get_workspace_planning_area_access,
     get_workspace_role,
@@ -24,13 +26,6 @@ CONNECTED_EVENT = "realtime.connected"
 WORKSPACE_DELETED_EVENT = "workspace.workspace.deleted"
 MEMBERSHIP_REVOKED_EVENTS = ("workspace.member.removed", "workspace.member.left")
 ROLE_CHANGED_EVENT = "workspace.member.role_changed"
-DATALAYER_UPLOAD_EVENTS = (
-    "datasets.datalayer.created",
-    "datasets.datalayer.status_changed",
-    "datasets.datalayer.deleted",
-    "datasets.datalayer.updated",
-)
-READY = "READY"
 
 
 @database_sync_to_async
@@ -124,7 +119,7 @@ class WorkspaceConsumer(AsyncJsonWebsocketConsumer):
             return False
         if self.role != WorkspaceRole.VIEWER:
             return False
-        return (event.get("data") or {}).get("status") != READY
+        return (event.get("data") or {}).get("status") != DataLayerStatus.READY
 
     def for_viewer(self, event: dict[str, Any]) -> dict[str, Any]:
         """

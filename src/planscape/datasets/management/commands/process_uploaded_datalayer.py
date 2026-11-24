@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 
 from datasets.models import DataLayer, DataLayerOrigin, DataLayerStatus
+from datasets.services import set_upload_status
 from datasets.tasks import process_uploaded_datalayer
 
 
@@ -26,9 +27,7 @@ class Command(BaseCommand):
             raise CommandError(f"Upload {datalayer_id} does not exist.")
 
         if retry and datalayer.status == DataLayerStatus.FAILED:
-            datalayer.status = DataLayerStatus.PENDING
-            datalayer.failure_reason = None
-            datalayer.save(update_fields=["status", "failure_reason", "updated_at"])
+            set_upload_status(datalayer, DataLayerStatus.PENDING)
 
         if datalayer.status != DataLayerStatus.PENDING:
             raise CommandError(

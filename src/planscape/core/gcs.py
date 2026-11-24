@@ -87,20 +87,18 @@ def create_upload_url(
 
 
 def _get_blob(gs_url: str):
+    if not is_gcs_file(gs_url):
+        raise ValueError(f"Invalid GCS URL: {gs_url}")
     bucket_name, key = get_bucket_and_key(gs_url)
     return storage.Client().bucket(bucket_name).get_blob(key)
 
 
 def get_file_size(gs_url: str) -> Optional[int]:
-    if not is_gcs_file(gs_url):
-        raise ValueError(f"Invalid GCS URL: {gs_url}")
     blob = _get_blob(gs_url)
     return blob.size if blob else None
 
 
 def download_file(gs_url: str, output_file: str) -> None:
-    if not is_gcs_file(gs_url):
-        raise ValueError(f"Invalid GCS URL: {gs_url}")
     blob = _get_blob(gs_url)
     if not blob:
         raise FileNotFoundError(gs_url)
@@ -108,8 +106,6 @@ def download_file(gs_url: str, output_file: str) -> None:
 
 
 def delete_file(gs_url: str) -> None:
-    if not is_gcs_file(gs_url):
-        raise ValueError(f"Invalid GCS URL: {gs_url}")
     blob = _get_blob(gs_url)
     if blob:
         blob.delete()
