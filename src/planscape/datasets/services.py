@@ -953,7 +953,7 @@ class UploadsNotSupported(Exception):
 
 def workspace_uploads_prefix() -> str:
     """Where workspace uploads live; GCS finalize notifications watch it."""
-    return f"{get_bucket_url()}/{settings.DATALAYERS_FOLDER}/workspaces/"
+    return f"gs://{settings.GCS_BUCKET}/{settings.DATALAYERS_FOLDER}/workspaces/"
 
 
 def upload_dataset_name(user: User) -> str:
