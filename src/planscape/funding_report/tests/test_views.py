@@ -199,7 +199,7 @@ class RunReportTest(APITestCase):
         task_mock.delay.assert_not_called()
         self.burn_task_mock.delay.assert_not_called()
 
-    @override_settings(FEATURE_FLAGS=["FOR_WITH_BURN_EMULATOR"])
+    @override_settings(FEATURE_FLAGS=["CATASTROPHIC_REDUCTION"])
     @mock.patch("planning.views_v2.run_funding_opportunity_report")
     def test_run_report_with_burn_enabled_creates_report(self, legacy_task_mock):
         self.client.force_authenticate(self.user)
@@ -215,7 +215,7 @@ class RunReportTest(APITestCase):
         self.burn_task_mock.delay.assert_called_once_with(report.pk)
         legacy_task_mock.delay.assert_not_called()
 
-    @override_settings(FEATURE_FLAGS=["FOR_WITH_BURN_EMULATOR"])
+    @override_settings(FEATURE_FLAGS=["CATASTROPHIC_REDUCTION"])
     @mock.patch("planning.views_v2.run_funding_opportunity_report")
     def test_run_report_with_burn_enabled_reuses_report(self, legacy_task_mock):
         existing = FundingOpportunityReport.objects.create(

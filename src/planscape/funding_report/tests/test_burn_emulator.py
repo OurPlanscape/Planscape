@@ -447,7 +447,7 @@ class BurnEmulatorTaskTest(TestCase):
             )
         )
 
-    @override_settings(FEATURE_FLAGS=["FOR_WITH_BURN_EMULATOR"])
+    @override_settings(FEATURE_FLAGS=["CATASTROPHIC_REDUCTION"])
     def test_sweep_only_dispatches_active_jobs(self):
         with mock.patch(
             "funding_report.tasks.check_burn_emulator_status.delay"

@@ -31,6 +31,7 @@ describe('DataLayersComponent', () => {
           searchResults$: of(null),
           loading$: new BehaviorSubject(false),
           loadError$,
+          canUploadDataLayers$: of(false),
         }),
       ],
     })

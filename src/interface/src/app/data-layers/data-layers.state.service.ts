@@ -15,6 +15,7 @@ import {
   Subject,
   Subscription,
   switchMap,
+  take,
   tap,
 } from 'rxjs';
 import {
@@ -80,10 +81,21 @@ export class DataLayersStateService implements OnDestroy {
   /** The map module failed to load, so there are no datasets or categories to browse. */
   loadError$ = this.mapModuleService.loadError$;
 
-  dataSets$ = this.moduleNameOverride$.pipe(
-    switchMap((name) =>
-      name ? this.mapModuleService.datasetsFor(name) : this.baseDataSets$
-    ),
+  private _searchTab$ = new BehaviorSubject<SearchTab>('general');
+  searchTab$ = this._searchTab$.asObservable();
+
+  dataSets$: Observable<BaseDataSet[]> = combineLatest([
+    this._searchTab$,
+    this.moduleNameOverride$,
+  ]).pipe(
+    switchMap(([searchTab, name]) => {
+      if (searchTab === 'uploaded') {
+        return this.uploadedDataSets$(name ?? this.mapModuleService.moduleName);
+      }
+      return name
+        ? this.mapModuleService.datasetsFor(name)
+        : this.baseDataSets$;
+    }),
     tap(() => queueMicrotask(() => this.loadingSubject.next(false)))
   );
 
@@ -98,8 +110,35 @@ export class DataLayersStateService implements OnDestroy {
     this.moduleNameOverride$.next(name);
   }
 
-  private _searchTab$ = new BehaviorSubject<SearchTab>('general');
-  searchTab$ = this._searchTab$.asObservable();
+  // the module lists catalog datasets only, so the uploaded tab takes its
+  // datasets from the uploads themselves
+  private uploadedDataSets$(module: string): Observable<BaseDataSet[]> {
+    return this.planState.currentPlanOrNull$.pipe(
+      take(1),
+      tap(() => this.loadingSubject.next(true)),
+      switchMap((plan) =>
+        this.service.browseUploads(
+          this.requestWorkspaceId(plan, 'uploaded'),
+          module,
+          this.planGeometry(plan)
+        )
+      ),
+      map((layers) => {
+        const dataSets = new Map<number, BaseDataSet>();
+        layers.forEach((layer) =>
+          dataSets.set(layer.dataset.id, {
+            id: layer.dataset.id,
+            name: layer.dataset.name,
+            organization: layer.organization,
+          })
+        );
+        return [...dataSets.values()].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
+      }),
+      catchError(() => of([]))
+    );
+  }
 
   /**
    * Which tab the browse panel lists: every data layer, or the workspace's
@@ -335,6 +374,15 @@ export class DataLayersStateService implements OnDestroy {
         (workspace) =>
           workspace.role === 'OWNER' || workspace.role === 'COLLABORATOR'
       ),
+      catchError(() => of(false)),
+      startWith(false),
+      distinctUntilChanged(),
+      shareReplay(1)
+    );
+
+  canUploadDataLayers$: Observable<boolean> =
+    this.workspaceState.currentWorkspace$.pipe(
+      map((workspace) => workspace.permissions.includes('add_datalayer')),
       catchError(() => of(false)),
       startWith(false),
       distinctUntilChanged(),
