@@ -432,3 +432,22 @@ describe('Color Function Test For INTERVALS type', () => {
     expect(rgba[3]).toBe(255); // Full opacity
   });
 });
+
+describe('Color Function Test For a single VALUES entry', () => {
+  const colorFunction = generateColorFunction({
+    map_type: 'VALUES',
+    entries: [{ value: 1, color: '#aa00ff', opacity: 1.0, label: 'Habitat' }],
+  });
+
+  it('colors the matching value', () => {
+    const rgba = new Uint8ClampedArray(4);
+    colorFunction(new Float32Array([1]), rgba);
+    expect(rgba).toEqual(new Uint8ClampedArray([170, 0, 255, 255]));
+  });
+
+  it('leaves every other value transparent', () => {
+    const rgba = new Uint8ClampedArray(4);
+    colorFunction(new Float32Array([0]), rgba);
+    expect(rgba[3]).toBe(0);
+  });
+});

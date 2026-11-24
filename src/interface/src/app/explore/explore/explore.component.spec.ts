@@ -21,7 +21,7 @@ import {
   MockProvider,
   MockProviders,
 } from 'ng-mocks';
-import { BehaviorSubject, of, Subject } from 'rxjs';
+import { BehaviorSubject, of, Subject, take } from 'rxjs';
 import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
 import { SidebarTabs } from '@explore/sidebar-tabs';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
@@ -296,6 +296,20 @@ describe('ExploreComponent', () => {
       restoreTab(SidebarTabs.UPLOADED);
 
       expect(fixture.componentInstance.tabIndex).toBe(SidebarTabs.UPLOADED);
+    });
+
+    it('picks the first map for the uploaded panel', () => {
+      overrideFeatureFlags('DATA_ORGANIZATION', 'DATA_UPLOAD');
+      setupComponent();
+      mapState().setSelectedMap(null);
+
+      fixture.componentInstance.onTabIndexChange(SidebarTabs.UPLOADED);
+
+      let selected: number | null = null;
+      mapState()
+        .selectedMapId$.pipe(take(1))
+        .subscribe((id) => (selected = id));
+      expect(selected as number | null).toBe(1);
     });
 
     it('falls back to the data layers when DATA_UPLOAD went off', () => {

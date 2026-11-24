@@ -74,6 +74,7 @@
   align-items: flex-start;
   gap: 8px;
   width: 80px;
+  min-width: 80px;
   height: auto;
   max-height: calc(100% - $map-nav-bar-height);
   text-overflow: ellipsis;
