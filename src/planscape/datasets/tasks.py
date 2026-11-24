@@ -2,7 +2,6 @@ import logging
 import os
 import tempfile
 
-from cacheops import invalidate_model
 from core.gcs import (
     download_file,
     get_bucket_and_key,
@@ -23,7 +22,6 @@ from gis.vectors import ogr2ogr
 from planning.geometry import to_multipolygon
 from planscape.celery import app
 
-from datasets.events import DATALAYER_STATUS_CHANGED, publish_upload_event
 from datasets.models import (
     DataLayer,
     DataLayerOrigin,
@@ -228,6 +226,9 @@ def refresh_twig_treatment_layers_task() -> None:
         raise
 
 
+PROCESSING_FAILED = "Processing failed. Try uploading the file again."
+
+
 class UploadProcessingError(Exception):
     """Processing failed for a reason the uploader can act on."""
 
@@ -240,7 +241,7 @@ def upload_failure_reason(exc: Exception) -> str:
         return "The file has no coordinate reference system (CRS)."
     if exc.__class__.__name__ in ("RasterioIOError", "CPLE_OpenFailedError"):
         return "The file is not a readable GeoTIFF."
-    return "Processing failed. Try uploading the file again."
+    return PROCESSING_FAILED
 
 
 def claim_upload(datalayer_id: int) -> bool:
@@ -291,31 +292,31 @@ def process_uploaded_datalayer(datalayer_id: int) -> None:
     does for every datalayer (hash, outline, status). Safe to call more than
     once per upload; only the first call does the work.
     """
-    from datasets.services import fail_datalayer
+    from datasets.services import publish_upload_status, set_upload_status
 
     if not claim_upload(datalayer_id):
         logger.info("Upload %s is not pending, skipping", datalayer_id)
         return
 
     datalayer = DataLayer.objects.get(pk=datalayer_id)
-    invalidate_model(DataLayer)
-    publish_upload_event(DATALAYER_STATUS_CHANGED, datalayer)
+    publish_upload_status(datalayer)
 
     try:
         with tempfile.TemporaryDirectory() as workdir:
             convert_upload(datalayer, workdir)
     except Exception as exc:
         logger.exception("Processing upload %s failed", datalayer_id)
-        fail_datalayer(datalayer, upload_failure_reason(exc))
+        set_upload_status(
+            datalayer, DataLayerStatus.FAILED, upload_failure_reason(exc)
+        )
         return
 
     process_datalayer(datalayer_id)
     datalayer.refresh_from_db()
     if datalayer.status == DataLayerStatus.FAILED:
-        fail_datalayer(datalayer, "Processing failed. Try uploading the file again.")
+        set_upload_status(datalayer, DataLayerStatus.FAILED, PROCESSING_FAILED)
         return
-    invalidate_model(DataLayer)
-    publish_upload_event(DATALAYER_STATUS_CHANGED, datalayer)
+    publish_upload_status(datalayer)
 
 
 @app.task()
