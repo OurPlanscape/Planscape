@@ -590,6 +590,9 @@ CELERY_TASK_ROUTES = {
     "climate_foresight.tasks.*": {
         "queue": "climate-foresight",
     },
+    "datasets.tasks.process_uploaded_datalayer": {
+        "queue": "datalayer-uploads",
+    },
 }
 
 CELERY_ALWAYS_EAGER = config("CELERY_ALWAYS_EAGER", False)
@@ -694,6 +697,19 @@ AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", "us-west-2")
 AWS_S3_ENDPOINT_URL = config("AWS_S3_ENDPOINT_URL", default=None)
 UPLOAD_EXPIRATION_TTL = config("UPLOAD_EXPIRATION_TTL", default=3600, cast=int)
 DATALAYERS_FOLDER = "datalayers"
+UPLOADS_RAW_FOLDER = "uploads/raw"
+DATALAYER_UPLOAD_MAX_BYTES = config(
+    "DATALAYER_UPLOAD_MAX_BYTES", default=2 * 1024**3, cast=int
+)
+DATALAYER_UPLOAD_PENDING_TTL_HOURS = config(
+    "DATALAYER_UPLOAD_PENDING_TTL_HOURS", default=24, cast=int
+)
+DATALAYER_UPLOAD_PROCESSING_TTL_HOURS = config(
+    "DATALAYER_UPLOAD_PROCESSING_TTL_HOURS", default=2, cast=int
+)
+# Pub/Sub push subscription that delivers GCS object-finalize notifications.
+GCS_PUSH_AUDIENCE = config("GCS_PUSH_AUDIENCE", default=None)
+GCS_PUSH_SERVICE_ACCOUNT = config("GCS_PUSH_SERVICE_ACCOUNT", default=None)
 GEOPACKAGES_FOLDER = "geopackages"
 TEMP_GEOPACKAGE_FOLDER = config(
     "TEMP_GEOPACKAGE_FOLDER", default="/tmp/planscape/geopackages"

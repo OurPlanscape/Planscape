@@ -61,15 +61,15 @@ def get_gcs_hash(gs_url: str) -> Optional[str]:
 def create_upload_url(
     object_name: str,
     bucket_name: str = settings.GCS_BUCKET,
+    content_type: Optional[str] = None,
+    size: Optional[int] = None,
+    origin: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     """
-    Creates an upload URL for a Google Cloud Storage file.
+    Creates a resumable upload session for a Google Cloud Storage object.
 
-    Args:
-        gs_url (str): The GCS URL of the file.
-
-    Returns:
-        str: The upload URL for the file.
+    Browsers can only PUT to the session if it was created with their
+    `origin`.
     """
 
     storage_client = storage.Client()
@@ -77,9 +77,42 @@ def create_upload_url(
 
     blob = bucket.blob(object_name)
 
-    url = blob.create_resumable_upload_session()
+    url = blob.create_resumable_upload_session(
+        content_type=content_type,
+        size=size,
+        origin=origin,
+    )
 
     return {"url": url}
+
+
+def _get_blob(gs_url: str):
+    bucket_name, key = get_bucket_and_key(gs_url)
+    return storage.Client().bucket(bucket_name).get_blob(key)
+
+
+def get_file_size(gs_url: str) -> Optional[int]:
+    if not is_gcs_file(gs_url):
+        raise ValueError(f"Invalid GCS URL: {gs_url}")
+    blob = _get_blob(gs_url)
+    return blob.size if blob else None
+
+
+def download_file(gs_url: str, output_file: str) -> None:
+    if not is_gcs_file(gs_url):
+        raise ValueError(f"Invalid GCS URL: {gs_url}")
+    blob = _get_blob(gs_url)
+    if not blob:
+        raise FileNotFoundError(gs_url)
+    blob.download_to_filename(output_file)
+
+
+def delete_file(gs_url: str) -> None:
+    if not is_gcs_file(gs_url):
+        raise ValueError(f"Invalid GCS URL: {gs_url}")
+    blob = _get_blob(gs_url)
+    if blob:
+        blob.delete()
 
 
 def create_download_url(

@@ -311,6 +311,7 @@ class SearchGroupBy(models.TextChoices):
 class DataLayerStatus(models.TextChoices):
     READY = "READY", "Ready"
     PENDING = "PENDING", "Pending"
+    PROCESSING = "PROCESSING", "Processing"
     FAILED = "FAILED", "Failed"
 
 
@@ -546,6 +547,26 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Status of the file relative to our system.",
     )
 
+    failure_reason = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Why processing failed, shown to the uploader.",
+    )
+
+    raw_url = models.CharField(
+        max_length=1024,
+        null=True,
+        blank=True,
+        db_index=True,
+        help_text="Where a workspace upload lands before processing.",
+    )
+
+    file_size = models.BigIntegerField(
+        null=True,
+        blank=True,
+        help_text="Size in bytes of the uploaded file.",
+    )
+
     origin = models.CharField(
         max_length=16,
         choices=DataLayerOrigin.choices,
@@ -694,6 +715,7 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
                     "name",
                     "type",
                 ],
+                condition=Q(deleted_at__isnull=True),
                 name="datalayer_unique_constraint",
             )
         ]

@@ -55,3 +55,44 @@ def publish_datalayer_unfavorited(
         obj=datalayer_object(datalayer_id),
         actor_id=get_actor_id(actor),
     )
+
+
+def serialize_upload_status(datalayer: DataLayer) -> dict[str, Any]:
+    return {
+        "name": datalayer.name,
+        "status": datalayer.status,
+        "failure_reason": datalayer.failure_reason,
+        "created_by": datalayer.created_by_id,
+    }
+
+
+def _publish_upload_event(
+    event_type: str,
+    datalayer: DataLayer,
+    actor: Any = None,
+) -> None:
+    publish_workspace_event(
+        datalayer.workspace_id,
+        event_type,
+        obj=datalayer_object(datalayer.pk),
+        data=serialize_upload_status(datalayer),
+        actor_id=get_actor_id(actor),
+    )
+
+
+def publish_datalayer_created(datalayer: DataLayer, *, actor: Any = None) -> None:
+    _publish_upload_event("datasets.datalayer.created", datalayer, actor)
+
+
+def publish_datalayer_status_changed(
+    datalayer: DataLayer, *, actor: Any = None
+) -> None:
+    _publish_upload_event("datasets.datalayer.status_changed", datalayer, actor)
+
+
+def publish_datalayer_deleted(datalayer: DataLayer, *, actor: Any = None) -> None:
+    _publish_upload_event("datasets.datalayer.deleted", datalayer, actor)
+
+
+def publish_datalayer_updated(datalayer: DataLayer, *, actor: Any = None) -> None:
+    _publish_upload_event("datasets.datalayer.updated", datalayer, actor)

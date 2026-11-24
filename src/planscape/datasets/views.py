@@ -4,6 +4,8 @@ from core.serializers import MultiSerializerMixin
 from datasets.filters import DataLayerFilterSet
 from datasets.models import (
     DataLayer,
+    DataLayerOrigin,
+    DataLayerStatus,
     DataLayerType,
     Dataset,
     SearchTab,
@@ -19,11 +21,20 @@ from datasets.serializers import (
     FindAnythingSerializer,
     SearchResultsSerializer,
     SimpleCategorySerializer,
+    CreateWorkspaceDataLayerSerializer,
+    UpdateWorkspaceDataLayerSerializer,
+    WorkspaceDataLayerCreatedSerializer,
+    WorkspaceDataLayerDetailSerializer,
+    WorkspaceDataLayerSerializer,
 )
 from datasets.services import (
+    UploadsNotSupported,
     browse,
     browse_datalayers,
     browse_simple_category,
+    create_workspace_upload,
+    delete_workspace_datalayer,
+    update_workspace_datalayer,
     find_anything,
     get_favorite_datalayer_ids,
 )
@@ -31,15 +42,25 @@ from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
+from rest_framework.mixins import (
+    DestroyModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+)
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (
+    AllowAny,
+    BasePermission,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from workspaces.models import Workspace
+from workspaces.permissions import get_workspace_permissions
 
 from planscape.analytics import track_event
 
@@ -294,14 +315,33 @@ class DataLayerViewSet(
 
         user = self.request.user if self.request else None
 
+        # Workspace uploads only show up elsewhere once they're READY; the
+        # workspace datalayers endpoint is where pending and failed ones live.
+        unfinished_uploads = Q(origin=DataLayerOrigin.USER) & ~Q(
+            status=DataLayerStatus.READY
+        )
+
         if self.action == "urls":
-            return DataLayer.objects.filter(
-                Q(dataset__visibility=VisibilityOptions.PUBLIC)
-                | Q(dataset_id=settings.CLIMATE_FORESIGHT_DATASET_ID)
-                | Q(dataset__modules__contains=["funding_report"])
+            workspace_uploads = Q(pk__in=[])
+            if user and user.is_authenticated:
+                workspace_uploads = Q(
+                    origin=DataLayerOrigin.USER,
+                    workspace__user_access__user=user,
+                )
+            return (
+                DataLayer.objects.filter(
+                    Q(dataset__visibility=VisibilityOptions.PUBLIC)
+                    | Q(dataset_id=settings.CLIMATE_FORESIGHT_DATASET_ID)
+                    | Q(dataset__modules__contains=["funding_report"])
+                    | workspace_uploads
+                )
+                .exclude(unfinished_uploads)
+                .distinct()
             )
 
-        queryset = DataLayer.objects.all().accessible_by(user)
+        queryset = (
+            DataLayer.objects.all().accessible_by(user).exclude(unfinished_uploads)
+        )
 
         if self.action == "list" and (
             search_query := self.request.query_params.get("search")
@@ -318,3 +358,97 @@ class DataLayerViewSet(
             )
 
         return queryset
+
+
+class WorkspaceDataLayerPermission(BasePermission):
+    """Managing uploads needs `add_datalayer` in the workspace. Non-members
+    get a 404 from `get_workspace`, members without it a 403."""
+
+    def has_permission(self, request, view):
+        if not (request.user and request.user.is_authenticated):
+            return False
+        workspace = view.get_workspace()
+        return "add_datalayer" in get_workspace_permissions(request.user, workspace)
+
+
+class WorkspaceDataLayerViewSet(
+    ListModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet
+):
+    queryset = DataLayer.objects.none()
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
+    permission_classes = [WorkspaceDataLayerPermission]
+    pagination_class = LimitOffsetPagination
+    serializer_class = WorkspaceDataLayerSerializer
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return WorkspaceDataLayerDetailSerializer
+        return super().get_serializer_class()
+
+    def get_workspace(self) -> Workspace:
+        if not hasattr(self, "_workspace"):
+            self._workspace = get_object_or_404(
+                Workspace.objects.list_by_user(self.request.user),
+                pk=self.kwargs["workspace_pk"],
+            )
+        return self._workspace
+
+    def get_queryset(self):
+        return (
+            DataLayer.objects.filter(
+                workspace=self.get_workspace(),
+                origin=DataLayerOrigin.USER,
+            )
+            .select_related("created_by")
+            .order_by("-created_at")
+        )
+
+    @extend_schema(
+        description="Creates a PENDING datalayer and returns a GCS resumable "
+        "upload session to PUT the GeoTIFF to.",
+        request=CreateWorkspaceDataLayerSerializer,
+        responses={201: WorkspaceDataLayerCreatedSerializer},
+    )
+    def create(self, request, workspace_pk=None):
+        workspace = self.get_workspace()
+        serializer = CreateWorkspaceDataLayerSerializer(
+            data=request.data,
+            context={"workspace": workspace},
+        )
+        serializer.is_valid(raise_exception=True)
+        origin = request.headers.get("Origin")
+        if origin not in settings.CORS_ALLOWED_ORIGINS:
+            origin = None
+        try:
+            result = create_workspace_upload(
+                workspace=workspace,
+                created_by=request.user,
+                origin=origin,
+                **serializer.validated_data,
+            )
+        except UploadsNotSupported as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_501_NOT_IMPLEMENTED,
+            )
+        return Response(
+            WorkspaceDataLayerCreatedSerializer(result).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    @extend_schema(
+        description="Renames a READY upload and/or edits its metadata.",
+        request=UpdateWorkspaceDataLayerSerializer,
+        responses={200: WorkspaceDataLayerDetailSerializer},
+    )
+    def partial_update(self, request, workspace_pk=None, pk=None):
+        datalayer = self.get_object()
+        serializer = UpdateWorkspaceDataLayerSerializer(
+            data=request.data, context={"datalayer": datalayer}
+        )
+        serializer.is_valid(raise_exception=True)
+        update_workspace_datalayer(datalayer, request.user, **serializer.validated_data)
+        return Response(WorkspaceDataLayerDetailSerializer(datalayer).data)
+
+    def perform_destroy(self, instance):
+        delete_workspace_datalayer(instance, self.request.user)

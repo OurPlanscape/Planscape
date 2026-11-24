@@ -603,9 +603,11 @@ not serve WebSockets; use `make docker-run` or the script instead.
 | `climate_foresight.run.geopackage_status_changed` | `climate_foresight_run` | `status`, `geopackage_status` |
 | `climate_foresight.input_datalayer.updated` | `climate_foresight_input_datalayer` (`run_id`, `planning_area_id`) | `status`, `has_statistics` |
 | `funding_report.report.created`, `.status_changed`, `.geopackage_status_changed` | `funding_report` (`scenario_id`, `planning_area_id`) | `status`, `geopackage_status` (`geopackage_url` on geopackage events) |
+| `datasets.datalayer.created`, `.status_changed`, `.deleted` | `datalayer` | `name`, `status` (`PENDING`, `PROCESSING`, `READY`, `FAILED`), `failure_reason` |
 
 Only objects that belong to a workspace produce events; legacy planning areas
-without a workspace are silent.
+without a workspace are silent. Viewers only receive datalayer upload events
+once the layer is `READY`.
 
 ### Trying it locally
 
