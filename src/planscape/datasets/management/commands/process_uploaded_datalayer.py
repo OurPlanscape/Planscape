@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from datasets.models import DataLayer, DataLayerStatus
+from datasets.models import DataLayer, DataLayerOrigin, DataLayerStatus
 from datasets.tasks import process_uploaded_datalayer
 
 
@@ -20,7 +20,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, datalayer_id, retry, **options):
         datalayer = DataLayer.objects.filter(
-            pk=datalayer_id, raw_url__isnull=False
+            pk=datalayer_id, origin=DataLayerOrigin.USER
         ).first()
         if datalayer is None:
             raise CommandError(f"Upload {datalayer_id} does not exist.")

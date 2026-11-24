@@ -1,7 +1,6 @@
 import logging
 import os
 import tempfile
-from pathlib import Path
 
 from cacheops import invalidate_model
 from core.gcs import (
@@ -19,14 +18,18 @@ from django.conf import settings
 from django.db import connection
 from django.utils import timezone
 from gis.info import info_raster
-from gis.rasters import get_estimated_mask, to_planscape_streaming
-from gis.geometry import geodjango_to_multi, to_geodjango_geometry
+from gis.rasters import to_planscape_streaming
 from gis.vectors import ogr2ogr
 from planning.geometry import to_multipolygon
 from planscape.celery import app
 
-from datasets.events import publish_datalayer_status_changed
-from datasets.models import DataLayer, DataLayerStatus, DataLayerType
+from datasets.events import DATALAYER_STATUS_CHANGED, publish_upload_event
+from datasets.models import (
+    DataLayer,
+    DataLayerOrigin,
+    DataLayerStatus,
+    DataLayerType,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -246,15 +249,16 @@ def claim_upload(datalayer_id: int) -> bool:
     claimed = DataLayer.objects.filter(
         pk=datalayer_id,
         status=DataLayerStatus.PENDING,
-        raw_url__isnull=False,
+        origin=DataLayerOrigin.USER,
     ).update(status=DataLayerStatus.PROCESSING, updated_at=timezone.now())
     return claimed == 1
 
 
 def convert_upload(datalayer: DataLayer, workdir: str) -> None:
-    from datasets.services import geometry_from_info, get_upload_final_url
+    """Replaces the uploaded GeoTIFF with a Planscape COG, in place."""
+    from datasets.services import geometry_from_info
 
-    size = get_file_size(datalayer.raw_url)  # type: ignore
+    size = get_file_size(datalayer.url)  # type: ignore
     if size is None:
         raise UploadProcessingError("The uploaded file was not found.")
     if size > settings.DATALAYER_UPLOAD_MAX_BYTES:
@@ -263,35 +267,31 @@ def convert_upload(datalayer: DataLayer, workdir: str) -> None:
             f"The file is larger than the {limit_gb:g} GB limit."
         )
 
-    raw_file = os.path.join(workdir, f"raw{Path(datalayer.raw_url).suffix}")  # type: ignore
+    raw_file = os.path.join(workdir, "raw.tif")
     cog_file = os.path.join(workdir, "cog.tif")
-    download_file(datalayer.raw_url, raw_file)  # type: ignore
+    download_file(datalayer.url, raw_file)  # type: ignore
     to_planscape_streaming(input_file=raw_file, output_file=cog_file)
 
-    info = info_raster(cog_file)
-    outline = get_estimated_mask(cog_file)
-
-    final_url = get_upload_final_url(datalayer.workspace_id, str(datalayer.uuid))
-    _bucket, object_name = get_bucket_and_key(final_url)
+    _bucket, object_name = get_bucket_and_key(datalayer.url)  # type: ignore
     upload_file_via_cli(object_name=object_name, input_file=cog_file)
 
-    datalayer.url = final_url
-    datalayer.info = info
-    datalayer.geometry = geometry_from_info(info, datalayer_type=DataLayerType.RASTER)
-    datalayer.outline = to_multipolygon(geodjango_to_multi(to_geodjango_geometry(outline)))
-    datalayer.hash = get_gcs_hash(final_url)
-    datalayer.status = DataLayerStatus.READY
+    datalayer.info = info_raster(cog_file)
+    datalayer.geometry = geometry_from_info(
+        datalayer.info, datalayer_type=DataLayerType.RASTER
+    )
     datalayer.failure_reason = None
+    datalayer.save(update_fields=["info", "geometry", "failure_reason", "updated_at"])
 
 
 @app.task()
 def process_uploaded_datalayer(datalayer_id: int) -> None:
     """
     Turns a workspace upload into a READY COG datalayer: reprojects to the
-    Planscape CRS, converts to COG, stores info, outline and hash. Safe to
-    call more than once per upload; only the first call does the work.
+    Planscape CRS and converts to COG, then `process_datalayer` does what it
+    does for every datalayer (hash, outline, status). Safe to call more than
+    once per upload; only the first call does the work.
     """
-    from datasets.services import delete_raw_upload, fail_datalayer
+    from datasets.services import fail_datalayer
 
     if not claim_upload(datalayer_id):
         logger.info("Upload %s is not pending, skipping", datalayer_id)
@@ -299,7 +299,7 @@ def process_uploaded_datalayer(datalayer_id: int) -> None:
 
     datalayer = DataLayer.objects.get(pk=datalayer_id)
     invalidate_model(DataLayer)
-    publish_datalayer_status_changed(datalayer)
+    publish_upload_event(DATALAYER_STATUS_CHANGED, datalayer)
 
     try:
         with tempfile.TemporaryDirectory() as workdir:
@@ -309,11 +309,13 @@ def process_uploaded_datalayer(datalayer_id: int) -> None:
         fail_datalayer(datalayer, upload_failure_reason(exc))
         return
 
-    datalayer.save()
+    process_datalayer(datalayer_id)
+    datalayer.refresh_from_db()
+    if datalayer.status == DataLayerStatus.FAILED:
+        fail_datalayer(datalayer, "Processing failed. Try uploading the file again.")
+        return
     invalidate_model(DataLayer)
-    publish_datalayer_status_changed(datalayer)
-    delete_raw_upload(datalayer)
-    datalayer_file_post_process.delay(datalayer_id=datalayer_id)
+    publish_upload_event(DATALAYER_STATUS_CHANGED, datalayer)
 
 
 @app.task()
