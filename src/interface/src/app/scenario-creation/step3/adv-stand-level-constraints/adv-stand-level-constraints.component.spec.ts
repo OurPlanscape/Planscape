@@ -438,10 +438,34 @@ describe('AdvStandLevelConstraintsComponent', () => {
       });
     });
 
+    describe('distance from roads unit', () => {
+      it('labels the input in miles', () => {
+        const legends = fixture.debugElement
+          .queryAll(By.css('.legend'))
+          .map((el) => el.nativeElement.textContent.trim());
+
+        expect(legends).toContain('mi');
+      });
+
+      it('names miles in the maximum error', () => {
+        const control = component.form.get('min_distance_from_road')!;
+        control.setValue(101);
+        control.markAsTouched();
+        fixture.detectChanges();
+
+        const error = fixture.debugElement
+          .query(By.css('mat-error'))
+          .nativeElement.textContent.replace(/\s+/g, ' ')
+          .trim();
+
+        expect(error).toBe('Max Distance From Roads cannot exceed 100 miles');
+      });
+    });
+
     describe('validations for stand level constraints form should work as expected', () => {
       const ranges = [
         { control: 'max_slope', min: 0, max: 100, valid: 50 },
-        { control: 'min_distance_from_road', min: 0, max: 100000, valid: 500 },
+        { control: 'min_distance_from_road', min: 0, max: 100, valid: 50 },
       ];
 
       const ctrl = (name: string) => component.form.get(name)!;
@@ -469,13 +493,13 @@ describe('AdvStandLevelConstraintsComponent', () => {
 
       it('makes the form invalid when any field is out of range', () => {
         ctrl('max_slope').setValue(50);
-        ctrl('min_distance_from_road').setValue(100001);
+        ctrl('min_distance_from_road').setValue(101);
         expect(component.form.valid).toBeFalse();
       });
 
       it('makes the form valid when all fields are in range', () => {
         ctrl('max_slope').setValue(10);
-        ctrl('min_distance_from_road').setValue(1000);
+        ctrl('min_distance_from_road').setValue(50);
         expect(component.form.valid).toBeTrue();
       });
     });

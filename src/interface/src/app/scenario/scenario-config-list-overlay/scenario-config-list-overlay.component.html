@@ -85,7 +85,10 @@
                   </ng-container>
                   <ng-container *ngSwitchCase="'roads'">
                     Distance from roads is less than (&lt;)
-                    {{ item.constraint.value | number: '1.0-2' }} yds
+                    {{ item.constraint.value | number: '1.0-2' }} mi
+                  </ng-container>
+                  <ng-container *ngSwitchDefault>
+                    {{ constraintName(item.constraint) }}
                   </ng-container>
                 </li>
               </ul>
