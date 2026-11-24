@@ -7,11 +7,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
 import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
-import { WebSocketService } from '@app/services';
+import { AuthService, WebSocketService } from '@app/services';
 import { WorkspaceDataLayersService } from '@services/workspace-data-layers.service';
 import { FeatureService } from '@features/feature.service';
 import { Pagination, WorkspaceDataLayer, WorkspaceEvent } from '@types';
 import { UploadDataLayerComponent } from '@data-layers/upload-data-layer/upload-data-layer.component';
+import { ActiveUploadsService } from '@data-layers/upload-data-layer/active-uploads.service';
 import { WorkspaceState } from '../workspace.state';
 import {
   DATA_LAYERS_PAGE_SIZE,
@@ -101,6 +102,7 @@ describe('WorkspaceDataLayersComponent', () => {
           provide: WebSocketService,
           useValue: { workspaceUpdates$: () => updates$ },
         },
+        { provide: AuthService, useValue: { currentUser: () => ({ id: 1 }) } },
         {
           provide: FeatureService,
           useValue: { isFeatureEnabled: () => uploadEnabled },
@@ -154,7 +156,7 @@ describe('WorkspaceDataLayersComponent', () => {
     service.listDataLayers.and.returnValue(
       of(
         page([
-          layer(1, { status: 'PENDING' }),
+          layer(1, { status: 'PENDING', created_by: 2 }),
           layer(2, { status: 'PROCESSING' }),
           layer(3, {
             status: 'FAILED',
@@ -166,12 +168,38 @@ describe('WorkspaceDataLayersComponent', () => {
     updates$.next(null);
     fixture.detectChanges();
 
-    expect(rows()[0].textContent).toContain('Processing');
+    expect(rows()[0].textContent).toContain('Uploading');
     expect(rows()[1].textContent).toContain('Processing');
     expect(rows()[2].textContent).toContain('Failed');
     expect(rows()[2].textContent).toContain(
       'The file has no coordinate reference system.'
     );
+  });
+
+  describe('your own pending upload', () => {
+    beforeEach(() => {
+      service.listDataLayers.and.returnValue(
+        of(page([layer(1, { status: 'PENDING' })]))
+      );
+    });
+
+    it('shows as uploading while this tab sends it', () => {
+      TestBed.inject(ActiveUploadsService).add(1);
+      updates$.next(null);
+      fixture.detectChanges();
+
+      expect(rows()[0].textContent).toContain('Uploading');
+      expect(rows()[0].querySelector('td.actions button')).toBeNull();
+      TestBed.inject(ActiveUploadsService).remove(1);
+    });
+
+    it('shows as interrupted and deletable once nothing sends it', () => {
+      updates$.next(null);
+      fixture.detectChanges();
+
+      expect(rows()[0].textContent).toContain('Upload interrupted');
+      expect(rows()[0].querySelector('td.actions button')).toBeTruthy();
+    });
   });
 
   it('links only ready layers to their edit page', () => {

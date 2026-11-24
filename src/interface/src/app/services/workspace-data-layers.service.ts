@@ -85,6 +85,15 @@ export class WorkspaceDataLayersService {
       );
   }
 
+  /** A DELETE that outlives the page, for discarding an upload on unload. */
+  discardOnUnload(workspaceId: number, dataLayerId: number) {
+    fetch(`${this.path(workspaceId)}${dataLayerId}/`, {
+      method: 'DELETE',
+      credentials: 'include',
+      keepalive: true,
+    }).catch(() => undefined);
+  }
+
   private path(workspaceId: number) {
     return `${environment.backend_endpoint}/v2/workspaces/${workspaceId}/datalayers/`;
   }

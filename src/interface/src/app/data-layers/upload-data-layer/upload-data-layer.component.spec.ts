@@ -8,6 +8,7 @@ import {
 import { HttpErrorResponse } from '@angular/common/http';
 import { EMPTY, of, Subject } from 'rxjs';
 import { WorkspaceDataLayersService } from '@services/workspace-data-layers.service';
+import { ActiveUploadsService } from './active-uploads.service';
 import { WorkspaceDataLayer, WorkspaceDataLayerCreated } from '@types';
 import {
   MAX_UPLOAD_BYTES,
@@ -43,6 +44,7 @@ describe('UploadDataLayerComponent', () => {
       'createUpload',
       'uploadFile',
       'deleteDataLayer',
+      'discardOnUnload',
     ]);
     service.createUpload.and.returnValue(created$);
     service.uploadFile.and.returnValue(progress$);
@@ -253,6 +255,44 @@ describe('UploadDataLayerComponent', () => {
       expect(service.uploadFile).not.toHaveBeenCalled();
       expect(service.deleteDataLayer).toHaveBeenCalledWith(7, layer.id);
       expect(dialogRef.close).toHaveBeenCalledOnceWith();
+    });
+  });
+
+  describe('leaving the page', () => {
+    // a real beforeunload trips Karma's full-page-reload check
+    const beforeUnload = () => {
+      const event = new Event('beforeunload', {
+        cancelable: true,
+      }) as BeforeUnloadEvent;
+      component.warnBeforeLeaving(event);
+      return event;
+    };
+
+    it('asks the browser to confirm while uploading', () => {
+      startUpload();
+
+      expect(beforeUnload().defaultPrevented).toBeTrue();
+    });
+
+    it('lets the page go when nothing is uploading', () => {
+      expect(beforeUnload().defaultPrevented).toBeFalse();
+    });
+
+    it('discards the pending layer with a request that outlives the page', () => {
+      startUpload();
+      component.discardOnLeave();
+
+      expect(service.discardOnUnload).toHaveBeenCalledWith(7, layer.id);
+      expect(TestBed.inject(ActiveUploadsService).has(layer.id)).toBeFalse();
+    });
+
+    it('tracks the layer as uploading from this tab until it finishes', () => {
+      const activeUploads = TestBed.inject(ActiveUploadsService);
+      startUpload();
+      expect(activeUploads.has(layer.id)).toBeTrue();
+
+      progress$.complete();
+      expect(activeUploads.has(layer.id)).toBeFalse();
     });
   });
 

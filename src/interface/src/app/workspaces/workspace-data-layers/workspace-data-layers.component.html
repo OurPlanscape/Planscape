@@ -84,7 +84,7 @@
               <td class="right">{{ formatFileSize(layer.file_size) }}</td>
               <td class="actions">
                 <button
-                  *ngIf="layer.status === 'FAILED'"
+                  *ngIf="canDelete(layer)"
                   sg-button
                   variant="icon-only"
                   icon="delete"

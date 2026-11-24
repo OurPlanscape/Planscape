@@ -30,7 +30,7 @@ import { NavBarComponent } from '@app/standalone/nav-bar/nav-bar.component';
 import { ResourceUnavailableComponent } from '@app/shared/resource-unavailable/resource-unavailable.component';
 import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/confirmation-dialog.component';
 import { BreadcrumbService } from '@app/services/breadcrumb.service';
-import { WebSocketService } from '@app/services';
+import { AuthService, WebSocketService } from '@app/services';
 import { WorkspaceDataLayersService } from '@services/workspace-data-layers.service';
 import { FeatureService } from '@features/feature.service';
 import { SNACK_ERROR_CONFIG } from '@shared';
@@ -44,6 +44,7 @@ import {
   UploadDataLayerComponent,
   UploadDataLayerData,
 } from '@data-layers/upload-data-layer/upload-data-layer.component';
+import { ActiveUploadsService } from '@data-layers/upload-data-layer/active-uploads.service';
 import { WorkspaceState } from '../workspace.state';
 import { canManageDataLayers } from '../data-layer-access';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -54,10 +55,15 @@ const STATUS_CHIPS: Record<
   WorkspaceDataLayerStatus,
   { status: StatusChipStatus; label: string }
 > = {
-  PENDING: { status: 'inProgress', label: 'Processing' },
+  PENDING: { status: 'inProgress', label: 'Uploading' },
   PROCESSING: { status: 'inProgress', label: 'Processing' },
   READY: { status: 'success', label: 'Ready' },
   FAILED: { status: 'failed', label: 'Failed' },
+};
+
+const INTERRUPTED_CHIP = {
+  status: 'failed' as StatusChipStatus,
+  label: 'Upload interrupted',
 };
 
 @UntilDestroy()
@@ -95,6 +101,8 @@ export class WorkspaceDataLayersComponent implements OnInit {
   private workspaceState = inject(WorkspaceState);
   private featureService = inject(FeatureService);
   private workspaceDataLayersService = inject(WorkspaceDataLayersService);
+  private authService = inject(AuthService);
+  private activeUploads = inject(ActiveUploadsService);
 
   readonly pageSize = DATA_LAYERS_PAGE_SIZE;
   readonly formatFileSize = formatFileSize;
@@ -165,7 +173,23 @@ export class WorkspaceDataLayersComponent implements OnInit {
   }
 
   statusChip(layer: WorkspaceDataLayer) {
-    return STATUS_CHIPS[layer.status];
+    return this.isInterrupted(layer)
+      ? INTERRUPTED_CHIP
+      : STATUS_CHIPS[layer.status];
+  }
+
+  canDelete(layer: WorkspaceDataLayer) {
+    return layer.status === 'FAILED' || this.isInterrupted(layer);
+  }
+
+  // Your own upload that this tab isn't sending was left behind by a reload
+  // or a closed tab. Someone else's could still be uploading.
+  private isInterrupted(layer: WorkspaceDataLayer) {
+    return (
+      layer.status === 'PENDING' &&
+      layer.created_by === this.authService.currentUser()?.id &&
+      !this.activeUploads.has(layer.id)
+    );
   }
 
   retry() {

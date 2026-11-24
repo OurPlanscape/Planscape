@@ -1,4 +1,4 @@
-import { Component, OnDestroy, inject } from '@angular/core';
+import { Component, HostListener, OnDestroy, inject } from '@angular/core';
 import { DecimalPipe, NgIf, PercentPipe } from '@angular/common';
 import {
   FormControl,
@@ -28,6 +28,7 @@ import { ConfirmationDialogComponent } from '@standalone/confirmation-dialog/con
 import { WorkspaceDataLayersService } from '@services/workspace-data-layers.service';
 import { WorkspaceDataLayer } from '@types';
 import { EMPTY, filter, merge, Subscription, switchMap, tap } from 'rxjs';
+import { ActiveUploadsService } from './active-uploads.service';
 
 export interface UploadDataLayerData {
   workspaceId: number;
@@ -68,6 +69,7 @@ export class UploadDataLayerComponent implements OnDestroy {
     );
   private dialog = inject(MatDialog);
   private workspaceDataLayersService = inject(WorkspaceDataLayersService);
+  private activeUploads = inject(ActiveUploadsService);
 
   form = new FormGroup({
     name: new FormControl('', {
@@ -83,7 +85,7 @@ export class UploadDataLayerComponent implements OnDestroy {
   progress = 0;
 
   private suggestedName = '';
-  private pendingLayer: WorkspaceDataLayer | null = null;
+  private _pendingLayer: WorkspaceDataLayer | null = null;
   private cancelled = false;
   private upload?: Subscription;
   private confirmRef?: MatDialogRef<ConfirmationDialogComponent, boolean>;
@@ -97,6 +99,42 @@ export class UploadDataLayerComponent implements OnDestroy {
         .keydownEvents()
         .pipe(filter((event) => event.key === 'Escape'))
     ).subscribe(() => this.close());
+  }
+
+  private get pendingLayer() {
+    return this._pendingLayer;
+  }
+
+  private set pendingLayer(layer: WorkspaceDataLayer | null) {
+    if (this._pendingLayer) {
+      this.activeUploads.remove(this._pendingLayer.id);
+    }
+    if (layer) {
+      this.activeUploads.add(layer.id);
+    }
+    this._pendingLayer = layer;
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  warnBeforeLeaving(event: BeforeUnloadEvent) {
+    if (this.uploading) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  }
+
+  // The page is going away, so a regular request would be aborted with it
+  @HostListener('window:pagehide')
+  discardOnLeave() {
+    if (!this.uploading || !this.pendingLayer) {
+      return;
+    }
+    this.workspaceDataLayersService.discardOnUnload(
+      this.data.workspaceId,
+      this.pendingLayer.id
+    );
+    this.pendingLayer = null;
+    this.uploading = false;
   }
 
   get canSubmit() {
