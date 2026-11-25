@@ -30,6 +30,7 @@ import { TreeNode } from '@data-layers/data-layers/tree-node';
 import { WorkspacesService } from '@services/workspaces.service';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
 import { WebSocketService } from '@services/websocket.service';
+import { ProductAnalyticsService } from '@services/product-analytics.service';
 
 describe('DataLayersStateService', () => {
   let service: DataLayersStateService;
@@ -39,6 +40,7 @@ describe('DataLayersStateService', () => {
   let currentWorkspace$: Subject<Workspace>;
   let currentPlan: Plan | null;
   let workspaceEvents$: Subject<WorkspaceEvent>;
+  let productAnalytics: jasmine.SpyObj<ProductAnalyticsService>;
 
   const layer = {
     id: 1,
@@ -83,9 +85,15 @@ describe('DataLayersStateService', () => {
     workspacesService.favoriteDataLayer.and.returnValue(of({}));
     workspacesService.unfavoriteDataLayer.and.returnValue(of(undefined));
 
+    productAnalytics = jasmine.createSpyObj<ProductAnalyticsService>(
+      'ProductAnalyticsService',
+      ['trackEvent']
+    );
+
     TestBed.configureTestingModule({
       imports: [FeaturesModule, MatSnackBarModule, NoopAnimationsModule],
       providers: [
+        { provide: ProductAnalyticsService, useValue: productAnalytics },
         { provide: DataLayersService, useValue: dataLayersService },
         DataLayersStateService,
         { provide: MAX_SELECTED_DATALAYERS, useValue: 1 },
@@ -180,6 +188,92 @@ describe('DataLayersStateService', () => {
   });
 
   // the rail's panel is narrower than the legacy one it replaces
+  describe('tracking', () => {
+    const otherLayer = { ...layer, id: 2, name: 'Other' } as DataLayer;
+    const expectedLayerProps = {
+      source: 'map_viewer',
+      datalayer_id: 1,
+      datalayer_name: 'Layer',
+      dataset_id: 10,
+      dataset_name: 'Dataset',
+      organization_id: 5,
+      organization_name: 'Org',
+      plan_id: 123,
+    };
+
+    beforeEach(() => {
+      service = TestBed.inject(DataLayersStateService);
+    });
+
+    it('tracks a layer the user views', () => {
+      service.viewDataLayer(layer);
+
+      expect(productAnalytics.trackEvent).toHaveBeenCalledOnceWith(
+        'datalayer.viewed',
+        expectedLayerProps
+      );
+    });
+
+    it('does not track clearing the viewed layer', () => {
+      service.viewDataLayer(null);
+
+      expect(productAnalytics.trackEvent).not.toHaveBeenCalled();
+    });
+
+    it('does not track layers viewed programmatically', () => {
+      service.selectDataLayer(layer);
+
+      expect(productAnalytics.trackEvent).not.toHaveBeenCalled();
+    });
+
+    it('tracks a layer the user selects', () => {
+      service.handleLayerClick(layer);
+
+      expect(productAnalytics.trackEvent).toHaveBeenCalledOnceWith(
+        'datalayer.selected',
+        { ...expectedLayerProps, selected_count: 1, max_selectable: 1 }
+      );
+    });
+
+    it('does not track deselecting a layer', () => {
+      service.updateSelectedLayers([layer]);
+
+      service.handleLayerClick(layer);
+
+      expect(productAnalytics.trackEvent).not.toHaveBeenCalled();
+    });
+
+    it('does not track a click refused by the selection limit', () => {
+      service.updateSelectedLayers([otherLayer]);
+
+      service.handleLayerClick(layer);
+
+      expect(productAnalytics.trackEvent).not.toHaveBeenCalled();
+    });
+
+    it('tracks clicks in manual mode, where the consumer adds the layer', () => {
+      service.setSelectionMode('MANUAL');
+
+      service.handleLayerClick(layer);
+
+      expect(productAnalytics.trackEvent).toHaveBeenCalledOnceWith(
+        'datalayer.selected',
+        { ...expectedLayerProps, selected_count: 0, max_selectable: 1 }
+      );
+    });
+
+    it('names the flow after the map module', () => {
+      (TestBed.inject(MapModuleService) as any).moduleName = 'forsys';
+
+      service.viewDataLayer(layer);
+
+      expect(productAnalytics.trackEvent).toHaveBeenCalledOnceWith(
+        'datalayer.viewed',
+        { ...expectedLayerProps, source: 'scenario_creation' }
+      );
+    });
+  });
+
   describe('the label of the view column', () => {
     it('is short where the panel is narrow', () => {
       createService('DATA_ORGANIZATION');

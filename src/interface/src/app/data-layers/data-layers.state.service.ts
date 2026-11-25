@@ -53,7 +53,14 @@ import { FeatureService } from '@features/feature.service';
 import { WorkspacesService } from '@services/workspaces.service';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
 import { WebSocketService } from '@services/websocket.service';
+import { ProductAnalyticsService } from '@services/product-analytics.service';
 import { Geometry } from 'geojson';
+
+const ANALYTICS_SOURCES: Record<string, string> = {
+  forsys: 'scenario_creation',
+  climate_foresight: 'promote',
+  map: 'map_viewer',
+};
 
 /** The dataset or category whose layers are being browsed. */
 export interface BrowseSelection {
@@ -587,7 +594,8 @@ export class DataLayersStateService implements OnDestroy {
     private featureService: FeatureService,
     private workspacesService: WorkspacesService,
     private workspaceState: WorkspaceState,
-    private webSocketService: WebSocketService
+    private webSocketService: WebSocketService,
+    private productAnalytics: ProductAnalyticsService
   ) {
     this.subscriptions.add(this.followFavoriteEvents());
   }
@@ -641,6 +649,14 @@ export class DataLayersStateService implements OnDestroy {
   /** Draws the viewed layer with `style` until another layer is selected. */
   previewStyle(style: StyleJson | null) {
     this._draftStyle$.next(style);
+  }
+
+  /** Views a layer the user picked, as opposed to one restored or preset. */
+  viewDataLayer(dataLayer: DataLayer | null) {
+    this.selectDataLayer(dataLayer);
+    if (dataLayer) {
+      this.trackDataLayer('datalayer.viewed', dataLayer);
+    }
   }
 
   setDataLayerLoading(status: boolean) {
@@ -798,12 +814,22 @@ export class DataLayersStateService implements OnDestroy {
 
   // Adding or removing an item to the selected list
   handleLayerClick(layer: DataLayer) {
+    const wasSelected = this.isSelectedLayer(layer);
     // if this is automatic, we go ahead and 'automatically' toggle...
     if (this.selectionMode === 'AUTOMATIC') {
       this.toggleLayer(layer);
     } else {
       // otherwise we throw an event, and let the subscriber 'manually' select
       this.layerClicked.next(layer);
+    }
+    if (
+      !wasSelected &&
+      (this.selectionMode === 'MANUAL' || this.isSelectedLayer(layer))
+    ) {
+      this.trackDataLayer('datalayer.selected', layer, {
+        selected_count: this._selectedDataLayers$.value.length,
+        max_selectable: this.maxSelectedDatalayers,
+      });
     }
   }
 
@@ -837,6 +863,27 @@ export class DataLayersStateService implements OnDestroy {
 
   setSelectionMode(mode: 'AUTOMATIC' | 'MANUAL') {
     this.selectionMode = mode;
+  }
+
+  private trackDataLayer(
+    name: string,
+    layer: DataLayer,
+    extra: Record<string, unknown> = {}
+  ) {
+    this.planState.currentPlanId$.pipe(take(1)).subscribe((planId) => {
+      const module = this.mapModuleService.moduleName;
+      this.productAnalytics.trackEvent(name, {
+        source: ANALYTICS_SOURCES[module] ?? module,
+        datalayer_id: layer.id,
+        datalayer_name: layer.name,
+        dataset_id: layer.dataset?.id,
+        dataset_name: layer.dataset?.name,
+        organization_id: layer.organization?.id,
+        organization_name: layer.organization?.name,
+        plan_id: planId,
+        ...extra,
+      });
+    });
   }
 }
 
