@@ -114,39 +114,88 @@ describe('BaseLayersStateService', () => {
     });
   });
 
-  describe('addBaseLayer', () => {
-    it('should add a layer without removing existing ones', (done) => {
-      const layer1 = makeLayer(1, 'catA');
-      const layer2 = makeLayer(2, 'catB');
-      service.setBaseLayers([layer1]);
+  describe('pinned layers', () => {
+    it('displays pinned layers alongside the selection', (done) => {
+      const pinned = makeLayer(1, 'subunits');
+      const selected = makeLayer(2, 'catA');
+      service.pinLayer(pinned);
+      service.updateBaseLayers(selected, false);
 
-      service.addBaseLayer(layer2);
-
-      service.selectedBaseLayers$.pipe(take(1)).subscribe((layers) => {
-        expect(layers).toEqual([layer1, layer2]);
+      service.displayedBaseLayers$.pipe(take(1)).subscribe((layers) => {
+        expect(layers).toEqual([pinned, selected]);
         done();
       });
     });
 
-    it('should not add a duplicate layer', (done) => {
-      const layer = makeLayer(1, 'catA');
-      service.setBaseLayers([layer]);
-
-      service.addBaseLayer(layer);
+    it('keeps pinned layers out of the selection', (done) => {
+      service.pinLayer(makeLayer(1, 'subunits'));
 
       service.selectedBaseLayers$.pipe(take(1)).subscribe((layers) => {
+        expect(layers).toBeNull();
+        done();
+      });
+    });
+
+    it('keeps pinned layers when the selection is cleared', (done) => {
+      const pinned = makeLayer(1, 'subunits');
+      service.pinLayer(pinned);
+      service.updateBaseLayers(makeLayer(2, 'catA'), false);
+
+      service.clearBaseLayer();
+
+      service.displayedBaseLayers$.pipe(take(1)).subscribe((layers) => {
+        expect(layers).toEqual([pinned]);
+        done();
+      });
+    });
+
+    it('keeps pinned layers when a single-select layer replaces the selection', (done) => {
+      const pinned = makeLayer(1, 'subunits');
+      const selected = makeLayer(3, 'catB');
+      service.pinLayer(pinned);
+      service.updateBaseLayers(makeLayer(2, 'catA'), false);
+      service.updateBaseLayers(selected, false);
+
+      service.displayedBaseLayers$.pipe(take(1)).subscribe((layers) => {
+        expect(layers).toEqual([pinned, selected]);
+        done();
+      });
+    });
+
+    it('shows a layer that is both pinned and selected once', (done) => {
+      const layer = makeLayer(1, 'subunits');
+      service.pinLayer(layer);
+      service.updateBaseLayers(layer, false);
+
+      service.displayedBaseLayers$.pipe(take(1)).subscribe((layers) => {
         expect(layers).toEqual([layer]);
         done();
       });
     });
 
-    it('should set loading source id for the added layer', () => {
-      const layer = makeLayer(1, 'catA');
-      spyOn<any>(service, 'addLoadingSourceId');
+    it('does not pin the same layer twice', (done) => {
+      const layer = makeLayer(1, 'subunits');
+      service.pinLayer(layer);
+      service.pinLayer(layer);
 
-      service.addBaseLayer(layer);
+      service.displayedBaseLayers$.pipe(take(1)).subscribe((layers) => {
+        expect(layers).toEqual([layer]);
+        done();
+      });
+    });
 
-      expect(service['addLoadingSourceId']).toHaveBeenCalledWith('source_1');
+    it('unpins a layer and clears its loading source id', (done) => {
+      service.pinLayer(makeLayer(1, 'subunits'));
+
+      service.unpinLayer(1);
+
+      service.displayedBaseLayers$.pipe(take(1)).subscribe((layers) => {
+        expect(layers).toEqual([]);
+        service.loadingLayers$.pipe(take(1)).subscribe((ids) => {
+          expect(ids).toEqual([]);
+          done();
+        });
+      });
     });
   });
 

@@ -67,16 +67,16 @@ describe('ScenarioMapComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('removes the added sub-unit base layer on destroy so it does not leak to other maps', () => {
+  it('unpins the sub-unit layer on destroy so it does not leak to other maps', () => {
     const baseLayersState = TestBed.inject(BaseLayersStateService);
-    const removeSpy = spyOn(baseLayersState, 'removeBaseLayer');
+    const unpinSpy = spyOn(baseLayersState, 'unpinLayer');
     const layer = { id: 42 } as unknown as BaseLayer;
 
-    // simulate the sub-unit layer having been pushed into the app-wide state
+    // simulate the sub-unit layer having been pinned in the app-wide state
     (component as any).addedSubUnitLayer = layer;
 
     component.ngOnDestroy();
 
-    expect(removeSpy).toHaveBeenCalledWith(layer);
+    expect(unpinSpy).toHaveBeenCalledWith(42);
   });
 });

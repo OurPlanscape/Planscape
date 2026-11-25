@@ -20,7 +20,7 @@ describe('MapBaseLayersComponent', () => {
       imports: [HttpClientTestingModule, MapBaseLayersComponent],
       providers: [
         MockProvider(BaseLayersStateService, {
-          selectedBaseLayers$: of([]),
+          displayedBaseLayers$: of([]),
         }),
       ],
     }).compileComponents();

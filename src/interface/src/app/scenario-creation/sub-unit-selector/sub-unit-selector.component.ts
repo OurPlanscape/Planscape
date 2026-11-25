@@ -66,8 +66,16 @@ export class SubUnitSelectorComponent extends StepDirective<ScenarioDraftConfigu
   }
 
   onSubunitSelect(selectedLayer: BaseLayer) {
-    this.baseLayersStateService.updateBaseLayers(selectedLayer, false);
-    this.newScenarioState.setSelectedSubUnitLayer(selectedLayer);
+    this.showSubUnitLayer(selectedLayer);
+  }
+
+  private showSubUnitLayer(layer: BaseLayer) {
+    const previousId = this.newScenarioState.selectedSubUnitLayerId;
+    if (previousId !== null && previousId !== layer.id) {
+      this.baseLayersStateService.unpinLayer(previousId);
+    }
+    this.baseLayersStateService.pinLayer(layer);
+    this.newScenarioState.setSelectedSubUnitLayer(layer);
   }
 
   override beforeStepLoad(): void {
@@ -82,8 +90,7 @@ export class SubUnitSelectorComponent extends StepDirective<ScenarioDraftConfigu
           (layer) => layer.id === config.sub_units_layer
         );
         if (matchedLayer) {
-          this.baseLayersStateService.updateBaseLayers(matchedLayer, false);
-          this.newScenarioState.setSelectedSubUnitLayer(matchedLayer);
+          this.showSubUnitLayer(matchedLayer);
         }
       }
     });
