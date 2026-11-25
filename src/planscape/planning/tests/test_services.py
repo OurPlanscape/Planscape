@@ -10,7 +10,7 @@ from unittest import mock
 import fiona
 from cacheops import invalidate_all
 from datasets.dynamic_models import qualify_for_django
-from datasets.models import DataLayerType, GeometryType
+from datasets.models import DataLayer, DataLayerType, GeometryType
 from datasets.tasks import datalayer_uploaded
 from datasets.tests.factories import DataLayerFactory
 from django.conf import settings
@@ -37,6 +37,7 @@ from planning.models import (
 from planning.services import (
     build_run_configuration,
     calculate_and_update_scenario_result,
+    calculate_scenario_treatable_area,
     clone_scenario,
     create_planning_area,
     create_scenario,
@@ -48,17 +49,20 @@ from planning.services import (
     export_scenario_sub_units_outputs_to_geopackage,
     export_to_geopackage,
     export_to_shapefile,
+    export_treatable_area_to_geopackage,
     get_acreage,
     get_available_stand_ids,
     get_available_stands,
     get_constrained_stands,
     get_excluded_stands,
     get_flatten_geojson,
+    get_intersection_from_sub_units,
     get_max_area_project,
     get_max_treatable_area,
     get_max_treatable_stand_count,
     get_scenario_configuration_details,
     get_schema,
+    get_stands_from_sub_units,
     get_sub_units_details,
     sanitize_shp_field_name,
     trigger_scenario_run,
@@ -2626,3 +2630,357 @@ class GetScenarioConfigurationDetailsTest(TestCase):
         self.assertIsNone(details["treatment_goal"])
         self.assertEqual(details["excluded_areas"], [])
         self.assertEqual(details["stand_level_constraints"], [])
+
+
+def _square(x0, y0, x1, y1, srid=4269):
+    return Polygon(((x0, y0), (x0, y1), (x1, y1), (x1, y0), (x0, y0)), srid=srid)
+
+
+def _mock_dynamic_model(model_from_fiona_mock, rows=None, aggregate_geometry=None):
+    """
+    Configures `model_from_fiona_mock` so that
+    `DynamicModel.objects.filter(...).filter(...).all()` returns `rows`
+    and `.aggregate(...)` returns `{"geometry": aggregate_geometry}`.
+    Returns the mocked `objects` manager so callers can assert on filters.
+    """
+    objects = mock.MagicMock()
+    objects.filter.return_value = objects
+    objects.all.return_value = objects
+    objects.__iter__.side_effect = lambda: iter(rows or [])
+    objects.aggregate.return_value = {"geometry": aggregate_geometry}
+    model_from_fiona_mock.return_value.objects = objects
+    return objects
+
+
+class GetIntersectionFromSubUnitsTest(TestCase):
+    def setUp(self):
+        self.planning_area = PlanningAreaFactory.create(
+            geometry=MultiPolygon([_square(0, 0, 1, 1)], srid=4269)
+        )
+        self.datalayer = DataLayerFactory.create(type=DataLayerType.VECTOR)
+
+    @mock.patch("planning.services.model_from_fiona", autospec=True)
+    def test_returns_none_when_there_are_no_sub_units(self, model_from_fiona_mock):
+        _mock_dynamic_model(model_from_fiona_mock, rows=[])
+
+        result = get_intersection_from_sub_units(
+            planning_area=self.planning_area, datalayer=self.datalayer
+        )
+
+        self.assertIsNone(result)
+        model_from_fiona_mock.assert_called_once_with(self.datalayer)
+
+    @mock.patch("planning.services.model_from_fiona", autospec=True)
+    def test_clips_single_sub_unit_to_planning_area(self, model_from_fiona_mock):
+        sub_unit = _square(0.5, 0.5, 2, 2)
+        objects = _mock_dynamic_model(
+            model_from_fiona_mock, rows=[SimpleNamespace(geometry=sub_unit)]
+        )
+
+        result = get_intersection_from_sub_units(
+            planning_area=self.planning_area, datalayer=self.datalayer
+        )
+
+        self.assertEqual(result.geom_type, "MultiPolygon")
+        self.assertTrue(result.equals(_square(0.5, 0.5, 1, 1)))
+        objects.filter.assert_any_call(geometry__bboverlaps=self.planning_area.geometry)
+        objects.filter.assert_any_call(geometry__intersects=self.planning_area.geometry)
+
+    @mock.patch("planning.services.model_from_fiona", autospec=True)
+    def test_unions_multiple_sub_units(self, model_from_fiona_mock):
+        rows = [
+            SimpleNamespace(geometry=_square(-1, -1, 0.25, 0.25)),
+            SimpleNamespace(geometry=_square(0.75, 0.75, 2, 2)),
+        ]
+        _mock_dynamic_model(model_from_fiona_mock, rows=rows)
+
+        result = get_intersection_from_sub_units(
+            planning_area=self.planning_area, datalayer=self.datalayer
+        )
+
+        self.assertEqual(result.geom_type, "MultiPolygon")
+        self.assertEqual(len(result), 2)
+        expected = MultiPolygon(
+            [_square(0, 0, 0.25, 0.25), _square(0.75, 0.75, 1, 1)], srid=4269
+        )
+        self.assertTrue(result.equals(expected))
+        self.assertAlmostEqual(result.area, 0.125)
+
+    @mock.patch("planning.services.model_from_fiona", autospec=True)
+    def test_sub_unit_touching_only_the_boundary_is_ignored(
+        self, model_from_fiona_mock
+    ):
+        # The second sub-unit only shares an edge with the planning area, so
+        # PA ∩ union is a GeometryCollection(Polygon, LineString).
+        rows = [
+            SimpleNamespace(geometry=_square(0.25, 0.25, 0.75, 0.75)),
+            SimpleNamespace(geometry=_square(1, 0.2, 2, 0.4)),
+        ]
+        _mock_dynamic_model(model_from_fiona_mock, rows=rows)
+
+        result = get_intersection_from_sub_units(
+            planning_area=self.planning_area, datalayer=self.datalayer
+        )
+
+        self.assertEqual(result.geom_type, "MultiPolygon")
+        self.assertTrue(result.equals(_square(0.25, 0.25, 0.75, 0.75)))
+
+    @mock.patch("planning.services.model_from_fiona", autospec=True)
+    def test_returns_none_when_sub_units_only_touch_the_boundary(
+        self, model_from_fiona_mock
+    ):
+        rows = [SimpleNamespace(geometry=_square(1, 0, 2, 1))]
+        _mock_dynamic_model(model_from_fiona_mock, rows=rows)
+
+        result = get_intersection_from_sub_units(
+            planning_area=self.planning_area, datalayer=self.datalayer
+        )
+
+        self.assertIsNone(result)
+
+
+class GetStandsFromSubUnitsTest(TestCase):
+    def setUp(self):
+        invalidate_all()
+        self.planning_area = PlanningAreaFactory.create(
+            geometry=MultiPolygon([_square(0, 0, 1, 1)], srid=4269)
+        )
+        self.datalayer = DataLayerFactory.create(type=DataLayerType.VECTOR)
+        self.inside = StandFactory.create(
+            size=StandSizeChoices.LARGE, geometry=_square(0.1, 0.1, 0.2, 0.2)
+        )
+        self.outside = StandFactory.create(
+            size=StandSizeChoices.LARGE, geometry=_square(0.8, 0.8, 0.9, 0.9)
+        )
+        self.stands = Stand.objects.filter(id__in=[self.inside.pk, self.outside.pk])
+
+    def tearDown(self):
+        invalidate_all()
+
+    @mock.patch("planning.services.get_intersection_from_sub_units")
+    def test_returns_stands_within_intersection(self, intersection_mock):
+        intersection_mock.return_value = MultiPolygon(
+            [_square(0, 0, 0.5, 0.5)], srid=4269
+        )
+
+        result = get_stands_from_sub_units(
+            self.stands, self.planning_area, StandSizeChoices.LARGE, self.datalayer
+        )
+
+        self.assertEqual([s.pk for s in result], [self.inside.pk])
+        intersection_mock.assert_called_once_with(
+            planning_area=self.planning_area, datalayer=self.datalayer
+        )
+
+    @mock.patch("planning.services.get_intersection_from_sub_units", return_value=None)
+    def test_returns_no_stands_without_intersection(self, intersection_mock):
+        result = get_stands_from_sub_units(
+            self.stands, self.planning_area, StandSizeChoices.LARGE, self.datalayer
+        )
+
+        self.assertEqual(list(result), [])
+        intersection_mock.assert_called_once()
+
+
+@mock.patch("planning.services.model_from_fiona", autospec=True)
+@mock.patch("planning.services.get_intersection_from_sub_units")
+class CalculateScenarioTreatableAreaTest(TestCase):
+    def setUp(self):
+        self.pa_geometry = MultiPolygon([_square(0, 0, 1, 1)], srid=4269)
+        self.planning_area = PlanningAreaFactory.create(geometry=self.pa_geometry)
+        self.sub_units_layer = DataLayerFactory.create(type=DataLayerType.VECTOR)
+        self.included = DataLayerFactory.create(type=DataLayerType.VECTOR)
+        self.includes = DataLayer.objects.filter(pk=self.included.pk)
+        # Included area covers the whole PA and beyond.
+        self.layer_geometry = MultiPolygon([_square(-1, -1, 2, 2)], srid=4269)
+        self.sub_units_intersection = MultiPolygon([_square(0, 0, 0.5, 0.5)], srid=4269)
+
+    def _scenario(self, **kwargs):
+        return ScenarioFactory.create(planning_area=self.planning_area, **kwargs)
+
+    def _sub_units_scenario(self, **kwargs):
+        return self._scenario(
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+            configuration={"sub_units_layer": self.sub_units_layer.pk},
+            **kwargs,
+        )
+
+    def test_uses_planning_area_for_default_approach(
+        self, intersection_mock, model_from_fiona_mock
+    ):
+        objects = _mock_dynamic_model(
+            model_from_fiona_mock, aggregate_geometry=self.layer_geometry
+        )
+        scenario = self._scenario(
+            planning_approach=ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS,
+            configuration={"sub_units_layer": self.sub_units_layer.pk},
+        )
+
+        result = calculate_scenario_treatable_area(scenario, self.includes)
+
+        intersection_mock.assert_not_called()
+        objects.filter.assert_any_call(geometry__bboverlaps=self.pa_geometry)
+        self.assertEqual(result.geom_type, "MultiPolygon")
+        self.assertTrue(result.equals(self.pa_geometry))
+
+    def test_clips_to_sub_units_intersection(
+        self, intersection_mock, model_from_fiona_mock
+    ):
+        intersection_mock.return_value = self.sub_units_intersection
+        objects = _mock_dynamic_model(
+            model_from_fiona_mock, aggregate_geometry=self.layer_geometry
+        )
+        scenario = self._sub_units_scenario()
+
+        result = calculate_scenario_treatable_area(scenario, self.includes)
+
+        intersection_mock.assert_called_once_with(
+            planning_area=self.planning_area, datalayer=self.sub_units_layer
+        )
+        objects.filter.assert_any_call(geometry__bboverlaps=self.sub_units_intersection)
+        objects.filter.assert_any_call(geometry__intersects=self.sub_units_intersection)
+        self.assertEqual(result.geom_type, "MultiPolygon")
+        self.assertTrue(result.equals(self.sub_units_intersection))
+
+    def test_returns_none_when_sub_units_do_not_intersect(
+        self, intersection_mock, model_from_fiona_mock
+    ):
+        intersection_mock.return_value = None
+        scenario = self._sub_units_scenario()
+
+        result = calculate_scenario_treatable_area(scenario, self.includes)
+
+        self.assertIsNone(result)
+        model_from_fiona_mock.assert_not_called()
+
+    def test_uses_planning_area_when_sub_units_layer_is_missing(
+        self, intersection_mock, model_from_fiona_mock
+    ):
+        objects = _mock_dynamic_model(
+            model_from_fiona_mock, aggregate_geometry=self.layer_geometry
+        )
+        scenario = self._scenario(
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
+
+        result = calculate_scenario_treatable_area(scenario, self.includes)
+
+        intersection_mock.assert_not_called()
+        objects.filter.assert_any_call(geometry__bboverlaps=self.pa_geometry)
+        self.assertTrue(result.equals(self.pa_geometry))
+
+    def test_project_areas_child_ignores_sub_units(
+        self, intersection_mock, model_from_fiona_mock
+    ):
+        objects = _mock_dynamic_model(
+            model_from_fiona_mock, aggregate_geometry=self.layer_geometry
+        )
+        parent = self._scenario(type=ScenarioType.PROJECT_AREAS)
+        scenario = self._sub_units_scenario(parent=parent)
+
+        result = calculate_scenario_treatable_area(scenario, self.includes)
+
+        intersection_mock.assert_not_called()
+        objects.filter.assert_any_call(geometry__bboverlaps=self.pa_geometry)
+        self.assertTrue(result.equals(self.pa_geometry))
+
+    def test_skips_raster_includes(self, intersection_mock, model_from_fiona_mock):
+        intersection_mock.return_value = self.sub_units_intersection
+        raster = DataLayerFactory.create(type=DataLayerType.RASTER)
+        scenario = self._sub_units_scenario()
+
+        result = calculate_scenario_treatable_area(
+            scenario, DataLayer.objects.filter(pk=raster.pk)
+        )
+
+        self.assertIsNone(result)
+        model_from_fiona_mock.assert_not_called()
+
+    def test_returns_none_when_layer_does_not_intersect(
+        self, intersection_mock, model_from_fiona_mock
+    ):
+        intersection_mock.return_value = self.sub_units_intersection
+        _mock_dynamic_model(model_from_fiona_mock, aggregate_geometry=None)
+        scenario = self._sub_units_scenario()
+
+        result = calculate_scenario_treatable_area(scenario, self.includes)
+
+        self.assertIsNone(result)
+
+    def test_returns_none_without_includes(
+        self, intersection_mock, model_from_fiona_mock
+    ):
+        intersection_mock.return_value = self.sub_units_intersection
+        scenario = self._sub_units_scenario()
+
+        self.assertIsNone(calculate_scenario_treatable_area(scenario, None))
+
+
+class ExportTreatableAreaToGeopackageTest(TestCase):
+    def setUp(self):
+        self.pa_geometry = MultiPolygon([_square(0, 0, 1, 1)], srid=4269)
+        self.planning_area = PlanningAreaFactory.create(geometry=self.pa_geometry)
+        self.included = DataLayerFactory.create(
+            type=DataLayerType.VECTOR,
+            name="Federal",
+            info={
+                "ownership": {
+                    "schema": {
+                        "geometry": "Polygon",
+                        "properties": {"owner": "str:80"},
+                    }
+                }
+            },
+        )
+        self.treatable_area = MultiPolygon([_square(0, 0, 0.5, 0.5)], srid=4269)
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            treatable_area=self.treatable_area,
+            configuration={"included_areas_ids": [self.included.pk]},
+        )
+        self.output_path = Path("test_export_treatable_area.gpkg")
+        self.addCleanup(self.output_path.unlink, missing_ok=True)
+
+    @mock.patch("planning.services.model_from_fiona", autospec=True)
+    def test_clips_features_to_treatable_area(self, model_from_fiona_mock):
+        rows = [SimpleNamespace(geometry=_square(-1, -1, 2, 2), owner="USFS")]
+        objects = _mock_dynamic_model(model_from_fiona_mock, rows=rows)
+
+        export_treatable_area_to_geopackage(self.scenario, self.output_path)
+
+        objects.filter.assert_any_call(geometry__bboverlaps=self.treatable_area)
+        with fiona.open(self.output_path, layer="treatable_area") as src:
+            features = list(src)
+            self.assertEqual(
+                to_string(src.crs), to_string(settings.CRS_GEOPACKAGE_EXPORT)
+            )
+
+        self.assertEqual(len(features), 1)
+        properties = features[0]["properties"]
+        self.assertEqual(properties["owner"], "USFS")
+        self.assertEqual(properties["ownership"], "Federal")
+        geometry = GEOSGeometry(json.dumps(dict(features[0]["geometry"])), srid=4326)
+        self.assertEqual(geometry.geom_type, "MultiPolygon")
+        self.assertAlmostEqual(geometry.area, 0.25, places=3)
+
+    @mock.patch("planning.services.model_from_fiona", autospec=True)
+    def test_skips_raster_includes(self, model_from_fiona_mock):
+        self.included.type = DataLayerType.RASTER
+        self.included.save(update_fields=["type"])
+
+        export_treatable_area_to_geopackage(self.scenario, self.output_path)
+
+        model_from_fiona_mock.assert_not_called()
+        with fiona.open(self.output_path, layer="treatable_area") as src:
+            self.assertEqual(len(src), 0)
+
+    @mock.patch("planning.services.model_from_fiona", autospec=True)
+    def test_skips_legacy_scenarios(self, model_from_fiona_mock):
+        self.scenario.configuration = {}
+        self.scenario.save(update_fields=["configuration"])
+
+        with self.assertLogs("planning.services", level="WARNING"):
+            export_treatable_area_to_geopackage(self.scenario, self.output_path)
+
+        model_from_fiona_mock.assert_not_called()
+        self.assertFalse(self.output_path.exists())
