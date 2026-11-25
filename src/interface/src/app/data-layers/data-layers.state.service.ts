@@ -878,8 +878,6 @@ export class DataLayersStateService implements OnDestroy {
         datalayer_name: layer.name,
         category_ids: layer.simple_categories?.map((c) => c.id) ?? [],
         category_names: layer.simple_categories?.map((c) => c.name) ?? [],
-        organization_id: layer.organization?.id,
-        organization_name: layer.organization?.name,
         plan_id: planId,
         ...extra,
       });

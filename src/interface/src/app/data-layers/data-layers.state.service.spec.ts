@@ -196,8 +196,6 @@ describe('DataLayersStateService', () => {
       datalayer_name: 'Layer',
       category_ids: [20, 21],
       category_names: ['Fire', 'Water'],
-      organization_id: 5,
-      organization_name: 'Org',
       plan_id: 123,
     };
 
