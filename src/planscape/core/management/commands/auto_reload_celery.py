@@ -69,7 +69,7 @@ def auto_reload_celery(*args, **kwargs):
 
     start_worker_cmd = (
         "celery -A planscape worker -E --loglevel INFO --concurrency 3 "
-        "-Q forsys,default,impacts,geopackage,planning-stand-creation,planning-stand-metrics,climate-foresight"
+        "-Q forsys,default,impacts,geopackage,planning-stand-creation,planning-stand-metrics,climate-foresight,datalayer-uploads"
     )
     print("Starting celery worker...")
     process = subprocess.Popen(shlex.split(start_worker_cmd))

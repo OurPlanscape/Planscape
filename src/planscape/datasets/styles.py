@@ -6,6 +6,14 @@ from datasets.models import DataLayer, Style
 
 NODATA_NAN = "nan"
 
+# Transparent NaN; the raster's own nodata value gets merged in on read
+DEFAULT_NO_DATA = {
+    "values": [NODATA_NAN],
+    "color": None,
+    "opacity": 0,
+    "label": "",
+}
+
 
 def _nodata_style_value(nodata: Any) -> Any:
     if isinstance(nodata, float):
@@ -81,7 +89,7 @@ def get_default_raster_style(
         )
 
     # merge no data from the layer
-    nodata_dict = {"values": [NODATA_NAN], "color": None, "opacity": 0, "label": ""}
+    nodata_dict = deepcopy(DEFAULT_NO_DATA)
     if nodata is not None:
         nodata_value = _nodata_style_value(nodata)
         if nodata_value is not None and nodata_value not in nodata_dict["values"]:
@@ -95,3 +103,20 @@ def get_default_raster_style(
             "entries": entries,
         },
     }
+
+
+def get_default_raster_style_for(datalayer: DataLayer) -> Dict[str, Any]:
+    """The automatic ramp a raster shows while it has no style of its own."""
+    info = datalayer.info or {}
+    stats = dict((info.get("stats") or [{"min": 0, "max": 1}])[0])
+    if info.get("nodata") is not None:
+        stats["nodata"] = info["nodata"]
+    return get_default_raster_style(**stats)
+
+
+def get_upload_style(datalayer: DataLayer) -> Optional[Style]:
+    """The style a workspace upload was given, if any."""
+    return Style.objects.filter(
+        workspace_id=datalayer.workspace_id,
+        rel_styles__datalayer=datalayer,
+    ).first()

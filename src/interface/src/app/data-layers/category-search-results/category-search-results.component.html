@@ -10,7 +10,7 @@
     *ngFor="let result of results.dataSets"
     (selectDataset)="goToDataSet(result)"
     [name]="result.name"
-    [organizationName]="result.data.organization.name"
+    [organizationName]="result.data.organization?.name ?? ''"
     [searchTerm]="searchTerm">
   </app-data-set>
   <app-data-set

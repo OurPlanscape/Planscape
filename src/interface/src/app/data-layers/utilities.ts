@@ -158,7 +158,7 @@ const determineColorFunction = (
 
   if (entries.length === 0) {
     return () => TRANSPARENT;
-  } else if (entries.length === 1) {
+  } else if (entries.length === 1 && map_type !== 'VALUES') {
     return createSingleEntryMapper(entries[0]);
   } else {
     switch (map_type) {
