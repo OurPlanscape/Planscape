@@ -1,0 +1,18 @@
+{
+  "/planscape-backend/ws": {
+    "target": "https://dev.planscape.org",
+    "ws": true,
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/planscape-backend": {
+    "target": "https://dev.planscape.org/planscape-backend",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/planscape-backend": ""
+    }
+  }
+}
