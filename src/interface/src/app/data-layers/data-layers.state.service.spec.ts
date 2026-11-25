@@ -194,8 +194,8 @@ describe('DataLayersStateService', () => {
       source: 'map_viewer',
       datalayer_id: 1,
       datalayer_name: 'Layer',
-      dataset_id: 10,
-      dataset_name: 'Dataset',
+      category_ids: [20, 21],
+      category_names: ['Fire', 'Water'],
       organization_id: 5,
       organization_name: 'Org',
       plan_id: 123,
@@ -259,6 +259,15 @@ describe('DataLayersStateService', () => {
       expect(productAnalytics.trackEvent).toHaveBeenCalledOnceWith(
         'datalayer.selected',
         { ...expectedLayerProps, selected_count: 0, max_selectable: 1 }
+      );
+    });
+
+    it('sends no categories for layers without them', () => {
+      service.viewDataLayer({ ...layer, simple_categories: undefined });
+
+      expect(productAnalytics.trackEvent).toHaveBeenCalledOnceWith(
+        'datalayer.viewed',
+        { ...expectedLayerProps, category_ids: [], category_names: [] }
       );
     });
 
