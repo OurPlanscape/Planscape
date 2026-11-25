@@ -76,6 +76,7 @@ from planning.geometry import (
     coerce_geometry,
     fix_geometry,
     to_multipolygon,
+    to_polygonal_or_none,
 )
 from planning.models import (
     GeoPackageStatus,
@@ -1870,8 +1871,8 @@ def export_treatable_area_to_geopackage(
         logger.warning("Scenario has no treatable area (Legacy). Skipping.")
         return
 
-    planning_area = scenario.planning_area
-    pa_geometry = planning_area.geometry
+    treatable_area_geometry = scenario.treatable_area
+
     included_areas_ids = scenario.configuration.get("included_areas_ids")
 
     includes = DataLayer.objects.filter(pk__in=included_areas_ids)
@@ -1900,11 +1901,13 @@ def export_treatable_area_to_geopackage(
 
                     DynamicModel = model_from_fiona(included)
                     queryset = DynamicModel.objects.filter(
-                        geometry__bboverlaps=pa_geometry
-                    ).filter(geometry__intersects=pa_geometry)
+                        geometry__bboverlaps=treatable_area_geometry
+                    ).filter(geometry__intersects=treatable_area_geometry)
 
                     for feature in queryset.all():
-                        feature_geometry = pa_geometry.intersection(feature.geometry)
+                        feature_geometry = treatable_area_geometry.intersection(
+                            feature.geometry
+                        )
                         geometry_json = json.loads(
                             feature_geometry.transform(
                                 settings.CRS_GEOPACKAGE_EXPORT, clone=True
@@ -2195,13 +2198,10 @@ def get_constrained_stands(
     return stands_qs.exclude(Exists(matching_metrics)).values_list("id", flat=True)
 
 
-@cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
-def get_stands_from_sub_units(
-    stands: QuerySet[Stand],
+def get_intersection_from_sub_units(
     planning_area: PlanningArea,
-    stand_size: str,
     datalayer: DataLayer,
-) -> QuerySet[Stand]:
+) -> Optional[GEOSGeometry]:
     geometry = planning_area.geometry
     DynamicModel = model_from_fiona(datalayer)
 
@@ -2216,8 +2216,25 @@ def get_stands_from_sub_units(
         else:
             merged_geometry = merged_geometry.union(sub_unit.geometry)
 
-    if merged_geometry is not None:
-        intersection = geometry.intersection(merged_geometry)
+    if merged_geometry is None:
+        return None
+
+    return to_polygonal_or_none(geometry.intersection(merged_geometry))
+
+
+@cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
+def get_stands_from_sub_units(
+    stands: QuerySet[Stand],
+    planning_area: PlanningArea,
+    stand_size: str,
+    datalayer: DataLayer,
+) -> QuerySet[Stand]:
+    intersection = get_intersection_from_sub_units(
+        planning_area=planning_area,
+        datalayer=datalayer,
+    )
+
+    if intersection is not None:
         return stands.within_polygon(intersection, stand_size)
 
     return stands.none()
@@ -2464,6 +2481,20 @@ def calculate_scenario_treatable_area(
     planning_area = scenario.planning_area
     pa_geometry = planning_area.geometry
 
+    useful_geometry = pa_geometry
+    if (
+        not is_project_areas_child(scenario)
+        and scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        and scenario.sub_unit_datalayer
+    ):
+        useful_geometry = get_intersection_from_sub_units(
+            planning_area=planning_area,
+            datalayer=scenario.sub_unit_datalayer,
+        )
+
+    if useful_geometry is None:
+        return None
+
     included_geometry = None
     if includes:
         for included in includes:
@@ -2473,14 +2504,14 @@ def calculate_scenario_treatable_area(
 
             DynamicModel = model_from_fiona(included)
             queryset = DynamicModel.objects.filter(
-                geometry__bboverlaps=pa_geometry
-            ).filter(geometry__intersects=pa_geometry)
+                geometry__bboverlaps=useful_geometry
+            ).filter(geometry__intersects=useful_geometry)
             layer_geometry = queryset.all().aggregate(geometry=UnionOp("geometry"))[
                 "geometry"
             ]
             if not layer_geometry:
                 continue
-            layer_geometry = layer_geometry.intersection(pa_geometry)
+            layer_geometry = layer_geometry.intersection(useful_geometry)
 
             if not included_geometry:
                 included_geometry = layer_geometry
