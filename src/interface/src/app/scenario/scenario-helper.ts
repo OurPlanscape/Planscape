@@ -11,6 +11,8 @@ import {
   ScenarioGoal,
   ScenarioV3Config,
   ScenarioV3Payload,
+  THRESHOLD_OPERATOR_SYMBOLS,
+  ThresholdCondition,
 } from '@types';
 
 /**
@@ -296,4 +298,18 @@ export function getConstraintDisplayName(
 export function getOperatorDisplayText(operator: CONSTRAINT_OPERATOR): string {
   const def = CONSTRAINT_OPERATOR_MAP.get(operator);
   return def?.symbol ? def.symbol : operator;
+}
+
+export function getThresholdDisplayText(
+  conditions: ThresholdCondition[] | null | undefined
+): string {
+  if (!conditions?.length) {
+    return '';
+  }
+  return conditions
+    .map(
+      (condition) =>
+        `${THRESHOLD_OPERATOR_SYMBOLS[condition.operator] ?? condition.operator} ${condition.value}`
+    )
+    .join(' and ');
 }

@@ -89,6 +89,14 @@
   color: $color-black;
 }
 
+.layer-threshold {
+  @include small-paragraph();
+  margin-left: 4px;
+  font-weight: 600;
+  color: $color-black;
+  white-space: nowrap;
+}
+
 .layer-source {
   @include small-paragraph();
   font-size: 12px;
