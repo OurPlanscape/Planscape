@@ -168,6 +168,18 @@ const routes: Routes = [
           ).then((m) => m.WorkspaceDataLayersComponent),
       },
       {
+        path: 'workspace/:workspaceId/datalayers/:dataLayerId',
+        title: 'Edit Data Layer',
+        canActivate: [AuthGuard],
+        resolve: {
+          workspaceId: workspaceLoaderResolver,
+        },
+        loadComponent: () =>
+          import(
+            '@app/workspaces/workspace-data-layer-edit/workspace-data-layer-edit.component'
+          ).then((m) => m.WorkspaceDataLayerEditComponent),
+      },
+      {
         // The same plan, scenario and treatment pages, reached from a workspace.
         path: 'workspace/:workspaceId',
         resolve: {

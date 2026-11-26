@@ -1,0 +1,152 @@
+@import 'colors';
+@import 'mixins';
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.custom-toggle {
+  padding: 16px 0;
+}
+
+.toggle-text {
+  display: flex;
+  flex-direction: column;
+  margin-left: 8px;
+}
+
+.toggle-label {
+  font-weight: 600;
+}
+
+.hint {
+  @include small-paragraph();
+  color: $color-md-gray;
+}
+
+.style-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.map-type {
+  width: 100%;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.range-hint {
+  margin: 0;
+}
+
+.section-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.section-label {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.palettes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.palette {
+  padding: 3px;
+  background: $color-white;
+  border: 1px solid $color-soft-gray;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    border-color: $color-standard-blue;
+  }
+
+  &.active {
+    border-color: $color-standard-blue;
+    box-shadow: 0 0 0 1px $color-standard-blue;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.palette-swatch {
+  display: block;
+  height: 16px;
+  border-radius: 2px;
+}
+
+.entries {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    @include small-paragraph();
+    font-weight: 600;
+    text-align: left;
+    padding: 0 4px 4px;
+    color: $color-dark-gray;
+  }
+
+  td {
+    padding: 2px 4px;
+  }
+
+  input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid $color-fields-gray;
+    border-radius: 4px;
+    font: inherit;
+
+    &.invalid {
+      border-color: $color-error;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $color-standard-blue;
+    }
+  }
+
+  .color-input {
+    width: 48px;
+    padding: 2px;
+    cursor: pointer;
+  }
+
+  .remove {
+    width: 1%;
+  }
+}
+
+.error {
+  @include small-paragraph();
+  color: $color-error;
+}
+
+.add-entry {
+  align-self: flex-start;
+}

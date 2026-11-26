@@ -14,8 +14,9 @@ import { environment } from '@env/environment';
 import * as Sentry from '@sentry/browser';
 import { EventData } from '@maplibre/ngx-maplibre-gl';
 import { MapConfigState } from '../map-config.state';
-import { filter, firstValueFrom } from 'rxjs';
+import { combineLatest, filter, firstValueFrom } from 'rxjs';
 import { FrontendConstants } from '@map/map.constants';
+import { StyleJson } from '@types';
 
 @UntilDestroy()
 @Component({
@@ -42,6 +43,10 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
   cogUrl: string | null = null;
   /** Id of the data layer currently rendered as `image-layer`. */
   private currentLayerId: number | null = null;
+  private drawn: {
+    data: { layer: any; url: string };
+    style: StyleJson;
+  } | null = null;
 
   errorCount = 0;
 
@@ -50,24 +55,57 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
     private dataLayersStateService: DataLayersStateService,
     private matSnackBar: MatSnackBar
   ) {
-    dataLayersStateService.dataLayerWithUrl$
+    // a draft style only recolors: the URL isn't fetched again
+    combineLatest([
+      dataLayersStateService.dataLayerWithUrl$,
+      dataLayersStateService.draftStyle$,
+    ])
       .pipe(untilDestroyed(this))
-      .subscribe((data) => {
+      .subscribe(([data, draftStyle]) => {
         if (data) {
+          const style = draftStyle ?? data.layer?.styles[0].data;
+          if (this.looksTheSame(data, style)) {
+            this.drawn = { data, style };
+            this.dataLayersStateService.setDataLayerLoading(false);
+            return;
+          }
+          this.drawn = { data, style };
           this.cogUrl = `cog://${data.url}`;
           this.currentLayerId = data.layer?.id ?? null;
-          const colorFn = generateColorFunction(data.layer?.styles[0].data);
-          setColorFunction(data.url, colorFn);
+          this.applyColorFunction(data.url, style);
+          this.dataLayersStateService.setDataLayerLoading(true);
           this.tileSize =
             data.layer.info.blockxsize ??
             FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
           this.addRasterLayer();
         } else {
+          this.drawn = null;
           this.cogUrl = null;
           this.currentLayerId = null;
           this.removeRasterLayer();
         }
       });
+  }
+
+  // Redrawing blanks the raster while its tiles reload, so skip it when
+  // nothing visible changed, e.g. a saved style replacing its own draft.
+  // The same layer object coming back is a retry, which always redraws.
+  private looksTheSame(
+    data: { layer: any; url: string },
+    style: StyleJson
+  ): boolean {
+    const drawn = this.drawn;
+    return (
+      !!drawn &&
+      !!this.mapLibreMap?.getLayer('image-layer') &&
+      data.url === drawn.data.url &&
+      (data === drawn.data || data.layer !== drawn.data.layer) &&
+      JSON.stringify(style) === JSON.stringify(drawn.style)
+    );
+  }
+
+  private applyColorFunction(url: string, style: StyleJson) {
+    setColorFunction(url, generateColorFunction(style));
   }
 
   /** Whether the currently viewed layer is the designated top layer. */
