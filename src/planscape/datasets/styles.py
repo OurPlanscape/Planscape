@@ -79,11 +79,11 @@ def get_default_raster_style(
 
     tuples = zip(breakpoints, colors)
     if min == max:
-        entries = [{"value": min, "color": colors[0], "opacity": 1, "label": str(min)}]
+        entries = [{"value": min, "color": colors[0], "opacity": 1, "label": f"{min:g}"}]
     else:
         entries = list(
             [
-                {"value": value, "color": color, "opacity": 1, "label": str(value)}
+                {"value": value, "color": color, "opacity": 1, "label": f"{value:g}"}
                 for value, color in tuples
             ]
         )

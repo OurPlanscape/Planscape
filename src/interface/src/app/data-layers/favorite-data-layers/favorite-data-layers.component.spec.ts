@@ -71,7 +71,7 @@ describe('FavoriteDataLayersComponent', () => {
             favorites$,
             loadingLayer$: of(false),
             viewedDataLayer$: of(null),
-            selectDataLayer: jasmine.createSpy('selectDataLayer'),
+            viewDataLayer: jasmine.createSpy('viewDataLayer'),
             toggleFavorite: jasmine.createSpy('toggleFavorite'),
             favoritesEnabled: () => true,
             canEditFavorites$,

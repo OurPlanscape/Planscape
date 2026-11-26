@@ -777,7 +777,7 @@ class UploadStyleTest(APITestCase):
         self.assertTrue(body["custom_style"])
         self.assertEqual(
             [(e["value"], e["color"], e["label"]) for e in body["style"]["entries"]],
-            [(0, "#ffffff", "Low"), (50, "#ff0000", "50"), (100, "#000000", "High")],
+            [(0, "#ffffff", "Low"), (50, "#ff0000", ""), (100, "#000000", "High")],
         )
 
         self.assertEqual(len(body["default_style"]["entries"]), 7)

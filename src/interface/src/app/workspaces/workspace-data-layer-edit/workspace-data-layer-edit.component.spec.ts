@@ -365,8 +365,8 @@ describe('WorkspaceDataLayerEditComponent', () => {
         style: {
           map_type: 'RAMP',
           entries: [
-            { value: 0, color: '#123456', label: '' },
-            { value: 50, color: '#30123b', label: '' },
+            { value: 0, color: '#123456', label: '0.0' },
+            { value: 50, color: '#30123b', label: '50.0' },
           ],
         },
       });
