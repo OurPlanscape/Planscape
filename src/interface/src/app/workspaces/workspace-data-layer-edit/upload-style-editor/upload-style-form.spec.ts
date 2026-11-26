@@ -24,7 +24,7 @@ const STYLE: StyleJson = {
 };
 
 describe('upload style form', () => {
-  it('fills from a saved style, hiding labels that repeat the value', () => {
+  it('fills from a saved style', () => {
     const form = createStyleForm();
     fillStyleForm(form, STYLE, true);
 
@@ -32,9 +32,9 @@ describe('upload style form', () => {
       custom: true,
       map_type: 'RAMP',
       entries: [
-        { value: 0, color: '#000000', label: '' },
+        { value: 0, color: '#000000', label: '0.0' },
         { value: 5, color: '#777777', label: 'Middle' },
-        { value: 10, color: '#ffffff', label: '' },
+        { value: 10, color: '#ffffff', label: '10' },
       ],
     });
     expect(form.pristine).toBeTrue();
@@ -117,8 +117,17 @@ describe('upload style form', () => {
       value: 0,
       color: '#000000',
       opacity: 1,
-      label: '0',
+      label: '0.0',
     });
+  });
+
+  it('keeps empty labels empty', () => {
+    const form = createStyleForm();
+    fillStyleForm(form, STYLE, true);
+    form.controls.entries.at(1).controls.label.setValue('');
+
+    expect(stylePayload(form).entries[1].label).toBe('');
+    expect(draftStyle(form, STYLE.no_data).entries[1].label).toBe('');
   });
 });
 
