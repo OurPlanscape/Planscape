@@ -1,70 +1,42 @@
-<div class="container" cdkDropListGroup>
-  <div class="col left-panel">
-    <div class="section-container">
-      <!-- Section -->
-      <sg-section
-        headline="Select Data Layers"
-        [required]="true"
-        class="datalayers-section"
-        tooltipIcon="help"
-        tooltipLink="https://support.planscape.org/support/solutions/articles/32000036443-how-to-use-climate-foresightToDoc">
-        <!-- Section description paragraph -->
+<div class="container">
+  <div class="col left-panel" *appFeatureFlag="'DATA_ORGANIZATION'">
+    <sg-section
+      headline="Select Data Layers"
+      [required]="true"
+      class="datalayers-section"
+      tooltipIcon="help"
+      tooltipLink="https://support.planscape.org/support/solutions/articles/32000036443-how-to-use-climate-foresightToDoc"
+      [headlineHint]="
+        (selectedCount$ | async) + '/' + maxDataLayers + ' Selected'
+      ">
+      <div class="padding-section">
         <p class="description bold-paragraph">
           Select the data layers you want to include in your Climate Foresight
-          analysis (up to 10).
+          analysis (up to {{ maxDataLayers }}).
         </p>
         <p class="description">
           Choose layers that represent current landscape conditions you want to
           evaluate based on future climate conditions. These layers will form
           the foundation of your analysis.
         </p>
-        <!-- Data layers list -->
-        <div class="selection-counter">
-          <span class="count">
-            {{ selectedCount$ | async }}/{{ maxDataLayers }} Selected
-          </span>
-          <button sg-button icon="add" (click)="toggleBrowser()">Select</button>
-        </div>
 
-        <div
-          class="data-layers-list"
-          *ngIf="selectedCount$ | async as selectedCount">
-          <div *ngIf="selectedCount === 0" class="no-selection">
-            <p>No Data Layers Selected</p>
-          </div>
+        <sg-chip-selector
+          [items]="(selectedDataLayers$ | async) ?? []"
+          (removeItem)="removeDataLayer($event)"></sg-chip-selector>
+      </div>
 
-          <div *ngIf="selectedCount > 0" class="selected-layers">
-            <div
-              *ngFor="let layer of selectedDataLayers"
-              class="selected-layer-item">
-              <span class="layer-name">{{ layer.name }}</span>
-              <button
-                sg-button
-                variant="icon-only"
-                icon="close"
-                (click)="removeDataLayer(layer)"
-                class="remove-button"></button>
-            </div>
-          </div>
-        </div>
-      </sg-section>
-    </div>
+      <app-data-layers-rail
+        [useClearFooter]="false"
+        [displayAddButton]="true"></app-data-layers-rail>
+    </sg-section>
   </div>
-  <div class="browser-panel" [class.open]="isBrowserOpen">
-    <div class="browser-header">
-      <h5>Data layers</h5>
-      <button
-        sg-button
-        variant="icon-only"
-        icon="close"
-        (click)="toggleBrowser()"></button>
-    </div>
-    <div class="datalayer-container">
-      <app-data-layers
-        class="white-background"
-        [displayAddButton]="true"></app-data-layers>
-    </div>
-  </div>
+
+  <app-legacy-data-layer-selection
+    *appFeatureFlag="
+      'DATA_ORGANIZATION';
+      hide: true
+    "></app-legacy-data-layer-selection>
+
   <div class="col dataLayers-map">
     <app-climate-foresight-map></app-climate-foresight-map>
   </div>
