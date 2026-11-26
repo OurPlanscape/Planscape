@@ -896,9 +896,12 @@ R_OPERATOR_MAP = {
 R_OPERATOR_REVERSE_MAP = {v: k for k, v in R_OPERATOR_MAP.items()}
 
 
+_NUMBER_PATTERN = r"-?(?:\d+(?:\.\d*)?|\.\d+)"
+
+
 def _format_in_value(value: str) -> str:
     # numbers are kept as is, words are quoted
-    if re.match(r"^-?\d+(\.\d+)?$", value):
+    if re.match(rf"^{_NUMBER_PATTERN}$", value):
         return value
     return f'"{value}"'
 
@@ -922,7 +925,7 @@ def _get_operation(operator: str, value: str) -> str:
 
 
 _THRESHOLD_COMPARISON_RE = re.compile(
-    r"""^value\s*(>=|<=|==|!=|>|<)\s*(-?\d+(?:\.\d+)?|"[^"]*"|'[^']*'|\w+)$"""
+    rf"""^value\s*(>=|<=|==|!=|>|<)\s*({_NUMBER_PATTERN}|"[^"]*"|'[^']*'|\w+)$"""
 )
 _THRESHOLD_IN_RE = re.compile(r"^value\s*%in%\s*c\((.*)\)$")
 _THRESHOLD_NIN_RE = re.compile(r"^!\(\s*value\s*%in%\s*c\((.*)\)\s*\)$")
