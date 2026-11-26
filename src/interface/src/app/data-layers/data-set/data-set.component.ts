@@ -97,11 +97,9 @@ export class DataSetComponent {
   selectDataLayer(dataLayer: DataLayer, event: Event) {
     const target = event.target as HTMLInputElement;
 
-    if (target.checked) {
-      this.dataLayersStateService.selectDataLayer(dataLayer);
-    } else {
-      this.dataLayersStateService.selectDataLayer(null);
-    }
+    this.dataLayersStateService.viewDataLayer(
+      target.checked ? dataLayer : null
+    );
   }
 
   isDatalayerSelected(layer: DataLayer) {
