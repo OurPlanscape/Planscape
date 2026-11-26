@@ -715,6 +715,11 @@ TEMP_GEOPACKAGE_FOLDER = config(
 )
 GCS_BUCKET = config("GCS_BUCKET", "planscape-datastore-dev")
 GCS_MEDIA_BUCKET = config("GCS_MEDIA_BUCKET", f"planscape-media-{ENV}")
+# Cloud CDN in front of the datastore bucket. Only used with the RASTER_CDN flag.
+RASTER_CDN_BASE_URL = config("RASTER_CDN_BASE_URL", default=None)
+RASTER_CDN_KEY_NAME = config("RASTER_CDN_KEY_NAME", default=None)
+RASTER_CDN_SIGNING_KEY = config("RASTER_CDN_SIGNING_KEY", default=None)
+RASTER_CDN_URL_WINDOW_DAYS = config("RASTER_CDN_URL_WINDOW_DAYS", default=15, cast=int)
 GOOGLE_APPLICATION_CREDENTIALS_FILE = config(
     "GOOGLE_APPLICATION_CREDENTIALS_FILE", default=None
 )

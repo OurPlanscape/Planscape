@@ -1,3 +1,5 @@
+from unittest import mock
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
@@ -446,3 +448,59 @@ class MapURLTests(TestCase):
     def test_map_url_none_when_no_table(self):
         layer = DataLayerFactory(type=DataLayerType.VECTOR, table=None)
         self.assertIsNone(layer.get_map_url())
+
+
+@override_settings(
+    FEATURE_FLAGS="RASTER_CDN",
+    GCS_BUCKET="planscape-datastore-test",
+    RASTER_CDN_BASE_URL="https://cdn.test.planscape.org",
+    RASTER_CDN_KEY_NAME="my-key",
+    RASTER_CDN_SIGNING_KEY="nZtRohdNF9m3cKM24IcK4w==",
+)
+class RasterCdnURLTests(TestCase):
+    GCS_SIGNED_URL = "https://storage.googleapis.com/signed"
+    CDN_PREFIX = "https://cdn.test.planscape.org/datalayers/1/a.tif?Expires="
+
+    def setUp(self):
+        self.raster = DataLayerFactory(
+            type=DataLayerType.RASTER,
+            storage_type=StorageTypeChoices.FILESYSTEM,
+            url="gs://planscape-datastore-test/datalayers/1/a.tif",
+        )
+        patcher = mock.patch(
+            "datasets.models.create_gcs_download_url",
+            return_value=self.GCS_SIGNED_URL,
+        )
+        self.create_gcs_download_url = patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_flag_on_returns_cdn_url(self):
+        self.assertTrue(self.raster.get_public_url().startswith(self.CDN_PREFIX))
+        self.assertEqual(self.raster.get_public_url(), self.raster.get_public_url())
+        self.create_gcs_download_url.assert_not_called()
+
+    def test_flag_on_serializer_urls(self):
+        data = DataLayerSerializer(self.raster).data
+        self.assertTrue(data["public_url"].startswith(self.CDN_PREFIX))
+        self.assertTrue(data["map_url"].startswith(self.CDN_PREFIX))
+
+    @override_settings(FEATURE_FLAGS="")
+    def test_flag_off_returns_gcs_signed_url(self):
+        self.assertEqual(self.raster.get_public_url(), self.GCS_SIGNED_URL)
+        self.assertEqual(self.raster.get_map_url(), self.GCS_SIGNED_URL)
+
+    @override_settings(RASTER_CDN_SIGNING_KEY=None)
+    def test_missing_settings_falls_back_to_gcs_signed_url(self):
+        self.assertEqual(self.raster.get_public_url(), self.GCS_SIGNED_URL)
+
+    def test_vector_keeps_gcs_signed_url(self):
+        vector = DataLayerFactory(
+            type=DataLayerType.VECTOR,
+            storage_type=StorageTypeChoices.FILESYSTEM,
+            url="gs://planscape-datastore-test/datalayers/1/b.gpkg",
+        )
+        self.assertEqual(vector.get_public_url(), self.GCS_SIGNED_URL)
+
+    def test_other_bucket_falls_back_to_gcs_signed_url(self):
+        self.raster.url = "gs://another-bucket/datalayers/1/a.tif"
+        self.assertEqual(self.raster.get_public_url(), self.GCS_SIGNED_URL)
