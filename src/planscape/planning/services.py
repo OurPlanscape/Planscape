@@ -2329,7 +2329,7 @@ def get_available_stands(
 
     planning_area = scenario.planning_area
     area_transform = Area(Transform("geometry", settings.AREA_SRID))
-    if feature_enabled("ADD_INCLUDES") and scenario.treatable_area is not None:
+    if feature_enabled("ADD_INCLUDES") and scenario.treatable_area is not None and sub_unit is None:
         geometry = Scenario.objects.filter(pk=scenario.pk).values("treatable_area")
     else:
         geometry = PlanningArea.objects.filter(pk=planning_area.pk).values("geometry")
