@@ -1761,7 +1761,7 @@ class TestRemoveExcludes(TestCase):
         return result["summary"]["total_area"]
 
     @override_settings(FEATURE_FLAGS="ADD_INCLUDES")
-    def test_get_available_stands_with_treatable_area_and_scenario_sub_unit_uses_planning_area(
+    def test_get_available_stands_with_treatable_area_and_scenario_sub_unit_uses_treatable_area(
         self,
     ):
         scenario, stand_to_remove, sub_unit_stands = (
@@ -1769,7 +1769,7 @@ class TestRemoveExcludes(TestCase):
                 configuration={"sub_units_layer": self.datalayer.pk}
             )
         )
-        expected_total_area = self._planning_area_total_area(scenario)
+        planning_area_total_area = self._planning_area_total_area(scenario)
 
         with mock.patch(
             "planning.services.get_stands_from_sub_units", return_value=sub_unit_stands
@@ -1777,12 +1777,11 @@ class TestRemoveExcludes(TestCase):
             result = get_available_stands(scenario, stand_size=StandSizeChoices.LARGE)
 
         get_stands_from_sub_units_mock.assert_called_once()
-        self.assertEqual(17, get_stands_from_sub_units_mock.call_args.args[0].count())
+        self.assertLess(get_stands_from_sub_units_mock.call_args.args[0].count(), 17)
         self.assertEqual(
             self.datalayer, get_stands_from_sub_units_mock.call_args.args[3]
         )
-        self.assertAlmostEqual(expected_total_area, result["summary"]["total_area"])
-        self.assertGreater(result["summary"]["total_area"], 7118.095268765973)
+        self.assertLess(result["summary"]["total_area"], planning_area_total_area)
         self.assertEqual(
             {stand_to_remove.pk}, set(result["unavailable"]["by_exclusions"])
         )
