@@ -92,8 +92,7 @@ function fillEntries(form: UploadStyleForm, style: StyleJson) {
       createStyleEntry(
         entry.value,
         entry.color ?? '#000000',
-        // labels that just repeat the value ("8.17") show as empty
-        Number(entry.label) === entry.value ? '' : (entry.label ?? '')
+        entry.label ?? ''
       ),
       { emitEvent: false }
     );
@@ -140,7 +139,7 @@ export function draftStyle(
       value: entry.value,
       color: entry.color,
       opacity: 1,
-      label: entry.label || String(entry.value),
+      label: entry.label,
     })),
   };
 }

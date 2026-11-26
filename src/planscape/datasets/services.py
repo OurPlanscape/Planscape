@@ -1031,7 +1031,7 @@ def set_upload_style(
                 "value": entry["value"],
                 "color": entry["color"],
                 "opacity": 1,
-                "label": entry.get("label") or f"{entry['value']:g}",
+                "label": entry.get("label", ""),
             }
             for entry in style_data["entries"]
         ],
