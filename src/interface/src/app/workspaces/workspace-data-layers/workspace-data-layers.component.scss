@@ -54,14 +54,18 @@ table {
   text-align: left;
 }
 
+// the status chip's height, so every cell's first line shares a centre
+$row-line: 32px;
+
 th,
 td {
-  padding: 12px 16px;
+  padding: 16px;
   vertical-align: top;
 }
 
 th {
   @include small-paragraph();
+  line-height: $row-line;
   font-weight: 600;
   color: $color-dark-gray;
   border-bottom: 1px solid $color-soft-gray;
@@ -70,6 +74,8 @@ th {
 
 td {
   @include regular-paragraph();
+  line-height: $row-line;
+  color: $color-dark-gray;
 }
 
 tbody tr + tr td {
@@ -77,6 +83,8 @@ tbody tr + tr td {
 }
 
 .layer-name {
+  @include regular-paragraph();
+  line-height: $row-line;
   font-weight: 600;
 }
 
@@ -93,7 +101,6 @@ tbody tr + tr td {
 .secondary,
 .failure-reason {
   @include small-paragraph();
-  margin-top: 4px;
 }
 
 .secondary {
@@ -102,6 +109,7 @@ tbody tr + tr td {
 
 .failure-reason {
   max-width: 280px;
+  margin-top: 4px;
   color: $color-error;
 }
 
@@ -112,8 +120,7 @@ tbody tr + tr td {
 
 .actions {
   width: 1%;
-  padding: 4px 8px;
-  vertical-align: middle;
+  padding: 14px 8px 0;
 }
 
 .loading-row {

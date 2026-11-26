@@ -10,10 +10,12 @@ import {
   WorkspaceEvent,
 } from '@types';
 import { DataLayerUploadListenerService } from './data-layer-upload-listener.service';
+import { DataLayerReadyNoticeComponent } from './data-layer-ready-notice/data-layer-ready-notice.component';
 
 describe('DataLayerUploadListenerService', () => {
   let events$: Subject<WorkspaceEvent>;
   let snackOpen: jasmine.Spy;
+  let snackOpenFromComponent: jasmine.Spy;
   let snackAction$: Subject<void>;
 
   const statusChanged = (data: Partial<DataLayerUploadPayload>) =>
@@ -53,19 +55,23 @@ describe('DataLayerUploadListenerService', () => {
       id: 3,
     } as any);
     snackAction$ = new Subject<void>();
-    snackOpen = spyOn(TestBed.inject(MatSnackBar), 'open').and.returnValue({
-      onAction: () => snackAction$,
-    } as any);
+    const snackBarRef = { onAction: () => snackAction$ } as any;
+    snackOpen = spyOn(TestBed.inject(MatSnackBar), 'open').and.returnValue(
+      snackBarRef
+    );
+    snackOpenFromComponent = spyOn(
+      TestBed.inject(MatSnackBar),
+      'openFromComponent'
+    ).and.returnValue(snackBarRef);
     TestBed.inject(DataLayerUploadListenerService).start();
   });
 
   it('tells the uploader their layer is ready', () => {
     events$.next(statusChanged({ status: 'READY' }));
 
-    expect(snackOpen).toHaveBeenCalledWith(
-      '"Canopy" is ready.',
-      'View layer',
-      jasmine.anything()
+    expect(snackOpenFromComponent).toHaveBeenCalledWith(
+      DataLayerReadyNoticeComponent,
+      jasmine.objectContaining({ data: { name: 'Canopy', canEdit: true } })
     );
   });
 
@@ -95,12 +101,12 @@ describe('DataLayerUploadListenerService', () => {
   it('stays quiet while the layer is processing', () => {
     events$.next(statusChanged({ status: 'PROCESSING' }));
 
-    expect(snackOpen).not.toHaveBeenCalled();
+    expect(snackOpenFromComponent).not.toHaveBeenCalled();
   });
 
   it("stays quiet about someone else's upload", () => {
     events$.next(statusChanged({ created_by: 9 }));
 
-    expect(snackOpen).not.toHaveBeenCalled();
+    expect(snackOpenFromComponent).not.toHaveBeenCalled();
   });
 });

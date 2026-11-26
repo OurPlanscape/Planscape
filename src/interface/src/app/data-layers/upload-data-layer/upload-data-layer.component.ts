@@ -234,8 +234,9 @@ export class UploadDataLayerComponent implements OnDestroy {
   }
 
   private finish() {
-    const layer = this.pendingLayer ?? undefined;
-    this.pendingLayer = null;
+    const layer = this._pendingLayer ?? undefined;
+    // Stays in active uploads: the layer is PENDING until the server picks up the file.
+    this._pendingLayer = null;
     this.uploading = false;
     this.confirmRef?.close();
     this.dialogRef.close(layer);
