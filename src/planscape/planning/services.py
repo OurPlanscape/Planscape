@@ -2324,8 +2324,6 @@ def get_available_stands(
         excludes = list()
     if not constraints:
         constraints = list()
-    if not sub_unit:
-        sub_unit = scenario.sub_unit_datalayer
 
     planning_area = scenario.planning_area
     area_transform = Area(Transform("geometry", settings.AREA_SRID))
@@ -2333,6 +2331,9 @@ def get_available_stands(
         geometry = Scenario.objects.filter(pk=scenario.pk).values("treatable_area")
     else:
         geometry = PlanningArea.objects.filter(pk=planning_area.pk).values("geometry")
+    
+    if not sub_unit:
+        sub_unit = scenario.sub_unit_datalayer
 
     # the database reads the geometry, so it is not sent with every query below
     stands = Stand.objects.within_geometry(Subquery(geometry[:1]), stand_size)
