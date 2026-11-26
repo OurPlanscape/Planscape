@@ -1,5 +1,10 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, distinctUntilChanged } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  map,
+} from 'rxjs';
 import { BaseLayer, Pagination, SearchResult } from '@types';
 
 @Injectable({
@@ -18,6 +23,23 @@ export class BaseLayersStateService {
 
   private _selectedBaseLayers$ = new BehaviorSubject<BaseLayer[] | null>(null);
   selectedBaseLayers$ = this._selectedBaseLayers$.asObservable();
+
+  // Layers a feature keeps on the map (e.g. scenario sub-units). They render
+  // with the selection but aren't part of it, so clearing leaves them alone.
+  private _pinnedLayers$ = new BehaviorSubject<BaseLayer[]>([]);
+
+  displayedBaseLayers$ = combineLatest([
+    this._pinnedLayers$,
+    this._selectedBaseLayers$,
+  ]).pipe(
+    map(([pinned, selected]) => {
+      const selection = selected ?? [];
+      return [
+        ...pinned.filter((p) => !selection.some((l) => l.id === p.id)),
+        ...selection,
+      ];
+    })
+  );
 
   // Panel search and expanded groups, kept here so they survive switching tabs.
   private _searchTerm$ = new BehaviorSubject<string>('');
@@ -127,11 +149,18 @@ export class BaseLayersStateService {
     this._selectedBaseLayers$.next(null);
   }
 
-  addBaseLayer(layer: BaseLayer) {
-    const current = this._selectedBaseLayers$.value ?? [];
+  pinLayer(layer: BaseLayer) {
+    const current = this._pinnedLayers$.value;
     if (current.some((l) => l.id === layer.id)) return;
     this.addLoadingSourceId('source_' + layer.id);
-    this._selectedBaseLayers$.next([...current, layer]);
+    this._pinnedLayers$.next([...current, layer]);
+  }
+
+  unpinLayer(layerId: number) {
+    this.removeLoadingSourceId('source_' + layerId);
+    this._pinnedLayers$.next(
+      this._pinnedLayers$.value.filter((l) => l.id !== layerId)
+    );
   }
 
   removeBaseLayer(layer: BaseLayer) {

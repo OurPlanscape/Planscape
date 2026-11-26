@@ -2,7 +2,13 @@ import copy
 import json
 from unittest import mock
 
-from datasets.models import Category, DataLayer, DataLayerType, GeometryType
+from datasets.models import (
+    Category,
+    DataLayer,
+    DataLayerStatus,
+    DataLayerType,
+    GeometryType,
+)
 from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
@@ -1739,6 +1745,70 @@ class PatchScenarioConfigurationTest(APITestCase):
         self.scenario.refresh_from_db()
         self.assertIsNone(self.scenario.treatable_area)
         calculate_scenario_treatable_area_mock.assert_called()
+
+    @mock.patch("planning.serializers.calculate_scenario_treatable_area")
+    def test_patch_scenario_treatable_area_uses_pending_approach_and_sub_units(
+        self, calculate_scenario_treatable_area_mock
+    ):
+        seen = []
+
+        def capture(scenario, includes):
+            seen.append(
+                (
+                    scenario.planning_approach,
+                    getattr(scenario.sub_unit_datalayer, "pk", None),
+                )
+            )
+            return MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
+
+        calculate_scenario_treatable_area_mock.side_effect = capture
+        old_sub_units_layer = DataLayerFactory.create(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+            status=DataLayerStatus.READY,
+        )
+        new_sub_units_layer = DataLayerFactory.create(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+            status=DataLayerStatus.READY,
+        )
+        self.scenario.planning_approach = (
+            ScenarioPlanningApproach.OPTIMIZE_PROJECT_AREAS
+        )
+        self.scenario.configuration = {"sub_units_layer": old_sub_units_layer.pk}
+        self.scenario.save(update_fields=["planning_approach", "configuration"])
+        # Warm the cached property with the old layer.
+        self.assertEqual(self.scenario.sub_unit_datalayer, old_sub_units_layer)
+        included_layer = DataLayerFactory.create(
+            type=DataLayerType.VECTOR,
+            geometry_type=GeometryType.POLYGON,
+        )
+
+        payload = {
+            "planning_approach": ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+            "configuration": {
+                "included_areas": [included_layer.pk],
+                "sub_units_layer": new_sub_units_layer.pk,
+            },
+        }
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.content)
+
+        # Called once while validating and once while saving; both must see
+        # the approach and sub-units layer sent in this request.
+        self.assertEqual(len(seen), 2)
+        for approach, sub_units_layer_id in seen:
+            self.assertEqual(approach, ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS)
+            self.assertEqual(sub_units_layer_id, new_sub_units_layer.pk)
+
+        self.scenario.refresh_from_db()
+        self.assertIsNotNone(self.scenario.treatable_area)
+        self.assertEqual(
+            self.scenario.planning_approach,
+            ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+        )
 
     @mock.patch(
         "planning.serializers.calculate_scenario_treatable_area",
