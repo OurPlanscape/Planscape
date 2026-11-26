@@ -37,7 +37,11 @@ const FULL_GOAL = goalWith([
   { usage_type: 'PRIORITY', datalayer: FIRE_SEVERITY },
   { usage_type: 'SECONDARY_METRIC', datalayer: STRUCTURE_EXPOSURE },
   { usage_type: 'SECONDARY_METRIC', datalayer: CARBON },
-  { usage_type: 'THRESHOLD', datalayer: FLAME_LENGTH },
+  {
+    usage_type: 'THRESHOLD',
+    datalayer: FLAME_LENGTH,
+    threshold: [{ operator: 'lt', value: 0 }],
+  },
 ]);
 
 describe('TreatmentGoalDetailsComponent', () => {
@@ -76,6 +80,12 @@ describe('TreatmentGoalDetailsComponent', () => {
   function layerNames() {
     return fixture.debugElement
       .queryAll(By.css('.layer-name'))
+      .map((el) => el.nativeElement.textContent.trim());
+  }
+
+  function thresholds() {
+    return fixture.debugElement
+      .queryAll(By.css('.layer-threshold'))
       .map((el) => el.nativeElement.textContent.trim());
   }
 
@@ -251,6 +261,57 @@ describe('TreatmentGoalDetailsComponent', () => {
       false,
       false,
     ]);
+  });
+
+  describe('the condition a stand-level constraint applies', () => {
+    it('spells it out next to the layer it constrains', () => {
+      expect(thresholds()).toEqual(['< 0']);
+    });
+
+    it('leaves the other groups without one', () => {
+      const rows = fixture.debugElement.queryAll(By.css('.layer'));
+
+      expect(rows.length).toBe(4);
+      expect(
+        rows.map((row) => !!row.query(By.css('.layer-threshold')))
+      ).toEqual([false, false, false, true]);
+    });
+
+    it('joins both halves of a range', async () => {
+      await renderWith(
+        goalWith([
+          {
+            usage_type: 'THRESHOLD',
+            datalayer: FLAME_LENGTH,
+            threshold: [
+              { operator: 'gte', value: 60 },
+              { operator: 'lte', value: 61 },
+            ],
+          },
+        ])
+      );
+
+      expect(thresholds()).toEqual(['≥ 60 and ≤ 61']);
+    });
+
+    it('says nothing when the goal came back without one', async () => {
+      await renderWith(
+        goalWith([{ usage_type: 'THRESHOLD', datalayer: FLAME_LENGTH }])
+      );
+
+      expect(thresholds()).toEqual([]);
+      expect(layerNames()).toEqual([FLAME_LENGTH.name]);
+    });
+
+    it('says nothing when the goal came back with an empty one', async () => {
+      await renderWith(
+        goalWith([
+          { usage_type: 'THRESHOLD', datalayer: FLAME_LENGTH, threshold: null },
+        ])
+      );
+
+      expect(thresholds()).toEqual([]);
+    });
   });
 
   it('asks to be closed', () => {

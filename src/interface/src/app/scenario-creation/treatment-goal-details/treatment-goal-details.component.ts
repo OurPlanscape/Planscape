@@ -3,11 +3,13 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ButtonComponent, ToggleComponent } from '@styleguide';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { getThresholdDisplayText } from '@app/scenario/scenario-helper';
 import { DataLayer, EmbeddedDataLayer, ScenarioGoal, UsageType } from '@types';
 
 interface PreviewRow {
   key: string;
   layer: EmbeddedDataLayer;
+  threshold: string;
 }
 
 interface PreviewGroup {
@@ -23,10 +25,15 @@ const PREVIEW_GROUPS: { usageType: string; label: string }[] = [
 
 function rowsOf(usages: UsageType[], usageType: string): PreviewRow[] {
   return usages
-    .filter((usage) => usage.usage_type === usageType)
-    .map((usage) => usage.datalayer)
-    .filter((layer): layer is EmbeddedDataLayer => typeof layer !== 'string')
-    .map((layer) => ({ key: `${usageType}:${layer.id}`, layer }));
+    .filter(
+      (usage): usage is UsageType & { datalayer: EmbeddedDataLayer } =>
+        usage.usage_type === usageType && typeof usage.datalayer !== 'string'
+    )
+    .map((usage) => ({
+      key: `${usageType}:${usage.datalayer.id}`,
+      layer: usage.datalayer,
+      threshold: getThresholdDisplayText(usage.threshold),
+    }));
 }
 
 @UntilDestroy()

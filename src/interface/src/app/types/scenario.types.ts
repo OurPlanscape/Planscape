@@ -201,6 +201,7 @@ export interface UsageType {
   usage_type: string;
   datalayer: string | EmbeddedDataLayer;
   weight?: number;
+  threshold?: ThresholdCondition[] | null;
 }
 
 // Backend scenario goal metadata.
@@ -251,6 +252,32 @@ export const CONSTRAINT_OPERATOR_MAP = new Map<
   CONSTRAINT_OPERATOR,
   OperatorDefinition
 >(CONSTRAINT_OPERATORS.map((op) => [op.value, op]));
+
+export type THRESHOLD_OPERATOR =
+  | 'eq'
+  | 'dne'
+  | 'in'
+  | 'nin'
+  | 'lt'
+  | 'lte'
+  | 'gt'
+  | 'gte';
+
+export interface ThresholdCondition {
+  operator: THRESHOLD_OPERATOR;
+  value: number | string;
+}
+
+export const THRESHOLD_OPERATOR_SYMBOLS: Record<THRESHOLD_OPERATOR, string> = {
+  eq: '=',
+  dne: '!=',
+  in: '=',
+  nin: '!=',
+  lt: '<',
+  lte: '≤',
+  gt: '>',
+  gte: '≥',
+};
 
 export interface ScenarioPriority {
   datalayer: number;
