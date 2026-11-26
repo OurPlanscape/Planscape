@@ -3,6 +3,7 @@ import {
   convertOldConfigurationToV3Payload,
   getGroupedGoals,
   getResultsTableHeadline,
+  getThresholdDisplayText,
   sanitizePayloadForScenarioType,
   scenarioHasCapability,
   suggestUniqueName,
@@ -453,5 +454,57 @@ describe('getResultsTableHeadline', () => {
     expect(getResultsTableHeadline('OPTIMIZE_PROJECT_AREAS', null)).toBe(
       'Project Areas'
     );
+  });
+});
+
+describe('getThresholdDisplayText', () => {
+  it('reads nothing when the goal has no threshold', () => {
+    expect(getThresholdDisplayText(null)).toBe('');
+    expect(getThresholdDisplayText(undefined)).toBe('');
+    expect(getThresholdDisplayText([])).toBe('');
+  });
+
+  it('writes a single condition as a symbol and a value', () => {
+    expect(getThresholdDisplayText([{ operator: 'lt', value: 0 }])).toBe('< 0');
+    expect(getThresholdDisplayText([{ operator: 'gt', value: 77.84 }])).toBe(
+      '> 77.84'
+    );
+  });
+
+  it('writes each operator with the symbol the rest of the app uses', () => {
+    expect(getThresholdDisplayText([{ operator: 'eq', value: 1 }])).toBe('= 1');
+    expect(getThresholdDisplayText([{ operator: 'dne', value: 1 }])).toBe(
+      '!= 1'
+    );
+    expect(getThresholdDisplayText([{ operator: 'lte', value: 1 }])).toBe(
+      '≤ 1'
+    );
+    expect(getThresholdDisplayText([{ operator: 'gte', value: 1 }])).toBe(
+      '≥ 1'
+    );
+  });
+
+  it('joins the two halves of a between', () => {
+    expect(
+      getThresholdDisplayText([
+        { operator: 'gte', value: 60 },
+        { operator: 'lte', value: 61 },
+      ])
+    ).toBe('≥ 60 and ≤ 61');
+  });
+
+  it('keeps the list a membership condition carries', () => {
+    expect(
+      getThresholdDisplayText([{ operator: 'in', value: '1,2,abc' }])
+    ).toBe('= 1,2,abc');
+    expect(getThresholdDisplayText([{ operator: 'nin', value: '1,abc' }])).toBe(
+      '!= 1,abc'
+    );
+  });
+
+  it('falls back to an operator it has no symbol for', () => {
+    expect(
+      getThresholdDisplayText([{ operator: 'btw' as never, value: '1,2' }])
+    ).toBe('btw 1,2');
   });
 });
