@@ -36,7 +36,6 @@ import { MapNavbarComponent } from '@app/maplibre-map/map-nav-bar/map-nav-bar.co
 import { MultiMapControlComponent } from '@app/maplibre-map/multi-map-control/multi-map-control.component';
 import { DataLayersRegistryService } from '@app/explore/data-layers-registry';
 import { DynamicClimateLayersComponent } from '../dynamic-climate-layers/dynamic-climate-layers.component';
-import { ClimateLayersComponent } from '../climate-layers/climate-layers.component';
 import { MULTIMAP_STORAGE } from '@app/services/multimap-storage.token';
 import { DrawService } from '@app/maplibre-map/draw.service';
 import { BaseLayersStateService } from '@app/base-layers/base-layers.state.service';
@@ -73,7 +72,6 @@ export interface ResultsLayer {
     OpacitySliderComponent,
     MultiMapControlComponent,
     DynamicClimateLayersComponent,
-    ClimateLayersComponent,
     NavBarComponent,
   ],
   providers: [

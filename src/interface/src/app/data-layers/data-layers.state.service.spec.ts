@@ -3,7 +3,7 @@ import { fakeAsync, flushMicrotasks, TestBed } from '@angular/core/testing';
 import { DataLayersStateService } from './data-layers.state.service';
 import { MockProvider } from 'ng-mocks';
 import { DataLayersService } from '@services/data-layers.service';
-import { defer, filter, of, Subject, throwError } from 'rxjs';
+import { defer, filter, of, Subject, take, throwError } from 'rxjs';
 import {
   DATALAYER_FAVORITED_EVENT,
   DATALAYER_UNFAVORITED_EVENT,
@@ -12,6 +12,7 @@ import {
   Pagination,
   Plan,
   REALTIME_CONNECTED_EVENT,
+  StyleJson,
   Workspace,
   WorkspaceEvent,
   WorkspaceRole,
@@ -959,6 +960,71 @@ describe('DataLayersStateService', () => {
       service.toggleFavorite(notFavorited);
 
       expect(workspacesService.favoriteDataLayer).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('previewStyle', () => {
+    const ownStyle: StyleJson = {
+      map_type: 'RAMP',
+      entries: [
+        { value: 0, color: '#000000', label: 'Own low' },
+        { value: 1, color: '#ffffff', label: 'Own high' },
+      ],
+    };
+    const draft: StyleJson = {
+      map_type: 'VALUES',
+      entries: [
+        { value: 1, color: '#ff0000', label: 'Draft one' },
+        { value: 2, color: '#00ff00', label: 'Draft two' },
+      ],
+    };
+    const layer = {
+      id: 9,
+      metadata: null,
+      styles: [{ id: 3, data: ownStyle }],
+    } as unknown as DataLayer;
+
+    function legendLabels() {
+      let labels: string[] = [];
+      service.colorLegendInfo$
+        .pipe(take(1))
+        .subscribe(
+          (info) => (labels = info?.entries.map((e) => e.entryLabel) ?? [])
+        );
+      return labels;
+    }
+
+    beforeEach(() => {
+      createService();
+      service.selectDataLayer(layer);
+    });
+
+    it('draws the legend from the draft style', () => {
+      service.previewStyle(draft);
+
+      expect(legendLabels()).toContain('Draft one');
+      expect(legendLabels()).not.toContain('Own low');
+    });
+
+    it('goes back to the layer style when the draft is cleared', () => {
+      service.previewStyle(draft);
+      service.previewStyle(null);
+
+      expect(legendLabels()).toContain('Own low');
+    });
+
+    it('drops the draft when another layer is selected', () => {
+      service.previewStyle(draft);
+      service.selectDataLayer({ ...layer, id: 10 } as DataLayer);
+
+      expect(legendLabels()).toContain('Own low');
+    });
+
+    it('keeps the draft when the same layer is selected again', () => {
+      service.previewStyle(draft);
+      service.selectDataLayer({ ...layer } as DataLayer);
+
+      expect(legendLabels()).toContain('Draft one');
     });
   });
 });

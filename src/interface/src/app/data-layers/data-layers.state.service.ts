@@ -31,6 +31,7 @@ import {
   SearchResult,
   SearchTab,
   SimpleCategory,
+  StyleJson,
 } from '@types';
 import {
   buildFlatTree,
@@ -176,6 +177,10 @@ export class DataLayersStateService implements OnDestroy {
   private _viewedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
   viewedDataLayer$ = this._viewedDataLayer$.asObservable();
 
+  private _draftStyle$ = new BehaviorSubject<StyleJson | null>(null);
+  /** A style drawn instead of the viewed layer's own, while it is edited. */
+  draftStyle$ = this._draftStyle$.asObservable();
+
   // Datalayers selected from the list of layers
   private _selectedDataLayers$ = new BehaviorSubject<DataLayer[] | []>([]);
   selectedDataLayers$ = this._selectedDataLayers$.asObservable();
@@ -284,10 +289,15 @@ export class DataLayersStateService implements OnDestroy {
   private _searchTerm$ = new BehaviorSubject<string>('');
   searchTerm$ = this._searchTerm$.asObservable();
 
-  colorLegendInfo$ = this.viewedDataLayer$.pipe(
-    map((currentLayer: DataLayer | null) => {
+  colorLegendInfo$ = combineLatest([
+    this.viewedDataLayer$,
+    this.draftStyle$,
+  ]).pipe(
+    map(([currentLayer, draftStyle]) => {
       if (currentLayer) {
-        return extractLegendInfo(currentLayer);
+        return extractLegendInfo(
+          draftStyle ? withStyle(currentLayer, draftStyle) : currentLayer
+        );
       } else {
         return null;
       }
@@ -616,7 +626,19 @@ export class DataLayersStateService implements OnDestroy {
 
   selectDataLayer(dataLayer: DataLayer | null) {
     this.setDataLayerLoading(true);
+    // a draft belongs to its layer; reselecting that layer (e.g. after saving
+    // the draft) keeps it until the editor drops it, so the map doesn't flash
+    // the old style in between
+    const sameLayer = dataLayer?.id === this._viewedDataLayer$.value?.id;
+    if (this._draftStyle$.value && !sameLayer) {
+      this._draftStyle$.next(null);
+    }
     this._viewedDataLayer$.next(dataLayer);
+  }
+
+  /** Draws the viewed layer with `style` until another layer is selected. */
+  previewStyle(style: StyleJson | null) {
+    this._draftStyle$.next(style);
   }
 
   setDataLayerLoading(status: boolean) {
@@ -814,4 +836,8 @@ export class DataLayersStateService implements OnDestroy {
   setSelectionMode(mode: 'AUTOMATIC' | 'MANUAL') {
     this.selectionMode = mode;
   }
+}
+
+function withStyle(layer: DataLayer, style: StyleJson): DataLayer {
+  return { ...layer, styles: [{ id: layer.styles[0]?.id ?? 0, data: style }] };
 }

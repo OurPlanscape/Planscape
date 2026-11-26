@@ -885,9 +885,23 @@ def calculate_child_project_areas(scenario: Scenario) -> list[ProjectArea]:
     return project_areas
 
 
+R_OPERATOR_MAP = {
+    "eq": "==",
+    "dne": "!=",
+    "lt": "<",
+    "lte": "<=",
+    "gt": ">",
+    "gte": ">=",
+}
+R_OPERATOR_REVERSE_MAP = {v: k for k, v in R_OPERATOR_MAP.items()}
+
+
+_NUMBER_PATTERN = r"-?(?:\d+(?:\.\d*)?|\.\d+)"
+
+
 def _format_in_value(value: str) -> str:
     # numbers are kept as is, words are quoted
-    if re.match(r"^-?\d+(\.\d+)?$", value):
+    if re.match(rf"^{_NUMBER_PATTERN}$", value):
         return value
     return f'"{value}"'
 
@@ -907,16 +921,70 @@ def _get_operation(operator: str, value: str) -> str:
         case _:
             # normal cases
             # constraints datalayers from scenario configuration
-            OPERATOR_MAP = {
-                "eq": "==",
-                "dne": "!=",
-                "lt": "<",
-                "lte": "<=",
-                "gt": ">",
-                "gte": ">=",
-            }
+            return f"value {R_OPERATOR_MAP.get(operator, operator)} {value}"
 
-            return f"value {OPERATOR_MAP.get(operator, operator)} {value}"
+
+_THRESHOLD_COMPARISON_RE = re.compile(
+    rf"""^value\s*(>=|<=|==|!=|>|<)\s*({_NUMBER_PATTERN}|"[^"]*"|'[^']*'|\w+)$"""
+)
+_THRESHOLD_IN_RE = re.compile(r"^value\s*%in%\s*c\((.*)\)$")
+_THRESHOLD_NIN_RE = re.compile(r"^!\(\s*value\s*%in%\s*c\((.*)\)\s*\)$")
+
+
+def _parse_threshold_literal(raw: str) -> Union[int, float, str]:
+    raw = raw.strip()
+    if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in ("'", '"'):
+        return raw[1:-1]
+    if re.match(r"^-?\d+$", raw):
+        return int(raw)
+    try:
+        return float(raw)
+    except ValueError:
+        return raw
+
+
+def _parse_threshold_list(raw: str) -> str:
+    items = [str(_parse_threshold_literal(item)) for item in raw.split(",")]
+    return ",".join(item for item in items if item)
+
+
+def parse_threshold_expression(
+    expression: Optional[str],
+) -> Optional[List[Dict[str, Any]]]:
+    """
+    Converts an R-like threshold expression (e.g. `value >= 60 & value <= 61`)
+    into a list of constraint-like conditions, e.g.
+    `[{"operator": "gte", "value": 60}, {"operator": "lte", "value": 61}]`.
+
+    Returns None when the expression is empty or cannot be parsed.
+    """
+    if not expression or not expression.strip():
+        return None
+
+    conditions = []
+    for clause in expression.split("&"):
+        clause = clause.strip()
+        if match := _THRESHOLD_NIN_RE.match(clause):
+            conditions.append(
+                {"operator": "nin", "value": _parse_threshold_list(match.group(1))}
+            )
+        elif match := _THRESHOLD_IN_RE.match(clause):
+            conditions.append(
+                {"operator": "in", "value": _parse_threshold_list(match.group(1))}
+            )
+        elif match := _THRESHOLD_COMPARISON_RE.match(clause):
+            r_operator, raw_value = match.groups()
+            conditions.append(
+                {
+                    "operator": R_OPERATOR_REVERSE_MAP[r_operator],
+                    "value": _parse_threshold_literal(raw_value),
+                }
+            )
+        else:
+            logger.warning("Unable to parse threshold expression: %s", expression)
+            return None
+
+    return conditions
 
 
 def build_run_configuration(scenario: "Scenario") -> dict[str, Any]:

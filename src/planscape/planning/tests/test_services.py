@@ -16,7 +16,7 @@ from datasets.tests.factories import DataLayerFactory
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import connection
-from django.test import TestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 from fiona.crs import to_string
 from stands.models import Stand, StandSizeChoices
@@ -35,6 +35,7 @@ from planning.models import (
     TreatmentGoalUsageType,
 )
 from planning.services import (
+    _get_operation,
     build_run_configuration,
     calculate_and_update_scenario_result,
     calculate_scenario_treatable_area,
@@ -61,6 +62,7 @@ from planning.services import (
     get_max_treatable_area,
     get_max_treatable_stand_count,
     get_scenario_configuration_details,
+    parse_threshold_expression,
     get_schema,
     get_stands_from_sub_units,
     get_sub_units_details,
@@ -128,6 +130,104 @@ class MaxAreaProjectTest(TestCase):
         )
         max_project_area = get_max_area_project(scenario=scenario)
         self.assertEqual(max_project_area, 494.0)
+
+
+class ParseThresholdExpressionTest(SimpleTestCase):
+    def test_empty_returns_none(self):
+        self.assertIsNone(parse_threshold_expression(None))
+        self.assertIsNone(parse_threshold_expression(""))
+        self.assertIsNone(parse_threshold_expression("   "))
+
+    def test_single_comparison(self):
+        self.assertEqual(
+            parse_threshold_expression("value < 1"),
+            [{"operator": "lt", "value": 1}],
+        )
+        self.assertEqual(
+            parse_threshold_expression("value == 1"),
+            [{"operator": "eq", "value": 1}],
+        )
+        self.assertEqual(
+            parse_threshold_expression("value != 1"),
+            [{"operator": "dne", "value": 1}],
+        )
+
+    def test_float_value(self):
+        self.assertEqual(
+            parse_threshold_expression("value > 77.84"),
+            [{"operator": "gt", "value": 77.84}],
+        )
+
+    def test_decimal_between_zero_and_one(self):
+        for expression in ("value > 0.5", "value >  0.5", "value > .5"):
+            with self.subTest(expression=expression):
+                self.assertEqual(
+                    parse_threshold_expression(expression),
+                    [{"operator": "gt", "value": 0.5}],
+                )
+        self.assertEqual(
+            parse_threshold_expression("value > -.5"),
+            [{"operator": "gt", "value": -0.5}],
+        )
+        self.assertEqual(
+            parse_threshold_expression("value >= .25 & value <= .75"),
+            [{"operator": "gte", "value": 0.25}, {"operator": "lte", "value": 0.75}],
+        )
+
+    def test_negative_value(self):
+        self.assertEqual(
+            parse_threshold_expression("value >= -5"),
+            [{"operator": "gte", "value": -5}],
+        )
+
+    def test_combined_conditions(self):
+        self.assertEqual(
+            parse_threshold_expression("value >= 60 & value <= 61"),
+            [{"operator": "gte", "value": 60}, {"operator": "lte", "value": 61}],
+        )
+
+    def test_without_spaces(self):
+        self.assertEqual(
+            parse_threshold_expression("value>=60&value<=61"),
+            [{"operator": "gte", "value": 60}, {"operator": "lte", "value": 61}],
+        )
+
+    def test_in_and_nin(self):
+        self.assertEqual(
+            parse_threshold_expression('value %in% c(1, 2, "abc")'),
+            [{"operator": "in", "value": "1,2,abc"}],
+        )
+        self.assertEqual(
+            parse_threshold_expression('!(value %in% c(1, "abc"))'),
+            [{"operator": "nin", "value": "1,abc"}],
+        )
+
+    def test_unparseable_returns_none(self):
+        self.assertIsNone(parse_threshold_expression("value > 1 | value < 0"))
+        self.assertIsNone(parse_threshold_expression("foo bar"))
+
+    def test_round_trip_with_get_operation(self):
+        cases = [
+            ("eq", "1", [{"operator": "eq", "value": 1}]),
+            ("dne", "1", [{"operator": "dne", "value": 1}]),
+            ("lt", "1.5", [{"operator": "lt", "value": 1.5}]),
+            ("lte", "2", [{"operator": "lte", "value": 2}]),
+            ("gt", "3", [{"operator": "gt", "value": 3}]),
+            ("gte", "4", [{"operator": "gte", "value": 4}]),
+            (
+                "btw",
+                "60,61",
+                [{"operator": "gte", "value": 60}, {"operator": "lte", "value": 61}],
+            ),
+            ("in", "1,abc", [{"operator": "in", "value": "1,abc"}]),
+            ("nin", "1,abc", [{"operator": "nin", "value": "1,abc"}]),
+        ]
+        for operator, value, expected in cases:
+            with self.subTest(operator=operator):
+                self.assertEqual(
+                    parse_threshold_expression(_get_operation(operator, value)),
+                    expected,
+                )
 
 
 class BuildRunConfigurationTest(TestCase):
