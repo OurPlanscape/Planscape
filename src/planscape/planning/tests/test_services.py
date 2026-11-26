@@ -158,6 +158,22 @@ class ParseThresholdExpressionTest(SimpleTestCase):
             [{"operator": "gt", "value": 77.84}],
         )
 
+    def test_decimal_between_zero_and_one(self):
+        for expression in ("value > 0.5", "value >  0.5", "value > .5"):
+            with self.subTest(expression=expression):
+                self.assertEqual(
+                    parse_threshold_expression(expression),
+                    [{"operator": "gt", "value": 0.5}],
+                )
+        self.assertEqual(
+            parse_threshold_expression("value > -.5"),
+            [{"operator": "gt", "value": -0.5}],
+        )
+        self.assertEqual(
+            parse_threshold_expression("value >= .25 & value <= .75"),
+            [{"operator": "gte", "value": 0.25}, {"operator": "lte", "value": 0.75}],
+        )
+
     def test_negative_value(self):
         self.assertEqual(
             parse_threshold_expression("value >= -5"),
