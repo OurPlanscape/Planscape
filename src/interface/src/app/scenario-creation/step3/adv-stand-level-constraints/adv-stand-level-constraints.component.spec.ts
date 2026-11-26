@@ -6,7 +6,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { BehaviorSubject, of, Subject } from 'rxjs';
+import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
 
 import { AdvStandLevelConstraintsComponent } from './adv-stand-level-constraints.component';
 import { DataLayersStateService } from '@app/data-layers/data-layers.state.service';
@@ -21,6 +21,7 @@ import { MockComponent, MockProvider } from 'ng-mocks';
 import { DataLayersComponent } from '@app/data-layers/data-layers/data-layers.component';
 import { DataLayersRailComponent } from '@app/data-layers/data-layers-rail/data-layers-rail.component';
 import { ForsysService } from '@app/services/forsys.service';
+import { DataLayersService } from '@services';
 
 const layerOne = { id: 1, name: 'Test Layer One' } as unknown as DataLayer;
 const layerTwo = { id: 2, name: 'Test Layer Two' } as unknown as DataLayer;
@@ -68,6 +69,10 @@ describe('AdvStandLevelConstraintsComponent', () => {
   let dialogSpy: jasmine.SpyObj<MatDialog>;
   let mapModuleServiceSpy: jasmine.SpyObj<MapModuleService>;
 
+  let dataLayersServiceSpy: jasmine.SpyObj<DataLayersService>;
+  let viewedDataLayer$: BehaviorSubject<DataLayer | null>;
+  let selectDataLayer: jasmine.Spy;
+
   let currentScenario$: Subject<unknown>;
   let planningAreaGeometry$: Subject<unknown>;
   let advConstraints$: BehaviorSubject<Constraint[] | null>;
@@ -94,6 +99,15 @@ describe('AdvStandLevelConstraintsComponent', () => {
     planningAreaGeometry$ = new Subject();
     advConstraints$ = new BehaviorSubject<Constraint[] | null>(null);
     layerClicked$ = new Subject<DataLayer>();
+    viewedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
+    selectDataLayer = jasmine.createSpy('selectDataLayer');
+
+    dataLayersServiceSpy = jasmine.createSpyObj('DataLayersService', [
+      'getDataLayersByIds',
+    ]);
+    dataLayersServiceSpy.getDataLayersByIds.and.returnValue(
+      of([layerOne, layerTwo])
+    );
 
     dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
 
@@ -129,8 +143,11 @@ describe('AdvStandLevelConstraintsComponent', () => {
         MockProvider(ForsysService, {
           forsysData$: of(forsysData),
         }),
+        { provide: DataLayersService, useValue: dataLayersServiceSpy },
         MockProvider(DataLayersStateService, {
           layerClicked$,
+          viewedDataLayer$,
+          selectDataLayer,
           addSelectedLayer: jasmine.createSpy('addSelectedLayer'),
           removeSelectedLayer: jasmine.createSpy('removeSelectedLayer'),
           setSelectionMode: jasmine.createSpy('setSelectionMode'),
@@ -183,6 +200,25 @@ describe('AdvStandLevelConstraintsComponent', () => {
     });
   });
 
+  describe('when the threshold layers cannot be loaded', () => {
+    it('leaves both view toggles switched off and out of reach', () => {
+      dataLayersServiceSpy.getDataLayersByIds.and.returnValue(
+        throwError(() => new Error('no layers'))
+      );
+      fixture.detectChanges();
+
+      const toggles = fixture.debugElement.queryAll(
+        By.css('.view-layer-toggle input')
+      );
+
+      expect(toggles.length).toBe(2);
+      expect(toggles.map((t) => t.nativeElement.disabled)).toEqual([
+        true,
+        true,
+      ]);
+    });
+  });
+
   describe('after init', () => {
     beforeEach(() => {
       fixture.detectChanges();
@@ -206,6 +242,73 @@ describe('AdvStandLevelConstraintsComponent', () => {
         expect(dataLayerState.setSelectionMode).toHaveBeenCalledWith(
           'AUTOMATIC'
         );
+      });
+    });
+
+    describe('viewing the threshold layers on the map', () => {
+      const viewToggles = () =>
+        fixture.debugElement.queryAll(By.css('.view-layer-toggle input'));
+
+      const checkedStates = () =>
+        viewToggles().map((toggle) => toggle.nativeElement.checked);
+
+      it('offers one toggle per threshold layer', () => {
+        expect(viewToggles().length).toBe(2);
+        expect(
+          viewToggles().map((toggle) => toggle.nativeElement.disabled)
+        ).toEqual([false, false]);
+      });
+
+      it('asks for the two layers the forsys module names', () => {
+        expect(dataLayersServiceSpy.getDataLayersByIds).toHaveBeenCalledWith([
+          1, 2,
+        ]);
+      });
+
+      it('puts the slope layer on the map', () => {
+        viewToggles()[0].nativeElement.click();
+
+        expect(selectDataLayer).toHaveBeenCalledWith(layerOne);
+      });
+
+      it('puts the distance from roads layer on the map', () => {
+        viewToggles()[1].nativeElement.click();
+
+        expect(selectDataLayer).toHaveBeenCalledWith(layerTwo);
+      });
+
+      it('takes the layer off the map when switched back off', () => {
+        viewedDataLayer$.next(layerOne);
+        fixture.detectChanges();
+
+        viewToggles()[0].nativeElement.click();
+
+        expect(selectDataLayer).toHaveBeenCalledWith(null);
+      });
+
+      it('shows which layer the map is already on', () => {
+        viewedDataLayer$.next(layerTwo);
+        fixture.detectChanges();
+
+        expect(checkedStates()).toEqual([false, true]);
+      });
+
+      it('drops the other toggle when the map moves between them', () => {
+        viewedDataLayer$.next(layerOne);
+        fixture.detectChanges();
+        expect(checkedStates()).toEqual([true, false]);
+
+        viewedDataLayer$.next(layerTwo);
+        fixture.detectChanges();
+
+        expect(checkedStates()).toEqual([false, true]);
+      });
+
+      it('checks neither when the map is on some other layer', () => {
+        viewedDataLayer$.next({ id: 99 } as DataLayer);
+        fixture.detectChanges();
+
+        expect(checkedStates()).toEqual([false, false]);
       });
     });
 
