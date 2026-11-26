@@ -116,7 +116,7 @@ export class FavoriteDataLayersComponent {
 
   selectDataLayer(layer: DataLayer, event: Event) {
     const target = event.target as HTMLInputElement;
-    this.dataLayersStateService.selectDataLayer(target.checked ? layer : null);
+    this.dataLayersStateService.viewDataLayer(target.checked ? layer : null);
   }
 
   isSelected(layer: DataLayer) {
