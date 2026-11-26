@@ -55,7 +55,7 @@ const STATUS_CHIPS: Record<
   WorkspaceDataLayerStatus,
   { status: StatusChipStatus; label: string }
 > = {
-  PENDING: { status: 'inProgress', label: 'Uploading' },
+  PENDING: { status: 'inProgress', label: 'Processing' },
   PROCESSING: { status: 'inProgress', label: 'Processing' },
   READY: { status: 'success', label: 'Ready' },
   FAILED: { status: 'failed', label: 'Failed' },

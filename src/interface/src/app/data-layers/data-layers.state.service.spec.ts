@@ -321,7 +321,7 @@ describe('DataLayersStateService', () => {
       expect(names).toEqual(['Another', 'Dataset']);
     });
 
-    it('shows the spinner while the uploads load', () => {
+    it('shows the spinner while the uploads load', async () => {
       const uploads$ = new Subject<DataLayer[]>();
       dataLayersService.browseUploads.and.returnValue(uploads$);
       createService();
@@ -329,8 +329,19 @@ describe('DataLayersStateService', () => {
       let loading = false;
       service.loading$.subscribe((l) => (loading = l));
       service.dataSets$.subscribe();
+      // set outside change detection, so the template isn't changed mid-check
+      await Promise.resolve();
 
       expect(loading).toBeTrue();
+    });
+
+    it('fetches the uploads once for every subscriber', () => {
+      createService();
+      service.setSearchTab('uploaded');
+      service.dataSets$.subscribe();
+      service.dataSets$.subscribe();
+
+      expect(dataLayersService.browseUploads).toHaveBeenCalledTimes(1);
     });
 
     it('browses datasets instead of categories', () => {

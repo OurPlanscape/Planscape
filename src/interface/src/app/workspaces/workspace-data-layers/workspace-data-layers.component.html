@@ -16,8 +16,8 @@
       <div>
         <h3>Data Layers</h3>
         <p class="page-description">
-          Manage the data layers available in the
-          {{ workspace.name }} workspace.
+          Manage the data layers available in the "{{ workspace.name }}"
+          workspace.
         </p>
       </div>
       <button sg-button variant="primary" icon="upload" (click)="upload()">
@@ -87,7 +87,8 @@
                   *ngIf="canDelete(layer)"
                   sg-button
                   variant="icon-only"
-                  icon="delete"
+                  icon="delete_outlined"
+                  [outlined]="true"
                   matTooltip="Delete"
                   [attr.aria-label]="'Delete ' + layer.name"
                   (click)="delete(layer)"></button>

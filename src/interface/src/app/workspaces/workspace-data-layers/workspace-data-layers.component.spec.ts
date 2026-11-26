@@ -168,7 +168,7 @@ describe('WorkspaceDataLayersComponent', () => {
     updates$.next(null);
     fixture.detectChanges();
 
-    expect(rows()[0].textContent).toContain('Uploading');
+    expect(rows()[0].textContent).toContain('Processing');
     expect(rows()[1].textContent).toContain('Processing');
     expect(rows()[2].textContent).toContain('Failed');
     expect(rows()[2].textContent).toContain(
@@ -183,12 +183,12 @@ describe('WorkspaceDataLayersComponent', () => {
       );
     });
 
-    it('shows as uploading while this tab sends it', () => {
+    it('shows as processing while this tab sends it', () => {
       TestBed.inject(ActiveUploadsService).add(1);
       updates$.next(null);
       fixture.detectChanges();
 
-      expect(rows()[0].textContent).toContain('Uploading');
+      expect(rows()[0].textContent).toContain('Processing');
       expect(rows()[0].querySelector('td.actions button')).toBeNull();
       TestBed.inject(ActiveUploadsService).remove(1);
     });

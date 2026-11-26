@@ -91,6 +91,15 @@ body.no-scroll-bounce {
   }
 }
 
+.mat-mdc-snack-bar-container.snackbar-card {
+  margin-top: 56px; // clears the top nav
+}
+
+.mat-mdc-snack-bar-container.snackbar-card .mdc-snackbar__surface {
+  padding: 0;
+  max-width: none;
+}
+
 .snackbar-error-multiline {
   white-space: pre-line;
 }

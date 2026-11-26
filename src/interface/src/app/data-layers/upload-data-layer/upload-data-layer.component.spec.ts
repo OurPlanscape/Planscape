@@ -286,13 +286,13 @@ describe('UploadDataLayerComponent', () => {
       expect(TestBed.inject(ActiveUploadsService).has(layer.id)).toBeFalse();
     });
 
-    it('tracks the layer as uploading from this tab until it finishes', () => {
+    it('keeps the layer tracked after the file is sent, while the server picks it up', () => {
       const activeUploads = TestBed.inject(ActiveUploadsService);
       startUpload();
       expect(activeUploads.has(layer.id)).toBeTrue();
 
       progress$.complete();
-      expect(activeUploads.has(layer.id)).toBeFalse();
+      expect(activeUploads.has(layer.id)).toBeTrue();
     });
   });
 

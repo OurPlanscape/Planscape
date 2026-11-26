@@ -96,7 +96,9 @@ export class DataLayersStateService implements OnDestroy {
         ? this.mapModuleService.datasetsFor(name)
         : this.baseDataSets$;
     }),
-    tap(() => queueMicrotask(() => this.loadingSubject.next(false)))
+    tap(() => queueMicrotask(() => this.loadingSubject.next(false))),
+    // the list subscribes only once loading ends; a second fetch would restart it
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   retryLoad() {
@@ -115,7 +117,7 @@ export class DataLayersStateService implements OnDestroy {
   private uploadedDataSets$(module: string): Observable<BaseDataSet[]> {
     return this.planState.currentPlanOrNull$.pipe(
       take(1),
-      tap(() => this.loadingSubject.next(true)),
+      tap(() => queueMicrotask(() => this.loadingSubject.next(true))),
       switchMap((plan) =>
         this.service.browseUploads(
           this.requestWorkspaceId(plan, 'uploaded'),
