@@ -1,31 +1,26 @@
 import {
-  Component,
-  Input,
-  Output,
-  EventEmitter,
-  OnChanges,
-  SimpleChanges,
   ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatTreeModule } from '@angular/material/tree';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { AsyncPipe } from '@angular/common';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 
-import { ButtonComponent, SectionComponent } from '@styleguide';
-import { Plan, ClimateForesightRun, DataLayer } from '@types';
+import { SectionComponent } from '@styleguide';
+import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
+import { ClimateForesightRun, DataLayer, Plan } from '@types';
 import { ClimateForesightService } from '@services';
 import { StepDirective } from '@styleguide/steps/step.component';
 import { MapConfigService } from '@maplibre-map/map-config.service';
-import { DataLayersComponent } from '@data-layers/data-layers/data-layers.component';
+import { DataLayersRailComponent } from '@data-layers/data-layers-rail/data-layers-rail.component';
 import { DataLayersStateService } from '@data-layers/data-layers.state.service';
+import { FeaturesModule } from '@features/features.module';
 import { ClimateForesightMapComponent } from '@plan/climate-foresight/climate-foresight-run/climate-foresight-map/climate-foresight-map.component';
+import { LegacyDataLayerSelectionComponent } from '@plan/climate-foresight/climate-foresight-run/legacy-data-layer-selection/legacy-data-layer-selection.component';
 import { MAX_CLIMATE_DATALAYERS } from '@shared';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
@@ -34,14 +29,12 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   selector: 'app-data-layer-selection',
   standalone: true,
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    ButtonComponent,
-    MatButtonModule,
-    MatTreeModule,
-    MatProgressSpinnerModule,
+    AsyncPipe,
+    ChipSelectorComponent,
+    DataLayersRailComponent,
+    FeaturesModule,
+    LegacyDataLayerSelectionComponent,
     SectionComponent,
-    DataLayersComponent,
     ClimateForesightMapComponent,
   ],
   providers: [
@@ -60,8 +53,6 @@ export class DataLayerSelectionComponent
   // eslint-disable-next-line @angular-eslint/no-output-native
   @Output() complete = new EventEmitter<any>();
 
-  selectedDataLayers!: DataLayer[];
-
   maxDataLayers = MAX_CLIMATE_DATALAYERS;
 
   form = new FormGroup({
@@ -71,13 +62,9 @@ export class DataLayerSelectionComponent
     ),
   });
 
-  isBrowserOpen = false;
-
   selectedCount$ = this.dataLayersState.selectedLayersCount$;
 
-  canProceed$ = this.dataLayersState.hasSelectedDatalayers$;
-
-  canSelectMore$ = this.dataLayersState.canSelectMoreDatalayers$;
+  selectedDataLayers$ = this.dataLayersState.selectedDataLayers$;
 
   constructor(
     private climateForesightService: ClimateForesightService,
@@ -93,7 +80,6 @@ export class DataLayerSelectionComponent
         this.form.patchValue({
           dataLayers: datalayers,
         });
-        this.selectedDataLayers = datalayers;
         this.form.markAsTouched();
         this.cdr.markForCheck();
       });
@@ -121,10 +107,6 @@ export class DataLayerSelectionComponent
         },
       });
     }
-  }
-
-  toggleBrowser(): void {
-    this.isBrowserOpen = !this.isBrowserOpen;
   }
 
   removeDataLayer(layer: DataLayer): void {

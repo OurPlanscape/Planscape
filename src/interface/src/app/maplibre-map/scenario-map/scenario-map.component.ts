@@ -74,7 +74,7 @@ export class ScenarioMapComponent implements OnDestroy {
   @Input() showDataLayerName = true;
 
   /**
-   * The sub-unit layer currently pushed into the app-wide BaseLayersStateService.
+   * The sub-unit layer currently pinned in the app-wide BaseLayersStateService.
    * Tracked so it can be removed on destroy — otherwise it leaks into every other
    * map in the app (the state service is a root singleton).
    */
@@ -220,7 +220,7 @@ export class ScenarioMapComponent implements OnDestroy {
     map(([show, layer]) => (show && layer ? layer : null)),
     tap((layer) => {
       if (layer) {
-        this.baseLayersStateService.addBaseLayer(layer);
+        this.baseLayersStateService.pinLayer(layer);
         this.addedSubUnitLayer = layer;
       }
     }),
@@ -290,10 +290,10 @@ export class ScenarioMapComponent implements OnDestroy {
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
 
   ngOnDestroy(): void {
-    // Remove the sub-unit layer we pushed into the app-wide base layers state,
+    // Unpin the sub-unit layer from the app-wide base layers state,
     // otherwise it stays visible on other maps after leaving the scenario.
     if (this.addedSubUnitLayer) {
-      this.baseLayersStateService.removeBaseLayer(this.addedSubUnitLayer);
+      this.baseLayersStateService.unpinLayer(this.addedSubUnitLayer.id);
       this.addedSubUnitLayer = null;
     }
   }

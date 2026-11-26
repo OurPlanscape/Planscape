@@ -68,7 +68,7 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
 
   // only one hovered stand
   hoveredFeature: MapGeoJSONFeature | null = null;
-  selectedLayers$ = this.baseLayersStateService.selectedBaseLayers$;
+  selectedLayers$ = this.baseLayersStateService.displayedBaseLayers$;
   enableBaseLayerHover$ = this.baseLayersStateService.enableBaseLayerHover$;
 
   private _tooltipInfo$ = new BehaviorSubject<BaseLayerTooltipData | null>(
@@ -79,10 +79,10 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
     this._tooltipInfo$,
     this.selectedLayers$,
   ]).pipe(
-    map(([info, layers]: [BaseLayerTooltipData | null, BaseLayer[] | null]) => {
+    map(([info, layers]: [BaseLayerTooltipData | null, BaseLayer[]]) => {
       if (
-        !layers ||
-        layers?.some((layer) => layer.path.includes('Ownership'))
+        !layers.length ||
+        layers.some((layer) => layer.path.includes('Ownership'))
       ) {
         return null;
       } else {

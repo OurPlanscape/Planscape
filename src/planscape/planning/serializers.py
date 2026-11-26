@@ -19,6 +19,7 @@ from django.utils import timezone
 from planscape.analytics import track_event
 from planscape.exceptions import InvalidGeometry
 from rest_framework import serializers
+from rest_framework.settings import api_settings
 from rest_framework_gis import serializers as gis_serializers
 from stands.models import Stand, StandSizeChoices
 from workspaces.access import get_planning_area_permissions, get_planning_area_role
@@ -48,7 +49,14 @@ from planning.services import (
     calculate_scenario_treatable_area,
     get_acreage,
     get_min_project_area,
+    parse_threshold_expression,
     union_geojson,
+)
+
+
+NO_STANDS_IN_INCLUDED_AREAS_ERROR = (
+    "There are no stands with the selected ownership in your planning area.  "
+    "Please 'View' ownership options to see what area is available in your planning area."
 )
 
 
@@ -888,29 +896,6 @@ class UpsertConfigurationV3Serializer(ConfigurationV3Serializer):
 
         return included_areas
 
-    def validate(self, attrs):
-        included_areas = attrs.get("included_areas_ids")
-        if included_areas:
-            scenario = self.parent.instance
-            treatable_area = calculate_scenario_treatable_area(
-                scenario=scenario, includes=included_areas
-            )
-
-            if not treatable_area or treatable_area.area == 0:
-                raise serializers.ValidationError(
-                    "There are no stands with the selected ownership in your planning area.  "
-                    "Please 'View' ownership options to see what area is available in your planning area."
-                )
-            stand_size = attrs.get("stand_size") or scenario.get_stand_size()
-
-            if not Stand.objects.within_polygon(treatable_area, stand_size).exists():
-                raise serializers.ValidationError(
-                    "There are no stands with the selected ownership in your planning area.  "
-                    "Please 'View' ownership options to see what area is available in your planning area."
-                )
-
-        return super().validate(attrs)
-
     def update(self, instance, validated_data):
         instance.configuration = {
             **(instance.configuration or {}),
@@ -947,6 +932,16 @@ class TreatmentGoalUsageListSerializer(serializers.ListSerializer):
 
 class TreatmentGoalUsageSerializer(serializers.ModelSerializer):
     datalayer = serializers.SerializerMethodField()
+    threshold = serializers.SerializerMethodField(
+        help_text=(
+            "Threshold as a list of constraint-like conditions, e.g. "
+            '`[{"operator": "gte", "value": 60}, {"operator": "lte", "value": 61}]` '
+            "for `value >= 60 & value <= 61`."
+        )
+    )
+
+    def get_threshold(self, instance):
+        return parse_threshold_expression(instance.threshold)
 
     def get_datalayer(self, instance):
         if feature_enabled("IMPROVED_TREATMENT_GOAL"):
@@ -955,7 +950,7 @@ class TreatmentGoalUsageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TreatmentGoalUsesDataLayer
-        fields = ("usage_type", "datalayer")
+        fields = ("usage_type", "datalayer", "threshold")
         list_serializer_class = TreatmentGoalUsageListSerializer
 
 
@@ -1392,15 +1387,74 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
         model = Scenario
         fields = ("planning_approach", "treatment_goal", "configuration", "parent")
 
+    def _get_pending_scenario(self, attrs) -> Scenario:
+        """
+        Unsaved copy of the scenario with this request's changes applied, so
+        the treatable area is validated against the planning approach, parent
+        and sub-units layer that will actually be saved.
+        """
+        instance = self.instance
+        parent = attrs["parent"] if "parent" in attrs else instance.parent
+        return Scenario(
+            planning_area=parent.planning_area if parent else instance.planning_area,
+            planning_approach=attrs.get(
+                "planning_approach", instance.planning_approach
+            ),
+            parent=parent,
+            configuration={
+                **(instance.configuration or {}),
+                **(attrs.get("configuration") or {}),
+            },
+        )
+
+    def validate(self, attrs):
+        configuration = attrs.get("configuration") or {}
+        included_areas = configuration.get("included_areas_ids")
+        if included_areas and self.instance is not None:
+            scenario = self._get_pending_scenario(attrs)
+            treatable_area = calculate_scenario_treatable_area(
+                scenario=scenario, includes=included_areas
+            )
+            stand_size = configuration.get("stand_size") or scenario.get_stand_size()
+
+            if (
+                not treatable_area
+                or treatable_area.area == 0
+                or not Stand.objects.within_polygon(treatable_area, stand_size).exists()
+            ):
+                raise serializers.ValidationError(
+                    {
+                        "configuration": {
+                            api_settings.NON_FIELD_ERRORS_KEY: [
+                                NO_STANDS_IN_INCLUDED_AREAS_ERROR
+                            ]
+                        }
+                    }
+                )
+
+        return super().validate(attrs)
+
     def update(self, instance: Scenario, validated_data):
         if "treatment_goal" in validated_data:
             instance.treatment_goal = validated_data["treatment_goal"]
+
+        # Planning approach and parent must be applied before the treatable
+        # area is calculated, since both change which geometry it is clipped to.
+        if "planning_approach" in validated_data:
+            instance.planning_approach = validated_data["planning_approach"]
+
+        if "parent" in validated_data:
+            instance.parent = validated_data["parent"]
+            if instance.parent:
+                instance.planning_area = instance.parent.planning_area
 
         if "configuration" in validated_data:
             cfg = instance.configuration or {}
             incoming = validated_data["configuration"]
             cfg.update(incoming)
             instance.configuration = cfg
+            # `sub_unit_datalayer` is a cached_property derived from configuration.
+            instance.__dict__.pop("sub_unit_datalayer", None)
 
             included_areas_ids = incoming.get("included_areas_ids")
             if included_areas_ids:
@@ -1409,14 +1463,6 @@ class PatchScenarioV3Serializer(serializers.ModelSerializer):
                     scenario=instance, includes=included_areas
                 )
                 instance.treatable_area = treatable_area
-
-        if "planning_approach" in validated_data:
-            instance.planning_approach = validated_data["planning_approach"]
-
-        if "parent" in validated_data:
-            instance.parent = validated_data["parent"]
-            if instance.parent:
-                instance.planning_area = instance.parent.planning_area
 
         instance.save(
             update_fields=[

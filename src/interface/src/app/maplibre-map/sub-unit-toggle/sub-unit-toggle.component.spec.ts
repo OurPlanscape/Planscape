@@ -12,9 +12,8 @@ describe('SubUnitToggleComponent', () => {
 
   beforeEach(async () => {
     const spy = jasmine.createSpyObj('BaseLayersStateService', [
-      'addBaseLayer',
-      'removeBaseLayer',
-      'clearBaseLayer',
+      'pinLayer',
+      'unpinLayer',
     ]);
 
     await TestBed.configureTestingModule({
@@ -41,17 +40,15 @@ describe('SubUnitToggleComponent', () => {
     expect(el.textContent).toContain('Subfireshed');
   });
 
-  it('should call addBaseLayer when toggled on', () => {
+  it('should pin the layer when toggled on', () => {
     component.showBaseLayer = true;
     component.toggleBaseLayer(mockLayer);
-    expect(baseLayersServiceSpy.addBaseLayer).toHaveBeenCalledWith(mockLayer);
+    expect(baseLayersServiceSpy.pinLayer).toHaveBeenCalledWith(mockLayer);
   });
 
-  it('should call removeBaseLayer when toggled off', () => {
+  it('should unpin the layer when toggled off', () => {
     component.showBaseLayer = false;
     component.toggleBaseLayer(mockLayer);
-    expect(baseLayersServiceSpy.removeBaseLayer).toHaveBeenCalledWith(
-      mockLayer
-    );
+    expect(baseLayersServiceSpy.unpinLayer).toHaveBeenCalledWith(1);
   });
 });

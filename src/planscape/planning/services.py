@@ -76,6 +76,7 @@ from planning.geometry import (
     coerce_geometry,
     fix_geometry,
     to_multipolygon,
+    to_polygonal_or_none,
 )
 from planning.models import (
     GeoPackageStatus,
@@ -884,6 +885,17 @@ def calculate_child_project_areas(scenario: Scenario) -> list[ProjectArea]:
     return project_areas
 
 
+R_OPERATOR_MAP = {
+    "eq": "==",
+    "dne": "!=",
+    "lt": "<",
+    "lte": "<=",
+    "gt": ">",
+    "gte": ">=",
+}
+R_OPERATOR_REVERSE_MAP = {v: k for k, v in R_OPERATOR_MAP.items()}
+
+
 def _format_in_value(value: str) -> str:
     # numbers are kept as is, words are quoted
     if re.match(r"^-?\d+(\.\d+)?$", value):
@@ -906,16 +918,70 @@ def _get_operation(operator: str, value: str) -> str:
         case _:
             # normal cases
             # constraints datalayers from scenario configuration
-            OPERATOR_MAP = {
-                "eq": "==",
-                "dne": "!=",
-                "lt": "<",
-                "lte": "<=",
-                "gt": ">",
-                "gte": ">=",
-            }
+            return f"value {R_OPERATOR_MAP.get(operator, operator)} {value}"
 
-            return f"value {OPERATOR_MAP.get(operator, operator)} {value}"
+
+_THRESHOLD_COMPARISON_RE = re.compile(
+    r"""^value\s*(>=|<=|==|!=|>|<)\s*(-?\d+(?:\.\d+)?|"[^"]*"|'[^']*'|\w+)$"""
+)
+_THRESHOLD_IN_RE = re.compile(r"^value\s*%in%\s*c\((.*)\)$")
+_THRESHOLD_NIN_RE = re.compile(r"^!\(\s*value\s*%in%\s*c\((.*)\)\s*\)$")
+
+
+def _parse_threshold_literal(raw: str) -> Union[int, float, str]:
+    raw = raw.strip()
+    if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in ("'", '"'):
+        return raw[1:-1]
+    if re.match(r"^-?\d+$", raw):
+        return int(raw)
+    try:
+        return float(raw)
+    except ValueError:
+        return raw
+
+
+def _parse_threshold_list(raw: str) -> str:
+    items = [str(_parse_threshold_literal(item)) for item in raw.split(",")]
+    return ",".join(item for item in items if item)
+
+
+def parse_threshold_expression(
+    expression: Optional[str],
+) -> Optional[List[Dict[str, Any]]]:
+    """
+    Converts an R-like threshold expression (e.g. `value >= 60 & value <= 61`)
+    into a list of constraint-like conditions, e.g.
+    `[{"operator": "gte", "value": 60}, {"operator": "lte", "value": 61}]`.
+
+    Returns None when the expression is empty or cannot be parsed.
+    """
+    if not expression or not expression.strip():
+        return None
+
+    conditions = []
+    for clause in expression.split("&"):
+        clause = clause.strip()
+        if match := _THRESHOLD_NIN_RE.match(clause):
+            conditions.append(
+                {"operator": "nin", "value": _parse_threshold_list(match.group(1))}
+            )
+        elif match := _THRESHOLD_IN_RE.match(clause):
+            conditions.append(
+                {"operator": "in", "value": _parse_threshold_list(match.group(1))}
+            )
+        elif match := _THRESHOLD_COMPARISON_RE.match(clause):
+            r_operator, raw_value = match.groups()
+            conditions.append(
+                {
+                    "operator": R_OPERATOR_REVERSE_MAP[r_operator],
+                    "value": _parse_threshold_literal(raw_value),
+                }
+            )
+        else:
+            logger.warning("Unable to parse threshold expression: %s", expression)
+            return None
+
+    return conditions
 
 
 def build_run_configuration(scenario: "Scenario") -> dict[str, Any]:
@@ -1870,8 +1936,8 @@ def export_treatable_area_to_geopackage(
         logger.warning("Scenario has no treatable area (Legacy). Skipping.")
         return
 
-    planning_area = scenario.planning_area
-    pa_geometry = planning_area.geometry
+    treatable_area_geometry = scenario.treatable_area
+
     included_areas_ids = scenario.configuration.get("included_areas_ids")
 
     includes = DataLayer.objects.filter(pk__in=included_areas_ids)
@@ -1900,11 +1966,13 @@ def export_treatable_area_to_geopackage(
 
                     DynamicModel = model_from_fiona(included)
                     queryset = DynamicModel.objects.filter(
-                        geometry__bboverlaps=pa_geometry
-                    ).filter(geometry__intersects=pa_geometry)
+                        geometry__bboverlaps=treatable_area_geometry
+                    ).filter(geometry__intersects=treatable_area_geometry)
 
                     for feature in queryset.all():
-                        feature_geometry = pa_geometry.intersection(feature.geometry)
+                        feature_geometry = treatable_area_geometry.intersection(
+                            feature.geometry
+                        )
                         geometry_json = json.loads(
                             feature_geometry.transform(
                                 settings.CRS_GEOPACKAGE_EXPORT, clone=True
@@ -2195,13 +2263,10 @@ def get_constrained_stands(
     return stands_qs.exclude(Exists(matching_metrics)).values_list("id", flat=True)
 
 
-@cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
-def get_stands_from_sub_units(
-    stands: QuerySet[Stand],
+def get_intersection_from_sub_units(
     planning_area: PlanningArea,
-    stand_size: str,
     datalayer: DataLayer,
-) -> QuerySet[Stand]:
+) -> Optional[GEOSGeometry]:
     geometry = planning_area.geometry
     DynamicModel = model_from_fiona(datalayer)
 
@@ -2216,8 +2281,25 @@ def get_stands_from_sub_units(
         else:
             merged_geometry = merged_geometry.union(sub_unit.geometry)
 
-    if merged_geometry is not None:
-        intersection = geometry.intersection(merged_geometry)
+    if merged_geometry is None:
+        return None
+
+    return to_polygonal_or_none(geometry.intersection(merged_geometry))
+
+
+@cached(timeout=settings.SUB_UNITS_DETAILS_TTL)
+def get_stands_from_sub_units(
+    stands: QuerySet[Stand],
+    planning_area: PlanningArea,
+    stand_size: str,
+    datalayer: DataLayer,
+) -> QuerySet[Stand]:
+    intersection = get_intersection_from_sub_units(
+        planning_area=planning_area,
+        datalayer=datalayer,
+    )
+
+    if intersection is not None:
         return stands.within_polygon(intersection, stand_size)
 
     return stands.none()
@@ -2464,6 +2546,20 @@ def calculate_scenario_treatable_area(
     planning_area = scenario.planning_area
     pa_geometry = planning_area.geometry
 
+    useful_geometry = pa_geometry
+    if (
+        not is_project_areas_child(scenario)
+        and scenario.planning_approach == ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS
+        and scenario.sub_unit_datalayer
+    ):
+        useful_geometry = get_intersection_from_sub_units(
+            planning_area=planning_area,
+            datalayer=scenario.sub_unit_datalayer,
+        )
+
+    if useful_geometry is None:
+        return None
+
     included_geometry = None
     if includes:
         for included in includes:
@@ -2473,14 +2569,14 @@ def calculate_scenario_treatable_area(
 
             DynamicModel = model_from_fiona(included)
             queryset = DynamicModel.objects.filter(
-                geometry__bboverlaps=pa_geometry
-            ).filter(geometry__intersects=pa_geometry)
+                geometry__bboverlaps=useful_geometry
+            ).filter(geometry__intersects=useful_geometry)
             layer_geometry = queryset.all().aggregate(geometry=UnionOp("geometry"))[
                 "geometry"
             ]
             if not layer_geometry:
                 continue
-            layer_geometry = layer_geometry.intersection(pa_geometry)
+            layer_geometry = layer_geometry.intersection(useful_geometry)
 
             if not included_geometry:
                 included_geometry = layer_geometry
