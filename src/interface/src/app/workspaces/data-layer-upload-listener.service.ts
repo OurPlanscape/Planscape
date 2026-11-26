@@ -9,6 +9,10 @@ import {
   DataLayerUploadPayload,
   WorkspaceEvent,
 } from '@types';
+import {
+  DataLayerReadyNoticeComponent,
+  DataLayerReadyNoticeData,
+} from './data-layer-ready-notice/data-layer-ready-notice.component';
 
 /**
  * Tells the uploader when their layer finishes processing, wherever they are
@@ -56,15 +60,19 @@ export class DataLayerUploadListenerService {
   private showReady(event: WorkspaceEvent<DataLayerUploadPayload>) {
     const workspaceId = event.workspace_id;
     const layerId = event.object?.id;
-    const canLink = workspaceId !== undefined && layerId !== undefined;
+    const canEdit = workspaceId !== undefined && layerId !== undefined;
     this.snackBar
-      .open(
-        `"${event.data?.name}" is ready.`,
-        canLink ? 'View layer' : 'Dismiss',
-        SNACK_NOTICE_CONFIG
-      )
+      .openFromComponent<
+        DataLayerReadyNoticeComponent,
+        DataLayerReadyNoticeData
+      >(DataLayerReadyNoticeComponent, {
+        ...SNACK_NOTICE_CONFIG,
+        duration: 8000,
+        horizontalPosition: 'end',
+        panelClass: ['snackbar-card'],
+        data: { name: event.data?.name ?? '', canEdit },
+      })
       .onAction()
-      .pipe(filter(() => canLink))
       .subscribe(() =>
         this.router.navigate(['/workspace', workspaceId, 'datalayers', layerId])
       );

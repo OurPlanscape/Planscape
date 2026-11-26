@@ -1,0 +1,13 @@
+<div class="notice">
+  <mat-icon class="status-icon">check_circle</mat-icon>
+  <div class="content">
+    <div class="title">Layer "{{ data.name }}" is ready</div>
+    <p class="body">
+      Access it from the Data Layers panel, or edit its style and metadata.
+    </p>
+  </div>
+  <button class="close" aria-label="Close" (click)="close()">
+    <mat-icon>close</mat-icon>
+  </button>
+  <button *ngIf="data.canEdit" class="cta" (click)="edit()">Edit Layer</button>
+</div>
