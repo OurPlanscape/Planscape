@@ -23,6 +23,9 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { UploadDataModalComponent } from '@data-layers/upload-data-modal/upload-data-modal.component';
 import { FEATURES_JSON } from '@features/features-config';
 import { FeaturesModule } from '@features/features.module';
+import { provideRouter, Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { UploadDataLayerComponent } from '@data-layers/upload-data-layer/upload-data-layer.component';
 
 describe('ExploreSidebarComponent', () => {
   let component: ExploreSidebarComponent;
@@ -30,13 +33,14 @@ describe('ExploreSidebarComponent', () => {
   let selection$: BehaviorSubject<BrowseSelection | null>;
   let dataLayersState: jasmine.SpyObj<DataLayersStateService>;
   let dataUploadEnabled = false;
+  let frontendUploadEnabled = false;
   let workspacePermissions = ['view_workspace', 'add_datalayer'];
   let dialog: jasmine.SpyObj<MatDialog>;
-  let afterClosed$: Subject<void>;
+  let afterClosed$: Subject<unknown>;
 
   beforeEach(async () => {
     selection$ = new BehaviorSubject<BrowseSelection | null>(null);
-    afterClosed$ = new Subject<void>();
+    afterClosed$ = new Subject<unknown>();
     dataLayersState = jasmine.createSpyObj<DataLayersStateService>(
       'DataLayersStateService',
       ['goBackToSearchResults'],
@@ -52,6 +56,7 @@ describe('ExploreSidebarComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ExploreSidebarComponent],
       providers: [
+        provideRouter([]),
         {
           provide: MultiMapConfigState,
           useValue: { selectedMapId$: new BehaviorSubject(1) },
@@ -60,14 +65,17 @@ describe('ExploreSidebarComponent', () => {
         {
           provide: WorkspaceState,
           useValue: {
-            currentWorkspace$: of({ permissions: workspacePermissions }),
+            currentWorkspace$: of({ id: 7, permissions: workspacePermissions }),
           },
         },
         { provide: MatDialog, useValue: dialog },
       ],
     })
       .overrideProvider(FEATURES_JSON, {
-        useValue: { DATA_UPLOAD: dataUploadEnabled },
+        useValue: {
+          DATA_UPLOAD: dataUploadEnabled,
+          FRONTEND_UPLOAD: frontendUploadEnabled,
+        },
       })
       .overrideComponent(ExploreSidebarComponent, {
         remove: {
@@ -199,9 +207,53 @@ describe('ExploreSidebarComponent', () => {
 
       expect(document.activeElement).not.toBe(button);
 
-      afterClosed$.next();
+      afterClosed$.next(undefined);
 
       expect(document.activeElement).toBe(button);
+    });
+
+    describe('with FRONTEND_UPLOAD', () => {
+      beforeAll(() => (frontendUploadEnabled = true));
+      afterAll(() => (frontendUploadEnabled = false));
+
+      it('opens the in-app upload dialog and goes to the data layers page after', () => {
+        const notice = spyOn(
+          fixture.debugElement.injector.get(MatSnackBar),
+          'open'
+        );
+        const navigate = spyOn(TestBed.inject(Router), 'navigate');
+
+        uploadButton().nativeElement.click();
+        afterClosed$.next({ id: 5, name: 'Canopy' });
+
+        expect(dialog.open).toHaveBeenCalledWith(UploadDataLayerComponent, {
+          data: { workspaceId: 7 },
+          restoreFocus: false,
+        });
+        expect(navigate).toHaveBeenCalledWith(['/workspace', 7, 'datalayers']);
+        expect(notice).toHaveBeenCalledWith(
+          jasmine.stringContaining('"Canopy" uploaded'),
+          'Dismiss',
+          jasmine.anything()
+        );
+      });
+
+      it('stays put and refocuses the CTA when the dialog is dismissed', () => {
+        const notice = spyOn(
+          fixture.debugElement.injector.get(MatSnackBar),
+          'open'
+        );
+        const navigate = spyOn(TestBed.inject(Router), 'navigate');
+        const button: HTMLElement = uploadButton().nativeElement;
+        button.focus();
+
+        button.click();
+        afterClosed$.next(undefined);
+
+        expect(notice).not.toHaveBeenCalled();
+        expect(navigate).not.toHaveBeenCalled();
+        expect(document.activeElement).toBe(button);
+      });
     });
 
     describe('for a workspace viewer', () => {
@@ -254,9 +306,10 @@ describe('ExploreSidebarComponent', () => {
       expect(panels[0].attributes['panel']).toBe('uploaded');
     });
 
-    it('goes back to the datasets from the header arrow', () => {
+    it('goes back to the datasets from the header arrow', fakeAsync(() => {
       component.selectedTab = SidebarTabs.UPLOADED;
       selection$.next({ type: 'dataset', id: 10, name: 'My uploads' });
+      flushMicrotasks();
       fixture.detectChanges();
 
       expect(
@@ -268,14 +321,15 @@ describe('ExploreSidebarComponent', () => {
         .nativeElement.click();
 
       expect(dataLayersState.goBackToSearchResults).toHaveBeenCalled();
-    });
+    }));
   });
 
   describe('when a category is open in the data layers panel', () => {
-    beforeEach(() => {
+    beforeEach(fakeAsync(() => {
       selection$.next({ type: 'category', id: 20, name: 'Air Quality' });
+      flushMicrotasks();
       fixture.detectChanges();
-    });
+    }));
 
     it('shows the category name in the header', () => {
       expect(

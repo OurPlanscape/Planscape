@@ -18,12 +18,20 @@ import { SidebarTabs } from '@explore/sidebar-tabs';
 import { DataLayersRegistryService } from '@explore/data-layers-registry';
 import { MultiMapConfigState } from '@maplibre-map/multi-map-config.state';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
-import { MatDialog } from '@angular/material/dialog';
 import { UploadDataModalComponent } from '@data-layers/upload-data-modal/upload-data-modal.component';
 import { FeatureService } from '@features/feature.service';
 import { FeaturesModule } from '@features/features.module';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import {
+  UploadDataLayerComponent,
+  UploadDataLayerData,
+} from '@data-layers/upload-data-layer/upload-data-layer.component';
+import { SNACK_NOTICE_CONFIG } from '@shared';
+import { WorkspaceDataLayer } from '@types';
 import {
   asapScheduler,
   catchError,
@@ -53,6 +61,7 @@ const PANEL_BY_RAIL_ITEM: Record<string, SidebarTabs> = {
     FeaturesModule,
     MapTabsComponent,
     MatIconModule,
+    MatSnackBarModule,
     MatTooltipModule,
     SidebarIconRailComponent,
   ],
@@ -77,9 +86,10 @@ export class ExploreSidebarComponent {
   );
 
   dataLayersSelection$ = this.dataLayersState$.pipe(
-    // Maps register and restore their state on init, after this header was checked
-    observeOn(asapScheduler),
-    switchMap((state) => state?.selection$ ?? of(null))
+    switchMap((state) => state?.selection$ ?? of(null)),
+    // Maps register and restore their state on init, and switching to the
+    // Uploaded tab resets the selection, both after this header was checked
+    observeOn(asapScheduler)
   );
 
   constructor(
@@ -87,7 +97,9 @@ export class ExploreSidebarComponent {
     private dataLayersRegistry: DataLayersRegistryService,
     private featureService: FeatureService,
     private workspaceState: WorkspaceState,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
+    private router: Router
   ) {}
 
   canUpload$ = this.featureService.isFeatureEnabled('DATA_UPLOAD')
@@ -100,10 +112,46 @@ export class ExploreSidebarComponent {
   openUpload(trigger: HTMLElement) {
     // The dialog aria-hides the page before it takes focus
     trigger.blur();
-    this.dialog
-      .open(UploadDataModalComponent, { restoreFocus: false })
-      .afterClosed()
-      .subscribe(() => trigger.focus());
+    if (this.featureService.isFeatureEnabled('FRONTEND_UPLOAD')) {
+      this.uploadInApp(trigger);
+    } else {
+      this.dialog
+        .open(UploadDataModalComponent, { restoreFocus: false })
+        .afterClosed()
+        .subscribe(() => trigger.focus());
+    }
+  }
+
+  private uploadInApp(trigger: HTMLElement) {
+    this.workspaceState.currentWorkspace$
+      .pipe(
+        take(1),
+        switchMap((workspace) =>
+          this.dialog
+            .open<
+              UploadDataLayerComponent,
+              UploadDataLayerData,
+              WorkspaceDataLayer
+            >(UploadDataLayerComponent, {
+              data: { workspaceId: workspace.id },
+              restoreFocus: false,
+            })
+            .afterClosed()
+            .pipe(map((layer) => ({ layer, workspaceId: workspace.id })))
+        )
+      )
+      .subscribe(({ layer, workspaceId }) => {
+        if (!layer) {
+          trigger.focus();
+          return;
+        }
+        this.router.navigate(['/workspace', workspaceId, 'datalayers']);
+        this.snackBar.open(
+          `"${layer.name}" uploaded. We'll let you know when it's ready.`,
+          'Dismiss',
+          SNACK_NOTICE_CONFIG
+        );
+      });
   }
 
   goBack() {

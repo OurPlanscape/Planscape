@@ -34,6 +34,25 @@
           src="assets/svg/map_layer.svg"
           alt="map" />
       </sg-card-link>
+
+      <button
+        *ngIf="canManageDataLayers(workspace)"
+        type="button"
+        class="data-layers-card"
+        (click)="goToDataLayers()">
+        <span class="data-layers-icon">
+          <mat-icon class="material-symbols-outlined"
+            >drive_folder_upload</mat-icon
+          >
+        </span>
+        <span class="data-layers-text">
+          <span class="data-layers-title">Data Layers</span>
+          <span class="data-layers-summary">
+            {{ (dataLayersSummary$ | async) ?? 'Manage uploaded data' }}
+          </span>
+        </span>
+        <mat-icon class="data-layers-chevron">chevron_right</mat-icon>
+      </button>
     </div>
     <div right-column class="planing-areas-column">
       <app-planning-area-list></app-planning-area-list>

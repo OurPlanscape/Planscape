@@ -1,3 +1,5 @@
+import { WorkspaceDataLayerStatus } from './data-sets';
+
 export type WebSocketStatus =
   | 'disconnected'
   | 'connecting'
@@ -32,6 +34,19 @@ export const PLANNING_AREA_MAP_STATUS_EVENT =
 // A data layer joined or left the favorites, which the workspace shares
 export const DATALAYER_FAVORITED_EVENT = 'datasets.datalayer.favorited';
 export const DATALAYER_UNFAVORITED_EVENT = 'datasets.datalayer.unfavorited';
+
+// Workspace uploads: created, moved through processing, or deleted
+export const DATALAYER_CREATED_EVENT = 'datasets.datalayer.created';
+export const DATALAYER_STATUS_EVENT = 'datasets.datalayer.status_changed';
+export const DATALAYER_DELETED_EVENT = 'datasets.datalayer.deleted';
+export const DATALAYER_UPDATED_EVENT = 'datasets.datalayer.updated';
+
+export const DATALAYER_UPLOAD_EVENTS = [
+  DATALAYER_CREATED_EVENT,
+  DATALAYER_STATUS_EVENT,
+  DATALAYER_DELETED_EVENT,
+  DATALAYER_UPDATED_EVENT,
+];
 
 // Everything that changes what the list of planning areas shows
 export const PLANNING_AREA_LIST_EVENTS = [
@@ -107,4 +122,12 @@ export const WORKSPACE_DELETED_EVENT = 'workspace.workspace.deleted';
 // Data of workspace.workspace.deleted
 export interface WorkspaceDeletedPayload {
   workspace_id: number;
+}
+
+// Data of the datasets.datalayer.* upload events
+export interface DataLayerUploadPayload {
+  name: string;
+  status: WorkspaceDataLayerStatus;
+  failure_reason: string | null;
+  created_by: number;
 }

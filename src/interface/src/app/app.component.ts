@@ -9,6 +9,7 @@ import { MapModuleService } from '@services/map-module.service';
 import { ProductAnalyticsService } from '@services/product-analytics.service';
 import { PlanDeletedListenerService } from '@plan/plan-deleted-listener.service';
 import { WorkspaceDeletedListenerService } from '@app/workspaces/workspace-deleted-listener.service';
+import { DataLayerUploadListenerService } from '@app/workspaces/data-layer-upload-listener.service';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
 
 @Component({
@@ -32,7 +33,8 @@ export class AppComponent implements OnInit {
     private webSocketService: WebSocketService,
     private workspaceState: WorkspaceState,
     private workspaceDeletedListener: WorkspaceDeletedListenerService,
-    private planDeletedListener: PlanDeletedListenerService
+    private planDeletedListener: PlanDeletedListenerService,
+    private dataLayerUploadListener: DataLayerUploadListenerService
   ) {}
 
   isLoading$ = this.overlayLoaderService.isLoading$;
@@ -52,6 +54,7 @@ export class AppComponent implements OnInit {
     this.followCurrentWorkspace();
     this.workspaceDeletedListener.start();
     this.planDeletedListener.start();
+    this.dataLayerUploadListener.start();
   }
 
   // There is one connection per workspace, and everything inside a workspace

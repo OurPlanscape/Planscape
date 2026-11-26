@@ -17,6 +17,8 @@ The name and value of the flag will be shared by frontend and backend.
 
 `DATA_UPLOAD`: Enables the user to upload data
 
+`FRONTEND_UPLOAD`: The upload button opens the in-app upload dialog instead of the QGIS hand-off
+
 `CATASTROPHIC_REDUCTION`: Features related to Catastrophic Fire Reduction stats in FoR
 
 `IMPROVED_TREATMENT_GOAL`: Enables the new Improved Treatment Goal step

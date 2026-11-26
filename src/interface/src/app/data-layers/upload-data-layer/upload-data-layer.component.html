@@ -1,0 +1,58 @@
+<sg-modal
+  title="Upload data layer"
+  [primaryButtonText]="uploading ? 'Uploading' : 'Upload'"
+  secondaryButtonText="Cancel"
+  [showClose]="true"
+  [primaryButtonDisabled]="!canSubmit"
+  [hasPrimarySpinner]="true"
+  [isInSpinState]="uploading"
+  (clickedPrimary)="submit()"
+  (clickedSecondary)="close()"
+  (clickedClose)="close()">
+  <div modalBodyContent>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form-line">
+      <p>
+        Add a raster layer to this workspace. Once it's uploaded we process it
+        in the background and let you know when it's ready to use.
+      </p>
+
+      <sg-modal-info
+        *ngIf="error"
+        leadingIcon="error"
+        infoType="error"
+        [message]="error"></sg-modal-info>
+
+      <sg-file-upload
+        fieldLabel="GeoTIFF file"
+        placeholder="Choose a GeoTIFF to upload"
+        supportedFileInfo=".tif, .tiff (up to 2 GB)"
+        [supportedTypes]="supportedTypes"
+        [uploadStatus]="fileStatus"
+        [disabled]="uploading"
+        (fileEvent)="handleFile($event)" />
+
+      <sg-input-field size="full" label="Layer name">
+        <input
+          sgInput
+          id="dataLayerName"
+          required="true"
+          formControlName="name" />
+      </sg-input-field>
+
+      <div class="progress" *ngIf="uploading">
+        <div
+          class="progress-track"
+          role="progressbar"
+          aria-label="Upload progress"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-valuenow]="progress * 100 | number: '1.0-0'">
+          <div class="progress-fill" [style.width.%]="progress * 100"></div>
+        </div>
+        <span class="progress-label">
+          Uploading… {{ progress | percent }}
+        </span>
+      </div>
+    </form>
+  </div>
+</sg-modal>
