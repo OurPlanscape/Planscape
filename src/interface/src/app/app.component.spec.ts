@@ -10,6 +10,7 @@ import { MockDeclaration, MockProvider } from 'ng-mocks';
 import { TopBarComponent } from '@shared/top-bar/top-bar.component';
 import { PlanDeletedListenerService } from '@plan/plan-deleted-listener.service';
 import { WorkspaceDeletedListenerService } from '@app/workspaces/workspace-deleted-listener.service';
+import { DataLayerUploadListenerService } from '@app/workspaces/data-layer-upload-listener.service';
 import { WorkspaceState } from '@app/workspaces/workspace.state';
 
 describe('AppComponent', () => {
@@ -42,11 +43,13 @@ describe('AppComponent', () => {
         MockProvider(WorkspaceState, { currentWorkspaceId$ }),
         MockProvider(WorkspaceDeletedListenerService),
         MockProvider(PlanDeletedListenerService),
+        MockProvider(DataLayerUploadListenerService),
       ],
     }).compileComponents();
 
     spyOn(TestBed.inject(WorkspaceDeletedListenerService), 'start');
     spyOn(TestBed.inject(PlanDeletedListenerService), 'start');
+    spyOn(TestBed.inject(DataLayerUploadListenerService), 'start');
     connect = spyOn(TestBed.inject(WebSocketService), 'connect');
     disconnect = spyOn(TestBed.inject(WebSocketService), 'disconnect');
 
@@ -134,6 +137,12 @@ describe('AppComponent', () => {
     it('starts listening for deleted workspaces', () => {
       expect(
         TestBed.inject(WorkspaceDeletedListenerService).start
+      ).toHaveBeenCalled();
+    });
+
+    it('starts listening for finished uploads', () => {
+      expect(
+        TestBed.inject(DataLayerUploadListenerService).start
       ).toHaveBeenCalled();
     });
   });

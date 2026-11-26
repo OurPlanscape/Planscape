@@ -1,0 +1,127 @@
+@import 'colors';
+@import 'mixins';
+@import 'media';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background-color: $color-light-gray;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+
+  @include on-small() {
+    padding: 16px;
+  }
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+
+  h3 {
+    margin: 0 0 4px;
+  }
+}
+
+.page-description {
+  @include regular-paragraph();
+  margin: 0;
+  color: $color-dark-gray;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  background: $color-white;
+  border: 1px solid $color-soft-gray;
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th,
+td {
+  padding: 12px 16px;
+  vertical-align: top;
+}
+
+th {
+  @include small-paragraph();
+  font-weight: 600;
+  color: $color-dark-gray;
+  border-bottom: 1px solid $color-soft-gray;
+  white-space: nowrap;
+}
+
+td {
+  @include regular-paragraph();
+}
+
+tbody tr + tr td {
+  border-top: 1px solid $color-soft-gray;
+}
+
+.layer-name {
+  font-weight: 600;
+}
+
+.layer-link {
+  color: $color-standard-blue;
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
+}
+
+.secondary,
+.failure-reason {
+  @include small-paragraph();
+  margin-top: 4px;
+}
+
+.secondary {
+  color: $color-md-gray;
+}
+
+.failure-reason {
+  max-width: 280px;
+  color: $color-error;
+}
+
+.right {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.actions {
+  width: 1%;
+  padding: 4px 8px;
+  vertical-align: middle;
+}
+
+.loading-row {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.unavailable {
+  padding: 24px;
+}

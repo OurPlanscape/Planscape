@@ -35,6 +35,35 @@ def to_multipolygon(geometry: GEOSGeometry) -> GEOSGeometry:
     return MultiPolygon([geometry], srid=geometry.srid)
 
 
+def to_polygonal_or_none(geometry: GEOSGeometry | None) -> MultiPolygon | None:
+    """
+    Keeps only the polygonal parts of `geometry` as a MultiPolygon.
+
+    Intersections may yield lower-dimension geometries (lines / points when
+    shapes only touch) or GeometryCollections mixing them with polygons.
+    Returns None when there is no polygonal area left.
+    """
+    if geometry is None or geometry.empty:
+        return None
+
+    match geometry.geom_type:
+        case "MultiPolygon":
+            return geometry
+        case "Polygon":
+            return MultiPolygon([geometry], srid=geometry.srid)
+        case "GeometryCollection":
+            polygons = []
+            for part in geometry:
+                part_polygonal = to_polygonal_or_none(part)
+                if part_polygonal is not None:
+                    polygons.extend(part_polygonal)
+            if not polygons:
+                return None
+            return MultiPolygon(polygons, srid=geometry.srid)
+        case _:
+            return None
+
+
 def from_geojson(geometry: Any) -> GEOSGeometry:
     if isinstance(geometry, GEOSGeometry):
         return geometry

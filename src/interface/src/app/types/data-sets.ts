@@ -126,6 +126,63 @@ export interface DataLayer {
   is_favorite?: boolean | null;
 }
 
+export type WorkspaceDataLayerStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'READY'
+  | 'FAILED';
+
+export interface WorkspaceDataLayer {
+  id: number;
+  uuid: string;
+  name: string;
+  type: string;
+  status: WorkspaceDataLayerStatus;
+  failure_reason: string | null;
+  original_name: string | null;
+  file_size: number | null;
+  created_at: string;
+  updated_at: string;
+  created_by: number;
+  creator_name: string;
+}
+
+export interface WorkspaceDataLayerMetadata {
+  description: string;
+  units: string;
+  vintage: string;
+  geographic_coverage: string;
+  source_url: string;
+}
+
+export interface WorkspaceDataLayerDetail
+  extends WorkspaceDataLayer,
+    WorkspaceDataLayerMetadata {
+  // [west, south, east, north] in lon/lat
+  bbox: [number, number, number, number] | null;
+  custom_style: boolean;
+  // what the layer is drawn with: its custom style or the automatic one
+  style: StyleJson;
+  default_style: StyleJson;
+}
+
+export interface WorkspaceDataLayerStylePayload {
+  map_type: RasterColorType;
+  entries: { value: number; color: string; label: string }[];
+}
+
+export type WorkspaceDataLayerUpdate = Partial<
+  WorkspaceDataLayerMetadata & { name: string }
+> & {
+  // null goes back to the automatic style
+  style?: WorkspaceDataLayerStylePayload | null;
+};
+
+export interface WorkspaceDataLayerCreated {
+  datalayer: WorkspaceDataLayer;
+  upload_to: { url: string };
+}
+
 /**
  * Lightweight DataLayer preview used in list responses.
  * Signed URLs are omitted to avoid slow GCS requests.
