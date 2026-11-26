@@ -1,0 +1,194 @@
+<sg-overlay-loader *ngIf="isWorkspaceLoading$ | async"></sg-overlay-loader>
+
+<div class="unavailable" *ngIf="workspaceNotFound$ | async">
+  <app-resource-unavailable resource="workspace"></app-resource-unavailable>
+</div>
+
+<ng-container *ngIf="currentWorkspace$ | async as workspace">
+  <app-nav-bar area="SCENARIO"></app-nav-bar>
+
+  <div
+    class="unavailable"
+    *ngIf="!canManage(workspace) || loadState === 'not-found'">
+    <app-resource-unavailable resource="data layer"></app-resource-unavailable>
+  </div>
+
+  <main class="page" *ngIf="canManage(workspace) && loadState !== 'not-found'">
+    <div class="loading-row" *ngIf="loadState === 'loading'">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <sg-empty-state
+      *ngIf="loadState === 'error'"
+      icon="error"
+      title="We couldn't load this data layer"
+      description="Something went wrong. Please try again.">
+      <button sg-button variant="primary" (click)="load()">Try Again</button>
+    </sg-empty-state>
+
+    <ng-container *ngIf="loadState === 'loaded' && (detail$ | async) as detail">
+      <header class="page-header">
+        <h3>{{ detail.name }}</h3>
+        <p class="secondary">
+          {{ detail.original_name }} · Uploaded
+          {{ detail.created_at | date: 'mediumDate' }} by
+          {{ detail.creator_name }}
+        </p>
+      </header>
+
+      <div class="columns">
+        <form
+          class="details-form"
+          [formGroup]="form"
+          (ngSubmit)="save()"
+          *ngIf="detail.status === 'READY'; else notReady">
+          <sg-modal-info
+            *ngIf="error"
+            leadingIcon="error"
+            infoType="error"
+            [message]="error"></sg-modal-info>
+
+          <sg-toggle-tabs
+            class="tabs"
+            [buttons]="tabs"
+            [defaultSelection]="tab"
+            (emitSelection)="selectTab($event)"></sg-toggle-tabs>
+
+          <div class="tab-panel" *ngIf="tab === 'details'">
+            <sg-input-field size="full" label="Name">
+              <input
+                sgInput
+                id="layerName"
+                required="true"
+                formControlName="name" />
+            </sg-input-field>
+
+            <div class="textarea-field">
+              <label class="field-label" for="layerDescription"
+                >Description</label
+              >
+              <textarea
+                id="layerDescription"
+                rows="4"
+                formControlName="description"
+                placeholder="What the layer shows and how it was made"></textarea>
+            </div>
+
+            <div class="field-row">
+              <sg-input-field size="full" label="Units">
+                <input
+                  sgInput
+                  id="layerUnits"
+                  formControlName="units"
+                  placeholder="e.g. Percent" />
+              </sg-input-field>
+              <sg-input-field size="full" label="Date">
+                <input
+                  sgInput
+                  id="layerVintage"
+                  formControlName="vintage"
+                  placeholder="e.g. 2024" />
+              </sg-input-field>
+            </div>
+
+            <sg-input-field size="full" label="Geographic coverage">
+              <input
+                sgInput
+                id="layerCoverage"
+                formControlName="geographic_coverage"
+                placeholder="e.g. California" />
+            </sg-input-field>
+
+            <sg-input-field
+              size="full"
+              label="Source URL"
+              [error]="form.controls.source_url.invalid"
+              [supportMessage]="
+                form.controls.source_url.invalid
+                  ? 'Enter a link starting with http:// or https://'
+                  : ''
+              ">
+              <input
+                sgInput
+                id="layerSource"
+                type="url"
+                formControlName="source_url"
+                placeholder="https://" />
+            </sg-input-field>
+          </div>
+
+          <app-upload-style-editor
+            *ngIf="tab === 'style'"
+            [form]="styleForm"
+            [range]="range"
+            [automaticStyle]="detail.default_style"></app-upload-style-editor>
+
+          <div class="form-actions">
+            <button sg-button type="button" variant="ghost" (click)="cancel()">
+              Back
+            </button>
+            <button
+              sg-button
+              type="submit"
+              variant="primary"
+              [loading]="saving"
+              [disabled]="!canSave">
+              Save
+            </button>
+          </div>
+        </form>
+
+        <ng-template #notReady>
+          <sg-empty-state
+            class="details-form"
+            icon="hourglass_top"
+            [outlined]="true"
+            title="This layer isn't ready yet"
+            description="You can edit it once processing has finished.">
+          </sg-empty-state>
+        </ng-template>
+
+        <section class="preview" aria-label="Map preview">
+          <mgl-map
+            *ngIf="bounds(detail) as bounds; else noExtent"
+            [style]="(baseLayerUrl$ | async) || ''"
+            [transformRequest]="transformRequest"
+            [minZoom]="minZoom"
+            [maxZoom]="maxZoom"
+            [dragRotate]="false"
+            [attributionControl]="false"
+            [fitBounds]="bounds"
+            [fitBoundsOptions]="{ padding: 24 }"
+            (mapLoad)="mapLoaded($event)">
+            <mgl-layer
+              type="background"
+              id="bottom-layer"
+              [layout]="{ visibility: 'none' }"></mgl-layer>
+            <app-map-data-layer
+              *ngIf="mapLibreMap"
+              [mapLibreMap]="mapLibreMap"></app-map-data-layer>
+            <mgl-control position="top-right">
+              <app-map-layer-color-legend
+                size="compact"></app-map-layer-color-legend>
+            </mgl-control>
+          </mgl-map>
+          <div
+            *ngIf="bounds(detail)"
+            class="map-loader"
+            [class.visible]="layerLoading$ | async"
+            [attr.aria-hidden]="(layerLoading$ | async) !== true">
+            <mat-spinner diameter="32"></mat-spinner>
+          </div>
+          <ng-template #noExtent>
+            <sg-empty-state
+              icon="map"
+              [outlined]="true"
+              title="No preview available"
+              description="This layer has no extent to show yet.">
+            </sg-empty-state>
+          </ng-template>
+        </section>
+      </div>
+    </ng-container>
+  </main>
+</ng-container>
