@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, Iterable, List, Optional, Tuple
@@ -5,6 +6,7 @@ from urllib.parse import urlparse
 from uuid import uuid4
 
 from cacheops import cached
+from core.cdn import create_raster_cdn_url, is_raster_cdn_configured
 from core.flags import feature_enabled
 from core.gcs import create_download_url as create_gcs_download_url
 from core.gcs import is_gcs_file
@@ -27,6 +29,7 @@ from treebeard.mp_tree import MP_Node
 from utils.frontend import get_base_url, get_domain
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 def validate_dataset_modules(value: Optional[List[str]]) -> None:
@@ -664,11 +667,23 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
                 download_url = str(new_url.geturl())
 
         elif is_gcs_file(self.url):
-            download_url = create_gcs_download_url(self.url)
+            download_url = self.get_cdn_url() or create_gcs_download_url(self.url)
         else:
             download_url = None
 
         return download_url
+
+    def get_cdn_url(self) -> Optional[str]:
+        """
+        Returns the Cloud CDN URL for a raster when the RASTER_CDN flag is on.
+        Returns None otherwise, so callers fall back to a GCS signed URL.
+        """
+        if self.type != DataLayerType.RASTER or not feature_enabled("RASTER_CDN"):
+            return None
+        if not is_raster_cdn_configured():
+            logger.error("RASTER_CDN is enabled but the CDN settings are missing.")
+            return None
+        return create_raster_cdn_url(self.url)
 
     def get_map_url(self) -> Optional[str]:
         if self.storage_type == StorageTypeChoices.EXTERNAL_SERVICE:

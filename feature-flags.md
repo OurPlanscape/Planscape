@@ -22,3 +22,5 @@ The name and value of the flag will be shared by frontend and backend.
 `CATASTROPHIC_REDUCTION`: Features related to Catastrophic Fire Reduction stats in FoR
 
 `IMPROVED_TREATMENT_GOAL`: Enables the new Improved Treatment Goal step
+
+`RASTER_CDN`: Backend only. Raster datalayer URLs point to Cloud CDN and stay the same for 15 days, instead of a new GCS signed URL per request. Needs `RASTER_CDN_BASE_URL`, `RASTER_CDN_KEY_NAME` and `RASTER_CDN_SIGNING_KEY`
