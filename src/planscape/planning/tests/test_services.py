@@ -1736,6 +1736,102 @@ class TestRemoveExcludes(TestCase):
         for query in context.captured_queries:
             self.assertNotIn(geometry_hex, query["sql"].lower())
 
+    def _setup_sub_unit_scenario_with_treatable_area(self, configuration=None):
+        extent = MultiPolygon(
+            [stand.geometry for stand in self.stands[:8]], srid=4269
+        ).extent
+        scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            planning_approach=ScenarioPlanningApproach.PRIORITIZE_SUB_UNITS,
+            configuration=configuration or {},
+            treatable_area=MultiPolygon(Polygon.from_bbox(extent), srid=4269),
+        )
+        stand_to_remove = self.stands[0]
+        sub_unit_stands = Stand.objects.filter(
+            id__in=[stand.id for stand in self.stands]
+        ).exclude(id=stand_to_remove.pk)
+        return scenario, stand_to_remove, sub_unit_stands
+
+    def _planning_area_total_area(self, scenario, **kwargs):
+        with override_settings(FEATURE_FLAGS=""):
+            with mock.patch("planning.services.get_stands_from_sub_units"):
+                result = get_available_stands(
+                    scenario, stand_size=StandSizeChoices.LARGE, **kwargs
+                )
+        return result["summary"]["total_area"]
+
+    @override_settings(FEATURE_FLAGS="ADD_INCLUDES")
+    def test_get_available_stands_with_treatable_area_and_scenario_sub_unit_uses_planning_area(
+        self,
+    ):
+        scenario, stand_to_remove, sub_unit_stands = (
+            self._setup_sub_unit_scenario_with_treatable_area(
+                configuration={"sub_units_layer": self.datalayer.pk}
+            )
+        )
+        expected_total_area = self._planning_area_total_area(scenario)
+
+        with mock.patch(
+            "planning.services.get_stands_from_sub_units", return_value=sub_unit_stands
+        ) as get_stands_from_sub_units_mock:
+            result = get_available_stands(scenario, stand_size=StandSizeChoices.LARGE)
+
+        get_stands_from_sub_units_mock.assert_called_once()
+        self.assertEqual(17, get_stands_from_sub_units_mock.call_args.args[0].count())
+        self.assertEqual(
+            self.datalayer, get_stands_from_sub_units_mock.call_args.args[3]
+        )
+        self.assertAlmostEqual(expected_total_area, result["summary"]["total_area"])
+        self.assertGreater(result["summary"]["total_area"], 7118.095268765973)
+        self.assertEqual(
+            {stand_to_remove.pk}, set(result["unavailable"]["by_exclusions"])
+        )
+
+    @override_settings(FEATURE_FLAGS="ADD_INCLUDES")
+    def test_get_available_stands_with_treatable_area_and_explicit_sub_unit_uses_planning_area(
+        self,
+    ):
+        scenario, stand_to_remove, sub_unit_stands = (
+            self._setup_sub_unit_scenario_with_treatable_area()
+        )
+        self.assertIsNone(scenario.sub_unit_datalayer)
+        expected_total_area = self._planning_area_total_area(
+            scenario, sub_unit=self.datalayer
+        )
+
+        with mock.patch(
+            "planning.services.get_stands_from_sub_units", return_value=sub_unit_stands
+        ) as get_stands_from_sub_units_mock:
+            result = get_available_stands(
+                scenario,
+                stand_size=StandSizeChoices.LARGE,
+                sub_unit=self.datalayer,
+            )
+
+        get_stands_from_sub_units_mock.assert_called_once()
+        self.assertEqual(17, get_stands_from_sub_units_mock.call_args.args[0].count())
+        self.assertEqual(
+            self.datalayer, get_stands_from_sub_units_mock.call_args.args[3]
+        )
+        self.assertAlmostEqual(expected_total_area, result["summary"]["total_area"])
+        self.assertIn(stand_to_remove.pk, result["unavailable"]["by_exclusions"])
+
+    @override_settings(FEATURE_FLAGS="ADD_INCLUDES")
+    def test_get_available_stands_with_treatable_area_without_sub_unit_uses_treatable_area(
+        self,
+    ):
+        scenario, _, _ = self._setup_sub_unit_scenario_with_treatable_area()
+        planning_area_total_area = self._planning_area_total_area(scenario)
+
+        with mock.patch(
+            "planning.services.get_stands_from_sub_units"
+        ) as get_stands_from_sub_units_mock:
+            result = get_available_stands(scenario, stand_size=StandSizeChoices.LARGE)
+
+        get_stands_from_sub_units_mock.assert_not_called()
+        self.assertLess(result["summary"]["total_area"], planning_area_total_area)
+        self.assertLess(result["summary"]["treatable_stand_count"], 17)
+
     def test_get_available_stands_applies_aslc_constraint(self):
         self.datalayer.metadata = {
             "modules": {
