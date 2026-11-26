@@ -194,6 +194,7 @@ SECRET_KEY_SECRET=planscape-backend-secret-key-$(ENV)
 REGION=us-central1
 CELERY_WORKER_GENERAL=planscape-celery-worker-general-$(ENV)
 CELERY_WORKER_HEAVY=planscape-celery-worker-heavy-$(ENV)
+CELERY_WORKER_UPLOADS=planscape-celery-worker-uploads-$(ENV)
 CELERY_BEAT=planscape-celery-beat-$(ENV)
 DJANGO_JOB=planscape-django-cmd-$(ENV)
 MANAGE_ARGS=migrate --no-input
@@ -248,10 +249,13 @@ cloud-run-deploy-celery-general:
 cloud-run-deploy-celery-heavy:
 	gcloud run services update $(CELERY_WORKER_HEAVY) --image $(DOCKER_TAG) --region $(REGION)
 
+cloud-run-deploy-celery-uploads:
+	gcloud run services update $(CELERY_WORKER_UPLOADS) --image $(DOCKER_TAG) --region $(REGION)
+
 cloud-run-deploy-celery-beat:
 	gcloud run services update $(CELERY_BEAT) --image $(DOCKER_TAG) --region $(REGION)
 
-cloud-run-deploy-celery: cloud-run-push cloud-run-deploy-celery-general cloud-run-deploy-celery-heavy cloud-run-deploy-celery-beat
+cloud-run-deploy-celery: cloud-run-push cloud-run-deploy-celery-general cloud-run-deploy-celery-heavy cloud-run-deploy-celery-uploads cloud-run-deploy-celery-beat
 
 
 cloud-run-update-django-job:
@@ -307,7 +311,7 @@ cloud-run-deploy-all:
 	$(MAKE) cloud-run-push-all
 	$(MAKE) -j2 cloud-run-update-django-job cloud-run-update-frontend-job
 	$(MAKE) cloud-run-execute-django-job MANAGE_ARGS="migrate --no-input"
-	$(MAKE) -j6 cloud-run-deploy-celery-general cloud-run-deploy-celery-heavy cloud-run-deploy-celery-beat cloud-run-deploy cloud-run-deploy-gateway cloud-run-execute-frontend-job
+	$(MAKE) -j7 cloud-run-deploy-celery-general cloud-run-deploy-celery-heavy cloud-run-deploy-celery-uploads cloud-run-deploy-celery-beat cloud-run-deploy cloud-run-deploy-gateway cloud-run-execute-frontend-job
 
 
 # Reset relevant tables and load development fixture data
