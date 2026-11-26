@@ -32,7 +32,12 @@
             [checked]="previewedRow === row"
             (changed)="toggleLayer(row, $event)">
             <span class="layer">
-              <span class="layer-name">{{ row.layer.name }}</span>
+              <span class="layer-title">
+                <span class="layer-name">{{ row.layer.name }}</span>
+                <span class="layer-threshold" *ngIf="row.threshold">{{
+                  row.threshold
+                }}</span>
+              </span>
               <span class="layer-source" *ngIf="sourceOf(row.layer)">{{
                 sourceOf(row.layer)
               }}</span>
