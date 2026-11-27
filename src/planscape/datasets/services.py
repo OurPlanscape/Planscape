@@ -5,7 +5,7 @@ import mimetypes
 from copy import deepcopy
 from datetime import timedelta
 from pathlib import Path
-from typing import Any, Collection, Dict, Optional, Set, Tuple, Union
+from typing import Any, Collection, Dict, List, Optional, Set, Tuple, Union
 from uuid import uuid4
 
 import mmh3
@@ -40,6 +40,7 @@ from datasets.models import (
     SearchGroupBy,
     SearchResult,
     SearchTab,
+    SelectionTypeOptions,
     SimpleCategory,
     StorageTypeChoices,
     Style,
@@ -226,6 +227,7 @@ def create_dataset(
     version: Optional[str] = None,
     selection_type: Optional[str] = None,
     preferred_display_type: Optional[str] = None,
+    modules: Optional[List[str]] = None,
     **kwargs,
 ) -> Dataset:
     dataset = Dataset.objects.create(
@@ -238,6 +240,7 @@ def create_dataset(
         version=version,
         selection_type=selection_type,
         preferred_display_type=preferred_display_type,
+        modules=modules,
     )
     invalidate_model(Dataset)
     track_event(
@@ -945,6 +948,22 @@ def enable_datalayer_module(
 
 UPLOAD_MIMETYPE = "image/tiff"
 
+# The modules a workspace upload is exposed in, and its options in each. The
+# upload dataset lists the same modules: module options skip datasets that
+# don't.
+UPLOAD_MODULES: Dict[str, Dict[str, Any]] = {
+    "map": {"enabled": True},
+    "forsys": {
+        "enabled": True,
+        "capabilities": [
+            TreatmentGoalUsageType.PRIORITY.value,
+            TreatmentGoalUsageType.SECONDARY_METRIC.value,
+            TreatmentGoalUsageType.THRESHOLD.value,
+        ],
+    },
+    "advanced_stand_level_constraint": {"enabled": True},
+}
+
 
 class UploadsNotSupported(Exception):
     pass
@@ -982,6 +1001,8 @@ def get_or_create_workspace_upload_dataset(
         created_by=user,
         visibility=VisibilityOptions.PRIVATE,
         preferred_display_type=PreferredDisplayType.MAIN_DATALAYERS,
+        selection_type=SelectionTypeOptions.SINGLE,
+        modules=list(UPLOAD_MODULES),
     )
 
 
@@ -1081,8 +1102,7 @@ def create_workspace_upload(
         status=DataLayerStatus.PENDING,
         file_size=size,
         origin=DataLayerOrigin.USER,
-        # module lists only include layers enabled for them
-        metadata={"modules": {"map": {"enabled": True}}},
+        metadata={"modules": deepcopy(UPLOAD_MODULES)},
         upload_session={
             "content_type": UPLOAD_MIMETYPE,
             "size": size,
