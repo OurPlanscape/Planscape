@@ -294,7 +294,7 @@ describe('ExploreSidebarComponent', () => {
       expect(
         fixture.debugElement.query(By.css('.panel-header h4')).nativeElement
           .textContent
-      ).toContain('Uploaded');
+      ).toContain('Uploaded Data Layers');
     });
 
     it('shows the uploaded panel when that tab is selected', () => {
