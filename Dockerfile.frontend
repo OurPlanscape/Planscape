@@ -10,12 +10,14 @@ RUN npm ci && npm run postinstall
 
 COPY src/interface/ ./
 RUN npm run build -- --configuration docker --output-path=dist/out
+RUN npm run build-storybook -- --output-dir=storybook-static
 
 FROM nginx:1.30-alpine
 
 COPY docker/frontend/nginx.conf /etc/nginx/templates/default.conf.template
 COPY docker/frontend/entrypoint.sh /entrypoint.sh
 COPY --from=build /app/src/interface/dist/out/ /usr/share/nginx/html/
+COPY --from=build /app/src/interface/storybook-static/ /usr/share/nginx/html/storybook/
 
 RUN chmod +x /entrypoint.sh
 
