@@ -11,7 +11,13 @@ export function dataLayersRailItems(options: {
       ? [{ id: 'base-layers', icon: 'layers', label: 'Base Layers' }]
       : []),
     ...(options.uploaded
-      ? [{ id: 'uploaded', icon: 'drive_folder_upload', label: 'Uploaded' }]
+      ? [
+          {
+            id: 'uploaded',
+            icon: 'drive_folder_upload',
+            label: 'Uploaded Data Layers',
+          },
+        ]
       : []),
     {
       id: 'favorites',

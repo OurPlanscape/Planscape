@@ -18,7 +18,11 @@
       <h4 class="selection-title">{{ selection.name }}</h4>
     </ng-container>
     <ng-template #title>
-      <h4>{{ activePanel === 'uploaded' ? 'Uploaded' : 'Data Layers' }}</h4>
+      <h4>
+        {{
+          activePanel === 'uploaded' ? 'Uploaded Data Layers' : 'Data Layers'
+        }}
+      </h4>
     </ng-template>
   </div>
   <app-data-layers

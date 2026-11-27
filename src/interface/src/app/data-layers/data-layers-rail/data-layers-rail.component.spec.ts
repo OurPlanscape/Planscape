@@ -134,7 +134,7 @@ describe('DataLayersRailComponent', () => {
     it('opens the uploaded panel', () => {
       openUploaded();
 
-      expect(title()).toContain('Uploaded');
+      expect(title()).toContain('Uploaded Data Layers');
     });
 
     it('browses the uploads, with the same options as the data layers', () => {
