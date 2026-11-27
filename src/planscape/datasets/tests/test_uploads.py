@@ -1,4 +1,5 @@
 import shutil
+from copy import deepcopy
 from datetime import timedelta
 from io import StringIO
 from pathlib import Path
@@ -23,11 +24,14 @@ from datasets.models import (
     DataLayerStatus,
     DataLayerType,
     Dataset,
+    SearchTab,
+    SelectionTypeOptions,
     Style,
     VisibilityOptions,
     WorkspaceFavoriteDataLayer,
 )
 from datasets.services import (
+    UPLOAD_MODULES,
     change_datalayer_status,
     create_style,
     create_workspace_upload,
@@ -39,6 +43,8 @@ from datasets.tasks import process_uploaded_datalayer
 from gis.rasters import get_estimated_mask
 from datasets.upload_metadata import read_upload_metadata, write_upload_metadata
 from datasets.tests.factories import DataLayerFactory
+from modules.base import MODULE_HANDLERS, filter_datalayers, get_module
+from planning.models import TreatmentGoalUsageType
 from planscape.tests.factories import UserFactory
 
 ASSETS = Path(__file__).parent / "assets"
@@ -48,7 +54,7 @@ SESSION = {"url": "https://storage.googleapis.com/upload/session"}
 
 def make_upload(workspace, status=DataLayerStatus.PENDING, **kwargs):
     dataset = get_or_create_workspace_upload_dataset(workspace, workspace.created_by)
-    kwargs.setdefault("metadata", {"modules": {"map": {"enabled": True}}})
+    kwargs.setdefault("metadata", {"modules": deepcopy(UPLOAD_MODULES)})
     datalayer = DataLayerFactory.create(
         dataset=dataset,
         organization=None,
@@ -107,7 +113,11 @@ class CreateWorkspaceDataLayerTest(APITestCase):
         self.assertEqual(body["datalayer"]["status"], "PENDING")
         self.assertEqual(body["datalayer"]["file_size"], self.payload["size"])
         datalayer = DataLayer.objects.get(pk=body["datalayer"]["id"])
-        self.assertEqual(datalayer.metadata, {"modules": {"map": {"enabled": True}}})
+        self.assertEqual(datalayer.metadata, {"modules": UPLOAD_MODULES})
+        self.assertEqual(datalayer.dataset.modules, list(UPLOAD_MODULES))
+        self.assertEqual(
+            datalayer.dataset.selection_type, SelectionTypeOptions.SINGLE
+        )
 
         datalayer = DataLayer.objects.get(pk=body["datalayer"]["id"])
         self.assertEqual(datalayer.workspace, self.workspace)
@@ -523,6 +533,73 @@ class ReadPathsTest(APITestCase):
     DATALAYER_UPLOAD_PENDING_TTL_HOURS=24,
     DATALAYER_UPLOAD_PROCESSING_TTL_HOURS=2,
 )
+class UploadModulesTest(TestCase):
+    def setUp(self):
+        self.owner = UserFactory.create()
+        self.workspace = PlanningWorkspaceFactory.create(created_by=self.owner)
+        self.datalayer = make_upload(
+            self.workspace,
+            status=DataLayerStatus.READY,
+            geometry=Polygon.from_bbox((-121.0, 38.0, -120.0, 39.0)),
+        )
+
+    def test_modules_are_registered(self):
+        self.assertLessEqual(set(UPLOAD_MODULES), set(MODULE_HANDLERS))
+        self.assertEqual(
+            set(UPLOAD_MODULES), {"map", "forsys", "advanced_stand_level_constraint"}
+        )
+
+    def test_forsys_capabilities(self):
+        for capability in (
+            TreatmentGoalUsageType.PRIORITY,
+            TreatmentGoalUsageType.SECONDARY_METRIC,
+            TreatmentGoalUsageType.THRESHOLD,
+        ):
+            self.assertIn(
+                self.datalayer, DataLayer.objects.all().by_meta_capability(capability)
+            )
+        for capability in (
+            TreatmentGoalUsageType.INCLUSION_ZONE,
+            TreatmentGoalUsageType.EXCLUSION_ZONE,
+        ):
+            self.assertNotIn(
+                self.datalayer, DataLayer.objects.all().by_meta_capability(capability)
+            )
+
+    def test_dataset_is_listed_by_each_module(self):
+        for module in UPLOAD_MODULES:
+            self.assertIn(
+                self.datalayer.dataset,
+                get_module(module).get_datasets(user=self.owner),
+                module,
+            )
+
+    def test_upload_is_browsable_in_each_module(self):
+        for module in UPLOAD_MODULES:
+            datalayers = filter_datalayers(
+                DataLayer.objects.all(),
+                type=DataLayerType.RASTER,
+                module=module,
+                search_tab=SearchTab.UPLOADED,
+                user=self.owner,
+                workspace=self.workspace,
+            )
+            self.assertIn(self.datalayer, datalayers, module)
+
+    def test_upload_is_a_stand_level_constraint_option(self):
+        module = get_module("advanced_stand_level_constraint")
+        self.assertIn(self.datalayer, module.get_datalayers(user=self.owner))
+
+    def test_other_users_do_not_get_the_upload(self):
+        outsider = UserFactory.create()
+        for module in UPLOAD_MODULES:
+            self.assertNotIn(
+                self.datalayer.dataset,
+                get_module(module).get_datasets(user=outsider),
+                module,
+            )
+
+
 class ExpireStaleUploadsTest(TestCase):
     def setUp(self):
         self.workspace = PlanningWorkspaceFactory.create()
