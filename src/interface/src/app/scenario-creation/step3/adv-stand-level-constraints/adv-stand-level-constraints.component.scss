@@ -68,6 +68,17 @@
     gap: 8px;
 }
 
+.view-layer-label {
+    @include small-paragraph();
+    margin: 0 0 8px 0;
+    color: $color-md-gray;
+}
+
+.view-layer-toggle {
+    display: block;
+    margin-bottom: 8px;
+}
+
 .apply-constraints-form {
     display: flex;
     flex-direction: row;

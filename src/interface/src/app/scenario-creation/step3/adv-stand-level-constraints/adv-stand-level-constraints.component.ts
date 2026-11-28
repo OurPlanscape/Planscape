@@ -15,6 +15,7 @@ import {
   PopoverComponent,
   SectionComponent,
   StepDirective,
+  ToggleComponent,
 } from '@styleguide';
 import { ChipSelectorComponent } from '@styleguide/chip-selector/chip-selector.component';
 import {
@@ -23,12 +24,14 @@ import {
 } from '../adv-stand-level-constraints-modal/adv-stand-level-constraints-modal.component';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   debounceTime,
   distinctUntilChanged,
   filter,
   map,
   Observable,
+  of,
   shareReplay,
   startWith,
   Subject,
@@ -49,6 +52,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NewScenarioState } from '@app/scenario-creation/new-scenario.state';
 import { getConstraintDisplayName } from '@app/scenario/scenario-helper';
 import { ForsysService } from '@app/services/forsys.service';
+import { DataLayersService } from '@services';
 import {
   FormControl,
   FormGroup,
@@ -62,6 +66,15 @@ import { ASLC_INFO_URL } from '@app/shared';
 
 const MAX_SELECTABLE_LAYERS = Number.POSITIVE_INFINITY;
 const MAX_DISTANCE_FROM_ROADS_MILES = 100;
+
+export type ThresholdLayerKey = 'slope' | 'distance_from_roads';
+
+export type ThresholdLayers = Record<ThresholdLayerKey, DataLayer | null>;
+
+const NO_THRESHOLD_LAYERS: ThresholdLayers = {
+  slope: null,
+  distance_from_roads: null,
+};
 
 @UntilDestroy()
 @Component({
@@ -89,6 +102,7 @@ const MAX_DISTANCE_FROM_ROADS_MILES = 100;
     MatExpansionModule,
     MatFormFieldModule,
     MatInputModule,
+    ToggleComponent,
   ],
   templateUrl: './adv-stand-level-constraints.component.html',
   styleUrl: './adv-stand-level-constraints.component.scss',
@@ -132,6 +146,50 @@ export class AdvStandLevelConstraintsComponent
     ]),
     constraints: new FormControl<NamedConstraint[]>([], { nonNullable: true }),
   });
+
+  readonly thresholdLayers$: Observable<ThresholdLayers> =
+    this.forsysService.forsysData$.pipe(
+      take(1),
+      switchMap(({ thresholds }) =>
+        this.dataLayersService
+          .getDataLayersByIds([
+            thresholds.slope.id,
+            thresholds.distance_from_roads.id,
+          ])
+          .pipe(
+            map((layers) => ({
+              slope: layers.find((l) => l.id === thresholds.slope.id) ?? null,
+              distance_from_roads:
+                layers.find(
+                  (l) => l.id === thresholds.distance_from_roads.id
+                ) ?? null,
+            })),
+            catchError(() => of(NO_THRESHOLD_LAYERS))
+          )
+      ),
+      startWith(NO_THRESHOLD_LAYERS),
+      shareReplay(1)
+    );
+
+  readonly viewedThresholdLayer$: Observable<ThresholdLayerKey | null> =
+    combineLatest([
+      this.thresholdLayers$,
+      this.dataLayersStateService.viewedDataLayer$,
+    ]).pipe(
+      map(([layers, viewed]) => {
+        if (!viewed) {
+          return null;
+        }
+        if (layers.slope?.id === viewed.id) {
+          return 'slope';
+        }
+        if (layers.distance_from_roads?.id === viewed.id) {
+          return 'distance_from_roads';
+        }
+        return null;
+      }),
+      shareReplay(1)
+    );
 
   private knownLayers: DataLayer[] = [];
 
@@ -186,7 +244,8 @@ export class AdvStandLevelConstraintsComponent
     private planState: PlanState,
     private dataLayersStateService: DataLayersStateService,
     private newScenarioState: NewScenarioState,
-    private forsysService: ForsysService
+    private forsysService: ForsysService,
+    private dataLayersService: DataLayersService
   ) {
     super();
 
@@ -367,6 +426,13 @@ export class AdvStandLevelConstraintsComponent
       (c) => c.name !== constraintName
     );
     this.selectedConstraints$.next(current);
+  }
+
+  toggleThresholdLayer(layer: DataLayer | null, viewing: boolean) {
+    if (!layer) {
+      return;
+    }
+    this.dataLayersStateService.selectDataLayer(viewing ? layer : null);
   }
 
   toggleLayersSection() {
