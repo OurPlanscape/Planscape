@@ -39,12 +39,46 @@ export default defineConfig({
     {
       name: 'auth-setup',
       testMatch: /auth\.setup\.ts/,
+      teardown: 'cleanup',
     },
     {
       name: 'authenticated',
       testDir: './e2e/specs',
-      testIgnore: /\/public\//,
+      testIgnore: [/\/public\//, /cleanup\.spec\.ts/, /\/scenario\//], dependencies: ['auth-setup'],
+      use: {
+        storageState: 'e2e/.auth/user.json',
+      },
+    },
+    {
+      name: 'plan-setup',
+      testMatch: /plan\.setup\.ts/,
       dependencies: ['auth-setup'],
+      teardown: 'plan-teardown',
+      timeout: 300_000,
+      use: {
+        storageState: 'e2e/.auth/user.json',
+      },
+    },
+    {
+      name: 'scenarios',
+      testMatch: /\/scenario\/.*\.spec\.ts/,
+      dependencies: ['auth-setup', 'plan-setup'],
+      teardown: 'scenarios-teardown',
+      timeout: 300_000,
+      use: {
+        storageState: 'e2e/.auth/user.json',
+      },
+    },
+{
+      name: 'scenarios-teardown',
+      testMatch: /scenario\.teardown\.ts/,
+      use: {
+        storageState: 'e2e/.auth/user.json',
+      },
+    },
+    {
+      name: 'plan-teardown',
+      testMatch: /plan\.teardown\.ts/,
       use: {
         storageState: 'e2e/.auth/user.json',
       },
@@ -53,22 +87,21 @@ export default defineConfig({
       name: 'public',
       testDir: './e2e/specs/public',
     },
+
     {
       name: 'cleanup',
       testMatch: /cleanup\.spec\.ts/,
-      dependencies: ['authenticated'],
-      use: {
-        storageState: 'e2e/.auth/user.json',
-      },
+      use: { storageState: 'e2e/.auth/user.json' },
     },
+
   ],
 
   webServer: process.env['E2E_BASE_URL']
     ? undefined
     : {
-        command: 'npx ng serve',
-        url: 'http://localhost:4200',
-        reuseExistingServer: !process.env['CI'],
-        timeout: 120_000,
-      },
+      command: 'npx ng serve',
+      url: 'http://localhost:4200',
+      reuseExistingServer: !process.env['CI'],
+      timeout: 120_000,
+    },
 });

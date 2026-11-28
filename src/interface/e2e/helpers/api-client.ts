@@ -1,4 +1,5 @@
 import { APIRequestContext } from '@playwright/test';
+import { Geometry } from 'geojson';
 
 interface TestUser {
   email: string;
@@ -6,6 +7,10 @@ interface TestUser {
   firstName: string;
   lastName: string;
 }
+
+const PLANNING_AREA_URL = 'planscape-backend/v2/planningareas/';
+const SCENARIO_URL = 'planscape-backend/v2/scenarios/';
+
 
 export async function registerTestUser(api: APIRequestContext, user: TestUser) {
   return api.post('/planscape-backend/dj-rest-auth/registration/', {
@@ -65,6 +70,46 @@ export async function destroyTestUser(api: APIRequestContext) {
   const res = await api.post('/planscape-backend/users/e2e/destroy/');
   if (!res.ok()) {
     throw new Error(`Destroy failed: ${res.status()} ${await res.text()}`);
+  }
+  return res;
+}
+
+export async function createPlanningArea(api: APIRequestContext, testName: string, testGeom: Geometry, workspaceId: number) {
+  const res = await api.post(PLANNING_AREA_URL, {
+    data: { name: testName, geometry: testGeom, workspace: workspaceId }
+  });
+  if (!res.ok()) {
+    throw new Error(`Plan creation failed: ${res.status()} ${await res.text()}`);
+  }
+  return res;
+}
+
+export async function deletePlanningArea(api: APIRequestContext, planId: number) {
+  const res = await api.delete(PLANNING_AREA_URL + `/${planId}/`, {
+  });
+  if (!res.ok()) {
+    throw new Error(`Plan deletion failed: ${res.status()} ${await res.text()}`);
+  }
+  return res;
+}
+
+export async function getScenariosForPlan(
+  request: APIRequestContext,
+  planId: number,
+): Promise<{ id: number }[]> {
+  const res = await request.get(SCENARIO_URL, {
+    params: { planning_area: planId },
+  });
+  if (!res.ok()) throw new Error(`List scenarios failed: ${res.status()}`);
+  return res.json();
+}
+
+
+export async function deleteScenario(api: APIRequestContext, scenarioId: number) {
+  const res = await api.delete(SCENARIO_URL + `/${scenarioId}/`, {
+  });
+  if (!res.ok()) {
+    throw new Error(`Scenario deletion failed: ${res.status()} ${await res.text()}`);
   }
   return res;
 }
